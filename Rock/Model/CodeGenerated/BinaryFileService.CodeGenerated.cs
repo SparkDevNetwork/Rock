@@ -65,6 +65,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<AIAgent>( Context ).Queryable().Any( a => a.AvatarBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, AIAgent.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<BackgroundCheck>( Context ).Queryable().Any( a => a.ResponseDocumentId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, BackgroundCheck.FriendlyTypeName );
@@ -116,6 +122,12 @@ namespace Rock.Model
             if ( new Service<ConnectionOpportunity>( Context ).Queryable().Any( a => a.PhotoId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, ConnectionOpportunity.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<Contact>( Context ).Queryable().Any( a => a.PhotoId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Contact.FriendlyTypeName );
                 return false;
             }
 

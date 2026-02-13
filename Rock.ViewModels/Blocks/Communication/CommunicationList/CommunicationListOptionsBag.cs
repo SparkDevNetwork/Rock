@@ -15,6 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Communication.CommunicationList
 {
     /// <summary>
@@ -41,5 +45,11 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationList
         /// Gets or sets whether an active push transport exists.
         /// </summary>
         public bool HasActivePushTransport { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of communication topic defined value items - both active and inactive - that the
+        /// individual can filter by.
+        /// </summary>
+        public List<ListItemBag> TopicItems { get; set; }
     }
 }

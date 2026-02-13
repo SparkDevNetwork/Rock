@@ -1,0 +1,97 @@
+<template>
+    <Modal v-model="isCheckoutAllModalVisible"
+           title="Mark All as Checked-Out"
+           saveText="Confirm"
+           @closeModal="onCloseModal"
+           @save="onSaveClick">
+        <p>Which scheduled times would you like to mark everyone as checked-out?</p>
+
+        <CheckBoxList v-model="checkoutAllSelectedSchedules"
+                      label="Schedules"
+                      horizontal
+                      rules="required"
+                      :items="checkoutAllScheduleItems" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { ref } from "vue";
+    import { RosterSingleAttendanceRecord } from "./types.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+
+    defineExpose({ show });
+
+    // #region Values
+
+    const isCheckoutAllModalVisible = ref(false);
+    const checkoutAllRows = ref<RosterSingleAttendanceRecord[]>([]);
+    const checkoutAllSelectedSchedules = ref<string[]>([]);
+    const checkoutAllScheduleItems = ref<ListItemBag[]>([]);
+
+    let promiseSource: PromiseCompletionSource<string[] | null> | null = null;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Shows the modal to checkout all records from a set of potential service
+     * schedules. The callback will be invoked if the user confirms the action.
+     *
+     * @param records The records that will be checked out.
+     * @param schedules The available schedules that can be selected for checkout.
+     * @param callback The callback to invoke when confirmed.
+     */
+
+    async function show(records: RosterSingleAttendanceRecord[], schedules: ListItemBag[], callback: ((values: string[]) => Promise<void>)): Promise<void> {
+        checkoutAllRows.value = records;
+        checkoutAllScheduleItems.value = schedules.map(s => {
+            const count = Enumerable.from(records).where(r => r.schedule.value === s.value).count();
+
+            return {
+                value: s.value,
+                text: `${s.text} (${count} ${(count === 1 ? "person" : "people")})`
+            };
+        });
+        checkoutAllSelectedSchedules.value = [];
+        isCheckoutAllModalVisible.value = true;
+
+        promiseSource = new PromiseCompletionSource<string[] | null>();
+        const result = await promiseSource.promise;
+        promiseSource = null;
+
+        if (result) {
+            await callback(result);
+        }
+
+        isCheckoutAllModalVisible.value = false;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles when the Save button is clicked.
+     */
+    async function onSaveClick(): Promise<void> {
+        const idKeys = checkoutAllRows.value
+            .filter(r => checkoutAllSelectedSchedules.value.includes(r.schedule.value ?? ""))
+            .map(r => r.idKey);
+
+        promiseSource?.resolve(idKeys.length > 0 ? idKeys : null);
+    }
+
+    /**
+     * Handles when the modal is closed without saving.
+     */
+    function onCloseModal(): void {
+        promiseSource?.resolve(null);
+    }
+
+    // #endregion
+</script>

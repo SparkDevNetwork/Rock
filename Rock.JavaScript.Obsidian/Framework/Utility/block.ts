@@ -15,14 +15,14 @@
 // </copyright>
 //
 
-import { BlockEvent, InvokeBlockActionFunc, SecurityGrant } from "@Obsidian/Types/Utility/block";
+import { BlockEvent, InvokeBlockActionFunc, InvokeStreamingBlockActionFunc, SecurityGrant } from "@Obsidian/Types/Utility/block";
 import { IBlockPersonPreferencesProvider, IPersonPreferenceCollection } from "@Obsidian/Types/Core/personPreferences";
 import { ExtendedRef } from "@Obsidian/Types/Utility/component";
 import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
 import { inject, provide, Ref, ref, watch } from "vue";
 import { RockDateTime } from "./rockDateTime";
 import { Guid } from "@Obsidian/Types";
-import { HttpBodyData, HttpPostFunc, HttpResult } from "@Obsidian/Types/Utility/http";
+import { HttpBodyData, HttpDoStreamingApiCallFunc, HttpPostFunc, HttpResult } from "@Obsidian/Types/Utility/http";
 import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
 import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 import { IEntity } from "@Obsidian/ViewModels/entity";
@@ -117,6 +117,63 @@ export function createInvokeBlockAction(post: HttpPostFunc, pageGuid: Guid, bloc
                 __context: context,
                 ...data
             },
+            cancellationToken);
+    }
+
+    return invokeBlockAction;
+}
+
+/**
+ * Gets the function that will be used to invoke block actions.
+ *
+ * @returns An instance of @see {@link InvokeStreamingBlockActionFunc}.
+ */
+export function useInvokeStreamingBlockAction(): InvokeStreamingBlockActionFunc {
+    const result = inject<InvokeStreamingBlockActionFunc>("invokeStreamingBlockAction");
+
+    if (result === undefined) {
+        throw "Attempted to access block action invocation outside of a RockBlock.";
+    }
+
+    return result;
+}
+
+/**
+ * Creates a function that can be provided to the block that allows calling
+ * block actions and returning streaming data.
+ *
+ * @private This should not be used by plugins.
+ *
+ * @param post The function to handle the post operation.
+ * @param pageGuid The unique identifier of the page.
+ * @param blockGuid The unique identifier of the block.
+ * @param pageParameters The parameters to include with the block action calls.
+ * @param sessionGuid The unique identifier of the session from the original page request.
+ * @param interactionGuid The unique identifier of the interaction from the original page request.
+ *
+ * @returns A function that can be used to provide the invoke block action.
+ */
+export function createInvokeStreamingBlockAction(doStreamingApiCall: HttpDoStreamingApiCallFunc, pageGuid: Guid, blockGuid: Guid, pageParameters: Record<string, string>, sessionGuid: Guid, interactionGuid: Guid): InvokeStreamingBlockActionFunc {
+    async function invokeBlockAction<T>(actionName: string, data: HttpBodyData | undefined = undefined, actionContext: BlockActionContextBag | undefined = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<ReadableStream<T>>> {
+        let context: BlockActionContextBag = {};
+
+        if (actionContext) {
+            context = { ...actionContext };
+        }
+
+        context.pageParameters = pageParameters;
+        context.interactionGuid = interactionGuid;
+        context.sessionGuid = sessionGuid;
+
+        return await doStreamingApiCall<T>(
+            "POST",
+            `/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`,
+            undefined,
+            {
+                __context: context,
+                ...data
+            },
+            undefined,
             cancellationToken);
     }
 

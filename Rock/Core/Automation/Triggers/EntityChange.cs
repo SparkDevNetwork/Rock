@@ -66,6 +66,15 @@ namespace Rock.Core.Automation.Triggers
             public const string Properties = "properties";
         }
 
+        private static class RequestKey
+        {
+            public const string Command = "command";
+
+            public const string EntityType = "entityType";
+
+            public const string Criteria = "criteria";
+        }
+
         #endregion Keys
 
         #region Methods
@@ -235,11 +244,76 @@ namespace Rock.Core.Automation.Triggers
         /// <inheritdoc/>
         public override Dictionary<string, string> ExecuteComponentRequest( Dictionary<string, string> request, SecurityGrant securityGrant, RockContext rockContext, RockRequestContext requestContext )
         {
-            if ( request.TryGetValue( ConfigurationKey.EntityType, out var entityTypeGuid ) )
+            var command = request.GetValueOrNull( RequestKey.Command );
+
+            if ( command == "GetEntityProperties" )
             {
+                var entityTypeGuid = request.GetValueOrNull( RequestKey.EntityType )?.AsGuidOrNull();
+
                 return new Dictionary<string, string>
                 {
-                    [OptionKey.Properties] = GetPropertiesForEntityType( entityTypeGuid.AsGuidOrNull(), rockContext ),
+                    [OptionKey.Properties] = GetPropertiesForEntityType( entityTypeGuid, rockContext ),
+                };
+            }
+
+            if ( command == "Validate" )
+            {
+                var entityTypeGuid = request.GetValueOrNull( RequestKey.EntityType )?.AsGuidOrNull();
+                var criteria = request.GetValueOrNull( RequestKey.Criteria );
+
+                var entityType = entityTypeGuid.HasValue
+                    ? EntityTypeCache.Get( entityTypeGuid.Value, rockContext )?.GetEntityType()
+                    : null;
+
+                if ( entityType == null )
+                {
+                    return new Dictionary<string, string>
+                    {
+                        ["isValid"] = "false",
+                        ["errorMessage"] = "The specified Entity Type is not valid."
+                    };
+                }
+
+                try
+                {
+                    EntityChangeCriteria.CreateAdvancedFilterDelegate( entityType, criteria );
+                }
+                catch ( System.Linq.Dynamic.Core.Exceptions.ParseException ex )
+                {
+                    string errorMessage;
+
+                    if ( ex.Position >= 0 )
+                    {
+                        var startIndex = Math.Max( ex.Position - 10, 0 );
+                        var length = Math.Min( 20, criteria.Length - startIndex );
+
+                        var nearText = criteria.Substring( startIndex, length );
+
+                        errorMessage = $"{ex.Message}: At position {ex.Position} near '{nearText}'";
+                    }
+                    else
+                    {
+                        errorMessage = ex.Message;
+                    }
+
+                    return new Dictionary<string, string>
+                    {
+                        ["isValid"] = "false",
+                        ["errorMessage"] = errorMessage
+                    };
+                }
+                catch ( Exception ex )
+                {
+                    return new Dictionary<string, string>
+                    {
+                        ["isValid"] = "false",
+                        ["errorMessage"] = $"Error in criteria: {ex.Message}"
+                    };
+                }
+
+                return new Dictionary<string, string>
+                {
+                    ["isValid"] = "true"
                 };
             }
 

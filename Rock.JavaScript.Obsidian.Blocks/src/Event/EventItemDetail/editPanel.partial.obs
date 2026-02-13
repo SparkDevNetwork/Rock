@@ -227,7 +227,7 @@
 
     const computedAudiences = computed((): ListItemBag[] => {
         const selectedAudiences = audiences.value.map(a => a.value);
-        return availableAudiences.value.filter(x => !selectedAudiences.some(sa => sa == x.value)) || [];
+        return availableAudiences.value.filter(x => !selectedAudiences.some(sa => sa === x.value)) || [];
     });
 
     // #endregion
@@ -266,8 +266,8 @@
         isAudienceModalOpen.value = false;
 
         const audienceValue = audience.value;
-        if (audienceValue && !audiences.value.some(x => x.value == audienceValue)) {
-            const audience = availableAudiences.value.find(x => x.value == audienceValue);
+        if (audienceValue && !audiences.value.some(x => x.value === audienceValue)) {
+            const audience = availableAudiences.value.find(x => x.value === audienceValue);
             if (audience) {
                 audiences.value.push(audience);
                 const rowItem = toAudienceRowItem(audience);
@@ -340,8 +340,8 @@
             const index = eventOccurenceAttributes.value.findIndex(a => a.attribute?.guid === occurrenceAttribute.value?.guid);
 
             if (index !== -1) {
-                let editedAttribute = eventOccurenceAttributes.value.find(a => a.attribute?.guid == occurrenceAttribute.value?.guid);
-                let rowItem = occurenceAttributesGridData.rows?.find(x => x.key == occurrenceAttribute.value?.key);
+                let editedAttribute = eventOccurenceAttributes.value.find(a => a.attribute?.guid === occurrenceAttribute.value?.guid);
+                let rowItem = occurenceAttributesGridData.rows?.find(x => x.key === occurrenceAttribute.value?.key);
 
                 if (editedAttribute?.attribute) {
                     editedAttribute.attribute = occurrenceAttribute.value;

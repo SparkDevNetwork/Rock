@@ -28,10 +28,8 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.SiteDetail;
-using Rock.ViewModels.Blocks.Communication.SnippetTypeDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -111,8 +109,19 @@ namespace Rock.Blocks.Cms
 
             var physicalRootFolder = AppDomain.CurrentDomain.BaseDirectory;
             string physicalFolder = Path.Combine( physicalRootFolder, RequestContext.ResolveRockUrl( "~~/" ).RemoveLeadingForwardslash() );
-            var di = new DirectoryInfo( physicalFolder );
-            options.Themes.AddRange( di.Parent.EnumerateDirectories().OrderBy( a => a.Name ).Select( themeDir => new ListItemBag() { Text = themeDir.Name, Value = themeDir.Name } ) );
+
+            var sites = SiteCache.All()
+                .Where( s => !string.IsNullOrWhiteSpace( s.Theme ) )
+                .DistinctBy( s => s.Theme )
+                .OrderBy( s => s.Theme )
+                .Select( s => new ListItemBag
+                {
+                    Text = s.Theme,
+                    Value = s.Theme
+                } );
+
+            options.Themes.AddRange( sites );
+
             return options;
         }
 
@@ -191,6 +200,11 @@ namespace Rock.Blocks.Cms
                 return null;
             }
 
+            var interactionChannelService = new InteractionChannelService( RockContext );
+            int channelMediumWebsiteValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+            var interactionChannelForSite = interactionChannelService.Queryable()
+                .Where( a => a.ChannelTypeMediumValueId == channelMediumWebsiteValueId && a.ChannelEntityId == entity.Id ).FirstOrDefault();
+
             var bag = new SiteBag
             {
                 IdKey = entity.IdKey,
@@ -229,10 +243,76 @@ namespace Rock.Blocks.Cms
                 RegistrationPage = entity.RegistrationPage.ToListItemBag(),
                 RegistrationPageRoute = entity.RegistrationPageRoute.ToListItemBag(),
                 RequiresEncryption = entity.RequiresEncryption,
+                RetentionDuration = interactionChannelForSite?.RetentionDuration ?? ( int? ) null,
                 SiteLogoBinaryFile = entity.SiteLogoBinaryFile.ToListItemBag(),
                 Theme = entity.Theme,
                 SiteUrl = $"{this.RequestContext.ResolveRockUrl( "~/page/" )}{entity.DefaultPageId}"
             };
+
+            #region Utilize Route Pages
+            // Existing entities that have a Route proceed with the route's page instead
+
+            if ( entity.ChangePasswordPageRoute != null )
+            {
+                Rock.Model.Page page = entity.ChangePasswordPageRoute.Page;
+                bag.ChangePasswordPage.Value = page.Guid.ToString();
+                if ( entity.ChangePasswordPageRoute.Id != 0 )
+                {
+                    bag.ChangePasswordPage.Text = page.InternalName;
+                }
+            }
+
+            if ( entity.CommunicationPageRoute != null )
+            {
+                Rock.Model.Page page = entity.CommunicationPageRoute.Page;
+                bag.CommunicationPage.Value = page.Guid.ToString();
+                if ( entity.CommunicationPageRoute.Id != 0 )
+                {
+                    bag.CommunicationPage.Text = page.InternalName;
+                }
+            }
+
+            if ( entity.DefaultPageRoute != null )
+            {
+                Rock.Model.Page page = entity.DefaultPageRoute.Page;
+                bag.DefaultPage.Value = page.Guid.ToString();
+                if ( entity.DefaultPageRoute.Id != 0 )
+                {
+                    bag.DefaultPage.Text = page.InternalName;
+                }
+            }
+
+            if ( entity.LoginPageRoute != null )
+            {
+                Rock.Model.Page page = entity.LoginPageRoute.Page;
+                bag.LoginPage.Value = page.Guid.ToString();
+                if ( entity.LoginPageRoute.Id != 0 )
+                {
+                    bag.LoginPage.Text = page.InternalName;
+                }
+            }
+
+            if ( entity.PageNotFoundPageRoute != null )
+            {
+                Rock.Model.Page page = entity.PageNotFoundPageRoute.Page;
+                bag.PageNotFoundPage.Value = page.Guid.ToString();
+                if ( entity.PageNotFoundPageRoute.Id != 0 )
+                {
+                    bag.PageNotFoundPage.Text = page.InternalName;
+                }
+            }
+
+            if ( entity.RegistrationPageRoute != null )
+            {
+                Rock.Model.Page page = entity.RegistrationPageRoute.Page;
+                bag.RegistrationPage.Value = page.Guid.ToString();
+                if ( entity.RegistrationPageRoute.Id != 0 )
+                {
+                    bag.RegistrationPage.Text = page.InternalName;
+                }
+            }
+
+            #endregion Utilize Route Pages
 
             if ( entity.SiteDomains != null )
             {
@@ -398,9 +478,6 @@ namespace Rock.Blocks.Cms
 
             box.IfValidProperty( nameof( box.Bag.SiteLogoBinaryFile ),
                 () => entity.SiteLogoBinaryFileId = box.Bag.SiteLogoBinaryFile.GetEntityId<BinaryFile>( RockContext ) );
-
-            box.IfValidProperty( nameof( box.Bag.Theme ),
-                () => entity.Theme = box.Bag.Theme );
 
             box.IfValidProperty( nameof( box.Bag.Theme ),
                 () => entity.Theme = box.Bag.Theme );
@@ -574,6 +651,37 @@ namespace Rock.Blocks.Cms
                 .ToList();
         }
 
+        /// <summary>
+        /// Updates the site's applied page attributes.
+        /// </summary>
+        /// <param name="box">The box that contains all the information required to save.</param>
+        /// <param name="entity">The site entity being updated.</param>
+        private void UpdateSitePageAttributes( ValidPropertiesBox<SiteBag> box, Site entity )
+        {
+            // Save the attributes using convention, then handle order manually
+            SaveAttributes( new Page().TypeId, "SiteId", entity.Id.ToString(), box.Bag.SiteAttributes, RockContext );
+
+            // Grab all the attributes in one query
+            var attributeService = new AttributeService( RockContext );
+            var attributes = attributeService.GetByGuids( box.Bag.SiteAttributes
+                .Where( a => a.Guid.HasValue )
+                .Select( a => a.Guid.Value )
+                .ToList()
+            );
+
+            // Update the order of the attributes
+            foreach ( var attributeBag in box.Bag.SiteAttributes )
+            {
+                var attribute = attributes.FirstOrDefault( a => a.Guid == attributeBag.Guid );
+                if ( attribute != null )
+                {
+                    attribute.Order = box.Bag.SiteAttributes.IndexOf( attributeBag );
+                }
+            }
+
+            RockContext.SaveChanges();
+        }
+
         #endregion
 
         #region Block Actions
@@ -641,7 +749,7 @@ namespace Rock.Blocks.Cms
                 RockContext.SaveChanges();
                 entity.SaveAttributeValues( RockContext );
 
-                SaveAttributes( new Page().TypeId, "SiteId", entity.Id.ToString(), box.Bag.SiteAttributes, RockContext );
+                UpdateSitePageAttributes( box, entity );
 
                 if ( existingIconId.HasValue && existingIconId.Value != entity.FavIconBinaryFileId )
                 {

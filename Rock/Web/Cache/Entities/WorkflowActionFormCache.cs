@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -220,7 +221,7 @@ namespace Rock.Web.Cache
                     {
                         if ( _formAttributeIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 _formAttributeIds = new WorkflowActionFormAttributeService( rockContext )
                                     .Queryable().AsNoTracking()

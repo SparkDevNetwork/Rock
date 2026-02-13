@@ -301,12 +301,12 @@ namespace Rock.Blocks.Cms
 
             foreach ( var field in fileOrImageFields.Cast<VariableThemeField>() )
             {
-                if ( originalValues?.TryGetValue( field.Variable, out var originalValue ) != true )
+                if ( originalValues?.TryGetValue( field.Key, out var originalValue ) != true )
                 {
                     originalValue = string.Empty;
                 }
 
-                if ( newValues?.TryGetValue( field.Variable, out var newValue ) != true )
+                if ( newValues?.TryGetValue( field.Key, out var newValue ) != true )
                 {
                     newValue = string.Empty;
                 }
@@ -403,7 +403,7 @@ namespace Rock.Blocks.Cms
             {
                 fieldBag.Name = variableField.Name;
                 fieldBag.Description = variableField.Description;
-                fieldBag.Variable = variableField.Variable;
+                fieldBag.Key = variableField.Key;
 
                 if ( variableField.Type == ThemeFieldType.Image || variableField.Type == ThemeFieldType.File )
                 {

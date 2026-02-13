@@ -3,14 +3,14 @@
     display:      flex;
     flex-wrap:    wrap;
     align-items:  center;
-  
+
     /* Replace 18px with panel-body-padding if available */
-    padding:        8px 18px;
-    margin:         -18px -18px 0;
+    padding:        var(--spacing-xsmall) var(--spacing-medium);
+    margin:         -16px -16px 0;
     background:     var(--color-interface-softer);
     border-bottom:  1px solid var(--color-interface-soft);
   }
-  
+
 .add-step-buttons .add-step-label {
   margin:     0 var(--spacing-tiny) 0 0;
   font-size:  var(--font-size-small);

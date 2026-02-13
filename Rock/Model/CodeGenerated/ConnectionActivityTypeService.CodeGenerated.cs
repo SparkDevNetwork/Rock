@@ -141,6 +141,8 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.Name = source.Name;
+            target.PersonNoteCreationBehavior = source.PersonNoteCreationBehavior;
+            target.PersonNoteTypeId = source.PersonNoteTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

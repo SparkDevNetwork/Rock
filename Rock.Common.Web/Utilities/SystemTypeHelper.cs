@@ -27,6 +27,8 @@ namespace Rock
     /// <summary>
     /// Static helper methods for accessing the .NET type system.
     /// </summary>
+    [Obsolete( "Use standard Rock Reflection methods." )]
+    [RockObsolete( "19.0" )]
     public static class SystemTypeHelper
     {
         /// <summary>

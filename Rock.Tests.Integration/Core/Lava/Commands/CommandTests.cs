@@ -136,8 +136,8 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
 
                 TestHelper.DebugWriteRenderResult( engine, input, output );
 
-                Assert.IsTrue( output.Contains( "Ted Decker" ), "Expected person not found." );
-                Assert.IsTrue( output.Contains( "Cindy Decker" ), "Expected person not found." );
+                Assert.Contains( "Ted Decker", output, "Expected person not found." );
+                Assert.Contains( "Cindy Decker", output, "Expected person not found." );
             } );
         }
 
@@ -350,7 +350,7 @@ findme-interactiontest3
                 .Where( x => x.InteractionSummary == summary )
                 .ToList();
 
-            Assert.IsTrue( interactions.Count == 1, $"Expected Interaction not found. [Interaction Summary={summary}]" );
+            Assert.HasCount( 1, interactions, $"Expected Interaction not found. [Interaction Summary={summary}]" );
 
             return interactions.First();
         }
@@ -424,7 +424,7 @@ findme-interactiontest3
 ";
 
             var expectedOutput = @"`mynumber`:`123`"
-                .Replace("`", @"""" );
+                .Replace( "`", @"""" );
 
             TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
@@ -450,7 +450,7 @@ findme-interactiontest3
         }
 
         [TestMethod]
-        [Ignore("Add code to correctly set Universal Search component to disabled status.")]
+        [Ignore( "Add code to correctly set Universal Search component to disabled status." )]
         public void SearchBlock_UniversalSearchNotEnabled_ReturnsConfigurationErrorMessage()
         {
             var input = @"
@@ -633,9 +633,9 @@ Brian;Daniel;Nancy;William;
 
                 var output = result.Text.Replace( " ", string.Empty );
 
-                Assert.IsTrue( output.Contains( "person-Rock.Lava.Blocks.RockEntity" ), "Expected Entity Tag not found." );
-                Assert.IsTrue( output.Contains( "cache-Rock.Lava.Blocks.Cache" ), "Expected Command Block not found." );
-                Assert.IsTrue( output.Contains( "interactionwrite-Rock.Lava.Blocks.InteractionWrite" ), "Expected Command Tag not found." );
+                Assert.Contains( "person-Rock.Lava.Blocks.RockEntity", output, "Expected Entity Tag not found." );
+                Assert.Contains( "cache-Rock.Lava.Blocks.Cache", output, "Expected Command Block not found." );
+                Assert.Contains( "interactionwrite-Rock.Lava.Blocks.InteractionWrite", output, "Expected Command Tag not found." );
             } );
         }
 

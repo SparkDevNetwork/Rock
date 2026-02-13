@@ -187,7 +187,8 @@ namespace Rock.Observability
                     } )
 
                    // Other configuration, like adding an exporter and setting resources
-                   .AddSource( serviceName )  // Be sure to update this in RockActivitySource.cs also!!!    
+                   .AddSource( serviceName )  // Be sure to update this in RockActivitySource.cs also!!!
+                   .AddSource( "Microsoft.SemanticKernel*" )
 
                    .SetResourceBuilder(
                        ResourceBuilder.CreateDefault()
@@ -233,6 +234,7 @@ namespace Rock.Observability
                 _currentMeterProvider = Sdk.CreateMeterProviderBuilder()
                     .SetResourceBuilder( ResourceBuilder.CreateDefault().AddService( serviceName: serviceName, serviceVersion: "1.0.0", serviceInstanceId: GetServiceInstanceId() ) )
                     .AddMeter( serviceName )
+                    .AddMeter( "Microsoft.SemanticKernel*" )
                     .AddOtlpExporter( o =>
                     {
                         o.Endpoint = endpointUri;
@@ -326,8 +328,12 @@ namespace Rock.Observability
 
                 rootActivity.SetTag( "rock.descendant_count", childCount + 1 );
 
+                // Allow the root activity to specify that it wants a full trace
+                // even if it is disabled by default.
+                var wantsFullTrace = rootActivity.GetCustomProperty( "rock.full_trace" ) is bool b && b == true;
+
                 // Don't create child spans in minimal mode.
-                if ( _traceLevel == Enums.Observability.TraceLevel.Minimal )
+                if ( _traceLevel == Enums.Observability.TraceLevel.Minimal && !wantsFullTrace )
                 {
                     return null;
                 }

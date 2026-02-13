@@ -505,7 +505,7 @@ namespace RockWeb.Blocks.Event
                                 {
                                     var groupMemberService = new GroupMemberService( newRockContext );
                                     var groupMember = groupMemberService
-                                        .Queryable().AsNoTracking()
+                                        .Queryable()
                                         .Where( m =>
                                             m.GroupId == reloadedRegistrant.Registration.Group.Id &&
                                             m.PersonId == reloadedRegistrant.PersonId &&
@@ -528,6 +528,10 @@ namespace RockWeb.Blocks.Event
                                     {
                                         registrantChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, string.Format( "Registrant to existing person in {0} group", reloadedRegistrant.Registration.Group.Name ) );
                                     }
+
+                                    // Always honor the template's configured Group Member Status, even when the person
+                                    // already exists in the group.
+                                    groupMember.GroupMemberStatus = this.RegistrationTemplate.GroupMemberStatus;
 
                                     if ( reloadedRegistrant.GroupMemberId.HasValue && reloadedRegistrant.GroupMemberId.Value != groupMember.Id )
                                     {

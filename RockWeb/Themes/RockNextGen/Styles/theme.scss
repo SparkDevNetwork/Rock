@@ -220,24 +220,6 @@ body.navbar-side-open {
   }
 }
 
-$navbarside-width: 80px;
-$navbar-top-height: 80px;
-$navbar-element-height: 40px;
-
-.page-wrapper {
-  // Moved from theme.less and refactor from having its own class to joining this class
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  // =============
-
-  @media (min-width: $screen-medium) {
-    margin-top: $navbar-top-height;
-    height: calc(100vh - 80px);
-  }
-
-}
-
 // Nav
 .rock-top-header {
   display: flex;
@@ -548,6 +530,66 @@ $navbar-element-height: 40px;
 
 }
 
+// ======================== REMINDERS / BOOKMARKS ========================
+
+a.rock-bookmark {
+  color: var(--color-interface-strong);
+}
+.rock-bookmark {
+  --size: 32px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size);
+  height: var(--size);
+  margin: 0 0 0 var(--spacing-small);
+  font-size: calc(var(--size) * 0.5);
+  background-color: var(--color-interface-softer);
+  border: 1px solid var(--color-interface-soft);
+  border-radius: 999px;
+  transition: .15s ease-in-out,box-shadow .15s ease-in-out;
+
+  &:hover {
+    color: var(--color-interface-stronger);
+  }
+
+  &:focus {
+    box-shadow: var(--input-focus-box-shadow) !important;
+    i {
+      color: var(--color-primary) !important;
+    }
+  }
+
+  @media (min-width: $screen-small) {
+    --size: 40px;
+    padding: 20px;
+  }
+}
+
+.rock-top-header .rock-bookmark.active.has-reminders > .indicator-bottom {
+  position: absolute;
+  top: 0px;
+  right: 2px;
+  background-color: var(--color-primary);
+  border: 1px solid var(--color-interface-softest);
+  width: 8px;
+  height: 8px;
+  border-radius: var(--rounded-xsmall);
+
+  @media (min-width: $screen-small) {
+    top: 2px;
+    right: 2px;
+    border: none
+  }
+}
+
+.rock-top-header .rock-bookmark:hover {
+  border: 1px solid var(--color-interface-medium);
+}
+
+// ======================== END REMINDERS / BOOKMARKS ========================
+
 // Side Nav
 .navbar-static-side {
   --nav-childpages-bg: var(--navbarside-background-color);
@@ -601,6 +643,13 @@ $navbar-element-height: 40px;
           display: inline-block;
           box-shadow: var(--popup-box-shadow);
         }
+        .item-title,
+        .nav-childpages li.title {
+          color: var(--color-interface-stronger);
+          i {
+            color: var(--color-interface-strong);
+          }
+        }
         @media (min-width: $screen-xsmall) {
           .item-title {
             color: var(--color-interface-stronger);
@@ -616,11 +665,11 @@ $navbar-element-height: 40px;
         font-size: 24px;
         font-weight: var(--font-weight-semibold);
         line-height: 1;
-        color: var(--color-interface-softer);
+        color: var(--base-interface-softer);
 
         &:after {
-          content: "\f054";
-          font-family: FontAwesome;
+          content: "\ea61";
+          font-family: tabler-icons;
           font-size: 12px;
           font-weight: 900;
           margin-left: 12px;
@@ -652,7 +701,7 @@ $navbar-element-height: 40px;
     left: 0;
     width: 100%;
     display: none;
-    padding: 0 10px 0 var(--spacing-small);
+    padding: 0 var(--spacing-small) var(--spacing-xlarge) var(--spacing-small);
     overflow-x: hidden;
     overflow-y: auto;
     text-align: left;
@@ -1000,41 +1049,6 @@ $hamburger-spacing: 4px;
   }
 }
 
-a.rock-bookmark {
-  color: var(--color-interface-strong);
-}
-.rock-bookmark {
-  --size: 32px;
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--size);
-  height: var(--size);
-  margin: 0 0 0 var(--spacing-small);
-  font-size: calc(var(--size) * 0.5);
-  background-color: var(--color-interface-softer);
-  border: 1px solid var(--color-interface-soft);
-  border-radius: 999px;
-  transition: .15s ease-in-out,box-shadow .15s ease-in-out;
-
-  &:hover {
-    color: var(--color-interface-stronger);
-  }
-
-  &:focus {
-    box-shadow: var(--input-focus-box-shadow) !important;
-    i {
-      color: var(--color-primary) !important;
-    }
-  }
-
-  @media (min-width: $screen-small) {
-    --size: 40px;
-    padding: 20px;
-  }
-}
-
 // .smartsearch,
 // .smartsearch:focus-within {
 //   background-color: var(--color-interface-softest);
@@ -1203,75 +1217,6 @@ a.rock-bookmark {
   }
 }
 
-.card-profile-bio-condensed {
-  flex-direction: row;
-  align-items: center;
-  height: 100%;
-  margin: 0;
-
-  .protection-profile {
-    padding: 14px 18px;
-  }
-
-  .profile-image {
-    position: relative;
-    flex-shrink: 0;
-    width: 25%;
-    height: 100%;
-
-    img {
-      border-radius: var(--rounded-normal) 0 0 var(--rounded-normal);
-    }
-  }
-
-  .profile-data {
-    width: 75%;
-    padding: 14px 18px;
-  }
-
-  .person-name {
-    margin: 0;
-  }
-
-  .dropdown {
-    padding-right: 32px;
-  }
-
-  .profile-toggle {
-    position: relative;
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-    padding: 0;
-    color: var(--color-interface-stronger) !important;
-
-    &::after {
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      bottom: -4px;
-      left: -4px;
-      z-index: -1;
-      content: '';
-      background: #eee;
-      border-radius: 4px;
-      opacity: 0;
-    }
-    .person-name {
-      flex: 1 1 auto;
-    }
-
-    .dropdown-icon {
-      margin: 0 4px 0 12px;
-    }
-  }
-
-  .profile-toggle:hover::after,
-  .open .profile-toggle::after {
-    opacity: 1;
-  }
-}
-
 @media (max-width: $screen-medium) {
   .form-well {
     padding: var(--spacing-medium);
@@ -1281,11 +1226,6 @@ a.rock-bookmark {
     box-shadow: none;
   }
 }
-
-
-
-
-
 
 // .tooltip {
 //   &.top {

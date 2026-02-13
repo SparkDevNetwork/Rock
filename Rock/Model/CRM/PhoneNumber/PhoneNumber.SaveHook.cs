@@ -24,6 +24,14 @@ namespace Rock.Model
     public partial class PhoneNumber
     {
         /// <summary>
+        /// Represents the format string used to generate the property name for a phone history entry.
+        /// </summary>
+        /// <remarks>The format string expects a single argument, typically representing the type or label
+        /// of the phone (for example, "Home" or "Work"). The resulting property name will follow the
+        /// pattern "{Type} Phone".</remarks>
+        public static readonly string PHONE_HISTORY_PROPERTY_NAME = "{0} Phone";
+
+        /// <summary>
         /// Save hook implementation for <see cref="Person"/>.
         /// </summary>
         /// <seealso cref="Rock.Data.EntitySaveHook{TEntity}" />
@@ -77,7 +85,7 @@ namespace Rock.Model
                 {
                     case EntityContextState.Added:
                         {
-                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( Entity.NumberTypeValueId ) ), string.Empty, Entity.NumberFormatted );
+                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( PhoneNumber.PHONE_HISTORY_PROPERTY_NAME, DefinedValueCache.GetName( Entity.NumberTypeValueId ) ), string.Empty, Entity.NumberFormatted );
                             History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", DefinedValueCache.GetName( Entity.NumberTypeValueId ) ), ( bool? ) null, Entity.IsUnlisted );
                             History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", DefinedValueCache.GetName( Entity.NumberTypeValueId ) ), ( bool? ) null, Entity.IsMessagingEnabled );
                             break;
@@ -89,12 +97,12 @@ namespace Rock.Model
                             int? oldPhoneNumberTypeId = Entry.OriginalValues[nameof( PhoneNumber.NumberTypeValueId )].ToStringSafe().AsIntegerOrNull();
                             if ( ( oldPhoneNumberTypeId ?? 0 ) == ( Entity.NumberTypeValueId ?? 0 ) )
                             {
-                                History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", numberTypeName ), Entry.OriginalValues[nameof( PhoneNumber.NumberFormatted )].ToStringSafe(), Entity.NumberFormatted );
+                                History.EvaluateChange( PersonHistoryChanges[personId], string.Format( PHONE_HISTORY_PROPERTY_NAME, numberTypeName ), Entry.OriginalValues[nameof( PhoneNumber.NumberFormatted )].ToStringSafe(), Entity.NumberFormatted );
                             }
                             else
                             {
-                                History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), Entry.OriginalValues[nameof( PhoneNumber.NumberFormatted )].ToStringSafe(), string.Empty );
-                                History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", numberTypeName ), string.Empty, Entity.NumberFormatted );
+                                History.EvaluateChange( PersonHistoryChanges[personId], string.Format( PHONE_HISTORY_PROPERTY_NAME, DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), Entry.OriginalValues[nameof( PhoneNumber.NumberFormatted )].ToStringSafe(), string.Empty );
+                                History.EvaluateChange( PersonHistoryChanges[personId], string.Format( PHONE_HISTORY_PROPERTY_NAME, numberTypeName ), string.Empty, Entity.NumberFormatted );
                             }
 
                             History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", numberTypeName ), Entry.OriginalValues[nameof( PhoneNumber.IsUnlisted )].ToStringSafe().AsBooleanOrNull(), Entity.IsUnlisted );
@@ -108,7 +116,7 @@ namespace Rock.Model
                             personId = Entry.OriginalValues["PersonId"].ToStringSafe().AsInteger();
                             PersonHistoryChanges.TryAdd( personId, new History.HistoryChangeList() );
                             var oldPhoneNumberTypeId = Entity.NumberTypeValueId;
-                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), Entity.NumberFormatted, string.Empty );
+                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( PHONE_HISTORY_PROPERTY_NAME, DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), Entity.NumberFormatted, string.Empty );
 
                             return;
                         }

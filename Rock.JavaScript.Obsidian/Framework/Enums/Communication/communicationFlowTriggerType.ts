@@ -37,9 +37,9 @@ export const CommunicationFlowTriggerType = {
 export const CommunicationFlowTriggerTypeDescription: Record<number, string> = {
     1: "Recurring",
 
-    2: "On Demand",
+    2: "On-Demand",
 
-    3: "One Time"
+    3: "One-Time"
 };
 
 /** Represents the types of triggers that determine when a Communication Flow is executed. */

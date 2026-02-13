@@ -75,7 +75,7 @@
             return valueBuilder.build();
         }
 
-        if(props.modelValue?.batchStartDateTime && props.modelValue?.batchEndDateTime) {
+        if (props.modelValue?.batchStartDateTime && props.modelValue?.batchEndDateTime) {
             valueBuilder.addTextValue("Date Range", `${RockDateTime.parseISO(props.modelValue.batchStartDateTime)?.toASPString("g") ?? ""} to
             ${RockDateTime.parseISO(props.modelValue.batchEndDateTime)?.toASPString("g") ?? ""}`);
         }
@@ -83,20 +83,20 @@
         let controlAmount = toNumber(props.modelValue?.controlAmount);
         let transactionAmount = toNumber(props.options.transactionAmount);
         let transactionVariance = transactionAmount - controlAmount;
-        if(transactionVariance == 0) {
+        if (transactionVariance === 0) {
             valueBuilder.addHtmlValue("Transaction Amount / Control / Variance", `${toCurrencyOrNull(transactionAmount, currencyInfo)} / ${toCurrencyOrNull(controlAmount, currencyInfo)} / ${toCurrencyOrNull(transactionVariance, currencyInfo)}`);
         }
         else {
             valueBuilder.addHtmlValue("Transaction Amount / Control / Variance",
-            `${toCurrencyOrNull(transactionAmount, currencyInfo)} / ${toCurrencyOrNull(controlAmount, currencyInfo)} / <span class='label label-danger'>${toCurrencyOrNull(transactionVariance, currencyInfo)}</span>`);
+                `${toCurrencyOrNull(transactionAmount, currencyInfo)} / ${toCurrencyOrNull(controlAmount, currencyInfo)} / <span class='label label-danger'>${toCurrencyOrNull(transactionVariance, currencyInfo)}</span>`);
         }
 
         let transactionItemCount = toNumber(props.options.transactionItemCount);
         let controlItemCount = toNumber(props.modelValue.controlItemCount);
         let itemVariance = transactionItemCount - controlItemCount;
 
-        if(props.modelValue.controlItemCount) {
-            if(itemVariance == 0) {
+        if (props.modelValue.controlItemCount) {
+            if (itemVariance === 0) {
                 valueBuilder.addHtmlValue("Transaction Item Count / Control / Variance", `${transactionItemCount} / ${controlItemCount} / ${itemVariance}`);
             }
             else {
@@ -105,11 +105,11 @@
             }
         }
 
-        if(props.modelValue?.accountingSystemCode) {
+        if (props.modelValue?.accountingSystemCode) {
             valueBuilder.addTextValue("Accounting Code", props.modelValue.accountingSystemCode);
         }
 
-        if(props.modelValue?.note) {
+        if (props.modelValue?.note) {
             valueBuilder.addTextValue("Notes", props.modelValue.note);
         }
 
@@ -128,11 +128,11 @@
             var accountsTotalTable = `<table class="grid-table table table-auto">
                     <tbody>
                         ${props.options.accounts?.map(a =>
-                            "<tr> <td align='left'>" + a.name + (a.glCode && a.glCode.length > 0 ? " <small>(" + a.glCode + ")</small>" : "") + "</td> <td align='right'>" + toCurrencyOrNull(a.currency) + "</td> </tr>").join("")}
+                "<tr> <td align='left'>" + a.name + (a.glCode && a.glCode.length > 0 ? " <small>(" + a.glCode + ")</small>" : "") + "</td> <td align='right'>" + toCurrencyOrNull(a.currency) + "</td> </tr>").join("")}
                     </tbody>
                 </table>`;
 
-            valueBuilder.addHtmlValue("Account Totals", props.options.accounts?.length == 0 ? "No Accounts Found" : accountsTotalTable);
+            valueBuilder.addHtmlValue("Account Totals", props.options.accounts?.length === 0 ? "No Accounts Found" : accountsTotalTable);
         }
 
         var currencyTotalTable = `<table class="grid-table table table-auto">
@@ -141,7 +141,7 @@
                 </tbody>
             </table>`;
 
-        valueBuilder.addHtmlValue("Currency Totals", props.options.accounts?.length == 0 ? "No CurrencyTypes Found" : currencyTotalTable);
+        valueBuilder.addHtmlValue("Currency Totals", props.options.accounts?.length === 0 ? "No CurrencyTypes Found" : currencyTotalTable);
 
         return valueBuilder.build();
     });

@@ -22,7 +22,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 using Rock.Web.Cache;
 
@@ -101,7 +100,7 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
             var workflowType = WorkflowTypeCache.Get( WorkflowTypeItSupportGuid );
             var workflowActivity = workflowType.ActivityTypes.FirstOrDefault( at => at.Name == "Assign Worker" );
 
-            Assert.That.IsNotNull( workflowActivity );
+            Assert.IsNotNull( workflowActivity );
 
             var mergeFields = new LavaDataDictionary
             {
@@ -171,7 +170,7 @@ Details: Now!
             var workflowType = WorkflowTypeCache.Get( WorkflowTypeItSupportGuid );
             var activityType = workflowType.ActivityTypes.FirstOrDefault( at => at.Name == "Open" );
 
-            Assert.That.IsNotNull( activityType );
+            Assert.IsNotNull( activityType );
 
             var mergeFields = new LavaDataDictionary
             {

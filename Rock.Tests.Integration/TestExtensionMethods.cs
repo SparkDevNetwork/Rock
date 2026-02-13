@@ -40,7 +40,7 @@ namespace Rock.Tests.Integration
         {
             rockContext = rockContext ?? new RockContext();
 
-            var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext ) as Service<T>; 
+            var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext ) as Service<T>;
 
             var entity = service.Queryable().GetByIdentifier( identifier );
             return entity;

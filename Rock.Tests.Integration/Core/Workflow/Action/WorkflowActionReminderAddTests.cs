@@ -72,7 +72,7 @@ namespace Rock.Tests.Integration.Core.Workflow
 
             var messages = ExecuteTestWorkflow( newWorkflow, throwOnFailure: false );
 
-            Assert.That.Contains( messages, "No person was provided for the reminder." );
+            Assert.Contains( "No person was provided for the reminder.", messages );
         }
 
         [TestMethod]
@@ -88,7 +88,7 @@ namespace Rock.Tests.Integration.Core.Workflow
 
             var messages = ExecuteTestWorkflow( newWorkflow, throwOnFailure: false );
 
-            Assert.That.Contains( messages, "Reminder Date value is not a valid date ('invalid_date')" );
+            Assert.Contains( "Reminder Date value is not a valid date ('invalid_date')", messages );
         }
 
         [TestMethod]
@@ -109,7 +109,7 @@ namespace Rock.Tests.Integration.Core.Workflow
             List<string> messages;
             var success = workflowService.Process( newWorkflow, out messages );
 
-            Assert.That.IsTrue( success, "Workflow execution failed.\n" + messages.AsDelimited( "\n" ) );
+            Assert.IsTrue( success, "Workflow execution failed.\n" + messages.AsDelimited( "\n" ) );
 
             // Verify the Reminder details.
             var reminderService = new ReminderService( rockContext );
@@ -136,7 +136,7 @@ namespace Rock.Tests.Integration.Core.Workflow
             List<string> messages;
             var success = workflowService.Process( newWorkflow, out messages );
 
-            Assert.That.IsTrue( success, "Workflow execution failed.\n" + messages.AsDelimited( "\n" ) );
+            Assert.IsTrue( success, "Workflow execution failed.\n" + messages.AsDelimited( "\n" ) );
 
             // Verify the Reminder details.
             var reminderService = new ReminderService( rockContext );
@@ -162,7 +162,7 @@ namespace Rock.Tests.Integration.Core.Workflow
             List<string> messages;
             var success = workflowService.Process( newWorkflow, out messages );
 
-            Assert.That.IsTrue( success, "Workflow execution failed.\n" + messages.AsDelimited( "\n" ) );
+            Assert.IsTrue( success, "Workflow execution failed.\n" + messages.AsDelimited( "\n" ) );
 
             // Verify the Reminder details.
             var reminderService = new ReminderService( rockContext );
@@ -188,7 +188,7 @@ namespace Rock.Tests.Integration.Core.Workflow
 
             if ( !success && throwOnFailure )
             {
-                Assert.That.Fail( "Workflow execution failed.\n" + messages.AsDelimited( "\n" ) );
+                Assert.Fail( "Workflow execution failed.\n" + messages.AsDelimited( "\n" ) );
             }
 
             return messages;

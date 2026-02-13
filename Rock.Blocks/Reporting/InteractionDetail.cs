@@ -42,7 +42,6 @@ namespace Rock.Blocks.Reporting
     [CodeEditorField( "Default Template",
         Description = "The Lava template to use as default.",
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
-        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 300,
         IsRequired = false,
         Order = 2,

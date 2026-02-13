@@ -167,30 +167,19 @@ namespace Rock.Core.Automation.Triggers
         /// Processes the entity save entry and executes any events that are
         /// attached to the trigger.
         /// </summary>
-        /// <param name="entry"></param>
-        public static void ProcessEntity( IEntitySaveEntry entry )
+        /// <param name="entry">The entity entry that has been saved.</param>
+        /// <returns><c>true</c> if any triggers were configured for the entity type; otherwise <c>false</c>.</returns>
+        public static bool ProcessEntity( IEntitySaveEntry entry )
         {
             if ( !( entry.Entity is IEntity entity ) )
             {
-                return;
+                return false;
             }
 
             if ( !_monitors.TryGetValue( entity.TypeName, out var entityMonitors ) )
             {
-                return;
+                return false;
             }
-
-            var request = new AutomationRequest
-            {
-                Values = new Dictionary<string, object>
-                {
-                    [AutomationRequest.KnownKeys.Entity] = entry.Entity,
-                    ["Person"] = RockRequestContextAccessor.Current?.CurrentPerson,
-                    ["OriginalValues"] = entry.OriginalValues,
-                    ["ModifiedProperties"] = entry.ModifiedProperties,
-                    ["State"] = entry.PreSaveState
-                }
-            };
 
             List<EntityChangeMonitor> monitors;
 
@@ -209,8 +198,20 @@ namespace Rock.Core.Automation.Triggers
             }
             else
             {
-                return;
+                return true;
             }
+
+            var request = new AutomationRequest
+            {
+                Values = new Dictionary<string, object>
+                {
+                    [AutomationRequest.KnownKeys.Entity] = entry.Entity,
+                    ["Person"] = RockRequestContextAccessor.Current?.CurrentPerson,
+                    ["OriginalValues"] = entry.OriginalValues,
+                    ["ModifiedProperties"] = entry.ModifiedProperties,
+                    ["State"] = entry.PreSaveState
+                }
+            };
 
             foreach ( var monitor in monitors )
             {
@@ -219,6 +220,8 @@ namespace Rock.Core.Automation.Triggers
                     AutomationEventCache.ExecuteEvents( monitor._triggerId, request );
                 }
             }
+
+            return true;
         }
 
         #endregion

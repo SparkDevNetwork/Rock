@@ -870,10 +870,10 @@ namespace RockWeb.Blocks.Finance
                 !isEventRegistrationTransactionType
                 && gateway != null
                 && gateway.UpdateScheduledPaymentSupported;
-            btnCancelSchedule.Visible = financialScheduledTransaction.IsActive && gateway.UpdateScheduledPaymentSupported;
+            btnCancelSchedule.Visible = financialScheduledTransaction.IsActive && ( gateway?.UpdateScheduledPaymentSupported ?? false );
             btnReactivateSchedule.Visible =
                 !isEventRegistrationTransactionType
-                && !financialScheduledTransaction.IsActive && gateway != null && gateway.ReactivateScheduledPaymentSupported;
+                && !financialScheduledTransaction.IsActive && gateway != null && ( gateway?.ReactivateScheduledPaymentSupported ?? false );
         }
 
         /// <summary>

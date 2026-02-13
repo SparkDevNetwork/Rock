@@ -113,17 +113,17 @@
 
             if (result.isError || !result.data) {
                 if (!isAutoApply) {
-                    if (result.errorMessage != null && result.errorMessage != "") {
+                    if (result.errorMessage != null && result.errorMessage !== "") {
                         discountCodeWarningMessage.value = result.errorMessage;
                     }
-                    else if (discountCodeInput.value != "") {
+                    else if (discountCodeInput.value !== "") {
                         discountCodeWarningMessage.value = `'${discountCodeInput.value}' is not a valid ${registrationEntryTerms.value.discountCodeSingularTitleCase}.`;
                     }
                 }
             }
             else {
                 discountCodeWarningMessage.value = "";
-                discountCodeInput.value = discountCodeInput.value == "" ? result.data.discountCode : discountCodeInput.value;
+                discountCodeInput.value = discountCodeInput.value === "" ? result.data.discountCode : discountCodeInput.value;
                 registrationEntryState.discountAmount = result.data.discountAmount;
                 registrationEntryState.discountPercentage = result.data.discountPercentage;
                 registrationEntryState.discountCode = result.data.discountCode;
@@ -161,8 +161,8 @@
             discountCodeSingularLowerCase
         } = registrationEntryTerms.value;
 
-        if (discountMaxRegistrants != 0 && registrantCount > discountMaxRegistrants) {
-            const registrantTerm = discountMaxRegistrants == 1 ? registrantSingularLowerCase : registrantPluralLowerCase;
+        if (discountMaxRegistrants !== 0 && registrantCount > discountMaxRegistrants) {
+            const registrantTerm = discountMaxRegistrants === 1 ? registrantSingularLowerCase : registrantPluralLowerCase;
             return `Your ${discountText} ${discountCodeSingularLowerCase} was successfully applied to the maximum allowed number of ${discountMaxRegistrants} ${registrantTerm}`;
         }
 

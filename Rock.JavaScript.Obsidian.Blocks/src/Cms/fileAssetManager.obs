@@ -53,7 +53,7 @@
         }
         return {
             style: {
-                margin: "-18px"
+                margin: "0px"
             }
         };
     });

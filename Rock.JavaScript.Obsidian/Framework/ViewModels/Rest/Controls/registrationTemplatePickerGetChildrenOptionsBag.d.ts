@@ -29,6 +29,15 @@ import { Guid } from "@Obsidian/Types";
  */
 export type RegistrationTemplatePickerGetChildrenOptionsBag = {
     /**
+     * Gets or sets the values that need to be expanded to. This is used
+     * when opening the tree view with an already selected value. Each
+     * selected value is included in this property. When getting the list
+     * of root items, you should automatically expand your results until
+     * each of these values is reached.
+     */
+    expandToValues?: string[] | null;
+
+    /**
      * Gets or sets the parent unique identifier whose children are to
      * be retrieved. If null then the root items are being requested.
      */

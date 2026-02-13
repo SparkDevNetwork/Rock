@@ -163,7 +163,7 @@ export const ConfigurationComponent = defineComponent({
     <TextBox label="Name" v-model="name" help="The name of the social media network." />
     <TextBox label="Icon CSS Class" v-model="iconCssClass" help="The icon that represents the social media network." />
     <ColorPicker label="Color" v-model="color" help="The color to use for making buttons for the social media network." />
-    <CodeEditor label="Text Template" v-model="textTemplate" theme="rock" mode="text" :editorHeight="200" help="Lava template to use to create a formatted version for the link. Primarily used for making the link text." />
+    <CodeEditor label="Text Template" v-model="textTemplate" mode="text" :editorHeight="200" help="Lava template to use to create a formatted version for the link. Primarily used for making the link text." />
     <UrlLinkBox label="Base URL" v-model="baseUrl" help="The base URL for the social media network. If the entry does not have a URL in it this base URL will be prepended to the entered string." />
     <TextBox label="Base URL Aliases" v-model="baseUrlAliases" help="A comma-delimited list of URL prefixes that are considered valid aliases for the Base URL. If any of these values are detected in the input, they will be replaced by the Base URL." />
     `

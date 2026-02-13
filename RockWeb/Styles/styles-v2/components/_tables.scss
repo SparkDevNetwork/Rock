@@ -9,6 +9,7 @@
 //  + Table Grid
 //  + Table States
 //  + Print Style (Obsidian)
+//  + Misc
 // =============================================================
 
 
@@ -58,7 +59,7 @@ th {
       > td {
         padding:        var(--spacing-xsmall);
         line-height:    var(--line-height-normal);
-        vertical-align: top;
+        vertical-align: middle;
         border-top:     1px solid var(--color-interface-soft);
       }
     }
@@ -75,6 +76,8 @@ th {
       content:        "\f111";
     }
   }
+
+
 
   tbody > tr > td {
     color: var(--color-interface-strong);
@@ -256,11 +259,6 @@ td.wrap-contents {
   > tbody > tr:hover {
     background-color: var(--color-interface-softer);
   }
-}
-
-// Table - No Borders
-.table-no-border {
-  overflow-x: auto;
 }
 
 // Core Table
@@ -665,7 +663,7 @@ tr.row-highlight {
     &:focus,
     &:hover,
     &:active {
-      background-color: var(--color-danger-softer); // TODO darken ui softest it by 10%
+      background-color: var(--color-interface-softer); // TODO darken ui softest it by 10%
     }
   }
 
@@ -684,7 +682,7 @@ tr.row-highlight {
     &:active:focus {
       color:        var(--color-danger-strong);
       background:   var(--color-danger-soft);
-      border-color: var(--color-danger-strnog);
+      border-color: var(--color-danger-strong);
     }
   }
 }
@@ -831,47 +829,6 @@ tr.row-highlight {
 td.grid-col-actions {
   text-align: right;
 }
-
-// Moved to _grid-obisidian.scss
-.grid-actions {
-  text-align:         right;
-  background-color:   var(--color-interface-softest);
-
-  .btn {
-    margin-left:      var(--spacing-xsmall);
-  }
-
-  &:hover {
-    color:            var(--color-interface-strong);
-  }
-
-  .btn-add:hover {
-    color:            var(--color-success-strong);
-  }
-
-  .btn-grid-action {
-    padding:          5px 7px; // Need to hard coded so that the action btn in the group scheduler takes more space, for the "filter options" button to fit in
-    margin:           0 0 0 2px;
-    font-size:        20px;
-    border:           0;
-    box-shadow:       none;
-    transition:       color 250ms;
-    color:            var(--color-interface-medium);
-    background-color: transparent;
-    border-color:     transparent;
-  }
-
-  .btn-grid-custom-action {
-    margin-bottom: var(--spacing-xsmall);
-  }
-
-}
-
-.grid-actions:has(.btn-grid-custom-action) {
-    padding-top: var(--spacing-xsmall) !important;
-    border-bottom-left-radius: var(--rounded-medium);
-    border-bottom-right-radius: var(--rounded-medium);
-  }
 
 td.grid-actions {
   padding: 0 !important;
@@ -1122,3 +1079,5 @@ td.grid-actions {
   }
 }
 // ===================== END PRINT STYLES (OBSIDIAN) =====================
+
+

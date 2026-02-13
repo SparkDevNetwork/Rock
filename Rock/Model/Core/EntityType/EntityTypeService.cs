@@ -23,6 +23,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -63,7 +64,7 @@ namespace Rock.Model
             if ( createIfNotFound )
             {
                 // Create a new context so type can be saved independing of current context
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var entityTypeService = new EntityTypeService( rockContext );
                     entityType = CreateFromType( type );
@@ -139,7 +140,7 @@ namespace Rock.Model
             if ( createIfNotFound )
             {
                 // Create a new context so type can be saved independing of current context
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var entityTypeService = new EntityTypeService( rockContext );
                 entityType = new EntityType();
                 entityType.Name = name;

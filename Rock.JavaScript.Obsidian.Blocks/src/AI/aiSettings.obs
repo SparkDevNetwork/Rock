@@ -1,0 +1,99 @@
+<template>
+    <DetailBlock v-model:mode="panelMode"
+                 name="AI Settings"
+                 :isAuditHidden="true"
+                 @cancelEdit="onCancelEdit"
+                 @save="onSave">
+        <template #edit>
+            <CodeEditor v-model="organizationPrompt"
+                        label="Organization Prompt"
+                        help="This prompt will be included with every AI request to provide context about your organization. It can include Lava syntax, but the Lava will only be processed one time, not for every request. If not blank, then a default prompt will be used that includes the organization name, address and phone number."
+                        mode="lava"
+                        editor="monaco" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { AISettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/AISettings/aiSettingsOptionsBag";
+    import { ref } from "vue";
+    import { AISettingsBag } from "@Obsidian/ViewModels/Blocks/AI/AISettings/aiSettingsBag";
+
+    const config = useConfigurationValues<AISettingsOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const organizationPrompt = ref(config.settings?.organizationPrompt ?? "");
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (config.returnUrl) {
+            return config.returnUrl;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        const bag: AISettingsBag = {
+            organizationPrompt: organizationPrompt.value
+        };
+
+        const result = await invokeBlockAction("Save", { bag });
+
+        if (result.isSuccess) {
+            if (config.returnUrl) {
+                return config.returnUrl;
+            }
+            else {
+                return false;
+            }
+        }
+
+        await alert(result.errorMessage ?? "Unknown error while trying to save ai agent.");
+
+        return false;
+    }
+
+    // #endregion
+
+    // function onSaveClick(): void {
+    // }
+
+    // function onEditCancelClick(): void {
+    // }
+
+    // function onSaveSubmit(): void {
+    // }
+
+    // function onEditSuspenseReady(): void {
+    // }
+</script>

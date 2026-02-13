@@ -423,7 +423,66 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public sealed override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
-            return base.GetPrivateConfigurationValues( publicConfigurationValues );
+            var fieldTypeAttributes = GetConfigurationAttributes();
+            var privateConfigurationValues = new Dictionary<string, string>();
+
+            // Convert the public configuration values into private ones for
+            // each of the field type attributes defined on this instance.
+            foreach ( var fieldTypeAttribute in fieldTypeAttributes )
+            {
+                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                if ( fieldTypeCache == null || fieldTypeCache.Field == null )
+                {
+                    continue;
+                }
+
+                if ( !publicConfigurationValues.TryGetValue( fieldTypeAttribute.Key, out var publicValue ) )
+                {
+                    publicValue = string.Empty;
+                }
+
+                var configurationValues = fieldTypeAttribute.FieldConfigurationValues
+                    .ToDictionary( k => k.Key, k => k.Value.Value );
+
+                privateConfigurationValues[fieldTypeAttribute.Key] = fieldTypeCache.Field.GetPrivateEditValue( publicValue, configurationValues );
+            }
+
+            return privateConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            if ( usage == ConfigurationValueUsage.Configure )
+            {
+                var fieldTypeAttributes = GetConfigurationAttributes();
+                var publicConfigurationValues = new Dictionary<string, string>();
+
+                // Convert the private configuration values into public ones for
+                // each of the field type attributes defined on this instance.
+                foreach ( var fieldTypeAttribute in fieldTypeAttributes )
+                {
+                    var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                    if ( fieldTypeCache == null || fieldTypeCache.Field == null )
+                    {
+                        continue;
+                    }
+
+                    if ( !privateConfigurationValues.TryGetValue( fieldTypeAttribute.Key, out var privateValue ) )
+                    {
+                        privateValue = string.Empty;
+                    }
+
+                    var configurationValues = fieldTypeAttribute.FieldConfigurationValues
+                        .ToDictionary( k => k.Key, k => k.Value.Value );
+
+                    publicConfigurationValues[fieldTypeAttribute.Key] = fieldTypeCache.Field.GetPublicEditValue( privateValue, configurationValues );
+                }
+
+                return publicConfigurationValues;
+            }
+
+            return base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
         }
 
         /// <inheritdoc/>

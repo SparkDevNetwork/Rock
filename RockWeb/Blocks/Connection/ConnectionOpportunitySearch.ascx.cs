@@ -43,7 +43,6 @@ namespace RockWeb.Blocks.Connection
         "Lava Template",
         Description = "Lava template to use to display the list of opportunities.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = @"{% include '~~/Assets/Lava/OpportunitySearch.lava' %}",

@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -150,7 +149,7 @@ namespace Rock.Tests.Integration.Core
 
             var expectedCount = historyRecordShouldExist ? 1 : 0;
             var actualCount = valueChangeHistoryItems.Count();
-            Assert.IsTrue( actualCount == expectedCount,
+            Assert.AreEqual( expectedCount, actualCount,
                 $"History log is incorrect. Expected {expectedCount} entries, found {actualCount} entries." );
         }
 

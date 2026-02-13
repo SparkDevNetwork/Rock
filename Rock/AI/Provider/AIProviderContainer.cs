@@ -16,18 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-#if REVIEW_WEBFORMS
-using Mono.CSharp;
-#endif
-using Rock.Address;
+
 using Rock.Data;
 using Rock.Extension;
-using Rock.UniversalSearch;
 using Rock.Web.Cache;
 
 namespace Rock.AI.Provider
@@ -111,7 +104,7 @@ namespace Rock.AI.Provider
 
                     Rock.Attribute.Helper.UpdateAttributes( componentType,
                         providerEntityTypeId,
-                        "EntityTypeId",
+                        "ProviderComponentEntityTypeId",
                         componentEntityTypeId.ToString(),
                         rockContext );
                 }

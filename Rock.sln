@@ -100,6 +100,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.github\copilot-instructions.md = .github\copilot-instructions.md
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
+		NuGetReadme.md = NuGetReadme.md
 		Rock.sln.vsspell = Rock.sln.vsspell
 	EndProjectSection
 EndProject

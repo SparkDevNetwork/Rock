@@ -6,9 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Labels;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.CheckIn.CheckInKiosk;
@@ -189,7 +191,7 @@ namespace Rock.Blocks.Mobile.CheckIn
         /// <inheritdoc />
         public override object GetMobileConfigurationValues()
         {
-            using( var rockContext = new RockContext() )
+            using ( var rockContext = new RockContext() )
             {
                 return new
                 {
@@ -321,7 +323,7 @@ namespace Rock.Blocks.Mobile.CheckIn
                     Text = g.Description
                 } );
 
-           
+
             return grades.ToList();
         }
 
@@ -489,6 +491,17 @@ namespace Rock.Blocks.Mobile.CheckIn
                 {
                     PerformedByPersonId = RequestContext.CurrentPerson?.IdKey
                 };
+
+                // If there was a provided attendance source, use that.
+                if ( options.Session.SourceValueId.IsNotNullOrWhiteSpace() )
+                {
+                    var attendanceSource = DefinedValueCache.Get( options.Session.SourceValueId, false )?.Id;
+
+                    if ( attendanceSource.HasValue )
+                    {
+                        session.AttendanceSourceValueId = attendanceSource.Value;
+                    }
+                }
 
                 // Default to mobile attendance if not specified.
                 if ( !session.AttendanceSourceValueId.HasValue )
@@ -704,6 +717,32 @@ namespace Rock.Blocks.Mobile.CheckIn
         #region Registration Block Actions
 
         /// <summary>
+        /// Begins the process for adding a new family member.
+        /// </summary>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult BeginAddIndividual( FamilyMembersOptionsBag options )
+        {
+            var response = Rock.Blocks.CheckIn.CheckInKiosk.TryGetEditFamilyResponseBag( RockContext,
+                person: RequestContext.CurrentPerson,
+                familyId: options.FamilyId,
+                templateId: options.ConfigurationTemplateId,
+                kioskId: options.KioskId,
+                addIndividualOnly: false,
+                bypassKioskChecks: true,
+                out var errorMessage );
+
+            if ( response == null )
+            {
+                var error = errorMessage ?? "An unknown error occurred.";
+                return ActionBadRequest( error );
+            }
+
+            return ActionOk( response );
+        }
+
+        /// <summary>
         /// Saves changes made to a family on a kiosk registration screen.
         /// </summary>
         /// <param name="options">The options that describe the request.</param>
@@ -784,7 +823,7 @@ namespace Rock.Blocks.Mobile.CheckIn
             if ( registrationPerson.Bag.AttributeValues == null )
             {
                 return;
-            }        
+            }
 
             var attributes = AttributeCache.GetMany( attributeGuids, RockContext );
 

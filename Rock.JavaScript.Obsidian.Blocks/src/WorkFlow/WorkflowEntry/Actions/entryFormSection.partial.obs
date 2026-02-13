@@ -13,7 +13,6 @@
                      :class="getWidthClass(field)">
                     <EntryFormField :field="field"
                                     :fieldValues="fieldValues"
-                                    :filterContext="filterContext"
                                     @updateFieldValue="onUpdateFieldValue" />
                 </div>
             </div>
@@ -27,7 +26,6 @@
                       v-slot:[field.attribute!.attributeGuid!]>
                 <EntryFormField :field="field"
                                 :fieldValues="fieldValues"
-                                :filterContext="filterContext"
                                 @updateFieldValue="onUpdateFieldValue" />
             </template>
         </ItemsWithPreAndPostHtml>
@@ -75,7 +73,15 @@
 
     /** The fields that should be displayed in this section. */
     const sectionFields = computed((): EntryFormFieldBag[] => {
-        return props.fields.filter(f => (f.sectionId ?? "") === (props.section?.id ?? ""));
+        return props.fields
+            .filter(f => (f.sectionId ?? "") === (props.section?.id ?? ""))
+            .filter(f => {
+                if (!f.visibilityRule) {
+                    return true;
+                }
+
+                return visbilityFilter.isMatch(props.filterContext, f.visibilityRule);
+            });
     });
 
     /** The section fields' pre-post items to allow pre-post HTML to be rendered */

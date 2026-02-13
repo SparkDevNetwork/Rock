@@ -22,7 +22,9 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Observability;
+using Rock.ViewModels.CheckIn;
 using Rock.ViewModels.Rest.CheckIn;
 using Rock.Web.Cache;
 
@@ -64,31 +66,77 @@ namespace Rock.CheckIn.v2
         #region Methods
 
         /// <summary>
+        /// Gets the proximity notification message for the attendance.
+        /// </summary>
+        /// <param name="attendance">The attendance.</param>
+        /// <param name="commonMergeFields">The common merge fields.</param>
+        /// <returns></returns>
+        public ProximityAttendanceNotificationBag GetProximityNotificationMessage( Attendance attendance, Dictionary<string, object> commonMergeFields )
+        {
+            if ( !attendance.Occurrence.RootGroupTypeId.HasValue )
+            {
+                return null;
+            }
+
+
+            var rootGroupType = GroupTypeCache.Get( attendance.Occurrence.RootGroupTypeId.Value );
+
+            // Fetch the Check In Configuration
+            var checkInConfiguration = rootGroupType?.GetCheckInConfiguration( _rockContext );
+
+            if ( checkInConfiguration == null || !checkInConfiguration.IsProximityEnabled )
+            {
+                return null;
+            }
+
+            var template = checkInConfiguration.ProximityAttendanceNotificationTemplate;
+
+            // Parse the Lava for the push
+            if ( template.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            commonMergeFields.Add( "Attendance", attendance );
+            var notificationMessage = template.ResolveMergeFields( commonMergeFields );
+
+            // These are delivered locally on the client, so just return the message.
+            return new ProximityAttendanceNotificationBag
+            {
+                Title = "Check-In Successful",
+                Message = notificationMessage
+            };
+        }
+
+        /// <summary>
         /// Checks in a person using the specified proximity beacon information.
         /// If the person is already checked in for the found location then the
         /// existing <see cref="Attendance"/> record will be updated.
         /// </summary>
         /// <param name="person">The person that is being checked in.</param>
         /// <param name="beacon">The object that contains the beacon details.</param>
+        /// <param name="notificationMergeFields">The common merge fields to use when generating the notification message. Attendance is added to this list.</param>
         /// <returns><c>true</c> if the check-in was successful, otherwise <c>false</c> if the beacon was not valid.</returns>
-        public bool CheckIn( Person person, ProximityBeaconBag beacon )
+        public ProximityAttendanceResult CheckIn( Person person, ProximityBeaconBag beacon, Dictionary<string, object> notificationMergeFields )
         {
             using ( ObservabilityHelper.StartActivity( "Proximity Check-in" ) )
             {
                 var now = RockDateTime.Now;
-                var option = GetBestCheckInOption( beacon, now );
+                var configurationGroupType = GetConfigurationGroupType();
+                var option = GetBestCheckInOption( beacon, now, configurationGroupType );
 
                 if ( option.LocationId == 0 )
                 {
-                    return false;
+                    return null;
                 }
 
                 // Look for an existing attendance record for today.
                 var attendanceService = new AttendanceService( _rockContext );
                 var attendance = GetCurrentAttendance( person.Id, option, attendanceService, now );
+                var isNewAttendance = attendance == null;
 
                 // If there is no existing attendance record then create one.
-                if ( attendance == null )
+                if ( isNewAttendance )
                 {
                     var occurrenceService = new AttendanceOccurrenceService( _rockContext );
 
@@ -132,10 +180,15 @@ namespace Rock.CheckIn.v2
                 attendance.DidAttend = true;
                 attendance.CampusId = option.CampusId;
                 attendance.SourceValueId = sourceValueId;
-
                 _rockContext.SaveChanges();
 
-                return true;
+                return new ProximityAttendanceResult
+                {
+                    Attendance = attendance,
+                    IsNewAttendance = isNewAttendance,
+                    NotificationData = isNewAttendance ? GetProximityNotificationMessage( attendance, notificationMergeFields ) : null,
+                    Success = true
+                };
             }
         }
 
@@ -147,16 +200,20 @@ namespace Rock.CheckIn.v2
         /// <param name="person">The person that is being checked out.</param>
         /// <param name="beacon">The object that contains the beacon details.</param>
         /// <returns><c>true</c> if the checkout was successful, otherwise <c>false</c> if the beacon was not valid.</returns>
-        public bool Checkout( Person person, ProximityBeaconBag beacon )
+        public ProximityAttendanceResult Checkout( Person person, ProximityBeaconBag beacon )
         {
             using ( ObservabilityHelper.StartActivity( "Proximity Checkout" ) )
             {
                 var now = RockDateTime.Now;
-                var option = GetBestCheckInOption( beacon, now );
+                var configurationGroupType = GetConfigurationGroupType();
+                var option = GetBestCheckInOption( beacon, now, configurationGroupType );
 
                 if ( option.LocationId == 0 )
                 {
-                    return false;
+                    return new ProximityAttendanceResult
+                    {
+                        Success = false
+                    };
                 }
 
                 // Look for an existing attendance record for today.
@@ -167,22 +224,39 @@ namespace Rock.CheckIn.v2
                 // don't do anything.
                 if ( attendance == null )
                 {
-                    return true;
+                    return new ProximityAttendanceResult
+                    {
+                        Success = true
+                    };
                 }
 
                 // If they are already checked out, then we don't need to do anything.
                 if ( attendance.EndDateTime.HasValue )
                 {
-                    return true;
+                    return new ProximityAttendanceResult
+                    {
+                        Success = true
+                    };
                 }
 
                 attendance.EndDateTime = now;
                 attendance.CheckInStatus = Enums.Event.CheckInStatus.CheckedOut;
-
                 _rockContext.SaveChanges();
 
-                return true;
+                return new ProximityAttendanceResult
+                {
+                    Attendance = attendance,
+                    IsNewAttendance = false,
+                    NotificationData = null,
+                    Success = true
+                };
             }
+        }
+
+        private GroupTypeCache GetConfigurationGroupType()
+        {
+            return GroupTypeCache.All( _rockContext )
+                .FirstOrDefault( gt => gt.GetCheckInConfiguration( _rockContext )?.IsProximityEnabled == true );
         }
 
         /// <summary>
@@ -191,14 +265,15 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <param name="beacon">The beacon that describes where the person should be checked in.</param>
         /// <param name="now">The current date and time to use for calculations.</param>
+        /// <param name="configurationGroupType">The group type to use when searching for a check-in option.</param>
         /// <returns>The check-in options that was found.</returns>
-        private CheckInOption GetBestCheckInOption( ProximityBeaconBag beacon, DateTime now )
+        private CheckInOption GetBestCheckInOption( ProximityBeaconBag beacon, DateTime now, GroupTypeCache configurationGroupType )
         {
             // Eventually this stopwatch and event message can probably be removed.
             // This is here initially to let us check a few production servers that
             // have lots of group types to make sure that this remains fast.
             var sw = Stopwatch.StartNew();
-            var areaIds = GetProximityAreaIds();
+            var areaIds = GetProximityAreaIds( configurationGroupType );
             sw.Stop();
             Activity.Current?.AddEvent( new ActivityEvent( $"Get Proximity Area Ids took {sw.Elapsed.TotalMilliseconds}ms" ) );
 
@@ -270,13 +345,11 @@ namespace Rock.CheckIn.v2
         /// proximity check-in.
         /// </summary>
         /// <returns>A list of integer identifiers.</returns>
-        private List<int> GetProximityAreaIds()
+        private List<int> GetProximityAreaIds( GroupTypeCache configurationGroupType )
         {
             // GetCheckInConfiguration() will already check if it is a check-in
             // template group type, so we don't need to check the purpose.
-            var rootTypes = GroupTypeCache.All( _rockContext )
-                .Where( gt => gt.GetCheckInConfiguration( _rockContext )?.IsProximityEnabled == true )
-                .SelectMany( gt => gt.ChildGroupTypes );
+            var rootTypes = configurationGroupType.ChildGroupTypes;
 
             return rootTypes
                 .SelectMany( gt => gt.GetDescendentGroupTypes() )

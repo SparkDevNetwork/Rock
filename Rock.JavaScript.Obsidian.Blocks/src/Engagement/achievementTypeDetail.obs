@@ -15,7 +15,7 @@
                        :options="options"
                        :rebuildActionSuccessMessage="rebuildActionSuccessMessage" />
 
-            <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+            <RockForm v-model:submit="submitForm" @submit="onSave">
                 <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit"
                            v-model="achievementTypeEditBag"
                            :options="options"
@@ -112,7 +112,6 @@
     const errorMessage = ref("");
     const rebuildActionSuccessMessage = ref("");
     const submitForm = ref(false);
-    const resetKey = ref("");
     const validationError = ref("");
 
     const achievementTypeViewBag = ref(config.entity);

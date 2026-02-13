@@ -63,7 +63,6 @@ namespace Rock.Blocks.Finance
         Key = AttributeKey.DonorColumn,
         Description = "The value that should be displayed for the Donor column. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = true,
         DefaultValue = @"<a href=""/Person/{{ Donor.Id }}"">{{ Donor.FullName }}</a>",
@@ -73,7 +72,6 @@ namespace Rock.Blocks.Finance
         Key = AttributeKey.ParticipantColumn,
         Description = "The value that should be displayed for the Participant column. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = true,
         DefaultValue = @"<a href=""/Person/{{ Participant.PersonId }}"" class=""pull-right margin-l-sm btn btn-sm btn-default"">

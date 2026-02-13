@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -95,7 +96,7 @@ namespace Rock.Web.Cache
                     {
                         if ( _attributeIds == null )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 _attributeIds = new AttributeService( rockContext )
                                     .Queryable().AsNoTracking()
@@ -181,7 +182,7 @@ namespace Rock.Web.Cache
                 return GetValue( key, attributeCache, rockContext );
             }
 
-            using ( var myRockContext = new RockContext() )
+            using ( var myRockContext = RockApp.Current.CreateRockContext() )
             {
                 return GetValue( key, attributeCache, myRockContext );
             }
@@ -233,7 +234,7 @@ namespace Rock.Web.Cache
         /// <param name="saveValue">if set to <c>true</c> [save value].</param>
         public void SetValue( string key, string value, bool saveValue )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 SetValue( key, value, saveValue, rockContext );
             }
@@ -251,7 +252,7 @@ namespace Rock.Web.Cache
             if ( saveValue )
             {
                 // Save new value
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 var attributeValueService = new AttributeValueService( rockContext );
                 var attributeValue = attributeValueService.GetGlobalAttributeValue( key );
 
@@ -444,7 +445,7 @@ namespace Rock.Web.Cache
                 var locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
                 if ( !locGuid.HasValue ) return null;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     return new LocationService( rockContext ).Get( locGuid.Value );
                 }
@@ -487,7 +488,7 @@ namespace Rock.Web.Cache
 
                     // otherwise read the new location and save
                     appSettings[ORG_LOC_GUID] = locGuid.Value;
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var location = new LocationService( rockContext ).Get( locGuid.Value );
                         if ( location == null ) return string.Empty;
@@ -499,7 +500,7 @@ namespace Rock.Web.Cache
                 }
 #endif
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var location = new LocationService( rockContext ).Get( locGuid.Value );
                     if ( location != null )
@@ -541,7 +542,7 @@ namespace Rock.Web.Cache
 
                     // otherwise read the new location and save 
                     appSettings[ORG_LOC_GUID] = locGuid.Value;
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var location = new LocationService( rockContext ).Get( locGuid.Value );
                         if ( location == null ) return string.Empty;
@@ -553,7 +554,7 @@ namespace Rock.Web.Cache
                 }
 #endif
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var location = new LocationService( rockContext ).Get( locGuid.Value );
                     if ( location != null )
@@ -595,7 +596,7 @@ namespace Rock.Web.Cache
 
                     // otherwise read the new location and save 
                     appSettings[ORG_LOC_GUID] = locGuid.Value;
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var location = new LocationService( rockContext ).Get( locGuid.Value );
                         if ( location == null ) return string.Empty;
@@ -606,7 +607,7 @@ namespace Rock.Web.Cache
                 }
 #endif
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var location = new LocationService( rockContext ).Get( locGuid.Value );
                     if ( location != null )

@@ -125,7 +125,6 @@ namespace RockWeb.Blocks.Groups
     [CodeEditorField( "Info Window Contents",
         Description = "Lava template for the info window. To suppress the window provide a blank template.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 600,
         IsRequired = false,
         DefaultValue = DEFAULT_LAVA_TEMPLATE,
@@ -214,12 +213,13 @@ namespace RockWeb.Blocks.Groups
                         <style>
                             #map_wrapper {{
                                 height: {0}px;
+                                margin-top: var(--spacing-medium);
                             }}
 
                             #map_canvas {{
                                 width: 100%;
                                 height: 100%;
-                                border-radius: var(--border-radius-base);
+                                border-radius: var(--rounded-small);
                             }}
                         </style>";
 
@@ -423,7 +423,7 @@ namespace RockWeb.Blocks.Groups
                             this.position = position;
                             this.marker_element.position = position;
                         }}
-                    }}                    
+                    }}
                 }}
 
 

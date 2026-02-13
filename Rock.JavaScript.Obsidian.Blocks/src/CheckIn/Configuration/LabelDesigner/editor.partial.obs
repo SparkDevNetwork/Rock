@@ -43,7 +43,7 @@
 
 <style scoped>
 .editor {
-    background-color: var(--theme-lightest);
+    background-color: var(--color-interface-softest);
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -51,8 +51,8 @@
 
 .menu-bar {
     height: var(--menu-bar-height);
-    background-color: var(--theme-white);
-    color: var(--theme-darkest);
+    background-color: var(--color-interface-softer);
+    color: var(--color-interface-strongest);
     display: flex;
     padding-left: 16px;
     padding-right: 16px;
@@ -78,7 +78,7 @@
 .menu-bar .btn {
     padding: 3px 6px;
     font-size: 16px;
-    color: var(--theme-black);
+    color: var(--color-interface-strongest);
     border-width: 0;
     box-shadow: none;
 }

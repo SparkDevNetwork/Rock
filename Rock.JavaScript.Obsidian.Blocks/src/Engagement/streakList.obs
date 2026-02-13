@@ -20,10 +20,10 @@
         <Column name="person"
                 title="Name"
                 field="person"
-                :sortValue="row => getPersonFullName(row)"
+                :sortValue="getNameRowSortValue"
                 :filter="pickExistingValueFilter"
                 :filterValue="getNameRowFilterValue"
-                :quickFilterValue="getNameRowFilterValue"
+                :quickFilterValue="getNameRowQuickFilterValue"
                 visiblePriority="xs"
                 width="15%">
             <template #format="{ row }">
@@ -37,7 +37,7 @@
                 title="Recent Engagement"
                 field="engagementMap"
                 :disableSort="true"
-                quickFilterValue="null"
+                quickFilterValue="❌"
                 visiblePriority="md"
                 width="12%">
 
@@ -78,7 +78,6 @@
                     headerClass="title-right"
                     itemClass="justify-content-end text-right"
                     :filter="dateValueFilter"
-                    :quickFilterValue="getEnrollmentDateFilterValue"
                     visiblePriority="xs"
                     width="5%" />
 
@@ -151,10 +150,6 @@
         }
     }
 
-    const getPersonFullName = (row: Record<string, unknown>): string => {
-        return row["fullName"] as string;
-    };
-
     function getIsDeceasedRowClass(row: Record<string, unknown>): string {
         const isDeceased = asBoolean(row["isDeceased"]);
         return isDeceased ? "is-deceased" : "";
@@ -178,12 +173,30 @@
     }
 
     /**
+     * Gets the sort value text to use for the name column.
+     *
+     * @param row The row to be sorted.
+     */
+    const getNameRowSortValue = (row: Record<string, unknown>): string => {
+        return `${row.lastName} ${row.nickName}`;
+    };
+
+    /**
     * Gets the filter value text to use for the person column.
     *
     * @param row The row to be filtered.
     */
     function getNameRowFilterValue(row: Record<string, unknown>): string {
-        return row.fullName as string;
+        return `${row.nickName} ${row.lastName}`;
+    }
+
+    /**
+    * Gets the quick filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getNameRowQuickFilterValue(row: Record<string, unknown>): string {
+        return `${row.nickName} ${row.lastName}`;
     }
 
     /**
@@ -211,22 +224,6 @@
     */
     function getEngagementCountFilterValue(row: Record<string, unknown>): string {
         return row.engagementCount as string;
-    }
-
-    /**
-    * Gets the filter value text to use for the person column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getEnrollmentDateFilterValue(row: Record<string, unknown>): string {
-        const dateStr = row.enrollmentDate as string;
-        if (!dateStr) return "";
-        const date = new Date(dateStr);
-        if (isNaN(date.getTime())) return dateStr;
-        const mm = String(date.getMonth() + 1);
-        const dd = String(date.getDate());
-        const yyyy = date.getFullYear();
-        return `${mm}/${dd}/${yyyy}`;
     }
 
     // #endregion

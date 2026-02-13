@@ -50,7 +50,13 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Include Inactive Groups", "Determines if inactive groups should be included on the map.", false, "", 6 )]
     [TextField( "Attributes", "Comma delimited list of attribute keys to include values for in the map info window (e.g. 'StudyTopic,MeetingTime').", false, "", "", 7 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 8 )]
-    [CodeEditorField( "Info Window Contents", "Lava template for the info window. To suppress the window provide a blank template.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 600, false, @"
+
+    [CodeEditorField( "Info Window Contents",
+        Description = "Lava template for the info window. To suppress the window provide a blank template.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 600,
+        IsRequired = false,
+        DefaultValue = @"
 <div class='clearfix'>
     <h4 class='pull-left' style='margin-top: 0;'>{{GroupName}}</h4>
     <span class='label label-campus pull-right'>{{GroupCampus}}</span>
@@ -88,7 +94,9 @@ namespace RockWeb.Blocks.Groups
     <a class='btn btn-xs btn-action' href='{{GroupDetailPage}}'>View Group</a>
 {% endif %}
 
-", "", 9 )]
+",
+        Order = 9 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "2CCAFC0B-8B48-4B64-B210-0EDAF9FFC4EF" )]
     public partial class GroupTypeMap : Rock.Web.UI.RockBlock
     {

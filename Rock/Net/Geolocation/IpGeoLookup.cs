@@ -26,6 +26,7 @@ using MaxMind.GeoIP2.Exceptions;
 using RestSharp;
 using RestSharp.Extensions;
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Observability;
 using Rock.SystemKey;
@@ -44,11 +45,7 @@ namespace Rock.Net.Geolocation
 
         private const string UpdateUrl = "https://rockrms.blob.core.windows.net/resources/ip-geo/ip-geo-current.mmdb";
 
-#if REVIEW_NET5_0_OR_GREATER
-        private static readonly string _directoryPath = Rock.Configuration.RockApp.Current.HostingSettings.WebRootPath + "App_Data/Geolocation";
-#else
-        private static readonly string _directoryPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/Geolocation" );
-#endif
+        private static readonly string _directoryPath = RockApp.Current.MapPath( "~/App_Data/Geolocation" );
         private static readonly string _eTagPath = Path.Combine( _directoryPath, "ip-geo-current-etag.txt" );
         private static readonly string _databasePath = Path.Combine( _directoryPath, "ip-geo-current.mmdb" );
 

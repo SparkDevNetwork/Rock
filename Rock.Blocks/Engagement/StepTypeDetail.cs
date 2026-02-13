@@ -432,7 +432,7 @@ namespace Rock.Blocks.Engagement
                 Name = entity.Name,
                 ShowCountOnBadge = entity.ShowCountOnBadge,
                 IconCssClass = entity.IconCssClass,
-                IsDeletable = !entity.IsSystem,
+                IsDeletable = !entity.IsSystem && entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ),
                 EngagementType = entity.EngagementType,
                 ImpactWeight = entity.ImpactWeight,
                 OrganizationalObjectiveValue = entity.OrganizationalObjectiveValue.ToListItemBag(),
@@ -460,8 +460,24 @@ namespace Rock.Blocks.Engagement
 
             var defaultDateRange = GetDefaultDateRange();
 
-            bag.Kpi = GetKpi( defaultDateRange );
             bag.DefaultDateRange = GetSlidingDateRangeBag( defaultDateRange );
+
+            var reportPeriod = new TimePeriod( defaultDateRange );
+            var dateRange = reportPeriod.GetDateRange();
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
+
+            if ( !startDate.HasValue || !endDate.HasValue )
+            {
+                bag.ErrorMessage = "Please select a valid date range to display KPI and chart data.";
+                return bag;
+            }
+
+            bag.StepTypeDetailsBag = new StepTypeDetailsBag
+            {
+                Kpi = GetKpi( startDate.Value, endDate.Value ),
+                ChartData = GetChartData( entity.Id, startDate.Value, endDate.Value )
+            };
 
             return bag;
         }
@@ -890,16 +906,24 @@ namespace Rock.Blocks.Engagement
             }
 
             // Update the Attributes that were assigned in the UI
+            // The attributes are coming from the frontend already sorted in the correct order.
+            int order = 0;
             foreach ( var attributeState in viewStateAttributes )
             {
-                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
+                var attr = Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
+                if ( attr != null )
+                {
+                    attr.Order = order++;
+                }
             }
+
+            RockContext.SaveChanges();
         }
 
         /// <summary>
         /// Gets the kpi HTML.
         /// </summary>
-        private string GetKpi( string delimitedDateRange )
+        private string GetKpi( DateTime startDate, DateTime endDate )
         {
             var stepType = GetStepType();
             var template = GetAttributeValue( AttributeKey.KpiLava );
@@ -909,8 +933,8 @@ namespace Rock.Blocks.Engagement
                 return string.Empty;
             }
 
-            var startedQuery = GetStartedStepQuery( delimitedDateRange );
-            var completedQuery = GetCompletedStepQuery( delimitedDateRange );
+            var startedQuery = GetStartedStepQuery( startDate, endDate );
+            var completedQuery = GetCompletedStepQuery( startDate, endDate );
 
             var stepsStarted = startedQuery.Count();
             var stepsCompleted = completedQuery.Count();
@@ -945,7 +969,7 @@ namespace Rock.Blocks.Engagement
         /// Gets the completed step query.
         /// </summary>
         /// <returns></returns>
-        private IQueryable<Step> GetCompletedStepQuery( string delimitedDateRange )
+        private IQueryable<Step> GetCompletedStepQuery( DateTime startDate, DateTime endDate )
         {
             var stepService = new StepService( RockContext );
             var stepTypeId = GetStepTypeId();
@@ -963,23 +987,10 @@ namespace Rock.Blocks.Engagement
                 query = query.Where( s => s.CampusId == campusContext.Id );
             }
 
-            // Apply date range
-            var reportPeriod = new TimePeriod( delimitedDateRange );
-            var dateRange = reportPeriod.GetDateRange();
-            var startDate = dateRange.Start;
-            var endDate = dateRange.End;
+            var startDateKey = startDate.ToDateKey();
+            var compareDateKey = endDate.ToDateKey();
 
-            if ( startDate != null )
-            {
-                var startDateKey = startDate.Value.ToDateKey();
-                query = query.Where( x => x.CompletedDateKey >= startDateKey );
-            }
-
-            if ( endDate != null )
-            {
-                var compareDateKey = endDate.Value.ToDateKey();
-                query = query.Where( x => x.CompletedDateKey <= compareDateKey );
-            }
+            query = query.Where( x => x.CompletedDateKey >= startDateKey && x.CompletedDateKey <= compareDateKey );
 
             return query;
         }
@@ -988,7 +999,7 @@ namespace Rock.Blocks.Engagement
         /// Gets the step started query.
         /// </summary>
         /// <returns></returns>
-        private IQueryable<Step> GetStartedStepQuery( string delimitedDateRange )
+        private IQueryable<Step> GetStartedStepQuery( DateTime startDate, DateTime endDate )
         {
             var stepService = new StepService( RockContext );
             var stepTypeId = GetStepTypeId();
@@ -1006,23 +1017,10 @@ namespace Rock.Blocks.Engagement
                 query = query.Where( s => s.CampusId == campusContext.Id );
             }
 
-            // Apply date range
-            var reportPeriod = new TimePeriod( delimitedDateRange );
-            var dateRange = reportPeriod.GetDateRange();
-            var startDate = dateRange.Start;
-            var endDate = dateRange.End;
+            var startDateKey = startDate.ToDateKey();
+            var compareDateKey = endDate.ToDateKey();
 
-            if ( startDate != null )
-            {
-                var startDateKey = startDate.Value.ToDateKey();
-                query = query.Where( x => x.StartDateKey >= startDateKey );
-            }
-
-            if ( endDate != null )
-            {
-                var compareDateKey = endDate.Value.ToDateKey();
-                query = query.Where( x => x.StartDateKey <= compareDateKey );
-            }
+            query = query.Where( x => x.StartDateKey >= startDateKey && x.StartDateKey <= compareDateKey );
 
             return query;
         }
@@ -1142,7 +1140,7 @@ namespace Rock.Blocks.Engagement
         /// <param name="startDate">The start date of the reporting range.</param>
         /// <param name="endDate">The end date of the reporting range.</param>
         /// <returns>A ChartDataBag containing series for started and completed steps.</returns>
-        private ChartDataBag GetChartForStepStatuses( StepTypeCache stepType, int timeUnitHelper, DateTime startDate, DateTime endDate )
+        private ChartDataBag GetChartForStepStatuses( int stepTypeId, int timeUnitHelper, DateTime startDate, DateTime endDate )
         {
             var stepService = new StepService( RockContext );
             var query = stepService.Queryable()
@@ -1151,7 +1149,7 @@ namespace Rock.Blocks.Engagement
                 .Include( x => x.StepStatus )
                 .Include( x => x.Campus )
                     .Where( x =>
-                    x.StepType.Id == stepType.Id
+                    x.StepType.Id == stepTypeId
                     && x.StepType.IsActive
                     && x.StepStatusId.HasValue );
 
@@ -1186,6 +1184,42 @@ namespace Rock.Blocks.Engagement
                 DateLabels = allDates,
                 Series = new List<SeriesBag> { startedSeries, completedSeries }
             };
+
+            return chartDataBag;
+        }
+
+        private ChartDataBag GetChartData( int stepTypeId, DateTime startDate, DateTime endDate )
+        {
+            double totalDays = ( endDate - startDate ).TotalDays;
+
+            int timeUnitHelper;
+            string timeUnit;
+            ChartDataBag chartDataBag;
+
+            // More than 3 years
+            if ( totalDays > 365 * 3 )
+            {
+                // Group by Year
+                timeUnitHelper = 10000;
+                timeUnit = "year";
+            }
+            // More than 3 months
+            else if ( totalDays > 90 )
+            {
+                // Group by Month
+                timeUnitHelper = 100;
+                timeUnit = "month";
+            }
+            else
+            {
+                // Group by Day
+                timeUnitHelper = 1;
+                timeUnit = "day";
+            }
+
+            chartDataBag = GetChartForStepStatuses( stepTypeId, timeUnitHelper, startDate, endDate );
+
+            chartDataBag.TimeUnit = timeUnit;
 
             return chartDataBag;
         }
@@ -1465,7 +1499,7 @@ namespace Rock.Blocks.Engagement
         }
 
         [BlockAction]
-        public BlockActionResult GetChartData( DateTimeOffset startDateTime, DateTimeOffset endDateTime )
+        public BlockActionResult GetStepTypeDetails( DateTimeOffset startDateTime, DateTimeOffset endDateTime )
         {
             var stepType = StepTypeCache.Get( PageParameter( PageParameterKey.StepTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
 
@@ -1474,40 +1508,21 @@ namespace Rock.Blocks.Engagement
                 return ActionBadRequest( "Could not find the specified Step Type" );
             }
 
+            if ( !stepType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to view this Step Type." );
+            }
+
             DateTime startDate = startDateTime.ToOrganizationDateTime();
             DateTime endDate = endDateTime.ToOrganizationDateTime();
-            double totalDays = ( endDate - startDate ).TotalDays;
 
-            int timeUnitHelper;
-            string timeUnit;
-            ChartDataBag chartDataBag;
-
-            // More than 3 years
-            if ( totalDays > 365 * 3 )
+            var stepTypeDetailsBag = new StepTypeDetailsBag
             {
-                // Group by Year
-                timeUnitHelper = 10000;
-                timeUnit = "year";
-            }
-            // More than 3 months
-            else if ( totalDays > 90 )
-            {
-                // Group by Month
-                timeUnitHelper = 100;
-                timeUnit = "month";
-            }
-            else
-            {
-                // Group by Day
-                timeUnitHelper = 1;
-                timeUnit = "day";
-            }
+                ChartData = GetChartData( stepType.Id, startDate, endDate ),
+                Kpi = GetKpi( startDate, endDate )
+            };
 
-            chartDataBag = GetChartForStepStatuses( stepType, timeUnitHelper, startDate, endDate );
-
-            chartDataBag.TimeUnit = timeUnit;
-
-            return ActionOk( chartDataBag );
+            return ActionOk( stepTypeDetailsBag );
         }
 
         /// <summary>
@@ -1609,32 +1624,6 @@ namespace Rock.Blocks.Engagement
         }
 
         #endregion
-
-        /// <summary>
-        /// Changes the ordered position of a single step attribute.
-        /// </summary>
-        /// <param name="key">The identifier of the step attribute that will be moved.</param>
-        /// <param name="beforeKey">The identifier of the step attribute it will be placed before.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult ReorderItem( string key, string beforeKey )
-        {
-            var stepType = GetStepType();
-            if ( stepType == null )
-            {
-                return ActionBadRequest( "Step type not found." );
-            }
-
-            var items = GetStepTypeAttributes( stepType.Id.ToString() );
-
-            if ( !items.ReorderEntity( key, beforeKey ) )
-            {
-                return ActionBadRequest( "Invalid reorder attempt." );
-            }
-
-            RockContext.SaveChanges();
-            return ActionOk();
-        }
 
         private class StepStatusProjection
         {

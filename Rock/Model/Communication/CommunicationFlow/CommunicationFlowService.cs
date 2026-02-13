@@ -34,6 +34,8 @@ namespace Rock.Model
             CommunicationFlowInstanceRecipientInactiveReason.UnsubscribedFromFlow
         };
 
+        private const string PersonUnsubscribedFromCommunicationFlowStatusNote = "Person unsubscribed from communication flow.";
+
         /// <summary>
         /// Unsubscribes a person from a flow, preventing them from being a recipient of future communications for this communication flow.
         /// </summary>
@@ -41,14 +43,40 @@ namespace Rock.Model
         /// <param name="personId">The identifier of the person to unsubscribe.</param>
         public void UnsubscribePersonFromFlow( int communicationFlowId, int personId )
         {
-            foreach ( var communicationFlowInstanceRecipient in new CommunicationFlowInstanceRecipientService( ( RockContext ) Context )
-                .Queryable()
-                .Where( r =>
-                    r.CommunicationFlowInstance.CommunicationFlowId == communicationFlowId
-                    && r.RecipientPersonAlias.PersonId == personId
-                    && r.Status == CommunicationFlowInstanceRecipientStatus.Active ) )
+            if ( Context is RockContext rockContext )
             {
-                DeactivateInstanceRecipient( communicationFlowInstanceRecipient, CommunicationFlowInstanceRecipientInactiveReason.UnsubscribedFromFlow );
+                var communicationFlowInstanceRecipientService = new CommunicationFlowInstanceRecipientService( rockContext );
+                var communicationFlowInstanceService = new CommunicationFlowInstanceService( rockContext );
+
+                var communicationFlowInstanceRecipients = communicationFlowInstanceRecipientService
+                    .Queryable()
+                    .Where( r =>
+                        r.CommunicationFlowInstance.CommunicationFlowId == communicationFlowId
+                        && r.RecipientPersonAlias.PersonId == personId
+                        && r.Status == CommunicationFlowInstanceRecipientStatus.Active )
+                    .ToList();
+
+                foreach ( var communicationFlowInstanceRecipient in communicationFlowInstanceRecipients )
+                {
+                    DeactivateInstanceRecipient( communicationFlowInstanceRecipient, CommunicationFlowInstanceRecipientInactiveReason.UnsubscribedFromFlow );
+                }
+
+                // Cancel pending communications for this flow.
+                var communicationFlowInstanceCommunicationRecipients = communicationFlowInstanceService
+                    .GetByCommunicationFlow( communicationFlowId )
+                    .SelectMany( cfi => cfi.CommunicationFlowInstanceCommunications.SelectMany( cfic => cfic.Communication.Recipients ) )
+                    .Where( cr =>
+                        cr.PersonAlias.PersonId == personId
+                        && !cr.Communication.SendDateTime.HasValue
+                        && cr.Communication.FutureSendDateTime.HasValue
+                        && cr.Status == CommunicationRecipientStatus.Pending )
+                    .ToList();
+
+                foreach ( var communicationRecipient in communicationFlowInstanceCommunicationRecipients )
+                {
+                    communicationRecipient.Status = CommunicationRecipientStatus.Cancelled;
+                    communicationRecipient.StatusNote = PersonUnsubscribedFromCommunicationFlowStatusNote;
+                }
             }
         }
 
@@ -59,16 +87,40 @@ namespace Rock.Model
         /// <param name="personId">The identifier of the person to resubscribe.</param>
         public void ResubscribePersonToFlow( int communicationFlowId, int personId )
         {
-            foreach ( var communicationFlowInstanceRecipient in new CommunicationFlowInstanceRecipientService( ( RockContext ) Context )
-                .Queryable()
-                .Where( r =>
-                    r.CommunicationFlowInstance.CommunicationFlowId == communicationFlowId
-                    && r.RecipientPersonAlias.PersonId == personId
-                    && r.Status == CommunicationFlowInstanceRecipientStatus.Inactive
-                    && r.InactiveReason.HasValue
-                    && UnsubscribedInactiveReasons.Contains( r.InactiveReason.Value ) ) )
+            if ( Context is RockContext rockContext )
             {
-                ActivateInstanceRecipient( communicationFlowInstanceRecipient );
+                var communicationFlowInstanceRecipientService = new CommunicationFlowInstanceRecipientService( rockContext );
+                var communicationFlowInstanceService = new CommunicationFlowInstanceService( rockContext );
+
+                // Mark canceled communications as pending for this flow.
+                var communicationFlowInstanceCommunicationRecipients = communicationFlowInstanceService
+                    .GetByCommunicationFlow( communicationFlowId )
+                    .SelectMany( cfi => cfi.CommunicationFlowInstanceCommunications.SelectMany( cfic => cfic.Communication.Recipients ) )
+                    .Where( cr =>
+                        cr.PersonAlias.PersonId == personId
+                        && !cr.Communication.SendDateTime.HasValue
+                        && cr.Communication.FutureSendDateTime.HasValue
+                        && cr.Status == CommunicationRecipientStatus.Cancelled
+                        && cr.StatusNote == PersonUnsubscribedFromCommunicationFlowStatusNote )
+                    .ToList();
+
+                foreach ( var communicationRecipient in communicationFlowInstanceCommunicationRecipients )
+                {
+                    communicationRecipient.Status = CommunicationRecipientStatus.Pending;
+                    communicationRecipient.StatusNote = null;
+                }
+
+                foreach ( var communicationFlowInstanceRecipient in communicationFlowInstanceRecipientService
+                    .Queryable()
+                    .Where( r =>
+                        r.CommunicationFlowInstance.CommunicationFlowId == communicationFlowId
+                        && r.RecipientPersonAlias.PersonId == personId
+                        && r.Status == CommunicationFlowInstanceRecipientStatus.Inactive
+                        && r.InactiveReason.HasValue
+                        && UnsubscribedInactiveReasons.Contains( r.InactiveReason.Value ) ) )
+                {
+                    ActivateInstanceRecipient( communicationFlowInstanceRecipient );
+                }
             }
         }
 

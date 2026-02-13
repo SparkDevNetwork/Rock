@@ -1,0 +1,154 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <NotificationBox v-if="isSystem" alertType="info">
+            <strong>Note</strong> Because this group type is used by Rock, editing is not enabled.
+        </NotificationBox>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { GroupTypeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/groupTypeBag";
+    import { GroupTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/groupTypeDetailOptionsBag";
+    import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GroupTypeBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<GroupTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        // Identity & structure.
+        if (props.modelValue.groupTypePurposeValue?.text) {
+            valueBuilder.addTextValue("Purpose", props.modelValue.groupTypePurposeValue.text);
+        }
+
+        valueBuilder.addTextValue("Group Term", props.modelValue.groupTerm ?? "");
+        valueBuilder.addTextValue("Member Term", props.modelValue.groupMemberTerm ?? "");
+
+        if (props.modelValue.inheritedGroupType?.text) {
+            valueBuilder.addTextValue("Inherits From", props.modelValue.inheritedGroupType.text);
+        }
+
+        // Child group type rules.
+        if (props.modelValue.allowAnyChildGroupType) {
+            valueBuilder.addTextValue("Allowed Child Types", "Any");
+        }
+        else if ((props.modelValue.childGroupTypes?.length ?? 0) > 0) {
+            valueBuilder.addTextValue("Allowed Child Types", `${props.modelValue.childGroupTypes?.length ?? 0} selected`);
+        }
+        else {
+            valueBuilder.addTextValue("Allowed Child Types", "None");
+        }
+
+        if (props.modelValue.groupStatusDefinedType?.text) {
+            valueBuilder.addTextValue("Group Status Defined Type", props.modelValue.groupStatusDefinedType.text);
+        }
+
+        valueBuilder.addTextValue("Requires Campus", asYesNoOrNull(props.modelValue.groupsRequireCampus) ?? "");
+        valueBuilder.addTextValue("Administrator Enabled", asYesNoOrNull(props.modelValue.showAdministrator) ?? "");
+        valueBuilder.addTextValue("Show in Group Lists", asYesNoOrNull(props.modelValue.showInGroupList) ?? "");
+        valueBuilder.addTextValue("Show in Navigation", asYesNoOrNull(props.modelValue.showInNavigation) ?? "");
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the right side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        // High-level feature summary.
+        valueBuilder.addTextValue("Scheduling Enabled", asYesNoOrNull(props.modelValue.isSchedulingEnabled) ?? "");
+        valueBuilder.addTextValue("Attendance Tracking", asYesNoOrNull(props.modelValue.takesAttendance) ?? "");
+        valueBuilder.addTextValue("Chat Enabled", asYesNoOrNull(props.modelValue.isChatAllowed) ?? "");
+        valueBuilder.addTextValue("RSVP Enabled", asYesNoOrNull(props.modelValue.enableRSVP) ?? "");
+        valueBuilder.addTextValue("Peer Network Enabled", asYesNoOrNull(props.modelValue.isPeerNetworkEnabled) ?? "");
+
+        // Operational / admin features.
+        valueBuilder.addTextValue("Group Sync Enabled", asYesNoOrNull(props.modelValue.allowGroupSync) ?? "");
+        valueBuilder.addTextValue("Indexing Enabled", asYesNoOrNull(props.modelValue.isIndexEnabled) ?? "");
+        valueBuilder.addTextValue("Group History Enabled", asYesNoOrNull(props.modelValue.enableGroupHistory) ?? "");
+
+        // High-level counts (avoid detailed configuration in view mode).
+        valueBuilder.addTextValue("Roles", `${props.modelValue.roles?.length ?? 0}`);
+        valueBuilder.addTextValue("Group Requirements", `${props.modelValue.groupRequirements?.length ?? 0}`);
+        valueBuilder.addTextValue("Workflow Triggers", `${props.modelValue.groupMemberWorkflowTriggers?.length ?? 0}`);
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

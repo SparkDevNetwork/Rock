@@ -150,11 +150,11 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
             var results = personQuery.ToList();
 
             // Verify Ted Decker found - Internal site only.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.TedDecker.AsGuid() ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.TedDecker.AsGuid() ) );
             // Verify Alisha Marble found - Internal and External Sites.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.AlishaMarble.AsGuid() ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.AlishaMarble.AsGuid() ) );
             // Verify Bill Marble not found - External Site only.
-            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.TestPeople.BillMarble.AsGuid() ) );
+            Assert.IsFalse( results.Any( x => x.Guid == TestGuids.TestPeople.BillMarble.AsGuid() ) );
         }
 
         [TestMethod]
@@ -168,11 +168,11 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
             var results = personQuery.ToList();
 
             // Verify Alisha Marble found - has Mobile.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.AlishaMarble.AsGuid() ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.AlishaMarble.AsGuid() ) );
             // Verify Bill Marble found - has Mobile.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.BillMarble.AsGuid() ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.BillMarble.AsGuid() ) );
             // Verify Ted Decker not found - no Mobile.
-            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.TestPeople.TedDecker.AsGuid() ) );
+            Assert.IsFalse( results.Any( x => x.Guid == TestGuids.TestPeople.TedDecker.AsGuid() ) );
         }
 
         [TestMethod]
@@ -186,11 +186,11 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
             var results = personQuery.ToList();
 
             // Verify Ted Decker found - iOS and Other platforms.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.TedDecker.AsGuid() ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.TedDecker.AsGuid() ) );
             // Verify Alisha Marble found - iOS, Android and Other platforms.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.AlishaMarble.AsGuid() ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.AlishaMarble.AsGuid() ) );
             // Verify Bill Marble not found - Android platform only.
-            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.TestPeople.BillMarble.AsGuid() ) );
+            Assert.IsFalse( results.Any( x => x.Guid == TestGuids.TestPeople.BillMarble.AsGuid() ) );
         }
 
         [TestMethod]
@@ -204,11 +204,11 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
             var results = personQuery.ToList();
 
             // Verify Ted Decker found - some devices with Notifications enabled.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.TedDecker.AsGuid() ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.TedDecker.AsGuid() ) );
             // Verify Alisha Marble found - all devices with Notifications enabled.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.AlishaMarble.AsGuid() ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.TestPeople.AlishaMarble.AsGuid() ) );
             // Verify Bill Marble not found - no devices with Notifications enabled.
-            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.TestPeople.BillMarble.AsGuid() ) );
+            Assert.IsFalse( results.Any( x => x.Guid == TestGuids.TestPeople.BillMarble.AsGuid() ) );
         }
 
         /// <summary>

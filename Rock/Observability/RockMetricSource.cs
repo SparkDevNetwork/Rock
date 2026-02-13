@@ -16,12 +16,15 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Configuration;
 using Rock.Data;
@@ -58,7 +61,7 @@ namespace Rock.Observability
         /// <summary>
         /// Counter for tracking the number of page loads for Rock.
         /// </summary>
-        public static Counter<long> PageRequestCounter { get;  private set; }
+        public static Counter<long> PageRequestCounter { get; private set; }
 
         /// <summary>
         /// Counter for tracking the number of API requests for Rock.
@@ -202,10 +205,10 @@ namespace Rock.Observability
                 unit: "count",
                 description: "Count of exceptions that have been thrown in managed code, since the observation started. The value will be unavailable until an exception has been thrown after OpenTelemetry.Instrumentation.Runtime initialization." );
 
-                AppDomain.CurrentDomain.FirstChanceException += ( source, e ) =>
-                {
-                    exceptionCounter.Add( 1 );
-                };
+            AppDomain.CurrentDomain.FirstChanceException += ( source, e ) =>
+            {
+                exceptionCounter.Add( 1 );
+            };
 
             /* 
                 The following are missing because we need .Net 6+
@@ -327,7 +330,7 @@ namespace Rock.Observability
                     foreach ( DriveInfo d in allDrives )
                     {
                         // If the device is not ready, ignore it to avoid an access error.
-                        if ( !d.IsReady  )
+                        if ( !d.IsReady )
                         {
                             continue;
                         }
@@ -477,17 +480,15 @@ namespace Rock.Observability
         /// <returns>A measurement value.</returns>
         private static Measurement<float> GetSqlCpuMeasure()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                // Take the last 4 CPU averages. These are recorded every 15
-                // seconds. Then take the highest value. Since we are called every
-                // 60 seconds, this should give us the max recorded CPU in
-                // the last minute.
-                // NOTE: We use a TOP 4 instead of a timestamp check because
-                // I'm not sure there is any guarantee that "end_time" is in any
-                // specific time zone, so it's possible we might get wrong
-                // values if we filter on that.
-                var result = rockContext.Database.SqlQuery<double>( @"
+            // Take the last 4 CPU averages. These are recorded every 15
+            // seconds. Then take the highest value. Since we are called every
+            // 60 seconds, this should give us the max recorded CPU in
+            // the last minute.
+            // NOTE: We use a TOP 4 instead of a timestamp check because
+            // I'm not sure there is any guarantee that "end_time" is in any
+            // specific time zone, so it's possible we might get wrong
+            // values if we filter on that.
+            var result = GetSqlScalar<double>( @"
 If EXISTS (SELECT * FROM [sys].[system_objects] WHERE [name] = 'dm_db_resource_stats')
     SELECT MAX([Value]) AS [Value]
         FROM (
@@ -515,10 +516,9 @@ END TRY
 BEGIN CATCH
     SELECT CAST(-1 AS FLOAT) AS [Value]
 END CATCH
-" ).FirstOrDefault();
+" );
 
-                return new Measurement<float>( ( float ) result, _commonTags );
-            }
+            return new Measurement<float>( ( float ) result, _commonTags );
         }
 
         /// <summary>
@@ -529,9 +529,7 @@ END CATCH
         /// <returns>A measurement value.</returns>
         private static Measurement<float> GetSqlDtuTotalMeasure()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var result = rockContext.Database.SqlQuery<double>( @"
+            var result = GetSqlScalar<double>( @"
 If EXISTS (SELECT * FROM [sys].[system_objects] WHERE [name] = 'dm_db_resource_stats')
     SELECT TOP 1
         CAST([dtu_limit] AS FLOAT) AS [Value]
@@ -539,10 +537,9 @@ If EXISTS (SELECT * FROM [sys].[system_objects] WHERE [name] = 'dm_db_resource_s
         ORDER BY [end_time] DESC
 ELSE
     SELECT CAST(0 AS FLOAT) AS [Value]
-" ).FirstOrDefault();
+" );
 
-                return new Measurement<float>( ( float ) result, _commonTags );
-            }
+            return new Measurement<float>( ( float ) result, _commonTags );
         }
 
         /// <summary>
@@ -551,9 +548,7 @@ ELSE
         /// <returns>A measurement value.</returns>
         private static Measurement<long> GetSqlMemoryUsageMeasure()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var result = rockContext.Database.SqlQuery<long>( @"
+            var result = GetSqlScalar<long>( @"
 BEGIN TRY
     SELECT
         CAST([cntr_value] AS BIGINT) * 8 * 1024 AS [Value]
@@ -564,9 +559,38 @@ END TRY
 BEGIN CATCH
     SELECT CAST(-1 AS BIGINT) AS [Value]
 END CATCH
-" ).FirstOrDefault();
+" );
 
-                return new Measurement<long>( result, _commonTags );
+            return new Measurement<long>( result, _commonTags );
+        }
+
+        /// <summary>
+        /// Execute a scalar SQL SELECT statement and return the result. We use
+        /// a direct SQL connection here to avoid Observability adding a trace
+        /// for this query.
+        /// </summary>
+        /// <typeparam name="T">The data type expected from the SQL query.</typeparam>
+        /// <param name="sql">The SQL query statement to be executed.</param>
+        /// <returns>An value of <typeparamref name="T"/>.</returns>
+        private static T GetSqlScalar<T>( string sql )
+        {
+            var connectionString = RockApp.Current.GetRequiredService<IConnectionStringProvider>().ConnectionString;
+
+            using ( var connection = new SqlConnection( connectionString ) )
+            {
+                connection.Open();
+
+                using ( var command = new SqlCommand( sql, connection ) )
+                {
+                    var result = command.ExecuteScalar();
+
+                    if ( result == null || result == DBNull.Value )
+                    {
+                        return default;
+                    }
+
+                    return ( T ) Convert.ChangeType( result, typeof( T ) );
+                }
             }
         }
 

@@ -14,6 +14,7 @@ export interface ChatComponentProps {
     jumpToMessageId?: string;
     chatViewStyle?: ChatViewStyle;
     reactions: ChatReactionBag[];
+    directMessageAllowed: boolean;
 }
 
 /** Represents a reaction that can be used in a chat message, including its key, optional image, and display text. */

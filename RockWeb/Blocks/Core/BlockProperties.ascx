@@ -54,8 +54,8 @@
                             </div>
                         </div>
 
-                        <Rock:CodeEditor ID="cePreHtml" runat="server" Label="Pre-HTML" Help="HTML Content to render before the block <span class='tip tip-lava'></span>." EditorMode="Lava" EditorTheme="Rock" EditorHeight="400" />
-                        <Rock:CodeEditor ID="cePostHtml" runat="server" Label="Post-HTML" Help="HTML Content to render after the block <span class='tip tip-lava'></span>." EditorMode="Lava" EditorTheme="Rock" EditorHeight="400" />
+                        <Rock:CodeEditor ID="cePreHtml" runat="server" Label="Pre-HTML" Help="HTML Content to render before the block <span class='tip tip-lava'></span>." EditorMode="Lava" EditorHeight="400" />
+                        <Rock:CodeEditor ID="cePostHtml" runat="server" Label="Post-HTML" Help="HTML Content to render after the block <span class='tip tip-lava'></span>." EditorMode="Lava" EditorHeight="400" />
                         <Rock:RockTextBox ID="tbCacheDuration" runat="server"  Label="Output Cache Duration (seconds)" Help="Number of seconds to cache the output of this block.  If a value is entered here, this block will only process data when the cache expires." />
                         <Rock:AttributeValuesContainer ID="avcAdvancedAttributes" runat="server" ShowCategoryLabel="false" />
                         <asp:PlaceHolder ID="phCustomAdvancedSettings" runat="server" />
@@ -103,6 +103,7 @@
                         <Rock:PanelWidget ID="pwCustomGridColumns" runat="server" Title="Custom Columns">
                             <Rock:RockControlWrapper ID="rcwCustomGridColumns" runat="server" Label="Custom Columns">
                                 <Rock:NotificationBox ID="nbGridWarning" runat="server" Text="With great power comes great responsibility! This feature allows you to easily display additional information but be aware that this could cause performance issues for grids with more than a few dozen rows." CssClass="alert alert-warning"></Rock:NotificationBox>
+                                <Rock:NotificationBox ID="nbCustomColumnMessage" runat="server" NotificationBoxType="Info"></Rock:NotificationBox>
                                 <asp:LinkButton ID="lbAddColumns" runat="server" CssClass="btn btn-default" Text="Add Column" OnClick="lbAddColumns_Click" />
                                 <asp:Repeater ID="rptCustomGridColumns" runat="server" OnItemDataBound="rptCustomGridColumns_ItemDataBound">
                                     <ItemTemplate>

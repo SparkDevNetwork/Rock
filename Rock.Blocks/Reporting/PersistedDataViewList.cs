@@ -38,14 +38,15 @@ namespace Rock.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Shows a list of Data Views that have persistence enabled." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the data view details.",
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "e1c5fbeb-7e0a-496f-97b2-38e6ec8d5b84" )]
-    [Rock.SystemGuid.BlockTypeGuid( "1a46cc61-6110-4022-8ace-efe188a6ab5a" )]
+    // Was [Rock.SystemGuid.BlockTypeGuid( "1a46cc61-6110-4022-8ace-efe188a6ab5a" )]
+    [Rock.SystemGuid.BlockTypeGuid( "3C4FAFAE-41D1-4FF2-B6DC-FF99CD4DABBE" )]
     [CustomizedGrid]
     public class PersistedDataViewList : RockEntityListBlockType<DataView>
     {

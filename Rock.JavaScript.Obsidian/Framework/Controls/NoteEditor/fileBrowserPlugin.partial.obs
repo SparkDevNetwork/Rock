@@ -133,6 +133,32 @@
         });
     }
 
+    /**
+     * Normalizes a given href to ensure it is a valid URL or relative path.
+     */
+    function normalizeHref(input: string): string {
+        try {
+            const url = new URL(input, window.location.origin);
+
+            // Allow only http(s) to be normalized.
+            if (url.protocol !== "http:" && url.protocol !== "https:") {
+                return input;
+            }
+
+            // Preserve absolute URLs.
+            if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(input)) {
+                return url.toString();
+            }
+
+            // Return the relative URL.
+            return url.pathname + url.search + url.hash;
+        }
+        catch {
+            // If that fails, fallback to the raw string.
+            return input;
+        }
+    }
+
     //#endregion
 
     //#region Event Handlers
@@ -143,7 +169,7 @@
 
         if (editor && file.value?.length > 0) {
             // Possible commands: https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/
-            editor.execCommand("InsertHTML", false, `<a href="${file.value[0].uri}">${file.value[0].name}</a>`);
+            editor.execCommand("InsertHTML", false, `<a href="${normalizeHref(file.value[0].uri)}">${file.value[0].name}</a>`);
         }
 
         // Clear the selected file and close the modal.
@@ -167,3 +193,4 @@
 
     //#endregion
 </script>
+

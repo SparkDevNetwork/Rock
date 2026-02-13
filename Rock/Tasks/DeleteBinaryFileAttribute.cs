@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 
 using Rock.Data;
@@ -43,13 +44,13 @@ namespace Rock.Tasks
                     string guidAsString = binaryFile.Guid.ToString();
 
                     // If any attribute still has this file as a default value, don't delete it
-                    if ( new AttributeService( rockContext ).Queryable().Any( a => a.DefaultValue == guidAsString ) )
+                    if ( new AttributeService( rockContext ).Queryable().Any( a => a.DefaultValueChecksum ==  SqlFunctions.Checksum( guidAsString ) ) )
                     {
                         return;
                     }
 
                     // If any attribute value still has this file as a value, don't delete it
-                    if ( new AttributeValueService( rockContext ).Queryable().Any( a => a.Value == guidAsString ) )
+                    if ( new AttributeValueService( rockContext ).Queryable().Any( a => a.ValueChecksum == SqlFunctions.Checksum( guidAsString ) ) )
                     {
                         return;
                     }

@@ -273,7 +273,7 @@ namespace Rock.Blocks.Engagement
                 DefaultListView = entity.DefaultListView.ConvertToInt(),
                 CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ),
                 CompletionFlow = entity.Id > 0 ? ( CompletionFlow? ) entity.CompletionFlow : null,
-                IsDeletable = !entity.IsSystem,
+                IsDeletable = !entity.IsSystem && entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ),
                 StatusFilterOptions = GetStepStatuses( entity.Id )
                     .Select( s => new ListItemBag
                     {
@@ -311,8 +311,6 @@ namespace Rock.Blocks.Engagement
 
             bag.Kpi = kpi;
 
-            bag.StepFlowConfigurationBag = GetStepFlowConfigBag( entity );
-
             bag.StepTypes = entity.StepTypes.ToListItemBagList();
 
             // Query used to help determine what measure filters should be displayed
@@ -349,7 +347,6 @@ namespace Rock.Blocks.Engagement
             bag.Statuses = GetStepStatuses( entity.Id ).Select( s => new StepStatusBag()
             {
                 Guid = s.Guid,
-                Id = s.Id,
                 IsActive = s.IsActive,
                 IsCompleteStatus = s.IsCompleteStatus,
                 Name = s.Name,
@@ -368,8 +365,6 @@ namespace Rock.Blocks.Engagement
                     PrimaryQualifier = GetStepStatuses( entity.Id ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).FromStatusId )?.Guid.ToString(),
                     SecondaryQualifier = GetStepStatuses( entity.Id ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).ToStatusId )?.Guid.ToString(),
                 } ).ToList();
-
-            bag.StatusOptions = new StepStatusService( RockContext ).Queryable().Where( s => s.StepProgramId == entity.Id ).AsEnumerable().ToListItemBagList();
 
             return bag;
         }
@@ -478,9 +473,6 @@ namespace Rock.Blocks.Engagement
             box.IfValidProperty( nameof( box.Bag.Statuses ),
                 () => SaveStatuses( box.Bag, entity, RockContext ) );
 
-            box.IfValidProperty( nameof( box.Bag.WorkflowTriggers ),
-                () => SaveWorkflowTriggers( box.Bag, entity, RockContext ) );
-
             box.IfValidProperty( nameof( box.Bag.CompletionFlow ),
                 () => entity.CompletionFlow = box.Bag.CompletionFlow.Value );
 
@@ -570,10 +562,18 @@ namespace Rock.Blocks.Engagement
             }
 
             // Update the Attributes that were assigned in the UI
+            // The attributes are coming from the frontend already sorted in the correct order.
+            int order = 0;
             foreach ( var attributeState in viewStateAttributes )
             {
-                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
+                var attr = Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
+                if ( attr != null )
+                {
+                    attr.Order = order++;
+                }
             }
+
+            RockContext.SaveChanges();
         }
 
         /// <summary>
@@ -658,8 +658,10 @@ namespace Rock.Blocks.Engagement
             }
 
             // Step Statuses: Update modified Statuses
-            foreach ( var stepStatusState in bag.Statuses )
+            // The statuses are coming from the frontend already sorted in the correct order.
+            for ( int i = 0; i < bag.Statuses.Count; i++ ) 
             {
+                var stepStatusState = bag.Statuses[i];
                 var stepStatus = entity.StepStatuses.FirstOrDefault( a => a.Guid == stepStatusState.Guid );
 
                 if ( stepStatus == null )
@@ -668,10 +670,13 @@ namespace Rock.Blocks.Engagement
                     entity.StepStatuses.Add( stepStatus );
                 }
 
+                stepStatus.Guid = stepStatusState.Guid;
+
                 stepStatus.Name = stepStatusState.Name;
                 stepStatus.IsActive = stepStatusState.IsActive;
                 stepStatus.IsCompleteStatus = stepStatusState.IsCompleteStatus;
                 stepStatus.StatusColor = stepStatusState.StatusColor;
+                stepStatus.Order = i;
 
                 stepStatus.StepProgramId = entity.Id;
             }
@@ -1898,7 +1903,7 @@ namespace Rock.Blocks.Engagement
                         g.Key.CampusGuid,
                         g.Key.CampusName,
                         g.Key.CampusOrder,
-                        Count = Math.Round( ( double ) g.Count() / g.Key.AvgCampusAttendance, 2 )
+                        Count = Math.Round( ( double ) g.Count() / g.Key.AvgCampusAttendance, 0 )
                     } )
                     .ToList();
 
@@ -1994,45 +1999,6 @@ namespace Rock.Blocks.Engagement
         #region Step Flow Methods
 
         /// <summary>
-        /// Builds the Sankey diagram configuration for a step program, including legend HTML and colors.
-        /// </summary>
-        /// <param name="stepProgram">The step program whose steps are used to generate the configuration.</param>
-        /// <returns>A SankeyDiagramSettingsBag containing the flow legend and settings.</returns>
-        private SankeyDiagramSettingsBag GetStepFlowConfigBag( StepProgram stepProgram )
-        {
-            var lavaNodes = new List<Object>();
-            int order = 0;
-
-            foreach ( StepType step in stepProgram.StepTypes )
-            {
-                lavaNodes.Add( new
-                {
-                    Key = ++order,
-                    StepName = step.Name,
-                    Color = step.HighlightColor.IsNotNullOrWhiteSpace() ? step.HighlightColor : GetNextDefaultColor()
-                } );
-            }
-
-            // The default value
-            string lavaTemplate = "<div class=\"flow-legend\">\n" +
-            "{% for stepItem in Steps %}\n" +
-            "    <div class=\"flow-key\">\n" +
-            "        <span class=\"color\" style=\"background-color:{{stepItem.Color}};\"></span>\n" +
-            "        <span class=\"step-text\">{{stepItem.StepName}}</span>\n" +
-            "    </div>\n" +
-            "{% endfor %}\n" +
-            "</div>";
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-            mergeFields.Add( "Steps", lavaNodes );
-            var legendHtml = lavaTemplate.ResolveMergeFields( mergeFields );
-
-            return new SankeyDiagramSettingsBag
-            {
-                LegendHtml = legendHtml
-            };
-        }
-
-        /// <summary>
         /// Builds an HTML tooltip string describing the flow between two step types.
         /// </summary>
         /// <param name="source">The source step type.</param>
@@ -2089,7 +2055,7 @@ namespace Rock.Blocks.Engagement
 
             var dateRange = testRange.SelectedDateRange;
 
-            parameters.Add( "StartingStepTypeIds", startingStepTypeIds.ConvertToEntityIdListParameter( "StartingStepTypeIds" ) );
+            parameters.Add( "StartingStepTypeIds", startingStepTypeIds.ConvertToIdListParameter( "StartingStepTypeIds" ) );
 
             if ( dateRange.Start != null )
             {
@@ -2137,58 +2103,6 @@ namespace Rock.Blocks.Engagement
         #endregion Methods
 
         #region Block Actions
-
-        /// <summary>
-        /// Changes the ordered position of a single step status.
-        /// </summary>
-        /// <param name="key">The identifier of the step status that will be moved.</param>
-        /// <param name="beforeKey">The identifier of the step status it will be placed before.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult ReorderStepStatus( string key, string beforeKey )
-        {
-            var stepProgram = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
-            if ( stepProgram == null )
-            {
-                return ActionBadRequest( "Step program not found." );
-            }
-
-            var items = GetStepStatuses( stepProgram.Id );
-
-            if ( !items.ReorderEntity( key, beforeKey ) )
-            {
-                return ActionBadRequest( "Invalid reorder attempt." );
-            }
-
-            RockContext.SaveChanges();
-            return ActionOk();
-        }
-
-        /// <summary>
-        /// Changes the ordered position of a single step type attribute.
-        /// </summary>
-        /// <param name="key">The identifier of the step type attribute that will be moved.</param>
-        /// <param name="beforeKey">The identifier of the step type attribute it will be placed before.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult ReorderStepTypeAttribute( string key, string beforeKey )
-        {
-            var stepProgram = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
-            if ( stepProgram == null )
-            {
-                return ActionBadRequest( "Step program not found." );
-            }
-
-            var items = GetStepTypeAttributes( stepProgram.Id.ToString() );
-
-            if ( !items.ReorderEntity( key, beforeKey ) )
-            {
-                return ActionBadRequest( "Invalid reorder attempt." );
-            }
-
-            RockContext.SaveChanges();
-            return ActionOk();
-        }
 
         /// <summary>
         /// Gets the box that will contain all the information needed to begin
@@ -2253,6 +2167,21 @@ namespace Rock.Blocks.Engagement
             {
                 RockContext.SaveChanges();
                 entity.SaveAttributeValues( RockContext );
+
+                /*
+                    1/3/2026 - MSE
+
+                    Newly created Step Statuses can now be selected when configuring Workflow Triggers
+                    before they are saved to the database, rather than limiting selection to
+                    previously persisted statuses only. Because Workflow Triggers serialize
+                    Step Status references using database IDs, the statuses must be saved first
+                    so those IDs exist.
+
+                    Reason: Ensure Workflow Trigger serialization uses valid Step Status IDs.
+                */
+                SaveWorkflowTriggers( box.Bag, entity, RockContext );
+
+                RockContext.SaveChanges();
             } );
 
             SaveAttributes( new StepType().TypeId, "StepProgramId", entity.Id.ToString(), box.Bag.StepProgramAttributes );
@@ -2338,6 +2267,12 @@ namespace Rock.Blocks.Engagement
 
                 foreach ( var stepType in stepTypes )
                 {
+                    if ( stepType.IsSystem )
+                    {
+                        errorMessage = $"This program contains the Step Type, '{stepType.Name}', which is a system Step Type and cannot be deleted.";
+                        return;
+                    }
+
                     if ( !stepTypeService.CanDelete( stepType, out errorMessage ) )
                     {
                         return;
@@ -2449,14 +2384,24 @@ namespace Rock.Blocks.Engagement
             var nodeResults = new List<SankeyDiagramNodeBag>();
             List<int> startingStepTypeIds = new List<int>();
             int order = 0;
+            var lavaNodes = new List<Object>();
 
-            foreach ( StepTypeCache stepType in stepTypes )
+            foreach ( StepTypeCache stepType in stepTypes.OrderBy( st => st.Order ) )
             {
+                ++order;
+
                 nodeResults.Add( new SankeyDiagramNodeBag
                 {
                     Id = stepType.Id,
-                    Order = ++order,
+                    Order = order,
                     Name = stepType.Name,
+                    Color = stepType.HighlightColor.IsNotNullOrWhiteSpace() ? stepType.HighlightColor : GetNextDefaultColor()
+                } );
+
+                lavaNodes.Add( new
+                {
+                    Key = order,
+                    StepName = stepType.Name,
                     Color = stepType.HighlightColor.IsNotNullOrWhiteSpace() ? stepType.HighlightColor : GetNextDefaultColor()
                 } );
 
@@ -2465,6 +2410,19 @@ namespace Rock.Blocks.Engagement
                     startingStepTypeIds.Add( stepType.Id );
                 }
             }
+
+            // The default value
+            string lavaTemplate = "<div class=\"flow-legend\">\n" +
+            "{% for stepItem in Steps %}\n" +
+            "    <div class=\"flow-key\">\n" +
+            "        <span class=\"color\" style=\"background-color:{{stepItem.Color}};\"></span>\n" +
+            "        <span class=\"step-text\">{{forloop.index}}. {{stepItem.StepName}}</span>\n" +
+            "    </div>\n" +
+            "{% endfor %}\n" +
+            "</div>";
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            mergeFields.Add( "Steps", lavaNodes );
+            var legendHtml = lavaTemplate.ResolveMergeFields( mergeFields );
 
             var parameters = GetStepFlowParameters( maxLevels, dateRange, startingStepTypeIds );
             var flowEdgeData = new DbService( new RockContext() ).GetDataTableFromSqlCommand( "spSteps_StepFlow", System.Data.CommandType.StoredProcedure, parameters );
@@ -2493,7 +2451,8 @@ namespace Rock.Blocks.Engagement
             return ActionOk( new StepFlowGetDataBag
             {
                 Edges = flowEdgeResults,
-                Nodes = nodeResults
+                Nodes = nodeResults,
+                LegendHtml = legendHtml
             } );
         }
 

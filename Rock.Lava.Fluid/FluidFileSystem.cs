@@ -60,6 +60,11 @@ namespace Rock.Lava
             return content;
         }
 
+        public DateTimeOffset? FileLastModified( string filePath )
+        {
+            return _fileSystem.FileLastModified( filePath );
+        }
+
         #endregion
 
         #region IFileProvider implementation
@@ -88,6 +93,12 @@ namespace Rock.Lava
                 exists = _fileSystem.FileExists( filePath );
             }
 
+            var filePathLower = filePath.ToLowerInvariant();
+            if ( filePathLower.Contains( "web.config" ) || filePathLower.Contains( "web~1.con" ) || filePathLower.Contains( "web.connectionstrings.config" ) || filePathLower.Contains( "webcon~1.con" ) )
+            {
+                throw new LavaException( "File Load Failed. File \"{0}\" could not be accessed.", filePath );
+            }
+
             // This method is called directly by the Fluid framework.
             // Therefore, we need to load the Lava template from the file and convert it to Liquid-compatible syntax before returning it to the Fluid engine.
             var lavaText = exists ? _fileSystem.ReadTemplateFile( null, filePath ) : string.Empty;
@@ -98,11 +109,31 @@ namespace Rock.Lava
              */
             var liquidText = _lavaConverter.RemoveLavaComments( lavaText );
 
+            /*
+                10/29/2025 - NA
+
+                Added a call to ReplaceElseIfKeyword() to convert Lava's 'elseif' syntax to
+                the standard Liquid 'elsif' keyword. This adjustment is necessary because we
+                no longer override the IfTag parser, which previously handled this keyword
+                translation internally.
+
+                Reason: Ensures Lava Include templates using 'elseif' continue to parse correctly now
+                        that the custom IfTag parser has been removed in commit
+                        https://github.com/SparkDevNetwork/Rock/commit/6a294f8#L412-L431
+            */
+            liquidText = _lavaConverter.ReplaceElseIfKeyword( liquidText );
+
             var fileInfo = new LavaFileInfo( filePath, liquidText, exists );
 
             if ( !exists )
             {
                 throw new LavaException( "File Load Failed. File \"{0}\" could not be accessed.", filePath );
+            }
+
+            var lastModified = _fileSystem.FileLastModified( filePath );
+            if ( lastModified != null )
+            {
+                fileInfo.LastModified = lastModified.Value;
             }
 
             return fileInfo;
@@ -132,6 +163,12 @@ namespace Rock.Lava
 
             return filePath;
         }
+
+        /// <inheritdoc>
+        public string ResolveTemplatePath( string filePath )
+        {
+            return filePath;
+        }
     }
 
     #region Support Classes
@@ -146,6 +183,9 @@ namespace Rock.Lava
             Name = name;
             Content = content;
             Exists = exists;
+            // Set initially at construction to capture creation time as the LastModified time, but allow
+            // it to be set later if it is a real file.
+            LastModified = DateTimeOffset.Now;
         }
 
         public string Content { get; set; }
@@ -160,13 +200,7 @@ namespace Rock.Lava
             }
         }
 
-        public DateTimeOffset LastModified
-        {
-            get
-            {
-                return DateTimeOffset.MinValue;
-            }
-        }
+        public DateTimeOffset LastModified { get; set; }
 
         public long Length
         {

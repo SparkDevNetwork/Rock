@@ -24,6 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Controls;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
@@ -229,40 +230,42 @@ namespace Rock.Blocks.Cms
                 .Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_URLSHORTENER )?.Id;
 
             // Get interaction counts grouped by ShortLink ID
-            var interactionCounts = new InteractionService( rockContext )
-                .Queryable().AsNoTracking()
+            var interactions = new InteractionService( rockContext )
+                .Queryable()
+                .AsNoTracking()
                 .Where( i =>
                     i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == urlShortenerChannelTypeId &&
                     i.InteractionComponent.EntityId.HasValue )
-                .GroupBy( i => i.InteractionComponent.EntityId.Value )
                 .Select( g => new
                 {
-                    ShortLinkId = g.Key,
-                    ClickCount = g.Count()
+                    ShortLinkId = g.InteractionComponent.EntityId.Value,
                 } );
 
-            var pageShortLinkService = new PageShortLinkService( RockContext );
+            var pageShortLinkQueryable = new PageShortLinkService( RockContext ).Queryable().AsNoTracking();
 
-            var pageShortLinkQueryable = FilterByCreatedDate( pageShortLinkService.Queryable() );
+            pageShortLinkQueryable = FilterByCreatedDate( pageShortLinkQueryable );
 
-            var queryable = FilterByPerson( pageShortLinkQueryable ).GroupJoin(
-                    interactionCounts,
+            pageShortLinkQueryable = FilterByPerson( pageShortLinkQueryable );
+
+            var queryable = pageShortLinkQueryable
+                .GroupJoin(
+                    interactions,
                     shortLink => shortLink.Id,
-                    ic => ic.ShortLinkId,
-                    ( shortLink, counts ) => new
+                    i => i.ShortLinkId,
+                    ( shortLink, clicks ) => new PageShortLinkWithClicks
                     {
                         PageShortLink = shortLink,
-                        ClickCount = counts.Select( c => c.ClickCount ).FirstOrDefault()
-                    } )
-                .Select( x => new PageShortLinkWithClicks
-                {
-                    PageShortLink = x.PageShortLink,
-                    ClickCount = x.ClickCount
-                } )
-                .OrderByDescending( x => x.PageShortLink.IsPinned )
-                .ThenByDescending( x => x.ClickCount );
+                        CategoryName = shortLink.Category != null ? shortLink.Category.Name : string.Empty,
+                        ClickCount = clicks.Count()
+                    } );
 
             return queryable;
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<PageShortLinkWithClicks> GetOrderedListQueryable( IQueryable<PageShortLinkWithClicks> queryable, RockContext rockContexts )
+        {
+            return queryable.OrderByDescending( x => x.PageShortLink.IsPinned ).ThenByDescending( x => x.ClickCount );
         }
 
         /// <inheritdoc/>
@@ -270,6 +273,9 @@ namespace Rock.Blocks.Cms
         {
             // Load all the Short Links into memory.
             var items = queryable.ToList();
+
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( items, a => a.PageShortLink, _gridAttributes.Value, rockContext );
 
             // Get all SiteIds referenced by the short links
             var siteIds = items
@@ -298,13 +304,18 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override GridBuilder<PageShortLinkWithClicks> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<PageShortLinkWithClicks>
+            {
+                LavaObject = row => row.PageShortLink
+            };
+
             return new GridBuilder<PageShortLinkWithClicks>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.PageShortLink.IdKey )
                 .AddTextField( "url", a => a.PageShortLink.Url )
                 .AddTextField( "site", a => a.PageShortLink.Site?.Name )
                 .AddTextField( "token", a => a.PageShortLink.Token )
-                .AddTextField( "category", a => a.PageShortLink.Category?.Name )
+                .AddTextField( "category", a => a.CategoryName )
                 .AddField( "clickCount", a => a.ClickCount )
                 .AddField( "isPinned", a => a.PageShortLink.IsPinned )
                 .AddTextField( "shortLink", a => a.PageShortLink.ShortLinkUrl )
@@ -418,6 +429,9 @@ namespace Rock.Blocks.Cms
         public class PageShortLinkWithClicks
         {
             public PageShortLink PageShortLink { get; set; }
+
+            public string CategoryName { get; set; }
+
             public int ClickCount { get; set; }
         }
 

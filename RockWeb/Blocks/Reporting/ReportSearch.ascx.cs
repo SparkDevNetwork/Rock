@@ -37,7 +37,13 @@ namespace RockWeb.Blocks.Reporting
     [DisplayName( "Report Search" )]
     [Category( "Reporting" )]
     [Description( "Handles displaying report search results and redirects to the report result page (via route ~/reporting/reports) when only one match was found." )]
-    [CodeEditorField( "Report URL Format", "The URL to use for linking to a report. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "/reporting/reports?ReportId={{ Report.Id }}" )]
+
+    [CodeEditorField( "Report URL Format",
+        Description = "The URL to use for linking to a report. <span class='tip tip-lava'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = "/reporting/reports?ReportId={{ Report.Id }}" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "13955B32-11F4-4606-8C31-4C6E5324C81A" )]
     public partial class ReportSearch : RockBlock

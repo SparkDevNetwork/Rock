@@ -10,7 +10,24 @@
             </div>
             <div class="panel-body">
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlDefaultSmsPhoneNumber"
+                            runat="server"
+                            Label="Default SMS Phone Number"
+                            Help="The default phone number to use when sending SMS messages. This is currently only supported in specific places in Rock." />
+                    </div>
+
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbEmailClosingPhrase"
+                            runat="server"
+                            Label="E-mail Closing Phrase"
+                            Help="A plain text string that will be appended to e-mails as your optional closing phrase. This is currently only supported in specific places in Rock." />
+
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
                         <Rock:DefinedValuePicker ID="dvpOriginateCallSource" runat="server" Label="Call Origination Source" Help="The number to call when you use click-to-call." />
                     </div>
                 </div>

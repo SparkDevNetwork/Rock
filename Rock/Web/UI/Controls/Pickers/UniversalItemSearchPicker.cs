@@ -330,6 +330,16 @@ namespace Rock.Web.UI.Controls
             set => ViewState[nameof( SearchUrl )] = value;
         }
 
+        /// <summary>
+        /// The context to use when sending the POST request to search for
+        /// results.
+        /// </summary>
+        internal string UrlContext
+        {
+            get => ViewState[nameof( UrlContext )] as string;
+            set => ViewState[nameof( UrlContext )] = value;
+        }
+
         #endregion
 
         #region Constructors
@@ -378,6 +388,7 @@ namespace Rock.Web.UI.Controls
             var script = $@"Rock.controls.universalItemSearchPicker.initialize({{
     controlId: '{ClientID}',
     restUrl: '{restUrl}',
+    context: {(UrlContext != null ? UrlContext.ToJson() : "null")},
     areDetailsAlwaysVisible: {( AreDetailsAlwaysVisible ? "true" : "false" )}
 }});";
 

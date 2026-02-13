@@ -20,13 +20,16 @@ import TreeItemPicker from "@Obsidian/Controls/treeItemPicker.obs";
 import { UniversalItemTreePickerOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/universalItemTreePickerOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
-import { post } from "@Obsidian/Utility/http";
+import { useHttp } from "@Obsidian/Utility/http";
 import { updateRefValue, useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ITreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { DataEntryMode } from "@Obsidian/Utility/fieldTypes";
 
 class UniversalTreeItemProvider implements ITreeItemProvider {
+    /** The HTTP client for making API requests. */
+    private readonly http = useHttp();
+
     /**
      * The security grant token that will be used to request additional access
      * to the category list.
@@ -83,7 +86,7 @@ class UniversalTreeItemProvider implements ITreeItemProvider {
             context: this.context
         };
 
-        const response = await post<TreeItemBag[]>(this.restUrl, {}, options);
+        const response = await this.http.post<TreeItemBag[]>(this.restUrl, {}, options);
 
         if (response.isSuccess && response.data && typeof response.data === "object" && Array.isArray(response.data)) {
             return response.data;
@@ -146,6 +149,14 @@ export const EditComponent = defineComponent({
             return asBoolean(props.configurationValues["isMultiple"]);
         });
 
+        const isDescendantSelectionAllowed = computed((): boolean => {
+            return asBoolean(props.configurationValues["isDescendantSelectionAllowed"]);
+        });
+
+        const isFolderSelectionDisabled = computed((): boolean => {
+            return asBoolean(props.configurationValues["isFolderSelectionDisabled"]);
+        });
+
         const rules = computed((): string => {
             return isRequired ? "required" : "";
         });
@@ -170,6 +181,8 @@ export const EditComponent = defineComponent({
         return {
             iconCssClass,
             internalValue,
+            isDescendantSelectionAllowed,
+            isFolderSelectionDisabled,
             isRequired,
             itemProvider,
             multiple,
@@ -184,6 +197,8 @@ export const EditComponent = defineComponent({
                 :iconCssClass="iconCssClass"
                 :provider="itemProvider"
                 :multiple="multiple"
+                :showSelectChildren="isDescendantSelectionAllowed"
+                :disableFolderSelection="isFolderSelectionDisabled"
                 :rules="rules" />
 `
 });
@@ -202,7 +217,7 @@ export const FilterComponent = defineComponent({
         const dataEntryMode = computed((): DataEntryMode => props.dataEntryMode);
 
         const configurationValues = computed((): Record<string, string> => {
-            const values = {...props.configurationValues};
+            const values = { ...props.configurationValues };
 
             // Invert the multiple state for the filter component.
             if (asBoolean(values["isMultiple"])) {

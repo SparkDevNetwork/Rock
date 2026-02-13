@@ -822,7 +822,6 @@ namespace RockWeb.Blocks.Core
                 public int? CreatedByPersonSuffixValueId;
 
                 public IEnumerable<History> HistoryEntries;
-                public History FirstHistoryEntry;
             }
 
             /// <summary>

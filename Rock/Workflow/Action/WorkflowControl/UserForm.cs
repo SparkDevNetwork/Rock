@@ -258,13 +258,17 @@ namespace Rock.Workflow.Action
             var fieldValues = componentData.GetValueOrNull( ComponentDataKey.FieldValues )?.FromJsonOrNull<Dictionary<Guid, string>>();
             var personEntryValues = componentData.GetValueOrNull( ComponentDataKey.PersonEntryValues )?.FromJsonOrNull<PersonEntryValuesBag>();
             var button = componentData.GetValueOrNull( ComponentDataKey.Button );
+            var workflowType = WorkflowTypeCache.Get( action.Activity.Workflow.WorkflowTypeId, rockContext );
+            var formBuilderTemplate = workflowType.FormBuilderTemplateId.HasValue
+                ? WorkflowFormBuilderTemplateCache.Get( workflowType.FormBuilderTemplateId.Value )
+                : null;
 
             if ( form == null )
             {
                 throw new Exception( "Invalid action state, could not find workflow or form details." );
             }
 
-            if ( personEntryValues != null )
+            if ( form.GetAllowPersonEntry( formBuilderTemplate ) )
             {
                 // The person entry processor requires its own RockContext.
                 using ( var personEntryRockContext = new RockContext() )
@@ -338,7 +342,7 @@ namespace Rock.Workflow.Action
                 ? formBuilderTemplate.FormFooter.ToStringSafe() + form.Footer.ToStringSafe()
                 : form.Footer.ToStringSafe();
 
-            var fields = GetFormFields( form, action, rockContext );
+            var fields = GetFormFields( form, action, mergeFields, rockContext );
             var fieldValues = GetFormFieldValues( form, action, rockContext );
             var personEntryValues = GetPersonEntryValues( action, requestContext.CurrentPerson, rockContext );
             var personEntryConfiguration = GetPersonEntryConfiguration( action, requestContext.CurrentPerson, personEntryValues?.MaritalStatusGuid, mergeFields, rockContext );
@@ -643,9 +647,10 @@ namespace Rock.Workflow.Action
         /// </summary>
         /// <param name="form">The data that describes the form to be displayed.</param>
         /// <param name="action">The action currently being processed.</param>
+        /// <param name="mergeFields">The merge fields to use for Lava parsing.</param>
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <returns>A list of bags that represent the fields to be displayed.</returns>
-        private static List<EntryFormFieldBag> GetFormFields( WorkflowActionFormCache form, WorkflowAction action, RockContext rockContext )
+        private static List<EntryFormFieldBag> GetFormFields( WorkflowActionFormCache form, WorkflowAction action, Dictionary<string, object> mergeFields, RockContext rockContext )
         {
             var fields = new List<EntryFormFieldBag>();
             var activity = action.Activity;
@@ -684,8 +689,8 @@ namespace Rock.Workflow.Action
                     Attribute = PublicAttributeHelper.GetPublicAttributeForEdit( attribute ),
                     IsLabelHidden = formAttribute.HideLabel,
                     IsRequired = formAttribute.IsRequired,
-                    PreHtml = formAttribute.PreHtml,
-                    PostHtml = formAttribute.PostHtml,
+                    PreHtml = formAttribute.PreHtml.ResolveMergeFields( mergeFields ),
+                    PostHtml = formAttribute.PostHtml.ResolveMergeFields( mergeFields ),
                     SectionId = formAttribute.ActionFormSectionId.HasValue
                         ? IdHasher.Instance.GetHash( formAttribute.ActionFormSectionId.Value )
                         : null,

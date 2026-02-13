@@ -43,7 +43,7 @@ namespace Rock.Tests.Integration.Communications
         {
             var result = SendSystemCommunication( $"Click <a href='/person/1'>here</a> to view your person profile." );
 
-            Assert.That.AreEqual( $"Click <a href='http://www.organization.com/person/1'>here</a> to view your person profile.",
+            Assert.AreEqual( $"Click <a href='http://www.organization.com/person/1'>here</a> to view your person profile.",
                 result.EmailMessage.Body );
         }
 
@@ -61,7 +61,7 @@ namespace Rock.Tests.Integration.Communications
 
             var mailMessage = SendTestRockEmailMessage( rockMessage );
 
-            Assert.That.AreEqual( "Click <a href='/person/1'>here</a> to view your person profile.",
+            Assert.AreEqual( "Click <a href='/person/1'>here</a> to view your person profile.",
                 mailMessage.Body );
         }
 
@@ -73,7 +73,7 @@ namespace Rock.Tests.Integration.Communications
 
             var mailMessage = SendTestRockEmailMessage( rockMessage );
 
-            Assert.That.AreEqual( "Click <a href='http://www.my.church/person/1'>here</a> to view your person profile.",
+            Assert.AreEqual( "Click <a href='http://www.my.church/person/1'>here</a> to view your person profile.",
                 mailMessage.Body );
         }
 

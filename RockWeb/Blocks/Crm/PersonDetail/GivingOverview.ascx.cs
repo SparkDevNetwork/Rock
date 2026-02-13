@@ -452,7 +452,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{growthPercentClass}""
 
             // Giving Journey
             var journeyStage = ( GivingJourneyStage ) Person.GetAttributeValue( Rock.SystemGuid.Attribute.PERSON_GIVING_CURRENT_GIVING_JOURNEY_STAGE.AsGuid() ).AsInteger();
-            var journeyStageName = journeyStage.GetDescription() ?? journeyStage.ConvertToString();
+            var journeyStageName = journeyStage.GetDisplayName();
             var kpiGivingJourney = GetKpiShortCode( "Giving Journey", journeyStageName, icon: "fa fa-hiking" );
 
             // Combined KPIs

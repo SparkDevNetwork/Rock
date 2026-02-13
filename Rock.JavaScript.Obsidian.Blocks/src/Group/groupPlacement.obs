@@ -23,62 +23,55 @@
         </template>
 
         <template #headerActions>
-            <div class="d-flex gap-1">
-                <DropDownList v-model="fallbackRegistrationTemplatePlacement"
-                              v-if="box.registrationTemplatePlacements"
-                              :items="box.registrationTemplatePlacements"
-                              :showBlankItem="false"
-                              inputClasses="placements-dropdown" />
-                <div class="dropdown">
-                    <RockButton :btnType="BtnType.Default"
-                                :btnSize="BtnSize.Small"
-                                :isSquare="true"
-                                title="Sort Items"
-                                data-toggle="dropdown">
-                        <i class="ti ti-caret-up-down"></i>
-                    </RockButton>
-                    <ul class="dropdown-menu dropdown-menu-right">
-                        <li>
-                            <span class="dropdown-header">
-                                Sort Person Order
-                            </span>
-                        </li>
-                        <li v-for="[key, label] in sortOptions"
-                            :key="key"
-                            :class="{ 'selected': currentSortOrder === key }">
-                            <a href="#" @click.prevent="changeSort(key)">
-                                {{ label }}
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <RockButton :btnType="BtnType.Default"
-                            :btnSize="BtnSize.Small"
-                            :isSquare="true"
-                            title="Toggle Gender Highlight View"
-                            @click="toggleHighlightGender">
-                    <i class="ti ti-gender-male"></i>
-                </RockButton>
-                <RockButton :btnType="BtnType.Default"
-                            :btnSize="BtnSize.Small"
-                            :isSquare="true"
-                            title="Toggle Details"
-                            @click="toggleCardExpansion">
-                    <i class="ti ti-info-circle"></i>
-                </RockButton>
-                <RockButton :btnType="BtnType.Default"
-                            :btnSize="BtnSize.Small"
-                            :isSquare="true"
-                            @click="openPlacementConfigSettings">
-                    <i class="ti ti-settings"></i>
-                </RockButton>
-                <RockButton :btnType="BtnType.Default"
-                            :btnSize="BtnSize.Small"
-                            :isSquare="true"
-                            @click="toggleFullScreen">
-                    <i class="ti ti-maximize"></i>
-                </RockButton>
+            <DropDownList v-model="fallbackRegistrationTemplatePlacement"
+                            v-if="box.registrationTemplatePlacements"
+                            :items="box.registrationTemplatePlacements"
+                            :showBlankItem="false"
+                            inputClasses="placements-dropdown" />
+            <div class="dropdown">
+                <button class="btn btn-panel-action"
+                        type="button"
+                        title="Sort Items"
+                        data-toggle="dropdown">
+                    <i class="ti ti-caret-up-down"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <li>
+                        <span class="dropdown-header">
+                            Sort Person Order
+                        </span>
+                    </li>
+                    <li v-for="[key, label] in sortOptions"
+                        :key="key"
+                        :class="{ 'selected': currentSortOrder === key }">
+                        <a href="#" @click.prevent="changeSort(key)">
+                            {{ label }}
+                        </a>
+                    </li>
+                </ul>
             </div>
+            <button class="btn btn-panel-action"
+                        type="button"
+                        title="Toggle Gender Highlight View"
+                        @click="toggleHighlightGender">
+                <i class="ti ti-gender-male"></i>
+            </button>
+            <button class="btn btn-panel-action"
+                        type="button"
+                        title="Toggle Details"
+                        @click="toggleCardExpansion">
+                <i class="ti ti-info-circle"></i>
+            </button>
+            <button class="btn btn-panel-action"
+                        type="button"
+                        @click="openPlacementConfigSettings">
+                <i class="ti ti-settings"></i>
+            </button>
+            <button class="btn btn-panel-action"
+                        type="button"
+                        @click="toggleFullScreen">
+                <i class="ti ti-maximize"></i>
+            </button>
         </template>
 
         <NotificationBox v-if="!isNullOrWhiteSpace(dataRetrievalError)" alertType="danger">
@@ -321,7 +314,7 @@
                                  :placementConfigurationSettings="placementConfigurationSettings"
                                  :placementConfigurationSettingOptions="box.placementConfigurationSettingOptions ?? {}"
                                  :placementMode="box.placementMode"
-                                 @save="savePlacementCofigSettings" />
+                                 @save="savePlacementConfigSettings" />
 
     <AddGroupModal v-model="isAddGroupModalVisible"
                    ref="addGroupModalElement"
@@ -767,8 +760,12 @@
                 return areAttributeFiltersMet(destinationGroupMemberAttributesForFilter.value, destinationMemberAttributeValuesForFilter.value, m.attributeValues);
             });
 
-            // Sort people associated with the filtered group members.
-            const sortedPeople = getSortedPeople(validGroupMembers.map(m => m.person!));
+            // Sort people associated with the filtered group members. Need to pass in the date time the group member was added
+            // so that the function will correctly sort by date if that sort type is toggled.
+            const sortedPeople = getSortedPeople(validGroupMembers.map(m => ({
+                ...m.person!,
+                dateTimeAddedToDestinationGroup: m.dateTimeAdded
+            })), true);
 
             // Map each personIdKey to their associated group members.
             const memberMap = new Map<string, GroupMemberBag[]>();
@@ -868,7 +865,7 @@
      * @param people The list of people to sort.
      * @returns The sorted list of people.
      */
-    function getSortedPeople(people: PersonBag[]): PersonBag[] {
+    function getSortedPeople(people: PersonBag[], isSortingPlacedPeople: boolean = false): PersonBag[] {
         return [...people].sort((a, b) => {
             switch (currentSortOrder.value) {
                 case SortTypes.SortByFirstName: {
@@ -890,13 +887,17 @@
                 case SortTypes.SortByDateAddedAsc: {
                     let entityDateTimeA;
                     let entityDateTimeB;
-                    if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
+                    if (isSortingPlacedPeople) {
+                        entityDateTimeA = a.dateTimeAddedToDestinationGroup;
+                        entityDateTimeB = b.dateTimeAddedToDestinationGroup;
+                    }
+                    else if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
                         entityDateTimeA = a.registrants?.[0]?.createdDateTime;
                         entityDateTimeB = b.registrants?.[0]?.createdDateTime;
                     }
                     else if (box.placementMode === PlacementMode.GroupMode) {
-                        entityDateTimeA = a.sourceGroupMembers?.[0]?.createdDateTime;
-                        entityDateTimeB = b.sourceGroupMembers?.[0]?.createdDateTime;
+                        entityDateTimeA = a.sourceGroupMembers?.[0]?.dateTimeAdded;
+                        entityDateTimeB = b.sourceGroupMembers?.[0]?.dateTimeAdded;
                     }
                     else {
                         return 0;
@@ -921,13 +922,17 @@
                 case SortTypes.SortByDateAddedDesc: {
                     let entityDateTimeA;
                     let entityDateTimeB;
-                    if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
+                    if (isSortingPlacedPeople) {
+                        entityDateTimeA = a.dateTimeAddedToDestinationGroup;
+                        entityDateTimeB = b.dateTimeAddedToDestinationGroup;
+                    }
+                    else if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
                         entityDateTimeA = a.registrants?.[0]?.createdDateTime;
                         entityDateTimeB = b.registrants?.[0]?.createdDateTime;
                     }
                     else if (box.placementMode === PlacementMode.GroupMode) {
-                        entityDateTimeA = a.sourceGroupMembers?.[0]?.createdDateTime;
-                        entityDateTimeB = b.sourceGroupMembers?.[0]?.createdDateTime;
+                        entityDateTimeA = a.sourceGroupMembers?.[0]?.dateTimeAdded;
+                        entityDateTimeB = b.sourceGroupMembers?.[0]?.dateTimeAdded;
                     }
                     else {
                         return 0;
@@ -1779,7 +1784,7 @@
      *
      * @param bag The settings to save.
      */
-    async function savePlacementCofigSettings(bag: PlacementConfigurationSettingsBag): Promise<void> {
+    async function savePlacementConfigSettings(bag: PlacementConfigurationSettingsBag): Promise<void> {
         preferences.setValue(getPlacementConfigurationSettingsKey(), JSON.stringify(bag));
 
         isPlacementConfigModalVisible.value = false;
@@ -1855,28 +1860,33 @@
      * @param groupMember The updated group member message.
      */
     function onGroupMemberUpdatedFromServer(groupMember: GroupMemberUpdatedMessageBag): void {
-        // If a group member was added to the source group then we add to peopleToPlace
+        // Handle case where a group member is added to the source group
         if (groupMember.groupIdKey === box.groupPlacementKeys?.sourceGroupIdKey) {
             if (isNullOrWhiteSpace(groupMember.person?.personIdKey)) {
                 return;
             }
 
+            // Track the new member so we can populate their attributes later if needed
             pendingSourceGroupMembers.value.push(groupMember);
 
             let isPersonInPeopleToPlace = false;
             let isPersonInDestinationGroup = false;
 
+            // Check if the person already exists in the "people to place" list
             peopleToPlace.value.forEach(p => {
                 if (p.personIdKey === groupMember.person?.personIdKey) {
+                    // Add the source group for the person we found.
                     addSourceGroupMemberForPerson(p, groupMember);
                     isPersonInPeopleToPlace = true;
                 }
             });
 
+            // Check if the person already exists in any destination group
             placementGroups.value.forEach(pg => {
                 if (pg.groupMembers) {
                     pg.groupMembers.forEach(gm => {
                         if (gm.person && gm.person.personIdKey === groupMember.person?.personIdKey) {
+                            // Link this new source group membership to the existing destination group member
                             addSourceGroupMemberForPerson(gm.person, groupMember);
                             isPersonInDestinationGroup = true;
                         }
@@ -1884,33 +1894,47 @@
                 }
             });
 
+            // If the person isn't already in the "people to place" list or a destination group
+            // (unless multiple placements allowed), add them to the "people to place" list so
+            // they appear in the placement UI.
             if (!isPersonInPeopleToPlace && (!isPersonInDestinationGroup || box.isPlacementAllowingMultiple)) {
                 var newPerson = groupMember.person! as PersonBag;
                 newPerson.sourceGroupMembers = [{
-                    groupMemberIdKey: groupMember.groupMemberIdKey
+                    groupMemberIdKey: groupMember.groupMemberIdKey,
+                    dateTimeAdded: groupMember.dateTimeAdded
                 } as GroupMemberBag];
 
                 peopleToPlace.value.push(newPerson);
             }
         }
+        // Handle case where a group member was added to a destination group (not the source)
         else {
+            // Determine which placement group this member belongs to,
+            // and whether the person already exists in the placement context
             const { placementGroup, existingPerson } = getPlacementContext(groupMember);
 
+            // Skip if no valid placement group was found (safety check)
             if (!placementGroup) {
                 return;
             }
 
+            // Track the new group member so we can populate their attributes later if needed.
             pendingDestinationGroupMembers.value.push(groupMember);
 
+            // Use the existing person reference if available, otherwise fall back to the one from groupMember
             const personToUse = existingPerson || groupMember.person;
 
+            // Add the person to the destination group's member list
             placementGroup.groupMembers!.push({
                 groupMemberId: groupMember.groupMemberId,
                 groupRoleIdKey: groupMember.groupRoleIdKey,
                 person: personToUse,
-                groupMemberIdKey: groupMember.groupMemberIdKey
+                groupMemberIdKey: groupMember.groupMemberIdKey,
+                dateTimeAdded: groupMember.dateTimeAdded
             });
 
+            // If multiple placements aren’t allowed, remove this person
+            // from the “people to place” list so they no longer appear as unplaced
             if (!box.isPlacementAllowingMultiple) {
                 peopleToPlace.value = peopleToPlace.value.filter(
                     p => groupMember.person?.personIdKey !== p.personIdKey

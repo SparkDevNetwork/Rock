@@ -1,0 +1,189 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      :scriptSetupCode="scriptSetupCode"
+                      enableReflection>
+        <div class="mb-3" style="display: flex;">
+            <SearchResultsSearchField v-model="searchTerm"
+                                      :searchResultsPageUrl="searchResultsPageUrl"
+                                      :searchType="searchType"
+                                      :placeholderText="placeholderText"
+                                      :searchButtonIconCssClass="searchButtonIconCssClass"
+                                      :additionalSearchParameters="additionalSearchParameters"
+                                      :isButtonClickRequired="isButtonClickRequired" />
+        </div>
+        <div class="col-md-12" style="border: 1px solid #F27A1F; background-color: #f3f3f3;">
+            <p class="font-italic">This section displays information not obvious from the control above. It will not show in actual use of the component and is for demonstration.</p>
+            <dl>
+                <dt>Search Results Page URL:</dt>
+                <dd>{{ searchResultsPageUrl }}</dd>
+                <dt>Search Type:</dt>
+                <dd>{{ searchType }}</dd>
+                <dt>Additional Search Parameters:</dt>
+                <dd>{{ !!additionalSearchParameters ? JSON.stringify(additionalSearchParameters) : "<None Specified>" }}</dd>
+                <dt>Is Button Click Required:</dt>
+                <dd>{{ isButtonClickRequired }}</dd>
+                <dt>URL That Will Be Navigated To:</dt>
+                <dd>{{ computedFinalUrl }}</dd>
+            </dl>
+        </div>
+        <template #settings>
+            <div class="d-flex flex-row gap-3" style="max-height: 5vw;">
+                <ContentSection title="Demonstratable Settings"
+                                icon="ti ti-settings"
+                                disableCollapse>
+                    <p class="text-semibold font-italic">The settings apply across many use-cases, so their usage and demonstration will show and occur if enabled or changed from defaults.</p>
+                    <ContentStack title="Toggle Properties"
+                                  description="Properties that typically are either true or false.">
+                        <div class="d-flex flex-row gap-3">
+                            <Switch v-model="isButtonClickRequired"
+                                    label="Button Click is Required"
+                                    help="Determines if the search button needs to be clicked to perform the search or if pressing Enter in the text box will also perform the search." />
+                        </div>
+                    </ContentStack>
+                    <ContentStack title="Value Properties"
+                                  description="Properties that typically require a value to be set.">
+                        <div class="d-flex flex-row gap-1">
+                            <div class="col-md-6">
+                                <p class="text-semibold">Field Display Values</p>
+                                <TextBox v-model="placeholderText"
+                                         label="Placeholder Text"
+                                         help="The placeholder text for the search's text box." />
+                                <TextBox v-model="searchButtonIconCssClass"
+                                         label="Search Button Icon CSS Class"
+                                         help="The CSS class for the icon displayed in the button that submits the search." />
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-semibold">Search Results</p>
+                                <TextBox v-model="searchResultsPageUrl"
+                                         label="Search Results Page URL"
+                                         help="The Search Results Page URL which will be navigated to and supplied query parameters. Ideally a NavigationUrlKey that is backend-validated, or raw URL." />
+                                <TextBox v-model="searchType"
+                                         label="Search Type"
+                                         help="The name of an exposed results field to look for the search term (modelValue) in once navigated to the search results page." />
+                            </div>
+                        </div>
+                        <div class="d-flex flex-row gap-1">
+                            <div class="col-md-6">
+                                <p class="text-semibold">Additional Search Parameters:</p>
+                                <KeyValueList v-model="additionalSearchParameters" keyPlaceholder="Key" valuePlaceholder="Value" />
+                            </div>
+                        </div>
+                    </ContentStack>
+                </ContentSection>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import SearchResultsSearchField from "@Obsidian/Controls/searchResultsSearchField.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import { getSfcControlImportPath, ComponentUsage } from "./common/utils.partial";
+
+    const searchTerm = ref<string>("");
+    const searchResultsPageUrl = ref<string>(new URL("/page/694", window.location.origin).toString());
+    const searchType = ref<string>("name");
+    const placeholderText = ref<string>("Quick Find");
+    const searchButtonIconCssClass = ref<string>("ti ti-search");
+    const additionalSearchParameters = ref<KeyValueItem[] | undefined>(undefined);
+    const isButtonClickRequired = ref<boolean>(false);
+
+    const computedFinalUrl = computed<string>(() => {
+        if (!searchTerm.value || searchTerm.value.trim() === "") {
+            return "<No Search Term Entered>";
+        }
+        if (!searchResultsPageUrl.value || searchResultsPageUrl.value.trim() === "") {
+            return "<No Search Results Page URL Entered>";
+        }
+        if (!searchType.value || searchType.value.trim() === "") {
+            return "<No Search Type Entered>";
+        }
+
+        const url = new URL(searchResultsPageUrl.value, window.location.origin);
+
+        if (searchType.value) {
+            url.searchParams.append("searchType", searchType.value);
+        }
+
+        url.searchParams.append("searchTerm", searchTerm.value);
+
+        if (additionalSearchParameters.value) {
+            for (const param of additionalSearchParameters.value) {
+                if (param.key && param.value) {
+                    url.searchParams.append(param.key, param.value);
+                }
+            }
+        }
+
+        return url.toString();
+    });
+
+    const importCode = getSfcControlImportPath("searchResultsSearchField");
+
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("SearchResultsSearchField");
+
+        usage.addAttribute(':modelValue="searchTerm"', true, false);
+        usage.addAttribute(':searchResultsPageUrl="searchResultsPageUrl"', true, false);
+        usage.addAttribute(':searchType="searchType"', searchType.value !== "name", false);
+        usage.addAttribute(':placeholderText="placeholderText"', placeholderText.value !== "Quick Find", false);
+        usage.addAttribute(':searchButtonIconCssClass="searchButtonIconCssClass"', searchButtonIconCssClass.value !== "ti ti-search", false);
+        usage.addAttribute(':additionalSearchParameters="additionalSearchParameters"', additionalSearchParameters.value !== undefined, false);
+        usage.addAttribute("isButtonClickRequired", isButtonClickRequired.value, false);
+
+        return usage.toString();
+    });
+    const scriptSetupCode = computed(() => {
+        const usage = new ComponentUsage("SearchResultsSearchField");
+
+        usage.addScriptBody('const searchTerm = ref<string>("");');
+
+        usage.addScriptBodyWithComment(
+            "Define the Search Results Page URL which will be navigated to and supplied query parameters. Ideally a NavigationUrlKey that is backend-validated",
+            `const searchResultsPageUrl = ref<string>("${searchResultsPageUrl.value}");`
+        );
+
+        if (searchType.value !== "name") {
+            usage.addScriptBodyWithComment(
+                "Define the name of an exposed results field to look for the search term in once navigated to the search results page.",
+                `const searchType = ref<string>("${searchType.value}");`
+            );
+        }
+
+        if (placeholderText.value !== "Quick Find") {
+            usage.addScriptBodyWithComment(
+                "Define the placeholder text for the search text box.",
+                `const placeholderText = ref<string>("${placeholderText.value}");`
+            );
+        }
+
+        if (searchButtonIconCssClass.value !== "ti ti-search") {
+            usage.addScriptBodyWithComment(
+                "Define the CSS class for the icon displayed in the search button.",
+                `const searchButtonIconCssClass = ref<string>("${searchButtonIconCssClass.value}");`
+            );
+        }
+
+        if (additionalSearchParameters.value !== undefined) {
+            const formattedSearchParameters = JSON.stringify(additionalSearchParameters.value, null, 8)
+                .replace(/"\s+/g, '"') // Remove spaces after keys
+                .replace(/\s+"/g, '"') // Remove spaces before values
+                .replace(/^\s*/gm, "        "); // Indent each line
+
+            usage.addScriptBodyWithComment(
+                "Define any additional search parameters to include in the search results page URL.",
+                `const additionalSearchParameters = ref<KeyValueItem[] | undefined>(\n${formattedSearchParameters}\n    );`
+            );
+        }
+
+        return usage.toScriptSetupString();
+    });
+</script>

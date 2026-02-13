@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockForm v-if="isBlockVisible" v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+    <RockForm v-if="isBlockVisible" v-model:submit="submitForm" @submit="onSave">
 
         <Panel :title="panelName" :headerSecondaryActions="headerSecondaryActions" type="block">
 
@@ -87,7 +87,6 @@
     const submitForm = ref(false);
     const beginRerunWorkflow = ref(false);
     const showAuditDetailsModal = ref(false);
-    const resetKey = ref("");
 
     const binaryFileViewBag = ref(config.entity);
     const binaryFileEditBag = ref<ValidPropertiesBox<BinaryFileBag>>({
@@ -127,7 +126,7 @@
     const panelName = computed((): string => {
         if (config.isEditable === true && panelMode.value !== DetailPanelMode.View) {
             const binaryFileTypeName = binaryFileEditBag.value?.bag?.binaryFileType?.text ?? "Binary File";
-            return panelMode.value == DetailPanelMode.Add ? `Add ${binaryFileTypeName}` : `Edit ${binaryFileTypeName}`;
+            return panelMode.value === DetailPanelMode.Add ? `Add ${binaryFileTypeName}` : `Edit ${binaryFileTypeName}`;
         }
         else {
             return "View Binary File";

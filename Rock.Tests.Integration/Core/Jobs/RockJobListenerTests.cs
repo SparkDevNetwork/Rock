@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading;
@@ -16,11 +18,9 @@ using Rock.Communication.Transport;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 using SmtpServer;
-using SmtpServer.Mail;
 using SmtpServer.Protocol;
 using SmtpServer.Storage;
 
@@ -64,11 +64,11 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var actualJob = GetAddTestJob( jobDataMapDictionary );
 
-            Assert.That.AreEqual( expectedExceptionMessage, actualJob.LastStatusMessage );
-            Assert.That.AreEqual( "Exception", actualJob.LastStatus );
+            Assert.AreEqual( expectedExceptionMessage, actualJob.LastStatusMessage );
+            Assert.AreEqual( "Exception", actualJob.LastStatus );
 
             var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedExceptionMessage );
-            Assert.That.IsTrue( exceptions.Count() == 1 );
+            Assert.HasCount( 1, exceptions );
         }
 
         [TestMethod]
@@ -79,23 +79,23 @@ namespace Rock.Tests.Integration.Core.Jobs
             await RunJob( GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage ), JobNotificationStatus.All );
 
             actualEmails.TryPop( out var message );
-            Assert.That.Contains( message, expectedExceptionMessage );
+            Assert.Contains( expectedExceptionMessage, message );
             RemoveTestJob();
 
             await RunJob( GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage ), JobNotificationStatus.Error );
 
             actualEmails.TryPop( out message );
-            Assert.That.Contains( message, expectedExceptionMessage );
+            Assert.Contains( expectedExceptionMessage, message );
             RemoveTestJob();
 
             await RunJob( GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage ), JobNotificationStatus.Success );
 
-            Assert.That.IsFalse( actualEmails.TryPop( out message ) );
+            Assert.IsFalse( actualEmails.TryPop( out message ) );
             RemoveTestJob();
 
             await RunJob( GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage ), JobNotificationStatus.None );
 
-            Assert.That.IsFalse( actualEmails.TryPop( out message ) );
+            Assert.IsFalse( actualEmails.TryPop( out message ) );
             RemoveTestJob();
         }
 
@@ -107,23 +107,23 @@ namespace Rock.Tests.Integration.Core.Jobs
             await RunJob( GetJobDataMapDictionary( TestResultType.Warning, expectedExceptionMessage ), JobNotificationStatus.All );
 
             actualEmails.TryPop( out var message );
-            Assert.That.Contains( message, expectedExceptionMessage );
+            Assert.Contains( expectedExceptionMessage, message );
             RemoveTestJob();
 
             await RunJob( GetJobDataMapDictionary( TestResultType.Warning, expectedExceptionMessage ), JobNotificationStatus.Error );
 
             actualEmails.TryPop( out message );
-            Assert.That.Contains( message, expectedExceptionMessage );
+            Assert.Contains( expectedExceptionMessage, message );
             RemoveTestJob();
 
             await RunJob( GetJobDataMapDictionary( TestResultType.Warning, expectedExceptionMessage ), JobNotificationStatus.Success );
 
-            Assert.That.IsFalse( actualEmails.TryPop( out message ) );
+            Assert.IsFalse( actualEmails.TryPop( out message ) );
             RemoveTestJob();
 
             await RunJob( GetJobDataMapDictionary( TestResultType.Warning, expectedExceptionMessage ), JobNotificationStatus.None );
 
-            Assert.That.IsFalse( actualEmails.TryPop( out message ) );
+            Assert.IsFalse( actualEmails.TryPop( out message ) );
             RemoveTestJob();
         }
 
@@ -135,23 +135,23 @@ namespace Rock.Tests.Integration.Core.Jobs
             await RunJob( GetJobDataMapDictionary( TestResultType.Success, expectedExceptionMessage ), JobNotificationStatus.All );
 
             actualEmails.TryPop( out var message );
-            Assert.That.Contains( message, expectedExceptionMessage );
+            Assert.Contains( expectedExceptionMessage, message );
             RemoveTestJob();
 
             await RunJob( GetJobDataMapDictionary( TestResultType.Success, expectedExceptionMessage ), JobNotificationStatus.Error );
 
-            Assert.That.IsFalse( actualEmails.TryPop( out message ) );
+            Assert.IsFalse( actualEmails.TryPop( out message ) );
             RemoveTestJob();
 
             await RunJob( GetJobDataMapDictionary( TestResultType.Success, expectedExceptionMessage ), JobNotificationStatus.Success );
 
             actualEmails.TryPop( out message );
-            Assert.That.Contains( message, expectedExceptionMessage );
+            Assert.Contains( expectedExceptionMessage, message );
             RemoveTestJob();
 
             await RunJob( GetJobDataMapDictionary( TestResultType.Success, expectedExceptionMessage ), JobNotificationStatus.None );
 
-            Assert.That.IsFalse( actualEmails.TryPop( out message ) );
+            Assert.IsFalse( actualEmails.TryPop( out message ) );
             RemoveTestJob();
         }
 
@@ -165,11 +165,11 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var actualJob = GetAddTestJob( jobDataMapDictionary );
 
-            Assert.That.AreEqual( $"One or more exceptions occurred. First Exception: {expectedExceptionMessage} 1", actualJob.LastStatusMessage );
-            Assert.That.AreEqual( "Exception", actualJob.LastStatus );
+            Assert.AreEqual( $"One or more exceptions occurred. First Exception: {expectedExceptionMessage} 1", actualJob.LastStatusMessage );
+            Assert.AreEqual( "Exception", actualJob.LastStatus );
 
             var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description.Contains( expectedExceptionMessage ) );
-            Assert.That.IsTrue( exceptions.Count() > 1 );
+            Assert.IsGreaterThan( 1, exceptions.Count() );
         }
 
         [TestMethod]
@@ -181,11 +181,11 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var actualJob = GetAddTestJob( jobDataMapDictionary );
 
-            Assert.That.AreEqual( expectedExceptionMessage, actualJob.LastStatusMessage );
-            Assert.That.AreEqual( "Exception", actualJob.LastStatus );
+            Assert.AreEqual( expectedExceptionMessage, actualJob.LastStatusMessage );
+            Assert.AreEqual( "Exception", actualJob.LastStatus );
 
             var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedExceptionMessage );
-            Assert.That.IsTrue( exceptions.Count() == 1 );
+            Assert.HasCount( 1, exceptions );
         }
 
         [TestMethod]
@@ -199,11 +199,11 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var actualJob = GetAddTestJob( jobDataMapDictionary );
 
-            Assert.That.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
-            Assert.That.AreEqual( "Warning", actualJob.LastStatus );
+            Assert.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
+            Assert.AreEqual( "Warning", actualJob.LastStatus );
 
             var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
-            Assert.That.IsTrue( exceptions.Count() == 1 );
+            Assert.HasCount( 1, exceptions );
         }
 
         [TestMethod]
@@ -216,11 +216,11 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var actualJob = GetAddTestJob( jobDataMapDictionary );
 
-            Assert.That.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
-            Assert.That.AreEqual( "Warning", actualJob.LastStatus );
+            Assert.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
+            Assert.AreEqual( "Warning", actualJob.LastStatus );
 
             var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
-            Assert.That.IsTrue( exceptions.Count() == 1 );
+            Assert.HasCount( 1, exceptions );
         }
 
         [TestMethod]
@@ -233,11 +233,11 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var actualJob = GetAddTestJob( jobDataMapDictionary );
 
-            Assert.That.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
-            Assert.That.AreEqual( "Warning", actualJob.LastStatus );
+            Assert.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
+            Assert.AreEqual( "Warning", actualJob.LastStatus );
 
             var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
-            Assert.That.IsTrue( exceptions.Count() == 1 );
+            Assert.HasCount( 1, exceptions );
         }
 
         [TestMethod]
@@ -253,10 +253,10 @@ namespace Rock.Tests.Integration.Core.Jobs
 
             var actualJob = GetAddTestJob( jobDataMapDictionary );
 
-            Assert.That.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
-            Assert.That.AreEqual( "Success", actualJob.LastStatus );
+            Assert.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
+            Assert.AreEqual( "Success", actualJob.LastStatus );
 
-            Assert.That.AreEqual( expectedExceptionsCount, actualExceptionsCount );
+            Assert.AreEqual( expectedExceptionsCount, actualExceptionsCount );
         }
 
         private async Task RunJob( Dictionary<string, string> jobDataMapDictionary, JobNotificationStatus jobNotificationStatus = JobNotificationStatus.None )
@@ -351,7 +351,7 @@ namespace Rock.Tests.Integration.Core.Jobs
                 Name = "Test Job",
                 Description = "This job is used for testing RockJobListener",
                 Class = typeof( RockJobListenerTestJob ).FullName,
-                Assembly = typeof(RockJobListenerTestJob).Assembly.FullName,
+                Assembly = typeof( RockJobListenerTestJob ).Assembly.FullName,
                 CronExpression = "0 0 1 * * ?",
                 NotificationStatus = jobNotificationStatus,
                 Guid = TestJobGuidString.AsGuid(),
@@ -404,10 +404,12 @@ namespace Rock.Tests.Integration.Core.Jobs
             var options = new SmtpServerOptionsBuilder()
                 .ServerName( "localhost" )
                 .Port( smtpPort )
-                .MessageStore( new SampleMessageStore() )
                 .Build();
 
-            var smtpServer = new SmtpServer.SmtpServer( options );
+            var serviceProvider = new SmtpServer.ComponentModel.ServiceProvider();
+            serviceProvider.Add( new SampleMessageStore() );
+
+            var smtpServer = new SmtpServer.SmtpServer( options, serviceProvider );
             smtpServer.StartAsync( CancellationToken.None );
         }
 
@@ -415,7 +417,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         {
             int port = 25;
             bool isAvailable = false;
-            
+
             IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
             var tcpConnInfoArray = ipGlobalProperties.GetActiveTcpListeners().ToList();
 
@@ -433,18 +435,31 @@ namespace Rock.Tests.Integration.Core.Jobs
 
         public class SampleMessageStore : MessageStore
         {
-            public override Task<SmtpResponse> SaveAsync( ISessionContext context, IMessageTransaction transaction, CancellationToken cancellationToken )
+            public override Task<SmtpResponse> SaveAsync( ISessionContext context, IMessageTransaction transaction, ReadOnlySequence<byte> buffer, CancellationToken cancellationToken )
             {
-                var textMessage = ( ITextMessage ) transaction.Message;
-                var message = MimeKit.MimeMessage.Load( textMessage.Content );
+                using ( var stream = new MemoryStream() )
+                {
+                    var position = buffer.GetPosition( 0 );
 
-                actualEmails.Push( message.HtmlBody );
+                    while ( buffer.TryGet( ref position, out var memory ) )
+                    {
+                        var bytes = memory.ToArray();
+
+                        stream.Write( bytes, 0, bytes.Length );
+                    }
+
+                    stream.Position = 0;
+
+                    var message = MimeKit.MimeMessage.Load( stream );
+
+                    actualEmails.Push( message.HtmlBody );
+                }
 
                 return Task.FromResult( SmtpResponse.Ok );
             }
         }
 
-        private void UpdateSmtpPortNumber(string smtpPort)
+        private void UpdateSmtpPortNumber( string smtpPort )
         {
             var smtp = new SMTP();
 

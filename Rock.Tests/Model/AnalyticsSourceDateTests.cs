@@ -16,6 +16,7 @@
 using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Model;
 
 namespace Rock.Tests.Model
@@ -68,7 +69,7 @@ namespace Rock.Tests.Model
            17  18  19  20  21  22  23
            24  25  26  27  28  29  30
          */
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Sun, Dec 25, 2022", 38 )]
         [DataRow( "Mon, Dec 26, 2022", 39 )] // should only be 7 days with the 39th week
         [DataRow( "Tue, Dec 27, 2022", 39 )] // .
@@ -117,7 +118,7 @@ namespace Rock.Tests.Model
             03      17 18 19 20 21 22 23 
             04      24 25 26 27 28 29 30 
          */
-        [DataTestMethod]
+        [TestMethod]
         // Fiscal Start == Jan 
         [DataRow( "Sat, Dec 25, 2021", 1, 51 )]
         [DataRow( "Sun, Dec 26, 2021", 1, 51 )]
@@ -174,7 +175,7 @@ namespace Rock.Tests.Model
         /// <param name="date">The input date string</param>
         /// <param name="fiscalMonthStart">The month the fiscal year starts (1 = January, 10 = October, etc.)</param>
         /// <param name="expectedFiscalMonthNumber">The expected fiscal month number result for the input date</param>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Thu, Oct 1, 2020", 10, 1 )]
         [DataRow( "Sat, Dec 31, 2022", 1, 12 )]
         [DataRow( "Sun, Jan 1, 2023", 1, 12 )] // Sun Jan 1, 2023 is the last day of the 12th month of FY2022
@@ -213,7 +214,7 @@ namespace Rock.Tests.Model
         /// <param name="date">The input date string</param>
         /// <param name="fiscalMonthStart">The month the fiscal year starts (1 = January, 10 = October, etc.)</param>
         /// <param name="expectedFiscalMonthNumber">The expected fiscal month number result for the input date</param>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Thu, Oct 1, 2020", 10, "October" )]
         [DataRow( "Wed, Nov 30, 2022", 1, "November" )]
         [DataRow( "Thu, Dec 1, 2022", 1, "December" )]
@@ -254,7 +255,7 @@ namespace Rock.Tests.Model
         /// </summary>
         /// <param name="date">The input date string</param>
         /// <param name="expectedFiscalYear">The expected fiscal year result for the input date</param>
-        [DataTestMethod]
+        [TestMethod]
         /*
             ----------------------------
             FWK     Mo Tu We Th Fr Sa Su
@@ -306,7 +307,7 @@ namespace Rock.Tests.Model
         /// </summary>
         /// <param name="date">The input date string</param>
         /// <param name="expectedFiscalQuarter">The expected fiscal quarter result for the input date</param>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Saturday, April 1, 2023", 4 )]
         [DataRow( "Sunday, April 2, 2023", 4 )]
         [DataRow( "Monday, April 3, 2023", 1 )]
@@ -331,7 +332,7 @@ namespace Rock.Tests.Model
         /// </summary>
         /// <param name="date">The input date string</param>
         /// <param name="expectedFiscalHalfYear">The expected fiscal half-year result for the input date</param>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow( "Saturday, April 1, 2023", "Second" )]
         [DataRow( "Sunday, April 2, 2023", "Second" )]
         [DataRow( "Monday, April 3, 2023", "First" )]

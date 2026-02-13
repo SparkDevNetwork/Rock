@@ -25,7 +25,7 @@ namespace Rock.Core.Automation
     /// Describes a single request that will pass through the automation system
     /// from the trigger to the events.
     /// </summary>
-    internal class AutomationRequest
+    public class AutomationRequest
     {
         /// <summary>
         /// The well known keys that are used in the <see cref="Values"/>

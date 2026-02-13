@@ -68,6 +68,6 @@
 
     const importCode = getSfcControlImportPath("campusAccountAmountPicker");
     const exampleCode = computed(() => `<CampusAccountAmountPicker v-model="value" v-model:campusGuid="campusGuid"
-    :selectableAccountGuids="['${selectableAccountGuids.join("','")}']"\n    accountAmountEntryMode="${multiple.value ? "multipleAccounts" : "singleAccount"}"${hideCampusIfKnown.value ? `\n    hideCampusIfKnown` : ""}${orderBySelectableAccountsIndex.value ? `\n    orderBySelectableAccountsIndex` : ""}${includeInactiveCampuses.value ? `\n    includeInactiveCampuses` : ""}${accountHeaderTemplate.value != "{{ Account.PublicName }}" ? `\n    accountHeaderTemplate="${accountHeaderTemplate.value}"` : ""}${disableAccountCampusMappingLogic.value ? `\n    disableAccountCampusMappingLogic` : ""} />`);
+    :selectableAccountGuids="['${selectableAccountGuids.join("','")}']"\n    accountAmountEntryMode="${multiple.value ? "multipleAccounts" : "singleAccount"}"${hideCampusIfKnown.value ? `\n    hideCampusIfKnown` : ""}${orderBySelectableAccountsIndex.value ? `\n    orderBySelectableAccountsIndex` : ""}${includeInactiveCampuses.value ? `\n    includeInactiveCampuses` : ""}${accountHeaderTemplate.value !== "{{ Account.PublicName }}" ? `\n    accountHeaderTemplate="${accountHeaderTemplate.value}"` : ""}${disableAccountCampusMappingLogic.value ? `\n    disableAccountCampusMappingLogic` : ""} />`);
 
 </script>

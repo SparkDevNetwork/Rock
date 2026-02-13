@@ -65,17 +65,17 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
 
             var settingsTarget = new StepsTakenFilter.FilterSettings( settingsString );
 
-            Assert.That.AreEqual( TestGuids.Steps.ProgramSacramentsGuid, settingsTarget.StepProgramGuid );
+            Assert.AreEqual( TestGuids.Steps.ProgramSacramentsGuid, settingsTarget.StepProgramGuid );
 
-            Assert.That.AreEqual( TestGuids.Steps.StepTypeBaptismGuid, settingsTarget.StepTypeGuids[0] );
-            Assert.That.AreEqual( TestGuids.Steps.StepTypeConfirmationGuid, settingsTarget.StepTypeGuids[1] );
-            Assert.That.AreEqual( TestGuids.Steps.StepTypeConfessionGuid, settingsTarget.StepTypeGuids[2] );
+            Assert.AreEqual( TestGuids.Steps.StepTypeBaptismGuid, settingsTarget.StepTypeGuids[0] );
+            Assert.AreEqual( TestGuids.Steps.StepTypeConfirmationGuid, settingsTarget.StepTypeGuids[1] );
+            Assert.AreEqual( TestGuids.Steps.StepTypeConfessionGuid, settingsTarget.StepTypeGuids[2] );
 
-            Assert.That.AreEqual( TestGuids.Steps.StatusSacramentsSuccessGuid, settingsTarget.StepStatusGuids[0] );
-            Assert.That.AreEqual( TestGuids.Steps.StatusSacramentsPendingGuid, settingsTarget.StepStatusGuids[1] );
+            Assert.AreEqual( TestGuids.Steps.StatusSacramentsSuccessGuid, settingsTarget.StepStatusGuids[0] );
+            Assert.AreEqual( TestGuids.Steps.StatusSacramentsPendingGuid, settingsTarget.StepStatusGuids[1] );
 
-            Assert.That.AreEqual( startPeriod, settingsTarget.StartedInPeriod );
-            Assert.That.AreEqual( endPeriod, settingsTarget.CompletedInPeriod );
+            Assert.AreEqual( startPeriod, settingsTarget.StartedInPeriod );
+            Assert.AreEqual( endPeriod, settingsTarget.CompletedInPeriod );
         }
 
         /// <summary>
@@ -94,11 +94,11 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
             var results = personQuery.ToList();
 
             // Verify Ted Decker found - Baptism.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
             // Verify Sarah Simmons found - Confirmation.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.SarahSimmonsPersonGuid ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.SarahSimmonsPersonGuid ) );
             // Verify Ben Jones not found - no Sacraments Steps, only Alpha.
-            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.BenJonesPersonGuid ) );
+            Assert.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.BenJonesPersonGuid ) );
         }
 
         /// <summary>
@@ -119,11 +119,11 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
             var results = personQuery.ToList();
 
             // Verify Ted Decker found - Confirmation.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
             // Verify Sarah Simmons found - Confirmation.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.SarahSimmonsPersonGuid ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.SarahSimmonsPersonGuid ) );
             // Verify Brian Jones not found - Baptism, no Confirmation.
-            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.BrianJonesPersonGuid ) );
+            Assert.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.BrianJonesPersonGuid ) );
         }
 
         /// <summary>
@@ -144,13 +144,13 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
             var results = personQuery.ToList();
 
             // Verify Ted Decker found - Confirmation.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
             // Verify Sarah Simmons found - Confirmation.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.SarahSimmonsPersonGuid ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.SarahSimmonsPersonGuid ) );
             // Verify Brian Jones found - Baptism.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.BrianJonesPersonGuid ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.BrianJonesPersonGuid ) );
             // Verify Ben Jones not found - no Sacraments Steps
-            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.BenJonesPersonGuid ) );
+            Assert.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.BenJonesPersonGuid ) );
         }
 
         /// <summary>
@@ -171,9 +171,9 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
             var results = personQuery.ToList();
 
             // Verify Brian Jones found - Baptism is Pending.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.BrianJonesPersonGuid ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.BrianJonesPersonGuid ) );
             // Verify Ted Decker not found - Baptism is Completed.
-            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
+            Assert.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
         }
 
         /// <summary>
@@ -194,9 +194,9 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
             var results = personQuery.ToList();
 
             // Verify Brian Jones found - Baptism is Pending.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.BrianJonesPersonGuid ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.BrianJonesPersonGuid ) );
             // Verify Ted Decker found - Baptism is Completed.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
         }
 
         /// <summary>
@@ -217,11 +217,11 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
             var results = personQuery.ToList();
 
             // Verify Bill Marble found - baptised in second half of 2001.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.BillMarblePersonGuid ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.BillMarblePersonGuid ) );
             // Verify Alisha Marble found - baptised in second half of 2001.
-            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.AlishaMarblePersonGuid ) );
+            Assert.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.AlishaMarblePersonGuid ) );
             // Verify Ted Decker not found - baptised in first half of 2001.
-            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
+            Assert.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
         }
 
         /// <summary>

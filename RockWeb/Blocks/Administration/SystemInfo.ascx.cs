@@ -567,6 +567,7 @@ namespace RockWeb.Blocks.Administration
             lSystemDateTime.Text = new DateTimeOffset( RockDateTime.SystemDateTime ).ToString();
 
             lRockTime.Text = RockDateTime.Now.ToRockDateTimeOffset().ToString();
+            lInstallDateTime.Text = Rock.Web.SystemSettings.GetRockInstallationDateTime().ToRockDateTimeOffset().ToString();
 
             var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
 

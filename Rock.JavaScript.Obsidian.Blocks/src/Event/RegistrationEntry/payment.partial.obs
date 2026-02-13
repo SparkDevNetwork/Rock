@@ -44,11 +44,13 @@
                 </div>
             </div>
 
-            <Captcha v-if="!disableCaptchaSupport" ref="captchaElement" />
+            <div v-if="!disableCaptchaSupport" v-show="!isCaptchaComplete">
+                <Captcha ref="captchaElement" />
+            </div>
 
             <NotificationBox v-if="submitErrorMessage" alertType="danger">{{ submitErrorMessage }}</NotificationBox>
 
-            <div class="actions text-right">
+            <div v-if="isCaptchaComplete || disableCaptchaSupport" class="actions text-right">
                 <RockButton class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>
                     Previous
                 </RockButton>
@@ -61,7 +63,7 @@
     </div>
 </template>
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, onMounted } from "vue";
     import { CurrentRegistrationEntryState, GetPersistSessionArgs, use } from "./utils.partial";
     import Captcha from "@Obsidian/Controls/captcha.obs";
     import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
@@ -86,6 +88,7 @@
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const disableCaptchaSupport = ref(registrationEntryState.viewModel.disableCaptchaSupport);
     const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const isCaptchaComplete = ref(false);
     const uniqueId = newGuid();
 
     const emit = defineEmits<{
@@ -306,7 +309,6 @@
 
         if (captchaElement.value) {
             actionContext.captcha = await captchaElement.value.getToken();
-            captchaElement.value.refreshToken();
         }
 
         dispatchPaymentEvent({ type: "submitting" });
@@ -314,6 +316,19 @@
         const result = await invokeBlockAction<RegistrationEntrySuccessBag>("SubmitRegistration", {
             args: getRegistrationEntryBlockArgs()
         }, actionContext);
+
+        if (result.isError && result.statusCode === 409) {
+            // The registration is full. Display special error message.
+            registrationEntryState.isCapacityFull = true;
+
+            dispatchPaymentEvent({
+                type: "failure",
+                errorMessage: result.errorMessage || "The registration could not be completed because it is full."
+            });
+
+            // Return true so the next step can be shown.
+            return true;
+        }
 
         if (result.isError || !result.data) {
             const errorMessage = result.errorMessage || "Unknown error";
@@ -330,5 +345,19 @@
         return result.isSuccess;
     }
 
+    async function waitForCaptcha(): Promise<void> {
+        if (disableCaptchaSupport.value || !captchaElement.value) {
+            isCaptchaComplete.value = true;
+            return;
+        }
+        const token = await captchaElement.value.getToken();
+        isCaptchaComplete.value = !!token;
+    }
+
     // #endregion
+
+    onMounted(() => {
+        waitForCaptcha();
+    });
+
 </script>

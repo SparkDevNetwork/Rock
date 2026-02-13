@@ -40,7 +40,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
                 var tedDecker = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker );
                 var person = registration.GetPersonBag( tedDecker, null );
 
-                Assert.That.IsEmpty( person.AttributeValues );
+                Assert.IsEmpty( person.AttributeValues );
             }
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var person = registration.GetPersonBag( tedDecker, null );
 
-                Assert.That.AreEqual( 1, person.AttributeValues.Count );
-                Assert.That.AreEqual( "Employer", person.AttributeValues.Keys.First() );
-                Assert.That.AreEqual( tedDecker.GetAttributeValue( "Employer" ), person.AttributeValues["Employer"] );
+                Assert.HasCount( 1, person.AttributeValues );
+                Assert.AreEqual( "Employer", person.AttributeValues.Keys.First() );
+                Assert.AreEqual( tedDecker.GetAttributeValue( "Employer" ), person.AttributeValues["Employer"] );
             }
         }
 
@@ -80,9 +80,9 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var person = registration.GetPersonBag( tedDecker, null );
 
-                Assert.That.AreEqual( 1, person.AttributeValues.Count );
-                Assert.That.AreEqual( "Employer", person.AttributeValues.Keys.First() );
-                Assert.That.AreEqual( tedDecker.GetAttributeValue( "Employer" ), person.AttributeValues["Employer"] );
+                Assert.HasCount( 1, person.AttributeValues );
+                Assert.AreEqual( "Employer", person.AttributeValues.Keys.First() );
+                Assert.AreEqual( tedDecker.GetAttributeValue( "Employer" ), person.AttributeValues["Employer"] );
             }
         }
 
@@ -101,9 +101,9 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var person = registration.GetPersonBag( tedDecker, null );
 
-                Assert.That.AreEqual( 1, person.AttributeValues.Count );
-                Assert.That.AreEqual( "Allergy", person.AttributeValues.Keys.First() );
-                Assert.That.AreEqual( tedDecker.GetAttributeValue( "Allergy" ), person.AttributeValues["Allergy"] );
+                Assert.HasCount( 1, person.AttributeValues );
+                Assert.AreEqual( "Allergy", person.AttributeValues.Keys.First() );
+                Assert.AreEqual( tedDecker.GetAttributeValue( "Allergy" ), person.AttributeValues["Allergy"] );
             }
         }
 
@@ -122,9 +122,9 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var person = registration.GetPersonBag( tedDecker, null );
 
-                Assert.That.AreEqual( 1, person.AttributeValues.Count );
-                Assert.That.AreEqual( "Allergy", person.AttributeValues.Keys.First() );
-                Assert.That.AreEqual( tedDecker.GetAttributeValue( "Allergy" ), person.AttributeValues["Allergy"] );
+                Assert.HasCount( 1, person.AttributeValues );
+                Assert.AreEqual( "Allergy", person.AttributeValues.Keys.First() );
+                Assert.AreEqual( tedDecker.GetAttributeValue( "Allergy" ), person.AttributeValues["Allergy"] );
             }
         }
 
@@ -196,25 +196,25 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var registrationPerson = registration.GetPersonBag( testPerson, null );
 
-                Assert.That.AreEqual( testPerson.IdKey, registrationPerson.Id );
-                Assert.That.AreEqual( testPerson.NickName, registrationPerson.NickName );
-                Assert.That.AreEqual( testPerson.LastName, registrationPerson.LastName );
-                Assert.That.AreEqual( seniorValue.Guid.ToString(), registrationPerson.Suffix.Value );
-                Assert.That.AreEqual( testPerson.Gender, registrationPerson.Gender );
-                Assert.That.AreEqual( testPerson.BirthDate, registrationPerson.BirthDate?.ToOrganizationDateTime() );
-                Assert.That.AreEqual( testPerson.Email, registrationPerson.Email );
-                Assert.That.AreEqual( thirdGradeValue.Value.ToString(), registrationPerson.Grade.Value );
-                Assert.That.AreEqual( "1", registrationPerson.PhoneNumber.CountryCode );
-                Assert.That.AreEqual( "6235553322", registrationPerson.PhoneNumber.Number );
-                Assert.That.IsTrue( registrationPerson.PhoneNumber.IsMessagingEnabled );
-                Assert.That.IsTrue( registrationPerson.IsAdult );
-                Assert.That.IsTrue( registrationPerson.IsMarried );
-                Assert.That.AreEqual( "test-search", registrationPerson.AlternateId );
-                Assert.That.AreEqual( otherRaceValue.Guid.ToString(), registrationPerson.Race.Value );
-                Assert.That.AreEqual( notHispanicValue.Guid.ToString(), registrationPerson.Ethnicity.Value );
-                Assert.That.AreEqual( activeRecordValue.Guid.ToString(), registrationPerson.RecordStatus.Value );
-                Assert.That.AreEqual( memberValue.Guid.ToString(), registrationPerson.ConnectionStatus.Value );
-                Assert.That.IsNull( registrationPerson.RelationshipToAdult );
+                Assert.AreEqual( testPerson.IdKey, registrationPerson.Id );
+                Assert.AreEqual( testPerson.NickName, registrationPerson.NickName );
+                Assert.AreEqual( testPerson.LastName, registrationPerson.LastName );
+                Assert.AreEqual( seniorValue.Guid.ToString(), registrationPerson.Suffix.Value );
+                Assert.AreEqual( testPerson.Gender, registrationPerson.Gender );
+                Assert.AreEqual( testPerson.BirthDate, registrationPerson.BirthDate?.ToOrganizationDateTime() );
+                Assert.AreEqual( testPerson.Email, registrationPerson.Email );
+                Assert.AreEqual( thirdGradeValue.Value.ToString(), registrationPerson.Grade.Value );
+                Assert.AreEqual( "1", registrationPerson.PhoneNumber.CountryCode );
+                Assert.AreEqual( "6235553322", registrationPerson.PhoneNumber.Number );
+                Assert.IsTrue( registrationPerson.PhoneNumber.IsMessagingEnabled );
+                Assert.IsTrue( registrationPerson.IsAdult );
+                Assert.IsTrue( registrationPerson.IsMarried );
+                Assert.AreEqual( "test-search", registrationPerson.AlternateId );
+                Assert.AreEqual( otherRaceValue.Guid.ToString(), registrationPerson.Race.Value );
+                Assert.AreEqual( notHispanicValue.Guid.ToString(), registrationPerson.Ethnicity.Value );
+                Assert.AreEqual( activeRecordValue.Guid.ToString(), registrationPerson.RecordStatus.Value );
+                Assert.AreEqual( memberValue.Guid.ToString(), registrationPerson.ConnectionStatus.Value );
+                Assert.IsNull( registrationPerson.RelationshipToAdult );
             }
         }
 
@@ -223,7 +223,6 @@ namespace Rock.Tests.Integration.CheckIn.v2
         #region GetFamilyBag
 
         [TestMethod]
-        [IsolatedTestDatabase]
         public void GetFamilyBag_WithDeckerFamily_SetsAllBagProperties()
         {
             using ( var rockContext = new RockContext() )
@@ -234,14 +233,30 @@ namespace Rock.Tests.Integration.CheckIn.v2
                 var deckerFamily = new GroupService( rockContext ).Get( DeckerFamilyGuid );
                 var registrationFamily = registration.GetFamilyBag( deckerFamily );
 
-                Assert.That.AreEqual( deckerFamily.IdKey, registrationFamily.Bag.Id );
-                Assert.That.AreEqual( deckerFamily.Name, registrationFamily.Bag.FamilyName );
-                Assert.That.AreEqual( "11624 N 31st Dr", registrationFamily.Bag.Address.Street1 );
-                Assert.That.IsNull( registrationFamily.Bag.Address.Street2 );
-                Assert.That.AreEqual( "Phoenix", registrationFamily.Bag.Address.City );
-                Assert.That.AreEqual( "Maricopa", registrationFamily.Bag.Address.Locality );
-                Assert.That.AreEqual( "AZ", registrationFamily.Bag.Address.State );
-                Assert.That.AreEqual( "85029-3202", registrationFamily.Bag.Address.PostalCode );
+                Assert.AreEqual( deckerFamily.IdKey, registrationFamily.Bag.Id );
+                Assert.AreEqual( deckerFamily.Name, registrationFamily.Bag.FamilyName );
+                Assert.AreEqual( "11624 N 31st Dr", registrationFamily.Bag.Address.Street1 );
+                Assert.IsNull( registrationFamily.Bag.Address.Street2 );
+                Assert.AreEqual( "Phoenix", registrationFamily.Bag.Address.City );
+                Assert.AreEqual( "Maricopa", registrationFamily.Bag.Address.Locality );
+                Assert.AreEqual( "AZ", registrationFamily.Bag.Address.State );
+                Assert.AreEqual( "85029-3202", registrationFamily.Bag.Address.PostalCode );
+            }
+        }
+
+        [TestMethod]
+        public void GetFamilyBag_WithAddressUnavailableInTemplate_DoesNotIncludeAddress()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
+                templateConfigurationDataMock.SetupGet( m => m.DisplayAddressOnFamilies ).Returns( Enums.Controls.RequirementLevel.Unavailable );
+
+                var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
+                var deckerFamily = new GroupService( rockContext ).Get( DeckerFamilyGuid );
+                var registrationFamily = registration.GetFamilyBag( deckerFamily );
+
+                Assert.IsNull( registrationFamily.Bag.Address );
             }
         }
 
@@ -264,7 +279,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var result = registration.SaveRegistration( registrationFamily, registrationPeople, null, new List<string>() );
 
-                Assert.That.True( result.IsSuccess );
+                Assert.IsTrue( result.IsSuccess );
             }
         }
 
@@ -283,8 +298,8 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var result = registration.SaveRegistration( registrationFamily, registrationPeople, null, new List<string>() );
 
-                Assert.That.IsEmpty( result.NewFamilyList );
-                Assert.That.IsEmpty( result.NewPersonList );
+                Assert.IsEmpty( result.NewFamilyList );
+                Assert.IsEmpty( result.NewPersonList );
             }
         }
 
@@ -308,8 +323,8 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var result = registration.HasAllRequiredValues( registrationFamily, new List<ValidPropertiesBox<RegistrationPersonBag>>(), out var errorMessage );
 
-                Assert.That.IsFalse( result );
-                Assert.That.AreEqual( expectedError, errorMessage );
+                Assert.IsFalse( result );
+                Assert.AreEqual( expectedError, errorMessage );
             }
         }
 
@@ -329,8 +344,8 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var result = registration.HasAllRequiredValues( registrationFamily, new List<ValidPropertiesBox<RegistrationPersonBag>>(), out var errorMessage );
 
-                Assert.That.IsFalse( result );
-                Assert.That.AreEqual( expectedError, errorMessage );
+                Assert.IsFalse( result );
+                Assert.AreEqual( expectedError, errorMessage );
             }
         }
 
@@ -351,8 +366,8 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var result = registration.HasAllRequiredValues( registrationFamily, registrationPeople, out var errorMessage );
 
-                Assert.That.IsFalse( result );
-                Assert.That.AreEqual( expectedError, errorMessage );
+                Assert.IsFalse( result );
+                Assert.AreEqual( expectedError, errorMessage );
             }
         }
 
@@ -374,8 +389,8 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var result = registration.HasAllRequiredValues( registrationFamily, registrationPeople, out var errorMessage );
 
-                Assert.That.IsFalse( result );
-                Assert.That.AreEqual( expectedError, errorMessage );
+                Assert.IsFalse( result );
+                Assert.AreEqual( expectedError, errorMessage );
             }
         }
 
@@ -396,8 +411,8 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var result = registration.HasAllRequiredValues( registrationFamily, registrationPeople, out var errorMessage );
 
-                Assert.That.IsFalse( result );
-                Assert.That.AreEqual( expectedError, errorMessage );
+                Assert.IsFalse( result );
+                Assert.AreEqual( expectedError, errorMessage );
             }
         }
 
@@ -418,8 +433,8 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var result = registration.HasAllRequiredValues( registrationFamily, registrationPeople, out var errorMessage );
 
-                Assert.That.IsFalse( result );
-                Assert.That.AreEqual( expectedError, errorMessage );
+                Assert.IsFalse( result );
+                Assert.AreEqual( expectedError, errorMessage );
             }
         }
 
@@ -440,8 +455,8 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var result = registration.HasAllRequiredValues( registrationFamily, registrationPeople, out var errorMessage );
 
-                Assert.That.IsFalse( result );
-                Assert.That.AreEqual( expectedError, errorMessage );
+                Assert.IsFalse( result );
+                Assert.AreEqual( expectedError, errorMessage );
             }
         }
 
@@ -480,11 +495,11 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var query = registration.GetPersonMatchQuery( registrationPerson );
 
-                Assert.That.IsEmpty( query.Email );
-                Assert.That.IsEmpty( query.MobilePhone );
-                Assert.That.IsNull( query.Gender );
-                Assert.That.IsNull( query.BirthDate );
-                Assert.That.IsNull( query.SuffixValueId );
+                Assert.IsEmpty( query.Email );
+                Assert.IsEmpty( query.MobilePhone );
+                Assert.IsNull( query.Gender );
+                Assert.IsNull( query.BirthDate );
+                Assert.IsNull( query.SuffixValueId );
             }
         }
 
@@ -533,13 +548,13 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
                 var query = registration.GetPersonMatchQuery( registrationPerson );
 
-                Assert.That.AreEqual( expectedNickName, query.FirstName );
-                Assert.That.AreEqual( expectedLastName, query.LastName );
-                Assert.That.AreEqual( expectedEmail, query.Email );
-                Assert.That.AreEqual( expectedNumber, query.MobilePhone );
-                Assert.That.AreEqual( expectedGender, query.Gender );
-                Assert.That.AreEqual( expectedBirthDate, query.BirthDate );
-                Assert.That.AreEqual( expectedSuffix.Id, query.SuffixValueId );
+                Assert.AreEqual( expectedNickName, query.FirstName );
+                Assert.AreEqual( expectedLastName, query.LastName );
+                Assert.AreEqual( expectedEmail, query.Email );
+                Assert.AreEqual( expectedNumber, query.MobilePhone );
+                Assert.AreEqual( expectedGender, query.Gender );
+                Assert.AreEqual( expectedBirthDate, query.BirthDate );
+                Assert.AreEqual( expectedSuffix.Id, query.SuffixValueId );
             }
         }
 
@@ -563,7 +578,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
 
             var saveResult = new FamilyRegistrationSaveResult();
 
-            Assert.That.ThrowsException<Exception>( () =>
+            Assert.Throws<Exception>( () =>
             {
                 registration.CreatePrimaryFamily( registrationFamily, string.Empty, null, saveResult );
             } );
@@ -597,7 +612,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
             var family = registration.CreatePrimaryFamily( registrationFamily, string.Empty, null, saveResult );
 
             rockContextMock.Verify( m => m.SaveChanges() );
-            Assert.That.AreEqual( expectedName, family.Name );
+            Assert.AreEqual( expectedName, family.Name );
         }
 
         [TestMethod]
@@ -621,7 +636,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
             var family = registration.CreatePrimaryFamily( registrationFamily, expectedLastName, null, saveResult );
 
             rockContextMock.Verify( m => m.SaveChanges() );
-            Assert.That.AreEqual( expectedName, family.Name );
+            Assert.AreEqual( expectedName, family.Name );
         }
 
         [TestMethod]
@@ -680,13 +695,75 @@ DELETE [AV]
             using ( var rockContext = new RockContext() )
             {
                 var family = new GroupService( rockContext ).Get( familyId );
-                Assert.That.IsNotNull( family );
-                Assert.That.IsNotEmpty( family.GroupLocations );
-                Assert.That.AreEqual( expectedStreet, family.GroupLocations.First().Location.Street1 );
-                Assert.That.AreEqual( expectedCity, family.GroupLocations.First().Location.City );
-                Assert.That.AreEqual( expectedState, family.GroupLocations.First().Location.State );
-                Assert.That.AreEqual( expectedPostalCode, family.GroupLocations.First().Location.PostalCode );
-                Assert.That.AreEqual( expectedCountry, family.GroupLocations.First().Location.Country );
+                Assert.IsNotNull( family );
+                Assert.IsNotEmpty( family.GroupLocations );
+                Assert.AreEqual( expectedStreet, family.GroupLocations.First().Location.Street1 );
+                Assert.AreEqual( expectedCity, family.GroupLocations.First().Location.City );
+                Assert.AreEqual( expectedState, family.GroupLocations.First().Location.State );
+                Assert.AreEqual( expectedPostalCode, family.GroupLocations.First().Location.PostalCode );
+                Assert.AreEqual( expectedCountry, family.GroupLocations.First().Location.Country );
+            }
+        }
+
+        [TestMethod]
+        [IsolatedTestDatabase]
+        public void CreatePrimaryFamily_WithAddressUnavailableInTemplate_DoesNotCreateFamilyAddress()
+        {
+            // Disable location services.
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( @"
+DELETE [AV]
+    FROM [AttributeValue] AS [AV]
+    INNER JOIN [Attribute] AS [A] ON [A].[Id] = [AV].[AttributeId]
+    INNER JOIN [EntityType] AS [ET] ON [ET].[Id] = [A].[EntityTypeId]
+    WHERE [ET].[Name] = 'Rock.Address.SmartyStreets'
+      AND [A].[Key] = 'Active'" );
+            }
+
+            int familyId;
+            var expectedStreet = "1234 Elm Street";
+            var expectedCity = "Nowhere";
+            var expectedState = "AZ";
+            var expectedPostalCode = "12345";
+            var expectedCountry = "US";
+
+            using ( var rockContext = new RockContext() )
+            {
+                var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
+                templateConfigurationDataMock.Setup( m => m.DisplayAddressOnFamilies ).Returns( Enums.Controls.RequirementLevel.Unavailable );
+                var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
+
+                var registrationFamily = new ValidPropertiesBox<RegistrationFamilyBag>
+                {
+                    Bag = new RegistrationFamilyBag
+                    {
+                        FamilyName = "Decker",
+                        Address = new AddressControlBag
+                        {
+                            Street1 = expectedStreet,
+                            City = expectedCity,
+                            State = expectedState,
+                            PostalCode = expectedPostalCode,
+                            Country = expectedCountry
+                        }
+                    },
+                    ValidProperties = new List<string>
+                    {
+                        nameof( RegistrationFamilyBag.FamilyName ),
+                        nameof( RegistrationFamilyBag.Address )
+                    }
+                };
+
+                var saveResult = new FamilyRegistrationSaveResult();
+                familyId = registration.CreatePrimaryFamily( registrationFamily, null, null, saveResult ).Id;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var family = new GroupService( rockContext ).Get( familyId );
+                Assert.IsNotNull( family );
+                Assert.IsEmpty( family.GroupLocations );
             }
         }
 
@@ -722,7 +799,7 @@ DELETE [AV]
 
             var familyName = registration.GetDefaultFamilyLastName( registrationPeople );
 
-            Assert.That.AreEqual( expectedLastName, familyName );
+            Assert.AreEqual( expectedLastName, familyName );
         }
 
         [TestMethod]
@@ -749,7 +826,7 @@ DELETE [AV]
 
             var familyName = registration.GetDefaultFamilyLastName( registrationPeople );
 
-            Assert.That.AreEqual( expectedLastName, familyName );
+            Assert.AreEqual( expectedLastName, familyName );
         }
 
         #endregion
@@ -774,8 +851,8 @@ DELETE [AV]
                 var deckerFamily = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker ).PrimaryFamily;
                 var homeLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid(), rockContext ).Id;
 
-                Assert.That.IsNotEmpty( deckerFamily.GroupLocations );
-                Assert.That.Equal( homeLocationTypeId, deckerFamily.GroupLocations.First().GroupLocationTypeValueId );
+                Assert.IsNotEmpty( deckerFamily.GroupLocations );
+                Assert.AreEqual( homeLocationTypeId, deckerFamily.GroupLocations.First().GroupLocationTypeValueId );
             }
 
             var expectedStreet = "1234 Elm Street";
@@ -816,13 +893,13 @@ DELETE [AV]
             using ( var rockContext = new RockContext() )
             {
                 var family = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker ).PrimaryFamily;
-                Assert.That.IsNotNull( family );
-                Assert.That.IsNotEmpty( family.GroupLocations );
-                Assert.That.AreEqual( expectedStreet, family.GroupLocations.First().Location.Street1 );
-                Assert.That.AreEqual( expectedCity, family.GroupLocations.First().Location.City );
-                Assert.That.AreEqual( expectedState, family.GroupLocations.First().Location.State );
-                Assert.That.AreEqual( expectedPostalCode, family.GroupLocations.First().Location.PostalCode );
-                Assert.That.AreEqual( expectedCountry, family.GroupLocations.First().Location.Country );
+                Assert.IsNotNull( family );
+                Assert.IsNotEmpty( family.GroupLocations );
+                Assert.AreEqual( expectedStreet, family.GroupLocations.First().Location.Street1 );
+                Assert.AreEqual( expectedCity, family.GroupLocations.First().Location.City );
+                Assert.AreEqual( expectedState, family.GroupLocations.First().Location.State );
+                Assert.AreEqual( expectedPostalCode, family.GroupLocations.First().Location.PostalCode );
+                Assert.AreEqual( expectedCountry, family.GroupLocations.First().Location.Country );
             }
         }
 
@@ -844,8 +921,8 @@ DELETE [AV]
                 var deckerFamily = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker ).PrimaryFamily;
                 var homeLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid(), rockContext ).Id;
 
-                Assert.That.IsNotEmpty( deckerFamily.GroupLocations );
-                Assert.That.Equal( homeLocationTypeId, deckerFamily.GroupLocations.First().GroupLocationTypeValueId );
+                Assert.IsNotEmpty( deckerFamily.GroupLocations );
+                Assert.AreEqual( homeLocationTypeId, deckerFamily.GroupLocations.First().GroupLocationTypeValueId );
             }
 
             using ( var rockContext = new RockContext() )
@@ -873,8 +950,86 @@ DELETE [AV]
             using ( var rockContext = new RockContext() )
             {
                 var family = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker ).PrimaryFamily;
-                Assert.That.IsNotNull( family );
-                Assert.That.IsEmpty( family.GroupLocations );
+                Assert.IsNotNull( family );
+                Assert.IsEmpty( family.GroupLocations );
+            }
+        }
+
+        [TestMethod]
+        [IsolatedTestDatabase]
+        public void UpdatePrimaryFamily_WithAddressUnavailableInTemplate_DoesNotUpdateExistingFamilyAddress()
+        {
+            string expectedStreet;
+            string expectedCity;
+            string expectedState;
+            string expectedPostalCode;
+            string expectedCountry;
+
+            // Disable location services and ensure Ted has a home address.
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( @"
+DELETE [AV]
+    FROM [AttributeValue] AS [AV]
+    INNER JOIN [Attribute] AS [A] ON [A].[Id] = [AV].[AttributeId]
+    INNER JOIN [EntityType] AS [ET] ON [ET].[Id] = [A].[EntityTypeId]
+    WHERE [ET].[Name] = 'Rock.Address.SmartyStreets'
+      AND [A].[Key] = 'Active'" );
+
+                var deckerFamily = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker ).PrimaryFamily;
+                var homeLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid(), rockContext ).Id;
+
+                Assert.IsNotEmpty( deckerFamily.GroupLocations );
+                Assert.AreEqual( homeLocationTypeId, deckerFamily.GroupLocations.First().GroupLocationTypeValueId );
+
+                expectedStreet = deckerFamily.GroupLocations.First().Location.Street1;
+                expectedCity = deckerFamily.GroupLocations.First().Location.City;
+                expectedState = deckerFamily.GroupLocations.First().Location.State;
+                expectedPostalCode = deckerFamily.GroupLocations.First().Location.PostalCode;
+                expectedCountry = deckerFamily.GroupLocations.First().Location.Country;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
+                templateConfigurationDataMock.Setup( m => m.DisplayAddressOnFamilies ).Returns( Enums.Controls.RequirementLevel.Unavailable );
+
+                var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
+
+                var registrationFamily = new ValidPropertiesBox<RegistrationFamilyBag>
+                {
+                    Bag = new RegistrationFamilyBag
+                    {
+                        Address = new AddressControlBag
+                        {
+                            Street1 = "1234 Elm Street",
+                            City = "Nowhere",
+                            State = "AZ",
+                            PostalCode = "12345",
+                            Country = "US"
+                        }
+                    },
+                    ValidProperties = new List<string>
+                    {
+                        nameof( RegistrationFamilyBag.Address )
+                    }
+                };
+
+                var deckerFamily = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker ).PrimaryFamily;
+                var saveResult = new FamilyRegistrationSaveResult();
+                registration.UpdatePrimaryFamily( deckerFamily, registrationFamily, saveResult );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var family = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker ).PrimaryFamily;
+                Assert.IsNotNull( family );
+                Assert.IsNotEmpty( family.GroupLocations );
+                Assert.AreEqual( expectedStreet, family.GroupLocations.First().Location.Street1 );
+                Assert.AreEqual( expectedCity, family.GroupLocations.First().Location.City );
+                Assert.AreEqual( expectedState, family.GroupLocations.First().Location.State );
+                Assert.AreEqual( expectedPostalCode, family.GroupLocations.First().Location.PostalCode );
+                Assert.AreEqual( expectedCountry, family.GroupLocations.First().Location.Country );
             }
         }
 
@@ -910,7 +1065,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( TestGuids.TestPeople.TedDecker.AsGuid(), person.Guid );
+            Assert.AreEqual( TestGuids.TestPeople.TedDecker.AsGuid(), person.Guid );
         }
 
         [TestMethod]
@@ -933,7 +1088,7 @@ DELETE [AV]
 
             var saveResult = new FamilyRegistrationSaveResult();
 
-            Assert.That.ThrowsExceptionWithMessage<Exception>( () =>
+            Assert.That.ThrowsWithMessage<Exception>( () =>
             {
                 registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
             }, "Person was not found." );
@@ -969,7 +1124,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.IsNotNull( primaryFamily );
+            Assert.IsNotNull( primaryFamily );
         }
 
         [TestMethod]
@@ -1007,8 +1162,8 @@ DELETE [AV]
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
             // Make sure we matched Ted, but did not update the family.
-            Assert.That.AreEqual( TestGuids.TestPeople.TedDecker.AsGuid(), person.Guid );
-            Assert.That.AreEqual( expectedGuid, primaryFamily.Guid );
+            Assert.AreEqual( TestGuids.TestPeople.TedDecker.AsGuid(), person.Guid );
+            Assert.AreEqual( expectedGuid, primaryFamily.Guid );
         }
 
         [TestMethod]
@@ -1039,8 +1194,8 @@ DELETE [AV]
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
             // Make sure we got a match on Noah, but that it did not update family.
-            Assert.That.AreEqual( TestGuids.TestPeople.NoahDecker.AsGuid(), person.Guid );
-            Assert.That.IsNull( primaryFamily );
+            Assert.AreEqual( TestGuids.TestPeople.NoahDecker.AsGuid(), person.Guid );
+            Assert.IsNull( primaryFamily );
         }
 
         #endregion
@@ -1073,7 +1228,71 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( expectedNickName, person.NickName );
+            Assert.AreEqual( expectedNickName, person.NickName );
+        }
+
+        [TestMethod]
+        public void CreateOrUpdatePerson_WithChangedNickName_UpdatesFirstName()
+        {
+            var expectedFirstName = "Teddy";
+
+            var rockContextMock = CreateRockContextWithoutSaveChanges();
+
+            var tedDeckerIdKey = new PersonService( rockContextMock.Object ).Get( TestGuids.TestPeople.TedDecker ).IdKey;
+            var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
+            var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
+
+            Group primaryFamily = null;
+            var registrationPerson = new ValidPropertiesBox<RegistrationPersonBag>
+            {
+                Bag = new RegistrationPersonBag
+                {
+                    Id = tedDeckerIdKey,
+                    NickName = expectedFirstName
+                },
+                ValidProperties = new List<string>
+                {
+                    nameof( RegistrationPersonBag.NickName )
+                }
+            };
+
+            var saveResult = new FamilyRegistrationSaveResult();
+            var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
+
+            Assert.AreEqual( expectedFirstName, person.FirstName );
+        }
+
+        [TestMethod]
+        public void CreateOrUpdatePerson_WithExistingPersonAndSameNickName_SkipsFirstName()
+        {
+            var rockContextMock = CreateRockContextWithoutSaveChanges();
+
+            var tedDecker = new PersonService( rockContextMock.Object ).Get( TestGuids.TestPeople.TedDecker );
+            var expectedFirstName = tedDecker.FirstName;
+
+            Assert.AreNotEqual( tedDecker.NickName, tedDecker.FirstName, "Expected Ted Decker's first name and nick name to be different." );
+
+            var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
+            var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
+
+            Group primaryFamily = null;
+            var registrationPerson = new ValidPropertiesBox<RegistrationPersonBag>
+            {
+                Bag = new RegistrationPersonBag
+                {
+                    Id = tedDecker.IdKey,
+                    NickName = tedDecker.NickName
+                },
+                ValidProperties = new List<string>
+                {
+                    nameof( RegistrationPersonBag.NickName )
+                }
+            };
+
+            var saveResult = new FamilyRegistrationSaveResult();
+            var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
+
+            Assert.AreEqual( expectedFirstName, person.FirstName );
         }
 
         [TestMethod]
@@ -1102,7 +1321,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( expectedLastName, person.LastName );
+            Assert.AreEqual( expectedLastName, person.LastName );
         }
 
         #endregion
@@ -1135,7 +1354,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( expectedGender, person.Gender );
+            Assert.AreEqual( expectedGender, person.Gender );
         }
 
         [TestMethod]
@@ -1161,7 +1380,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( expectedGender, person.Gender );
+            Assert.AreEqual( expectedGender, person.Gender );
         }
 
         #endregion
@@ -1194,7 +1413,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( expectedMaritalStatusValue.Id, person.MaritalStatusValueId );
+            Assert.AreEqual( expectedMaritalStatusValue.Id, person.MaritalStatusValueId );
         }
 
         [TestMethod]
@@ -1218,7 +1437,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.IsNull( person.MaritalStatusValueId );
+            Assert.IsNull( person.MaritalStatusValueId );
         }
 
         [TestMethod]
@@ -1251,8 +1470,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( tedDecker.Id, person.Id );
-            Assert.That.AreEqual( expectedMaritalStatusValue.Id, tedDecker.MaritalStatusValueId );
+            Assert.AreEqual( tedDecker.Id, person.Id );
+            Assert.AreEqual( expectedMaritalStatusValue.Id, tedDecker.MaritalStatusValueId );
         }
 
         [TestMethod]
@@ -1281,7 +1500,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( expectedMaritalStatusValue.Id, person.MaritalStatusValueId );
+            Assert.AreEqual( expectedMaritalStatusValue.Id, person.MaritalStatusValueId );
         }
 
         [TestMethod]
@@ -1315,8 +1534,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( tedDecker.Id, person.Id );
-            Assert.That.AreEqual( expectedMaritalStatusValue, tedDecker.MaritalStatusValueId );
+            Assert.AreEqual( tedDecker.Id, person.Id );
+            Assert.AreEqual( expectedMaritalStatusValue, tedDecker.MaritalStatusValueId );
         }
 
         #endregion
@@ -1358,7 +1577,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( expectedSuffix.Id, tedDecker.SuffixValueId );
+            Assert.AreEqual( expectedSuffix.Id, tedDecker.SuffixValueId );
         }
 
         [TestMethod]
@@ -1392,7 +1611,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.IsNull( tedDecker.SuffixValueId );
+            Assert.IsNull( tedDecker.SuffixValueId );
         }
 
         [TestMethod]
@@ -1432,8 +1651,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedSuffixId, tedDecker.SuffixValueId );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedSuffixId, tedDecker.SuffixValueId );
         }
 
         [TestMethod]
@@ -1476,8 +1695,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedSuffix.Id, tedDecker.SuffixValueId );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedSuffix.Id, tedDecker.SuffixValueId );
         }
 
         #endregion
@@ -1516,8 +1735,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedEmail, tedDecker.Email );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedEmail, tedDecker.Email );
         }
 
         [TestMethod]
@@ -1551,8 +1770,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( string.Empty, tedDecker.Email );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( string.Empty, tedDecker.Email );
         }
 
         [TestMethod]
@@ -1590,8 +1809,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedEmail, tedDecker.Email );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedEmail, tedDecker.Email );
         }
 
         [TestMethod]
@@ -1629,8 +1848,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedEmail, tedDecker.Email );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedEmail, tedDecker.Email );
         }
 
         #endregion
@@ -1669,7 +1888,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( expectedBirthDate, tedDecker.BirthDate );
+            Assert.AreEqual( expectedBirthDate, tedDecker.BirthDate );
         }
 
         [TestMethod]
@@ -1703,7 +1922,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.IsNull( tedDecker.BirthDate );
+            Assert.IsNull( tedDecker.BirthDate );
         }
 
         [TestMethod]
@@ -1739,8 +1958,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedBirthDate, tedDecker.BirthDate );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedBirthDate, tedDecker.BirthDate );
         }
 
         [TestMethod]
@@ -1782,8 +2001,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedBirthDate, tedDecker.BirthDate );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedBirthDate, tedDecker.BirthDate );
         }
 
         #endregion
@@ -1825,7 +2044,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( expectedGradeOffset, tedDecker.GradeOffset );
+            Assert.AreEqual( expectedGradeOffset, tedDecker.GradeOffset );
         }
 
         [TestMethod]
@@ -1859,7 +2078,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.IsNull( tedDecker.GradeOffset );
+            Assert.IsNull( tedDecker.GradeOffset );
         }
 
         [TestMethod]
@@ -1899,8 +2118,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedGradeOffset, tedDecker.GradeOffset );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedGradeOffset, tedDecker.GradeOffset );
         }
 
         [TestMethod]
@@ -1943,8 +2162,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedGradeOffset, tedDecker.GradeOffset );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedGradeOffset, tedDecker.GradeOffset );
         }
 
         #endregion
@@ -1986,7 +2205,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( expectedRecordStatus.Id, tedDecker.RecordStatusValueId );
+            Assert.AreEqual( expectedRecordStatus.Id, tedDecker.RecordStatusValueId );
         }
 
         [TestMethod]
@@ -2020,7 +2239,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.IsNull( tedDecker.RecordStatusValueId );
+            Assert.IsNull( tedDecker.RecordStatusValueId );
         }
 
         [TestMethod]
@@ -2060,8 +2279,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedRecordStatusId, tedDecker.RecordStatusValueId );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedRecordStatusId, tedDecker.RecordStatusValueId );
         }
 
         [TestMethod]
@@ -2104,8 +2323,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedRecordStatusId, tedDecker.RecordStatusValueId );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedRecordStatusId, tedDecker.RecordStatusValueId );
         }
 
         #endregion
@@ -2147,7 +2366,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( expectedConnectionStatus.Id, tedDecker.ConnectionStatusValueId );
+            Assert.AreEqual( expectedConnectionStatus.Id, tedDecker.ConnectionStatusValueId );
         }
 
         [TestMethod]
@@ -2181,7 +2400,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.IsNull( tedDecker.ConnectionStatusValueId );
+            Assert.IsNull( tedDecker.ConnectionStatusValueId );
         }
 
         [TestMethod]
@@ -2221,8 +2440,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedConnectionStatusId, tedDecker.ConnectionStatusValueId );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedConnectionStatusId, tedDecker.ConnectionStatusValueId );
         }
 
         [TestMethod]
@@ -2265,8 +2484,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedConnectionStatusId, tedDecker.ConnectionStatusValueId );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedConnectionStatusId, tedDecker.ConnectionStatusValueId );
         }
 
         #endregion
@@ -2308,7 +2527,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( expectedEthnicity.Id, tedDecker.EthnicityValueId );
+            Assert.AreEqual( expectedEthnicity.Id, tedDecker.EthnicityValueId );
         }
 
         [TestMethod]
@@ -2342,7 +2561,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.IsNull( tedDecker.EthnicityValueId );
+            Assert.IsNull( tedDecker.EthnicityValueId );
         }
 
         [TestMethod]
@@ -2382,8 +2601,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedEthnicityId, tedDecker.EthnicityValueId );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedEthnicityId, tedDecker.EthnicityValueId );
         }
 
         [TestMethod]
@@ -2426,8 +2645,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedEthnicityId, tedDecker.EthnicityValueId );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedEthnicityId, tedDecker.EthnicityValueId );
         }
 
         #endregion
@@ -2469,7 +2688,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreEqual( expectedRace.Id, tedDecker.RaceValueId );
+            Assert.AreEqual( expectedRace.Id, tedDecker.RaceValueId );
         }
 
         [TestMethod]
@@ -2503,7 +2722,7 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.IsNull( tedDecker.RaceValueId );
+            Assert.IsNull( tedDecker.RaceValueId );
         }
 
         [TestMethod]
@@ -2543,8 +2762,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedRaceId, tedDecker.RaceValueId );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedRaceId, tedDecker.RaceValueId );
         }
 
         [TestMethod]
@@ -2587,8 +2806,8 @@ DELETE [AV]
             var saveResult = new FamilyRegistrationSaveResult();
             var person = registration.CreateOrUpdatePerson( registrationPerson, ref primaryFamily, saveResult );
 
-            Assert.That.AreSame( tedDecker, person );
-            Assert.That.AreEqual( expectedRaceId, tedDecker.RaceValueId );
+            Assert.AreSame( tedDecker, person );
+            Assert.AreEqual( expectedRaceId, tedDecker.RaceValueId );
         }
 
         #endregion
@@ -2616,7 +2835,7 @@ DELETE [AV]
 
             var updatedPersonSearchKey = registration.UpdatePersonAlternateId( tedDecker, registrationPerson, false );
 
-            Assert.That.IsNull( updatedPersonSearchKey );
+            Assert.IsNull( updatedPersonSearchKey );
         }
 
         [TestMethod]
@@ -2644,7 +2863,7 @@ DELETE [AV]
 
             var updatedPersonSearchKey = registration.UpdatePersonAlternateId( tedDecker, registrationPerson, false );
 
-            Assert.That.IsNull( updatedPersonSearchKey );
+            Assert.IsNull( updatedPersonSearchKey );
         }
 
         [TestMethod]
@@ -2673,8 +2892,8 @@ DELETE [AV]
 
             var updatedPersonSearchKey = registration.UpdatePersonAlternateId( tedDecker, registrationPerson, false );
 
-            Assert.That.AreEqual( 0, updatedPersonSearchKey.Id );
-            Assert.That.AreEqual( expectedAlternateId, updatedPersonSearchKey.SearchValue );
+            Assert.AreEqual( 0, updatedPersonSearchKey.Id );
+            Assert.AreEqual( expectedAlternateId, updatedPersonSearchKey.SearchValue );
         }
 
         [TestMethod]
@@ -2719,8 +2938,8 @@ DELETE [AV]
             var updatedPersonSearchKey = registration.UpdatePersonAlternateId( tedDecker, registrationPerson, false );
             var newCount = tedDecker.GetPersonSearchKeys( rockContextMock.Object ).Count();
 
-            Assert.That.AreSame( personSearchKey, updatedPersonSearchKey );
-            Assert.That.AreEqual( expectedCount, newCount );
+            Assert.AreSame( personSearchKey, updatedPersonSearchKey );
+            Assert.AreEqual( expectedCount, newCount );
         }
 
         [TestMethod]
@@ -2748,8 +2967,8 @@ DELETE [AV]
 
             var updatedPersonSearchKey = registration.UpdatePersonAlternateId( newPerson, registrationPerson, true );
 
-            Assert.That.AreEqual( 0, updatedPersonSearchKey.Id );
-            Assert.That.AreEqual( expectedAlternateId, updatedPersonSearchKey.SearchValue );
+            Assert.AreEqual( 0, updatedPersonSearchKey.Id );
+            Assert.AreEqual( expectedAlternateId, updatedPersonSearchKey.SearchValue );
         }
 
         #endregion
@@ -2844,7 +3063,7 @@ DELETE [AV]
 
             registration.UpdatePersonMobilePhoneNumber( person.Object, registrationPerson, true );
 
-            Assert.That.IsEmpty( person.Object.PhoneNumbers );
+            Assert.IsEmpty( person.Object.PhoneNumbers );
         }
 
         [TestMethod]
@@ -2887,8 +3106,8 @@ DELETE [AV]
 
             registration.UpdatePersonMobilePhoneNumber( person.Object, registrationPerson, false );
 
-            Assert.That.AreEqual( 1, person.Object.PhoneNumbers.Count );
-            Assert.That.IsTrue( person.Object.PhoneNumbers.First().IsMessagingEnabled );
+            Assert.HasCount( 1, person.Object.PhoneNumbers );
+            Assert.IsTrue( person.Object.PhoneNumbers.First().IsMessagingEnabled );
         }
 
         [TestMethod]
@@ -2928,7 +3147,7 @@ DELETE [AV]
 
             registration.UpdatePersonMobilePhoneNumber( person.Object, registrationPerson, true );
 
-            Assert.That.AreEqual( 1, person.Object.PhoneNumbers.Count );
+            Assert.HasCount( 1, person.Object.PhoneNumbers );
         }
 
         #endregion
@@ -3013,8 +3232,8 @@ DELETE [AV]
 
             registration.UpdatePersonAttributeValues( person, registrationPerson, false );
 
-            Assert.That.IsNotNull( person.Attributes );
-            Assert.That.IsNotNull( person.AttributeValues );
+            Assert.IsNotNull( person.Attributes );
+            Assert.IsNotNull( person.AttributeValues );
         }
 
         [TestMethod]
@@ -3055,8 +3274,8 @@ DELETE [AV]
 
             registration.UpdatePersonAttributeValues( person, registrationPerson, false );
 
-            Assert.That.AreEqual( expectedAllergyValue, person.GetAttributeValue( "Allergy" ) );
-            Assert.That.AreEqual( expectedLegalNotesValue, person.GetAttributeValue( "LegalNotes" ) );
+            Assert.AreEqual( expectedAllergyValue, person.GetAttributeValue( "Allergy" ) );
+            Assert.AreEqual( expectedLegalNotesValue, person.GetAttributeValue( "LegalNotes" ) );
         }
 
         [TestMethod]
@@ -3097,8 +3316,8 @@ DELETE [AV]
 
             registration.UpdatePersonAttributeValues( person, registrationPerson, false );
 
-            Assert.That.AreEqual( expectedAllergyValue, person.GetAttributeValue( "Allergy" ) );
-            Assert.That.AreEqual( expectedLegalNotesValue, person.GetAttributeValue( "LegalNotes" ) );
+            Assert.AreEqual( expectedAllergyValue, person.GetAttributeValue( "Allergy" ) );
+            Assert.AreEqual( expectedLegalNotesValue, person.GetAttributeValue( "LegalNotes" ) );
         }
 
         [TestMethod]
@@ -3129,7 +3348,7 @@ DELETE [AV]
 
             registration.UpdatePersonAttributeValues( person, registrationPerson, false );
 
-            Assert.That.IsEmpty( person.GetAttributeValue( "Allergy" ) );
+            Assert.IsEmpty( person.GetAttributeValue( "Allergy" ) );
         }
 
         [TestMethod]
@@ -3168,7 +3387,7 @@ DELETE [AV]
 
             registration.UpdatePersonAttributeValues( person, registrationPerson, false );
 
-            Assert.That.AreEqual( expectedAllergyValue, person.GetAttributeValue( "Allergy" ) );
+            Assert.AreEqual( expectedAllergyValue, person.GetAttributeValue( "Allergy" ) );
         }
 
         [TestMethod]
@@ -3205,7 +3424,7 @@ DELETE [AV]
 
             registration.UpdatePersonAttributeValues( person, registrationPerson, true );
 
-            Assert.That.IsEmpty( person.GetAttributeValue( "Allergy" ) );
+            Assert.IsEmpty( person.GetAttributeValue( "Allergy" ) );
         }
 
         #endregion
@@ -3290,8 +3509,8 @@ DELETE [AV]
 
             registration.UpdateFamilyAttributeValues( family, registrationFamily );
 
-            Assert.That.IsNotNull( family.Attributes );
-            Assert.That.IsNotNull( family.AttributeValues );
+            Assert.IsNotNull( family.Attributes );
+            Assert.IsNotNull( family.AttributeValues );
         }
 
         [TestMethod]
@@ -3361,8 +3580,8 @@ DELETE [AV]
 
                 registration.UpdateFamilyAttributeValues( family, registrationFamily );
 
-                Assert.That.AreEqual( expectedOptionalValue, family.GetAttributeValue( "OptionalTest" ) );
-                Assert.That.AreEqual( expectedRequiredValue, family.GetAttributeValue( "RequiredTest" ) );
+                Assert.AreEqual( expectedOptionalValue, family.GetAttributeValue( "OptionalTest" ) );
+                Assert.AreEqual( expectedRequiredValue, family.GetAttributeValue( "RequiredTest" ) );
             }
         }
 
@@ -3411,7 +3630,7 @@ DELETE [AV]
 
                 registration.UpdateFamilyAttributeValues( family, registrationFamily );
 
-                Assert.That.IsEmpty( family.GetAttributeValue( "OptionalTest" ) );
+                Assert.IsEmpty( family.GetAttributeValue( "OptionalTest" ) );
             }
         }
 
@@ -3459,8 +3678,8 @@ DELETE [AV]
                         && gm.GroupId == deckerFamily.Id )
                     .SingleOrDefault();
 
-                Assert.That.IsNotNull( groupMember );
-                Assert.That.AreEqual( expectedRole.Id, groupMember.GroupRoleId );
+                Assert.IsNotNull( groupMember );
+                Assert.AreEqual( expectedRole.Id, groupMember.GroupRoleId );
             }
         }
 
@@ -3507,8 +3726,8 @@ DELETE [AV]
                         && gm.GroupId == deckerFamily.Id )
                     .SingleOrDefault();
 
-                Assert.That.IsNotNull( groupMember );
-                Assert.That.AreEqual( expectedRole.Id, groupMember.GroupRoleId );
+                Assert.IsNotNull( groupMember );
+                Assert.AreEqual( expectedRole.Id, groupMember.GroupRoleId );
             }
         }
 
@@ -3623,7 +3842,7 @@ DELETE [AV]
 
                 registration.EnsurePeopleNotInPrimaryFamilyHaveAFamily( people, null, saveResult );
 
-                Assert.That.AreEqual( 1, saveResult.NewFamilyList.Count );
+                Assert.HasCount( 1, saveResult.NewFamilyList );
             }
         }
 
@@ -3680,7 +3899,7 @@ DELETE [AV]
                     .Where( r => r.PersonId == brianJones.Id )
                     .FirstOrDefault();
 
-                Assert.That.NotNull( relationship );
+                Assert.IsNotNull( relationship );
             }
         }
 
@@ -3753,8 +3972,8 @@ DELETE [AV]
 
                 // This should create both a can-check-in relationship and the
                 // specified relationship.
-                Assert.That.NotNull( canCheckInRelationship );
-                Assert.That.NotNull( relationship );
+                Assert.IsNotNull( canCheckInRelationship );
+                Assert.IsNotNull( relationship );
             }
         }
 
@@ -3803,7 +4022,7 @@ DELETE [AV]
                     .Count();
 
                 // Make sure our data is valid before the test.
-                Assert.That.AreEqual( 1, tedRelationshipCount );
+                Assert.AreEqual( 1, tedRelationshipCount );
 
                 var expectedRelationshipCount = groupMemberService.Queryable()
                     .Count( gm => gm.GroupTypeId == knownRelationshipGroupType.Id ) - 1;
@@ -3822,8 +4041,8 @@ DELETE [AV]
                     .Count( gm => gm.GroupTypeId == knownRelationshipGroupType.Id );
 
                 // Make sure we removed that relationship and no others.
-                Assert.That.AreEqual( 0, actualTedRelationshipCount );
-                Assert.That.AreEqual( expectedRelationshipCount, actualRelationshipCount );
+                Assert.AreEqual( 0, actualTedRelationshipCount );
+                Assert.AreEqual( expectedRelationshipCount, actualRelationshipCount );
             }
         }
 
@@ -3864,8 +4083,8 @@ DELETE [AV]
                     .Select( gm => gm.GroupId )
                     .Single();
 
-                Assert.That.AreEqual( expectedFamilyCount, actualFamilyCount );
-                Assert.That.AreNotEqual( oldNoahDeckerFamilyId, actualNoahDeckerFamilyId );
+                Assert.AreEqual( expectedFamilyCount, actualFamilyCount );
+                Assert.AreNotEqual( oldNoahDeckerFamilyId, actualNoahDeckerFamilyId );
             }
         }
 
@@ -3892,7 +4111,7 @@ DELETE [AV]
                     .Count();
 
                 // Verify that Brian is already in two families.
-                Assert.That.AreEqual( 2, preBrianJonesFamilyCount );
+                Assert.AreEqual( 2, preBrianJonesFamilyCount );
 
                 var expectedFamilyCount = groupService.Queryable()
                     .Count( g => g.GroupTypeId == familyTypeId );
@@ -3908,8 +4127,8 @@ DELETE [AV]
                         && gm.PersonId == brianJones.Id )
                     .Count();
 
-                Assert.That.AreEqual( expectedFamilyCount, actualFamilyCount );
-                Assert.That.AreEqual( 1, actualBrianJonesFamilyCount );
+                Assert.AreEqual( expectedFamilyCount, actualFamilyCount );
+                Assert.AreEqual( 1, actualBrianJonesFamilyCount );
             }
         }
 

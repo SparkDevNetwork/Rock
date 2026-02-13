@@ -15,10 +15,21 @@
     gap: var(--spacing-large);
     width: 100%;
     height: auto;
+    padding-bottom: var(--spacing-large);
+    border-bottom: 1px solid var(--color-interface-soft);
+    &:last-child {
+        padding-bottom: 0; // Remove padding for last/only content stack in a section. Contentsection-body will handle spacing.
+        border-bottom: none;
+    }
 }
 
 .contentstack-body {
-    flex: 1 1 80%
+    flex: 1 1 80%;
+    max-width: 100%;
+
+    & .grid-light:last-child { // Remove bottom margin for last light grid in content stack body to allow. Contentsection-body will handle spacing.
+        margin-bottom: 0;
+    }
 }
 
 .contentstack > .contentstack-sidebar {

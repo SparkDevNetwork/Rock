@@ -29,8 +29,8 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { BasicSuspenseProvider, provideSuspense } from "@Obsidian/Utility/suspense";
 import { alert } from "@Obsidian/Utility/dialogs";
 import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
-import { doApiCall, provideHttp } from "@Obsidian/Utility/http";
-import { createInvokeBlockAction, provideBlockGuid, provideBlockTypeGuid } from "@Obsidian/Utility/block";
+import { doApiCall, doStreamingApiCall, provideHttp } from "@Obsidian/Utility/http";
+import { createInvokeBlockAction, createInvokeStreamingBlockAction, provideBlockGuid, provideBlockTypeGuid } from "@Obsidian/Utility/block";
 import { safeParseJson } from "@Obsidian/Utility/stringUtils";
 import { Guid } from "@Obsidian/Types";
 
@@ -521,7 +521,7 @@ export async function initializeDynamicComponentWrapper(rootElementId: string, c
 
         for (const mutation of mutations) {
             for (const node of mutation.removedNodes) {
-                if (node == rootElement || node.contains(rootElement)) {
+                if (node === rootElement || node.contains(rootElement)) {
                     removed = true;
                 }
             }
@@ -587,9 +587,11 @@ export async function showCustomBlockAction(actionFileUrl: string, pageGuid: str
             };
 
             const invokeBlockAction = createInvokeBlockAction(post, pageGuid, blockGuid, store.state.pageParameters, store.state.sessionGuid, store.state.interactionGuid);
+            const invokeStreamingBlockAction = createInvokeStreamingBlockAction(doStreamingApiCall, pageGuid, blockGuid, store.state.pageParameters, store.state.sessionGuid, store.state.interactionGuid);
 
             provideHttp({
                 doApiCall,
+                doStreamingApiCall,
                 get,
                 post
             });
@@ -597,6 +599,7 @@ export async function showCustomBlockAction(actionFileUrl: string, pageGuid: str
                 return `/api/v2/BlockActions/${pageGuid}/${blockGuid}/${actionName}`;
             });
             provide("invokeBlockAction", invokeBlockAction);
+            provide("invokeStreamingBlockAction", invokeStreamingBlockAction);
             provideBlockGuid(blockGuid);
             provideBlockTypeGuid(blockTypeGuid);
 

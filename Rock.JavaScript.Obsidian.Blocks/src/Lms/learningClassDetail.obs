@@ -173,7 +173,7 @@
      * The footer secondary actions for the block panel.
      */
     const footerSecondaryActions = computed((): PanelAction[] => {
-        if (panelMode.value != DetailPanelMode.View) {
+        if (panelMode.value !== DetailPanelMode.View) {
             return [];
         }
 
@@ -314,7 +314,7 @@
         const promptToUpdateAllClassGradingSystems = hasGradingSystemChanged
             && activeClassesUsingDefaultGradingSystem.value > 0;
 
-        const confirmationMessage = activeClassesUsingDefaultGradingSystem.value == 1 ?
+        const confirmationMessage = activeClassesUsingDefaultGradingSystem.value === 1 ?
             "Do you want to update the Grading System for the other active class?" :
             `Do you want to update the Grading System for the other ${activeClassesUsingDefaultGradingSystem.value} active classes?`;
 

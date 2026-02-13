@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 using Rock.Model;
@@ -56,6 +57,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupPlacement
         /// The URL of the person’s profile photo.
         /// </summary>
         public string PhotoUrl { get; set; }
+
+        /// <summary>
+        /// The Date time the person was added to a specific Destination Group.
+        /// (This is only used for date sorting in Obsidian and should not be populated/used in any other way.)
+        /// </summary>
+        public DateTimeOffset? DateTimeAddedToDestinationGroup { get; set; }
 
         /// <summary>
         /// A list of registrant records associated with the person, typically used in registration-based placement.

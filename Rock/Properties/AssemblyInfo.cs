@@ -16,6 +16,8 @@
 //
 using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo( "Rock.AI.Agent" )]
+[assembly: InternalsVisibleTo( "Rock.AI.Agent.Tests" )]
 [assembly: InternalsVisibleTo( "Rock.Blocks" )]
 [assembly: InternalsVisibleTo( "Rock.Blocks.NG" )]
 [assembly: InternalsVisibleTo( "Rock.CodeGeneration" )]
@@ -35,6 +37,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo( "DynamicProxyGenAssembly2" )] // Used by Moq
 
 // Register friendly logging category names.
+[assembly: Rock.Logging.RockLoggingCategory( "Rock" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Jobs" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Bus" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Communication" )]
@@ -156,3 +159,8 @@ using System.Runtime.CompilerServices;
 
 // The following type forwardings were setup in Rock 17.1
 [assembly: TypeForwardedTo( typeof(Rock.Media.MediaElementQuality ) )]
+
+// The following type forwardings were setup in Rock 19.0.4
+[assembly: TypeForwardedTo( typeof( Rock.Model.GroupLocationPickerMode ) )]
+[assembly: TypeForwardedTo( typeof( Rock.Model.GroupMemberWorkflowTriggerType ) )]
+[assembly: TypeForwardedTo( typeof( Rock.Model.ScheduleType ) )]

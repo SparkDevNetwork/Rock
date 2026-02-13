@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div id="pnlAssetManager" class="picker-wrapper align-items-stretch flex-nowrap styled-scroll" :style="wrapperStyles">
+    <div id="pnlAssetManager" class="picker-wrapper align-items-stretch styled-scroll" :style="wrapperStyles">
         <div class="picker-folders d-flex flex-column p-3 mh-100 position-relative flex-shrink-0" style="background-color: var(--color-interface-softer)">
 
             <div class="mb-3 d-flex flex-shrink-0">
@@ -49,8 +49,8 @@
             </Transition>
         </div>
 
-        <div class="picker-files d-flex flex-column p-3 mh-100 flex-shrink-0 position-relative">
-            <div class="mb-3 d-flex align-items-center">
+        <div class="picker-files d-flex flex-column mh-100 flex-shrink-0 position-relative">
+            <div class="my-3 px-3 d-flex align-items-center">
                 <div v-if="isUploadingFile" class="js-upload-progress upload-progress-sm mr-2">
                     <i class="ti ti-refresh ti-spin"></i>
                 </div>
@@ -163,7 +163,6 @@
 <style scoped>
 #pnlAssetManager {
     height: 100%;
-    min-height: 250px;
 }
 
 .assetmanager-files th,
@@ -194,6 +193,7 @@
 
 .assetmanager-files td.grid-selector {
     width: 50px;
+
     > .control-wrapper {
         display: flex;
         justify-content: center;
@@ -203,6 +203,7 @@
 
 .assetmanager-files td.grid-thumbnail {
     width: 60px;
+
     > img {
         object-fit: fill;
         height: 100%;
@@ -644,7 +645,27 @@
         }
     }
 
+    const hasSubfolders = computed(() => {
+        const bag = selectedFolderBag.value;
+        if (!bag) return false;
+
+        if (bag.children !== null && bag.children !== undefined) {
+            return bag.children.length > 0;
+        }
+        else {
+            return bag.hasChildren;
+        }
+    });
+
+    const hasContents = computed(() => {
+        return hasSubfolders.value || files.value.length > 0;
+    });
+
     async function deleteSelectedFolder(): Promise<void> {
+        if (hasContents.value && !(await confirm("Are you sure you want to delete this folder and all its contents?"))) {
+            return;
+        }
+
         isFolderPaneActionLoading.value = true;
 
         const options: AssetManagerBaseOptionsBag = {
@@ -710,7 +731,7 @@
         if (parts.length >= 3) {
             let root = Path.normalize((folder as AssetManagerTreeItemBag).unencryptedRoot ?? "");
 
-            if (root == "/") {
+            if (root === "/") {
                 root = "";
             }
 

@@ -14,7 +14,7 @@
                         <div class="push-message-header-text">
                             {{ pushTitle }}
                         </div>
-                        <span class="push-message-header-time text-muted">9:41&nbsp;AM</span>
+                        <span class="push-message-header-time">9:41&nbsp;AM</span>
                     </div>
                     <div class="push-message-text">
                         <template v-if="!isLoading">{{ pushMessage }}</template>
@@ -44,15 +44,16 @@
     padding: var(--spacing-medium);
     display: flex;
     gap: var(--spacing-medium);
-    background-color: rgba(242, 242, 247, 0.6);
+    background-color: rgba(242, 242, 247, 0.2);
     border-radius: var(--rounded-xlarge);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 .push-icon-container {
     padding: var(--spacing-tiny);
-    background-color: var(--color-interface-medium);
+    background-color: var(--base-interface-soft);
     border-radius: var(--rounded-medium);
     width: 30px;
     height: 30px;
@@ -62,7 +63,7 @@
 }
 
 .push-icon {
-    color: var(--color-interface-softest);
+    color: var(--base-interface-stronger);
     width: 18px;
     display: flex;
     align-items: center;
@@ -89,10 +90,12 @@
     line-height: 1;
     /* .push-message-header-time line-height should match this to center-align them. */
     font-size: var(--font-size-regular);
+    color: var(--base-interface-softest);
 }
 
 .push-message-text {
     font-size: var(--font-size-xsmall);
+    color: var(--base-interface-softest);
 }
 
 .push-message-header-time {

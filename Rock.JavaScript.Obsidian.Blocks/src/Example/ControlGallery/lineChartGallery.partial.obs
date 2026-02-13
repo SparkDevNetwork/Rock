@@ -22,6 +22,7 @@
                        :valueHideGridLines="valueHideGridLines"
                        :valueLabel="valueLabel"
                        :valueMaxTickCount="valueMaxTickCount"
+                       :valuePrecision="valuePrecision"
                        :valueSuggestedMax="valueSuggestedMax"
                        :valueSuggestedMin="valueSuggestedMin"
                        :valueTickCount="valueTickCount" />
@@ -70,6 +71,11 @@
                                           :items="lineStyleItems"
                                           label="Line Style"
                                           @update:modelValue="lineStyle = <LineStyle>$event" />
+
+                            <NumberBox v-model="valuePrecision"
+                                       help="Sets the number of decimal places to display. Actual values may be rounded automatically and may not always show the exact precision. Leave blank to use default formatting for ticks and tooltips."
+                                       label="Precision"
+                                       :maximumValue="20" />
 
                             <Switch :modelValue="isStacked ?? false"
                                     label="Stacked"
@@ -247,6 +253,7 @@
     const valueHideGridLines = ref<boolean | undefined>();
     const categoryMaxTickCount = ref<number | undefined>();
     const valueMaxTickCount = ref<number | undefined>();
+    const valuePrecision = ref<number | undefined>();
     const height = ref<string | undefined>();
     const width = ref<string | undefined>();
     const isUnfilled = ref<boolean | undefined>();
@@ -351,6 +358,9 @@
         }
         if (!isNullish(valueMaxTickCount.value)) {
             lineChartProps.push(`:valueMaxTickCount="${valueMaxTickCount.value}"`);
+        }
+        if (!isNullish(valuePrecision.value)) {
+            lineChartProps.push(`:valuePrecision="${valuePrecision.value}"`);
         }
         if (!isNullish(valueSuggestedMin.value)) {
             lineChartProps.push(`:valueSuggestedMin="${valueSuggestedMin.value}"`);

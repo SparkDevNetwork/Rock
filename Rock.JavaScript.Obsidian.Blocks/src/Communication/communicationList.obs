@@ -174,6 +174,7 @@
     <GridSettingsModal v-model="gridSettings"
                        v-model:visible="isGridSettingsVisible"
                        :showSentByFilter="showSentByFilter"
+                       :topicItems="topicItems"
                        :defaultSlidingDateRange="defaultSlidingDateRange" />
 </template>
 
@@ -208,19 +209,21 @@
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { useStore } from "@Obsidian/PageState";
+    import { formatAspDate } from "@Obsidian/Utility/aspDateFormat";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, usePersonPreferences } from "@Obsidian/Utility/block";
-    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { alert } from "@Obsidian/Utility/dialogs";
+    import { Enumerable } from "@Obsidian/Utility/linq";
     import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
-    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { debounceAsync } from "@Obsidian/Utility/util";
     import { CommunicationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationList/communicationListOptionsBag";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
-    import { formatAspDate } from "@Obsidian/Utility/aspDateFormat";
-    import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { debounceAsync } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<ListBlockBox<CommunicationListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -251,13 +254,13 @@
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>({
         sentBy: JSON.parse(preferences.getValue(PreferenceKey.FilterSentBy) || "{}"),
-        hideDrafts: asBoolean(preferences.getValue(PreferenceKey.FilterHideDrafts)),
+        hideDrafts: asBooleanOrNull(preferences.getValue(PreferenceKey.FilterHideDrafts)) ?? true,
         slidingDateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterSendDateRange)) ?? defaultSlidingDateRange,
         recipientCountRange: {
             lower: toNumberOrNull(preferences.getValue(PreferenceKey.FilterRecipientCountLower)),
             upper: toNumberOrNull(preferences.getValue(PreferenceKey.FilterRecipientCountUpper))
         },
-        topic: JSON.parse(preferences.getValue(PreferenceKey.FilterTopic) || "{}"),
+        topic: preferences.getValue(PreferenceKey.FilterTopic),
         name: preferences.getValue(PreferenceKey.FilterName),
         content: preferences.getValue(PreferenceKey.FilterContent)
     });
@@ -287,6 +290,11 @@
     /** `true` if the "Sent By" filter controls should be displayed. */
     const showSentByFilter = computed((): boolean => {
         return config.options?.showSentByFilter ?? false;
+    });
+
+    /** The list of topic items the individual can filter by. */
+    const topicItems = computed((): ListItemBag[] => {
+        return config.options?.topicItems ?? [];
     });
 
     /** `true` if the "Filter to Email" button should be displayed. */
@@ -643,9 +651,25 @@
      * @param key The key of the row that was selected.
      */
     function onSelectItem(key: string): void {
+        const row = findRow(key);
+        if (row?.isLegacyCommunication) {
+            if (config.navigationUrls?.[NavigationUrlKey.LegacyDetailPage]) {
+                window.location.href = config.navigationUrls[NavigationUrlKey.LegacyDetailPage].replace("((Key))", key);
+                return;
+            }
+        }
+
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+            return;
         }
+    }
+
+    function findRow(key: string): Row | undefined {
+        return Enumerable.from(gridData?.rows ?? [])
+            .cast<Row>((r): r is Row => true)
+            .where(r => r.idKey === key)
+            .firstOrDefault();
     }
 
     /**
@@ -689,7 +713,7 @@
         preferences.setValue(PreferenceKey.FilterSendDateRange, slidingDateRangeString);
         preferences.setValue(PreferenceKey.FilterRecipientCountLower, gridSettings.value.recipientCountRange?.lower?.toString() ?? "");
         preferences.setValue(PreferenceKey.FilterRecipientCountUpper, gridSettings.value.recipientCountRange?.upper?.toString() ?? "");
-        preferences.setValue(PreferenceKey.FilterTopic, JSON.stringify(gridSettings.value.topic));
+        preferences.setValue(PreferenceKey.FilterTopic, gridSettings.value.topic);
         preferences.setValue(PreferenceKey.FilterName, gridSettings.value.name);
         preferences.setValue(PreferenceKey.FilterContent, gridSettings.value.content);
 

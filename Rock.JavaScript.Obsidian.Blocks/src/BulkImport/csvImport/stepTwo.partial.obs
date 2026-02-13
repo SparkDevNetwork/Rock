@@ -1,0 +1,111 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <h2>Field Mapping</h2>
+        <p>We've uploaded your file to the server. Below is a listing of the fields you uploaded. You'll need to map these fields to those in Rock.</p>
+        <NotificationBox alertType="warning">
+            Please take your time on this screen and map the fields you want carefully. There is no way to undo the import once you've finished.
+        </NotificationBox>
+
+        <hr>
+
+        <p><strong>Record Count:</strong> {{ recordCount }}</p>
+
+        <RockForm @submit="onSubmit">
+
+            <NotificationBox v-if="submissionErrors" alertType="danger">
+                {{ submissionErrors }}
+            </NotificationBox>
+
+            <div class="row" v-for="csvColumn in csvColumns" :key="csvColumn">
+                <div class="col-md-4">
+                    <DropDownList v-model="columnMappings[csvColumn]"
+                                  :items="personFieldOptions"
+                                  :label='csvColumn'
+                                  :grouped="true"
+                                  enhanceForLongLists />
+                </div>
+            </div>
+
+            <div class="footer-actions">
+                <RockButton btnType="primary" type="submit">Import</RockButton>
+            </div>
+        </RockForm>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { CsvImportBox } from "@Obsidian/ViewModels/Blocks/BulkImport/csvImportBox";
+    import { StepTwoResults } from "./types.partial";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { CsvImportValidateMappingsOptionsBag } from "@Obsidian/ViewModels/Blocks/BulkImport/csvImportValidateMappingsOptionsBag";
+
+    defineProps({
+        config: {
+            type: Object as PropType<CsvImportBox>,
+            required: true
+        },
+
+        csvColumns: {
+            type: Array as PropType<string[]>,
+            required: true
+        },
+
+        personFieldOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        recordCount: {
+            type: Number,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "stepFinished", data: StepTwoResults): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const columnMappings = ref<Record<string, string>>({});
+    const submissionErrors = ref<string>("");
+
+    async function onSubmit(): Promise<void> {
+        // Reset submission errors
+        submissionErrors.value = "";
+
+        const result = await invokeBlockAction("ValidateMappings", {
+            options: {
+                columnMappings: invertObject(columnMappings.value)
+            } as CsvImportValidateMappingsOptionsBag
+        });
+
+        if (!result.isSuccess) {
+            submissionErrors.value = result.errorMessage ?? "Unknown error while reading CSV file.";
+            return;
+        }
+        else {
+            emit("stepFinished", {
+                columnMappings: invertObject(columnMappings.value)
+            });
+        }
+    }
+
+    // We need to swap the keys and values in the mapping object. On the client side, it really only
+    // works to have the key be the column and the value be the person property, but everything on
+    // the server expects the opposite.
+    function invertObject(obj: Record<string, string>): Record<string, string> {
+        const inverted: Record<string, string> = {};
+        for (const key in obj) {
+            inverted[obj[key]] = key;
+        }
+        return inverted;
+    }
+
+</script>

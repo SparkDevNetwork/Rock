@@ -267,13 +267,13 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                 var font = fontFamily.Value.CreateFont( ( float ) fontSize, icon.IsBold ? FontStyle.Bold : FontStyle.Regular );
 
                 // Measure the icon size so we can center it.
-                var textOptions = new TextOptions( font );
-                var textSize = TextMeasurer.Measure( icon.Code, textOptions );
+                var textOptions = new RichTextOptions( font );
+                var textSize = TextMeasurer.MeasureSize( icon.Code, textOptions );
 
                 // Draw the icon centerd in the image.
                 image.Mutate( img =>
                 {
-                    textOptions = new TextOptions( font )
+                    textOptions = new RichTextOptions( font )
                     {
                         Origin = new System.Numerics.Vector2( ( width - textSize.Width ) / 2, ( height - textSize.Height ) / 2 )
                     };

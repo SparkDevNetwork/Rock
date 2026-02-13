@@ -187,10 +187,24 @@ export const ServiceJob = {
     DataMigrations180PopulateCommunicationrecipientDelivereddatetime: "EF2CF0AC-7A83-4BEB-8824-41D3B5B8B832",
     /** The Job to run Post v18.0 Data Migrations to swap Block. */
     DataMigrations180SwapObsidianBlocks: "B3663D0F-6426-44BB-9C43-D9921A0974D3",
-    /** The job to run Post v18.0 Data Migrations to update an existing index on the CommunicationRecipient table. */
-    DataMigrations180UpdateCommunicationrecipientIndex: "FE519BCE-CCB8-42B7-A14C-1620859F23E8",
+    /** The job to run Post v18.0 Data Migrations to update the Manage My Account Page block setting for the recently-chopped Email Preference Entry block. */
+    DataMigrations180UpdateEmailPreferenceEntryBlockManageMyAccountPage: "7319E385-8068-43FE-9085-6F9A21F5972B",
     /** The job to run Post v18.0 Data Migrations to update the Nameless Locations. */
     DataMigrations180UpdateNamelessLocations: "6C3EE640-A442-4F9C-92ED-23E353BA8509",
+    /** The job to run Post v18.1 Data Migrations to add a new index to the FinancialBatch table. */
+    DataMigrations181AddFinancialbatchIndex: "EA5D69D8-8ABB-42CD-A664-48F6BC5E2C7F",
+    /** The job to run Post v18.1 Data Migrations to add indexes to improve communication prep performance. */
+    DataMigrations181AddIndexesForCommunicationPrep: "88C42A48-6713-4CB1-BF6B-A12AB2E292E7",
+    /** The job to run Post v19.0 Data Migrations to add an index to ensure the Communication Unsubscribe Report performs efficiently. */
+    DataMigrations190AddCommunicationUnsubscribeReportIndex: "ECBC94C0-7646-491E-A804-1CA228F0FFAD",
+    /** The Job to run Post v19.0 Data Migrations to perform the final chop of the File and Asset Manager (webforms) Blocks. */
+    DataMigrations190ChopFileAndAssetManagerFinal: "1EB6ED41-60F6-452E-A688-EB9C5444ECBC",
+    /** The Job to run Post v19.0 Data Migrations to perform the final chop of the Registration Entry (webforms) Block. */
+    DataMigrations190ChopRegistrationEntryFinal: "37E3EC22-513D-4F13-A929-38BBA2BDAC68",
+    /** The Job to run Post v19.0 Data Migrations to perform the final chop of the Service Metric Entry (webforms) Block. */
+    DataMigrations190ChopServiceMetricEntryFinal: "DD75B103-88B3-4551-B38F-E688422E2DC5",
+    /** The Job to run Post v19.0 Data Migrations to swap Block. */
+    DataMigrations190SwapObsidianBlocks: "C05C0C81-12B2-4C35-9405-C3CE09E3CE75",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail
@@ -235,13 +249,17 @@ export const ServiceJob = {
     SyncMedia: "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9",
     /** The Rock.Jobs.UpdateAnalyticsSourcePostalCode job. */
     UpdateAnalyticsSourcePostalCode: "29731D97-699D-4D34-A9F4-50C7C33D5C48",
+    /** The Rock.Jobs.UpdateEntityUsage job configured to update Media Element usage. */
+    UpdateMediaElementUsage: "32d0cb70-d4ef-4ac2-8693-bfdfe9e5233e",
+    /** The Rock.Jobs.UpdateOutreachToolboxTouchpoints job. */
+    UpdateOutreachToolboxTouchpoints: "06320140-a5ff-46fa-9ee5-41f747bbc542",
     /** The Update Persisted Attribute Values job. */
     UpdatePersistedAttributeValue: "A7DDA4B0-BA1D-49F1-8749-5E7A9876AE70",
     /** The Rock.Jobs.UpdatePersistedDatasets job. */
     UpdatePersistedDatasets: "B6D3B48A-039A-4A1C-87BE-3FC0152AB5DA",
     /** The Rock.Jobs.UpdatePersonalizationData job. */
     UpdatePersonalizationData: "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B",
-    /** The job for updating learning program completions. Rock.Jobs.UpdateProgramCompletions. */
+    /** The job for updating learning program completions. Rock.Jobs.UpdateLearningProgramCompletions. */
     UpdateProgramCompletions: "4E805A88-C031-4BA0-BAD6-0A706E647870",
     /** The job for updating step program completions. Rock.Jobs.UpdateStepProgramCompletions. */
     UpdateStepProgramCompletions: "EB658FC8-3DA1-4CE0-86F6-0D3CA6F48AAE",

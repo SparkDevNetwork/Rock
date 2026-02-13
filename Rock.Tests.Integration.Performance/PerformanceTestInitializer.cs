@@ -20,6 +20,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Tests.Integration.TestFramework;
 
+[assembly: DoNotParallelize]
+
 namespace Rock.Tests.Integration.Performance
 {
     [TestClass]

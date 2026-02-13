@@ -29,8 +29,9 @@ using Microsoft.Extensions.Logging;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
+using Rock.Core;
 using Rock.Data;
-using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility.Enums;
@@ -209,6 +210,12 @@ namespace RockWeb.Blocks.Crm
                     var entitySet = entitySetService.Get( setId.Value );
                     if ( entitySet != null )
                     {
+                        if ( entitySet.AdditionalSettingsJson != null )
+                        {
+                            var entitySetAdditionalSettings = entitySet.GetAdditionalSettings<EntitySetAdditionalSettings>();
+                            cbShouldNotifyAfterMerge.Checked = entitySetAdditionalSettings.ShouldNotifyAfterMerge;
+                        }
+
                         tbEntitySetNote.Text = entitySet.Note;
                         var definedValuePurpose = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid() );
                         if ( definedValuePurpose != null )
@@ -374,7 +381,14 @@ namespace RockWeb.Blocks.Crm
                 PersonService.UpdateAccountProtectionProfileForPerson( personId.Value, new RockContext() );
 
                 // Get the people selected
-                var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users" )
+                var people = new PersonService( new RockContext() )
+                    .Queryable( new PersonService.PersonQueryOptions
+                    {
+                        IncludeDeceased = true,
+                        IncludeNameless = true,
+                    } )
+                    .Include( a => a.CreatedByPersonAlias.Person )
+                    .Include( a => a.Users )
                     .Where( p => selectedPersonIds.Contains( p.Id ) )
                     .ToList();
 
@@ -402,7 +416,14 @@ namespace RockWeb.Blocks.Crm
                     .Select( p => p.Id ).ToList();
 
                 // Get the people selected
-                var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users" )
+                var people = new PersonService( new RockContext() )
+                    .Queryable( new PersonService.PersonQueryOptions
+                    {
+                        IncludeDeceased = true,
+                        IncludeNameless = true,
+                    } )
+                    .Include( a => a.CreatedByPersonAlias.Person )
+                    .Include( a => a.Users )
                     .Where( p => selectedPersonIds.Contains( p.Id ) )
                     .ToList();
 
@@ -446,7 +467,17 @@ namespace RockWeb.Blocks.Crm
                 personMergeFieldRowEventArgs.ContentDisplayType = MergePersonField.ContentDisplayType.SelectionLabel;
             }
 
-            personMergeFieldRowEventArgs.ContentHTML = valuesRowPersonPersonProperty.PersonPropertyValue.FormattedValue;
+            if ( valuesRowPersonPersonProperty.PersonPropertyValue.LastModifiedDateTime != null )
+            {
+                var pPropValue = valuesRowPersonPersonProperty.PersonPropertyValue;
+                personMergeFieldRowEventArgs.ContentHTML = pPropValue.FormattedValue
+                    + $"<br><small class=\"text-muted\">Last Modified {pPropValue.LastModifiedDateTime.Value.ToShortDateString()} at " +
+                    $"{pPropValue.LastModifiedDateTime.Value.ToShortTimeString()} by {pPropValue.ModifiedByNickName} {pPropValue.ModifiedByLastName}</small>";
+            }
+            else
+            {
+                personMergeFieldRowEventArgs.ContentHTML = valuesRowPersonPersonProperty.PersonPropertyValue.FormattedValue;
+            }
             personMergeFieldRowEventArgs.Selected = valuesRowPersonPersonProperty.PersonPropertyValue.Selected;
         }
 
@@ -576,7 +607,11 @@ namespace RockWeb.Blocks.Crm
                             primaryPerson.SuffixValueId = GetNewIntValue( "Suffix" );
                         }
 
-                        primaryPerson.LastName = GetNewStringValue( "LastName" );
+                        // Record the original last name to the PreviousNames (if it's changed).
+                        var newLastName = GetNewStringValue( "LastName" );
+                        RecordPreviousLastName( primaryPerson.LastName, newLastName, primaryPerson.Id, primaryPerson.PrimaryAliasId, rockContext );
+
+                        primaryPerson.LastName = newLastName;
                         primaryPerson.RecordTypeValueId = GetNewIntValue( "RecordType" );
                         primaryPerson.RecordStatusValueId = GetNewIntValue( "RecordStatus" );
                         primaryPerson.RecordStatusReasonValueId = GetNewIntValue( "RecordStatusReason" );
@@ -607,7 +642,9 @@ namespace RockWeb.Blocks.Crm
                             string oldValue = phoneNumber != null ? phoneNumber.Number : string.Empty;
 
                             string key = "phone_" + phoneType.Id.ToString();
-                            string newValue = GetNewStringValue( key );
+                            var selectedValue = GetNewValue( key );
+                            string newValue = selectedValue != null ? selectedValue.Value : string.Empty;
+
                             bool phoneNumberDeleted = false;
 
                             if ( !oldValue.Equals( newValue, StringComparison.OrdinalIgnoreCase ) )
@@ -623,8 +660,30 @@ namespace RockWeb.Blocks.Crm
                                         primaryPerson.PhoneNumbers.Add( phoneNumber );
                                     }
 
-                                    // Update phone number
-                                    phoneNumber.Number = newValue;
+                                    string selectedCountryCode = null;
+                                    string selectedNumberOnly = null;
+
+                                    var parts = newValue.Split( '|' );
+                                    if ( parts.Length == 2 )
+                                    {
+                                        selectedCountryCode = parts[0];
+                                        selectedNumberOnly = parts[1];
+                                    }
+                                    else
+                                    {
+                                        selectedNumberOnly = newValue;
+                                    }
+
+                                    phoneNumber.Number = PhoneNumber.CleanNumber( selectedNumberOnly );
+
+                                    if ( !string.IsNullOrWhiteSpace( selectedCountryCode ) )
+                                    {
+                                        phoneNumber.CountryCode = PhoneNumber.CleanNumber( selectedCountryCode );
+                                    }
+                                    else if ( string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
+                                    {
+                                        phoneNumber.CountryCode = PhoneNumber.DefaultCountryCode();
+                                    }
                                 }
                                 else
                                 {
@@ -876,7 +935,7 @@ namespace RockWeb.Blocks.Crm
                         logger.Write( $"Marking EntitySet as expired..." );
 
                         var entitySetService = new EntitySetService( rockContext );
-                        var entitySet = entitySetService.Get( MergeData.EntitySetId );
+                        var entitySet = entitySetService.GetInclude( MergeData.EntitySetId, es => es.CreatedByPersonAlias.Person );
                         if ( entitySet != null )
                         {
                             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( -1 );
@@ -895,19 +954,21 @@ namespace RockWeb.Blocks.Crm
                         // Run scripts to merge non-primary person data.
                         foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
                         {
-                            var parms = new Dictionary<string, object>();
-                            parms.Add( "OldId", p.Id );
-                            parms.Add( "NewId", primaryPerson.Id );
-                            parms.Add( "OldGuid", p.Guid );
-                            parms.Add( "NewGuid", primaryPerson.Guid );
-                            parms.Add( "PersonEntityTypeId", personEntityTypeId.Value );
-
                             logger.Write( $"Merging non-primary person data... [SourcePerson={p.FullName}]" );
 
-                            ExecutePersonMergeSqlScript( parms, rockContext, logger );
+                            // Run merge proc to merge all associated data
+                            var oldParam = new SqlParameter( "@OldId", SqlDbType.Int ) { Value = p.Id };
+                            var newParam = new SqlParameter( "@NewId", SqlDbType.Int ) { Value = primaryPersonId.Value };
+
+                            // Run the proc on the SAME EF connection/transaction created by WrapTransaction.
+                            rockContext.Database.ExecuteSqlCommand(
+                                "EXEC dbo.spCrm_PersonMerge @OldId, @NewId",
+                                oldParam, newParam );
                         }
 
                         logger.Write( $"Merge completed." );
+
+                        SendOptionalNotificationToRequester( entitySet, primaryPerson, MergeData.People.Count );
                     }
                 } );
             }
@@ -924,6 +985,78 @@ namespace RockWeb.Blocks.Crm
             }
 
             NavigateToLinkedPage( AttributeKey.PersonDetailPage, isBusiness ? "BusinessId" : "PersonId", primaryPersonId.Value );
+        }
+
+        /// <summary>
+        /// Record the old lastname if it's different than the new lastname and if it's not already in the person's list of
+        /// previous names.
+        /// </summary>
+        /// <param name="originalLastName"></param>
+        /// <param name="newLastName"></param>
+        /// <param name="primaryPersonId"></param>
+        /// <param name="primaryPersonAliasId"></param>
+        /// <param name="rockContext"></param>
+        private void RecordPreviousLastName( string originalLastName, string newLastName, int primaryPersonId, int? primaryPersonAliasId, RockContext rockContext )
+        {
+            if ( string.Equals( originalLastName, newLastName, StringComparison.OrdinalIgnoreCase ) || ! primaryPersonAliasId.HasValue)
+            {
+                return;
+            }
+
+            var personPreviousNameService = new PersonPreviousNameService( rockContext );
+            var isThatLastNameAlreadyRecorded = personPreviousNameService.Queryable().AsNoTracking().Any(
+                a => a.PersonAlias.PersonId == primaryPersonId
+                && a.LastName.ToLower() == originalLastName.ToLower()
+            );
+
+            if ( isThatLastNameAlreadyRecorded )
+            {
+                return;
+            }
+
+            // Otherwise add it
+            personPreviousNameService.Add( new PersonPreviousName { LastName = originalLastName, PersonAliasId = primaryPersonAliasId.Value, Guid = Guid.NewGuid() } );
+        }
+
+        /// <summary>
+        /// Sends a notification email to the requester when a person merge operation is completed, if notification is
+        /// enabled for the specified entity set.
+        /// </summary>
+        /// <remarks>Any errors encountered during email sending are logged as warnings.</remarks>
+        /// <param name="entitySet">The entity set representing the merge request. If null, no notification is sent.</param>
+        /// <param name="primaryPerson">The person record into which other records were merged. Used in the notification message.</param>
+        /// <param name="mergedPersonCount">The number of person records that were merged into the primary person record. Included in the notification message.</param>
+        private void SendOptionalNotificationToRequester( EntitySet entitySet, Person primaryPerson, int mergedPersonCount )
+        {
+            if ( entitySet == null )
+            {
+                return;
+            }
+
+            var entitySetAdditionalSettings = entitySet.GetAdditionalSettings<EntitySetAdditionalSettings>();
+            if ( !entitySetAdditionalSettings.ShouldNotifyAfterMerge || entitySet.CreatedByPersonId == null )
+            {
+                return;
+            }
+
+            var emailMessage = new RockEmailMessage
+            {
+                Subject = "Request to Merge Person Records Is Complete",
+                Message = $"Your request to merge {mergedPersonCount} records into the '{primaryPerson.FullName}' record has been completed."
+            };
+
+            var requester = entitySet.CreatedByPersonAlias.Person;
+            var recipients = new List<RockEmailMessageRecipient>();
+            recipients.Add( new RockEmailMessageRecipient( requester, null ) );
+
+            emailMessage.SetRecipients( recipients );
+
+            var errorMessages = new List<string>();
+            emailMessage.Send( out errorMessages );
+            if ( errorMessages.Count > 0 )
+            {
+                Logger.LogWarning( $"Unable to send merge completion notification email to requester ${requester.FullName}.  Errors: {string.Join( "; ", errorMessages )}" );
+            }
         }
 
         /// <summary>
@@ -1181,10 +1314,16 @@ namespace RockWeb.Blocks.Crm
                 var rockContext = new RockContext();
                 var entitySet = new EntitySetService( rockContext ).Get( setId.Value );
                 entitySet.Note = tbEntitySetNote.Text;
+
+                var entitySetAdditionalSettings = entitySet.GetAdditionalSettings<EntitySetAdditionalSettings>();
+                entitySetAdditionalSettings.ShouldNotifyAfterMerge = cbShouldNotifyAfterMerge.Checked;
+                entitySet.SetAdditionalSettings( entitySetAdditionalSettings );
+
                 rockContext.SaveChanges();
 
                 nbNoteSavedSuccess.Visible = true;
                 tbEntitySetNote.Visible = false;
+                cbShouldNotifyAfterMerge.Visible = false;
                 btnSaveRequestNote.Visible = false;
             }
         }
@@ -1587,7 +1726,19 @@ namespace RockWeb.Blocks.Crm
             var showWarning = conflictingHiddenProperties.Any();
             nbPermissionNotice.Visible = showWarning;
 
-            var conflictingGroupMemberProperties = MergeData.GroupMemberProperties.Where( p => p.Values.Select( v => v.Value ).Distinct().Count() > 1 || !p.Values.Any( v => v.PersonId == MergeData.PrimaryPersonId ) ).ToList();
+            /*
+                10/6/2025 - MSE
+
+                A conflict should only be flagged when merge candidates have different
+                values for an attribute, within the same group.
+
+                Do not flag conflicts for the attribute when:
+                1) Candidates are in different groups (even if the attribute key matches across those groups).
+                2) Candidates have matching values for the attribute within the same group.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6473
+            */
+            var conflictingGroupMemberProperties = MergeData.GroupMemberProperties.Where( p => p.Values.Select( v => v.Value ).Distinct().Count() > 1 ).ToList();
 
             nbGroupMemberAttributeConflict.Visible = conflictingGroupMemberProperties.Count > 0;
             if ( conflictingGroupMemberProperties.Count > 0 )
@@ -1736,440 +1887,6 @@ namespace RockWeb.Blocks.Crm
         }
 
         #endregion Methods
-
-        /// <summary>
-        /// Executes a merge script that is equivalent to the stored procedure "spCrm_PersonMerge".
-        /// </summary>
-        /// <param name="parms"></param>
-        /// <param name="rockContext"></param>
-        /// <param name="logger"></param>
-        private void ExecutePersonMergeSqlScript( Dictionary<string, object> parms, RockContext rockContext, RockProcessLogger logger )
-        {
-            // Relationships
-            logger.Write( "Merging relationships..." );
-            var sql = @"
--- Move/Update Known Relationships
-EXEC [dbo].[spCrm_PersonMergeRelationships] @OldId, @NewId, '7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42'
-
--- Move/Update Implied Relationships
-EXEC [dbo].[spCrm_PersonMergeRelationships] @OldId, @NewId, 'CB9A0E14-6FCF-4C07-A49A-D7873F45E196'
-";
-
-            
-             ExecuteSql( sql, parms, rockContext );
-
-            // Group Members
-            logger.Write( "Merging group memberships..." );
-            sql = @"
--- Group Member
------------------------------------------------------------------------------------------------
-DECLARE @GroupMemberStatusInactive INT = 0
-DECLARE @GroupMemberStatusActive INT = 1
-DECLARE @GroupMemberStatusPending INT = 2
-
-DECLARE @LessActiveGroupMembersIdsToDelete TABLE (id INT);
-DECLARE @GroupMembersIdsToArchive TABLE (id INT);
-
--- In the case when the old person and the new person are in the same group with the same role,
--- delete the groupmember record for the new person if it is 'less active' (Active > Pending > Inactive) then the old person. 
--- That will get that record out of the way so that the 'old' group member record can be assigned to the new person
-INSERT INTO @LessActiveGroupMembersIdsToDelete
-SELECT gmn.id
-FROM [GroupMember] GMO
-INNER JOIN [GroupTypeRole] GTR ON GTR.[Id] = GMO.[GroupRoleId]
-INNER JOIN [GroupMember] GMN ON GMN.[GroupId] = GMO.[GroupId]
-	AND GMN.[PersonId] = @NewId
-	AND (
-		GTR.[MaxCount] <= 1
-		OR GMN.[GroupRoleId] = GMO.[GroupRoleId]
-		)
-WHERE GMO.[PersonId] = @OldId
-	AND (
-		(
-			-- old person' group member status is Active but new person's status is not, so delete the new person's groupmember record so that we can set the old record to the new person id
-			gmn.GroupMemberStatus != @GroupMemberStatusActive
-			AND gmo.GroupMemberStatus = @GroupMemberStatusActive
-			)
-		OR (
-			-- old person's group member status is Pending but new person's group member status is Inactive, so delete the new person's groupmember record so that we can set the old record to the new person id
-			gmn.GroupMemberStatus = @GroupMemberStatusInactive
-			AND gmo.GroupMemberStatus = @GroupMemberStatusPending
-			)
-		)
-
--- NULL out RegistrationRegistrant Records for the @LessActiveGroupMembersIdsToDelete
-UPDATE [RegistrationRegistrant]
-SET [GroupMemberId] = NULL
-WHERE [GroupMemberId] IN (
-		SELECT [Id]
-		FROM @LessActiveGroupMembersIdsToDelete
-		)
-
--- Delete the GroupMemberAssignment Records for the @LessActiveGroupMembersIdsToDelete
-DELETE FROM [GroupMemberAssignment]
-WHERE [GroupMemberId] IN (
-		SELECT [Id]
-		FROM @LessActiveGroupMembersIdsToDelete
-		)
-
--- If there is GroupMemberHistory, we can't delete, so create a list of GroupMemberIds that we'll archive instead of delete
-INSERT INTO @GroupMembersIdsToArchive 
-	SELECT [Id]	FROM @LessActiveGroupMembersIdsToDelete WHERE Id IN (SELECT GroupMemberId FROM GroupMemberHistorical)
-
-DELETE FROM @LessActiveGroupMembersIdsToDelete 
-	WHERE Id IN (SELECT Id FROM @GroupMembersIdsToArchive)
-
--- Delete the @LessActiveGroupMembersIdsToDelete for any GroupMember records that don't have GroupMemberHistory
-DELETE
-FROM GroupMember
-WHERE Id IN (
-		SELECT [Id]
-		FROM @LessActiveGroupMembersIdsToDelete
-		)
-		
--- Update any group members associated to old person to the new person where the new is not 
--- already in the group with the same role (except for groupmember records that we are going to archive)
-UPDATE GMO
-	SET [PersonId] = @NewId
-FROM [GroupMember] GMO
-	INNER JOIN [GroupTypeRole] GTR
-		ON GTR.[Id] = GMO.[GroupRoleId]
-	LEFT OUTER JOIN [GroupMember] GMN
-		ON GMN.[GroupId] = GMO.[GroupId]
-		AND GMN.[PersonId] = @NewId
-        AND GMN.[IsArchived] = 0
-		AND (GTR.[MaxCount] <= 1 OR GMN.[GroupRoleId] = GMO.[GroupRoleId])
-WHERE GMO.[PersonId] = @OldId
-	AND GMN.[Id] IS NULL
-	and GMO.Id NOT IN (SELECT [Id] FROM @GroupMembersIdsToArchive)
-
--- Update any registrant groups that point to a group member about to be deleted 
-UPDATE [RegistrationRegistrant]
-SET [GroupMemberId] = NULL 
-WHERE [GroupMemberId] IN (
-	SELECT [Id]
-	FROM [GroupMember]
-	WHERE [PersonId] = @OldId
-)
-
-
--- Delete any Group Assignments that point to a group member about to be deleted
-DELETE FROM [GroupMemberAssignment]
-WHERE [GroupMemberId] IN (
-	SELECT [Id]
-	FROM [GroupMember]
-	WHERE [PersonId] = @OldId
-)
-
-
--- If there is GroupMemberHistory, we can't delete, so add any other GroupMemberIds for the old PersonId to our @GroupMembersIdsToArchive list
-INSERT INTO @GroupMembersIdsToArchive 
-	SELECT [Id]	FROM [GroupMember] WHERE [PersonId] = @OldId AND Id IN (SELECT GroupMemberId FROM GroupMemberHistorical)
-
-UPDATE [GroupMember] 
-	SET [IsArchived] = 1, [PersonId] = @NewId
-	WHERE [Id] IN (SELECT [Id] FROM @GroupMembersIdsToArchive)
-
--- Delete any group members not updated (already existed with new id)
-DELETE [GroupMember]
-WHERE [PersonId] = @OldId
-";
-
-            ExecuteSql( sql, parms, rockContext );
-
-            // Security
-            logger.Write( "Merging security records..." );
-            sql = @"
--- User Login
------------------------------------------------------------------------------------------------
--- Update any user logins associated with old id to be associated with primary person
-UPDATE [UserLogin]
-SET [PersonId] = @NewId
-WHERE [PersonId] = @OldId
-
--- Audit
------------------------------------------------------------------------------------------------
--- Update any audit records that were associated to the old person to be associated to the new person
-UPDATE [Audit] SET [EntityId] = @NewId
-WHERE [EntityTypeId] = @PersonEntityTypeId
-AND [EntityId] = @OldId
-
--- Auth
------------------------------------------------------------------------------------------------
--- Update any auth records that were associated to the old person to be associated to the new person
--- There is currently not any UI to set security associated to person, so really shouldn't be
--- any values here to update
-UPDATE A
-	SET [EntityId] = @NewId
-FROM [Auth] A
-	LEFT OUTER JOIN [Auth] NA
-		ON NA.[EntityTypeId] = A.[EntityTypeId]
-		AND NA.[EntityId] = @NewId
-		AND NA.[Action] = A.[Action]
-WHERE A.[EntityTypeId] = @PersonEntityTypeId
-	AND A.[EntityId] = @OldId
-	AND NA.[Id] IS NULL
-
-DELETE [Auth]
-WHERE [EntityTypeId] = @PersonEntityTypeId
-AND [EntityId] = @OldId
-";
-
-            ExecuteSql( sql, parms, rockContext );
-
-            // Documents/Transactions/Notes/Tags/Attributes.
-            logger.Write( "Merging documents..." );
-            sql = @"
--- Document
------------------------------------------------------------------------------------------------
--- Update any documents that are associated to the old person to be associated to the new person
-UPDATE [dbo].[Document]
-SET [EntityId] = @NewId
-WHERE [Id] IN (
-	SELECT d.[Id]
-	FROM [Document] d
-	JOIN [DocumentType] dt ON dt.[Id] = d.[DocumentTypeId]
-	WHERE dt.[EntityTypeId] = @PersonEntityTypeId
-		AND d.[EntityId] = @OldId)
-
--- Entity Set
------------------------------------------------------------------------------------------------
--- Update any entity set items that are associated to the old person to be associated to the new 
--- person. 
-UPDATE I
-	SET [EntityId] = @NewId
-FROM [EntitySet] S
-	INNER JOIN [EntitySetItem] I
-		ON I.[EntitySetId] = S.[Id]
-		AND I.[EntityId] = @OldId
-	LEFT OUTER JOIN [EntitySetItem] NI
-		ON NI.[EntitySetId] = S.[Id]
-		AND NI.[EntityId] = @NewId
-WHERE S.[EntityTypeId] = @PersonEntityTypeId
-	AND NI.[Id] IS NULL
-
-DELETE I
-FROM [EntitySet] S
-	INNER JOIN [EntitySetItem] I
-		ON I.[EntitySetId] = S.[Id]
-		AND I.[EntityId] = @OldId
-WHERE S.[EntityTypeId] = @PersonEntityTypeId
-
--- Transaction Detail
------------------------------------------------------------------------------------------------
--- Update any financial transaction ( or scheduled transaction ) details that are associated to the old person to be associated to the new person
-UPDATE [FinancialTransactionDetail] SET [EntityId] = @NewId
-WHERE [EntityTypeId] = @PersonEntityTypeId
-AND [EntityId] = @OldId
-
-UPDATE [FinancialScheduledTransactionDetail] SET [EntityId] = @NewId
-WHERE [EntityTypeId] = @PersonEntityTypeId
-AND [EntityId] = @OldId
-		
--- Following
------------------------------------------------------------------------------------------------
--- Update any followings that are associated to the old person to be associated to the new 
--- person. 
-UPDATE F
-	SET [EntityId] = @NewId
-FROM [Following] F
-	LEFT OUTER JOIN [Following] NF
-		ON NF.[EntityTypeId] = F.[EntityTypeId]
-		AND NF.[EntityId] = @NewId
-		AND NF.[PersonAliasId] = F.[PersonAliasId]
-WHERE F.[EntityTypeId] = @PersonEntityTypeId
-	AND F.[EntityId] = @OldId
-	AND NF.[Id] IS NULL
-
-DELETE [Following]
-WHERE [EntityTypeId] = @PersonEntityTypeId
-AND [EntityId] = @OldId
-
--- History
------------------------------------------------------------------------------------------------
--- Update any history that is associated to the old person to be associated to the new person
-UPDATE [History] SET [EntityId] = @NewId
-WHERE [EntityTypeId] = @PersonEntityTypeId
-AND [EntityId] = @OldId
-
-UPDATE [History] SET [RelatedEntityId] = @NewId
-WHERE [RelatedEntityTypeId] = @PersonEntityTypeId
-AND [RelatedEntityId] = @OldId
-
--- Note
------------------------------------------------------------------------------------------------
--- Update any note that is associated to the old person to be associated to the new person
-UPDATE N
-	SET [EntityId] = @NewId
-FROM [NoteType] NT
-	INNER JOIN [Note] N
-		ON N.[NoteTypeId] = NT.[Id]
-		AND N.[EntityId] = @OldId
-WHERE NT.[EntityTypeId] = @PersonEntityTypeId
-	
--- Tags
------------------------------------------------------------------------------------------------
--- Update any tags associated to the old person to be associated to the new person as long as 
--- same tag does not already exist for new person
-UPDATE TIO
-	SET [EntityGuid] = @NewGuid
-FROM [Tag] T
-	INNER JOIN [TaggedItem] TIO
-		ON TIO.[TagId] = T.[Id]
-		AND TIO.[EntityGuid] = @OldGuid
-	LEFT OUTER JOIN [TaggedItem] TIN
-		ON TIN.[TagId] = T.[Id]
-		AND TIN.[EntityGuid] = @NewGuid
-WHERE T.[EntityTypeId] = @PersonEntityTypeId
-	AND TIN.[Id] IS NULL
-
--- Delete any tagged items still associated with old person (new person had same tag)
-DELETE TIO
-FROM [Tag] T
-	INNER JOIN [TaggedItem] TIO
-		ON TIO.[TagId] = T.[Id]
-		AND TIO.[EntityGuid] = @OldGuid
-WHERE T.[EntityTypeId] = @PersonEntityTypeId
-
--- Attribute Value
------------------------------------------------------------------------------------------------
--- Update any attribute values associated with old id to be associated with primary person
-UPDATE [AttributeValue]
-SET [ValueAsPersonId] = @NewId
-WHERE [ValueAsPersonId] = @OldId
-";
-
-            ExecuteSql( sql, parms, rockContext );
-
-            logger.Write( "Updating PersonAlias pointer..." );
-            sql = @"
--- Update the Person Alias pointer
-UPDATE [PersonAlias]
-SET [PersonId] = @NewId
-WHERE [PersonId] = @OldId
-";
-
-            
-            ExecuteSql( sql, parms, rockContext );
-
-            logger.Write( "Merging previous names..." );
-            sql = @"
--- Delete any duplicate previous names
-DELETE PN
-FROM [PersonPreviousName] PN
-INNER JOIN [PersonAlias] PA ON PA.[Id] = PN.[PersonAliasId]
-WHERE PA.[PersonId] = @NewId
-AND PN.[Id] NOT IN (
-	SELECT MIN(PN2.[Id]) AS [Id]
-	FROM [PersonPreviousName] PN2
-	INNER JOIN [PersonAlias] PA2 ON PA2.[Id] = PN2.[PersonAliasId]
-	WHERE PA2.[PersonId] = @NewId
-	GROUP BY PN2.[LastName]
-)	
-";
-
-            ExecuteSql( sql, parms, rockContext );
-
-            // Foreign Keys
-            logger.Write( "Updating PersonId foreign key references..." );
-            sql = @"
--- Remaining Tables
------------------------------------------------------------------------------------------------
--- Update any column on any table that has a foreign key relationship to the Person table's Id
--- column ( Core tables are handled explicitely above, so this should only include custom tables )
-
-DECLARE @Sql varchar(max)
-
-DECLARE ForeignKeyCursor INSENSITIVE CURSOR FOR
-SELECT 
-	' UPDATE ' + tso.name +
-	' SET ' + tac.name + ' = ' + CAST(@NewId as varchar) +
-	' WHERE ' + tac.name + ' = ' + CAST(@OldId as varchar) 
-FROM sys.foreign_key_columns kc
-	INNER JOIN sys.foreign_keys k ON kc.constraint_object_id = k.object_id
-	INNER JOIN sys.all_objects so ON so.object_id = kc.referenced_object_id
-	INNER JOIN sys.all_columns rac ON rac.column_id = kc.referenced_column_id AND rac.object_id = so.object_id
-	INNER JOIN sys.all_objects tso ON tso.object_id = kc.parent_object_id
-	INNER JOIN sys.all_columns tac ON tac.column_id = kc.parent_column_id AND tac.object_id = tso.object_id
-WHERE so.name = 'Person'
-	AND rac.name = 'Id'
-	AND tso.name NOT IN (
-			'GroupMember'
-		,'PhoneNumber'
-		,'UserLogin'
-		,'PersonAlias'
-        ,'AttributeValue'
-	)
-
-OPEN ForeignKeyCursor
-
-FETCH NEXT
-FROM ForeignKeyCursor
-INTO @Sql
-
-WHILE (@@FETCH_STATUS <> -1)
-BEGIN
-
-	IF (@@FETCH_STATUS = 0)
-	BEGIN
-
-		EXEC(@Sql)
-		
-	END
-	
-	FETCH NEXT
-	FROM ForeignKeyCursor
-	INTO @Sql
-
-END
-
-CLOSE ForeignKeyCursor
-DEALLOCATE ForeignKeyCursor
-";
-
-            ExecuteSql( sql, parms, rockContext );
-
-            // Delete Merged Person.
-            logger.Write( "Deleting merged person record." );
-            sql = @"
--- Person
------------------------------------------------------------------------------------------------
--- Delete the old person record.  By this time it should not have any relationships 
--- with other tables 
-
-DELETE Person
-WHERE [Id] = @OldId
-";
-            ExecuteSql( sql, parms, rockContext );
-
-            // Reset FirstTime Attendance for all but the oldest first time record.
-            logger.Write( "Merging attendances..." );
-            sql = @"
-DECLARE @Records AS TABLE(Id INT, StartDateTime DATETIME)
-
-INSERT INTO @Records
-SELECT Attendance.Id, Attendance.StartDateTime
-FROM Attendance
-INNER JOIN PersonAlias ON PersonAlias.Id = Attendance.PersonAliasId
-WHERE PersonId = @NewId AND IsFirstTime = 1
-
-DECLARE @FirstTimeRecordId AS INT
-SELECT TOP 1 @FirstTimeRecordId = a.Id
-FROM @Records a
-ORDER BY a.StartDateTime ASC
-
-UPDATE Attendance
-SET IsFirstTime = 0
-FROM Attendance
-INNER JOIN PersonAlias ON PersonAlias.Id = Attendance.PersonAliasId
-WHERE Attendance.Id IN (
-	SELECT a.Id
-	FROM @Records a
-)
-AND Attendance.Id != @FirstTimeRecordId
-";
-            ExecuteSql( sql, parms, rockContext );
-        }
 
         /// <summary>
         /// Execute a SQL script in the specified data context.
@@ -2357,7 +2074,8 @@ AND Attendance.Id != @FirstTimeRecordId
                             iconHtml += " <span class='label label-success' title='SMS Enabled' data-toggle='tooltip' data-placement='top'><i class='ti ti-device-mobile-message'></i></span>";
                         }
 
-                        AddProperty( key, phoneType.Value, person.Id, phoneNumber.Number, phoneNumber.NumberFormatted + iconHtml );
+                        var countryCodeAndNumber = string.Format( "{0}|{1}", phoneNumber.CountryCode, phoneNumber.Number );
+                        AddProperty( key, phoneType.Value, person.Id, countryCodeAndNumber, phoneNumber.NumberFormatted + iconHtml );
                     }
                     else
                     {
@@ -2461,7 +2179,8 @@ AND Attendance.Id != @FirstTimeRecordId
                         var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
                                                 || grantPermissionForAllAttributes;
 
-                        AddGroupMemberProperty( "gm_attr_" + attribute.Key, attribute.Value.Name, groupMember, value, formattedValue, hasViewPermission, selected: false, attribute: attribute.Value );
+                        var theKey = $"gm_{groupMember.GroupId}_attr_{attribute.Key}";
+                        AddGroupMemberProperty( theKey, attribute.Value.Name, groupMember, value, formattedValue, hasViewPermission, selected: false, attribute: attribute.Value );
                     }
                 }
             }
@@ -2517,6 +2236,19 @@ AND Attendance.Id != @FirstTimeRecordId
                 {
                     property.Values.Add( new PersonPropertyValue() { PersonId = person.Id } );
                 }
+            }
+
+            // Add last updated information
+            foreach ( var person in people )
+            {
+                // Fetch any change history (per property/value) for the person
+                var historyDataTable = new PersonService( new RockContext() ).GetLatestPersonHistoryChangesDataTable( person.Id );
+                if ( historyDataTable == null )
+                {
+                    continue;
+                }
+
+                UpdatePersonPropertyHistoryMetaData( person, historyDataTable );
             }
 
             var primaryPerson = people.OrderBy( p => p.CreatedDateTime ).FirstOrDefault();
@@ -2697,6 +2429,135 @@ AND Attendance.Id != @FirstTimeRecordId
         #endregion
 
         #region Private Methods
+
+
+        /// <summary>
+        /// Here we will add some meta data to the MergeData.Properties list to provide details
+        /// about when a property was last modified and who modified it for the given person.
+        /// </summary>
+        /// <param name="person"></param>
+        /// <param name="historyDataTable"></param>
+        private void UpdatePersonPropertyHistoryMetaData( Person person, DataTable historyDataTable )
+        {
+            // Now set the extra ModifiedBy/DateTime in the personPropertyValue for the matching properties.
+            foreach ( DataRow row in historyDataTable.Rows )
+            {
+                var valueName = row["ValueName"].ToStringSafe().Replace( " ", "" );
+                var attributeId = row["AttributeId"].ToString().AsIntegerOrNull();
+
+                var personPropertyValue = Properties
+                    .Where( personProperty =>
+                        string.Equals( personProperty.Key, valueName, StringComparison.Ordinal )
+                        || ( attributeId != null && personProperty.AttributeId == attributeId )
+                        )
+                    .SelectMany( pvalue => pvalue.Values )
+                    .Where( pv => pv.PersonId == person.Id )
+                    .FirstOrDefault();
+
+                if ( personPropertyValue != null )
+                {
+                    personPropertyValue.ModifiedByPersonAliasId = row["CreatedByPersonAliasId"].ToStringSafe().AsIntegerOrNull();
+                    personPropertyValue.ModifiedByNickName = row["NickName"].ToStringSafe();
+                    personPropertyValue.ModifiedByLastName = row["LastName"].ToStringSafe();
+                    personPropertyValue.LastModifiedDateTime = row["CreatedDateTime"].ToStringSafe().AsDateTime();
+                }
+            }
+
+            // Now, handle Phone type properties since they have unique keys that start with "phone_"
+            var phonePersonPropertyValues = Properties
+                .Where( personProperty => personProperty.Key.StartsWith( "phone_", StringComparison.Ordinal ) )
+                .Select( p => new
+                {
+                    Property = p,
+                    Value = p.Values.FirstOrDefault( v => v.PersonId == person.Id )
+                } );
+
+            foreach ( var property in phonePersonPropertyValues )
+            {
+                var phoneTypeValueId = property.Property.Key.Replace( "phone_", string.Empty ).AsIntegerOrNull();
+                var personPropertyValue = property.Value;
+
+                if ( !phoneTypeValueId.HasValue )
+                {
+                    continue;
+                }
+
+                var phoneDefinedValueName = DefinedValueCache.GetName( phoneTypeValueId.Value );
+                if ( phoneDefinedValueName == null )
+                {
+                    continue;
+                }
+
+                // Construct the Value-Names for phone using the History naming convention
+                var phoneTypeValueName = string.Format( Rock.Model.PhoneNumber.PHONE_HISTORY_PROPERTY_NAME, phoneDefinedValueName );
+
+                // Update the matching property by each of these:
+                UpdateMatchingPhoneOrAddressDataRowAndSetFromProperty( phoneTypeValueName, historyDataTable, personPropertyValue );
+            }
+
+            // Lastly, handle Address type properties since they have unique keys that start with "address_"
+            var addressPersonPropertyValues = Properties
+                .Where( personProperty => personProperty.Key.StartsWith( "address_", StringComparison.Ordinal ) )
+                .Select( p => new
+                {
+                    Property = p,
+                    Value = p.Values.FirstOrDefault( v => v.PersonId == person.Id )
+                } );
+
+            foreach ( var property in addressPersonPropertyValues )
+            {
+                var locationTypeValueId = property.Property.Key.Replace( "address_", string.Empty ).AsIntegerOrNull();
+                var personPropertyValue = property.Value;
+
+                if ( !locationTypeValueId.HasValue )
+                {
+                    continue;
+                }
+
+                var locationType = DefinedValueCache.GetName( locationTypeValueId.Value );
+                if ( locationType == null )
+                {
+                    continue;
+                }
+
+                // Construct the Value-Names for phone using the History naming convention
+                // Update the matching property by each of these:
+                UpdateMatchingPhoneOrAddressDataRowAndSetFromProperty( $"{locationType} Location", historyDataTable, personPropertyValue );
+            }
+        }
+
+        /// <summary>
+        /// Updates the specified PersonPropertyValue object with information from the most recently updated row in
+        /// the DataTable whose 'ValueName' starts with the given name (this is the convention for phone history
+        /// records). For example, a mobile number can have three entries: "Mobile Phone", "Mobile Phone Messaging Enabled",
+        /// and "Mobile Phone Unlisted", but we only want the one that was most recently updated.
+        /// </summary>
+        /// <remarks>If no matching row is found in the table, the method performs no action.</remarks>
+        /// <param name="name">The prefix to match against the 'ValueName' column in the data table. Only rows where 'ValueName' starts
+        /// with this value are considered.</param>
+        /// <param name="dataTable">The DataTable containing rows to search for a matching phone data entry. Must not be null.</param>
+        /// <param name="personPropertyValue">The PersonPropertyValue object to update with data from the matching row. If null, no update is performed.</param>
+        private void UpdateMatchingPhoneOrAddressDataRowAndSetFromProperty( string name, DataTable dataTable, PersonPropertyValue personPropertyValue )
+        {
+            var row = dataTable
+                .AsEnumerable()
+                .Where( r => r["ValueName"].ToStringSafe().StartsWith( name, StringComparison.Ordinal ) )
+                .OrderByDescending( r => r["CreatedDateTime"].ToStringSafe().AsDateTime() ?? DateTime.MinValue )
+                .FirstOrDefault();
+
+            if ( row == null )
+            {
+                return;
+            }
+
+            if ( personPropertyValue != null )
+            {
+                personPropertyValue.ModifiedByPersonAliasId = row["CreatedByPersonAliasId"].ToStringSafe().AsIntegerOrNull();
+                personPropertyValue.ModifiedByNickName = row["NickName"].ToStringSafe();
+                personPropertyValue.ModifiedByLastName = row["LastName"].ToStringSafe();
+                personPropertyValue.LastModifiedDateTime = row["CreatedDateTime"].ToStringSafe().AsDateTime();
+            }
+        }
 
         private void AddPerson( Person person, bool isBusiness )
         {
@@ -3031,6 +2892,26 @@ AND Attendance.Id != @FirstTimeRecordId
         public string Value { get; set; }
 
         public string FormattedValue { get; set; }
+
+        /// <summary>
+        /// The date and time when the property was last changed.
+        /// </summary>
+        public DateTime? LastModifiedDateTime { get; set; }
+
+        /// <summary>
+        /// The person aliasId of the person who made the last change.
+        /// </summary>
+        public int? ModifiedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// The NickName of the person who made the last change.
+        /// </summary>
+        public string ModifiedByNickName { get; set; }
+
+        /// <summary>
+        /// The LastName of the person who made the last change.
+        /// </summary>
+        public string ModifiedByLastName { get; set; }
     }
 
     #endregion

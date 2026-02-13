@@ -6,7 +6,7 @@
                 class="pull-right"
                 :disabled="disabled"
                 :isSquare="true"
-                @click="$emit('remove', child)">
+                @click="$emit('remove', child as ChildRequestBag)">
         <i class="ti ti-x"></i>
     </RockButton>
 
@@ -17,12 +17,13 @@
     <div class="row">
         <div class="col-sm-6">
             <DropDownList
-                          v-model="child.familyRoleGuid"
+                          :modelValue="child.familyRoleGuid!"
                           :disabled="disabled"
                           :items="config.childRelationshipTypes ?? undefined"
                           :label="`Relationship to ${adultLabel}`"
                           :rules="requiredRules"
-                          :showBlankItem="false" />
+                          :showBlankItem="false"
+                          @update:modelValue="v => child.familyRoleGuid = v as string" />
         </div>
         <div class="col-sm-6"></div><!-- filler/blocker column -->
     </div>
@@ -123,9 +124,9 @@
                              :disabled="disabled"
                              :horizontal="true"
                              :items="[
-                                 { text: 'Email', value: CommunicationPreference.Email.toString() },
-                                 { text: 'SMS', value: CommunicationPreference.SMS.toString() }
-                             ]"
+                                { text: 'Email', value: CommunicationPreference.Email.toString() },
+                                { text: 'SMS', value: CommunicationPreference.SMS.toString() }
+                            ]"
                              label="Communication Preference"
                              :rules="config.childCommunicationPreferenceField.isRequired ? requiredRules : ''" />
         </div>
@@ -294,5 +295,5 @@
         childRequest.value = props.child;
     });
 
-        //#endregion
+    //#endregion
 </script>

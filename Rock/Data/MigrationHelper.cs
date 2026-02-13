@@ -8972,13 +8972,13 @@ END
         /// <param name="blockAttributeKeysToIgnore">An optional dictionary of attribute keys to be ignored for the blocktypes being Chopped or Swapped.</param>
         internal void ReplaceWebformsWithObsidianBlockMigration( string name, Dictionary<string, string> blockTypeReplacements, string migrationStrategy, string jobGuid, Dictionary<string, string> blockAttributeKeysToIgnore = null )
         {
-            if ( name.Length > 31 )
+            if ( name.Length > 38 )
             {
-                throw new ArgumentException( $"Service job name '{name}' exceeds the max limit of 31 characters.", "name" );
+                throw new ArgumentException( $"Service job name '{name}' exceeds the max limit of 38 characters.", "name" );
             }
 
             // note: the cronExpression was chosen at random. It is provided as it is mandatory in the Service Job. Feel free to change it if needed.
-            AddPostUpdateServiceJob( name: $"Rock Update Helper - Replace WebForms Blocks with Obsidian Blocks - {name}",
+            AddPostUpdateServiceJob( name: $"Rock Update Helper - Replace WebForms Blocks with Obsidian - {name}",
                 description: "This job will replace the  WebForms blocks with their Obsidian blocks on all sites, pages, and layouts.",
                 jobType: "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", cronExpression: "0 0 21 1/1 * ? *", guid: jobGuid );
 
@@ -9155,7 +9155,7 @@ END
         /// <param name="isDatasetSystem">Indicates if the persisted dataset is a system dataset.</param>
         /// <param name="isDatasetActive">Indicates if the persisted dataset is active.</param>
         /// <param name="enabledLavaCommands">The enabled Lava commands for the persisted dataset.</param>
-        /// <param name="refreshIntervalMinutes">The refresh interval in minutes for the persisted dataset.</param>
+        /// <param name="persistedScheduleIntervalMinutes">The persisted schedule refresh interval in minutes for the persisted dataset.</param>
         public void AddOrUpdatePersistedDatasetWithRefreshInterval(
             string datasetGuid,
             string datasetAccessKey,
@@ -9168,7 +9168,7 @@ END
             bool isDatasetSystem,
             bool isDatasetActive,
             string enabledLavaCommands,
-            int refreshIntervalMinutes )
+            int persistedScheduleIntervalMinutes )
         {
             Migration.Sql( $@"
     IF NOT EXISTS(SELECT 1 FROM [PersistedDataset] WHERE [Guid] = '{datasetGuid}')
@@ -9184,7 +9184,7 @@ END
             [IsSystem],
             [IsActive],
             [EnabledLavaCommands],
-            [RefreshIntervalMinutes],
+            [PersistedScheduleIntervalMinutes],
             [Guid]
         )
         VALUES (
@@ -9198,7 +9198,7 @@ END
             {(isDatasetSystem ? 1 : 0)},
             {(isDatasetActive ? 1 : 0)},
             '{enabledLavaCommands}',
-            {refreshIntervalMinutes},
+            {persistedScheduleIntervalMinutes},
             '{datasetGuid}'
         );
     END
@@ -9215,7 +9215,7 @@ END
             [IsSystem] = {(isDatasetSystem ? 1 : 0)},
             [IsActive] = {(isDatasetActive ? 1 : 0)},
             [EnabledLavaCommands] = '{enabledLavaCommands}',
-            [RefreshIntervalMinutes] = {refreshIntervalMinutes}
+            [PersistedScheduleIntervalMinutes] = {persistedScheduleIntervalMinutes}
         WHERE [Guid] = '{datasetGuid}';
     END" );
         }

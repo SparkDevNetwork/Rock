@@ -17,7 +17,7 @@
     "@rollup/plugin-commonjs": "^25.0.4",
     "@rollup/plugin-node-resolve": "^15.2.1",
     "@types/google.maps": "^3.54.0",
-    "@types/node": "^20.5.7",
+    "@types/node": "^20.19.25",
     "@typescript-eslint/eslint-plugin": "^6.5.0",
     "@typescript-eslint/parser": "^6.5.0",
     "copyfiles": "^2.4.1",
@@ -31,8 +31,9 @@
     "rollup-plugin-vue": "^6.0.0",
     "ts-node": "^10.9.1",
     "tslib": "^2.6.2",
-    "typescript": "^5.2.2",
+    "typescript": "^5.9.3",
     "vue": "^3.3.10",
-    "vue-eslint-parser": "^9.3.1"
+    "vue-eslint-parser": "^9.3.1",
+    "vue-tsc": "^2.1.6"
   }
 }

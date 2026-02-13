@@ -16,6 +16,7 @@
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
                  :footerActions="footerActions"
+                 :footerSecondaryActions="footerSecondaryActions"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -45,6 +46,8 @@
     import { CheckInLabelDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInLabelDetail/checkInLabelDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { LabelFormat } from "@Obsidian/Enums/CheckIn/Labels/labelFormat";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 
     const config = useConfigurationValues<DetailBlockBox<CheckInLabelBag, CheckInLabelDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -129,6 +132,24 @@
                 type: "link",
                 title: "Preview",
                 handler: () => editPanelElement.value?.showPreview()
+            });
+        }
+
+        return actions;
+    });
+
+    /**
+     * Additional Buttons displayed at the bottom of the Panel.
+     */
+    const footerSecondaryActions = computed((): PanelAction[] => {
+        const actions: PanelAction[] = [];
+
+        if (panelMode.value === DetailPanelMode.View) {
+            actions.push({
+                iconCssClass: "ti ti-copy",
+                title: "Duplicate Label",
+                type: "default",
+                handler: onCopyClick
             });
         }
 
@@ -235,6 +256,22 @@
         errorMessage.value = result.errorMessage ?? "Unknown error while trying to save check in label.";
 
         return false;
+    }
+
+    /**
+     * Called when the copy icon on the detail block has been clicked.
+     */
+    async function onCopyClick(): Promise<void> {
+        var result = await invokeBlockAction<string>("Copy", {
+            key: checkInLabelViewBag.value?.idKey ?? ""
+        });
+
+        if (result.isSuccess && result.data && typeof result.data === "string") {
+            window.location.href = makeUrlRedirectSafe(result.data);
+            return;
+        }
+
+        await alert(result.errorMessage || "Unknown error while trying to copy label.");
     }
 
     // #endregion

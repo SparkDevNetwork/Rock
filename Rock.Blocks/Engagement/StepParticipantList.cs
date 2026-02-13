@@ -23,11 +23,15 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Controls;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StepParticipantList;
+using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Engagement
@@ -63,7 +67,7 @@ namespace Rock.Blocks.Engagement
     // Was [Rock.SystemGuid.BlockTypeGuid( "272b2236-fccc-49b4-b914-20893f5e746d" )]
     [Rock.SystemGuid.BlockTypeGuid( "2E4A1578-145E-4052-9B56-1739F7366827" )]
     [CustomizedGrid]
-    public class StepParticipantList : RockEntityListBlockType<Step>
+    public class StepParticipantList : RockListBlockType<StepParticipantList.StepParticipantRow>
     {
         #region Keys
 
@@ -99,12 +103,37 @@ namespace Rock.Blocks.Engagement
             public const string FilterDateCompletedLower = "filter-date-completed-lower";
             public const string FilterNote = "filter-note";
             public const string FilterCampus = "filter-campus";
+            public const string FilterCreatedDateRange = "filter-created-date-range";
         }
 
         #endregion Keys
 
         #region Fields
+
+        private PersonPreferenceCollection _personPreferences;
+
         #endregion Fields
+
+        #region Properties
+
+        public PersonPreferenceCollection PersonPreferences
+        {
+            get
+            {
+                if ( _personPreferences == null )
+                {
+                    _personPreferences = this.GetBlockPersonPreferences();
+                }
+
+                return _personPreferences;
+            }
+        }
+
+        private SlidingDateRangeBag FilterCreatedDateRange => PersonPreferences
+            .GetValue( PreferenceKey.FilterCreatedDateRange )
+            .ToSlidingDateRangeBagOrNull();
+
+        #endregion
 
         #region Methods
 
@@ -114,8 +143,22 @@ namespace Rock.Blocks.Engagement
             var box = new ListBlockBox<StepParticipantListOptionsBag>();
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            if ( FilterCreatedDateRange == null )
+            {
+                var defaultSlidingDateRange = new SlidingDateRangeBag
+                {
+                    RangeType = SlidingDateRangeType.Last,
+                    TimeUnit = TimeUnitType.Month,
+                    TimeValue = 6
+                };
+
+                this.PersonPreferences.SetValue( PreferenceKey.FilterCreatedDateRange, defaultSlidingDateRange.ToDelimitedSlidingDateRangeOrNull() );
+                this.PersonPreferences.Save();
+            }
+
+            var canEdit = GetCanEdit();
+            box.IsAddEnabled = canEdit;
+            box.IsDeleteEnabled = canEdit;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -164,10 +207,10 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <summary>
-        /// Determines if the add button should be enabled in the grid.
+        /// Determines if the current person can edit the Steps
         /// <summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
+        /// <returns>A boolean value that indicates if the current person can edit.</returns>
+        private bool GetCanEdit()
         {
             var stepType = GetStepType();
             var currentPerson = GetCurrentPerson();
@@ -192,73 +235,188 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<Step> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<StepParticipantRow> GetListQueryable( RockContext rockContext )
         {
             var stepType = GetStepType();
             if ( stepType == null )
             {
-                return new List<Step>().AsQueryable();
+                return new List<StepParticipantRow>().AsQueryable();
             }
 
             var stepService = new StepService( rockContext );
 
             var queryable = stepService.Queryable()
-                .Include( x => x.StepStatus )
-                .Include( x => x.PersonAlias.Person )
-                .Include( x => x.Campus )
                 .AsNoTracking()
-                .Where( x => x.StepTypeId == stepType.Id );
+                .Where( x => x.StepTypeId == stepType.Id )
+                .Select( x => new StepParticipantRow
+                {
+                    Step = x,
+                    StepStatusName = x.StepStatus != null ? x.StepStatus.Name : string.Empty,
+                    CampusName = x.Campus != null ? x.Campus.Name : string.Empty,
+                    IsCompleted = x.StepStatus != null ? x.StepStatus.IsCompleteStatus : false,
+                    Person = new PersonProjection
+                    {
+                        NickName = x.PersonAlias.Person.NickName,
+                        LastName = x.PersonAlias.Person.LastName,
+                        SuffixValueId = x.PersonAlias.Person.SuffixValueId,
+                        PhotoId = x.PersonAlias.Person.PhotoId,
+                        Age = x.PersonAlias.Person.Age,
+                        Gender = x.PersonAlias.Person.Gender,
+                        RecordTypeValueId = x.PersonAlias.Person.RecordTypeValueId,
+                        AgeClassification = x.PersonAlias.Person.AgeClassification,
+                        Id = x.PersonAlias.Person.Id,
+                        RecordStatusValueId = x.PersonAlias.Person.RecordStatusValueId,
+                        TopSignalColor = x.PersonAlias.Person.TopSignalColor,
+                        TopSignalIconCssClass = x.PersonAlias.Person.TopSignalIconCssClass,
+                        IsDeceased = x.PersonAlias.Person.IsDeceased
+                    }
+                } );
+
+            var campusContext = RequestContext.GetContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                queryable = queryable.Where( s => s.Step.CampusId == campusContext.Id );
+            }
+
+            queryable = FilterByDate( queryable );
 
             return queryable;
         }
 
-        protected override IQueryable<Step> GetOrderedListQueryable( IQueryable<Step> queryable, RockContext rockContext )
+        protected override IQueryable<StepParticipantRow> GetOrderedListQueryable( IQueryable<StepParticipantRow> queryable, RockContext rockContext )
         {
-            return queryable.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.FirstName );
+            return queryable.OrderBy( a => a.Person.LastName ).ThenBy( a => a.Person.NickName );
         }
 
-        /// <inheritdoc/>
-        protected override GridBuilder<Step> GetGridBuilder()
+        protected override List<StepParticipantRow> GetListItems( IQueryable<StepParticipantRow> queryable, RockContext rockContext )
         {
-            var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
-            return new GridBuilder<Step>()
-                .WithBlock( this )
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddPersonField( "person", a => a.PersonAlias.Person )
-                .AddTextField( "fullName", a => a.PersonAlias.Person.FullName )
-                .AddTextField( "personIdKey", a => a.PersonAlias.Person.IdKey )
-                .AddTextField( "stepStatus", a => a.StepStatus?.Name )
-                .AddDateTimeField( "dateStarted", a => a.StartDateTime )
-                .AddDateTimeField( "dateCompleted", a => a.CompletedDateTime )
-                .AddTextField( "campus", a => a.Campus?.Name )
-                .AddTextField( "note", a => a.Note )
-                .AddTextField( "signalMarkup", a => a.PersonAlias.Person.GetSignalMarkup() )
-                .AddField( "isDeceased", a => a.PersonAlias.Person.IsDeceased )
-                .AddField( "isInactive", a => a.PersonAlias.Person.RecordStatusValueId == inactiveStatus.Id )
-                .AddField( "id", a => a.Id )
-                .AddField( "personId", a => a.PersonAlias.PersonId )
-                .AddField( "stepStatusId", a => a.StepStatusId)
-                .AddField( "exportPerson", a => a.PersonAlias.Person.FullName )
-                .AddField( "isCompleted", a => a.IsComplete.ToTrueFalse() )
-                .AddAttributeFields( GetGridAttributes() );
-        }
+            var stepParticipantData = queryable.ToList();
 
-        /// <inheritdoc/>
-        protected override List<AttributeCache> BuildGridAttributes()
-        {
-            // Parse the attribute filters
-            var availableAttributes = new List<AttributeCache>();
-            var stepType = GetStepType();
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( stepParticipantData, a => a.Step, GetGridAttributes(), rockContext );
 
-            if ( stepType != null )
+            foreach ( var participant in stepParticipantData )
             {
-                int entityTypeId = new Step().TypeId;
-
-                string entityTypeQualifier = stepType.Id.ToString();
-                availableAttributes.AddRange( AttributeCache.GetOrderedGridAttributes( entityTypeId, "StepTypeId", entityTypeQualifier ).Where( attribute => attribute.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ) );
+                participant.Person.IdKey = IdHasher.Instance.GetHash( participant.Person.Id );
+                participant.Person.Initials = $"{participant.Person.NickName.Truncate( 1, false )}{participant.Person.LastName.Truncate( 1, false )}";
+                participant.Person.FullName = Rock.Model.Person.FormatFullName(
+                    participant.Person.NickName,
+                    participant.Person.LastName,
+                    participant.Person.SuffixValueId,
+                    participant.Person.RecordTypeValueId
+                );
+                participant.Person.PhotoUrl = Rock.Model.Person.GetPersonPhotoUrl(
+                    participant.Person.Initials,
+                    participant.Person.PhotoId,
+                    participant.Person.Age,
+                    participant.Person.Gender,
+                    participant.Person.RecordTypeValueId,
+                    participant.Person.AgeClassification
+                );
             }
 
-            return availableAttributes;
+            return stepParticipantData;
+        }
+
+        /// <inheritdoc/>
+        protected override GridBuilder<StepParticipantRow> GetGridBuilder()
+        {
+            var blockOptions = new GridBuilderGridOptions<StepParticipantRow>
+            {
+                LavaObject = row => row.Step
+            };
+
+            var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+
+            return new GridBuilder<StepParticipantRow>()
+                .WithBlock( this, blockOptions )
+                .AddTextField( "idKey", a => a.Step.IdKey )
+                .AddField( "person", a => a.Person )
+                .AddTextField( "fullName", a => a.Person.FullName )
+                .AddTextField( "personIdKey", a => a.Person.IdKey )
+                .AddTextField( "stepStatus", a => a.StepStatusName )
+                .AddDateTimeField( "dateStarted", a => a.Step.StartDateTime )
+                .AddDateTimeField( "dateCompleted", a => a.Step.CompletedDateTime )
+                .AddTextField( "campus", a => a.CampusName )
+                .AddTextField( "note", a => a.Step.Note )
+                .AddTextField( "signalMarkup", a => Rock.Model.Person.GetSignalMarkup( a.Person.TopSignalColor, a.Person.TopSignalIconCssClass ) )
+                .AddField( "isDeceased", a => a.Person.IsDeceased )
+                .AddField( "isActive", a => a.Person.RecordStatusValueId != inactiveStatus.Id )
+                .AddField( "id", a => a.Step.Id )
+                .AddField( "personId", a => a.Person.Id )
+                .AddField( "stepStatusId", a => a.Step.StepStatusId )
+                .AddField( "exportPerson", a => a.Person.FullName )
+                .AddField( "isCompleted", a => a.IsCompleted.ToTrueFalse() )
+                .AddAttributeFieldsFrom( a => a.Step, GetGridAttributes() );
+        }
+
+        /// <summary>
+        /// Builds the list of grid attributes that should be included on the Grid.
+        /// </summary>
+        /// <remarks>
+        /// The default implementation returns only attributes that are not qualified.
+        /// </remarks>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        private List<AttributeCache> GetGridAttributes()
+        {
+            if ( _gridAttributes == null )
+            {
+                // Parse the attribute filters
+                var availableAttributes = new List<AttributeCache>();
+                var stepType = GetStepType();
+
+                if ( stepType != null )
+                {
+                    int entityTypeId = new Step().TypeId;
+
+                    string entityTypeQualifier = stepType.Id.ToString();
+                    availableAttributes.AddRange( AttributeCache.GetOrderedGridAttributes( entityTypeId, "StepTypeId", entityTypeQualifier ).Where( attribute => attribute.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ) );
+                }
+
+                _gridAttributes = availableAttributes;
+            }
+
+            return _gridAttributes;
+        }
+
+        private List<AttributeCache> _gridAttributes = null;
+
+        /// <summary>
+        /// Filters the queryable by the Created Date
+        /// </summary>
+        /// <param name="queryable">The <see cref="StepParticipantRow"/> queryable</param>
+        /// <returns></returns>
+        private IQueryable<StepParticipantRow> FilterByDate( IQueryable<StepParticipantRow> queryable )
+        {
+            // Default to the last 180 days if a null/invalid range was selected.
+            var defaultSlidingDateRange = new SlidingDateRangeBag
+            {
+                RangeType = SlidingDateRangeType.Last,
+                TimeUnit = TimeUnitType.Month,
+                TimeValue = 6
+            };
+
+            var dateRange = FilterCreatedDateRange.Validate( defaultSlidingDateRange ).ActualDateRange;
+            var dateTimeStart = dateRange.Start;
+            var dateTimeEnd = dateRange.End;
+
+            queryable = queryable
+                .Where( c =>
+                    (
+                        c.Step.CreatedDateTime ??
+                        c.Step.StartDateTime ??
+                        c.Step.CompletedDateTime ??
+                        c.Step.EndDateTime
+                    ) >= dateTimeStart &&
+                    (
+                        c.Step.CreatedDateTime ??
+                        c.Step.StartDateTime ??
+                        c.Step.CompletedDateTime ??
+                        c.Step.EndDateTime
+                    ) <= dateTimeEnd );
+
+
+            return queryable;
         }
 
         /// <summary>
@@ -304,17 +462,6 @@ namespace Rock.Blocks.Engagement
             }
         }
 
-        /// <summary>
-        /// Gets the campus context, returns null if there is only no more than one active campus.
-        /// This is to prevent to filtering out of Steps that are associated with currently inactive
-        /// campuses or no campus at all.
-        /// </summary>
-        /// <returns></returns>
-        private Campus GetCampusContextOrNull()
-        {
-            return ( CampusCache.All( false ).Count > 1 ) ? RequestContext.GetContextEntity<Campus>() : null;
-        }
-
         #endregion Methods
 
         #region Block Actions
@@ -337,7 +484,7 @@ namespace Rock.Blocks.Engagement
                     return ActionBadRequest( $"{Step.FriendlyTypeName} not found." );
                 }
 
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && !entity.IsAuthorized( Authorization.MANAGE_STEPS, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to delete {Step.FriendlyTypeName}." );
                 }
@@ -355,5 +502,59 @@ namespace Rock.Blocks.Engagement
         }
 
         #endregion Block Actions
+
+        #region Helper Classes
+
+        public class StepParticipantRow
+        {
+            public Step Step { get; set; }
+
+            public string StepStatusName { get; set; }
+
+            public string CampusName { get; set; }
+
+            public bool IsCompleted { get; set; }
+
+            public PersonProjection Person { get; set; }
+        }
+
+        public class PersonProjection
+        {
+            public string Initials { get; set; }
+
+            public string NickName { get; set; }
+
+            public string LastName { get; set; }
+
+            public int? SuffixValueId { get; set; }
+
+            public int? PhotoId { get; set; }
+
+            public int? Age { get; set; }
+
+            public Gender Gender { get; set; }
+
+            public int? RecordTypeValueId { get; set; }
+
+            public AgeClassification AgeClassification { get; set; }
+
+            public string PhotoUrl { get; set; }
+
+            public string IdKey { get; set; }
+
+            public int Id { get; set; }
+
+            public string FullName { get; set; }
+
+            public int? RecordStatusValueId { get; set; }
+
+            public string TopSignalColor { get; set; }
+
+            public string TopSignalIconCssClass { get; set; }
+
+            public bool IsDeceased { get; set; }
+        }
+
+        #endregion
     }
 }

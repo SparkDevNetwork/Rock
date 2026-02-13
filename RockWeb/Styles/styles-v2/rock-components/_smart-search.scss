@@ -3,8 +3,8 @@
 // searching people, groups, etc. (Rock Component)
 
 // =============================================================
-// Table of Content           
-//  + Base Style  
+// Table of Content
+//  + Base Style
 // =============================================================
 
 
@@ -20,7 +20,7 @@
   border:             1px solid var(--color-interface-stronger);
   border-radius:      var(--rounded-small);
   transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-  
+
   &:hover {
     border-color: var(--color-interface-medium) !important;
   }
@@ -132,12 +132,23 @@
 
     .dropdown-menu {
       top: 35px;
-      right: 0;
-      left: auto;
+      right: auto;
+      left: 0;
       // smart search type menu
       font-size: var(--font-size-xsmall);
       cursor: pointer;
     }
   }
+}
+
+@media (max-width: 767px) {
+
+  .rock-top-header .block-instance .smartsearch .dropdown {
+    .dropdown-menu {
+      right: auto;
+      left: 0;
+    }
+  }
+
 }
 // ====================== END BASE STYLE ======================

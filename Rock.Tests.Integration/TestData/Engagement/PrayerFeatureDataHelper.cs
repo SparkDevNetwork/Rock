@@ -677,7 +677,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
                 Debug.Print( $"Added Prayer Request #{entriesAdded}... [PersonId={person.Id}, Date={requestDate}]" );
             }
 
-            Debug.Print( $"Create Data completed: { entriesAdded } requests created." );
+            Debug.Print( $"Create Data completed: {entriesAdded} requests created." );
 
             if ( entriesAdded == 0 )
             {

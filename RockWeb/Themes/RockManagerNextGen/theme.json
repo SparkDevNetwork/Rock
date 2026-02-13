@@ -1,0 +1,124 @@
+{
+    "$schema": "https://community.rockrms.com/schema/2024-10-01/theme.schema.json",
+    "name": "Rock Check-in Manager - Next Gen",
+    "description": "The default theme for the Rock Check-in Manager - Next Gen.",
+    "purpose": "web",
+    "availableIconSets": ["fontawesome", "tabler"],
+    "fields": [
+          {
+            "type":"panel",
+            "title":"Application Colors",
+            "expanded": true,
+            "fields": [
+
+                {
+                    "type": "color",
+                    "name": "Primary Color",
+                    "variable": "base-primary",
+                    "description": "The primary color used to highlight screen elements, such as the main button.",
+                    "default": "#FF791D"
+                },
+
+                {
+                    "type": "color",
+                    "name": "Link Color",
+                    "variable": "base-link",
+                    "description": "The link color used to highlight screen elements, such as the main button.",
+                    "default": "#006DCC"
+                },
+
+                {
+                    "type": "color",
+                    "name": "Critical Color",
+                    "variable": "base-critical",
+                    "description": "Color use to paint critical alert, label, badges...",
+                    "default": "#ee7725"
+                },
+                {
+                    "type": "color",
+                    "name": "Danger Color",
+                    "variable": "base-danger",
+                    "description": "The danger color used to paint alert, label, badges.",
+                    "default": "#D70015"
+                },
+                {
+                    "type": "color",
+                    "name": "Info Color",
+                    "variable": "base-info",
+                    "description": "The info color used to paint alert, label, badges.",
+                    "default": "#005DD7"
+                },
+                {
+                    "type": "color",
+                    "name": "Success Color",
+                    "variable": "base-success",
+                    "description": "The success color used to paint alert, label, badges.",
+                    "default": "#01A11E"
+                },
+                {
+                    "type": "color",
+                    "name": "Warning Color",
+                    "variable": "base-warning",
+                    "description": "The warning color used to paint alert, label, badges.",
+                    "default": "#E58600"
+                }
+            ]
+        },
+        {
+            "type": "panel",
+            "title": "Interface Colors",
+            "expanded": false,
+            "fields": [
+                {
+                    "type": "color",
+                    "name": "Interface Color Strongest",
+                    "variable": "base-interface-strongest",
+                    "description": "The strongest color used throughout the UI",
+                    "default": "#0a0a0a"
+                },
+                {
+                    "type": "color",
+                    "name": "Interface Color Stronger",
+                    "variable": "base-interface-stronger",
+                    "description": "A stronger color used throughout the UI",
+                    "default": "#0d1117"
+                },
+                {
+                    "type": "color",
+                    "name": "Interface Color Strong",
+                    "variable": "base-interface-strong",
+                    "description": "A strong color used throughout the UI",
+                    "default": "#3d444d"
+                },
+                {
+                    "type": "color",
+                    "name": "Interface Color Medium",
+                    "variable": "base-interface-medium",
+                    "description": "A medium color used throughout the UI",
+                    "default": "#8B8BA7"
+                },
+                {
+                    "type": "color",
+                    "name": "Interface Color Soft",
+                    "variable": "base-interface-soft",
+                    "description": "A soft color used throughout the UI",
+                    "default": "#D9D9E3"
+                },
+                {
+                    "type": "color",
+                    "name": "Interface Color Softer",
+                    "variable": "base-interface-softer",
+                    "description": "A softer color used throughout the UI",
+                    "default": "#f8f8fc"
+                },
+                {
+                    "type": "color",
+                    "name": "Interface Color Softest",
+                    "variable": "base-interface-softest",
+                    "description": "The softest color used throughout the UI",
+                    "default": "#fdfdfd"
+                }
+            ]
+        }
+    ]
+}

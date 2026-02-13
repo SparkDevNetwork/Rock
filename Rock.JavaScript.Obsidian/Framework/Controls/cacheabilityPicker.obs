@@ -96,8 +96,8 @@
 
     const shouldAskForMaxAge = computed<boolean>(() => {
         const cacheType = internalValue.value.rockCacheabilityType;
-        return cacheType == RockCacheabilityType.Public || cacheType == RockCacheabilityType.Private;
+        return cacheType === RockCacheabilityType.Public || cacheType === RockCacheabilityType.Private;
     });
 
-    const shouldAskForSharedMaxAge = computed<boolean>(() => internalValue.value.rockCacheabilityType == RockCacheabilityType.Public);
+    const shouldAskForSharedMaxAge = computed<boolean>(() => internalValue.value.rockCacheabilityType === RockCacheabilityType.Public);
 </script>

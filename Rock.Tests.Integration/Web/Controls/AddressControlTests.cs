@@ -69,7 +69,7 @@ namespace Rock.Tests.Integration.Web.Controls
             var isValid = addressControl.Validate( out messages );
 
             Assert.IsFalse( isValid );
-            Assert.AreEqual( 1, messages.Count );
+            Assert.HasCount( 1, messages );
             Assert.AreEqual( "Incomplete Address. The following fields are required: City.", messages[0] );
         }
 

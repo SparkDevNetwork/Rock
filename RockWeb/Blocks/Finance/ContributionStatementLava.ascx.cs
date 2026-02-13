@@ -42,7 +42,12 @@ namespace RockWeb.Blocks.Finance
     [Description( "Obsolete. Use ContributionStatementGenerator instead." )]
     [AccountsField( "Accounts", "A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be used.", false, order: 0 )]
     [BooleanField( "Display Pledges", "Determines if pledges should be shown.", true, order: 1 )]
-    [CodeEditorField( "Lava Template", "The Lava template to use for the contribution statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, @"{% capture pageTitle %}{{ 'Global' | Attribute:'OrganizationName' }} | Contribution Statement{%endcapture%}
+    [CodeEditorField( "Lava Template",
+        Description = "The Lava template to use for the contribution statement.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 500,
+        IsRequired = true,
+        DefaultValue = @"{% capture pageTitle %}{{ 'Global' | Attribute:'OrganizationName' }} | Contribution Statement{%endcapture%}
 {{ pageTitle | SetPageTitle }}
 
 <div class=""row margin-b-xl"">
@@ -172,7 +177,8 @@ namespace RockWeb.Blocks.Finance
 
 <p class=""text-center"">
     <em>Unless otherwise noted, the only goods and services provided are intangible religious benefits.</em>
-</p>", order: 2 )]
+</p>",
+        Order = 2 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Excluded Currency Types", "Select the currency types you would like to excluded.", false, true, order: 4 )]
     [BooleanField( "Allow Person Querystring", "Determines if any person other than the currently logged in person is allowed to be passed through the querystring. For security reasons this is not allowed by default.", false, order: 5 )]
 

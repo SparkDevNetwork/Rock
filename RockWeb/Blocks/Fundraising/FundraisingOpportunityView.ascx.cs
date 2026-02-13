@@ -39,17 +39,37 @@ namespace RockWeb.Blocks.Fundraising
     [Category( "Fundraising" )]
     [Description( "Public facing block that shows a fundraising opportunity" )]
 
-    [CodeEditorField( "Summary Lava Template", "Lava template for what to display at the top of the main panel. Usually used to display title and other details about the fundraising opportunity.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
-        @"{% include '~~/Assets/Lava/FundraisingOpportunitySummary.lava' %}", order: 1 )]
+    [CodeEditorField( "Summary Lava Template",
+        Description = "Lava template for what to display at the top of the main panel. Usually used to display title and other details about the fundraising opportunity.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = @"{% include '~~/Assets/Lava/FundraisingOpportunitySummary.lava' %}",
+        Order = 1 )]
 
-    [CodeEditorField( "Sidebar Lava Template", "Lava template for what to display on the left side bar. Usually used to show event registration or other info.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
-        @"{% include '~~/Assets/Lava/FundraisingOpportunitySidebar.lava' %}", order: 2 )]
+    [CodeEditorField( "Sidebar Lava Template",
+        Description = "Lava template for what to display on the left side bar. Usually used to show event registration or other info.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = @"{% include '~~/Assets/Lava/FundraisingOpportunitySidebar.lava' %}",
+        Order = 2 )]
 
-    [CodeEditorField( "Updates Lava Template", "Lava template for the Updates (Content Channel Items)", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
-        @"{% include '~~/Assets/Lava/FundraisingOpportunityUpdates.lava' %}", order: 3 )]
+    [CodeEditorField( "Updates Lava Template",
+        Description = "Lava template for the Updates (Content Channel Items)",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = @"{% include '~~/Assets/Lava/FundraisingOpportunityUpdates.lava' %}",
+        Order = 3 )]
 
-    [CodeEditorField( "Participant Lava Template", "Lava template for how the participant actions and progress bar should be displayed", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
-        @"{% include '~~/Assets/Lava/FundraisingOpportunityParticipant.lava' %}", order: 4 )]
+    [CodeEditorField( "Participant Lava Template",
+        Description = "Lava template for how the participant actions and progress bar should be displayed",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = @"{% include '~~/Assets/Lava/FundraisingOpportunityParticipant.lava' %}",
+        Order = 4 )]
 
     [NoteTypeField( "Note Type", "Note Type to use for comments", false, "Rock.Model.Group", defaultValue: "9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95", order: 5 )]
     [LinkedPage( "Donation Page", "The page where a person can donate to the fundraising opportunity", required: false, order: 6 )]

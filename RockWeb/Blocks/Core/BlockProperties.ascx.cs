@@ -15,27 +15,28 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Blocks;
+using Rock.Core;
+using Rock.Data;
+using Rock.Enums.Cms;
+using Rock.Enums.Core.Grid;
+using Rock.Lava;
 using Rock.Model;
+using Rock.Security;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Security;
-using Rock.Data;
-using System.Web;
 using Rock.Web.UI.Controls;
-using System.Text;
-using Rock.Web;
-using Rock.Lava;
-using Rock.Core;
-using Rock.Enums.Cms;
 
 namespace RockWeb.Blocks.Core
 {
@@ -395,6 +396,8 @@ namespace RockWeb.Blocks.Core
                 || customizedGrid?.IsStickyHeaderSupported == true;
             this.ShowMobileOptions = _block.Attributes.Any( a => a.Value.Categories.Any( c => c.Name == "custommobile" ) );
 
+            nbCustomColumnMessage.Text = customizedGrid?.CustomColumnMessage;
+
             if ( !Page.IsPostBack && _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 if ( _block.Attributes != null )
@@ -546,7 +549,7 @@ namespace RockWeb.Blocks.Core
                 }
 
                 SaveCustomColumnsConfigToViewState();
-                if ( this.CustomGridColumnsConfigState != null && this.CustomGridColumnsConfigState.ColumnsConfig.Any() )
+                if ( this.CustomGridColumnsConfigState != null && this.CustomGridColumnsConfigState.Columns.Any() )
                 {
                     if ( !block.Attributes.Any( a => a.Key == CustomGridColumnsConfig.AttributeKey ) )
                     {
@@ -826,7 +829,7 @@ namespace RockWeb.Blocks.Core
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
             BlockCache _block = BlockCache.Get( blockId );
 
-            rptCustomGridColumns.DataSource = CustomGridColumnsConfigState.ColumnsConfig;
+            rptCustomGridColumns.DataSource = CustomGridColumnsConfigState.Columns;
             rptCustomGridColumns.DataBind();
         }
 
@@ -838,13 +841,13 @@ namespace RockWeb.Blocks.Core
             this.CustomGridColumnsConfigState = new CustomGridColumnsConfig();
             foreach ( var item in rptCustomGridColumns.Items.OfType<RepeaterItem>() )
             {
-                var columnConfig = new CustomGridColumnsConfig.ColumnConfig();
+                var columnConfig = new CustomColumnConfig();
 
                 var nbRelativeOffset = item.FindControl( "nbRelativeOffset" ) as NumberBox;
                 columnConfig.PositionOffset = nbRelativeOffset.Text.AsInteger();
 
                 var ddlOffsetType = item.FindControl( "ddlOffsetType" ) as RockDropDownList;
-                columnConfig.PositionOffsetType = ddlOffsetType.SelectedValueAsEnum<CustomGridColumnsConfig.ColumnConfig.OffsetType>();
+                columnConfig.PositionOffsetType = ddlOffsetType.SelectedValueAsEnum<ColumnPositionAnchor>();
 
                 var tbHeaderText = item.FindControl( "tbHeaderText" ) as RockTextBox;
                 columnConfig.HeaderText = tbHeaderText.Text;
@@ -855,7 +858,7 @@ namespace RockWeb.Blocks.Core
                 var ceLavaTemplate = item.FindControl( "ceLavaTemplate" ) as CodeEditor;
                 columnConfig.LavaTemplate = ceLavaTemplate.Text;
 
-                this.CustomGridColumnsConfigState.ColumnsConfig.Add( columnConfig );
+                this.CustomGridColumnsConfigState.Columns.Add( columnConfig );
             }
         }
 
@@ -868,7 +871,7 @@ namespace RockWeb.Blocks.Core
         protected void lbAddColumns_Click( object sender, EventArgs e )
         {
             SaveCustomColumnsConfigToViewState();
-            this.CustomGridColumnsConfigState.ColumnsConfig.Add( new CustomGridColumnsConfig.ColumnConfig() );
+            this.CustomGridColumnsConfigState.Columns.Add( new CustomColumnConfig() );
             BindCustomColumnsConfig();
         }
 
@@ -883,7 +886,7 @@ namespace RockWeb.Blocks.Core
             int? columnIndex = ( sender as LinkButton ).CommandArgument.AsIntegerOrNull();
             if ( columnIndex.HasValue )
             {
-                this.CustomGridColumnsConfigState.ColumnsConfig.RemoveAt( columnIndex.Value );
+                this.CustomGridColumnsConfigState.Columns.RemoveAt( columnIndex.Value );
             }
 
             BindCustomColumnsConfig();
@@ -896,7 +899,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptCustomGridColumns_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            CustomGridColumnsConfig.ColumnConfig columnConfig = e.Item.DataItem as CustomGridColumnsConfig.ColumnConfig;
+            CustomColumnConfig columnConfig = e.Item.DataItem as CustomColumnConfig;
             if ( columnConfig != null )
             {
                 var nbRelativeOffset = e.Item.FindControl( "nbRelativeOffset" ) as NumberBox;

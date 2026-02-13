@@ -23,6 +23,7 @@ using System.Text.RegularExpressions;
 
 using Rock.Attribute;
 using Rock.Blocks;
+using Rock.Enums.Cms;
 using Rock.Model;
 using Rock.Net;
 using Rock.ViewModels.Core.Grid;
@@ -204,7 +205,7 @@ namespace Rock.Obsidian.UI
             AddDefaultGridActionUrls( builder, block );
 
             // Add any custom columns that are defined in the block settings.
-            AddCustomGridColumns( builder, block, options?.LavaObject );
+            AddCustomGridColumns( builder, block, options );
 
             // Add any custom actions that are defined in the block settings.
             AddCustomGridActions( builder, block );
@@ -320,8 +321,8 @@ namespace Rock.Obsidian.UI
         /// <typeparam name="T">The type of the source collection that will be used to populate the grid.</typeparam>
         /// <param name="builder">The <see cref="GridBuilder{T}"/> to add the field to.</param>
         /// <param name="block">The block that is displaying this grid.</param>
-        /// <param name="lavaAccessor">The function that will be used to access the object sent to lava.</param>
-        private static void AddCustomGridColumns<T>( GridBuilder<T> builder, IRockBlockType block, Func<T, object> lavaAccessor )
+        /// <param name="options">The options that describe optional configuration data.</param>
+        private static void AddCustomGridColumns<T>( GridBuilder<T> builder, IRockBlockType block, GridBuilderGridOptions<T> options )
         {
             var customizedGrid = block.GetType().GetCustomAttribute<CustomizedGridAttribute>();
 
@@ -332,22 +333,26 @@ namespace Rock.Obsidian.UI
 
             var additionalColumns = block.BlockCache.GetAttributeValue( CustomGridColumnsConfig.AttributeKey ).FromJsonOrNull<CustomGridColumnsConfig>();
 
-            if ( additionalColumns == null || additionalColumns.ColumnsConfig.Count == 0 )
+            if ( additionalColumns == null || additionalColumns.Columns.Count == 0 )
             {
                 return;
             }
 
             System.Diagnostics.Activity.Current?.AddTag( "rock.grid.custom_column", true );
 
-            for ( int i = 0; i < additionalColumns.ColumnsConfig.Count; i++ )
+            var filteredColumns = additionalColumns.Columns
+                .Where( c => options?.CustomColumnFilter == null || options.CustomColumnFilter( c ) )
+                .ToList();
+
+            for ( int i = 0; i < filteredColumns.Count; i++ )
             {
-                var column = additionalColumns.ColumnsConfig[i];
+                var column = filteredColumns[i];
 
                 builder.AddTextField( $"core.customColumn_${i}", row =>
                 {
-                    if ( lavaAccessor != null )
+                    if ( options?.LavaObject != null )
                     {
-                        return GetCustomColumnText( lavaAccessor( row ), column.LavaTemplate, block.RequestContext );
+                        return GetCustomColumnText( options.LavaObject( row ), column.LavaTemplate, block.RequestContext );
                     }
                     else
                     {
@@ -358,16 +363,14 @@ namespace Rock.Obsidian.UI
 
             builder.AddDefinitionAction( definition =>
             {
-                definition.CustomColumns = additionalColumns.ColumnsConfig
+                definition.CustomColumns = filteredColumns
                     .Select( ( cc, index ) => new CustomColumnDefinitionBag
                     {
                         HeaderText = cc.HeaderText,
                         HeaderClass = cc.HeaderClass,
                         ItemClass = cc.ItemClass,
                         FieldName = $"core.customColumn_${index}",
-                        Anchor = cc.PositionOffsetType == CustomGridColumnsConfig.ColumnConfig.OffsetType.FirstColumn
-                            ? Enums.Core.Grid.ColumnPositionAnchor.FirstColumn
-                            : Enums.Core.Grid.ColumnPositionAnchor.LastColumn,
+                        Anchor = cc.PositionOffsetType,
                         PositionOffset = cc.PositionOffset
                     } )
                     .ToList();

@@ -124,7 +124,8 @@ namespace Rock.Blocks.Reporting
     #endregion Block Attributes
 
     [SystemGuid.EntityTypeGuid( "6739DD77-A510-4826-8263-2C2E53D31DF9" )]
-    [SystemGuid.BlockTypeGuid( "551DB463-A013-476C-A619-57CC234DC410" )]
+    // Was [SystemGuid.BlockTypeGuid( "551DB463-A013-476C-A619-57CC234DC410" )]
+    [Rock.SystemGuid.BlockTypeGuid( "B215F5FA-410C-4674-8C47-43DC40AF9F67" )]
     public class Insights : RockBlockType
     {
         #region Fields
@@ -573,6 +574,7 @@ namespace Rock.Blocks.Reporting
 
             var alivePersonsCount = alivePersons.Count();
             var statusCounts = alivePersons
+                .Where( p => p.RecordStatusValueId.HasValue )
                 .GroupBy( p => p.RecordStatusValueId )
                 .ToDictionary( g => g.Key, g => g.Count() );
 
@@ -632,9 +634,10 @@ namespace Rock.Blocks.Reporting
             return alivePersonsQry.ToList();
         }
 
-        /// Gets the count of persons from the provided collection who have a mobile phone number.
+        /// <summary>
+        /// Counts the number of persons in the provided collection who have a mobile phone number.
         /// </summary>
-        /// <param name="persons">A collection of <see cref="PersonViewModel"/> representing the persons to check for mobile phone numbers.</param>
+        /// <param name="persons">A collection of <see cref="PersonViewModel"/> representing the persons to check for mobile numbers.</param>
         /// <param name="rockContext">The <see cref="RockContext"/> used to query phone numbers from the database.</param>
         /// <returns>
         /// An <see cref="int"/> representing the number of persons in the collection who have a mobile phone number.
@@ -642,44 +645,93 @@ namespace Rock.Blocks.Reporting
         private static int CountPersonsWithMobileNumber( IEnumerable<PersonViewModel> persons, RockContext rockContext )
         {
             var mobilePhoneTypeGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid();
-            var personIds = persons.Select( p => p.Id ).ToList();
+            var personIdSet = new HashSet<int>( persons.Select( person => person.Id ) );
 
-            return new PhoneNumberService( rockContext ).Queryable()
+            var mobilePersonIds = new PhoneNumberService( rockContext ).Queryable()
                 .AsNoTracking()
-                .Where( number => number.NumberTypeValue.Guid == mobilePhoneTypeGuid
-                    && personIds.Contains( number.PersonId ) )
+                .Where( number => number.NumberTypeValue.Guid == mobilePhoneTypeGuid )
                 .Select( number => number.PersonId )
                 .Distinct()
-                .Count();
+                .ToList();
+
+            return mobilePersonIds.Count( id => personIdSet.Contains( id ) );
         }
 
-        /// Gets the count of persons from the provided collection who have a home address.
+        /// <summary>
+        /// Counts the number of persons in the provided collection who have a home address.
         /// </summary>
         /// <param name="persons">A collection of <see cref="PersonViewModel"/> representing the persons to check for home addresses.</param>
-        /// <param name="rockContext">The <see cref="RockContext"/> used to queryhome addresses from the database.</param>
+        /// <param name="rockContext">The <see cref="RockContext"/> used to query group locations from the database.</param>
         /// <returns>
         /// An <see cref="int"/> representing the number of persons in the collection who have a home address.
         /// </returns>
         private static int CountPersonsWithHomeAddress( IEnumerable<PersonViewModel> persons, RockContext rockContext )
         {
             var homeLocationTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
-            var familyIds = persons.Select( p => p.PrimaryFamilyId ).Where( id => id.HasValue ).Select( id => id.Value ).ToList();
 
-            // Get all group locations of type 'Home' for the families
-            var groupLocations = new GroupLocationService( rockContext ).Queryable()
-                .AsNoTracking()
-                .Where(
-                    groupLocation => groupLocation.GroupLocationTypeValueId == homeLocationTypeValueId
-                    && familyIds.Contains( groupLocation.GroupId )
-                )
-                .Select( groupLocation => groupLocation.GroupId )
-                .Distinct()
-                .ToList();
+            // Extract PrimaryFamilyIds (non-null)
+            var familyIdSet = new HashSet<int>(
+                persons.Select( p => p.PrimaryFamilyId )
+                       .Where( id => id.HasValue )
+                       .Select( id => id.Value )
+            );
 
-            // Count persons whose PrimaryFamilyId matches a family with a home address
-            var count = persons.Count( p => p.PrimaryFamilyId.HasValue && groupLocations.Contains( p.PrimaryFamilyId.Value ) );
+            var groupLocationService = new GroupLocationService( rockContext );
+            var groupIdsWithHomeAddress = new HashSet<int>();
+            const int batchSize = 200;
+
+            // Manual batching over familyIdSet
+            var batch = new List<int>( batchSize );
+            foreach ( var id in familyIdSet )
+            {
+                batch.Add( id );
+
+                if ( batch.Count >= batchSize )
+                {
+                    var batchResults = groupLocationService.Queryable()
+                        .AsNoTracking()
+                        .Where( gl =>
+                            gl.GroupLocationTypeValueId == homeLocationTypeValueId &&
+                            batch.Contains( gl.GroupId ) )
+                        .Select( gl => gl.GroupId )
+                        .Distinct()
+                        .ToList();
+
+                    foreach ( var gid in batchResults )
+                    {
+                        groupIdsWithHomeAddress.Add( gid );
+                    }
+
+                    batch.Clear();
+                }
+            }
+
+            // Handle remaining batch
+            if ( batch.Count > 0 )
+            {
+                var batchResults = groupLocationService.Queryable()
+                    .AsNoTracking()
+                    .Where( gl =>
+                        gl.GroupLocationTypeValueId == homeLocationTypeValueId &&
+                        batch.Contains( gl.GroupId ) )
+                    .Select( gl => gl.GroupId )
+                    .Distinct()
+                    .ToList();
+
+                foreach ( var gid in batchResults )
+                {
+                    groupIdsWithHomeAddress.Add( gid );
+                }
+            }
+
+            // Final count based on matched family IDs
+            var count = persons.Count( p =>
+                p.PrimaryFamilyId.HasValue &&
+                groupIdsWithHomeAddress.Contains( p.PrimaryFamilyId.Value ) );
+
             return count;
         }
+
 
         /// <summary>
         /// Calculates the percentage of a part relative to a total and returns it as a formatted string.

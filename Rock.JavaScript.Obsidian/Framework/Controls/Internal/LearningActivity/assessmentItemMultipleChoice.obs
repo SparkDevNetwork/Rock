@@ -20,10 +20,10 @@
                              :label="index === 0 ? 'Answers' : ''"
                              :rules="index === 0 ? 'required' : undefined" />
 
-                    <button
-                            aria-label="Remove this answer"
+                    <button aria-label="Remove this answer"
                             :disabled="disabled"
                             class="btn btn-default btn-square remove-answer-button"
+                            type="button"
                             @click.prevent="answers.splice(index, 1)">
                         <i class="ti ti-x" aria-hidden="true"></i>
                     </button>

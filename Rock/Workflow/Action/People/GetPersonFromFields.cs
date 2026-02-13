@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -58,10 +59,12 @@ namespace Rock.Workflow.Action
         true, "", "", 7, PERSON_ATTRIBUTE_KEY, new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Default Record Status", "The record status to use when creating a new person", false, false,
         Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 8 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE, "Default Record Source", "The record source to use when creating a new person (default = 'Workflow'). If a 'RecordSource' page parameter is found, it will be used instead.", false, false,
+        Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_WORKFLOW, "", 9 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status to use when creating a new person", false, false,
-        Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT, "", 9 )]
+        Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT, "", 10 )]
     [WorkflowAttribute( "Default Campus", "The attribute value to use as the default campus when creating a new person.",
-        false, "", "", 10, DEFAULT_CAMPUS_KEY, new string[] { "Rock.Field.Types.CampusFieldType" } )]
+        false, "", "", 11, DEFAULT_CAMPUS_KEY, new string[] { "Rock.Field.Types.CampusFieldType" } )]
 
     // Update settings
     [BooleanField(
@@ -80,6 +83,7 @@ namespace Rock.Workflow.Action
         private const string PERSON_ATTRIBUTE_KEY = "PersonAttribute";
         private const string DEFAULT_CONNECTION_STATUS_KEY = "DefaultConnectionStatus";
         private const string DEFAULT_RECORD_STATUS_KEY = "DefaultRecordStatus";
+        private const string DEFAULT_RECORD_SOURCE_KEY = "DefaultRecordSource";
         private const string DEFAULT_CAMPUS_KEY = "DefaultCampus";
         private const string MOBILE_NUMBER_KEY = "MobileNumber";
         private const string BIRTH_MONTH_KEY = "BirthMonth";
@@ -158,6 +162,14 @@ namespace Rock.Workflow.Action
                             person.RecordStatusValueId = defaultRecordStatus.Id;
                         }
 
+                        var defaultRecordSourceId = RecordSourceHelper.GetSessionRecordSourceValueId()
+                            ?? DefinedValueCache.Get( GetActionAttributeValue( action, DEFAULT_RECORD_SOURCE_KEY ).AsGuid() )?.Id;
+
+                        if ( defaultRecordSourceId.HasValue )
+                        {
+                            person.RecordSourceValueId = defaultRecordSourceId.Value;
+                        }
+
                         var defaultCampusGuid = GetAttributeValue( action, DEFAULT_CAMPUS_KEY, true ).AsGuidOrNull();
                         var defaultCampus = defaultCampusGuid.HasValue ? CampusCache.Get( defaultCampusGuid.Value ) : null;
                         var defaultCampusId = defaultCampus?.Id;
@@ -198,28 +210,48 @@ namespace Rock.Workflow.Action
 
         void UpdatePhoneNumber( Person person, string mobileNumber )
         {
-            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( mobileNumber ) ) )
+            if ( string.IsNullOrWhiteSpace( mobileNumber ) )
             {
-                var phoneNumberType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
-                if ( phoneNumberType == null )
-                {
-                    return;
-                }
+                return;
+            }
 
-                var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
-                string oldPhoneNumber = string.Empty;
-                if ( phoneNumber == null )
-                {
-                    phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberType.Id };
-                    person.PhoneNumbers.Add( phoneNumber );
-                }
-                else
-                {
-                    oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
-                }
+            var cleanedNumber = PhoneNumber.CleanNumber( mobileNumber );
+            if ( string.IsNullOrWhiteSpace( cleanedNumber ) )
+            {
+                return;
+            }
 
-                // TODO handle country code here
-                phoneNumber.Number = PhoneNumber.CleanNumber( mobileNumber );
+            var phoneNumberType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+            if ( phoneNumberType == null )
+            {
+                return;
+            }
+
+            var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
+            string oldPhoneNumber = string.Empty;
+            if ( phoneNumber == null )
+            {
+                phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberType.Id };
+                person.PhoneNumbers.Add( phoneNumber );
+            }
+            else
+            {
+                oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
+            }
+
+            string countryCodePart;
+            string numberPart;
+
+            var parsedOk = PhoneNumber.TryParseNumber( mobileNumber, out countryCodePart, out numberPart );
+            if ( parsedOk )
+            {
+                phoneNumber.CountryCode = PhoneNumber.CleanNumber( countryCodePart );
+                phoneNumber.Number = PhoneNumber.CleanNumber( numberPart );
+            }
+            else
+            {
+                phoneNumber.CountryCode = PhoneNumber.DefaultCountryCode();
+                phoneNumber.Number = cleanedNumber;
             }
         }
     }

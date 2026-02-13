@@ -23,6 +23,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage",
+    LegacyDetailPage = "LegacyDetailPage",
 }
 
 export const enum PreferenceKey {
@@ -42,7 +43,7 @@ export type GridSettingsOptions = {
     hideDrafts: boolean;
     slidingDateRange: SlidingDateRange | null;
     recipientCountRange?: NumberRangeModelValue;
-    topic?: ListItemBag | null;
+    topic: string;
     name: string;
     content: string;
 };
@@ -66,5 +67,6 @@ export type Row = {
     sentByPerson?: PersonFieldBag | null;
     reviewedDateTime?: string | null;
     reviewedByPersonFullName?: string | null;
-    isDeleteDisabled: boolean
+    isDeleteDisabled: boolean;
+    isLegacyCommunication: boolean;
 };

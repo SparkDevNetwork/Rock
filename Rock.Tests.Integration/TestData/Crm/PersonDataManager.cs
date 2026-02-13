@@ -312,7 +312,7 @@ namespace Rock.Tests.Integration.TestData.Crm
             rockContext.SaveChanges();
         }
 
-        
+
         public class PersonPreviousNameInfo
         {
             public string PreviousLastName { get; set; }

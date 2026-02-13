@@ -9,7 +9,9 @@
 //  + Communication Detail
 //  + Communication List
 //  + Communication Wizard
+//  + Email Builder
 //  + Legacy Email Editor
+//  + Communication History
 // =============================================================
 
 
@@ -57,6 +59,124 @@ iframe.email-body {
   border:               1px solid var(--color-interface-soft);
 }
 
+// Comms Analytics
+// =========================
+
+.communication-detail-analytics.contentsection-list { // Override default contentstack-list to remove overflow
+    overflow-y: unset;
+}
+
+// Empty State Messages
+.communication-detail-no-metrics {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-interface-medium);
+}
+
+.communication-detail-no-metrics-message {
+    font-size: var(--font-size-xsmall);
+    margin-top: var(--spacing-tiny);
+    text-align: center;
+}
+
+// KPI Cards
+
+.communication-detail-kpi .kpi { // Override default KPI margin to fill cols.
+  margin: 0;
+}
+
+// Performance Chart
+.communication-detail-performance-chart {
+    height: 450px;
+}
+
+// Top Clients Chart
+.communication-detail-top-clients,
+.communication-detail-unique-opens-by-age,
+.communication-detail-unique-opens-by-gender {
+    height: 100%;
+}
+
+.communication-detail-top-clients-chart {
+    height: 500px;
+}
+
+.communication-detail-top-clients-overflow-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.communication-detail-top-clients-overflow-list-item {
+    width: 100%;
+    max-width: 690px;
+    display: flex;
+    justify-content: space-between;
+}
+
+// Gender and Age Charts
+
+.communication-detail-gender-chart,
+.communication-detail-age-chart {
+    height: 350px;
+}
+
+@media (max-width: $screen-large) {
+    .communication-detail-gender-chart-section {
+      margin-bottom: var(--spacing-xlarge);
+    }
+}
+
+// Unique Interactions Over Time Chart
+.communication-detail-unique-interactions-over-time {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.communication-detail-unique-interactions-over-time-actions {
+    flex: 0 0 auto;
+
+    .form-group {
+        margin-bottom: var(--spacing-xsmall);
+    }
+}
+
+.communication-detail-unique-interactions-over-time-chart {
+    flex: 1 0 auto;
+}
+
+// General Layout Adjustments for Communication Detail
+
+.communication-detail-sub-header-left,
+.communication-detail-sub-header-right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.communication-detail-source-page-button {
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+
+.communication-detail-footer-secondary-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xsmall);
+}
+
+.communication-detail .panel .panel-body .panel-scrollable-content {
+    overflow: unset;
+}
+
 // ======================== END COMMUNICATION DETAIL ========================
 
 // ======================== COMMUNICATION LIST ========================
@@ -83,6 +203,102 @@ iframe.email-body {
 
 
 // ======================== COMMUNICATION WIZARD ========================
+
+// Wizard Start Page
+
+.wizard-start-step {
+
+  .panel-body-wizard {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+      .panel-body-contents {
+        flex: 1;
+        overflow-x: hidden;
+        overflow-y: auto;
+
+        .mediums-section {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 250px));
+          grid-template-rows: auto auto auto auto auto;
+          gap: var(--spacing-large);
+          padding-left: 2px; /* Adjustment for focus state & border */
+        }
+
+        .medium {
+            display: grid;
+            grid-template-rows: subgrid;
+            grid-row: span 5;
+            gap: var(--spacing-xsmall);
+
+            cursor: pointer;
+            padding: var(--spacing-medium);
+            text-align: center;
+            border: 1px solid var(--color-interface-soft);
+            border-radius: var(--rounded-small);
+            transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+        }
+
+        .medium.selected {
+            border: var(--focus-state-border);
+            box-shadow: var(--focus-state-shadow);
+        }
+
+        .medium-content {
+            display: grid;
+            grid-template-rows: subgrid;
+            gap: var(--spacing-xsmall);
+            grid-row: span 5;
+        }
+
+        .medium-content .label {
+            margin-left: auto;
+            margin-right: auto;
+            width: fit-content;
+        }
+
+        .medium-content small {
+            color: var(--color-interface-medium);
+        }
+
+        .medium-content h5 {
+            margin: 0;
+        }
+
+        .medium-content i {
+            color: var(--color-interface-stronger);
+        }
+
+        .medium .ti-circle-dot {
+            color: var(--color-primary);
+        }
+
+        .wizard-start-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .communication-list-group-container {
+            display: flex;
+            flex-direction: row;
+            gap: var(--spacing-xsmall);
+        }
+
+        .communication-list-container {
+            flex: 1;
+        }
+
+      }
+
+  }
+
+}
+
+
+// Communication Template Selection
 .communication-template {
   position:             relative;
   display:              block;
@@ -131,6 +347,62 @@ iframe.email-body {
 
 // ====================== END COMMUNICATION WIZARD ======================
 
+// ======================== EMAIL BUILDER ========================
+
+.communication-entry-wizard .email-editor .side-panel .flat-panel-body .alert {
+  margin:               var(--spacing-xsmall);
+  .btn {
+    margin-top:         var(--spacing-xsmall);
+  }
+}
+
+// Shorthand Property Headers
+
+.shorthand-property-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--color-interface-soft);
+    margin-bottom: var(--spacing-small);
+
+    .shorthand-property-label {
+    font-size: var(--font-size-regular);
+    }
+
+    .more-switch {
+        font-size: var(--font-size-small);
+    }
+}
+
+// Panel Header Button Adjustments
+
+.email-editor .side-panel .side-panel-content .flat-panel .btn-panel-action:hover {
+  background-color: transparent;
+  color: var(--color-interface-strong);
+}
+
+.email-editor .side-panel .side-panel-content .flat-panel .flat-panel-body .accordion-group .accordion .panel.panel-flex .panel-header .panel-title {
+  padding-left: var(--spacing-medium);
+}
+
+// Custom SVG Icons for Email Builder
+
+.btn-line-height {
+  display: inline-flex;
+
+  &.btn-primary svg {
+    stroke: var(--base-interface-softer);
+  }
+
+  svg {
+    stroke: var(--color-interface-strong);
+    stroke-width: 2px;
+  }
+}
+
+
+// ======================== END EMAIL BUILDER ======================
 
 // ====================== LEGACY EMAIL EDITOR ======================
 
@@ -209,3 +481,26 @@ iframe.email-body {
 }
 
 // ====================== END LEGACY EMAIL EDITOR ======================
+
+// ======================== COMMUNICATION HISTORY ========================
+
+// Recipient Details Grid Sticky Header Fix
+.communication-detail-recipient-details > .grid-obsidian > .grid-header {
+    position: sticky;
+    top: 0;
+}
+.communication-detail-recipient-details .sticky-column-header {
+    top: 57px;
+}
+
+.page-fullscreen-capable .panel.panel-block.panel-flex > .panel-body:has(.communication-detail-recipient-details) {
+    overflow: auto;
+}
+
+// Had to refactor the padding here because of the grid header sticky positioning.
+.panel-body:has(.communication-detail-recipient-details) {
+    padding: 0 var(--spacing-medium) var(--spacing-medium) var(--spacing-medium);
+}
+
+
+// ======================== END COMMUNICATION HISTORY ========================

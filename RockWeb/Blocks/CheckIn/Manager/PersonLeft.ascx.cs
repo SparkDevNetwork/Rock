@@ -571,7 +571,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     .ThenBy( m => m.Person.BirthDate )
                     .Select( m => new PersonInfo
                     {
-                        PhotoTag = Rock.Model.Person.GetPersonPhotoImageTag( m.Person, 64, 64, className: "d-block mb-1" ),
+                        PhotoTag = Rock.Model.Person.GetPersonPhotoImageTag( m.Person, 64, 64, className: "d-block mb-spacing-tiny" ),
                         Url = GetRelatedPersonUrl( m.Person.Guid ),
                         NickName = m.Person.NickName
                     } )

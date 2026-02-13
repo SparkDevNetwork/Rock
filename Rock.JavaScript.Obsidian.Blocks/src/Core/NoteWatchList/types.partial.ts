@@ -15,6 +15,16 @@
 // </copyright>
 //
 
+import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
+
+export const enum PreferenceKey {
+    FilterCreatedDateRange = "filter-created-date-range"
+}
+
+export type GridSettingsOptions = {
+    createdDateRange?: SlidingDateRange | null;
+};

@@ -1,0 +1,14 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-content="staticContent"></div>
+</template>
+
+<script setup lang="ts">
+    import { useStaticContent } from "@Obsidian/Utility/block";
+
+    // #region Values
+
+    const staticContent = useStaticContent();
+
+    // #endregion
+</script>

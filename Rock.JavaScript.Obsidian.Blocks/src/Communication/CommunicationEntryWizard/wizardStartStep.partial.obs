@@ -9,7 +9,7 @@
                         <template v-else>{{ recipientsLabel }}</template>
                     </HighlightLabel>
                 </div>
-                <div v-if="isUseSimpleEditorButtonShown && internalSimpleCommunicationPageUrl" class="mr-3">
+                <div v-if="isUseSimpleEditorButtonShown && internalSimpleCommunicationPageUrl">
                     <HighlightLabel labelType="default">
                         <a :href="internalSimpleCommunicationPageUrl">Use Simple Editor</a>
                     </HighlightLabel>
@@ -142,7 +142,7 @@
                                                      @click="internalCommunicationType = CommunicationType.Email">
                                                     <div class="medium-content">
                                                         <i class="ti ti-mail ti-2x"></i>
-                                                        <h3>Email</h3>
+                                                        <h5>Email</h5>
                                                         <small>Send an email to everyone in your targeted segment.</small>
                                                         <HighlightLabel labelType="info">
                                                             <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
@@ -158,7 +158,7 @@
                                                      @click="internalCommunicationType = CommunicationType.SMS">
                                                     <div class="medium-content">
                                                         <i class="ti ti-device-mobile-message ti-2x"></i>
-                                                        <h3>SMS</h3>
+                                                        <h5>SMS</h5>
                                                         <small>Send a text message to your targeted segment.</small>
                                                         <HighlightLabel labelType="info">
                                                             <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
@@ -174,7 +174,7 @@
                                                      @click="internalCommunicationType = CommunicationType.PushNotification">
                                                     <div class="medium-content">
                                                         <i class="ti ti-bell ti-2x"></i>
-                                                        <h3>Push Notifications</h3>
+                                                        <h5>Push Notifications</h5>
                                                         <small>Notify targeted segment via the church app.</small>
                                                         <HighlightLabel labelType="info">
                                                             <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
@@ -190,7 +190,7 @@
                                                      @click="internalCommunicationType = CommunicationType.RecipientPreference">
                                                     <div class="medium-content">
                                                         <i class="ti ti-user ti-2x"></i>
-                                                        <h3>Personal Preference</h3>
+                                                        <h5>Personal Preference</h5>
                                                         <small>Notify targeted segment via person's preferred channel.</small>
                                                         <HighlightLabel labelType="info">
                                                             <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
@@ -263,91 +263,6 @@
 <style scoped>
 @import "/Styles/RockFont/style.css";
 @import "/Styles/Blocks/Shared/Devices.css";
-
-.mediums-section {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 250px));
-    grid-template-rows: auto auto auto auto auto;
-    gap: var(--spacing-large);
-
-}
-
-.medium {
-    display: grid;
-    grid-template-rows: subgrid;
-    grid-row: span 5;
-    gap: var(--spacing-xsmall);
-
-    cursor: pointer;
-    padding: var(--spacing-medium);
-    text-align: center;
-    border: 1px solid var(--color-interface-soft);
-    border-radius: var(--rounded-small);
-    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
-}
-
-.medium.selected {
-    border: var(--focus-state-border);
-    box-shadow: var(--focus-state-shadow);
-}
-
-.medium-content {
-    display: grid;
-    grid-template-rows: subgrid;
-    gap: var(--spacing-xsmall);
-    grid-row: span 5;
-}
-
-.medium-content .label {
-    margin-left: auto;
-    margin-right: auto;
-    width: fit-content;
-}
-
-.medium-content small {
-    color: var(--color-interface-strong);
-}
-
-.medium-content h3 {
-    margin: 0;
-}
-
-.medium-content i {
-    color: var(--color-interface-stronger);
-}
-
-.medium .ti-circle-dot {
-    color: var(--color-primary);
-}
-
-.wizard-start-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.communication-list-group-container {
-    display: flex;
-    flex-direction: row;
-    gap: var(--spacing-xsmall);
-}
-
-.communication-list-container {
-    flex: 1;
-}
-
-:deep(.panel-body-wizard) {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.panel-body-contents {
-    flex: 1;
-    overflow-x: hidden;
-    overflow-y: auto;
-}
 </style>
 
 
@@ -676,9 +591,22 @@
         }
     });
 
+    const isCommunicationTypeAllowed = computed<boolean>(() => {
+        return props.allowedMediums.includes(internalCommunicationType.value);
+    });
+
     // #endregion Computed Values
 
     // #region Functions
+
+    /**
+     * Ensures the communication's type is within the allowed mediums.
+     */
+    function enforceAllowedCommunicationTypes(): void {
+        if (!isCommunicationTypeAllowed.value && props.allowedMediums.length > 0) {
+            internalCommunicationType.value = props.allowedMediums[0];
+        }
+    }
 
     function appendQueryParameters(url: string): string {
         const currentParams = new URLSearchParams(window.location.search);
@@ -812,4 +740,6 @@
     });
 
     // #endregion Watchers
+
+    enforceAllowedCommunicationTypes();
 </script>

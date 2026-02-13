@@ -1,0 +1,184 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridData"
+          light
+          keyField="guid"
+          itemTerm="Cookie"
+          @addItem="onAdd">
+        <TextColumn name="key" title="Key" field="key" />
+        <TextColumn name="matchType" title="Match Type" field="comparisonName" />
+        <TextColumn name="value" title="Value" field="comparisonValue" />
+        <EditColumn @click="onEdit" />
+        <DeleteColumn @click="onDelete" />
+    </Grid>
+
+    <div class="d-flex justify-content-end">
+        <Toggle v-model="filterExpressionType"
+                trueText="All"
+                falseText="Any"
+                btnSize="sm"
+                onButtonActiveCssClass="btn-info"
+                offButtonActiveCssClass="btn-info" />
+    </div>
+
+    <Modal v-model="isModalVisible"
+           :title="`${isEditing ? 'Edit' : 'Add'} Cookie Filter`"
+           saveText="Save"
+           cancelText="Cancel"
+           :onSave="onSave">
+        <div class="row form-row d-flex flex-wrap align-items-center">
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <span class="text-nowrap">Where the key</span>
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <TextBox :modelValue="theFilter.key ?? ''"
+                             @update:modelValue="val => theFilter.key = val"
+                             rules="required"
+                             validationTitle="Key" />
+                </div>
+            </div>
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <DropDownList
+                                  :modelValue="theFilter.comparisonType?.toString() ?? ''"
+                                  @update:modelValue="val => theFilter.comparisonType = Number(val)"
+                                  :items="comparisonTypes"
+                                  class="input-width-lg"
+                                  :showBlankItem="false" />
+                </div>
+            </div>
+        </div>
+        <div class="row form-row d-flex flex-wrap align-items-center">
+            <div class="col flex-grow-0">
+                <div class="form-group">
+                    <span class="text-nowrap">the value</span>
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <TextBox :modelValue="theFilter.comparisonValue ?? ''"
+                             @update:modelValue="val => theFilter.comparisonValue = val"
+                             rules="required"
+                             validationTitle="Value" />
+                </div>
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { EditColumn, DeleteColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { getComparisonName, stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import type { ICookieRequestFilter } from "./types.partial";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
+    import { CookieRequestFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/RequestFilterDetail/cookieRequestFilterBag";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ICookieRequestFilter>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ICookieRequestFilter): void
+    }>();
+
+    // #region Values
+
+    const theFilter = ref<CookieRequestFilterBag>({} as CookieRequestFilterBag);
+
+    const excludedComparisonValues = [ComparisonType.IsBlank, ComparisonType.IsNotBlank].map(v => v.toString());
+    const comparisonTypes = (getFilteredComparisonTypeOptions(stringComparisonTypes))
+        .filter(ct => !excludedComparisonValues.includes(ct.value ?? ""));
+
+    const isModalVisible = ref(false);
+    const isEditing = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const gridData = computed(() => {
+        const filters = props.modelValue.cookieRequestFilters ?? [];
+        const rows = filters.map(f => ({
+            guid: f.guid,
+            key: f.key ?? "",
+            comparisonName: getComparisonName(Number(f.comparisonType ?? 0)),
+            comparisonValue: f.comparisonValue ?? ""
+        }));
+        return { rows };
+    });
+
+    const filterExpressionType = computed<boolean>({
+        get() {
+            return (props.modelValue.cookieRequestFilterExpressionType ?? FilterExpressionType.GroupAny) === FilterExpressionType.GroupAll;
+        },
+        set(value: boolean) {
+            emit("update:modelValue", {
+                ...props.modelValue,
+                cookieRequestFilterExpressionType: value ? FilterExpressionType.GroupAll : FilterExpressionType.GroupAny
+            });
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function onAdd(): void {
+        theFilter.value = { guid: newGuid(), key: "", comparisonType: 1, comparisonValue: "" };
+        isModalVisible.value = true;
+        isEditing.value = false;
+    }
+
+    function onEdit(guid: string): void {
+        const row = props.modelValue.cookieRequestFilters?.find(x => x.guid === guid);
+        if (!row) return;
+        theFilter.value = { guid: row.guid, key: row.key, comparisonType: row.comparisonType, comparisonValue: row.comparisonValue };
+        isModalVisible.value = true;
+        isEditing.value = true;
+    }
+
+    function onDelete(guid: string): void {
+        const filters = (props.modelValue.cookieRequestFilters ?? []).filter(f => f.guid !== guid);
+        emit("update:modelValue", {
+            ...props.modelValue,
+            cookieRequestFilters: filters
+        });
+    }
+
+    function onSave(): void {
+        const filters = [...props.modelValue.cookieRequestFilters ?? []];
+        const idx = filters.findIndex(f => f.guid === theFilter.value.guid);
+        const item = {
+            guid: theFilter.value.guid,
+            key: theFilter.value.key,
+            comparisonType: theFilter.value.comparisonType ? Number(theFilter.value.comparisonType) : 0,
+            comparisonValue: theFilter.value.comparisonValue
+        } as CookieRequestFilterBag;
+
+        if (idx >= 0) filters.splice(idx, 1, item); else filters.push(item);
+
+        emit("update:modelValue", {
+            ...props.modelValue,
+            cookieRequestFilters: filters
+        });
+
+        isModalVisible.value = false;
+    }
+
+    // #endregion Functions
+
+</script>

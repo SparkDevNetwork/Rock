@@ -9,27 +9,9 @@
 //  + Workflow - styles for workflow blocks
 //  + Electronic Signatures
 //  + Rapid Attendance
+//  + Reminder List
+//  + Notifications
 // =============================================================
-
-// ======================== PAGE HEADER ========================
-
-.rock-top-header .rock-bookmark.active.has-reminders > .indicator-bottom {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  background-color: var(--color-primary);
-  width: 8px;
-  height: 8px;
-  border-radius: var(--rounded-xsmall);
-}
-
-.rock-top-header .rock-bookmark:hover {
-  border: 1px solid var(--color-interface-medium);
-}
-
-
-// ======================== END PAGE HEADER ========================
-
 
 .rock-fullscreen-toggle {
   position:         absolute;
@@ -57,7 +39,6 @@
 
   &::before {
     font-family:    'tabler-icons';
-    font-weight:    var(--font-weight-black);
     text-align:     center;
     content:        "\eaea";
   }
@@ -518,11 +499,46 @@
   }
 }
 
+.notes-container-editor-with-filter,
+.notes-container-editor-without-filter {
+  display: flex;
+}
+
+.notes-container-editor-with-filter .notes-container-editor .note-editor {
+  // Reduce the editor's right padding when the filter button is shown.
+  padding-right: var(--spacing-medium) !important;
+}
+
+.notes-container-editor {
+  flex: 1 1 auto;
+}
+
+.notes-container-filter {
+  flex: 0 0 auto;
+  padding-top: var(--spacing-medium);
+  padding-right: var(--spacing-medium);
+
+  .btn.btn-notes-container-filter {
+    border-radius: var(--rounded-small);
+  }
+
+  .btn.btn-notes-container-filter:hover,
+  .dropdown.open .btn.btn-notes-container-filter,
+  .btn.btn-notes-container-filter-active {
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-soft);
+  }
+
+  .dropdown-menu {
+    white-space: nowrap;
+  }
+}
+
 .note-editor {
   .meta-body {
     background:     var(--color-interface-softest);
     border:         1px solid var(--color-interface-soft);
-    border-radius:  var(--color-interface-soft)-radius;
+    border-radius:  var(--rounded-xsmall);
   }
 
   .settings {
@@ -683,7 +699,7 @@
   &.active,
   &.active:focus,
   &.active:hover {
-    background: var(--color-info-strong);
+    background: var(--color-info-soft);
   }
 
   &.btn-primary {
@@ -1192,3 +1208,37 @@ body.hide-block-role-secondary .block-instance.block-role-secondary:not(.block-r
 // ====================== END RAPID ATTENDANCE ======================
 
 
+// ====================== REMINDER LIST ======================
+
+.reminder-list a.success-on-hover {
+  color: var(--color-interface-strong);
+  transition: 0.2s color;
+  &:hover {
+    color: var(--color-success-strong);
+  }
+}
+
+// ====================== END REMINDER LIST ======================
+
+// ====================== MY DASHBOARD - NOTIFICATIONS ======================
+
+.notification-messages {
+
+  .notification-item {
+      margin-bottom: var(--spacing-medium);
+  }
+
+  .notification-item:last-child {
+      margin-bottom: 0;
+  }
+
+  .filter-button.active {
+      background-color: var(--color-interface-soft);
+      padding: var(--spacing-tiny) var(--spacing-xsmall);
+      border-radius: var(--rounded-xsmall);
+  }
+
+}
+
+
+// ====================== END MY DASHBOARD - NOTIFICATIONS ======================

@@ -37,6 +37,12 @@ export type GeneralConfigurationBag = {
     /** Gets or sets a value indicating whether this instance is multiple time zone support enabled. */
     isMultipleTimeZoneSupportEnabled: boolean;
 
+    /**
+     * Determines if the system is currently in Trailblazer Mode. When this
+     * is enabled, the system will show more advanced configuration options.
+     */
+    isTrailblazerMode: boolean;
+
     /** Gets or sets the PDF external render endpoint. */
     pdfExternalRenderEndpoint?: string | null;
 

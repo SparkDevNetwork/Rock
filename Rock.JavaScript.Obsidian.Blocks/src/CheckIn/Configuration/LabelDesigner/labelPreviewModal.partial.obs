@@ -3,12 +3,6 @@
            title="Preview"
            cancelText="Close">
         <div class="row">
-            <div class="col-md-4">
-                <TextBox label="Attendance Id"
-                         v-model="previewAttendanceId"
-                         help="To generate a preview of what this label looks like with an actual attendance record, you can enter an Attendance Id that's associated with a Next-gen Label." />
-            </div>
-
             <div v-if="showCustomSize" class="col-md-2">
                 <NumberBox label="Label Width"
                            v-model="customLabelWidth" />
@@ -19,18 +13,39 @@
                            v-model="customLabelHeight" />
             </div>
 
-            <div class="col-md-2">
-                <div class="form-group">
-                    <label class="control-label">&nbsp;</label>
-                    <div class="control-wrapper">
-                        <RockButton btnType="default"
-                                    autoDisable
-                                    @click="onPreviewRefreshClick">
-                            Refresh
-                        </RockButton>
-                    </div>
-                </div>
+            <div class="col-md-3">
+                <TextBox label="Attendance Id"
+                         v-model="previewAttendanceId"
+                         help="To generate a preview of what this label looks like with an actual attendance record, you can enter an Attendance Id that's associated with a Next-gen Label.">
+                    <template #inputGroupAppend>
+                        <span class="input-group-btn">
+                            <button class="btn btn-default"
+                                    :disabled="isRefreshing"
+                                    type="button"
+                                    @click.prevent="onPreviewRefreshClick">
+                                Refresh
+                            </button>
+                        </span>
+                    </template>
+                </TextBox>
+            </div>
 
+            <div class="col-md-4">
+                <DropDownList v-if="printers && printers.length > 0"
+                              label="Printer"
+                              v-model="selectedPrinter"
+                              :items="printers">
+                    <template #inputGroupAppend>
+                        <span class="input-group-btn">
+                            <button class="btn btn-default"
+                                    :disabled="!selectedPrinter || !previewSourceContent || isRefreshing || isPrinting"
+                                    type="button"
+                                    @click.prevent="onPreviewPrintClick">
+                                Print
+                            </button>
+                        </span>
+                    </template>
+                </DropDownList>
             </div>
         </div>
 
@@ -47,7 +62,7 @@
 <style>
 .preview-image {
     border-radius: 12px;
-    border: 1px solid var(--theme-light);
+    border: 1px solid var(--color-interface-soft);
     box-shadow: 2px 2px 6px rgba(0, 0, 0, .1);
     display: block;
     margin: auto;
@@ -55,15 +70,16 @@
 </style>
 
 <script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { PropType, ref, watch } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { PreviewResultBag } from "./types.partial";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { blobToBase64 } from "./utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {
@@ -76,10 +92,20 @@
             required: true
         },
 
+        printCallback: {
+            type: Function as PropType<(content: string, printerId: string) => Promise<void>>,
+            required: true
+        },
+
         showCustomSize: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        printers: {
+            type: Array as PropType<ListItemBag[] | null>,
+            required: false
+        },
     });
 
     const emit = defineEmits<{
@@ -87,11 +113,15 @@
     }>();
 
     const isPreviewOpen = useVModelPassthrough(props, "modelValue", emit);
+    const isRefreshing = ref(false);
+    const isPrinting = ref(false);
     const previewAttendanceId = ref("");
     const previewSource = ref<string | undefined>();
+    const previewSourceContent = ref<string | undefined>();
     const previewDuration = ref(0);
     const customLabelWidth = ref(4);
     const customLabelHeight = ref(2);
+    const selectedPrinter = ref<string>("");
 
     /**
      * Updates the preview data from selections made in the preview modal.
@@ -142,6 +172,7 @@
         const blob = await labelaryResult.blob();
         const image64 = await blobToBase64(blob);
 
+        previewSourceContent.value = result.data.content ?? undefined;
         previewSource.value = `data:image/png;base64,${image64}`;
         previewDuration.value = result.data.duration;
 
@@ -153,7 +184,19 @@
      * preview.
      */
     async function onPreviewRefreshClick(): Promise<void> {
+        isRefreshing.value = true;
         await updatePreview();
+        isRefreshing.value = false;
+    }
+
+    /**
+     * Event handler for the print button being clicked. Send the current label
+     * preview to the printer for printing.
+     */
+    async function onPreviewPrintClick(): Promise<void> {
+        isPrinting.value = true;
+        await props.printCallback(previewSourceContent.value ?? "", selectedPrinter.value);
+        isPrinting.value = false;
     }
 
     watch(() => props.modelValue, () => {

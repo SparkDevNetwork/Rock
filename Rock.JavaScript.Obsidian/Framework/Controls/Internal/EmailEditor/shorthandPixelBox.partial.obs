@@ -1,0 +1,296 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div :class="['shorthand-property-header', isMoreShown ? 'more' : '']">
+        <RockLabel class="shorthand-property-label" :help="help">{{ label }}</RockLabel>
+        <div class="more-switch">
+            <InlineSwitch v-model="isMoreShown"
+                          label="More" />
+        </div>
+    </div>
+
+    <TransitionVerticalCollapse>
+        <div v-if="!isMoreShown" class="row">
+            <div class="col-sm-6">
+                <NumberBox v-model="internalShorthandValue"
+                           v-bind="$attrs"
+                           :label="shorthandLabel">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">px</span>
+                    </template>
+                </NumberBox>
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
+
+    <TransitionVerticalCollapse>
+        <div v-if="isMoreShown">
+            <div class="row">
+                <div class="col-sm-6">
+                    <NumberBox v-model="internalTopValue"
+                               v-bind="$attrs"
+                               :label="topLabel"
+                               :disableLabel="!topLabel">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">px</span>
+                        </template>
+                    </NumberBox>
+                </div>
+
+                <div class="col-sm-6">
+                    <NumberBox v-model="internalBottomValue"
+                               v-bind="$attrs"
+                               :label="bottomLabel"
+                               :disableLabel="!bottomLabel">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">px</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <NumberBox v-model="internalLeftValue"
+                               v-bind="$attrs"
+                               :label="leftLabel"
+                               :disableLabel="!leftLabel">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">px</span>
+                        </template>
+                    </NumberBox>
+                </div>
+                <div class="col-sm-6">
+                    <NumberBox v-model="internalRightValue"
+                               v-bind="$attrs"
+                               :label="rightLabel"
+                               :disableLabel="!rightLabel">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">px</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { ShorthandModel } from "./types.partial";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ShorthandModel<number | null> | null>,
+            required: true
+        },
+
+        help: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        shorthandLabel: {
+            type: String as PropType<string>,
+            default: "All Sides"
+        },
+
+        topLabel: {
+            type: String as PropType<string>,
+            default: "Top"
+        },
+
+        bottomLabel: {
+            type: String as PropType<string>,
+            default: "Bottom"
+        },
+
+        leftLabel: {
+            type: String as PropType<string>,
+            default: "Left"
+        },
+
+        rightLabel: {
+            type: String as PropType<string>,
+            default: "Right"
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ShorthandModel<number | null> | null): void;
+    }>();
+
+    // #region Computed Props
+
+    const internalShorthandValue = computed<number | null>({
+        get(): number | null {
+            return props.modelValue?.top ?? null;
+        },
+        set(value: number | null): void {
+            if (isNullish(value)) {
+                emit("update:modelValue", null);
+            }
+            else {
+                emit("update:modelValue", {
+                    top: value,
+                    bottom: value,
+                    left: value,
+                    right: value
+                });
+            }
+        }
+    });
+
+    const internalTopValue = computed<number | null>({
+        get(): number | null {
+            return props.modelValue?.top ?? null;
+        },
+        set(value: number | null): void {
+            if (isNullish(value)
+                && isNullish(props.modelValue?.bottom)
+                && isNullish(props.modelValue?.left)
+                && isNullish(props.modelValue?.right)
+            ) {
+                emit("update:modelValue", null);
+            }
+            else {
+                emit("update:modelValue", {
+                    top: value,
+                    bottom: props.modelValue?.bottom ?? null,
+                    left: props.modelValue?.left ?? null,
+                    right: props.modelValue?.right ?? null
+                });
+            }
+        }
+    });
+
+    const internalBottomValue = computed<number | null>({
+        get(): number | null {
+            return props.modelValue?.bottom ?? null;
+        },
+        set(value: number | null): void {
+            if (isNullish(value)
+                && isNullish(props.modelValue?.top)
+                && isNullish(props.modelValue?.left)
+                && isNullish(props.modelValue?.right)
+            ) {
+                emit("update:modelValue", null);
+            }
+            else {
+                emit("update:modelValue", {
+                    top: props.modelValue?.top ?? null,
+                    bottom: value,
+                    left: props.modelValue?.left ?? null,
+                    right: props.modelValue?.right ?? null
+                });
+            }
+        }
+    });
+
+    const internalRightValue = computed<number | null>({
+        get(): number | null {
+            return props.modelValue?.right ?? null;
+        },
+        set(value: number | null): void {
+            if (isNullish(value)
+                && isNullish(props.modelValue?.top)
+                && isNullish(props.modelValue?.bottom)
+                && isNullish(props.modelValue?.left)
+            ) {
+                emit("update:modelValue", null);
+            }
+            else {
+                emit("update:modelValue", {
+                    top: props.modelValue?.top ?? null,
+                    bottom: props.modelValue?.bottom ?? null,
+                    left: props.modelValue?.left ?? null,
+                    right: value
+                });
+            }
+        }
+    });
+
+    const internalLeftValue = computed<number | null>({
+        get(): number | null {
+            return props.modelValue?.left ?? null;
+        },
+        set(value: number | null): void {
+            if (isNullish(value)
+                && isNullish(props.modelValue?.top)
+                && isNullish(props.modelValue?.bottom)
+                && isNullish(props.modelValue?.right)
+            ) {
+                emit("update:modelValue", null);
+            }
+            else {
+                emit("update:modelValue", {
+                    top: props.modelValue?.top ?? null,
+                    bottom: props.modelValue?.bottom ?? null,
+                    left: value,
+                    right: props.modelValue?.right ?? null
+                });
+            }
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Values
+
+    // Show more if any of the individual sides differ.
+    const isMoreShown = ref<boolean>(
+        (props.modelValue?.top ?? null) !== (props.modelValue?.bottom ?? null)
+        || (props.modelValue?.top ?? null) !== (props.modelValue?.left ?? null)
+        || (props.modelValue?.top ?? null) !== (props.modelValue?.right ?? null)
+        || (props.modelValue?.bottom ?? null) !== (props.modelValue?.left ?? null)
+        || (props.modelValue?.bottom ?? null) !== (props.modelValue?.right ?? null)
+        || (props.modelValue?.left ?? null) !== (props.modelValue?.right ?? null));
+
+    // #endregion Values
+
+    // #region Watchers
+
+    watch(isMoreShown, () => {
+        const isShorthandBeingShown = !isMoreShown.value;
+        if (isShorthandBeingShown) {
+            if (!isNullish(internalTopValue.value)
+                || !isNullish(internalBottomValue.value)
+                || !isNullish(internalLeftValue.value)
+                || !isNullish(internalRightValue.value)) {
+                // One of the sides is set and shorthand is being shown,
+                // so set all sides to the largest value of the four sides.
+                internalShorthandValue.value = Math.max(
+                    internalTopValue.value ?? 0,
+                    internalBottomValue.value ?? 0,
+                    internalLeftValue.value ?? 0,
+                    internalRightValue.value ?? 0);
+            }
+        }
+    });
+
+    watch(() => props.modelValue, () => {
+        // Expand all sides when there are any individual values.
+        const hasDifferentIndividualValues =
+            (props.modelValue?.top ?? null) !== (props.modelValue?.bottom ?? null)
+            || (props.modelValue?.top ?? null) !== (props.modelValue?.left ?? null)
+            || (props.modelValue?.top ?? null) !== (props.modelValue?.right ?? null)
+            || (props.modelValue?.bottom ?? null) !== (props.modelValue?.left ?? null)
+            || (props.modelValue?.bottom ?? null) !== (props.modelValue?.right ?? null)
+            || (props.modelValue?.left ?? null) !== (props.modelValue?.right ?? null);
+
+        if (hasDifferentIndividualValues) {
+            isMoreShown.value = true;
+        }
+    });
+
+    // #endregion Watchers
+</script>

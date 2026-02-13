@@ -50,11 +50,12 @@
         getBorderWrapperCellSelector,
         getBorderWrapperTableSelector,
         getRowComponentHelper,
+        imageComponentAdapter,
         numberToStringConverter,
         pixelConverter
     } from "../utils.partial";
-    import { isNullish } from "@Obsidian/Utility/util";
     import { isHTMLElement } from "@Obsidian/Utility/dom";
+    import { isNullish } from "@Obsidian/Utility/util";
 
     const props = defineProps({
         componentElement: {
@@ -186,6 +187,11 @@
         bodyWidthProvider.value = getBodyWidthProvider();
 
         componentHelper.value = rowComponentHelper.getElements(props.componentElement);
+    });
+
+    watch(() => bodyWidthProvider.value.value, () => {
+        // When the body width changes, we need to update dependent components to reflect the new width.
+        imageComponentAdapter.refreshAllComponents(props.componentElement.ownerDocument);
     });
 
     // #endregion Watchers

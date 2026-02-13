@@ -105,40 +105,44 @@
             </div>
             <div v-if="blockProperties.isInformationStatisticsShown">
                 <div v-if="blockProperties.isInformationCompletenessShown" class="row">
-                    <Panel title="Information Completeness">
-                        <BarChart v-if="barSeriesDataExists(informationCompletenessChartBarSeries)"
-                                  :labels="informationCompletenessChartBag.labels ?? []"
-                                  :series="informationCompletenessChartBarSeries"
-                                  :categoryShowAllTicks="true"
-                                  :categoryShowGridLines="true"
-                                  :hideLegend="true"
-                                  :horizontal="false"
-                                  :overlap="false"
-                                  :stack="false"
-                                  type="percent"
-                                  :unfilled="false"
-                                  :valueHideGridLines="false"
-                                  height="400px" />
-                        <NotificationBox v-else alertType="info">There is no data on information completeness.</NotificationBox>
-                    </Panel>
+                    <div class="col">
+                        <Panel title="Information Completeness">
+                            <BarChart v-if="barSeriesDataExists(informationCompletenessChartBarSeries)"
+                                      :labels="informationCompletenessChartBag.labels ?? []"
+                                      :series="informationCompletenessChartBarSeries"
+                                      :categoryShowAllTicks="true"
+                                      :categoryShowGridLines="true"
+                                      :hideLegend="true"
+                                      :horizontal="false"
+                                      :overlap="false"
+                                      :stack="false"
+                                      type="percent"
+                                      :unfilled="false"
+                                      :valueHideGridLines="false"
+                                      height="400px" />
+                            <NotificationBox v-else alertType="info">There is no data on information completeness.</NotificationBox>
+                        </Panel>
+                    </div>
                 </div>
                 <div v-if="blockProperties.isPercentageOfIndividualsWithAssessmentsShown" class="row">
-                    <Panel title="Percentage of Individuals with Assessments">
-                        <BarChart v-if="barSeriesDataExists(activeIndividualsWithAssessmentsChartBarSeries)"
-                                  :labels="activeIndividualsWithAssessmentsChartBag.labels ?? []"
-                                  :series="activeIndividualsWithAssessmentsChartBarSeries"
-                                  :categoryShowAllTicks="true"
-                                  :categoryShowGridLines="true"
-                                  :hideLegend="true"
-                                  :horizontal="false"
-                                  :overlap="false"
-                                  :stack="false"
-                                  type="percent"
-                                  :unfilled="false"
-                                  :valueHideGridLines="false"
-                                  height="400px" />
-                        <NotificationBox v-else alertType="info">There is no data on active individuals with assessments.</NotificationBox>
-                    </Panel>
+                    <div class="col">
+                        <Panel title="Percentage of Individuals with Assessments">
+                            <BarChart v-if="barSeriesDataExists(activeIndividualsWithAssessmentsChartBarSeries)"
+                                      :labels="activeIndividualsWithAssessmentsChartBag.labels ?? []"
+                                      :series="activeIndividualsWithAssessmentsChartBarSeries"
+                                      :categoryShowAllTicks="true"
+                                      :categoryShowGridLines="true"
+                                      :hideLegend="true"
+                                      :horizontal="false"
+                                      :overlap="false"
+                                      :stack="false"
+                                      type="percent"
+                                      :unfilled="false"
+                                      :valueHideGridLines="false"
+                                      height="400px" />
+                            <NotificationBox v-else alertType="info">There is no data on active individuals with assessments.</NotificationBox>
+                        </Panel>
+                    </div>
                 </div>
                 <div v-if="blockProperties.isRecordStatusesShown" class="row">
                     <div class="col-md-3">

@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Lava;
 using Rock.Lava.Shortcodes;
 using Rock.Model;
@@ -87,9 +88,12 @@ namespace Rock.Blocks.Cms
 
             box.LavaShortcodes = shortcodes.Select( s => new LavaShortcodeBag
             {
+                Guid = s.Guid,
                 IdKey = s.IdKey,
                 Categories = s.Categories.ToListItemBagList(),
-                Description = s.Description,
+                // This is an estimate to aim for no more than 4 wrapped lines of text when viewing the block at the
+                // "Rock Documentation" desktop width.
+                Description = s.Description.Truncate( 400 ),
                 Documentation = s.Documentation,
                 IsActive = s.IsActive,
                 IsSystem = s.IsSystem,
@@ -97,6 +101,7 @@ namespace Rock.Blocks.Cms
                 Name = s.Name,
                 TagName = s.TagName,
                 TagType = s.TagType.ToString(),
+                ShortcodeScopeBehavior = s.ShortcodeScopeBehavior.ToString()
             } ).ToList();
 
             box.NavigationUrls = GetBoxNavigationUrls();
@@ -138,7 +143,8 @@ namespace Rock.Blocks.Cms
                 IsSystem = l.IsSystem,
                 Description = l.Description,
                 Documentation = l.Documentation,
-                Categories = distinctCategories.Where( c => l.CategoryIds.Contains( c.Id ) ).ToList()
+                Categories = distinctCategories.Where( c => l.CategoryIds.Contains( c.Id ) ).ToList(),
+                ShortcodeScopeBehavior = l.ShortcodeScopeBehavior
             } ).ToList();
         }
 
@@ -186,6 +192,7 @@ namespace Rock.Blocks.Cms
                     shortcodeList.Add( new LavaShortcode
                     {
                         Id = -1,
+                        Guid = Guid.NewGuid(), // Create a runtime Guid for Obsidian identification.
                         Name = shortcodeMetadataAttribute.Name,
                         TagName = shortcodeMetadataAttribute.TagName,
                         TagType = ( shortcodeType == LavaShortcodeTypeSpecifier.Inline ) ? TagType.Inline : TagType.Block,
@@ -193,7 +200,8 @@ namespace Rock.Blocks.Cms
                         IsSystem = true,
                         Description = shortcodeMetadataAttribute.Description,
                         Documentation = shortcodeMetadataAttribute.Documentation,
-                        Categories = GetCategoriesFromMetaData( shortcodeMetadataAttribute )
+                        Categories = GetCategoriesFromMetaData( shortcodeMetadataAttribute ),
+                        ShortcodeScopeBehavior = ShortcodeScopeBehavior.Isolated
                     } );
 
                 }

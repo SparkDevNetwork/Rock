@@ -1,0 +1,32 @@
+// imported by styles-v2/_core.scss
+
+// Override Bootstrap Button Group Styles
+
+.btn-group {
+
+  .btn.btn-primary {
+    &:focus,
+    &:not(:disabled):not(.disabled):active:focus {
+      box-shadow: none;
+    }
+  }
+
+  .btn-tool {
+    background-color: var(--color-interface-soft);
+    border-color:     var(--color-interface-soft);
+    color:            var(--color-interface-stronger);
+    &:hover {
+      border-color:   var(--color-interface-medium);
+    }
+  }
+
+  a {
+    justify-content: center;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+
+}
+

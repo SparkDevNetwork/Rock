@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="grid-obsidian styled-scroll" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light }">
+    <div class="grid-obsidian styled-scroll" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light, 'grid-comfy': comfy }">
         <div class="grid-header">
             <FilterHeaderRow v-if="!light && !hideFilterHeaderRow"
                              v-model:quickFilterValue="quickFilterValue"
@@ -12,7 +12,11 @@
                              :countMessage="countMessage"
                              :selectedRowCount="selectedRowCount"
                              :isCountMessageVisible="isCountMessageVisible"
-                             :isSearchVisible="isSearchVisible" />
+                             :isSearchVisible="isSearchVisible">
+                <template #additionalHeaderBadges>
+                    <slot name="gridHeaderBadges" />
+                </template>
+            </FilterHeaderRow>
         </div>
 
         <div class="grid-content-container"
@@ -28,7 +32,8 @@
                                  v-model:columnFilters="columnFilterValues"
                                  v-model:columnSort="columnSortDirection"
                                  :grid="gridState"
-                                 :light="light" />
+                                 :light="light"
+                                 :manualSort="manualSort" />
                 <div v-if="$slots.gridHeaderAppend"
                      class="grid-header-append">
                     <slot name="gridHeaderAppend" />
@@ -115,8 +120,6 @@
         </div>
     </div>
 </template>
-
-
 
 <script setup lang="ts">
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -252,6 +255,15 @@
          * that are embedded inside other blocks or controls.
          */
         light: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * A comfy grid changes the display style of the rows so they look more
+         * like pills instead of traditional rows.
+         */
+        comfy: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -554,6 +566,16 @@
         },
 
         /**
+         * When a delegate is provided, allows the consumer to override
+         * the selected keys, such as when using row exclusion logic,
+         * needing to force certain keys to always be selected, etc.
+         */
+        selectedKeysOverride: {
+            type: Function as PropType<(selectedKeys: string[]) => string[]>,
+            default: undefined
+        },
+
+        /**
          * When `true`, forces page size to 50 and disables virtual scrolling.
          *
          * TEMPORARY: This is a temporary workaround for a virtual scrolling
@@ -563,8 +585,18 @@
         isNestedInScrollable: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
 
+        /**
+         * When defined, this function will be called when a column's header
+         * is clicked for sorting. This allows the consumer to implement manual
+         * sorting logic. This function receives the column name and is expected
+         * to provide the sorted data back to the grid via the data property.
+         */
+        manualSort: {
+            type: Function as PropType<((column: string, grid: IGridState) => void) | undefined>,
+            default: undefined
+        },
     });
 
     const emit = defineEmits<{
@@ -602,6 +634,7 @@
     const visibleColumnDefinitions = shallowRef<ReadonlyArray<ColumnDefinition>>([]);
     const dragOptions = ref<IDragSourceOptions | undefined>();
     const isRowSelectionInProgress = ref(false);
+    const isGridStateSelectedKeysOverrideSet = ref(false);
 
     const rootPreferences = usePersonPreferences().blockPreferences;
     const gridPreferences = getPrefixedPreferences();
@@ -942,7 +975,8 @@
             props.definition,
             props.liveUpdates ?? false,
             props.itemTerm || "item",
-            props.entityTypeGuid);
+            props.entityTypeGuid,
+            props.selectedKeysOverride);
 
         state.setItemKey(props.keyField);
 
@@ -1346,6 +1380,10 @@
      * Sets the current sort value to match what is in the preferences.
      */
     function setSortFromPreferences(): void {
+        if (props.manualSort) {
+            return;
+        }
+
         const sortDirection = gridPreferences.getValue(PreferenceKey.SortDirection);
 
         if (sortDirection) {
@@ -1408,7 +1446,7 @@
      * a request to save the preferences.
      */
     function saveSortPreferences(): void {
-        if (props.disablePreferences) {
+        if (props.disablePreferences || props.manualSort) {
             return;
         }
 
@@ -1431,7 +1469,7 @@
             return;
         }
 
-        if (pageSize.value && pageSize.value != 50) {
+        if (pageSize.value && pageSize.value !== 50) {
             gridPreferences.setValue(PreferenceKey.PageSize, JSON.stringify(pageSize.value));
         }
         else {
@@ -1555,6 +1593,11 @@
         const lineHeight = 15;
         const padding = 2;
 
+        if (!worksheet) {
+            await alert("Unable to create export file.");
+            return;
+        }
+
         // Apply formatting to data rows
         worksheet.eachRow((row, index) => {
             let maxLines = 1;
@@ -1661,11 +1704,16 @@
     async function onLaunchWorkflow(): Promise<void> {
         const url = props.definition?.actionUrls?.[GridActionUrlKey.LaunchWorkflow];
 
-        if (!props.keyField || !url) {
+        let keyField = props.keyField;
+        if (props.personKeyField && props.entityTypeGuid === EntityType.Person) {
+            keyField = props.personKeyField;
+        }
+
+        if (!keyField || !url) {
             return;
         }
 
-        await createEntitySetAndRedirect([props.keyField], url, undefined);
+        await createEntitySetAndRedirect([keyField], url, undefined);
     }
 
     /**
@@ -1785,6 +1833,18 @@
      * Update the UI to reflect the selection count.
      */
     function onSelectedKeysChanged(): void {
+        if (props.selectedKeysOverride !== undefined) {
+            // Clear override flag and skip to avoid recursion
+            if (isGridStateSelectedKeysOverrideSet.value) {
+                isGridStateSelectedKeysOverrideSet.value = false;
+                return;
+            }
+            else { // Set override and apply it to avoid recursion
+                isGridStateSelectedKeysOverrideSet.value = true;
+                gridState.selectedKeys = props.selectedKeysOverride(gridState.selectedKeys);
+            }
+        }
+
         selectedRowCount.value = gridState.selectedKeys.length;
 
         emit("selectedKeysChanged", gridState);

@@ -19,6 +19,8 @@ using System.Collections.Generic;
 
 using Microsoft.Extensions.Logging;
 
+using Newtonsoft.Json;
+
 namespace Rock.Logging
 {
     /// <summary>
@@ -31,21 +33,26 @@ namespace Rock.Logging
         /// enabled for standard logging.
         /// </summary>
         /// <value>The standard log level.</value>
-        public LogLevel StandardLogLevel { get; set; } = Microsoft.Extensions.Logging.LogLevel.None;
+        public LogLevel StandardLogLevel { get; set; } = Microsoft.Extensions.Logging.LogLevel.Error;
 
         /// <summary>
         /// Gets or sets the standard categories to log. These will be logged
         /// at the level specified by <see cref="StandardLogLevel"/>.
         /// </summary>
         /// <value>The standard categories to log.</value>
-        public List<string> StandardCategories { get; set; }
+        // Using this attribute is not ideal because it couples this class to
+        // Newtonsoft. But we found that by default Newtonsoft would not replace
+        // the list when deserializing, it would just add to it. This caused
+        // problems when trying to clear out the default "Rock" category.
+        [JsonProperty( ObjectCreationHandling = ObjectCreationHandling.Replace )]
+        public List<string> StandardCategories { get; set; } = new List<string> { "Rock" };
 
         /// <summary>
         /// Gets or sets a value indicating whether Rock will write logs to the
         /// local file system.
         /// </summary>
         /// <value><c>true</c> if Rock will write logs to the local file system; otherwise, <c>false</c>.</value>
-        public bool IsLocalLoggingEnabled { get; set; }
+        public bool IsLocalLoggingEnabled { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether Rock will write logs to the

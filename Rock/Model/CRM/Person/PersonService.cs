@@ -1777,6 +1777,164 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Get's a list of person records that match a full name using name similarity search (SoundEx)
+        /// </summary>
+        /// <param name="fullName">The full name of the people to search for.</param>
+        /// <param name="includeDeceased">If <c>true</c> then people marked as deceased will be included in the results.</param>
+        /// <returns>A queryable of the people that have similar names to <paramref name="fullName"/>.</returns>
+        public IQueryable<Person> GetSimilarPersons( string fullName, bool includeDeceased = false )
+        {
+            var splitName = SplitFullName( fullName );
+
+            var personQueryable = Queryable( includeDeceased );
+
+            if (splitName == null )
+            {
+                return personQueryable;
+            }
+
+            var metaphones = this.Context.Set<Metaphone>();
+
+            string ln1 = string.Empty;
+            string ln2 = string.Empty;
+            Rock.Utility.DoubleMetaphone.doubleMetaphone( splitName.LastName, ref ln1, ref ln2 );
+            ln1 = ln1 ?? string.Empty;
+            ln2 = ln2 ?? string.Empty;
+
+            var lastNames = metaphones
+                .Where( m =>
+                    ( ln1 != "" && ( m.Metaphone1 == ln1 || m.Metaphone2 == ln1 ) ) ||
+                    ( ln2 != "" && ( m.Metaphone1 == ln2 || m.Metaphone2 == ln2 ) ) )
+                .Select( m => m.Name )
+                .Distinct()
+                .ToList();
+
+            if ( !lastNames.Any() )
+            {
+                return null;
+            }
+
+            string fn1 = string.Empty;
+            string fn2 = string.Empty;
+            Rock.Utility.DoubleMetaphone.doubleMetaphone( splitName.FirstName, ref fn1, ref fn2 );
+            fn1 = fn1 ?? string.Empty;
+            fn2 = fn2 ?? string.Empty;
+
+            var firstNames = metaphones
+                .Where( m =>
+                    ( fn1 != "" && ( m.Metaphone1 == fn1 || m.Metaphone2 == fn1 ) ) ||
+                    ( fn2 != "" && ( m.Metaphone1 == fn2 || m.Metaphone2 == fn2 ) ) )
+                .Select( m => m.Name )
+                .Distinct()
+                .ToList();
+
+            if ( !firstNames.Any() )
+            {
+                return null;
+            }
+
+            // TODO: search for previous last names
+
+            return personQueryable
+            .Where( p =>
+                        lastNames.Contains( p.LastName )
+                        && ( firstNames.Contains( p.FirstName ) || firstNames.Contains( p.NickName ) )
+                        && ( !splitName.SuffixValueId.HasValue || p.SuffixValueId == splitName.SuffixValueId ) );
+
+        }
+
+        /// <summary>
+        /// Splits a full name into a first name and last name with some basic formatting assumptions. This method returns null
+        /// if it is unable to provide a successful parse.
+        /// Supported formats:
+        /// * Decker, Ted - Assumes the last name is before the command and everything after is the first name
+        /// </summary>
+        /// <param name="fullName"></param>
+        /// <returns></returns>
+        private SplitNameResult SplitFullName( string fullName )
+        {
+            if ( fullName.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            fullName = fullName.Trim();
+
+            // Fast path: "Last, First"
+            int comma = fullName.IndexOf( ',' );
+            if ( comma >= 0 )
+            {
+                var last = fullName.Substring( 0, comma ).Trim();
+                var first = ( comma + 1 < fullName.Length ) ? fullName.Substring( comma + 1 ).Trim() : string.Empty;
+
+                return new SplitNameResult
+                {
+                    FirstName = first,
+                    LastName = last
+                };
+            }
+
+            var nameParts = fullName.SplitDelimitedValues();
+            int namePartCount = nameParts.Length;
+
+            if ( namePartCount == 1 ) return null;  // Single part, name is not valid (sorry Prince, Cher and Madonna)
+
+            var result = new SplitNameResult();
+
+            // Process suffixes
+            var lastPart = nameParts[namePartCount - 1];
+            foreach ( var suffix in DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ).DefinedValues )
+            {
+                if ( string.Equals( suffix.Value.Trim( '.' ), lastPart.Trim( '.' ), StringComparison.OrdinalIgnoreCase ) )
+                {
+                    result.Suffix = suffix.Value;
+                    result.SuffixValueId = suffix.Id;
+
+                    // Remove the suffix from the part list
+                    namePartCount--;
+                }
+            }
+
+            // Process simple "First Last" (optional suffix)
+            if ( namePartCount == 2 )                          
+            {
+                result.FirstName = nameParts[0].Trim();
+                result.LastName = nameParts[1].Trim();
+                return result;
+            }
+
+            // Check if the second-to-last word is a last name prefix
+            int lastNameStartIndex = namePartCount - 1;
+            if ( LastNamePrefixes.Contains( nameParts[namePartCount - 2] ) )
+            {
+                lastNameStartIndex = namePartCount - 2;
+            }
+
+            // TODO: In the future we could do additional validation by looking at MetaFirstNameGenderLookup and MetaLastNameLookup
+            //       to see if our found values match. If not we could start looking for other permutations. This could help us
+            //       with Hispanic names that often have multi-word last names. This would also allow us to append a probable
+            //       gender to the result.
+
+            result.FirstName = string.Join( " ", nameParts, 0, lastNameStartIndex );
+            result.LastName = string.Join( " ", nameParts, lastNameStartIndex, namePartCount - lastNameStartIndex );
+
+            return result;
+        }
+
+        // Common last name prefixes that should be treated as part of the last name
+        private static readonly HashSet<string> LastNamePrefixes = new HashSet<string>( StringComparer.OrdinalIgnoreCase )
+        {
+            "van", "von", "de", "del", "di", "la", "le", "du", "da", "mac", "mc", "st", "st.", "san", "bin", "al"
+        };
+
+        private class SplitNameResult {
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public string Suffix { get; set; }
+            public int? SuffixValueId { get; set; }
+        }
+
+        /// <summary>
         /// Gets an queryable collection of <see cref="Rock.Model.Person"/> entities where their phone number partially matches the provided value.
         /// </summary>
         /// <param name="partialPhoneNumber">A <see cref="System.String"/> containing a partial phone number to match.</param>
@@ -3597,14 +3755,15 @@ namespace Rock.Model
                         }
 
                         RemoveAnonymousGiverUserLogins( userLoginService, rockContext );
+
+                        // Run merge proc to merge all associated data
+                        var parms = new Dictionary<string, object>();
+                        parms.Add( "OldId", personId );
+                        parms.Add( "NewId", anonymousPersonId.Value );
+                        DbService.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
                     }
                 } );
 
-                // Run merge proc to merge all associated data
-                var parms = new Dictionary<string, object>();
-                parms.Add( "OldId", personId );
-                parms.Add( "NewId", anonymousPersonId.Value );
-                DbService.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
             }
             catch ( Exception ex )
             {
@@ -5192,6 +5351,38 @@ AND GroupTypeId = ${familyGroupType.Id}
 
         #endregion
 
+        #region Person's History Related
+
+        /// <summary>
+        /// Gets the latest property-change history for the specified person.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns>
+        /// A <see cref="System.Data.DataTable"/> containing the stored procedure result set from
+        /// <c>[dbo].[spCrm_PersonMerge_ChangeHistory]</c> (one row per property/value name, latest change only).
+        /// <para>
+        /// Columns:
+        /// <list type="bullet">
+        ///   <item><description><c>CreatedDateTime</c> (datetime): When the change was recorded.</description></item>
+        ///   <item><description><c>CreatedByPersonAliasId</c> (int): PersonAliasId of the user who made the change.</description></item>
+        ///   <item><description><c>NickName</c> (nvarchar): Nickname of the user who made the change.</description></item>
+        ///   <item><description><c>LastName</c> (nvarchar): Last name of the user who made the change.</description></item>
+        ///   <item><description><c>ValueName</c> (nvarchar): The name of the property that changed (History.ValueName).</description></item>
+        ///   <item><description><c>AttributeId</c> (int, nullable): History.RelatedEntityId when the change is for a Person Attribute; NULL for non-attribute properties and Primary Family address-related changes.</description></item>
+        ///   <item><description><c>NewValue</c> (nvarchar, nullable): The new value recorded by History.</description></item>
+        ///   <item><description><c>OldValue</c> (nvarchar, nullable): The prior value recorded by History.</description></item>
+        /// </list>
+        /// </para>
+        /// </returns>
+        public DataTable GetLatestPersonHistoryChangesDataTable( int personId )
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.Add( "PersonId", personId );
+            return new DbService( this.Context ).GetDataTableFromSqlCommand( "[dbo].[spCrm_PersonMerge_ChangeHistory]", System.Data.CommandType.StoredProcedure, parameters );
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets all the foreign keys in the person table in the database
         /// </summary>
@@ -5449,6 +5640,8 @@ AND GroupTypeId = ${familyGroupType.Id}
                     return new RockChatUserKey
                     {
                         PersonId = p.Person.Id,
+                        NickName = p.Person.NickName,
+                        LastName = p.Person.LastName,
                         ChatPersonAliasId = firstChatAlias?.Id,
                         ChatPersonAliasGuid = firstChatAlias?.Guid
                     };
@@ -5499,6 +5692,8 @@ AND GroupTypeId = ${familyGroupType.Id}
                     ( p, pa ) => new RockChatUserKey
                     {
                         PersonId = p.Id,
+                        NickName = p.NickName,
+                        LastName = p.LastName,
                         ChatPersonAliasId = pa.Id,
                         ChatPersonAliasGuid = pa.Guid,
                     }
@@ -5536,6 +5731,8 @@ AND GroupTypeId = ${familyGroupType.Id}
                     ( p, pa ) => new RockChatUserKey
                     {
                         PersonId = p.Id,
+                        NickName = p.NickName,
+                        LastName = p.LastName,
                         ChatPersonAliasId = pa.Id,
                         ChatPersonAliasGuid = pa.Guid,
                     }

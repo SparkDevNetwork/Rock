@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -22,11 +23,15 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Group.GroupArchivedList;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Core.Grid;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Group
@@ -43,7 +48,7 @@ namespace Rock.Blocks.Group
     [Rock.SystemGuid.EntityTypeGuid( "b67a0c89-1550-4960-8aaf-baa713be3277" )]
     [Rock.SystemGuid.BlockTypeGuid( "972ad143-8294-4462-b2a7-1b36ea127374" )]
     [CustomizedGrid]
-    public class GroupArchivedList : RockEntityListBlockType<Rock.Model.Group>
+    public class GroupArchivedList : RockListBlockType<GroupArchivedList.ArchivedGroupRow>
     {
         #region Keys
 
@@ -57,7 +62,44 @@ namespace Rock.Blocks.Group
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PreferenceKey
+        {
+            public const string FilterArchivedDateRange = "filter-archived-date-range";
+        }
+
         #endregion Keys
+
+        #region Fields
+
+        private PersonPreferenceCollection _personPreferences;
+
+        /// <summary>
+        /// The Group attributes configured to show on the grid.
+        /// </summary>
+        private readonly Lazy<List<AttributeCache>> _gridAttributes = new System.Lazy<List<AttributeCache>>( BuildGridAttributes );
+
+        #endregion
+
+        #region Properties
+
+        public PersonPreferenceCollection PersonPreferences
+        {
+            get
+            {
+                if ( _personPreferences == null )
+                {
+                    _personPreferences = this.GetBlockPersonPreferences();
+                }
+
+                return _personPreferences;
+            }
+        }
+
+        private SlidingDateRangeBag FilterArchivedDateRange => PersonPreferences
+            .GetValue( PreferenceKey.FilterArchivedDateRange )
+            .ToSlidingDateRangeBagOrNull();
+
+        #endregion
 
         #region Methods
 
@@ -66,6 +108,19 @@ namespace Rock.Blocks.Group
         {
             var box = new ListBlockBox<GroupArchivedListOptionsBag>();
             var builder = GetGridBuilder();
+
+            if ( FilterArchivedDateRange == null )
+            {
+                var defaultSlidingDateRange = new SlidingDateRangeBag
+                {
+                    RangeType = SlidingDateRangeType.Last,
+                    TimeUnit = TimeUnitType.Month,
+                    TimeValue = 6
+                };
+
+                this.PersonPreferences.SetValue( PreferenceKey.FilterArchivedDateRange, defaultSlidingDateRange.ToDelimitedSlidingDateRangeOrNull() );
+                this.PersonPreferences.Save();
+            }
 
             box.IsAddEnabled = false;
             box.IsDeleteEnabled = false;
@@ -101,33 +156,142 @@ namespace Rock.Blocks.Group
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<Rock.Model.Group> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<ArchivedGroupRow> GetListQueryable( RockContext rockContext )
         {
             var queryable = new GroupService( rockContext ).GetArchived()
-                .Include( a => a.GroupType )
-                .Include( a => a.ArchivedByPersonAlias.Person );
+                .AsNoTracking()
+                .Select( a => new ArchivedGroupRow
+                {
+                    Group = a,
+                    GroupTypeName = a.GroupType != null ? a.GroupType.Name : string.Empty,
+                    PersonProjection = new PersonProjection
+                    {
+                        NickName = a.ArchivedByPersonAlias.Person.NickName,
+                        LastName = a.ArchivedByPersonAlias.Person.LastName,
+                        PhotoId = a.ArchivedByPersonAlias.Person.PhotoId,
+                        Age = a.ArchivedByPersonAlias.Person.Age,
+                        Gender = a.ArchivedByPersonAlias.Person.Gender,
+                        RecordTypeValueId = a.ArchivedByPersonAlias.Person.RecordTypeValueId,
+                        AgeClassification = a.ArchivedByPersonAlias.Person.AgeClassification,
+                        ConnectionStatusValueId = a.ArchivedByPersonAlias.Person.ConnectionStatusValueId,
+                        Id = a.ArchivedByPersonAlias.Person.Id,
+                    }
+                } );
+
+            queryable = FilterByArchivedDate( queryable );
 
             return queryable;
         }
 
-        protected override IQueryable<Model.Group> GetOrderedListQueryable( IQueryable<Model.Group> queryable, RockContext rockContext )
+        protected override IQueryable<ArchivedGroupRow> GetOrderedListQueryable( IQueryable<ArchivedGroupRow> queryable, RockContext rockContext )
         {
-            return queryable.OrderByDescending( g => g.ArchivedDateTime );
+            return queryable.OrderByDescending( g => g.Group.ArchivedDateTime );
+        }
+
+        protected override List<ArchivedGroupRow> GetListItems( IQueryable<ArchivedGroupRow> queryable, RockContext rockContext )
+        {
+            var archivedGroups = queryable.ToList();
+
+            foreach ( var archivedGroup in archivedGroups )
+            {
+                if ( archivedGroup.PersonProjection.Id.HasValue )
+                {
+                    archivedGroup.Person = new PersonFieldBag
+                    {
+                        IdKey = IdHasher.Instance.GetHash( archivedGroup.PersonProjection.Id.Value ),
+                        NickName = archivedGroup.PersonProjection.NickName,
+                        LastName = archivedGroup.PersonProjection.LastName
+                    };
+
+                    var initials = $"{archivedGroup.Person.NickName.Truncate( 1, false )}{archivedGroup.Person.LastName.Truncate( 1, false )}";
+                    archivedGroup.Person.PhotoUrl = Rock.Model.Person.GetPersonPhotoUrl(
+                        initials,
+                        archivedGroup.PersonProjection.PhotoId,
+                        archivedGroup.PersonProjection.Age,
+                        archivedGroup.PersonProjection.Gender ?? Gender.Unknown,
+                        archivedGroup.PersonProjection.RecordTypeValueId,
+                        archivedGroup.PersonProjection.AgeClassification
+                    );
+
+                    if ( archivedGroup.PersonProjection.ConnectionStatusValueId.HasValue )
+                    {
+                        var connectionStatusValue = DefinedValueCache.Get( archivedGroup.PersonProjection.ConnectionStatusValueId.Value );
+                        if ( connectionStatusValue != null )
+                        {
+                            archivedGroup.Person.ConnectionStatus = connectionStatusValue.Value;
+                        }
+                    }
+                }
+            }
+
+            // Load attribute values for the grid-selected attributes on Group
+            GridAttributeLoader.LoadFor( archivedGroups, g => g.Group, _gridAttributes.Value, rockContext );
+
+            return archivedGroups;
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<Rock.Model.Group> GetGridBuilder()
+        protected override GridBuilder<ArchivedGroupRow> GetGridBuilder()
         {
-            return new GridBuilder<Rock.Model.Group>()
-                .WithBlock( this )
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "groupType", a => a.GroupType.Name )
-                .AddTextField( "name", a => a.Name )
-                .AddTextField( "description", a => a.Description )
-                .AddDateTimeField( "createdDate", a => a.CreatedDateTime?.Date )
-                .AddDateTimeField( "archivedDate", a => a.ArchivedDateTime?.Date )
-                .AddPersonField( "archivedBy", a => a.ArchivedByPersonAlias?.Person )
-                .AddField( "isSystem", a => a.IsSystem );
+            var blockOptions = new GridBuilderGridOptions<ArchivedGroupRow>
+            {
+                LavaObject = row => row.Group
+            };
+
+            return new GridBuilder<ArchivedGroupRow>()
+                .WithBlock( this, blockOptions )
+                .AddTextField( "idKey", a => a.Group.IdKey )
+                .AddTextField( "groupType", a => a.GroupTypeName )
+                .AddTextField( "name", a => a.Group.Name )
+                .AddTextField( "description", a => a.Group.Description )
+                .AddDateTimeField( "createdDate", a => a.Group.CreatedDateTime?.Date )
+                .AddDateTimeField( "archivedDate", a => a.Group.ArchivedDateTime?.Date )
+                .AddField( "archivedBy", a => a.Person )
+                .AddField( "isSystem", a => a.Group.IsSystem )
+                .AddAttributeFieldsFrom( a => a.Group, _gridAttributes.Value );
+        }
+
+        /// <summary>
+        /// Builds the list of grid attributes that should be included on the Grid.
+        /// </summary>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        private static List<AttributeCache> BuildGridAttributes()
+        {
+            var entityTypeId = EntityTypeCache.Get<Rock.Model.Group>( false )?.Id;
+
+            if ( entityTypeId.HasValue )
+            {
+                return AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, string.Empty, string.Empty );
+            }
+
+            return new List<AttributeCache>();
+        }
+
+        /// <summary>
+        /// Filters the queryable by the Archived Date
+        /// </summary>
+        /// <param name="queryable">The <see cref="ArchivedGroupRow"/> queryable</param>
+        /// <returns></returns>
+        private IQueryable<ArchivedGroupRow> FilterByArchivedDate( IQueryable<ArchivedGroupRow> queryable )
+        {
+            // Default to the last 180 days if a null/invalid range was selected.
+            var defaultSlidingDateRange = new SlidingDateRangeBag
+            {
+                RangeType = SlidingDateRangeType.Last,
+                TimeUnit = TimeUnitType.Month,
+                TimeValue = 6
+            };
+
+            var dateRange = FilterArchivedDateRange.Validate( defaultSlidingDateRange ).ActualDateRange;
+            var dateTimeStart = dateRange.Start;
+            var dateTimeEnd = dateRange.End;
+
+            queryable = queryable
+                .Where( g =>
+                    g.Group.ArchivedDateTime >= dateTimeStart &&
+                    g.Group.ArchivedDateTime <= dateTimeEnd );
+
+            return queryable;
         }
 
         #endregion
@@ -165,6 +329,42 @@ namespace Rock.Blocks.Group
 
                 return ActionOk();
             }
+        }
+
+        #endregion
+
+        #region Helper Classes
+
+        public class ArchivedGroupRow
+        {
+            public Rock.Model.Group Group { get; set; }
+
+            public string GroupTypeName { get; set; }
+
+            public PersonProjection PersonProjection { get; set; }
+
+            public PersonFieldBag Person { get; set; }
+        }
+
+        public class PersonProjection
+        {
+            public string NickName { get; set; }
+
+            public string LastName { get; set; }
+
+            public int? PhotoId { get; set; }
+
+            public int? Age { get; set; }
+
+            public Gender? Gender { get; set; }
+
+            public int? RecordTypeValueId { get; set; }
+
+            public AgeClassification? AgeClassification { get; set; }
+
+            public int? ConnectionStatusValueId { get; set; }
+
+            public int? Id { get; set; }
         }
 
         #endregion

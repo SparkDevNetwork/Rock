@@ -71,5 +71,13 @@ namespace Rock.ViewModels.Blocks.Engagement.Steps
         /// List of Flow Diagram Nodes
         /// </value>
         public List<SankeyDiagramNodeBag> Nodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the legend HTML
+        /// </summary>
+        /// <value>
+        /// The generated HTML string for the chart legend
+        /// </value>
+        public string LegendHtml { get; set; }
     }
 }

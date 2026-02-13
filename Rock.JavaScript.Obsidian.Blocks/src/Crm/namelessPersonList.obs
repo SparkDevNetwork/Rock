@@ -305,6 +305,7 @@
                 field="foreignKey"
                 :hideOnScreen="true" />
         <ButtonColumn name="showModal"
+                      tooltip="Link to Person"
                       iconClass="ti ti-user"
                       @click="onShowModal"
                       :excludeFromExport="true" />

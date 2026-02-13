@@ -140,7 +140,7 @@ namespace Rock.Tests.Integration.Core.Jobs
             var followingEventSystemEmailGuid = "CA7576CD-0A10-4ADA-A068-62EE598178F5".AsGuid();
             var testAttributeValues = new Dictionary<string, string>();
             testAttributeValues.AddOrReplace( "EligibleFollowers", rsrStaffWorkersGroupGuid.ToString() );
-            testAttributeValues.AddOrReplace( "EmailTemplate", followingEventSystemEmailGuid.ToString());
+            testAttributeValues.AddOrReplace( "EmailTemplate", followingEventSystemEmailGuid.ToString() );
             job.ExecuteInternal( testAttributeValues );
         }
 

@@ -106,5 +106,12 @@ namespace Rock.ViewModels.Cms
         /// hide certain blocks in response to user actions.
         /// </summary>
         public BlockRole Role { get; set; }
+
+        /// <summary>
+        /// The parent trace for this block load operation. This is used to
+        /// link block actions back to the original trace. This must be in
+        /// the W3C format '{version}-{trace_id}-{span_id}-{trace_flags}'.
+        /// </summary>
+        public string ParentTrace { get; set; }
     }
 }

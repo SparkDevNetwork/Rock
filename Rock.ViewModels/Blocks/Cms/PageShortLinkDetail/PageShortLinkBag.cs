@@ -59,6 +59,11 @@ namespace Rock.ViewModels.Blocks.Cms.PageShortLinkDetail
         public bool IsPinned { get; set; }
 
         /// <summary>
+        /// Gets or sets the number of days until the short link expires.
+        /// </summary>
+        public int? ExpireInDays { get; set; }
+
+        /// <summary>
         /// The UTM settings to apply to this short link.
         /// </summary>
         public UtmSettingsBag UtmSettings { get; set; }

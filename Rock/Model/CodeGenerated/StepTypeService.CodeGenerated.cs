@@ -152,13 +152,18 @@ namespace Rock.Model
             target.AllowMultiple = source.AllowMultiple;
             target.AudienceDataViewId = source.AudienceDataViewId;
             target.AutoCompleteDataViewId = source.AutoCompleteDataViewId;
+            target.CallToActionDescription = source.CallToActionDescription;
+            target.CallToActionLabel = source.CallToActionLabel;
+            target.CallToActionLink = source.CallToActionLink;
             target.CardLavaTemplate = source.CardLavaTemplate;
             target.Description = source.Description;
+            target.EngagementType = source.EngagementType;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.HasEndDate = source.HasEndDate;
             target.HighlightColor = source.HighlightColor;
             target.IconCssClass = source.IconCssClass;
+            target.ImpactWeight = source.ImpactWeight;
             target.IsActive = source.IsActive;
             target.IsDateRequired = source.IsDateRequired;
             target.IsSystem = source.IsSystem;
@@ -166,6 +171,7 @@ namespace Rock.Model
             target.MergeTemplateId = source.MergeTemplateId;
             target.Name = source.Name;
             target.Order = source.Order;
+            target.OrganizationalObjectiveValueId = source.OrganizationalObjectiveValueId;
             target.ShowCountOnBadge = source.ShowCountOnBadge;
             target.StepProgramId = source.StepProgramId;
             target.CreatedDateTime = source.CreatedDateTime;

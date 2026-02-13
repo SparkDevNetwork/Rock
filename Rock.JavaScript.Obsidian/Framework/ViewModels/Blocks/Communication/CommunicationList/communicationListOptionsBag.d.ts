@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
 /** The additional configuration options for the Communication List block. */
 export type CommunicationListOptionsBag = {
     /** Gets or sets whether an active email transport exists. */
@@ -34,4 +36,10 @@ export type CommunicationListOptionsBag = {
 
     /** Gets or sets whether to show the "sent by" filter controls. */
     showSentByFilter: boolean;
+
+    /**
+     * Gets or sets the list of communication topic defined value items - both active and inactive - that the
+     * individual can filter by.
+     */
+    topicItems?: ListItemBag[] | null;
 };

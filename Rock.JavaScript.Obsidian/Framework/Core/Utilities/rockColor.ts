@@ -620,10 +620,10 @@ export class RockColor {
 
             let hue: number;
 
-            if (red == max) {
+            if (red === max) {
                 hue = blueDist - greenDist;
             }
-            else if (green == max) {
+            else if (green === max) {
                 hue = 2 + redDist - blueDist;
             }
             else {

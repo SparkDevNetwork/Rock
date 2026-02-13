@@ -22,6 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -136,6 +137,17 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 2500 )]
         public string Parameters { get; set; }
+
+        /// <summary>
+        /// Gets or sets how variables defined within this shortcode are scoped.
+        /// </summary>
+        /// <value>
+        /// The shortcode scope behavior.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public ShortcodeScopeBehavior ShortcodeScopeBehavior { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

@@ -19,6 +19,7 @@ import { standardColumnProps } from "@Obsidian/Core/Controls/grid";
 import { Component, defineComponent, PropType } from "vue";
 import SelectCell from "../Cells/selectCell.partial.obs";
 import SelectHeaderCell from "../Cells/selectHeaderCell.partial.obs";
+import { IGridState } from "@Obsidian/Types/Controls/grid";
 
 /**
  * Displays a checkbox that can be used to select the row for bulk operations
@@ -62,5 +63,32 @@ export default defineComponent({
             type: String as PropType<string>,
             default: "select"
         },
-    }
+
+        // #region Row Exclusion Props
+
+        /**
+         * A function that determines if the row should be excluded from having a Select checkbox.
+         * Should return true to exclude the row, false otherwise.
+         */
+        rowDisabled: {
+            type: Function as PropType<((row: Record<string, unknown>, grid: IGridState) => boolean)>,
+            default: undefined,
+            required: false
+        },
+
+        /**
+         * If true, the "select all" checkbox in the header will be available even if
+         * rowDisabled is defined.
+         *
+         * This is only useful if your rows are sorted in a way that being able to select all
+         * selectable rows on the current page is meaningful.
+         */
+        forceAllowSelectAll: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        }
+
+        // #endregion Row Exclusion Props
+    },
 });

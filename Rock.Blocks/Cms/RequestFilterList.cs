@@ -112,14 +112,19 @@ namespace Rock.Blocks.Cms
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "RequestFilterId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string>
+                {
+                    ["RequestFilterId"] = "((Key))",
+                    ["autoEdit"] = "true",
+                    ["returnUrl"] = this.GetCurrentPageUrl()
+                } )
             };
         }
 
         /// <inheritdoc/>
         protected override IQueryable<RequestFilter> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext );
+            return base.GetListQueryable( rockContext ).Include( a => a.Site );
         }
         protected override IQueryable<RequestFilter> GetOrderedListQueryable( IQueryable<RequestFilter> queryable, RockContext rockContext )
         {
@@ -133,7 +138,7 @@ namespace Rock.Blocks.Cms
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
-                .AddTextField( "site", a => a.Site.Name )
+                .AddTextField( "site", a => a.Site != null ? a.Site.Name : "" )
                 .AddField( "isActive", a => a.IsActive )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }

@@ -4,8 +4,8 @@
 
 
 // =============================================================
-// Table of Content           
-//  + Contributions      
+// Table of Content
+//  + Contributions
 //  + Scheduled Transactions
 //  + Transaction Matching
 // =============================================================
@@ -40,7 +40,9 @@
   width:            100%;
   margin-bottom:    var(--spacing-small);
   border:           2px solid var(--color-interface-soft);
-
+  img {
+    width: 100%;
+  }
   .fluidbox-ghost {
     cursor:         -webkit-zoom-in;
     cursor:         -moz-zoom-in;

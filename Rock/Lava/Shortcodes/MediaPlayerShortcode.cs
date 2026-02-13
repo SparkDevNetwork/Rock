@@ -31,7 +31,7 @@ namespace Rock.Lava.Shortcodes
     [LavaShortcodeMetadata(
         Name = "Media Player",
         TagName = "mediaplayer",
-        Description = "Media Player displays a single URL or a Media Element in a player that can also record metric data.",
+        Description = "Embed a media player that supports playback, streaming, and engagement tracking.",
         Documentation = DocumentationMetadata,
         Parameters = ParameterNamesMetadata,
         Categories = "C3270142-E72E-4FBF-BE94-9A2505DE7D54" )]

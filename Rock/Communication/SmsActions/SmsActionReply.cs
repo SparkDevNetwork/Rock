@@ -39,14 +39,14 @@ namespace Rock.Communication.SmsActions
 
     [TextValueFilterField( "Message",
         Description = "The message body content that will be filtered on.",
-        Key = AttributeKeys.Message,
+        Key = AttributeKey.Message,
         IsRequired = false,
         Category = AttributeCategories.Filters,
         Order = 1 )]
 
     [MemoField( "Response",
         Description = "The response that will be sent. <span class='tip tip-lava'></span>",
-        Key = AttributeKeys.Response,
+        Key = AttributeKey.Response,
         IsRequired = true,
         Category = AttributeCategories.Response,
         Order = 2 )]
@@ -55,13 +55,21 @@ namespace Rock.Communication.SmsActions
         "Attachment",
         Description = "An attached file that will be sent. Note that when sending attachments with MMS; jpg, gif, and png images are supported for all carriers. Support for other file types is dependent upon each carrier and device. So make sure to test sending this to different carriers and phone types to see if it will work as expected.",
         IsRequired = false,
-        Key = AttributeKeys.Attachment,
+        Key = AttributeKey.Attachment,
         Order = 3,
         Category = AttributeCategories.Response )]
 
+    [BooleanField( "Save Response",
+        Description = "If true, the response will be saved as a communication record so automated responses can be tracked.",
+        Key = AttributeKey.SaveResponse,
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Category = AttributeCategories.Response,
+        Order = 4 )]
+
     #endregion Attributes
 
-    [Rock.SystemGuid.EntityTypeGuid( "029085A7-5750-4055-BC37-2272BD194E1D")]
+    [Rock.SystemGuid.EntityTypeGuid( "029085A7-5750-4055-BC37-2272BD194E1D" )]
     public class SmsActionReply : SmsActionComponent
     {
         #region Keys
@@ -69,7 +77,7 @@ namespace Rock.Communication.SmsActions
         /// <summary>
         /// Keys for the attributes
         /// </summary>
-        private static class AttributeKeys
+        private static class AttributeKey
         {
             /// <summary>
             /// The message filter.
@@ -85,6 +93,11 @@ namespace Rock.Communication.SmsActions
             /// The attachment.
             /// </summary>
             public const string Attachment = "Attachment";
+
+            /// <summary>
+            /// Whether to save the response as a <see cref="Model.Communication"/>.
+            /// </summary>
+            public const string SaveResponse = "SaveResponse";
         }
 
         /// <summary>
@@ -93,7 +106,7 @@ namespace Rock.Communication.SmsActions
         protected class AttributeCategories : BaseAttributeCategories
         {
             /// <summary>
-            /// The filters category
+            /// The response category
             /// </summary>
             public const string Response = "Response";
         }
@@ -151,19 +164,19 @@ namespace Rock.Communication.SmsActions
 
             // If the (required) "Response" attribute does not have a value, skip
             // processing this action.
-            var responseMessage = action.GetAttributeValue( AttributeKeys.Response );
+            var responseMessage = action.GetAttributeValue( AttributeKey.Response );
             if ( string.IsNullOrWhiteSpace( responseMessage ) )
             {
                 return false;
             }
 
             // Get the filter expression for the message body.
-            var attribute = action.Attributes.ContainsKey( AttributeKeys.Message ) ? action.Attributes[AttributeKeys.Message] : null;
-            var msg = GetAttributeValue( action, AttributeKeys.Message );
+            var attribute = action.Attributes.ContainsKey( AttributeKey.Message ) ? action.Attributes[AttributeKey.Message] : null;
+            var msg = GetAttributeValue( action, AttributeKey.Message );
             var filter = ValueFilterFieldType.GetFilterExpression( attribute?.QualifierValues, msg );
 
             // Evaluate the message against the filter and return the match state.
-            return filter != null ? filter.Evaluate( message, AttributeKeys.Message ) : true;
+            return filter != null ? filter.Evaluate( message, AttributeKey.Message ) : true;
         }
 
         /// <summary>
@@ -180,12 +193,12 @@ namespace Rock.Communication.SmsActions
             // Process the message with lava to get the response that should be sent back.
             var mergeObjects = new Dictionary<string, object>
             {
-                { AttributeKeys.Message, message }
+                { AttributeKey.Message, message }
             };
-            var responseMessage = action.GetAttributeValue( AttributeKeys.Response ).ResolveMergeFields( mergeObjects, message.FromPerson );
+            var responseMessage = action.GetAttributeValue( AttributeKey.Response ).ResolveMergeFields( mergeObjects, message.FromPerson );
 
             // Add the attachment (if one was specified)
-            var attachmentBinaryFileGuid = GetAttributeValue( action, "Attachment").AsGuidOrNull();
+            var attachmentBinaryFileGuid = GetAttributeValue( action, "Attachment" ).AsGuidOrNull();
             BinaryFile binaryFile = null;
 
             if ( attachmentBinaryFileGuid.HasValue && attachmentBinaryFileGuid != Guid.Empty )
@@ -201,10 +214,11 @@ namespace Rock.Communication.SmsActions
 
             var smsMessage = new SmsMessage
             {
-                Message = responseMessage.Trim()
+                Message = responseMessage.Trim(),
+                SaveAsResponse = GetAttributeValue( action, AttributeKey.SaveResponse ).AsBoolean()
             };
 
-            if (binaryFile != null )
+            if ( binaryFile != null )
             {
                 smsMessage.Attachments.Add( binaryFile );
             }

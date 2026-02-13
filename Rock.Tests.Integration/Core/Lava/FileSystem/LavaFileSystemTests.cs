@@ -18,7 +18,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.Core.Lava.FileSystem
@@ -92,7 +91,7 @@ Included 'a' = b
 Outer 'a' = a
 ";
 
-	            var testEngineFluid = LavaService.NewEngineInstance( typeof( FluidEngine ), new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
+                var testEngineFluid = LavaService.NewEngineInstance( typeof( FluidEngine ), new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
                 TestHelper.AssertTemplateOutput( testEngineFluid, expectedOutputFluid, input );
             }
@@ -115,7 +114,7 @@ Outer 'a' = a
 
                 TestHelper.DebugWriteRenderResult( engine, input, result.Text );
 
-                Assert.That.Contains( result.Error.Messages().JoinStrings( "//" ), "File Load Failed." );
+                Assert.Contains( "File Load Failed.", result.Error.Messages().JoinStrings( "//" ) );
             } );
         }
 
@@ -132,7 +131,7 @@ Outer 'a' = a
 
                 var result = testEngine.RenderTemplate( input );
 
-                Assert.That.Contains( result.Error.Messages().JoinStrings( "//" ), "File Load Failed." );
+                Assert.Contains( "File Load Failed.", result.Error.Messages().JoinStrings( "//" ) );
             } );
         }
 

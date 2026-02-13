@@ -161,10 +161,10 @@
         minute = Math.min(59, Math.max(0, minute ?? 0));
         hour = Math.min(12, Math.max(1, hour ?? 12));
 
-        if (hour == 12 && meridiem == "AM") {
+        if (hour === 12 && meridiem === "AM") {
             hour = 0;
         }
-        else if (hour < 12 && meridiem == "PM") {
+        else if (hour < 12 && meridiem === "PM") {
             hour += 12;
         }
 
@@ -202,7 +202,7 @@
         let hour, minute, meridiem;
 
         let timeMode = ((/a/i).test(time) ? 1 : 0) + ((/p/i).test(time) ? 2 : 0); // 0 = none, 1 = AM, 2 = PM, 3 = BOTH.
-        if (timeMode > 2 || time.trim() == "") { // If both are present, fail.
+        if (timeMode > 2 || time.trim() === "") { // If both are present, fail.
             emit("update:modelValue", {});
             return;
         }
@@ -289,10 +289,10 @@
 
     /** Switch the highlighted unit in the main input to the next unit */
     function highlightNextUnit(): void {
-        if (highlightedUnit.value == "hour") {
+        if (highlightedUnit.value === "hour") {
             highlightedUnit.value = "minute";
         }
-        else if (highlightedUnit.value == "minute") {
+        else if (highlightedUnit.value === "minute") {
             highlightedUnit.value = "meridiem";
         }
         else {
@@ -302,10 +302,10 @@
 
     /** Switch the highlighted unit in the main input to the previous unit */
     function highlightPrevUnit(): void {
-        if (highlightedUnit.value == "meridiem") {
+        if (highlightedUnit.value === "meridiem") {
             highlightedUnit.value = "minute";
         }
-        else if (highlightedUnit.value == "hour") {
+        else if (highlightedUnit.value === "hour") {
             highlightedUnit.value = "meridiem";
         }
         else {
@@ -363,7 +363,7 @@
             // Wait for update to go through to make sure the next update isn't overridden
             await nextTick();
         }
-        else if (currVal == 12) {
+        else if (currVal === 12) {
             currVal = 0;
         }
 
@@ -458,13 +458,13 @@
                     break;
                 }
                 else if (e.shiftKey) {
-                    if (highlightedUnit.value == "hour") {
+                    if (highlightedUnit.value === "hour") {
                         showPickerWidget.value = false;
                         break;
                     }
                     highlightPrevUnit();
                 }
-                else if (highlightedUnit.value == "meridiem") {
+                else if (highlightedUnit.value === "meridiem") {
                     showPickerWidget.value = false;
                     break;
                 }
@@ -501,7 +501,7 @@
                 e.preventDefault();
                 break;
             case "Tab":
-                if ((e.shiftKey && segmentName == "hour") || (!e.shiftKey && segmentName == "meridiem")) {
+                if ((e.shiftKey && segmentName === "hour") || (!e.shiftKey && segmentName === "meridiem")) {
                     showPickerWidget.value = false;
                 }
                 return;
@@ -533,13 +533,13 @@
                 break;
             case "A": // Fall through
             case "a":
-                if (segmentName == "meridiem") {
+                if (segmentName === "meridiem") {
                     internalMeridiem.value = "AM";
                 }
                 break;
             case "P": // Fall through
             case "p":
-                if (segmentName == "meridiem") {
+                if (segmentName === "meridiem") {
                     internalMeridiem.value = "PM";
                 }
                 break;
@@ -562,7 +562,7 @@
         }
 
         // Disallow any other keypresses, other than non-paste keyboard shortcuts, so users can't enter invalid values
-        if ((!e.ctrlKey || (e.ctrlKey && e.key.toLowerCase() == "v")) && !e.altKey && !e.metaKey) {
+        if ((!e.ctrlKey || (e.ctrlKey && e.key.toLowerCase() === "v")) && !e.altKey && !e.metaKey) {
             e.preventDefault();
         }
     }
@@ -576,8 +576,8 @@
 
         if (
             e.target === widgetEl.value || e.composedPath().includes(widgetEl.value) ||
-            e.target == toggleBtnEl.value || e.composedPath().includes(toggleBtnEl.value as HTMLElement) ||
-            e.target == inputEl.value || e.composedPath().includes(inputEl.value as HTMLElement)
+            e.target === toggleBtnEl.value || e.composedPath().includes(toggleBtnEl.value as HTMLElement) ||
+            e.target === inputEl.value || e.composedPath().includes(inputEl.value as HTMLElement)
         ) {
             // Clicked in the widget or the toggle button. Skip
             return;

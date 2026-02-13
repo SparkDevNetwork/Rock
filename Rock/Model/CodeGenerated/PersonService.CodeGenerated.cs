@@ -176,6 +176,11 @@ namespace Rock.Model
             target.MiddleName = source.MiddleName;
             target.NickName = source.NickName;
             target.NickNamePronunciationOverride = source.NickNamePronunciationOverride;
+            target.OutreachEnableDailyNotification = source.OutreachEnableDailyNotification;
+            target.OutreachEnableSpecialEventsNotification = source.OutreachEnableSpecialEventsNotification;
+            target.OutreachNotificationTimeOfDay = source.OutreachNotificationTimeOfDay;
+            target.OutreachTouchpointGenerationEnabled = source.OutreachTouchpointGenerationEnabled;
+            target.OutreachTouchpointSchedule = source.OutreachTouchpointSchedule;
             target.PhotoId = source.PhotoId;
             target.PreferredLanguageValueId = source.PreferredLanguageValueId;
             target.PrimaryAliasGuid = source.PrimaryAliasGuid;

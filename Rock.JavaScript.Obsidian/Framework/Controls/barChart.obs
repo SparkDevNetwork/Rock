@@ -233,7 +233,15 @@
         },
 
         /**
-     * The minimum value to display in the value axis if there is nothing lower.
+         * The number of decimal places to display for values.
+         * Applies to both axis tick labels and tooltips.
+         */
+        valuePrecision: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The minimum value to display in the value axis if there is nothing lower.
          *
          * This is useful for controlling the starting point of the value axis.
          * The actual minimum value will be used if there is a lower value present.
@@ -629,7 +637,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-small")) || undefined,
-                            weight: getCssVar("--font-weight-semibold")
+                            weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         generateLabels: (chart) => {
@@ -674,7 +682,7 @@
                     font: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-small")) || undefined,
-                        weight: getCssVar("--font-weight-semibold")
+                        weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                     },
 
                     text: props.title ?? undefined,
@@ -688,7 +696,7 @@
                     bodyFont: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
-                        weight: getCssVar("--font-weight-regular")
+                        weight: getCssVar("--font-weight-regular") as "bold" | "normal" | "bolder" | "lighter"
                     },
 
                     borderColor: getCssVar("--color-interface-soft"),
@@ -714,7 +722,7 @@
                                             label: rawLabel,
                                             formattedLabel: getFormattedLabel(tooltipItem.chart, tooltipItem.chart.data, tooltipItem.dataIndex) ?? rawLabel,
                                             value: tooltipItem.raw as number | null,
-                                            formattedValue: getFormattedValue(tooltipItem.chart, tooltipItem.parsed[valueAxis.value], tooltipItem.dataIndex) ?? (tooltipItem.formattedValue || tooltipItem.parsed[valueAxis.value].toString()),
+                                            formattedValue: getFormattedValue(tooltipItem.chart, tooltipItem.parsed[valueAxis.value]!, tooltipItem.dataIndex) ?? (tooltipItem.formattedValue || tooltipItem.parsed[valueAxis.value]!.toString()),
                                             seriesLabel: tooltipItem.dataset.label ?? ""
                                         });
                                     })
@@ -738,40 +746,65 @@
                         // 2. props.type === "percent", use percent-formatted tooltip
                         // 3. use default
                         label:
-                            props.tooltip
-                                ? (context) => {
-                                    // There are 3 versions of the label.
-                                    // 1. The raw label (from prop.labels)
-                                    // 2. The formatted label (from the category axis; using the options.scales.x.ticks.callback formatter)
-                                    // 3. Unpredictable formatted label (from internal chart library formatting via `context.label`; unpredictable so don't use)
-                                    const rawLabel = props.labels[context.dataIndex];
+                            // Use the provided tooltip callback if present.
+                            props.tooltip ? (context) => {
+                                // There are 3 versions of the label.
+                                // 1. The raw label (from prop.labels)
+                                // 2. The formatted label (from the category axis; using the options.scales.x.ticks.callback formatter)
+                                // 3. Unpredictable formatted label (from internal chart library formatting via `context.label`; unpredictable so don't use)
+                                const rawLabel = props.labels[context.dataIndex];
 
-                                    return props.tooltip?.({
-                                        label: rawLabel,
-                                        formattedLabel: getFormattedLabel(context.chart, context.chart.data, context.dataIndex) ?? rawLabel,
-                                        value: context.raw as number | null,
-                                        formattedValue: getFormattedValue(context.chart, context.parsed[valueAxis.value], context.dataIndex) ?? (context.formattedValue || context.parsed[valueAxis.value].toString()),
-                                        seriesLabel: context.dataset.label ?? ""
-                                    }) ?? "";
+                                return props.tooltip?.({
+                                    label: rawLabel,
+                                    formattedLabel: getFormattedLabel(context.chart, context.chart.data, context.dataIndex) ?? rawLabel,
+                                    value: context.raw as number | null,
+                                    formattedValue: getFormattedValue(context.chart, context.parsed.y!, context.dataIndex) ?? (context.formattedValue || context.parsed.y!.toString()),
+                                    seriesLabel: context.dataset.label ?? ""
+                                }) ?? "";
+                            }
+
+                                // Format as a percentage if the chart type is "percent".
+                                : props.type === "percent" ? (context) => {
+                                    let label = context.dataset.label ?? "";
+
+                                    if (label) {
+                                        label += ": ";
+                                    }
+
+                                    const y = context.parsed.y;
+                                    if (!isNullish(y)) {
+                                        const maximumFractionDigits = clamp(props.valuePrecision, 0, 20) ?? 2;
+                                        label += y.toLocaleString(
+                                            undefined,
+                                            { style: "percent", maximumFractionDigits }
+                                        );
+                                    }
+
+                                    return label;
                                 }
-                                : props.type === "percent"
-                                    ? (context) => {
+
+                                    // Format as a number if the chart type is "number" and a precision is specified.
+                                    : props.type === "number" && !isNullish(props.valuePrecision) ? (context) => {
                                         let label = context.dataset.label ?? "";
 
                                         if (label) {
                                             label += ": ";
                                         }
 
-                                        if (!isNullish(context.parsed[valueAxis.value])) {
-                                            label += context.parsed[valueAxis.value].toLocaleString(
+                                        const y = context.parsed.y;
+                                        if (!isNullish(y)) {
+                                            const maximumFractionDigits = clamp(props.valuePrecision, 0, 20) ?? 2;
+                                            label += y.toLocaleString(
                                                 undefined,
-                                                { style: "percent", maximumFractionDigits: 2 }
+                                                { maximumFractionDigits }
                                             );
                                         }
 
                                         return label;
                                     }
-                                    : undefined,
+
+                                        // Otherwise, use the default label.
+                                        : undefined,
 
                         labelColor: (context): TooltipLabelStyle => {
                             return {
@@ -800,7 +833,7 @@
                     titleFont: {
                         family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                         size: parseInt(getCssVar("--font-size-small")) || undefined,
-                        weight: getCssVar("--font-weight-semibold")
+                        weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                     }
                 }
             },
@@ -832,7 +865,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
-                            weight: getCssVar("--font-weight-regular")
+                            weight: getCssVar("--font-weight-regular") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         // Limit the maximum label rotation to 45 degrees when not showing all ticks (showing all ticks may require more rotation).
@@ -860,7 +893,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-small")) || undefined,
-                            weight: getCssVar("--font-weight-semibold")
+                            weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         text: props.categoryLabel ?? undefined
@@ -895,8 +928,9 @@
                     suggestedMax: internalValueSuggestedMax.value ?? undefined,
 
                     ticks: {
-                        callback: props.type === "percent"
-                            ? (tickValue) => {
+                        callback:
+                            // Format as a percentage if the chart type is "percent".
+                            props.type === "percent" ? (tickValue) => {
                                 if (typeof tickValue !== "number") {
                                     tickValue = Number(tickValue);
                                 }
@@ -906,23 +940,48 @@
                                     return `${tickValue}`;
                                 }
                                 else {
+                                    const maximumFractionDigits = clamp(props.valuePrecision, 0, 20) ?? 0;
                                     return tickValue.toLocaleString(
                                         undefined,
-                                        { style: "percent", maximumFractionDigits: 0 }
+                                        { style: "percent", maximumFractionDigits }
                                     );
                                 }
                             }
-                            : undefined,
+
+                                // Format as a number if the chart type is "number" and a precision is specified.
+                                : props.type === "number" && !isNullish(props.valuePrecision)
+                                    ? (tickValue) => {
+                                        if (typeof tickValue !== "number") {
+                                            tickValue = Number(tickValue);
+                                        }
+
+                                        if (isNaN(tickValue)) {
+                                            // If it's not a number, return the original value.
+                                            return `${tickValue}`;
+                                        }
+                                        else {
+                                            return tickValue.toLocaleString(
+                                                undefined,
+                                                { maximumFractionDigits: clamp(props.valuePrecision, 0, 20) }
+                                            );
+                                        }
+                                    }
+
+                                    // Otherwise, use the default formatter.
+                                    : undefined,
+
                         color: getCssVar("--color-interface-strong"),
                         count: internalValueTickCount.value,
 
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
-                            weight: getCssVar("--font-weight-regular")
+                            weight: getCssVar("--font-weight-regular") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
-                        maxTicksLimit: clamp(props.valueMaxTickCount, 0)
+                        maxTicksLimit: clamp(props.valueMaxTickCount, 0),
+
+                        precision: clamp(props.valuePrecision, 0, 20) // The max precision is unknown but it seems to work as high as 20
                     },
 
                     title: {
@@ -932,7 +991,7 @@
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-small")) || undefined,
-                            weight: getCssVar("--font-weight-semibold")
+                            weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                         },
 
                         text: props.valueLabel ?? undefined
@@ -1107,7 +1166,7 @@
         var backgroundColor = window.getComputedStyle(el).backgroundColor;
 
         // if we got a real value, return it
-        if (backgroundColor != defaultStyle) return backgroundColor;
+        if (backgroundColor !== defaultStyle) return backgroundColor;
 
         // if we've reached the top parent el without getting an explicit color, return default
         if (!el.parentElement) return defaultStyle;

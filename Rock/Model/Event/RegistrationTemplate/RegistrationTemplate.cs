@@ -387,19 +387,19 @@ namespace Rock.Model
         public string SuccessText { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [allow multiple registrants].
+        /// Gets or sets a value indicating whether a registrar can register multiple registrants per registration.
         /// </summary>
         /// <value>
-        /// <c>true</c> if [allow multiple registrants]; otherwise, <c>false</c>.
+        /// <c>true</c> if a registrar can register multiple registrants per registration; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
         public bool AllowMultipleRegistrants { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum registrants.
+        /// Gets or sets the maximum number of registrants that a registrar can register per registration.
         /// </summary>
         /// <value>
-        /// The maximum registrants.
+        /// The maximum number of registrants that a registrar can register per registration.
         /// </value>
         [DataMember]
         public int? MaxRegistrants { get; set; }

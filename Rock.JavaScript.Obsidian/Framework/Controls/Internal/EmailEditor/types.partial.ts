@@ -17,6 +17,9 @@
 
 import { Ref } from "vue";
 import { Enumerable } from "@Obsidian/Utility/linq";
+import { Guid } from "@Obsidian/Types";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
 
 /**
  * Represents a set of related table elements used for email components.
@@ -147,6 +150,8 @@ export type ContentAreaElements = {
 
 export type HorizontalAlignment = "left" | "center" | "right";
 
+export type LetterCase = "none" | "uppercase" | "lowercase" | "capitalize";
+
 // Utility type to convert a string from camel case to kebab case
 type ToKebabCase<S extends string> =
     S extends `${infer T}${infer U}`
@@ -170,7 +175,7 @@ export type BackgroundFit = "repeat" | "center";
 
 export type BackgroundSize = "original" | "fit-width" | "fit-height";
 
-export type BorderStyle = "solid" | "dashed" | "dotted";
+export type BorderStyle = "solid" | "dashed" | "dotted" | "none";
 
 export type TextAlignment = "left" | "center" | "right" | "justify";
 
@@ -345,12 +350,634 @@ export class WeakPair<K extends object, V> {
     }
 }
 
-export type ButtonWidth = "fitToText" | "full" | "fixed";
+export type ButtonWidthMode = "fitToText" | "full" | "fixed";
 
-export type ButtonWidthValues = { width: ButtonWidth | null | undefined; fixedWidth: number | null | undefined; };
+export type ButtonWidthModel = {
+    mode: ButtonWidthMode | null;
+    fixedWidthPx: number | null;
+};
 
 export type ComponentMigrationHelper = {
     isMigrationRequired(componentElement: Element): boolean;
     migrate(componentElement: Element): Element;
     readonly latestVersion: string;
 };
+
+export type ShorthandModel<T> = {
+    /** Top. */
+    top: T;
+    /** Right. */
+    right: T;
+    /** Bottom. */
+    bottom: T;
+    /** Left. */
+    left: T;
+};
+
+/**
+ * Logical model for a border.
+ * Used for both local button borders and global button border styling.
+ */
+export type BorderModel = {
+    /** CSS border style. */
+    style: ShorthandModel<BorderStyle | null> | null;
+    /** Border width. */
+    widthPx: ShorthandModel<number | null> | null;
+    /** CSS color value, typically hex or rgb(a). */
+    color: ShorthandModel<string | null> | null;
+};
+
+
+export type GlobalAdapter<TGlobalProps> = {
+    version: string;
+
+    /**
+     * Reads global props for this component type from the DOM.
+     * For buttons, this typically means parsing canonical style blocks
+     * and any document level attributes that affect all buttons.
+     */
+    readGlobalProps: (emailDocument: Document) => TGlobalProps;
+
+    /**
+     * Writes global props for this component type into the DOM.
+     * For buttons, this typically means updating canonical style blocks
+     * and any document level attributes that affect all buttons.
+     */
+    writeGlobalProps: (emailDocument: Document, globalProps: TGlobalProps) => void;
+
+    /**
+     * Migrates the global DOM structures for this component type.
+     */
+    migrateGlobalProps: (emailDocument: Document) => void;
+
+    /**
+     * Creates a new default global props object for this component type.
+     *
+     * @param emailDocument
+     */
+    getDefaultGlobalProps: () => TGlobalProps;
+
+    /**
+     * Determines if global props for this component type are needed
+     * @param emailDocument
+     * @returns
+     */
+    areGlobalDefaultsNeeded: (emailDocument: Document) => boolean;
+
+    /**
+     * Called when a new component of this type is added to the document.
+     *
+     * @param event The event data for the component addition.
+     */
+    onComponentAdded(event: GlobalAdapterOnComponentAddedEvent<TGlobalProps>): void;
+};
+
+export type GlobalAdapterOnComponentAddedEvent<TGlobalProps> = {
+    /**
+     * The email document where the component was added.
+     */
+    emailDocument: Document;
+
+    /**
+     * The component element that was added.
+     */
+    componentElement: HTMLElement;
+
+    /**
+     * The component type name that was added.
+     */
+    componentTypeName: ComponentTypeName;
+
+    /**
+     * The current global props for the component type.
+     */
+    globalProps: TGlobalProps;
+};
+
+export type GlobalAdapterSnapshot<TGlobalProps> = Omit<
+    GlobalAdapter<TGlobalProps>,
+    "migrateGlobalProps" | "getDefaultGlobalProps" | "areGlobalDefaultsNeeded" | "onComponentAdded"
+>;
+
+/**
+ * Generic component adapter for a single component type.
+ * L represents local (per instance) props.
+ * G represents global (per component type) props.
+ */
+export type ComponentAdapter<TLocalProps> = {
+    /**
+     * Latest DOM version for component instances of this type.
+     *
+     * Stored per node as data-version.
+     */
+    version: string;
+
+    /**
+     * The component type name that this adapter handles.
+     */
+    componentTypeName: ComponentTypeName;
+
+    /**
+     * Migrates all component instance nodes of this type to the latest DOM version.
+     */
+    migrateAllComponents: (emailDocument: Document) => void;
+
+    /**
+     * Migrates a single component instance node to the latest DOM version.
+     *
+     * Must update data-component-version on the node.
+     */
+    migrateComponent: (emailDocument: Document, componentElement: HTMLElement) => HTMLElement;
+
+    /**
+     * Reads local (per instance) props from a migrated component node.
+     *
+     * These props will be bound directly to property panel controls.
+     */
+    readLocalProps: (componentElement: HTMLElement) => TLocalProps;
+
+    /**
+     * Writes local (per instance) props into a migrated component node.
+     *
+     * Called when any bound property panel control changes.
+     */
+    writeLocalProps: (componentElement: HTMLElement, localProps: TLocalProps) => void;
+
+    /**
+     * Creates a new component element for this component type but does not add it to the document.
+     */
+    createComponentElement: (emailDocument: Document) => HTMLElement;
+
+    /**
+     * Refreshes all local props for instances of this component type in the given email document.
+     *
+     * Useful when global props change that may affect local props.
+     */
+    refreshAllComponents(emailDocument: Document): void;
+};
+
+export type ComponentAdapterVersion<TLocalProps> = Omit<
+    ComponentAdapter<TLocalProps>,
+    // Omit functions that do not need implementations for each adapter version;
+    // i.e., those that will likely be common and should not be duplicated.
+    "migrateComponent" | "componentTypeName" | "migrateAllComponents" | "refreshAllComponents"
+>;
+
+/**
+ * Local button props that map directly to your Button component property panel.
+ */
+export type ButtonLocalProps = {
+    /**
+     * Button text content.
+     */
+    text: string;
+
+    /**
+     * Anchor href value.
+     */
+    href: string;
+
+    /**
+     * Font family for the button text.
+     */
+    fontFamily: string | null;
+
+    /**
+     * Font size in pixels for the button text.
+     */
+    fontSizePx: number | null;
+
+    /**
+     * Indicates if the button text is bold.
+     */
+    isBold: boolean | null;
+
+    /**
+     * Indicates if the button text is underlined.
+     */
+    isUnderlined: boolean | null;
+
+    /**
+     * Indicates if the button text is italicized.
+     */
+    isItalicized: boolean | null;
+
+    /**
+     * The letter case to use for the button text.
+     */
+    letterCase: LetterCase | null;
+
+    /**
+     * Line height for the button text.
+     */
+    lineHeight: number | null;
+
+    /**
+     * Text color for the button label.
+     */
+    textColor: string | null;
+
+    /**
+     * Horizontal alignment of the button.
+     */
+    horizontalAlignment: HorizontalAlignment | null;
+
+    /**
+     * Background color of the button.
+     */
+    backgroundColor: string | null;
+
+    /**
+     * Corner radius in pixels for the button.
+     */
+    borderRadiusPx: ShorthandModel<number | null> | null;
+
+    /**
+     * Logical width for this specific button instance.
+     */
+    width: ButtonWidthModel | null;
+
+    /**
+     * Outer margin applied around the button.
+     */
+    marginPx: ShorthandModel<number | null> | null;
+
+    /**
+     * Inner padding applied inside the button.
+     */
+    paddingPx: ShorthandModel<number | null> | null;
+
+    /**
+     * Border styling applied to the button.
+     */
+    border: BorderModel | null;
+};
+
+/**
+ * Global button props that map to the "Button Styling" section
+ * of your GlobalPropertyPanel.
+ */
+export type ButtonGlobalProps = {
+    /**
+     * Global background color for all buttons.
+     */
+    backgroundColor: string | null;
+
+    /**
+     * Global font family for button text.
+     */
+    fontFamily: string | null;
+
+    /**
+     * Global font size in pixels for button text.
+     */
+    fontSizePx: number | null;
+
+    /**
+     * Global bold setting for button text.
+     */
+    isBold: boolean | null;
+
+    /**
+     * Global underline setting for button text.
+     */
+    isUnderlined: boolean | null;
+
+    /**
+     * Global italic setting for button text.
+     */
+    isItalicized: boolean | null;
+
+    /**
+     * Global letter case for button text.
+     */
+    letterCase: LetterCase | null;
+
+    /**
+     * Global line height for button text.
+     */
+    lineHeight: number | null;
+
+    /**
+     * Global text color for button labels.
+     */
+    textColor: string | null;
+
+    /**
+     * Global border settings for buttons.
+     */
+    border: BorderModel | null;
+
+    /**
+     * Global corner radius in pixels for buttons.
+     */
+    borderRadiusPx: ShorthandModel<number | null> | null;
+
+    /**
+     * Global width policy for buttons.
+     */
+    width: ButtonWidthModel | null;
+
+    /**
+     * Global outer margin for buttons.
+     */
+    marginPx: ShorthandModel<number | null> | null;
+
+    /**
+     * Global inner padding for buttons.
+     */
+    paddingPx: ShorthandModel<number | null> | null;
+};
+
+/**
+ * Concrete adapter type alias for the Button component.
+ */
+export type ButtonComponentAdapter = ComponentAdapter<ButtonLocalProps>;
+
+/**
+ * Concrete global adapter type alias for the Button component.
+ */
+export type ButtonGlobalAdapter = GlobalAdapter<ButtonGlobalProps>;
+
+export type ShorthandPropertyNames = {
+    top: CssStyleDeclarationKebabKey;
+    right: CssStyleDeclarationKebabKey;
+    bottom: CssStyleDeclarationKebabKey;
+    left: CssStyleDeclarationKebabKey;
+};
+
+/**
+ * Local RSVP props that map directly to the RSVP component property panel.
+ */
+export type RsvpLocalProps = {
+    blockPaddingPx: ShorthandModel<number | null> | null;
+    blockHorizontalAlignment: HorizontalAlignment | null;
+    fontFamily: string | null;
+    fontSizePx: number | null;
+    isBold: boolean | null;
+    isUnderlined: boolean | null;
+    isItalicized: boolean | null;
+    letterCase: LetterCase | null;
+    lineHeight: number | null;
+    buttonPaddingPx: ShorthandModel<number | null> | null;
+    buttonBorderRadiusPx: ShorthandModel<number | null> | null;
+    acceptText: string;
+    acceptWidth: ButtonWidthModel | null;
+    acceptBackgroundColor: string | null;
+    acceptTextColor: string | null;
+    isDeclineHidden: boolean;
+    declineText: string;
+    declineWidth: ButtonWidthModel | null;
+    declineBackgroundColor: string | null;
+    declineTextColor: string | null;
+    rsvpGroupGuid: Guid | null;
+    rsvpOccurrenceValue: string | null;
+};
+
+/**
+ * Concrete adapter type alias for the RSVP component.
+ */
+export type RsvpComponentAdapter = ComponentAdapter<RsvpLocalProps>;
+
+/**
+ * Local divider props that map directly to the Divider component property panel.
+ */
+export type DividerLocalProps = {
+    style: BorderStyle | null;
+    thicknessPx: number | null;
+    color: string | null;
+    /**
+     * Added in v17.3-alpha to support margin around the divider.
+     */
+    widthPercent: number | null;
+    /**
+     * Added in v17.3-alpha to support horizontal alignment of the divider.
+     */
+    horizontalAlignment: HorizontalAlignment | null;
+    marginPx: ShorthandModel<number | null> | null;
+    /**
+     * @deprecated Supported for legacy reasons. This would place a horizontal line (`<hr>`) instead of a `<div>` resulting in a second line above the colored divider line.
+      */
+    isDividedWithLine: boolean;
+};
+
+/**
+ * Global divider props that map to the "Divider Styling" section of the GlobalPropertyPanel.
+ */
+export type DividerGlobalProps = {
+    style: BorderStyle | null;
+    thicknessPx: number | null;
+    color: string | null;
+    widthPercent: number | null;
+    horizontalAlignment: HorizontalAlignment | null;
+    marginPx: ShorthandModel<number | null> | null;
+};
+
+/**
+ * Concrete adapter type alias for the Divider component.
+ */
+export type DividerComponentAdapter = ComponentAdapter<DividerLocalProps>;
+
+/**
+ * Concrete global adapter type alias for the Divider component.
+ */
+export type DividerGlobalAdapter = GlobalAdapter<DividerGlobalProps>;
+
+export type ResizeMode = "crop" | "pad" | "stretch";
+
+type ImageSizeResponsive = {
+    readonly type: "responsive";
+};
+
+type ImageSizeOriginal = {
+    readonly type: "original";
+};
+
+type ImageSizeFixed = {
+    readonly type: "fixed";
+
+    /**
+     * These values are for backward compatibility with existing terminology,
+     * but map to these new values in the image component property panel:
+     *
+     * - "crop" == "Cover"
+     * - "pad" == "Contain"
+     * - "stretch" == "Stretch"
+     */
+    resizeMode: ResizeMode;
+    fixedWidthPx: number | null;
+    fixedHeightPx: number | null;
+};
+
+// Use discriminated union for ImageSize so each type can have its own properties.
+export type ImageSizeModel = ImageSizeResponsive | ImageSizeOriginal | ImageSizeFixed;
+
+type ImageSourceFile = {
+    readonly type: "file";
+
+    isHighResolution: boolean;
+    file: ListItemBag | null;
+};
+
+type ImageSourceAsset = {
+    readonly type: "asset";
+
+    asset: FileAsset | null;
+};
+
+export type ImageSourceModel = ImageSourceFile | ImageSourceAsset;
+
+export type ImageLocalProps = {
+    /**
+     * The source of the image along with related properties.
+     */
+    imageSource: ImageSourceModel;
+
+    /**
+     * The alt text for the image if it cannot be displayed.
+     */
+    altText: string;
+
+    /**
+     * The href to navigate to when the image is clicked.
+     */
+    href: string | null;
+
+    /**
+     * The image size mode and related properties.
+     */
+    imageSize: ImageSizeModel;
+
+    /**
+     * Horizontal alignment of the image.
+     */
+    horizontalAlignment: HorizontalAlignment | null;
+
+    /**
+     * Corner radius in pixels for the image.
+     *
+     * Not supported in some versions of Outlook.
+     */
+    borderRadiusPx: ShorthandModel<number | null> | null;
+
+    /**
+     * Outer margin applied around the image.
+     */
+    marginPx: ShorthandModel<number | null> | null;
+
+    /**
+     * Border styling applied to the image.
+     */
+    border: BorderModel | null;
+};
+
+export type ImageComponentAdapter = ComponentAdapter<ImageLocalProps>;
+
+export type BodyGlobalProps = {
+    widthPx: number | null;
+    backgroundColor: string | null;
+    bodyAlignment: HorizontalAlignment | null;
+    border: BorderModel | null;
+    marginPx: ShorthandModel<number | null> | null;
+    paddingPx: ShorthandModel<number | null> | null;
+};
+
+export type BodyGlobalAdapter = GlobalAdapter<BodyGlobalProps>;
+
+export type GetHtmlRequest = {
+    onSuccess: (response: GetHtmlResponse) => void;
+    onError?: ((error: string) => void) | null | undefined;
+};
+
+export type GetHtmlResponse = {
+    html: string;
+    bodyWidth?: number | null | undefined;
+};
+
+export type UsageType = "template" | "email";
+
+export type CodeLocalProps = {
+    html: string;
+    marginPx: ShorthandModel<number | null> | null;
+};
+
+export type CodeComponentAdapter = ComponentAdapter<CodeLocalProps>;
+
+export type TitleLocalProps = {
+    text: string;
+    headingLevel: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+    fontFamily: string | null;
+    fontSizePx: number | null;
+    isBold: boolean | null;
+    isUnderlined: boolean | null;
+    isItalicized: boolean | null;
+    letterCase: LetterCase | null;
+    textAlignment: TextAlignment | null;
+    lineHeight: number | null;
+    textColor: string | null;
+    paddingPx: ShorthandModel<number | null> | null;
+    marginPx: ShorthandModel<number | null> | null;
+    border: BorderModel | null;
+    borderRadiusPx: ShorthandModel<number | null> | null;
+};
+
+export type TitleComponentAdapter = ComponentAdapter<TitleLocalProps>;
+
+export type HeadingLevel = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+
+export type TextLocalProps = {
+    /**
+     * The text content of the component, typically in HTML format.
+     */
+    html: string;
+
+    fontFamily: string | null;
+    fontSizePx: number | null;
+    isBold: boolean | null;
+    isUnderlined: boolean | null;
+    isItalicized: boolean | null;
+    letterCase: LetterCase | null;
+    textAlignment: TextAlignment | null;
+    lineHeight: number | null;
+    textColor: string | null;
+    backgroundColor: string | null;
+    paddingPx: ShorthandModel<number | null> | null;
+    marginPx: ShorthandModel<number | null> | null;
+    border: BorderModel | null;
+    borderRadiusPx: ShorthandModel<number | null> | null;
+};
+
+export type TextComponentAdapter = ComponentAdapter<TextLocalProps>;
+
+export type VideoLocalProps = {
+    /**
+     * The URL to link the video to when clicked.
+     */
+    href: string | null;
+
+    /**
+     * This is the URL used to generate the preview image for the video.
+     *
+     * It is not directly used in the email, but is stored for reference.
+     */
+    previewImageGeneratorUrl: string | null;
+
+    /**
+     * The file reference for the preview image.
+     *
+     * This is used to construct the actual image URL in the email.
+     */
+    previewImageFile: ListItemBag | null;
+
+    /**
+     * The alt text for the preview image.
+     */
+    previewImageAltText: string | null;
+
+    /**
+     * Space applied around the video component.
+     */
+    paddingPx: ShorthandModel<number | null> | null;
+};
+
+export type VideoComponentAdapter = ComponentAdapter<VideoLocalProps>;

@@ -16,7 +16,6 @@
 //
 
 import { ComputedRef, InjectionKey, inject, provide, Ref } from "vue";
-import { ChartStyles } from "./types.partial";
 import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
 import { CommunicationDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationDetailBag";
 
@@ -88,22 +87,4 @@ export function provideSelectedTab(value: Ref<string>): void {
  */
 export function useSelectedTab(): Ref<string> {
     return use(selectedTabInjectionKey);
-}
-
-const chartStylesInjectionKey: InjectionKey<ComputedRef<ChartStyles>> = Symbol("chart-styles");
-
-/**
- * Sets the readonly, reactive chart styles.
- *
- * It can be injected as a dependency into child components with `useChartStyles()`.
- */
-export function provideChartStyles(value: ComputedRef<ChartStyles>): void {
-    provide(chartStylesInjectionKey, value);
-}
-
-/**
- * Gets the chart styles.
- */
-export function useChartStyles(): ComputedRef<ChartStyles> {
-    return use(chartStylesInjectionKey);
 }

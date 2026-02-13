@@ -13,7 +13,7 @@ using Rock.Web.Cache;
 namespace Rock.Blocks.Engagement
 {
     [DisplayName( "Streak Map Editor" )]
-    [Category( "Engagement" )]
+    [Category( "Streaks" )]
     [Description( "Allows editing a streak occurrence, engagement, or exclusion map." )]
     [IconCssClass( "ti ti-calendar-check" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]

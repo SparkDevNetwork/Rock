@@ -6,7 +6,8 @@
                     iconCssClass="ti ti-folder-open"
                     :provider="itemProvider"
                     :multiple="multiple"
-                    disableFolderSelection />
+                    disableFolderSelection
+                    autoExpand />
 </template>
 
 <script setup lang="ts">

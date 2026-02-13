@@ -18,6 +18,7 @@
 using System;
 
 using Rock.Blocks;
+using Rock.Web.UI;
 
 namespace Rock.Obsidian.UI
 {
@@ -29,12 +30,16 @@ namespace Rock.Obsidian.UI
     public class GridBuilderGridOptions<T>
     {
         /// <summary>
-        /// Gets or sets the method that will be called to translate the row
-        /// object into one that can be used with Lava for custom columns.
+        /// The method that will be called to translate the row object into
+        /// one that can be used with Lava for custom columns.
         /// </summary>
-        /// <value>
-        /// The method that will be called to translate the row into a lava object.
-        /// </value>
         public Func<T, object> LavaObject { get; set; }
+
+        /// <summary>
+        /// If set, this function will be called for each custom column that
+        /// is defined for the grid. If the function returns false, that custom
+        /// column will be excluded from the grid.
+        /// </summary>
+        public Func<CustomColumnConfig, bool> CustomColumnFilter { get; set; }
     }
 }

@@ -67,7 +67,6 @@ const NativeViewTransition: ComponentOptions = {
             }
 
             // If we don't support transitions then just return the child.
-            // @ts-expect-error startViewTransition is not standard yet.
             if (!document.startViewTransition) {
                 return children;
             }
@@ -90,7 +89,6 @@ const NativeViewTransition: ComponentOptions = {
                 // Note that we are starting to animate.
                 animationState = 1;
 
-                // @ts-expect-error startViewTransition is not standard yet.
                 document.startViewTransition(async () => {
                     // Note that we are ready to accept new content.
                     animationState = 2;

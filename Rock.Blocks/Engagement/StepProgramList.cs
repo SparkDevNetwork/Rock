@@ -250,13 +250,48 @@ namespace Rock.Blocks.Engagement
                 return ActionBadRequest( $"Not authorized to delete {StepProgram.FriendlyTypeName}." );
             }
 
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( "You cannot delete a system Step Program." );
+            }
+
+            string errorMessage = null;
+            RockContext.WrapTransaction( () =>
+            {
+                var stepTypes = entity.StepTypes.ToList();
+                var stepTypeService = new StepTypeService( RockContext );
+
+                foreach ( var stepType in stepTypes )
+                {
+                    if ( stepType.IsSystem )
+                    {
+                        errorMessage = $"This program contains the Step Type, '{stepType.Name}', which is a system Step Type and cannot be deleted.";
+                        return;
+                    }
+
+                    if ( !stepTypeService.CanDelete( stepType, out errorMessage ) )
+                    {
+                        return;
+                    }
+
+                    stepTypeService.Delete( stepType );
+                }
+
+                RockContext.SaveChanges();
+
+                if ( !entityService.CanDelete( entity, out errorMessage ) )
+                {
+                    return;
+                }
+
+                entityService.Delete( entity );
+                RockContext.SaveChanges();
+            } );
+
+            if ( !string.IsNullOrWhiteSpace( errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
             }
-
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
 
             return ActionOk();
         }

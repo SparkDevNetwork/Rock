@@ -94,10 +94,20 @@
                                     <Rock:RockCheckBox ID="cbPreventInactivePeople" runat="server" Label="Prevent Inactive People"
                                         Help="Should people who are inactive be excluded from being able to check-in?" />
                                     <Rock:RockCheckBox ID="cbPreventDuplicateCheckin" runat="server" Label="Prevent Duplicate Check-in"
-                                        Help="Should people be prevented from checking into a specifice service time (schedule) more than once?" />
+                                        Help="Should people be prevented from checking into a specific service time (schedule) more than once?" />
 
                                     <Rock:RockCheckBox ID="cbEnableProximityCheckIn" runat="server" Label="Enable Proximity Check-in"
-                                        Help="Makes this check-in configuration and all areas and groups available for proximity check-in with a native Rock Mobile application." />
+                                        Help="Makes this check-in configuration and all areas and groups available for proximity check-in with a native Rock Mobile application."
+                                        OnCheckedChanged="cbEnableProximityCheckIn_CheckedChanged"
+                                        AutoPostBack="true" />
+
+                                    <div class="well well-conditional" id="proximityAttendanceConfiguration" runat="server">
+                                     <Rock:CodeEditor ID="ceCheckInNotificationTemplate" runat="server" Label="Notification Template"
+                                        Help="The lava template that will be parsed to deliver a push notification when a person checks in through proximity attendance."
+                                        EditorMode="Lava"
+                                        Rows="3" />
+                                    </div>
+
                                 </div>
                             </div>
 
@@ -188,6 +198,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:DefinedValuePicker ID="dvpRegistrationDefaultPersonConnectionStatus" runat="server" Label="Default Person Connection Status" />
+                                    <Rock:DefinedValuePicker ID="dvpRegistrationDefaultPersonRecordSource" runat="server" Label="Default Person Record Source" Help="The record source to use when creating a new person (default = 'Check-in'). If a 'RecordSource' page parameter is found, it will be used instead." />
                                     <Rock:RockCheckBox ID="cbRegistrationDisplayAlternateIdFieldForAdults" runat="server" Label="Display Alternate ID Field for Adults" />
                                     <Rock:RockCheckBox ID="cbRegistrationDisplayAlternateIdFieldForChildren" runat="server" Label="Display Alternate ID Field for Children" />
                                     <Rock:RockCheckBox ID="cbRegistrationDisplaySmsEnabled" runat="server" Label="Display SMS Enabled Selection for Phone Number" />
@@ -217,6 +228,7 @@
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayEthnicityOnChildren" runat="server" Label="Display Ethnicity on Children" Help="How should ethnicity be displayed for children?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplayMobilePhoneOnChildren" runat="server" Label="Display Mobile Phone on Children" Help="How should Mobile Phone be displayed for children?" />
                                     <Rock:RockDropDownList ID="ddlRegistrationDisplaySuffix" runat="server" Label="Display Suffix" Help="Show or hide the suffix field when editing an individual." />
+                                    <Rock:RockDropDownList ID="ddlRegistrationDisplayAddressOnFamilies" runat="server" Label="Display Address on Families" Help="Controls how the family address field displayed when adding or editing a family during registration." />
                                 </div>
                             </div>
                         </Rock:PanelWidget>

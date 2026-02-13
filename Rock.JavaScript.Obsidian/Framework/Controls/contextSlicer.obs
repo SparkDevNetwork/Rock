@@ -1,6 +1,10 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+
+<!-- NOTE: The slicer only auto-shows for default slot content or the CampusContextPicker.
+     If you add other slot-driven controls, you must provide custom `isVisible` logic
+     at template level to prevent the slicer from displaying when those slots are empty. -->
 <template>
-    <div class="contextslicer">
+    <div v-show="($slots.default && $slots.default().length > 0) || isCampusPickerVisible" class="contextslicer">
         <div class="contextslicer-title">{{ props.title }}</div>
 
         <div class="contextslicer-content">
@@ -8,7 +12,8 @@
 
             <CampusContextPicker v-if="showCampus"
                                  :campusStatusFilter="campusStatusFilter"
-                                 :campusTypeFilter="campusTypeFilter" />
+                                 :campusTypeFilter="campusTypeFilter"
+                                 @isVisible="isCampusPickerVisible = $event" />
         </div>
     </div>
 </template>
@@ -60,7 +65,7 @@
 
 <script setup lang="ts">
     import CampusContextPicker from "./campusContextPicker.obs";
-    import { PropType } from "vue";
+    import { PropType, ref } from "vue";
     import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
@@ -94,4 +99,6 @@
             required: false
         },
     });
+
+    const isCampusPickerVisible = ref<boolean>(props.showCampus);
 </script>

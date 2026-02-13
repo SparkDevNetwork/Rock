@@ -11,6 +11,8 @@ using Rock.Web;
 using System.ComponentModel;
 using Rock.Model;
 using Rock.Security;
+using Rock.Attribute;
+using Rock.Enums.Cms;
 
 namespace Rock.Blocks.Cms
 {
@@ -18,10 +20,31 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a search page to find child pages" )]
 
+    #region Block Attributes
+
+    [CodeEditorField(
+        "Additional Content Template",
+        Description = "Lava template to use to display additional content on the page. This will be displayed in the sidebar below the section list.",
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
+        Key = AttributeKey.AdditionalContentTemplate,
+        Order = 0 )]
+
+    #endregion
+
+    [ConfigurationChangedReload( BlockReloadMode.Block )]
     [Rock.SystemGuid.EntityTypeGuid( "85BA51A4-41CF-4F60-9EAE-1D8B1E73C736" )]
     [Rock.SystemGuid.BlockTypeGuid( "A279A88E-D4E0-4867-A108-2AA743B3CFD0" )]
     public class PageSearch : RockBlockType
     {
+        #region Keys
+
+        private static class AttributeKey
+        {
+            public const string AdditionalContentTemplate = "AdditionalContentTemplate";
+        }
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
@@ -34,6 +57,8 @@ namespace Rock.Blocks.Cms
                 var hierarchicalPages = GetHierarchicalPagesByParent( this.PageCache, rockContext, 2 );
 
                 box.Pages = hierarchicalPages;
+                box.AdditionalContent = this.GetAttributeValue( AttributeKey.AdditionalContentTemplate )
+                    ?.ResolveMergeFields( RequestContext.GetCommonMergeFields() );
 
                 return box;
             }

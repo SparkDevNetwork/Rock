@@ -33,7 +33,6 @@ using Rock;
 using Rock.Attribute;
 using Rock.Chart;
 using Rock.Data;
-using Rock.Logging;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Utility;
@@ -151,6 +150,7 @@ namespace RockWeb.Blocks.CheckIn
     [DefinedValueField( name: "Campus Types",
         description: "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
         definedTypeGuid: Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        required: false,
         allowMultiple: true,
         order: 11,
         key: AttributeKeys.CampusTypes )]
@@ -159,6 +159,7 @@ namespace RockWeb.Blocks.CheckIn
         name: "Campus Statuses",
         description: "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
         definedTypeGuid: Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        required: false,
         allowMultiple: true,
         order: 12,
         key: AttributeKeys.CampusStatuses )]
@@ -238,6 +239,7 @@ namespace RockWeb.Blocks.CheckIn
         private Dictionary<int, string> _scheduleNameLookup = null;
         private Dictionary<int, Location> _personLocations = null;
         private Dictionary<int, List<PhoneNumber>> _personPhoneNumbers = null;
+        private List<int> _blockSettingsGroupTypeIds = null;
 
         private bool _currentlyExporting = false;
 
@@ -312,6 +314,13 @@ namespace RockWeb.Blocks.CheckIn
 
             // show / hide the checkin details page
             btnCheckinDetails.Visible = !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKeys.CheckinDetailPage ) );
+
+            _blockSettingsGroupTypeIds = this.GetAttributeValue( AttributeKeys.GroupTypes )
+                .SplitDelimitedValues()
+                .AsGuidList()
+                .Select( a => GroupTypeCache.Get( a ) )
+                .Where( a => a != null )
+                .Select( a => a.Id ).ToList();
         }
 
         /// <summary>
@@ -423,17 +432,8 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            string repeatDirection = GetAttributeValue( AttributeKeys.FilterColumnDirection );
-            int repeatColumns = GetAttributeValue( AttributeKeys.FilterColumnCount ).AsIntegerOrNull() ?? 0;
-            clbCampuses.RepeatDirection = repeatDirection == "vertical" ? RepeatDirection.Vertical : RepeatDirection.Horizontal;
-            clbCampuses.RepeatColumns = repeatDirection == "horizontal" ? repeatColumns : 0;
-
-            BuildGroupTypesUI( true );
-
-            if ( pnlResults.Visible )
-            {
-                LoadChartAndGrids();
-            }
+            // reload if block settings change
+            NavigateToCurrentPageReference();
         }
 
         /// <summary>
@@ -647,17 +647,18 @@ namespace RockWeb.Blocks.CheckIn
                         .ThenBy( t => t.Name )
                         .ToList();
 
-                    foreach ( var groupType in groupTypes.ToList() )
-                    {
-                        foreach ( var childGroupType in groupTypeService.GetCheckinAreaDescendantsOrdered( groupType.Id ) )
-                        {
-                            if ( !groupTypes.Any( t => t.Id == childGroupType.Id ) )
-                            {
-                                groupTypes.Add( childGroupType );
-                            }
-                        }
-                    }
+                    /*
+                        1/13/2026 - NA
 
+                        Removed logic that automatically added descendant (child) GroupTypes to the selection list when a specific
+                        set of GroupType GUIDs is configured. This change ensures only the explicitly provided GroupTypes are
+                        included, as intended by the admin configuration.
+
+                        Reason: When the administrator selects specific GroupTypes using the block settings, those are the only
+                        GroupTypes that should be considered "selected." Automatically including child GroupTypes introduced
+                        unintended behavior and violated admin expectations.
+                    */
+                    
                     var groupTypeIds = groupTypes.Select( a => a.Id ).ToList();
                     return groupTypeService.GetByIds( groupTypeIds ).ToList();
                 }
@@ -2500,7 +2501,10 @@ var headerText = dp.label;
                     var ulGroupTypeList = new HtmlGenericContainer( "ul", "list-unstyled" );
 
                     liGroupTypeItem.Controls.Add( ulGroupTypeList );
-                    foreach ( var childGroupType in groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+
+                    foreach ( var childGroupType in groupType.ChildGroupTypes
+                        .Where( gt => _blockSettingsGroupTypeIds == null || !_blockSettingsGroupTypeIds.Any() || _blockSettingsGroupTypeIds.Contains( gt.Id ) )
+                        .OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
                     {
                         var liChildGroupTypeItem = new HtmlGenericContainer( "li" );
                         liChildGroupTypeItem.ID = "liGroupTypeItem" + childGroupType.Id;
@@ -2526,10 +2530,24 @@ var headerText = dp.label;
                 if ( !_addedGroupIds.Contains( group.Id ) )
                 {
                     _addedGroupIds.Add( group.Id );
+ 
                     if ( cbIncludeGroupsWithoutSchedule.Checked || group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
                     {
-                        string displayName = showGroupAncestry ? service.GroupAncestorPathName( group.Id ) : group.Name;
-                        checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
+                        /*
+                            1/16/2026 - NA
+
+                            When filtering by GroupTypes, the Group’s GroupType must be included in the provided list in order to add
+                            a new checkbox item for it. However, this does not restrict child groups -- those can still be added later
+                            in the descendant tree if they pass the filter.
+
+                            Reason: Prevents checkboxes from being added for groups that are explicitly excluded by the GroupType filter,
+                            while still allowing valid descendant groups to appear.
+                        */
+                        if ( !_blockSettingsGroupTypeIds.Any() || _blockSettingsGroupTypeIds.Contains( group.GroupTypeId ) )
+                        {
+                            string displayName = showGroupAncestry ? service.GroupAncestorPathName( group.Id ) : group.Name;
+                            checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
+                        }
                     }
 
                     bool showInactive = GetBlockPersonPreferences().GetValue( "show-inactive" ).AsBoolean();

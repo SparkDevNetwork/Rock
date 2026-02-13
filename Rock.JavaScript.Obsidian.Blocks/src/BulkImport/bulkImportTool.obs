@@ -38,7 +38,6 @@
 
         <FileUploader v-model="slingshotFile"
                       label="Select Slingshot File"
-                      displayMode="DropZone"
                       :isBinaryFile="false"
                       :rootFolder="config.rootFolder ?? ''"
                       :uploadAsTemporary="false"
@@ -230,7 +229,8 @@ order by Gt.Id, Gt.Name, g.Name
     -- Using the SQL Results, add the Child Group Types to the appropriate Checkin-Template group type.
     -- Ones that sound like Weekend Check-in will go in Weekend Check-in GroupType, then the 'General' panelwidget | Child Group Types
     -- Ones that sound like Volunteer Check-in will go in Volunteer Check-in GroupType, then the 'General' panelwidget | Child Group Types
-    -- Now Attendance Analytics will be able to show the import Attendance Data`;
+
+-- Now Attendance Analytics will be able to show the import Attendance Data`;
 
     let realTimeConnectionId = "";
 

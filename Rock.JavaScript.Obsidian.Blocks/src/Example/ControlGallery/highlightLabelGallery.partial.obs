@@ -59,6 +59,6 @@
 
     const importCode = getSfcControlImportPath("highlightLabel");
     const exampleCode = computed(() => {
-        return `<HighlightLabel${labelType.value ? ` labelType="${labelType.value}"` : ""}${labelType.value == "custom" && customClass.value ? ` customClass="${customClass.value}"` : ""}${iconCssClass.value ? ` iconCssClass="${iconCssClass.value}"` : ""}${tooltip.value ? ` tooltip="${tooltip.value}"` : ""}${tooltip.value && placement.value ? ` tooltipPlacement="${placement.value}"` : ""}>This is the main content</HighlightLabel>`;
+        return `<HighlightLabel${labelType.value ? ` labelType="${labelType.value}"` : ""}${labelType.value === "custom" && customClass.value ? ` customClass="${customClass.value}"` : ""}${iconCssClass.value ? ` iconCssClass="${iconCssClass.value}"` : ""}${tooltip.value ? ` tooltip="${tooltip.value}"` : ""}${tooltip.value && placement.value ? ` tooltipPlacement="${placement.value}"` : ""}>This is the main content</HighlightLabel>`;
     });
 </script>

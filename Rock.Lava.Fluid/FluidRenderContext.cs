@@ -32,7 +32,6 @@ namespace Rock.Lava.Fluid
         private TemplateContext _context;
         private const string _InternalFieldKeyPrefix = "$_";
         private const string _InternalFieldKeyEnabledCommands = "EnabledCommands";
-        private const string _InternalFieldKeyIsChildScope = "_isChildScope";
 
         #region Constructors
 
@@ -180,9 +179,7 @@ namespace Rock.Lava.Fluid
         {
             var commandString = commands == null ? string.Empty : commands.JoinStrings( "," );
 
-            SetInternalField( _InternalFieldKeyEnabledCommands,
-                commandString,
-                LavaContextRelativeScopeSpecifier.Local );
+            SetInternalField( _InternalFieldKeyEnabledCommands, commandString );
         }
 
         /// <summary>
@@ -191,23 +188,7 @@ namespace Rock.Lava.Fluid
         /// </summary>
         public override void EnterChildScope()
         {
-            // In Fluid, the ChildScope has the following behavior:
-            // 1. GetValue(var) gets the value of "var" from the innermost scope in which the variable is currently defined.
-            // 2. SetValue(var) sets the value of "var" for the innermost scope.
-            // ... and the ForLoopScope has the following behavior:
-            // 1. GetValue(var) gets the value of "var" from the innermost scope in which the variable is currently defined.
-            // 2. SetValue(var) sets the value of "var" for the parent scope.
-            // 3. SetOwnValue(var) sets the value of "var" for the innermost scope.
-
-            // In Lava, the child scope has the following behavior:
-            // 1. GetValue(var) gets the value of "var" from the innermost scope in which the variable is currently defined.
-            // 2. SetValue(var) sets the value of "var" in the parent scope if it is already defined;
-            //    if not, the variable is created in the child scope.
-
-            _context.EnterForLoopScope();
-
-            var localScope = _contextScopeInternalField.GetValue( _context ) as Scope;
-            localScope.SetOwnValue( _InternalFieldKeyIsChildScope, FluidValue.Create( true, _context.Options ) );
+            _context.EnterChildScope();
         }
 
         /// <summary>
@@ -279,19 +260,9 @@ namespace Rock.Lava.Fluid
                 value = new FluidRawValueProxy( value );
             }
 
-            if ( scope == LavaContextRelativeScopeSpecifier.Local )
+            if ( scope == LavaContextRelativeScopeSpecifier.Default )
             {
-                var isChildScope = localScope.Properties.Contains( _InternalFieldKeyIsChildScope );
-                if ( isChildScope )
-                {
-                    // We are using the Fluid "ForLoopScope", which would set the value in the parent scope by default.
-                    // Here we must specify that we want to set the value in the current child scope.
-                    localScope.SetOwnValue( key, FluidValue.Create( value, _context.Options ) );
-                }
-                else
-                {
-                    _context.SetValue( key, value );
-                }
+                _context.SetValue( key, value );
             }
             else if ( scope == LavaContextRelativeScopeSpecifier.Parent )
             {

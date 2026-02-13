@@ -23,6 +23,7 @@
 
 import { EngagementType } from "@Obsidian/Enums/Engagement/engagementType";
 import { StepAttributeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepAttributeBag";
+import { StepTypeDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeDetailsBag";
 import { StepTypeWorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeWorkflowTriggerBag";
 import { SlidingDateRangeBag } from "@Obsidian/ViewModels/Controls/slidingDateRangeBag";
 import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
@@ -70,9 +71,6 @@ export type StepTypeBag = {
     /** Gets or sets the lava template used to render custom card details. */
     cardLavaTemplate?: string | null;
 
-    /** Gets or sets the chart data. */
-    chartData?: string | null;
-
     /** Gets or sets the default date range. */
     defaultDateRange?: SlidingDateRangeBag | null;
 
@@ -81,6 +79,9 @@ export type StepTypeBag = {
 
     /** Gets or sets the engagement type for this step type. */
     engagementType?: EngagementType | null;
+
+    /** Gets or sets the error message */
+    errorMessage?: string | null;
 
     /** Gets or sets a flag indicating if this step type happens over time (like being in a group) or is it achievement based (like attended a class). */
     hasEndDate: boolean;
@@ -112,9 +113,6 @@ export type StepTypeBag = {
      */
     isPrerequisiteStepType: boolean;
 
-    /** Gets or sets the kpi. */
-    kpi?: string | null;
-
     /** Gets or sets the name of the step type. This property is required. */
     name?: string | null;
 
@@ -123,9 +121,6 @@ export type StepTypeBag = {
 
     /** Gets or sets the pre requisites. */
     preRequisites?: string[] | null;
-
-    /** Gets or sets a value indicating whether [show chart]. */
-    showChart: boolean;
 
     /** Gets or sets a flag indicating if the number of occurrences should be shown on the badge. */
     showCountOnBadge: boolean;
@@ -138,6 +133,9 @@ export type StepTypeBag = {
 
     /** Gets or sets the step type attributes grid definition. */
     stepTypeAttributesGridDefinition?: GridDefinitionBag | null;
+
+    /** Gets or sets the Step Type Details */
+    stepTypeDetailsBag?: StepTypeDetailsBag | null;
 
     /** Gets or sets the workflows. */
     workflows?: StepTypeWorkflowTriggerBag[] | null;

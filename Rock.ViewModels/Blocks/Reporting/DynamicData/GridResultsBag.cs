@@ -41,15 +41,6 @@ namespace Rock.ViewModels.Blocks.Reporting.DynamicData
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the field that will be used to uniquely identify each row.
-        /// <remarks>
-        /// This may be a simple field name (i.e. "id") or a dot-separated path to the
-        /// key value within a particular field's object (i.e. "person.idKey").
-        /// </remarks>
-        /// </summary>
-        public string KeyField { get; set; }
-
-        /// <summary>
         /// Gets or sets whether to show the checkbox select column on the grid as the first column.
         /// </summary>
         public bool ShowCheckboxSelectionColumn { get; set; }

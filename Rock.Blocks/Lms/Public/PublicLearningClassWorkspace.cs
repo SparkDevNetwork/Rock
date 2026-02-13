@@ -60,7 +60,6 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.HeaderTemplate,
         Description = "The lava template to use to render the header on the page. Merge fields include: Course, Activities, Announcements, Facilitators, ContentPages and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
         DefaultValue = AttributeDefault.HeaderTemplate,
@@ -282,7 +281,8 @@ namespace Rock.Blocks.Lms
                     IsStudentCommentingEnabled = activity.LearningClassActivity.IsStudentCommentingEnabled,
                     Name = activity.LearningClassActivity.Name,
                     Order = activity.LearningClassActivity.Order,
-                    Points = activity.LearningClassActivity.Points
+                    Points = activity.LearningClassActivity.Points,
+                    SendNotificationCommunication = activity.LearningClassActivity.SendNotificationCommunication
                 };
 
                 var isPreviousMethodCalculation = activityBag.AvailabilityCriteria == AvailabilityCriteria.AfterPreviousCompleted;
@@ -454,6 +454,8 @@ namespace Rock.Blocks.Lms
             var currentPersonGuid = currentPerson.Guid.ToString();
 
             box.IsCurrentPersonFacilitator = box.Activities.Any( a => a.ClassActivityBag.CurrentPerson.IsFacilitator );
+
+            box.ShowCommunicationPreference = box.Activities.Any( a => a.ClassActivityBag.SendNotificationCommunication );
 
             var participantIdKey = box.Activities.Select( a => a.Student.IdKey ).FirstOrDefault();
             var participantData = participantService.GetSelect( participantIdKey, p => new

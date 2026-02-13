@@ -38,7 +38,7 @@
             <div v-else-if="config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OneTime"
                  class="row">
                 <div class="col-md-3">
-                    <StaticFormControl :modelValue="format_Thursday_JanDot_1_1970(parseRockDateTime(config.flowPerformance?.messages?.[0]?.communicationFlowInstanceStartDate))"
+                    <StaticFormControl :modelValue="format_Thursday_JanDot_1_1970(parseRockDateTime(config.flowPerformance?.messages?.[0]?.communicationFlowInstanceStartDate ?? config.flowPerformance?.communicationFlowStartDateTime))"
                                        help="For One-time flows, this is the start date and time of the initial message."
                                        label="Flow Instance" />
                 </div>

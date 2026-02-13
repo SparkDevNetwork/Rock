@@ -109,11 +109,11 @@
 }
 
 /** Only show the remove button on hover OR if on mobile screen size (disable hover behavior if mobile). */
-.recipient-modal-body:not(.xs) :deep(.recipient-modal-row .remove-button) {
+.recipient-modal-body:not(.xs) :deep(.recipient-modal-row .remove-button .btn) {
     visibility: hidden;
 }
 
-.recipient-modal-body:not(.xs) :deep(.recipient-modal-row:hover .remove-button) {
+.recipient-modal-body:not(.xs) :deep(.recipient-modal-row:hover .remove-button .btn) {
     visibility: visible;
 }
 

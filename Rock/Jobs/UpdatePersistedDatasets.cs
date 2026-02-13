@@ -75,12 +75,12 @@ namespace Rock.Jobs
                     ( a.ExpireDateTime == null || a.ExpireDateTime > currentDateTime ) &&
                     (
                         // Either the refresh interval is valid and elapsed
-                        ( a.RefreshIntervalMinutes.HasValue &&
+                        ( a.PersistedScheduleIntervalMinutes.HasValue &&
                             ( a.LastRefreshDateTime == null ||
 #if REVIEW_WEBFORMS
-                            DbFunctions.AddMinutes( a.LastRefreshDateTime.Value, a.RefreshIntervalMinutes.Value ) < currentDateTime ) )
+                            DbFunctions.AddMinutes( a.LastRefreshDateTime.Value, a.PersistedScheduleIntervalMinutes.Value ) < currentDateTime ) )
 #else
-                            a.LastRefreshDateTime.Value.AddMinutes( a.RefreshIntervalMinutes.Value ) < currentDateTime ) )
+                            a.LastRefreshDateTime.Value.AddMinutes( a.PersistedScheduleIntervalMinutes.Value ) < currentDateTime ) )
 #endif
                         ||
                         // Or it has a schedule
@@ -92,7 +92,7 @@ namespace Rock.Jobs
                     a.Name, // useful when debugging
                     a.Id,
                     a.LastRefreshDateTime,
-                    a.RefreshIntervalMinutes,
+                    a.PersistedScheduleIntervalMinutes,
                     a.PersistedScheduleId,
                 } )
                 .ToList();
@@ -143,7 +143,18 @@ namespace Rock.Jobs
                         {
                             this.UpdateLastStatusMessage( FormatStatusMessage( "Update", name, "success" ) );
                             updatedDatasetCount++;
-                            rockContext.SaveChanges();
+                            
+                            /*
+                                2/10/2026 - NA
+                                We are calling the SaveChanges( true ) overload that disables pre/post processing hooks
+                                because we only want to change the properties changed in UpdateResultData(). If we don't disable
+                                these hooks, the [ModifiedDateTime] value will also be updated every time a DataView is
+                                run, which is not what we want here.
+
+                                Reason: See Asana task "Persisted Datasets Don't Have CreatedBy/ModifiedBy Values"
+                                https://app.asana.com/1/20866866924293/task/1213202694111290
+                            */
+                            rockContext.SaveChanges( true );
                         }
                         else
                         {

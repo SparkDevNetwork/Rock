@@ -20,7 +20,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Field;
 using Rock.Field.Types;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Core.Field.Types
@@ -49,7 +48,7 @@ namespace Rock.Tests.Integration.Core.Field.Types
             var withoutEditValue = contentChannelItemFieldTypeWithoutConfigValues.GetEditValue( contentChannelItemControl, new Dictionary<string, ConfigurationValue>() );
             var withEditValue = contentChannelItemFieldTypeWithConfigValues.GetEditValue( contentChannelItemControl, configValues );
 
-            Assert.That.AreEqual( withoutEditValue, withEditValue );
+            Assert.AreEqual( withoutEditValue, withEditValue );
         }
     }
 }

@@ -209,7 +209,7 @@
 
     watch([loadedAccountListItems, () => props.accountAmountEntryMode], () => {
         if (loadedAccountListItems.value && loadedAccountListItems.value.length) {
-            if (props.accountAmountEntryMode == "multipleAccounts") {
+            if (props.accountAmountEntryMode === "multipleAccounts") {
                 amounts.value = loadedAccountListItems.value.map(account => {
                     return {
                         amount: null,
@@ -231,7 +231,7 @@
     }, { immediate: true });
 
     watchEffect(() => {
-        if (props.accountAmountEntryMode == "singleAccount") {
+        if (props.accountAmountEntryMode === "singleAccount") {
             internalValue.value = [{
                 account: selectedAccount.value,
                 amount: amount.value || null,

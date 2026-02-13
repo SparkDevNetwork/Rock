@@ -167,29 +167,33 @@ namespace Rock.CheckIn.v2
         /// <returns>An instance of <see cref="ValidPropertiesBox{TPropertyBag}"/> that wraps the <see cref="RegistrationFamilyBag"/>.</returns>
         public ValidPropertiesBox<RegistrationFamilyBag> GetFamilyBag( Group group )
         {
-            var homeLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid(), _rockContext ).Id;
             var attributeGuids = _template.RequiredAttributeGuidsForFamilies
                 .Union( _template.OptionalAttributeGuidsForFamilies )
                 .ToList();
             AddressControlBag address = null;
 
-            if ( group.GroupLocations != null )
+            if ( _template.DisplayAddressOnFamilies != Enums.Controls.RequirementLevel.Unavailable )
             {
-                var location = group.GroupLocations
-                    .Where( l => l.GroupLocationTypeValueId == homeLocationTypeId )
-                    .Select( l => l.Location )
-                    .FirstOrDefault();
+                var homeLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid(), _rockContext ).Id;
 
-                address = new AddressControlBag
+                if ( group.GroupLocations != null )
                 {
-                    City = location?.City,
-                    Country = location?.Country,
-                    State = location?.State,
-                    Locality = location?.County,
-                    PostalCode = location?.PostalCode,
-                    Street1 = location?.Street1,
-                    Street2 = location?.Street2,
-                };
+                    var location = group.GroupLocations
+                        .Where( l => l.GroupLocationTypeValueId == homeLocationTypeId )
+                        .Select( l => l.Location )
+                        .FirstOrDefault();
+
+                    address = new AddressControlBag
+                    {
+                        City = location?.City,
+                        Country = location?.Country,
+                        State = location?.State,
+                        Locality = location?.County,
+                        PostalCode = location?.PostalCode,
+                        Street1 = location?.Street1,
+                        Street2 = location?.Street2,
+                    };
+                }
             }
 
             if ( group.Attributes == null )
@@ -750,10 +754,13 @@ namespace Rock.CheckIn.v2
             saveResult.NewFamilyList.Add( family );
             _rockContext.SaveChanges();
 
-            registrationFamily.IfValidProperty( nameof( registrationFamily.Bag.Address ), () =>
+            if ( _template.DisplayAddressOnFamilies != Enums.Controls.RequirementLevel.Unavailable )
             {
-                UpdateFamilyAddress( family, registrationFamily.Bag.Address );
-            } );
+                registrationFamily.IfValidProperty( nameof( registrationFamily.Bag.Address ), () =>
+                {
+                    UpdateFamilyAddress( family, registrationFamily.Bag.Address );
+                } );
+            }
 
             return family;
         }
@@ -774,10 +781,13 @@ namespace Rock.CheckIn.v2
                 _rockContext.SaveChanges();
             }
 
-            registrationFamily.IfValidProperty( nameof( registrationFamily.Bag.Address ), () =>
+            if ( _template.DisplayAddressOnFamilies != Enums.Controls.RequirementLevel.Unavailable )
             {
-                UpdateFamilyAddress( family, registrationFamily.Bag.Address );
-            } );
+                registrationFamily.IfValidProperty( nameof( registrationFamily.Bag.Address ), () =>
+                {
+                    UpdateFamilyAddress( family, registrationFamily.Bag.Address );
+                } );
+            }
         }
 
         /// <summary>
@@ -906,8 +916,18 @@ namespace Rock.CheckIn.v2
             // NOTE: NickName, LastName, Gender, MaritalStatusValueId should
             // replace existing values if they were provided even if it is a
             // matched person.
-            person.NickName = registrationPerson.Bag.NickName;
+
             person.LastName = registrationPerson.Bag.LastName;
+
+            // If the value of the NickName has changed, then also update the
+            // first name. This way we don't "break" a name where the first
+            // name and nickname are different but the only real change they
+            // made was to birthdate.
+            if ( person.NickName != registrationPerson.Bag.NickName )
+            {
+                person.FirstName = registrationPerson.Bag.NickName;
+                person.NickName = registrationPerson.Bag.NickName;
+            }
 
             registrationPerson.IfValidProperty( nameof( registrationPerson.Bag.Gender ),
                 () => person.Gender = registrationPerson.Bag.Gender );
@@ -1022,7 +1042,7 @@ namespace Rock.CheckIn.v2
                 if ( !saveResult.RecordSourceValueId.HasValue )
                 {
                     saveResult.RecordSourceValueId = RecordSourceHelper.GetSessionRecordSourceValueId()
-                        ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_CHECK_IN.AsGuid() )?.Id;
+                        ?? DefinedValueCache.Get( _template.DefaultPersonRecordSourceGuid, _rockContext )?.Id;
                 }
 
                 person.RecordSourceValueId = saveResult.RecordSourceValueId;

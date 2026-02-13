@@ -1,80 +1,74 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ComponentPropertyPanelBase :componentElement="componentElement"
-                                :componentMigrationHelper="dividerComponentHelper"
                                 :ltr="ltr"
                                 title="Divider"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
                                 @delete="$emit('delete')"
                                 @migrate="$emit('migrate', $event)">
-        <template v-if="componentHelper">
-            <AccordionGroup>
-                <Accordion title="Divider Styling">
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <DividerStyleProperty :element="componentHelper.marginWrapper.borderWrapper.paddingWrapper.td"
-                                                  label="Style" />
-                        </div>
-
-                        <div class="col-sm-6 pl-0">
-                            <DividerThicknessProperty :element="componentHelper.marginWrapper.borderWrapper.paddingWrapper.td"
-                                                      label="Thickness" />
-                        </div>
+        <AccordionGroup>
+            <Accordion title="Divider Styling">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <BorderStylePicker v-model="style" label="Style" />
                     </div>
 
-                    <div class="row">
-                        <div class="col-sm-8">
-                            <DividerColorProperty :element="componentHelper.marginWrapper.borderWrapper.paddingWrapper.td"
-                                                  label="Color" />
-                        </div>
+                    <div class="col-sm-6 pl-0">
+                        <PixelBox v-model="thicknessPx"
+                                  label="Thickness" />
                     </div>
+                </div>
 
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <RangeSliderProperty label="Divider Width"
-                                                 :min="5"
-                                                 :max="100"
-                                                 :showValueBar="true"
-                                                 valueSuffix="%"
-                                                 :valueProvider="widthProvider" />
-                        </div>
+                <div class="row">
+                    <div class="col-sm-8">
+                        <ColorPicker v-model.hex="color" label="Color" />
                     </div>
+                </div>
 
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <HorizontalAlignmentProperty :valueProvider="horizontalAlignmentProvider" />
-                        </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <PercentRangeSlider v-model="widthPercent" label="Divider Width" />
                     </div>
-                </Accordion>
+                </div>
 
-                <Accordion title="Spacing">
-                    <PaddingProperty :element="componentHelper.marginWrapper.td"
-                                     label="Margin" />
-                </Accordion>
-            </AccordionGroup>
-        </template>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <HorizontalAlignmentPicker v-model="horizontalAlignment" />
+                    </div>
+                </div>
+            </Accordion>
+
+            <Accordion title="Spacing">
+                <ShorthandPixelBox v-model="marginPx" label="Margin" />
+            </Accordion>
+        </AccordionGroup>
     </ComponentPropertyPanelBase>
 </template>
 
 
 <script setup lang="ts">
-    import { onUnmounted, PropType, ref, watch } from "vue";
+    import { onMounted, PropType, ref, watch } from "vue";
     import AccordionGroup from "../accordionGroup.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
-    import DividerColorProperty from "../properties/dividerColorProperty.partial.obs";
-    import DividerStyleProperty from "../properties/dividerStyleProperty.partial.obs";
-    import DividerThicknessProperty from "../properties/dividerThicknessProperty.partial.obs";
-    import HorizontalAlignmentProperty from "../properties/horizontalAlignmentProperty.partial.obs";
-    import PaddingProperty from "../properties/paddingProperty.partial.obs";
-    import RangeSliderProperty from "../properties/rangeSliderProperty.partial.obs";
-    import { createComponentWidthProvider, createComponentOuterHorizontalAlignmentProvider } from "../providers.partial";
-    import { getDividerComponentHelper } from "../utils.partial";
+    import { dividerComponentAdapter, dividerGlobalAdapter } from "../utils.partial";
+    import { BorderStyle, DividerGlobalProps, HorizontalAlignment, ShorthandModel } from "../types.partial";
+    import BorderStylePicker from "../borderStylePicker.partial.obs";
+    import PixelBox from "../pixelBox.partial.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import PercentRangeSlider from "../percentRangeSlider.partial.obs";
+    import HorizontalAlignmentPicker from "../horizontalAlignmentPicker.partial.obs";
+    import ShorthandPixelBox from "../shorthandPixelBox.partial.obs";
 
     const props = defineProps({
         componentElement: {
             type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        dividerGlobalProps: {
+            type: Object as PropType<DividerGlobalProps>,
             required: true
         },
 
@@ -93,32 +87,69 @@
 
     // #region Values
 
-    const dividerComponentHelper = getDividerComponentHelper();
-    const componentHelper = ref(dividerComponentHelper.getElements(props.componentElement));
-    const widthProvider = ref(createComponentWidthProvider(props.componentElement));
-    const horizontalAlignmentProvider = ref(createComponentOuterHorizontalAlignmentProvider(props.componentElement));
+    const style = ref<BorderStyle | null>(null);
+    const thicknessPx = ref<number | null>(null);
+    const color = ref<string>("");
+    const widthPercent = ref<number | null>(null);
+    const horizontalAlignment = ref<HorizontalAlignment | "">("");
+    const marginPx = ref<ShorthandModel<number | null> | null>(null);
 
     // #endregion Values
 
+    // #region Functions
+
+    function readProps(): void {
+        const localProps = dividerComponentAdapter.readLocalProps(props.componentElement);
+
+        style.value = localProps.style;
+        thicknessPx.value = localProps.thicknessPx;
+        color.value = localProps.color ?? "";
+        widthPercent.value = localProps.widthPercent;
+        horizontalAlignment.value = localProps.horizontalAlignment ?? "";
+        marginPx.value = localProps.marginPx;
+    }
+
+    function writeProps(): void {
+        dividerComponentAdapter.writeLocalProps(props.componentElement, {
+            style: style.value,
+            thicknessPx: thicknessPx.value,
+            color: color.value || null,
+            widthPercent: widthPercent.value,
+            horizontalAlignment: horizontalAlignment.value || null,
+            marginPx: marginPx.value,
+            isDividedWithLine: false // No longer used in v17.3-alpha
+        });
+
+        // Make sure to re-run any global prop overrides
+        // just in case local props were removed and there are global props to apply.
+        dividerGlobalAdapter.writeGlobalProps(props.componentElement.ownerDocument, props.dividerGlobalProps);
+    }
+
+    // #endregion Functions
+
     // #region Watchers
 
+    watch([
+        style,
+        thicknessPx,
+        color,
+        widthPercent,
+        horizontalAlignment,
+        marginPx
+    ], () => {
+        writeProps();
+    });
+
     watch(() => props.componentElement, () => {
-        componentHelper.value = dividerComponentHelper.getElements(props.componentElement);
-
-        widthProvider.value?.dispose();
-        widthProvider.value = createComponentWidthProvider(props.componentElement);
-
-        horizontalAlignmentProvider.value?.dispose();
-        horizontalAlignmentProvider.value = createComponentOuterHorizontalAlignmentProvider(props.componentElement);
+        readProps();
     });
 
     // #endregion Watchers
 
     // #region Hooks
 
-    onUnmounted(() => {
-        widthProvider.value?.dispose();
-        horizontalAlignmentProvider.value?.dispose();
+    onMounted(() => {
+        readProps();
     });
 
     // #endregion Hooks

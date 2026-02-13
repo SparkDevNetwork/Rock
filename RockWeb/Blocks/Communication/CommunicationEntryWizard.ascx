@@ -37,6 +37,8 @@
             <div class="panel-body">
                 <%-- List Selection --%>
                 <asp:Panel ID="pnlListSelection" CssClass="js-navigation-panel h-100 d-flex flex-column" runat="server">
+                    <Rock:NotificationBox ID="nbUpgradeMessage" runat="server" NotificationBoxType="Warning" Title="You're Using the Legacy Communication Wizard" Visible="false" />
+
                     <div class="panel-fill-body position-relative flex-fill styled-scroll">
                         <div class="position-absolute inset-0 overflow-auto">
                             <div class="panel-body">
@@ -823,7 +825,7 @@
                                     <!-- Code Properties -->
                                     <div class="propertypanel propertypanel-code" data-component="code" style="display: none;">
                                         <h4 class="propertypanel-title">HTML</h4>
-                                        <Rock:CodeEditor ID="codeEditor" CssClass="js-component-code-codeEditor" runat="server" Height="350" EditorTheme="Rock" EditorMode="Lava" OnChangeScript="updateCodeComponent(this, contents);" />
+                                        <Rock:CodeEditor ID="codeEditor" CssClass="js-component-code-codeEditor" runat="server" Height="350" EditorMode="Lava" OnChangeScript="updateCodeComponent(this, contents);" />
                                         <div class="alert alert-danger" id="component-code-codeEditor-error" style="display: none"></div>
 
 

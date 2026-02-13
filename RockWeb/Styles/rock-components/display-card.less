@@ -69,14 +69,15 @@
     margin: 0;
     /* line-height: var(--line-height-compact) (line-height: 1.055) clips the bottom of "g" and "y"
        for small text, so making a little larger. */
-    line-height: 1.2;
+    line-height: var(--line-height-normal);
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
 }
 
 .displaycard-heading-text-description,
-.displaycard-heading-text-description > * {
+.displaycard-heading-text-description > *,
+.displaycard-text {
     font-size: var(--font-size-small);
     /* line-height: var(--line-height-tight) (line-height: 1.1) clips the bottom of "g" and "y"
        for small text, so making a little larger. */
@@ -246,3 +247,14 @@
 }
 
 // ======================== END DISPLAY CARD CONTAINER ========================
+
+// ======================= MOBILE ADJUSTMENTS =======================
+
+@media (max-width: 480px) {
+    .displaycard {
+        padding: var(--spacing-medium);
+        gap: var(--spacing-medium);
+    }
+}
+
+// ========================= END MOBILE ADJUSTMENTS =======================

@@ -64,5 +64,17 @@ namespace Rock.CheckIn
         /// verify that the child is not yet in school.
         /// </summary>
         public decimal? GradeConfirmationAge { get; set; }
+
+        /// <summary>
+        /// The lava template that will be used to generate the text for the push notification
+        /// displayed when a person's proximity is detected.
+        /// </summary>
+        public string ProximityAttendanceNotificationTemplate { get; set; }
+
+        /// <summary>
+        /// Controls how the family address field displayed when adding or
+        /// editing a family during registration.
+        /// </summary>
+        public RequirementLevel DisplayAddressOnFamilies { get; set; } = RequirementLevel.Optional;
     }
 }

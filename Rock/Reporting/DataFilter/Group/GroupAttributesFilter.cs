@@ -89,17 +89,13 @@ namespace Rock.Reporting.DataFilter.Group
         {
             var data = new Dictionary<string, string>();
 
-            var groupTypeService = new GroupTypeService( rockContext );
+            var groupTypes = GroupTypeCache.All().OrderBy( a => a.Order );
 
-            var groupTypes = groupTypeService.Queryable().OrderBy( a => a.Name ).ToList();
-
-            var groupTypeGuidsById = new Dictionary<int, Guid>();
             var fieldFilterSourcesByGroupType = new Dictionary<Guid, List<FieldFilterSourceBag>>();
 
             // Prime the dictionary with empty lists to make it easier to add the entity fields
             foreach ( var groupType in groupTypes )
             {
-                groupTypeGuidsById.Add( groupType.Id, groupType.Guid );
                 fieldFilterSourcesByGroupType.AddOrReplace( groupType.Guid, new List<FieldFilterSourceBag>() );
             }
 
@@ -111,46 +107,35 @@ namespace Rock.Reporting.DataFilter.Group
             var allEntityFields = new List<EntityField>();
             EntityHelper.AddEntityFieldsForAttributeList( allEntityFields, attributes );
 
-            // Go through all the entity fields and add them to the dictionary based on content channel type indicated by their entity type qualifier
-            foreach ( var attribute in attributes )
+            // Go through all the grouptype attributes and add them to the dictionary.
+            // Here we need to use LoadAttributes because of Attribute inheritance -- that method handles that complication for us.
+            // Even attributes global to all Groups will be added to the attributeList collection.
+            foreach ( var groupType in groupTypes )
             {
-                Guid groupTypeGuid = Guid.Empty;
+                var fakeGroup = new Rock.Model.Group { GroupTypeId = groupType.Id };
+                Rock.Attribute.Helper.LoadAttributes( fakeGroup, rockContext, attributes );
+                var attributeList = fakeGroup.Attributes.Select( a => a.Value ).ToList();
 
-                if ( attribute.EntityTypeQualifierColumn == "GroupTypeId" )
+                foreach ( var attribute in attributeList )
                 {
-                    groupTypeGuid = groupTypeGuidsById.GetValueOrDefault( attribute.EntityTypeQualifierValue.AsInteger(), Guid.Empty );
-                }
+                    var fieldType = attribute.FieldType;
 
-                var fieldType = attribute.FieldType;
-
-                var source = new FieldFilterSourceBag
-                {
-                    Guid = attribute.Guid,
-                    Type = FieldFilterSourceType.Attribute,
-                    Attribute = new PublicAttributeBag
+                    var source = new FieldFilterSourceBag
                     {
-                        AttributeGuid = attribute.Guid,
-                        ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Edit, null ),
-                        Description = attribute.Description,
-                        FieldTypeGuid = fieldType.Guid,
-                        Name = attribute.Name
-                    }
-                };
+                        Guid = attribute.Guid,
+                        Type = FieldFilterSourceType.Attribute,
+                        Attribute = new PublicAttributeBag
+                        {
+                            AttributeGuid = attribute.Guid,
+                            ConfigurationValues = fieldType.Field.GetPublicConfigurationValues( attribute.ConfigurationValues, Field.ConfigurationValueUsage.Edit, null ),
+                            Description = attribute.Description,
+                            FieldTypeGuid = fieldType.Guid,
+                            Name = attribute.Name
+                        }
+                    };
 
-                // Add to list for specific group type
-                if ( groupTypeGuid != Guid.Empty )
-                {
-                    fieldFilterSourcesByGroupType.GetValueOrNull( groupTypeGuid )?.Add( source );
+                    fieldFilterSourcesByGroupType.GetValueOrNull( groupType.Guid )?.Add( source );
                 }
-                // Add to each list, because it's global
-                else
-                {
-                    foreach ( var filterSourceList in fieldFilterSourcesByGroupType )
-                    {
-                        filterSourceList.Value.Add( source );
-                    }
-                }
-
             }
 
             data.AddOrReplace( "fieldFilterSources", fieldFilterSourcesByGroupType.ToCamelCaseJson( false, true ) );
@@ -163,7 +148,7 @@ namespace Rock.Reporting.DataFilter.Group
                     return data;
                 }
 
-                var groupType = groupTypeService.Get( values[0]?.AsGuid() ?? Guid.Empty );
+                var groupType = GroupTypeCache.Get( values[0]?.AsGuid() ?? Guid.Empty );
                 data.AddOrReplace( "groupType", groupType?.ToListItemBag().ToCamelCaseJson( false, true ) ?? "" );
 
                 if ( values.Count > 1 )

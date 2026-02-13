@@ -17,11 +17,11 @@
 
 import { defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
+import { asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import Captcha from "@Obsidian/Controls/captcha.obs";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import { ConfigurationPropertyKey } from "./captchaField.partial";
-import { CaptchaControlTokenValidateTokenResultBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlTokenValidateTokenResultBag";
+import { CaptchaValidateTokenResultBag } from "@Obsidian/ViewModels/Rest/Controls/captchaValidateTokenResultBag";
 
 export const EditComponent = defineComponent({
     name: "CaptchaField.Edit",
@@ -35,21 +35,21 @@ export const EditComponent = defineComponent({
     setup(props, { emit }) {
         // Internal values
         const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
-        const internalBooleanValue = ref(asBoolean(props.modelValue));
-        const internalValue = ref("");
+        const internalBooleanValue = ref<boolean | null>(asBooleanOrNull(props.modelValue));
+        const internalToken = ref<string | undefined>();
 
         watch(captchaElement, async () => {
             if (captchaElement.value) {
-                internalValue.value = await captchaElement.value.getToken();
-                const captchaControlTokenValidateTokenResultBag = await captchaElement.value.validateToken(internalValue.value) as CaptchaControlTokenValidateTokenResultBag;
-                internalBooleanValue.value = captchaControlTokenValidateTokenResultBag?.isTokenValid;
+                internalToken.value = await captchaElement.value.getToken();
+                const captchaValidateTokenResultBag = await captchaElement.value.validateToken(internalToken.value) as CaptchaValidateTokenResultBag;
+                internalBooleanValue.value = captchaValidateTokenResultBag?.isTokenValid || null;
             }
 
             emit("update:modelValue", asTrueFalseOrNull(internalBooleanValue.value) || "");
         });
 
         watch(() => props.modelValue, () => {
-            internalBooleanValue.value = asBoolean(props.modelValue);
+            internalBooleanValue.value = asBooleanOrNull(props.modelValue);
         });
 
         return {
@@ -58,7 +58,7 @@ export const EditComponent = defineComponent({
         };
     },
     template: `
-<Captcha ref="captchaElement" />
+<Captcha ref="captchaElement" :isFieldType="true" :isTokenValid="internalBooleanValue" />
 `
 });
 

@@ -1,0 +1,369 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer sidebar>
+        <ContentSection :disableCollapse="true">
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name"
+                                 label="Name"
+                                 rules="required" />
+                    </div>
+                    <div class="col-md-2">
+                        <CheckBox v-model="isActive"
+                                  label="Active" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="segmentKey"
+                                 label="Key"
+                                 rules="required" />
+                    </div>
+                </div>
+
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <CategoryPicker v-model="categories"
+                                        label="Categories"
+                                        :isRequired="false"
+                                        multiple
+                                        :showCategoryPath="true"
+                                        :entityTypeGuid="EntityType.PersonalizationSegment" />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Persistence Schedule" icon="ti ti-database-export">
+            <ContentStack>
+                <div class="panel panel-waterfall">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <RadioButtonList v-model="persistenceType"
+                                                 label="Type"
+                                                 :items="persistenceTypeOptions" />
+                            </div>
+                            <div v-if="persistenceType === 'Schedule'" class="col-md-3">
+                                <RadioButtonList v-model="persistenceScheduleType"
+                                                 label="Persistence Schedule"
+                                                 :items="persistedScheduleTypeOptions" />
+                            </div>
+                            <div v-if="persistenceType === 'Schedule'" class="col-md-6">
+                                <SchedulePicker v-if="persistenceScheduleType === 'Named'"
+                                                label="Named"
+                                                v-model="persistedSchedule"
+                                                :multiple="false"
+                                                :includeCategoryGuids="[Category.SchedulePersonalizationSegments]" />
+                                <ScheduleBuilder v-else-if="persistenceScheduleType === 'Unique'"
+                                                 label="Unique"
+                                                 v-model="uniqueScheduleICalendarContent"
+                                                 :hideStartDateTime="false"
+                                                 :hideDuration="false" />
+                            </div>
+                            <div v-if="persistenceType === 'Interval'" class="col-md-9">
+                                <IntervalPicker v-model="persistenceInterval" label="Persistence Interval" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Person Filters" icon="ti ti-user">
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-12">
+                        <NotificationBox alertType="info">
+                            Adding a Data View to the segment will exclude anonymous visitors.
+                        </NotificationBox>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DataViewPicker label="Filter Data View" v-model="filterDataView" :displayOnlyPersisted="true" />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Session Filters" icon="ti ti-world-code">
+            <ContentStack>
+                <SessionFilter v-model="sessionCountSegmentFilter" :sites="sites" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Page View Filters" icon="ti ti-sitemap">
+            <ContentStack>
+                <PageViewFilter v-model="pageViewSegmentFilter" :sites="sites" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Interaction Filters" icon="ti ti-hand-click">
+            <ContentStack>
+                <InteractionFilter v-model="interactionSegmentFilter" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection v-if="hasAttributes" title="Attributes" icon="ti ti-adjustments-plus">
+            <ContentStack>
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+            </ContentStack>
+        </ContentSection>
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import IntervalPicker from "@Obsidian/Controls/intervalPicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { TimeIntervalBag } from "@Obsidian/ViewModels/Utility/timeIntervalBag";
+    import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+    import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
+    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { PersonalizationSegmentBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalizationSegmentDetail/personalizationSegmentBag";
+    import { PersonalizationSegmentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalizationSegmentDetail/personalizationSegmentDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import { Category } from "@Obsidian/SystemGuids/category";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
+    import { AdditionalFilterConfigurationBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalizationSegmentDetail/additionalFilterConfigurationBag";
+    import SessionFilter from "./sessionFilter.partial.obs";
+    import PageViewFilter from "./pageViewFilter.partial.obs";
+    import InteractionFilter from "./interactionFilter.partial.obs";
+    import { InteractionSegmentFilter, PageViewSegmentFilter, SessionCountSegmentFilter } from "./types.partial";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<PersonalizationSegmentBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<PersonalizationSegmentDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<PersonalizationSegmentBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const categories = propertyRef(props.modelValue.bag?.categories ?? [], "Categories");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const segmentKey = propertyRef(props.modelValue.bag?.segmentKey ?? "", "SegmentKey");
+    const filterDataView = propertyRef(props.modelValue.bag?.filterDataView, "FilterDataView");
+
+    const persistenceType = propertyRef(props.modelValue.bag?.persistenceType ?? "Interval", "PersistenceType");
+    const persistenceScheduleType = propertyRef(props.modelValue.bag?.persistenceScheduleType ?? "Named", "PersistenceScheduleType");
+    const uniqueScheduleICalendarContent = propertyRef(props.modelValue.bag?.uniqueScheduleICalendarContent ?? "", "UniqueScheduleICalendarContent");
+    const persistedSchedule = propertyRef(props.modelValue.bag?.persistedSchedule ?? null, "PersistedSchedule");
+    const persistedScheduleIntervalMinutes = propertyRef(props.modelValue.bag?.persistedScheduleIntervalMinutes ?? 1440, "PersistenceInterval");
+    const persistenceInterval = ref(minutesToIntervalBag(persistedScheduleIntervalMinutes.value) ?? null);
+
+    const additionalFilterConfiguration = propertyRef(props.modelValue.bag?.additionalFilterConfiguration as AdditionalFilterConfigurationBag ?? "", "AdditionalFilterConfiguration");
+
+    const sites = props.options.sites ?? [];
+    const persistenceTypeOptions = [
+        { value: "Interval", text: "Interval" },
+        { value: "Schedule", text: "Schedule" }
+    ];
+
+    const persistedScheduleTypeOptions = [
+        { value: "Unique", text: "Unique" },
+        { value: "Named", text: "Named" }
+    ];
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [categories, description, isActive, name, segmentKey, persistenceType, persistenceScheduleType, uniqueScheduleICalendarContent,
+        persistedSchedule, persistedScheduleIntervalMinutes, filterDataView, additionalFilterConfiguration];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const hasAttributes = computed(() => {
+        return Object.keys(attributes.value).length > 0;
+    });
+
+    const sessionCountSegmentFilter = computed<SessionCountSegmentFilter>({
+        get() {
+            return {
+                sessionFilterExpressionType: additionalFilterConfiguration.value.sessionFilterExpressionType ?? FilterExpressionType.GroupAny,
+                sessionSegmentFilters: (additionalFilterConfiguration.value.sessionSegmentFilters) ?? []
+            };
+        },
+        set(value) {
+            additionalFilterConfiguration.value = {
+                ...additionalFilterConfiguration.value,
+                sessionFilterExpressionType: value.sessionFilterExpressionType,
+                sessionSegmentFilters: value.sessionSegmentFilters
+            };
+        }
+    });
+
+    const pageViewSegmentFilter = computed<PageViewSegmentFilter>({
+        get() {
+            return {
+                pageViewFilterExpressionType: additionalFilterConfiguration.value.pageViewFilterExpressionType ?? FilterExpressionType.GroupAny,
+                pageViewSegmentFilters: (additionalFilterConfiguration.value.pageViewSegmentFilters) ?? []
+            };
+        },
+        set(value) {
+            additionalFilterConfiguration.value = {
+                ...additionalFilterConfiguration.value,
+                pageViewFilterExpressionType: value.pageViewFilterExpressionType,
+                pageViewSegmentFilters: value.pageViewSegmentFilters
+            };
+        }
+    });
+
+    const interactionSegmentFilter = computed<InteractionSegmentFilter>({
+        get() {
+            return {
+                interactionFilterExpressionType: additionalFilterConfiguration.value.interactionFilterExpressionType ?? FilterExpressionType.GroupAny,
+                interactionSegmentFilters: (additionalFilterConfiguration.value.interactionSegmentFilters) ?? []
+            };
+        },
+        set(value) {
+            additionalFilterConfiguration.value = {
+                ...additionalFilterConfiguration.value,
+                interactionFilterExpressionType: value.interactionFilterExpressionType,
+                interactionSegmentFilters: value.interactionSegmentFilters
+            };
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function minutesToIntervalBag(minutes: number): TimeIntervalBag {
+        if (minutes <= 0) {
+            return { unit: TimeIntervalUnit.Days, value: 1 };
+        }
+
+        let value = minutes;
+        let unit;
+
+        if (minutes % 1440 === 0) {
+            value = minutes / 1440;
+            unit = TimeIntervalUnit.Days;
+        }
+        else if (minutes % 60 === 0) {
+            value = minutes / 60;
+            unit = TimeIntervalUnit.Hours;
+        }
+        else {
+            value = minutes;
+            unit = TimeIntervalUnit.Minutes;
+        }
+
+        return { unit, value };
+    }
+
+    function intervalBagToMinutes(bag: TimeIntervalBag | null): number {
+        if (isNullish(bag) || isNullish(bag.value)) {
+            return 0;
+        }
+
+        const value = bag.value;
+
+        switch (bag.unit) {
+            case TimeIntervalUnit.Days:
+                return value * 1440;
+            case TimeIntervalUnit.Hours:
+                return value * 60;
+            case TimeIntervalUnit.Minutes:
+                return value;
+            default:
+                return 1440;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(categories, props.modelValue.bag?.categories ?? []);
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(segmentKey, props.modelValue.bag?.segmentKey ?? "");
+        updateRefValue(persistenceType, props.modelValue.bag?.persistenceType ?? "Interval");
+        updateRefValue(persistenceScheduleType, props.modelValue.bag?.persistenceScheduleType ?? "Named");
+        updateRefValue(uniqueScheduleICalendarContent, props.modelValue.bag?.uniqueScheduleICalendarContent ?? "");
+        updateRefValue(persistedSchedule, props.modelValue.bag?.persistedSchedule ?? null);
+        updateRefValue(persistedScheduleIntervalMinutes, props.modelValue.bag?.persistedScheduleIntervalMinutes ?? 0);
+        updateRefValue(filterDataView, props.modelValue.bag?.filterDataView);
+
+        updateRefValue(additionalFilterConfiguration, props.modelValue.bag?.additionalFilterConfiguration as AdditionalFilterConfigurationBag ?? {});
+    });
+
+    // Autofill key when editing the name field
+    watch(name, (newVal) => {
+        updateRefValue(segmentKey, newVal.replace(/[^a-zA-Z0-9_.-]/g, ""));
+    });
+
+    watch(persistenceInterval, () => persistedScheduleIntervalMinutes.value = intervalBagToMinutes(persistenceInterval.value));
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<PersonalizationSegmentBag> = {
+            bag: { ...props.modelValue.bag } as PersonalizationSegmentBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "categories", categories.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "segmentKey", segmentKey.value);
+        setPropertiesBoxValue(newValue, "persistenceType", persistenceType.value);
+        setPropertiesBoxValue(newValue, "persistenceScheduleType", persistenceScheduleType.value);
+        setPropertiesBoxValue(newValue, "uniqueScheduleICalendarContent", uniqueScheduleICalendarContent.value);
+        setPropertiesBoxValue(newValue, "persistedSchedule", persistedSchedule.value);
+        setPropertiesBoxValue(newValue, "persistedScheduleIntervalMinutes", persistedScheduleIntervalMinutes.value);
+        setPropertiesBoxValue(newValue, "filterDataView", filterDataView.value);
+        setPropertiesBoxValue(newValue, "additionalFilterConfiguration", additionalFilterConfiguration.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // #endregion Watchers
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

@@ -39,6 +39,7 @@ using Rock.Observability;
 using Rock.Security;
 using Rock.Tasks;
 using Rock.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -150,6 +151,13 @@ namespace RockWeb.Blocks.Communication
         IsRequired = false,
         Order = 14 )]
 
+    [BooleanField( "Show Upgrade Message",
+        Key = AttributeKey.ShowUpgradeMessage,
+        Description = "Displays a message that encourages switching to the newer Communication Wizard. <br>This helps guide staff toward using the updated experience unless you plan to continue using the legacy wizard long-term.",
+        DefaultBooleanValue = true,
+        IsRequired = false,
+        Order = 15 )]
+
     // *** Advanced Category attributes.
 
     [BooleanField( "Disable Navigation Shortcuts",
@@ -186,6 +194,7 @@ namespace RockWeb.Blocks.Communication
             public const string DefaultAsBulk = "DefaultAsBulk";
             public const string EnablePersonParameter = "EnablePersonParameter";
             public const string DisableAddingIndividualsToRecipientLists = "DisableAddingIndividualsToRecipientLists";
+            public const string ShowUpgradeMessage = "ShowUpgradeMessage";
 
             public const string DisableNavigationShortcuts = "DisableNavigationShortcuts";
         }
@@ -196,6 +205,7 @@ namespace RockWeb.Blocks.Communication
 
         private static class PageParameterKey
         {
+            public const string Communication = "Communication";
             public const string CommunicationId = "CommunicationId";
             public const string Edit = "Edit";
             public const string Person = "Person";
@@ -321,6 +331,46 @@ namespace RockWeb.Blocks.Communication
         private void IndividualRecipientPersonIds_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
         {
             RaisePropertyChanged( nameof( IndividualRecipientPersonIds ) );
+        }
+
+        private string CommunicationOrCommunicationIdPageParameter
+        {
+            get
+            {
+                var communicationPageParameter = PageParameter( PageParameterKey.Communication );
+
+                if ( communicationPageParameter.IsNotNullOrWhiteSpace() )
+                {
+                    return communicationPageParameter;
+                }
+                else
+                {
+                    // Only allow the CommunicationId to contain an ID, but return it as a string so it can be used as an entity key.
+                    return PageParameter( PageParameterKey.CommunicationId ).AsIntegerOrNull()?.ToString();
+                }
+            }
+        }
+
+        private int? _communicationId = null;
+        private int? CommunicationId
+        {
+            get
+            {
+                if ( !_communicationId.HasValue )
+                {
+                    var communicationId = new CommunicationService( new RockContext() )
+                        .GetQueryableByKey( CommunicationOrCommunicationIdPageParameter, !this.PageCache.Layout.Site.DisablePredictableIds )
+                        .Select( c => c.Id )
+                        .FirstOrDefault();
+
+                    if ( communicationId > 0 )
+                    {
+                        _communicationId = communicationId;
+                    }
+                }
+
+                return _communicationId;
+            }
         }
 
         #endregion
@@ -474,7 +524,8 @@ function onTaskCompleted( resultData )
             {
                 ConfigureNavigationShortcuts();
                 hfNavigationHistoryInstance.Value = Guid.NewGuid().ToString();
-                ShowDetail( PageParameter( PageParameterKey.CommunicationId ).AsInteger() );
+
+                ShowDetail( CommunicationId ?? 0 );
             }
 
             // set the email preview visible = false on every load so that it doesn't stick around after previewing then navigating
@@ -520,7 +571,7 @@ function onTaskCompleted( resultData )
                     Dictionary<string, string> qryParams = new Dictionary<string, string>();
                     if ( hfCommunicationId.Value != "0" )
                     {
-                        qryParams.Add( PageParameterKey.CommunicationId, hfCommunicationId.Value );
+                        qryParams.Add( PageParameterKey.Communication, hfCommunicationId.Value );
                     }
 
                     this.NavigateToCurrentPageReference( qryParams );
@@ -567,6 +618,8 @@ function onTaskCompleted( resultData )
             var editingApproved = PageParameter( PageParameterKey.Edit ).AsBoolean() && IsUserAuthorized( "Approve" );
 
             nbCommunicationNotWizardCompatible.Visible = false;
+
+            ShowOrHideUpgradeMessage( rockContext );
 
             if ( communication == null )
             {
@@ -814,6 +867,38 @@ function onTaskCompleted( resultData )
                 pushNotificationControl.SetFromCommunication( pushCommunication );
                 pushNotificationControl.AdditionalMergeFields = communication.AdditionalMergeFields;
             }
+        }
+
+        private void ShowOrHideUpgradeMessage( RockContext rockContext )
+        {
+            nbUpgradeMessage.Visible = false;
+
+            if ( GetAttributeValue( AttributeKey.ShowUpgradeMessage ).AsBoolean() )
+            {
+                // Try to get a URL to the new communication entry wizard page.
+                var url = GetObsidianCommunicationEntryWizardUrl( rockContext );
+
+                if ( url.IsNotNullOrWhiteSpace() )
+                {
+                    // The block setting is enabled and we have a URL to the page with the new block.
+                    nbUpgradeMessage.Visible = true;
+                    nbUpgradeMessage.Text = $"This version of the Communication Wizard is no longer recommended. For the best experience and access to the latest features, we suggest using the new <a href=\"{url}\">Communication Wizard <i class=\"ti ti-square-arrow-right\"></i></a>. Start fresh with a new message to take full advantage of what's available.";
+                }
+            }
+        }
+
+        private string GetObsidianCommunicationEntryWizardUrl( RockContext rockContext )
+        {
+            var pageParameters = PageParameters();
+
+            var pageRef = new PageReference( Rock.SystemGuid.Page.NEW_COMMUNICATION_OBSIDIAN, pageParameters?.Where( p => p.Key != "PageId" ).ToDictionary( kvp => kvp.Key, kvp => kvp.Value?.ToString() ) );
+
+            if ( pageRef.PageId > 0 )
+            {
+                return pageRef.BuildUrl();
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -3212,7 +3297,14 @@ function onTaskCompleted( resultData )
 
             // Store the absolute page URL before the request terminates.
             // Set a placeholder value for the navigation URL, to be replaced using client-side script when the task completed notification is sent.
-            this.CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.CommunicationId, _viewCommunicationIdPlaceholder );
+            if ( this.CurrentPageReference.Parameters.ContainsKey( PageParameterKey.CommunicationId ) )
+            {
+                this.CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.CommunicationId, _viewCommunicationIdPlaceholder );
+            }
+            else
+            {
+                this.CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.Communication, _viewCommunicationIdPlaceholder );
+            }
 
             var uri = new Uri( Request.UrlProxySafe().ToString() );
 

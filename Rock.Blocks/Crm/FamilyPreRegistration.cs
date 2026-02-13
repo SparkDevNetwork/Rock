@@ -195,7 +195,6 @@ namespace Rock.Blocks.Crm
         DefaultValue = "/FamilyPreRegistrationSuccess?FamilyId={{ Family.Id }}&Parents={{ ParentIds }}&Children={{ ChildIds }}&When={{ PlannedVisitDate }}",
         Description = BlockAttributeDescription.RedirectURL,
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
         Order = 17 )]
@@ -1674,7 +1673,7 @@ namespace Rock.Blocks.Crm
         {
             errorMessages = new List<string>();
 
-            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            var disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
             if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
             {
                 errorMessages.Add( "Captcha was not valid." );
@@ -1999,7 +1998,7 @@ namespace Rock.Blocks.Crm
                 ChildProfilePhotoField = GetFieldBag( AttributeKey.ChildProfilePhoto ),
                 ChildRaceField = GetFieldBag( AttributeKey.ChildRaceOption ),
                 ChildEthnicityField = GetFieldBag( AttributeKey.ChildEthnicityOption ),
-                DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
+                DisableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() ),
                 AdultLabel = GetAttributeValue( AttributeKey.AdultLabel ),
                 ChildLabel = GetAttributeValue( AttributeKey.ChildLabel ),
             };
@@ -2034,7 +2033,7 @@ namespace Rock.Blocks.Crm
                 };
                 mockChild.LoadAttributes( rockContext );
                 var childAttributes = GetAttributeCategoryAttributes( rockContext, this.ChildAttributeCategoryGuids );
-                box.ChildAttributes = mockChild.GetPublicAttributesForEdit( currentPerson, attributeFilter: f => childAttributes.Any( a => a.Guid == f.Guid ) );
+                box.ChildAttributes = mockChild.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false, attributeFilter: f => childAttributes.Any( a => a.Guid == f.Guid ) );
                 box.Children = children.Select( child => GetFamilyPreRegistrationPersonBag( child.Person, child.FamilyRoleGuid, currentPerson, childAttributes ) ).ToList();
 
                 // Only load the home address if the Address field is shown.

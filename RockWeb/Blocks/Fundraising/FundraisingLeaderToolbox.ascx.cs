@@ -37,8 +37,12 @@ namespace RockWeb.Blocks.Fundraising
     [Category( "Fundraising" )]
     [Description( "The Leader Toolbox for a fundraising opportunity" )]
 
-    [CodeEditorField( "Summary Lava Template", "Lava template for what to display at the top of the main panel. Usually used to display title and other details about the fundraising opportunity.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false,
-         @"
+    [CodeEditorField( "Summary Lava Template",
+        Description = "Lava template for what to display at the top of the main panel. Usually used to display title and other details about the fundraising opportunity.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = @"
 <h1>{{ Group | Attribute:'OpportunityTitle' }}</h1>
 {% assign dateRangeParts = Group | Attribute:'OpportunityDateRange','RawValue' | Split:',' %}
 {% assign dateRangePartsSize = dateRangeParts | Size %}
@@ -54,7 +58,8 @@ namespace RockWeb.Blocks.Fundraising
 <p>
 {{ Group | Attribute:'OpportunitySummary' }}
 </p>
-", order: 1 )]
+",
+        Order = 1 )]
 
     [LinkedPage( "Participant Page", "The participant page for a participant of this fundraising opportunity", required: false, order: 2 )]
     [LinkedPage( "Main Page", "The main page for the fundraising opportunity", required: false, order: 3 )]

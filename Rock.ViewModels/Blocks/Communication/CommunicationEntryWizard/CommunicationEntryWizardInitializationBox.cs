@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.Enums.Blocks.Communication.CommunicationEntry;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
@@ -50,14 +49,14 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         public bool IsHidden { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the available communication list groups.
         /// </summary>
         public List<ListItemBag> CommunicationListGroups { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the SMS "from" numbers.
         /// </summary>
-        public List<ListItemBag> SmsFromNumbers { get; set; }
+        public List<SmsFromNumberListItemBag> SmsFromNumbers { get; set; }
 
         /// <summary>
         /// Gets or sets the communication mediums.
@@ -69,17 +68,17 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         public List<ListItemBag> Mediums { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets whether the duplicate prevention option should be shown.
         /// </summary>
         public bool IsDuplicatePreventionOptionShown { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the merge fields.
         /// </summary>
         public List<string> MergeFields { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the recipients.
         /// </summary>
         public List<CommunicationEntryWizardRecipientBag> Recipients { get; set; }
 
@@ -179,5 +178,10 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// When <see langword="true"/>, navigation shortcuts will be disabled.
         /// </value>
         public bool AreNavigationShortcutsDisabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the template should be applied to the communication on load.
+        /// </summary>
+        public bool ShouldApplyTemplateToCommunication { get; set; }
     }
 }

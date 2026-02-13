@@ -41,6 +41,9 @@ namespace Rock.RealTime.AspNet
         public NameValueCollection QueryString { get; }
 
         /// <inheritdoc/>
+        public IDictionary<string, object> RouteData { get; } = new Dictionary<string, object>();
+
+        /// <inheritdoc/>
         public NameValueCollection Headers { get; }
 
         /// <inheritdoc/>

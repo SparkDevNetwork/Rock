@@ -21,6 +21,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { HttpBodyData, HttpMethod, HttpFunctions, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
 import { inject, provide, getCurrentInstance, ref, type Ref } from "vue";
 import { ICancellationToken } from "./cancellation";
+import { EventSourceStream } from "@Obsidian/Libs/sse";
 
 
 // #region HTTP Requests
@@ -33,13 +34,37 @@ import { ICancellationToken } from "./cancellation";
  * @param params
  * @param data
  */
-async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlParams, data: HttpBodyData, cancellationToken?: ICancellationToken): Promise<AxiosResponse<unknown>> {
+async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlParams, data: HttpBodyData, options?: { headers?: Record<string, string> }, cancellationToken?: ICancellationToken): Promise<AxiosResponse<unknown>> {
     return await axios({
         method,
         url,
         params,
         data,
+        headers: options?.headers,
         signal: getSignal(cancellationToken)
+    });
+}
+
+/**
+ * Make an API call. This is only place Axios (or AJAX library) should be referenced to allow tools like performance metrics to provide
+ * better insights.
+ * @param method
+ * @param url
+ * @param params
+ * @param data
+ */
+async function doStreamingApiCallRaw(method: HttpMethod, url: string, params: HttpUrlParams, data: HttpBodyData, options?: { headers?: Record<string, string> }, cancellationToken?: ICancellationToken): Promise<AxiosResponse<ReadableStream<Uint8Array>>> {
+    return await axios<ReadableStream<Uint8Array>>({
+        method,
+        url,
+        params,
+        data,
+        signal: getSignal(cancellationToken),
+        headers: {
+            Accept: "text/event-stream"
+        },
+        responseType: "stream",
+        adapter: "fetch"
     });
 }
 
@@ -62,14 +87,50 @@ function getSignal(cancellationToken?: ICancellationToken): GenericAbortSignal |
  * normally be used. Instead call useHttp() to get the HTTP functions that
  * can be used.
  *
- * @param {string} method The HTTP method, such as GET
- * @param {string} url The endpoint to access, such as /api/campuses/
- * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
- * @param {any} data This will be the body of the request
+ * @obsolete RockObsolete( "19.0" ) - Use the overload that accepts an options object.
+ *
+ * @param method The HTTP method, such as GET
+ * @param url The endpoint to access, such as /api/campuses/
+ * @param params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
+ * @param data This will be the body of the request
  */
-export async function doApiCall<T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> {
+export async function doApiCall<T>(method: HttpMethod, url: string, params?: HttpUrlParams, data?: HttpBodyData, cancellationToken?: ICancellationToken): Promise<HttpResult<T>>;
+
+/**
+ * Make an API call.  This is a special use function that should not
+ * normally be used. Instead call useHttp() to get the HTTP functions that
+ * can be used.
+ *
+ * @param method The HTTP method, such as GET
+ * @param url The endpoint to access, such as /api/campuses/
+ * @param params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
+ * @param data This will be the body of the request
+ * @param options Additional options to use when construction the API call.
+ */
+export async function doApiCall<T>(method: HttpMethod, url: string, params?: HttpUrlParams, data?: HttpBodyData, options?: { headers?: Record<string, string> }, cancellationToken?: ICancellationToken): Promise<HttpResult<T>>;
+
+/**
+ * Make an API call.  This is a special use function that should not
+ * normally be used. Instead call useHttp() to get the HTTP functions that
+ * can be used.
+ *
+ * @param method The HTTP method, such as GET
+ * @param url The endpoint to access, such as /api/campuses/
+ * @param params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
+ * @param data This will be the body of the request
+ * @param optionsOrCancellationToken Additional options to use when construction the API call or a cancellation token.
+ * @param cancellationToken A cancellation token that can be used to cancel the request.
+ */
+export async function doApiCall<T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, optionsOrCancellationToken?: { headers?: Record<string, string> } | ICancellationToken, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> {
     try {
-        const result = await doApiCallRaw(method, url, params, data, cancellationToken);
+        let result: AxiosResponse<unknown>;
+
+        if (optionsOrCancellationToken && "onCancellationRequested" in optionsOrCancellationToken) {
+            result = await doApiCallRaw(method, url, params, data, undefined, optionsOrCancellationToken);
+        }
+        else {
+            result = await doApiCallRaw(method, url, params, data, optionsOrCancellationToken, cancellationToken);
+        }
 
         return {
             data: result.data as T,
@@ -107,6 +168,99 @@ export async function doApiCall<T>(method: HttpMethod, url: string, params: Http
                 statusCode: 0,
                 errorMessage: null
             } as HttpResult<T>;
+        }
+    }
+}
+
+/**
+ * Make an API call.  This is a special use function that should not
+ * normally be used. Instead call useHttp() to get the HTTP functions that
+ * can be used.
+ *
+ * @obsolete RockObsolete( "19.0" ) - Use the overload that accepts an options object.
+ *
+ * @param method The HTTP method, such as GET
+ * @param url The endpoint to access, such as /api/campuses/
+ * @param params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
+ * @param data This will be the body of the request
+ */
+export async function doStreamingApiCall<T>(method: HttpMethod, url: string, params?: HttpUrlParams, data?: HttpBodyData, cancellationToken?: ICancellationToken): Promise<HttpResult<T>>;
+
+/**
+ * Make an API call.  This is a special use function that should not
+ * normally be used. Instead call useHttp() to get the HTTP functions that
+ * can be used.
+ *
+ * @param method The HTTP method, such as GET
+ * @param url The endpoint to access, such as /api/campuses/
+ * @param params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
+ * @param data This will be the body of the request
+ * @param options Additional options to use when construction the API call.
+ */
+export async function doStreamingApiCall<T>(method: HttpMethod, url: string, params?: HttpUrlParams, data?: HttpBodyData, options?: { headers?: Record<string, string> }, cancellationToken?: ICancellationToken): Promise<HttpResult<T>>;
+
+/**
+ * Make an API call.  This is a special use function that should not
+ * normally be used. Instead call useHttp() to get the HTTP functions that
+ * can be used.
+ *
+ * @param method The HTTP method, such as GET
+ * @param url The endpoint to access, such as /api/campuses/
+ * @param params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
+ * @param data This will be the body of the request
+ * @param optionsOrCancellationToken Additional options to use when construction the API call or a cancellation token.
+ * @param cancellationToken A cancellation token that can be used to cancel the request.
+ */
+export async function doStreamingApiCall<T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, optionsOrCancellationToken?: { headers?: Record<string, string> } | ICancellationToken, cancellationToken?: ICancellationToken): Promise<HttpResult<ReadableStream<T>>> {
+    try {
+        let result: AxiosResponse<ReadableStream<Uint8Array>>;
+
+        if (optionsOrCancellationToken && "onCancellationRequested" in optionsOrCancellationToken) {
+            result = await doStreamingApiCallRaw(method, url, params, data, undefined, optionsOrCancellationToken);
+        }
+        else {
+            result = await doStreamingApiCallRaw(method, url, params, data, optionsOrCancellationToken, cancellationToken);
+        }
+
+        const decoder = new EventSourceStream();
+        const x = new JsonDecodeStream<T>();
+
+        return {
+            data: result.data.pipeThrough(decoder).pipeThrough(x),
+            isError: false,
+            isSuccess: true,
+            statusCode: result.status,
+            errorMessage: null
+        } as HttpResult<ReadableStream<T>>;
+    }
+    catch (e) {
+        if (axios.isAxiosError(e)) {
+            if (e.response?.data?.Message || e?.response?.data?.message) {
+                return {
+                    data: null,
+                    isError: true,
+                    isSuccess: false,
+                    statusCode: e.response.status,
+                    errorMessage: e?.response?.data?.Message ?? e.response.data.message
+                } as HttpResult<ReadableStream<T>>;
+            }
+
+            return {
+                data: null,
+                isError: true,
+                isSuccess: false,
+                statusCode: e.response?.status ?? 0,
+                errorMessage: null
+            } as HttpResult<ReadableStream<T>>;
+        }
+        else {
+            return {
+                data: null,
+                isError: true,
+                isSuccess: false,
+                statusCode: 0,
+                errorMessage: null
+            } as HttpResult<ReadableStream<T>>;
         }
     }
 }
@@ -165,6 +319,7 @@ export function useHttp(): HttpFunctions {
 
     return http || {
         doApiCall: doApiCall,
+        doStreamingApiCall: doStreamingApiCall,
         get: get,
         post: post
     };
@@ -188,7 +343,7 @@ type ApiCallerReturnType<ReturnType, Args extends any[] = []> = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createApiCaller<ReturnType = unknown, Args extends any[] = []> (options: ApiCallerOptions<ReturnType, Args>): ApiCallerReturnType<ReturnType, Args> {
+export function createApiCaller<ReturnType = unknown, Args extends any[] = []>(options: ApiCallerOptions<ReturnType, Args>): ApiCallerReturnType<ReturnType, Args> {
     const fetchFunction = useHttp()[(options.method || "post").toLowerCase()];
     const isLoading = ref(false);
     const hasError = ref(false);
@@ -198,7 +353,7 @@ export function createApiCaller<ReturnType = unknown, Args extends any[] = []> (
         isLoading,
         hasError,
         errorMessage,
-        async run (...args) {
+        async run(...args) {
             isLoading.value = true;
             hasError.value = false;
             errorMessage.value = undefined;
@@ -240,6 +395,32 @@ export function createApiCaller<ReturnType = unknown, Args extends any[] = []> (
         }
     };
 
+}
+
+/**
+ * A TransformStream that decodes JSON string chunks into objects of type T.
+ * Each chunk must be a complete JSON string.
+ */
+class JsonDecodeStream<T> implements TransformStream<MessageEvent<string>, T> {
+    public readonly readable: ReadableStream<T>;
+    public readonly writable: WritableStream<MessageEvent<string>>;
+
+    constructor() {
+        const transformer: Transformer<MessageEvent<string>, T> = {
+            transform(chunk, controller) {
+                try {
+                    const obj = JSON.parse(chunk.data) as T;
+                    controller.enqueue(obj);
+                }
+                catch (e) {
+                    controller.error(new Error(`Invalid JSON: ${e}`));
+                }
+            }
+        };
+        const ts = new TransformStream<MessageEvent<string>, T>(transformer);
+        this.readable = ts.readable;
+        this.writable = ts.writable;
+    }
 }
 
 // #endregion

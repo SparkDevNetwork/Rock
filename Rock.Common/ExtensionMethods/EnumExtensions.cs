@@ -116,6 +116,15 @@ namespace Rock
         }
 
         /// <summary>
+        /// Gets the display name of an enum. If the enum has a Description
+        /// attribute then that value will be used. Otherwise the enum name
+        /// will be used with split case applied.
+        /// </summary>
+        /// <param name="value">The enum value.</param>
+        /// <returns>A string that represents the name of the enum value.</returns>
+        public static string GetDisplayName( this Enum value ) => value.GetDescription() ?? value.ConvertToString();
+
+        /// <summary>
         /// Converts to int.
         /// </summary>
         /// <param name="eff">The eff.</param>

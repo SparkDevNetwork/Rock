@@ -140,7 +140,7 @@
     });
 
     const isEditable = computed((): boolean => {
-        const isReopenDisabled = financialBatchViewBag.value?.status == 2 && !config.options?.isReopenAuthorized;
+        const isReopenDisabled = financialBatchViewBag.value?.status === 2 && !config.options?.isReopenAuthorized;
         return config.isEditable === true && !(isReopenDisabled) && !financialBatchViewBag.value?.isAutomated;
     });
 
@@ -156,7 +156,7 @@
     });
 
     const footerActions = computed((): PanelAction[] => {
-        if (panelMode.value != DetailPanelMode.View) {
+        if (panelMode.value !== DetailPanelMode.View) {
             return [];
         }
         return [

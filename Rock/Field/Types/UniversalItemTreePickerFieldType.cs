@@ -14,13 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Reporting;
+using Rock.Security;
+using Rock.SystemGuid;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
@@ -55,7 +59,9 @@ namespace Rock.Field.Types
                     ["iconCssClass"] = GetItemIconCssClass( privateConfigurationValues ),
                     ["isMultiple"] = IsMultipleSelection.ToString(),
                     ["rootRestUrl"] = GetRootRestUrl( privateConfigurationValues ),
-                    ["context"] = GetContext( privateConfigurationValues )
+                    ["context"] = GetStandardContext( privateConfigurationValues ),
+                    ["isDescendantSelectionAllowed"] = GetDescendantSelectionAllowed( privateConfigurationValues ).ToString(),
+                    ["isFolderSelectionDisabled"] = GetFolderSelectionDisabled( privateConfigurationValues ).ToString(),
                 };
 
                 var itemTypes = GetSelectableItemTypes( privateConfigurationValues );
@@ -69,6 +75,34 @@ namespace Rock.Field.Types
             }
 
             return base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+        }
+
+        /// <summary>
+        /// Gets the context to send to the UI. If we are using the standard
+        /// URL then we need to provide some additional context data.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
+        /// <returns>Either the custom context data or the subclass context data.</returns>
+        private string GetStandardContext( Dictionary<string, string> privateConfigurationValues )
+        {
+            var fieldTypeGuid = GetType().GetCustomAttribute<FieldTypeGuidAttribute>()?.Guid;
+            var methodInfo = GetType().GetMethod( nameof( GetRootRestUrl ), BindingFlags.NonPublic | BindingFlags.Instance );
+
+            // If they haven't overridden GetRootRestUrl() then we need to
+            // provide custom context for the standard implementation.
+            if ( fieldTypeGuid.HasValue && methodInfo != null && methodInfo.GetBaseDefinition() != methodInfo )
+            {
+                var data = new ContextData
+                {
+                    ConfigurationValues = privateConfigurationValues,
+                    Context = GetContext( privateConfigurationValues ),
+                    FieldTypeGuid = fieldTypeGuid.Value
+                };
+
+                return Encryption.EncryptString( data.ToJson() );
+            }
+
+            return GetContext( privateConfigurationValues );
         }
 
         #region Protected Methods
@@ -86,7 +120,34 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
         /// <returns>A string that represents the URL.</returns>
-        protected abstract string GetRootRestUrl( Dictionary<string, string> privateConfigurationValues );
+        protected virtual string GetRootRestUrl( Dictionary<string, string> privateConfigurationValues )
+        {
+            return "/api/v2/controls/UniversalItemTreePickerGetItems";
+        }
+
+        /// <summary>
+        /// Gets the tree items to display in the tree view. This will be
+        /// called if you do not override <see cref="GetRootRestUrl(Dictionary{string, string})"/>
+        /// to get the items to display.
+        /// </summary>
+        /// <param name="options">The options that describe this request and provide additional data.</param>
+        /// <returns>A list of <see cref="TreeItemBag"/> objects that describe the items to be rendered.</returns>
+        internal List<TreeItemBag> GetTreeItemsInternal( UniversalItemTreePickerGetItemsOptions options )
+        {
+            return GetTreeItems( options );
+        }
+
+        /// <summary>
+        /// Gets the tree items to display in the tree view. This will be
+        /// called if you do not override <see cref="GetRootRestUrl(Dictionary{string, string})"/>
+        /// to get the items to display.
+        /// </summary>
+        /// <param name="options">The options that describe this request and provide additional data.</param>
+        /// <returns>A list of <see cref="TreeItemBag"/> objects that describe the items to be rendered.</returns>
+        protected virtual List<TreeItemBag> GetTreeItems( UniversalItemTreePickerGetItemsOptions options )
+        {
+            return new List<TreeItemBag>();
+        }
 
         /// <summary>
         /// Gets the CSS icon class to use on the picker when it is clsoed.
@@ -111,6 +172,18 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Determines if folder selection should be disabled in the tree view.
+        /// Folders are any items where <see cref="TreeItemBag.IsFolder"/> is true.
+        /// This is typically set when working with Category based trees.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <returns><c>true</c> if folder selection should be disabled; otherwise <c>false</c> to allow folder selection.</returns>
+        protected virtual bool GetFolderSelectionDisabled( Dictionary<string, string> privateConfigurationValues )
+        {
+            return false;
+        }
+
+        /// <summary>
         /// Gets the context string to include with all API requests. This can
         /// be information you might need in handling the API request so that
         /// you can return the correct data. We also recommend you encode any
@@ -122,6 +195,17 @@ namespace Rock.Field.Types
         protected virtual string GetContext( Dictionary<string, string> privateConfigurationValues )
         {
             return null;
+        }
+
+        /// <summary>
+        /// Gets a value to determine if this field type supports selecting
+        /// all descendants in the UI picker.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <returns><c>true</c> if the UI should support selecting all descendants; otherwise <c>false</c>.</returns>
+        protected virtual bool GetDescendantSelectionAllowed( Dictionary<string, string> privateConfigurationValues )
+        {
+            return false;
         }
 
         #endregion
@@ -163,10 +247,12 @@ namespace Rock.Field.Types
             {
                 ID = id,
                 IconCssClass = GetItemIconCssClass( privateConfigurationValues ),
-                AllowMultiSelect = IsMultipleSelection
+                AllowMultiSelect = IsMultipleSelection,
+                ShowSelectChildren = GetDescendantSelectionAllowed( privateConfigurationValues ),
             };
 
             picker.SetItemRestUrl( GetRootRestUrl( privateConfigurationValues ) );
+            picker.UrlContext = GetStandardContext( privateConfigurationValues );
 
             return picker;
         }
@@ -218,5 +304,14 @@ namespace Rock.Field.Types
         #endregion
 
 #endif
+
+        internal class ContextData
+        {
+            public Dictionary<string, string> ConfigurationValues { get; set; }
+
+            public string Context { get; set; }
+
+            public Guid FieldTypeGuid { get; set; }
+        }
     }
 }

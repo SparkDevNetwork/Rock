@@ -23,7 +23,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
@@ -134,8 +133,8 @@ namespace Rock.Tests.Integration.Core.Model
 
             var isValid = LocationService.ValidateLocationAddressRequirements( location, out errorMessage );
 
-            Assert.That.IsFalse( isValid, "Address validation succeeded unexpectedly." );
-            Assert.That.AreEqual( $"Incomplete Address. The following fields are required: Address Line 1, Address Line 2, City, County, Province, Postal Code.", errorMessage );
+            Assert.IsFalse( isValid, "Address validation succeeded unexpectedly." );
+            Assert.AreEqual( $"Incomplete Address. The following fields are required: Address Line 1, Address Line 2, City, County, Province, Postal Code.", errorMessage );
         }
 
         [TestMethod]
@@ -156,7 +155,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             var newLocation = locationService.Get( location.Street1, location.Street2, location.City, location.State, location.County, location.PostalCode, location.Country, group: null, verifyLocation: false, createNewLocation: true );
 
-            Assert.That.AreEqual( street2Guid, newLocation.Street2.ToLower() );
+            Assert.AreEqual( street2Guid, newLocation.Street2.ToLower() );
         }
 
         [TestMethod]
@@ -184,11 +183,11 @@ namespace Rock.Tests.Integration.Core.Model
 
             var isValid = LocationService.ValidateLocationAddressRequirements( location, out errorMessage );
 
-            Assert.That.IsTrue( isValid, "Address validation failed." );
+            Assert.IsTrue( isValid, "Address validation failed." );
 
             var newLocation = locationService.Get( location.Street1, location.Street2, location.City, location.State, location.County, location.PostalCode, location.Country, group: null, verifyLocation: false, createNewLocation: true );
 
-            Assert.That.AreEqual( street2Guid, newLocation.Street2.ToLower() );
+            Assert.AreEqual( street2Guid, newLocation.Street2.ToLower() );
         }
 
         [TestMethod]
@@ -212,11 +211,11 @@ namespace Rock.Tests.Integration.Core.Model
 
             var isValid = LocationService.ValidateLocationAddressRequirements( location, out errorMessage );
 
-            Assert.That.IsTrue( isValid, "Address validation failed." );
+            Assert.IsTrue( isValid, "Address validation failed." );
 
             var newLocation = locationService.Get( location.Street1, location.Street2, location.City, location.State, location.County, location.PostalCode, location.Country, group: null, verifyLocation: false, createNewLocation: true );
 
-            Assert.That.AreEqual( cityGuid, newLocation.City.ToLower() );
+            Assert.AreEqual( cityGuid, newLocation.City.ToLower() );
         }
 
         [TestMethod]
@@ -238,8 +237,8 @@ namespace Rock.Tests.Integration.Core.Model
 
             var isValid = LocationService.ValidateLocationAddressRequirements( location, out errorMessage );
 
-            Assert.That.IsFalse( isValid, "Address validation succeeded unexpectedly." );
-            Assert.That.AreEqual( $"Incomplete Address. The following fields are required: Province.", errorMessage );
+            Assert.IsFalse( isValid, "Address validation succeeded unexpectedly." );
+            Assert.AreEqual( $"Incomplete Address. The following fields are required: Province.", errorMessage );
         }
 
         [TestMethod]
@@ -259,8 +258,8 @@ namespace Rock.Tests.Integration.Core.Model
 
             var isValid = LocationService.ValidateLocationAddressRequirements( location, out errorMessage );
 
-            Assert.That.IsFalse( isValid, "Address validation succeeded unexpectedly." );
-            Assert.That.AreEqual( "Invalid Address. At least one field is required.", errorMessage );
+            Assert.IsFalse( isValid, "Address validation succeeded unexpectedly." );
+            Assert.AreEqual( "Invalid Address. At least one field is required.", errorMessage );
         }
 
         #endregion

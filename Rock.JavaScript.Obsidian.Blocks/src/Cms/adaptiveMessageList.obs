@@ -56,6 +56,8 @@
                       :filter="numberValueFilter"
                       visiblePriority="xs" />
 
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
@@ -69,7 +71,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { Column, LabelColumn, NumberColumn, ReorderColumn, pickExistingValueFilter, textValueFilter, DeleteColumn, numberValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { Column, LabelColumn, NumberColumn, ReorderColumn, pickExistingValueFilter, textValueFilter, DeleteColumn, numberValueFilter, AttributeColumns } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AdaptiveMessageListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageList/AdaptiveMessageListOptionsBag";

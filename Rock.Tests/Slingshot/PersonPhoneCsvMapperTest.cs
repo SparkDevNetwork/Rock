@@ -86,7 +86,7 @@ namespace Rock.Tests.Slingshot
             Assert.AreEqual( "6233452378", personPhones[0].PhoneNumber );
             Assert.AreEqual( "Mobile", personPhones[0].PhoneType );
             Assert.IsFalse( personPhones[0].IsMessagingEnabled ?? false );
-            Assert.AreEqual( 1, parserErrors.Count);
+            Assert.HasCount( 1, parserErrors );
         }
     }
 }

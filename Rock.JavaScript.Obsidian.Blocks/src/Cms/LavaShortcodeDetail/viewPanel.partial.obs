@@ -56,7 +56,7 @@
             return valueBuilder.build();
         }
 
-        if(props.modelValue.name) {
+        if (props.modelValue.name) {
             valueBuilder.addTextValue("Name", props.modelValue.name);
         }
 
@@ -85,6 +85,10 @@
 
         if (props.modelValue.tagType) {
             valueBuilder.addTextValue("Tag Type", props.modelValue.tagType);
+        }
+
+        if (props.modelValue.shortcodeScopeBehavior) {
+            valueBuilder.addTextValue("Variable Scope Context", props.modelValue.shortcodeScopeBehavior);
         }
 
         return valueBuilder.build();

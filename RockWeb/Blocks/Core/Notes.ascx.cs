@@ -130,7 +130,6 @@ namespace RockWeb.Blocks.Core
     [CodeEditorField( "Note View Lava Template",
         Description = "The Lava Template to use when rendering the readonly view of all the notes.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
         DefaultValue = @"{% include '~~/Assets/Lava/NoteViewList.lava' %}",

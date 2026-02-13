@@ -31,8 +31,8 @@ export const EditComponent = defineComponent({
     setup(props, { emit }) {
         const internalValue = ref({} as AddressFieldValue);
 
-        const disableFrontEndValidation = computed(() => props.dataEntryMode == "defaultValue");
-        const omitDefaultValues = computed(() => props.dataEntryMode == "defaultValue");
+        const disableFrontEndValidation = computed(() => props.dataEntryMode === "defaultValue");
+        const omitDefaultValues = computed(() => props.dataEntryMode === "defaultValue");
 
         watch(() => props.modelValue, () => {
             try {

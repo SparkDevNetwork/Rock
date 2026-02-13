@@ -190,7 +190,7 @@ Ted Decker's record can be identified by Guid '$tedDeckerGuid' or Id '$tedDecker
 ";
             var expectedMessage = "Lava Error: Invalid Input Guid Value.";
 
-            var exception = Assert.ThrowsException<LavaException>( () =>
+            var exception = Assert.Throws<LavaException>( () =>
             {
                 var renderOptions = LavaTestRenderOptions.DefaultEngine
                     .WithExceptionHandling( ExceptionHandlingStrategySpecifier.Throw );
@@ -263,7 +263,7 @@ Ted Decker's record can be identified by Guid '$tedDeckerGuid' or Id '$tedDecker
 ";
             var expectedMessage = "Lava Error: Invalid Entity Type.";
 
-            var exception = Assert.ThrowsException<LavaException>( () =>
+            var exception = Assert.Throws<LavaException>( () =>
             {
                 var renderOptions = LavaTestRenderOptions.DefaultEngine
                     .WithExceptionHandling( ExceptionHandlingStrategySpecifier.Throw );

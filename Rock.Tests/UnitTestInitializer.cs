@@ -18,6 +18,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Tests.Lava;
 
+[assembly: DoNotParallelize]
+
 namespace Rock.Tests
 {
     [TestClass()]
@@ -30,7 +32,7 @@ namespace Rock.Tests
         [AssemblyInitialize]
         public static void AssemblyInitialize( TestContext context )
         {
-            LavaUnitTestHelper.Initialize( testFluidEngine:true );
+            LavaUnitTestHelper.Initialize( testFluidEngine: true );
         }
 
         /// <summary>

@@ -118,7 +118,6 @@ namespace Rock.Blocks.Cms
             {
                 AdvancedSettings = rockConfig.AdvancedSettings,
                 IsLocalLoggingEnabled = rockConfig.IsLocalLoggingEnabled,
-                IsObservabilityLoggingEnabled = rockConfig.IsObservabilityLoggingEnabled,
                 MaxFileSize = rockConfig.MaxFileSize.ToString(),
                 NumberOfLogFiles = rockConfig.NumberOfLogFiles.ToString(),
                 StandardLogLevel = rockConfig.StandardLogLevel.ConvertToInt().ToString(),
@@ -152,9 +151,6 @@ namespace Rock.Blocks.Cms
 
             box.IfValidProperty( nameof( box.Bag.IsLocalLoggingEnabled ),
                 () => entity.IsLocalLoggingEnabled = box.Bag.IsLocalLoggingEnabled );
-
-            box.IfValidProperty( nameof( box.Bag.IsObservabilityLoggingEnabled ),
-                () => entity.IsObservabilityLoggingEnabled = box.Bag.IsObservabilityLoggingEnabled );
 
             box.IfValidProperty( nameof( box.Bag.AdvancedSettings ),
                 () => entity.AdvancedSettings = box.Bag.AdvancedSettings );

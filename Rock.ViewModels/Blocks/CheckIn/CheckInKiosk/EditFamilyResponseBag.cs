@@ -80,6 +80,12 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInKiosk
         public bool IsCheckInAfterRegistrationAllowed { get; set; }
 
         /// <summary>
+        /// Controls how the family address field displayed when adding or
+        /// editing a family during registration.
+        /// </summary>
+        public RequirementLevel DisplayAddressOnFamilies { get; set; }
+
+        /// <summary>
         /// Determines for which people the name suffix should be displayed
         /// when adding a new individual.
         /// </summary>

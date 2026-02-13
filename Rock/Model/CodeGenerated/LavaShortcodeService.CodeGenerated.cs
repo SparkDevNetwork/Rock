@@ -140,6 +140,7 @@ namespace Rock.Model
             target.Markup = source.Markup;
             target.Name = source.Name;
             target.Parameters = source.Parameters;
+            target.ShortcodeScopeBehavior = source.ShortcodeScopeBehavior;
             target.TagName = source.TagName;
             target.TagType = source.TagType;
             target.CreatedDateTime = source.CreatedDateTime;

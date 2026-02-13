@@ -169,7 +169,7 @@
         // Make sure the map's DIV will be rendered so we have a reference to it
         await nextTick();
 
-        drawingModes = [drawingMode == "Polygon" ? google.maps.drawing.OverlayType.POLYGON : google.maps.drawing.OverlayType.MARKER];
+        drawingModes = [drawingMode === "Polygon" ? google.maps.drawing.OverlayType.POLYGON : google.maps.drawing.OverlayType.MARKER];
 
         // Create a new StyledMapType object, passing it the array of styles,
         // as well as the name to be displayed on the map type control.
@@ -221,7 +221,7 @@
         // Create the shape overlay if we already have a value for it
         if (internalValue.value && internalValue.value.length > 0) {
             let shape;
-            if (drawingMode == "Polygon") {
+            if (drawingMode === "Polygon") {
                 shape = new google.maps.Polygon({
                     paths: internalValue.value.map((c: Coordinate) => createLatLng(...c)),
                     clickable: true,
@@ -290,7 +290,7 @@
         disableDrawing();
         select(newShape);
 
-        if (drawingMode == "Polygon") {
+        if (drawingMode === "Polygon") {
             shape = newShape as google.maps.Polygon;
             setEditable(true);
 
@@ -320,7 +320,7 @@
                 select(shape);
             });
         }
-        else if (drawingMode == "Point") {
+        else if (drawingMode === "Point") {
             shape = newShape as google.maps.Marker;
             let position = shape.getPosition();
 
@@ -347,7 +347,7 @@
         let path = shape.getPath();
 
         // if the last vertex has been removed, there's no more shape, so delete it and let us draw a new one.
-        if (path.getLength() == 0) {
+        if (path.getLength() === 0) {
             deleteSelectedShape(true);
             return;
         }
@@ -379,7 +379,7 @@
      * If the current shape is a polygon, make it editable
      */
     function setEditable(isEditable: boolean): void {
-        if (shape && drawingMode == "Polygon") {
+        if (shape && drawingMode === "Polygon") {
             (shape as google.maps.Polygon).setEditable(isEditable);
         }
     }
@@ -401,7 +401,7 @@
 
         const coords = internalValue.value;
 
-        if (drawingMode == "Point") {
+        if (drawingMode === "Point") {
             map.setCenter(new google.maps.LatLng(...coords[0]));
             return;
         }
@@ -489,7 +489,7 @@
         }
 
         // if the last vertex is not already the first, then add the first vertex to the end of the path.
-        if (path.getAt(0).toUrlValue() != coordinates[coordinates.length - 1]) {
+        if (path.getAt(0).toUrlValue() !== coordinates[coordinates.length - 1]) {
             coordinates.push(path.getAt(0).toUrlValue());
         }
 

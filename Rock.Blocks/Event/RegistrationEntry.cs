@@ -35,6 +35,7 @@ using Rock.Enums.Reporting;
 using Rock.Field;
 using Rock.Financial;
 using Rock.Model;
+using Rock.Model.Event.RegistrationInstance.Options;
 using Rock.Pdf;
 using Rock.Security;
 using Rock.Tasks;
@@ -46,6 +47,7 @@ using Rock.ViewModels.Reporting;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Event
 {
@@ -154,6 +156,13 @@ namespace Rock.Blocks.Event
         DefaultBooleanValue = false,
         Order = 17 )]
 
+    [BooleanField(
+        "Enable Missing Field Diagnostics",
+        Description = "When enabled, special checks will be performed during registration to identify missing required form fields and logged to the exception log. This should only be enabled at the request of the core team.",
+        Category = "Advanced",
+        Key = AttributeKey.EnableMissingFieldDiagnostics,
+        Order = 0 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EVENT_REGISTRATION_ENTRY )]
@@ -180,6 +189,8 @@ namespace Rock.Blocks.Event
             public const string EnableACH = "EnableACH";
             public const string EnableCreditCard = "EnableCreditCard";
             public const string DisableCaptchaSupport = "DisableCaptchaSupport";
+
+            public const string EnableMissingFieldDiagnostics = "EnableMissingFieldDiagnostics";
         }
 
         /// <summary>
@@ -210,7 +221,7 @@ namespace Rock.Blocks.Event
         /// <summary>
         /// A diagnostic collection of missing fields, grouped by form ID.
         /// </summary>
-        public Dictionary<int, Dictionary<int, string>> MissingFieldsByFormId { get; set; }
+        public Dictionary<int, Dictionary<Guid, string>> MissingFieldsByFormId { get; set; }
 
         /// <summary>
         /// Gets the registration identifier page parameter.
@@ -382,7 +393,7 @@ namespace Rock.Blocks.Event
 
                 if ( PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull() == null )
                 {
-                    var groupId = GetRegistrationGroupId( rockContext, context?.Registration?.RegistrationInstanceId );
+                    var groupId = GetRegistrationGroupId( rockContext, context?.Registration?.RegistrationInstanceId, allowParameterGroupId: false );
                     if ( groupId.HasValue )
                     {
                         RequestContext.PageParameters.Add( PageParameterKey.GroupId, groupId.ToString() );
@@ -427,27 +438,43 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult PersistSession( RegistrationEntryArgsBag args )
         {
-            using ( var rockContext = new RockContext() )
+            var context = GetContext( RockContext, args, out var errorMessage );
+
+            if ( !errorMessage.IsNullOrWhiteSpace() )
             {
-                var context = GetContext( rockContext, args, out var errorMessage );
+                return ActionBadRequest( errorMessage );
+            }
 
-                if ( !errorMessage.IsNullOrWhiteSpace() )
+            if ( !context.RegistrationSettings.IsTimeoutEnabled )
+            {
+                return ActionOk( new PersistSessionResponseBag
                 {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                var session = UpsertSession( context, args, SessionStatus.PaymentPending, out errorMessage );
-
-                if ( !errorMessage.IsNullOrWhiteSpace() )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                return ActionOk( new
-                {
-                    ExpirationDateTime = session.ExpirationDateTime.ToRockDateTimeOffset()
+                    IsTimeoutDisabled = true
                 } );
             }
+
+            var session = UpsertSession( context, args, SessionStatus.PaymentPending, out errorMessage );
+
+            if ( !errorMessage.IsNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            // Get the current spots remaining excluding those that were just reserved for this session, if any.
+            var spotsRemaining = new RegistrationInstanceService( RockContext ).GetSpotsAvailable( new GetSpotsAvailableOptions
+            {
+                ExcludeReservedSpotsForRegistrationSessionGuid = null,
+                IsTimeoutEnabled = context.RegistrationSettings.IsTimeoutEnabled,
+                IsWaitListExcluded = true,
+                MaxAttendees = context.RegistrationSettings.MaxAttendees,
+                RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId
+            } );
+
+            return ActionOk( new PersistSessionResponseBag
+            {
+                ExpirationDateTime = session.ExpirationDateTime.ToRockDateTimeOffset(),
+                SpotsRemaining = spotsRemaining
+            } );
         }
 
         /// <summary>
@@ -513,7 +540,7 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult SubmitRegistration( RegistrationEntryArgsBag args )
         {
-            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            var disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
 
             if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
             {
@@ -536,7 +563,26 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( errorMessage );
                 }
 
-                SubmitRegistration( rockContext, context, args, out errorMessage );
+                var result = SubmitRegistration( rockContext, context, args, out errorMessage );
+
+                if ( result == SubmitRegistrationResult.CapacityFullFailure )
+                {
+                    /* 
+                        11/18/2025 JMH
+
+                        If the registration fails because capacity has been reached, we return 409 Conflict.
+                        This lets our client detect the "capacity full" scenario and show a specific error page.
+                        This endpoint is used by third-party payment processors, so we must preserve the existing
+                        response shape. We cannot add custom error codes or change the payload structure.
+                        Using a standard HTTP status code ensures third parties can continue displaying the
+                        error message normally, while still allowing clients to handle 409 in a special way.
+                    */
+
+                    return new BlockActionResult( System.Net.HttpStatusCode.Conflict )
+                    {
+                        Error = errorMessage
+                    };
+                }
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
@@ -669,7 +715,7 @@ namespace Rock.Blocks.Event
 
                 // Process the GroupMember so we have data for the Lava merge.
                 GroupMember groupMember = null;
-                var groupId = GetRegistrationGroupId( rockContext, context.Registration.RegistrationInstanceId );
+                var groupId = GetRegistrationGroupId( rockContext, context.Registration.RegistrationInstanceId, allowParameterGroupId: false );
 
                 if ( groupId.HasValue )
                 {
@@ -807,7 +853,7 @@ namespace Rock.Blocks.Event
                     // try getting the group member for the registrant person.
                     if ( groupMember == null && person != null )
                     {
-                        var groupId = GetRegistrationGroupId( rockContext, GetRegistrationInstanceId( rockContext ) );
+                        var groupId = GetRegistrationGroupId( rockContext, GetRegistrationInstanceId( rockContext ), allowParameterGroupId: false );
 
                         if ( groupId.HasValue )
                         {
@@ -1165,7 +1211,7 @@ namespace Rock.Blocks.Event
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         /// <exception cref="Exception">There was a problem with the payment</exception>
-        private Registration SubmitRegistration( RockContext rockContext, RegistrationContext context, RegistrationEntryArgsBag args, out string errorMessage )
+        private SubmitRegistrationResult SubmitRegistration( RockContext rockContext, RegistrationContext context, RegistrationEntryArgsBag args, out string errorMessage )
         {
             // Ensure the arguments provided are in their proper format
             // before use (e.g. proper currency formatting of amounts).
@@ -1461,15 +1507,19 @@ namespace Rock.Blocks.Event
 
             try
             {
-                // Get each registrant
-                var index = 0;
-
                 // Keep track of the registered person IDs to prevent mistakenly merging different
                 // people (i.e. twins who share an email address) into the same person record
                 // based on an over-confident PersonService.FindPerson(...) match result.
                 context.PersonIdsRegisteredWithinThisSession.Clear();
 
                 /*
+                    11/18/2025 - JMH
+
+                    People are automatically put on the waitlist only if enabled
+                    in the Registration Template. If the waitlist is not enabled,
+                    and there is not enough room for all the new registrants being added,
+                    then no payment will occur and the registrants will not be put on the waitlist.
+
                     7/5/2024 - JMH
 
                     If max capacity is reached during registration, one or more registrants
@@ -1478,15 +1528,134 @@ namespace Rock.Blocks.Event
                     for any **automatically** wait-listed registrants.
                  */
                 var forceWaitlistedRegistrantGuids = new List<Guid>();
+                var registrationInstanceService = new RegistrationInstanceService( rockContext );
+                var registrationRegistrantService = new RegistrationRegistrantService( rockContext );
 
-                foreach ( var registrantInfo in args.Registrants )
+                // Figure out how many NEW registrants this submission is trying to add.
+                var newRegistrantGuidsToAdd = args.Registrants
+                    .Where( ri => !context.Registration.Registrants.Any( rr => rr.Guid == ri.Guid ) )
+                    .Select( ri => ri.Guid )
+                    .ToList();
+
+                var remainingNewRegistrantsToAdd = newRegistrantGuidsToAdd.Count;
+
+                // Resolve max attendees and available spots.
+                var registrationInstance = context.Registration.RegistrationInstance;
+                var maxAttendees = registrationInstance?.MaxAttendees; // int? (null means unlimited)
+                var hasCapacityLimit = maxAttendees.HasValue;                
+                var isWaitListEnabled = context.RegistrationSettings.IsWaitListEnabled;
+
+                if ( !hasCapacityLimit )
                 {
-                    var forceWaitlist = context.SpotsRemaining < 1 && ( isNewRegistration == true || registrantInfo.IsOnWaitList == true );
-                    context.SpotsRemaining -= 1;
+                    // Unlimited registrations.
+                    // Capacity, sessions, and waitlist are all irrelevant in this case.
+                    isWaitListEnabled = false;
+                    context.SpotsRemaining = null; // keep null to signal "unlimited"
+                }
+                else
+                {
+                    // Limited capacity, enforce instance and session capacity.
+                    context.SpotsRemaining = registrationInstanceService.GetSpotsAvailable( new GetSpotsAvailableOptions
+                    {
+                        RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId,
+                        MaxAttendees = maxAttendees,
+                        IsTimeoutEnabled = context.RegistrationSettings.IsTimeoutEnabled,
+                        AreRegistrationSessionsExcluded = true,
+                        IsWaitListExcluded = true
+                    } );
+                }
+
+                if ( context.SpotsRemaining < 0 )
+                {
+                    context.SpotsRemaining = 0;
+                }
+
+                // Pre-loop capacity gate when:
+                // 1) There is a capacity limit, and
+                // 2) Waitlist is disabled, and
+                // 3) There is at least one new registrant, and
+                // 4) There is not enough room for the new registrants.
+                if ( hasCapacityLimit
+                     && !isWaitListEnabled
+                     && remainingNewRegistrantsToAdd > ( context.SpotsRemaining ?? 0 ) )
+                {
+                    if ( isNewRegistration )
+                    {
+                        AbortNewRegistrationSubmission( context );
+                    }
+
+                    errorMessage = "The registration instance has reached its capacity and is no longer accepting new registrations.";
+                    return SubmitRegistrationResult.CapacityFullFailure;
+                }
+
+                // At this point either:
+                // 1) There is no capacity limit, or
+                // 2) Waitlist is enabled, or
+                // 3) There is currently enough space for all new registrants, or
+                // 4) There are no new registrants.
+
+                for ( var i = 0; i < args.Registrants.Count; i++ )
+                {
+                    var registrantInfo = args.Registrants[i];
+                    var isNewRegistrant = newRegistrantGuidsToAdd.Contains( registrantInfo.Guid );
+
+                    if ( hasCapacityLimit && isNewRegistrant )
+                    {
+                        // Refresh spots remaining before each new registrant is added.
+                        context.SpotsRemaining = registrationInstanceService.GetSpotsAvailable( new GetSpotsAvailableOptions
+                        {
+                            RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId,
+                            MaxAttendees = maxAttendees,
+                            IsTimeoutEnabled = context.RegistrationSettings.IsTimeoutEnabled,
+                            AreRegistrationSessionsExcluded = true,
+                            IsWaitListExcluded = true
+                        } );
+
+                        // Abort the registration if:
+                        // 1) Waitlist is not enabled, and
+                        // 2) There are not enough spots available for the remaining new registrants.
+                        if ( !isWaitListEnabled
+                             && remainingNewRegistrantsToAdd > ( context.SpotsRemaining ?? 0 ) )
+                        {
+                            if ( isNewRegistration )
+                            {
+                                AbortNewRegistrationSubmission( context );
+                            }
+
+                            errorMessage = "The registration instance has reached its capacity and is no longer accepting new registrations.";
+                            return SubmitRegistrationResult.CapacityFullFailure;
+                        }
+                    }
+
+                    var isRegistrationInstanceFull = hasCapacityLimit
+                        && context.SpotsRemaining.HasValue
+                        && context.SpotsRemaining.Value < 1;
+              
+                    var forceWaitlist = isRegistrationInstanceFull
+                        && isWaitListEnabled
+                        && ( isNewRegistration || isNewRegistrant || registrantInfo.IsOnWaitList );
+                    
+                    // Only decrement capacity if:
+                    // 1) There is a capacity limit, and
+                    // 2) This is a new registrant, and
+                    // 3) they are taking a spot, not being waitlisted.
+                    if ( hasCapacityLimit && isNewRegistrant && !forceWaitlist )
+                    {
+                        if ( context.SpotsRemaining.HasValue )
+                        {
+                            // SpotsRemaining is recalculated from the database at the start of each loop iteration
+                            // but decrement here for posterity and to reflect logical consumption of a spot.
+                            context.SpotsRemaining--;
+                        }
+
+                        remainingNewRegistrantsToAdd--;
+                    }
 
                     bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
-                    MissingFieldsByFormId = new Dictionary<int, Dictionary<int, string>>();
+                    MissingFieldsByFormId = GetAttributeValue( AttributeKey.EnableMissingFieldDiagnostics ).AsBoolean() && isNewRegistrant
+                        ? new Dictionary<int, Dictionary<Guid, string>>()
+                        : null;
 
                     UpsertRegistrant(
                         rockContext,
@@ -1494,7 +1663,7 @@ namespace Rock.Blocks.Event
                         registrar,
                         registrarFamily.Guid,
                         registrantInfo,
-                        index,
+                        i,
                         multipleFamilyGroupIds,
                         ref singleFamilyId,
                         forceWaitlist,
@@ -1508,8 +1677,6 @@ namespace Rock.Blocks.Event
                         forceWaitlistedRegistrantGuids.Add( registrantInfo.Guid );
                     }
 
-                    index++;
-
                     if ( MissingFieldsByFormId?.Any() == true )
                     {
                         /*
@@ -1522,20 +1689,85 @@ namespace Rock.Blocks.Event
 
                             Reason: Registration entries are sometimes missing registration form data.
                             https://github.com/SparkDevNetwork/Rock/issues/5091
+
+                            1/26/2026 - DSH
+
+                            We believe this was caused by an issue in RockForm on Obsidian that
+                            caused the errors to be cleared when resetting the form. This allowed
+                            an individual to move to a previous form and then back to the next
+                            form. From there they could proceed without filling out any data.
+                            This has been fixed, but we are leaving the logging information here
+                            for now in case there are still issues causing blank data. This is
+                            controlled by an advanced block setting.
+
+                            The remaining known issues are caused by things like people being on
+                            wait list and the form fields marked as not shown on wait list. As well
+                            as cases where a staff member manually adds a registrant with can bypass
+                            some required fields (such as person birth date).
+
+                            This logging code should be removed in Rock v22 if no further issues
+                            are reported.
                          */
                         var logAllMissingFieldsSb = new StringBuilder();
-                        logAllMissingFieldsSb.AppendLine( $"{logMsgPrefix}Registrant {index} of {args.Registrants.Count}: The following required (non-conditional) Field values were missing:" );
 
-                        foreach ( var missingFormFields in MissingFieldsByFormId )
+                        try
                         {
-                            var logMissingFormFieldsSb = new StringBuilder( $"[Form ID: {missingFormFields.Key} -" );
+                            // Serialize and log the missing and expected form fields as well as this registrant's field
+                            // values so a more thorough investigation can be performed.
+                            var missingFields = MissingFieldsByFormId
+                                .SelectMany( mf => mf.Value.Select( f => new LogMissingField
+                                {
+                                    TemplateFormId = mf.Key,
+                                    TemplateFormFieldGuid = f.Key,
+                                    TemplateFormFieldName = f.Value,
+                                } ) )
+                                .ToList();
 
-                            foreach ( var missingField in missingFormFields.Value )
+                            var logMissingFields = new LogMissingFields
                             {
-                                logMissingFormFieldsSb.Append( $" {missingField.Value} (Field ID: {missingField.Key});" );
-                            }
+                                RegistrationTemplateId = context.RegistrationSettings.RegistrationTemplateId,
+                                RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId,
+                                InstanceOrTemplateName = context.RegistrationSettings.Name,
+                                RegistrationId = context.Registration?.Id,
+                                MaxRegistrants = context.RegistrationSettings.MaxRegistrants,
+                                MaxAttendees = context.RegistrationSettings.MaxAttendees,
+                                SpotsRemaining = context.SpotsRemaining,
+                                IsTimeoutEnabled = context.RegistrationSettings.IsTimeoutEnabled,
+                                TimeoutMinutes = context.RegistrationSettings.TimeoutMinutes,
+                                TimeoutThreshold = context.RegistrationSettings.TimeoutThreshold,
+                                IsWaitlistEnabled = context.RegistrationSettings.IsWaitListEnabled,
+                                AreCurrentFamilyMembersShown = context.RegistrationSettings.AreCurrentFamilyMembersShown,
+                                CurrentPersonId = RequestContext.CurrentPerson?.Id,
+                                CurrentPersonName = RequestContext.CurrentPerson?.FullName,
+                                Registrar = args.Registrar,
+                                RegistrantIndexPosition = $"{i} of {args.Registrants.Count}",
+                                Registrant = registrantInfo,
+                                MissingFields = missingFields,
+                                ExpectedForms = context.RegistrationSettings.Forms
+                                    .Select( f => new LogTemplateForm( f ) )
+                                    .OrderBy( f => f.Order )
+                                    .ToList()
+                            };
 
-                            logAllMissingFieldsSb.AppendLine( $"{logMissingFormFieldsSb}]" );
+                            logAllMissingFieldsSb.Append( logMissingFields.ToJson() );
+                        }
+                        catch
+                        {
+                            // Go back to the old version of logging so we're sure to capture this failure.
+                            logAllMissingFieldsSb.Clear();
+                            logAllMissingFieldsSb.AppendLine( $"{logMsgPrefix}Registrant {i} of {args.Registrants.Count}: The following required (non-conditional) Field values were missing:" );
+
+                            foreach ( var missingFormFields in MissingFieldsByFormId )
+                            {
+                                var logMissingFormFieldsSb = new StringBuilder( $"[Form ID: {missingFormFields.Key} -" );
+
+                                foreach ( var missingField in missingFormFields.Value )
+                                {
+                                    logMissingFormFieldsSb.Append( $" {missingField.Value} (Field Guid: {missingField.Key});" );
+                                }
+
+                                logAllMissingFieldsSb.AppendLine( $"{logMissingFormFieldsSb}]" );
+                            }
                         }
 
                         ExceptionLogService.LogException( new RegistrationTemplateFormFieldException( logAllMissingFieldsSb.ToString() ) );
@@ -1561,7 +1793,7 @@ namespace Rock.Blocks.Event
                     if ( financialAccount == null )
                     {
                         errorMessage = "There was a problem with the financial account configuration for this registration instance";
-                        return null;
+                        return SubmitRegistrationResult.FinancialAccountFailure;
                     }
 
                     // Keep track of the customer token so the customer account is only created once.
@@ -1628,22 +1860,9 @@ namespace Rock.Blocks.Event
             }
             catch ( Exception )
             {
-                using ( var newRockContext = new RockContext() )
+                if ( isNewRegistration )
                 {
-                    // Cleanup any new records created since there was an error
-                    if ( isNewRegistration )
-                    {
-                        var newRegistrationService = new RegistrationService( newRockContext );
-                        var savedRegistration = new RegistrationService( newRockContext ).Get( context.Registration.Id );
-
-                        if ( savedRegistration != null )
-                        {
-                            HistoryService.DeleteChanges( newRockContext, typeof( Registration ), savedRegistration.Id );
-
-                            newRegistrationService.Delete( savedRegistration );
-                            newRockContext.SaveChanges();
-                        }
-                    }
+                    AbortNewRegistrationSubmission( context );
                 }
 
                 throw;
@@ -1670,7 +1889,36 @@ namespace Rock.Blocks.Event
                 ProcessPostSave( rockContext, context.RegistrationSettings, args, isNewRegistration, context.Registration, previousRegistrantPersonIds, postSaveActions );
             }
 
-            return context.Registration;
+            return SubmitRegistrationResult.Success;
+        }
+
+        /// <summary>
+        /// Aborts the registration submission and cleans up any new records created if there was an error.
+        /// </summary>
+        /// <param name="context">The registration context.</param>
+        /// <param name="isNewRegistration">Indicates if this is a new registration.</param>
+        private static void AbortNewRegistrationSubmission( RegistrationContext context )
+        {
+            if ( context?.Registration?.Id == null)
+            {
+                // Nothing to delete.
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationService = new RegistrationService( rockContext );
+                var registration = registrationService.Get( context.Registration.Id );
+
+                if ( registration == null )
+                {
+                    return;
+                }
+
+                HistoryService.DeleteChanges( rockContext, typeof( Registration ), registration.Id );
+                registrationService.Delete( registration );
+                rockContext.SaveChanges();
+            }
         }
 
         /// <summary>
@@ -1886,52 +2134,49 @@ namespace Rock.Blocks.Event
         /// <param name="rockContext">The rock context.</param>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <returns>The <see cref="Group"/> identifier or <c>null</c> if one is not available.</returns>
-        private int? GetRegistrationGroupId( RockContext rockContext, int? registrationInstanceId )
+        private int? GetRegistrationGroupId( RockContext rockContext, int? registrationInstanceId, bool allowParameterGroupId = true )
         {
             var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
             var registrationSlug = PageParameter( PageParameterKey.Slug );
             var eventOccurrenceId = this.EventOccurrenceIdPageParameter;
 
-            if ( !groupId.HasValue )
+            if ( !registrationSlug.IsNullOrWhiteSpace() )
             {
-                if ( !registrationSlug.IsNullOrWhiteSpace() )
-                {
-                    var dateTime = RockDateTime.Now;
-                    var linkage = new EventItemOccurrenceGroupMapService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( l =>
-                            l.UrlSlug == registrationSlug &&
-                            l.RegistrationInstance != null &&
-                            l.RegistrationInstance.IsActive &&
-                            l.RegistrationInstance.RegistrationTemplate != null &&
-                            l.RegistrationInstance.RegistrationTemplate.IsActive &&
-                            ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
-                            ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
-                        .FirstOrDefault();
+                var dateTime = RockDateTime.Now;
+                var linkage = new EventItemOccurrenceGroupMapService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( l =>
+                        l.UrlSlug == registrationSlug &&
+                        l.RegistrationInstance != null &&
+                        l.RegistrationInstance.IsActive &&
+                        l.RegistrationInstance.RegistrationTemplate != null &&
+                        l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                        ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
+                        ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
+                    .FirstOrDefault();
 
-                    if ( linkage != null )
-                    {
-                        groupId = linkage.GroupId;
-                    }
-                }
-                else if ( eventOccurrenceId.HasValue && registrationInstanceId.HasValue )
-                {
-                    var linkageGroupId = new EventItemOccurrenceService( rockContext )
-                        .Queryable()
-                        .Where( o => o.Id == eventOccurrenceId.Value )
-                        .SelectMany( o => o.Linkages )
-                        .Where( l => l.RegistrationInstanceId == registrationInstanceId.Value )
-                        .Select( l => l.GroupId )
-                        .FirstOrDefault();
+                return linkage?.GroupId;
+            }
+            else if ( eventOccurrenceId.HasValue && registrationInstanceId.HasValue )
+            {
+                var linkageGroupId = new EventItemOccurrenceService( rockContext )
+                    .Queryable()
+                    .Where( o => o.Id == eventOccurrenceId.Value )
+                    .SelectMany( o => o.Linkages )
+                    .Where( l => l.RegistrationInstanceId == registrationInstanceId.Value )
+                    .Select( l => l.GroupId )
+                    .FirstOrDefault();
 
-                    if ( linkageGroupId.HasValue )
-                    {
-                        groupId = linkageGroupId.Value;
-                    }
-                }
+                return linkageGroupId;
             }
 
-            return groupId;
+            if ( allowParameterGroupId && groupId.HasValue )
+            {
+                return groupId.Value;
+            }
+
+            // If there is no slug or event occurrence id then don't use/trust the groupId in the query string
+            return null;
         }
 
         /// <summary>
@@ -2005,27 +2250,26 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
-        /// Gets the registration instance query.
+        /// Gets a person field.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="includes">The includes.</param>
+        /// <param name="settings">The settings.</param>
+        /// <param name="personFieldType">Type of the person field.</param>
         /// <returns></returns>
-        private IQueryable<RegistrationInstance> GetRegistrationInstanceQuery( RockContext rockContext, string includes )
+        private RegistrationTemplateFormField GetPersonField( RegistrationSettings settings, RegistrationPersonFieldType personFieldType )
         {
-            var registrationInstanceId = GetRegistrationInstanceId( rockContext );
-            var now = RockDateTime.Now;
+            if ( settings == null || settings.Forms == null )
+            {
+                return null;
+            }
 
-            var query = new RegistrationInstanceService( rockContext )
-                .Queryable( includes )
-                .Where( r =>
-                    r.Id == registrationInstanceId &&
-                    r.IsActive &&
-                    r.RegistrationTemplate != null &&
-                    r.RegistrationTemplate.IsActive &&
-                    ( !r.StartDateTime.HasValue || r.StartDateTime <= now ) &&
-                    ( !r.EndDateTime.HasValue || r.EndDateTime > now ) );
-
-            return query;
+            return settings.Forms
+                .SelectMany( t => t.Fields
+                    .Where( f =>
+                        f.FieldSource == RegistrationFieldSource.PersonField &&
+                        f.PersonFieldType == personFieldType
+                    )
+                )
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -2489,7 +2733,8 @@ namespace Rock.Blocks.Event
         /// <param name="person">The person.</param>
         /// <param name="phoneTypeGuid">The phone type unique identifier.</param>
         /// <param name="changes">The changes.</param>
-        private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, History.HistoryChangeList changes )
+        /// <param name="isMessagingEnabledEditable">Whether the phone Messaging Enabled property is editable.</param>
+        private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, History.HistoryChangeList changes, bool isMessagingEnabledEditable )
         {
             string phoneNumber = string.Empty;
             string countryCode = string.Empty;
@@ -2500,7 +2745,7 @@ namespace Rock.Blocks.Event
             {
                 // We got the number and SMS selection, so set both.
                 phoneNumber = phoneData.Number;
-                isMessagingEnabled = phoneData.IsMessagingEnabled;
+                isMessagingEnabled = isMessagingEnabledEditable ? phoneData.IsMessagingEnabled : ( bool? ) null;
                 countryCode = phoneData.CountryCode;
             }
             else if ( fieldValue is string )
@@ -2519,6 +2764,7 @@ namespace Rock.Blocks.Event
 
             if ( string.IsNullOrWhiteSpace( cleanNumber ) || numberType == null )
             {
+                // TODO: Figure out why phone numbers are prevented from being cleared out here and update comment with "why".
                 return;
             }
 
@@ -2575,6 +2821,8 @@ namespace Rock.Blocks.Event
             var email = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Email, registrantInfo.FieldValues ).ToStringSafe();
             var birthday = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Birthdate, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerBag>().ToDateTime();
             var mobilePhone = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.MobilePhone, registrantInfo.FieldValues ).ToStringSafe();
+
+            var emailField = GetPersonField( context.RegistrationSettings, RegistrationPersonFieldType.Email );
 
             /*
                 8/15/2023 - JPH
@@ -2655,7 +2903,7 @@ namespace Rock.Blocks.Event
             {
                 // Try to find a matching person based on name, email address, mobile phone, and birthday. If these were not provided they are not considered.
                 var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
-                person = personService.FindPerson( personQuery, true );
+                person = personService.FindPerson( personQuery, updatePrimaryEmail: false ); // primary email updates are done below when applicable.
 
                 if ( person != null && context.PersonIdsRegisteredWithinThisSession.Contains( person.Id ) )
                 {
@@ -2687,7 +2935,7 @@ namespace Rock.Blocks.Event
                     if ( familyMembers.Count() == 1 )
                     {
                         person = familyMembers.First();
-                        if ( !string.IsNullOrWhiteSpace( email ) )
+                        if ( email.IsNotNullOrWhiteSpace() && IsFieldUnlockedForEditing( emailField, person.Email ) )
                         {
                             person.Email = email;
                         }
@@ -2729,7 +2977,7 @@ namespace Rock.Blocks.Event
                 if ( familyMembers.Count() == 1 )
                 {
                     person = familyMembers.First();
-                    if ( !string.IsNullOrWhiteSpace( email ) )
+                    if ( email.IsNotNullOrWhiteSpace() && IsFieldUnlockedForEditing( emailField,  person.Email ) )
                     {
                         person.Email = email;
                     }
@@ -2768,7 +3016,7 @@ namespace Rock.Blocks.Event
                     person.FirstName = firstName;
                     person.LastName = lastName;
                     person.IsEmailActive = true;
-                    person.Email = email;
+                    person.Email = email; // No need to check if the email field is unlocked for editing because this is a new person.
                     person.EmailPreference = EmailPreference.EmailAllowed;
                     person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
 
@@ -2796,7 +3044,7 @@ namespace Rock.Blocks.Event
         private bool IsFieldUnlockedForEditing( RegistrationTemplateFormField field, string currentFieldValue )
         {
             // The field can be updated if it is not "locked" or if it doesn't have a value.
-            return !field.IsLockedIfValuesExist || currentFieldValue.IsNullOrWhiteSpace();
+            return field != null && ( !field.IsLockedIfValuesExist || currentFieldValue.IsNullOrWhiteSpace() );
         }
 
         /// <summary>
@@ -2874,6 +3122,7 @@ namespace Rock.Blocks.Event
             var homeNumberDefinedValue = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
             var mobileNumberDefinedValue = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
             var workNumberDefinedValue = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
+            var isSmsOptInShown = settings.ShowSmsOptIn;
 
             // Set any of the template's person fields
             foreach ( var field in settings.Forms
@@ -2995,7 +3244,7 @@ namespace Rock.Blocks.Event
                         case RegistrationPersonFieldType.MobilePhone:
                             if ( IsFieldUnlockedForEditing( field, personService.GetPhoneNumber( person, mobileNumberDefinedValue )?.Number ) )
                             {
-                                SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), personChanges );
+                                SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), personChanges, isSmsOptInShown );
                             }
 
                             break;
@@ -3003,7 +3252,7 @@ namespace Rock.Blocks.Event
                         case RegistrationPersonFieldType.HomePhone:
                             if ( IsFieldUnlockedForEditing( field, personService.GetPhoneNumber( person, homeNumberDefinedValue )?.Number ) )
                             {
-                                SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), personChanges );
+                                SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), personChanges, isMessagingEnabledEditable: false );
                             }
 
                             break;
@@ -3011,7 +3260,7 @@ namespace Rock.Blocks.Event
                         case RegistrationPersonFieldType.WorkPhone:
                             if ( IsFieldUnlockedForEditing( field, personService.GetPhoneNumber( person, workNumberDefinedValue )?.Number ) )
                             {
-                                SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid(), personChanges );
+                                SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid(), personChanges, isMessagingEnabledEditable: false );
                             }
 
                             break;
@@ -3074,7 +3323,10 @@ namespace Rock.Blocks.Event
                     }
                 }
 
-                field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, fieldValue );
+                if ( MissingFieldsByFormId != null )
+                {
+                    field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, fieldValue );
+                }
             }
 
             return (campusId, location, updateExistingCampus);
@@ -3137,7 +3389,10 @@ namespace Rock.Blocks.Event
                             }
                         }
                     }
+                }
 
+                if ( MissingFieldsByFormId != null && ( !registrantInfo.IsOnWaitList || field.ShowOnWaitlist ) )
+                {
                     field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, fieldValue );
                 }
             }
@@ -3279,6 +3534,8 @@ namespace Rock.Blocks.Event
                 {
                     var totalFeeQuantity = 0;
                     var feeItemModels = feeModel.FeeItems.ToList();
+                    var isFeeUsageAutoReduced = false;
+                    var hasRequiredFeeItem = false;
 
                     for ( var i = 0; i < feeItemModels.Count; i++ )
                     {
@@ -3304,22 +3561,32 @@ namespace Rock.Blocks.Event
                         if ( countRemaining.HasValue && countRemaining < quantity )
                         {
                             quantity = countRemaining.Value;
+                            isFeeUsageAutoReduced = true;
                         }
 
                         // Don't allow selecting more than 1 if not allowed
                         if ( !feeModel.AllowMultiple && quantity > 1 )
                         {
                             quantity = 1;
+                            isFeeUsageAutoReduced = true;
                         }
 
                         // Don't allow selecting any if other items of this fee are already selected
                         if ( !feeModel.AllowMultiple && totalFeeQuantity > 0 )
                         {
                             quantity = 0;
+                            isFeeUsageAutoReduced = true;
                         }
 
                         // Check if the item is selected (either actually selected or not allowed to be selected)
-                        if ( quantity < 1 )
+                        if ( quantity >= 1 )
+                        {
+                            if ( feeModel.IsRequired )
+                            {
+                                hasRequiredFeeItem = true;
+                            }
+                        }
+                        else if ( quantity < 1 )
                         {
                             // The item is not selected, so remove it if it already exists
                             if ( registrantFee != null )
@@ -3359,6 +3626,15 @@ namespace Rock.Blocks.Event
 
                         History.EvaluateChange( registrantChanges, feeName + " Cost", registrantFee.Cost, feeItemModel.Cost );
                         registrantFee.Cost = feeItemModel.Cost;
+                    }
+
+                    if ( feeModel.IsRequired && !hasRequiredFeeItem )
+                    {
+                        var cannotAccommodateQuantitySuffix = isFeeUsageAutoReduced
+                                ? $", but is no longer available{( feeModel.AllowMultiple ? " in the selected quantity" : string.Empty )}"
+                                : string.Empty;
+
+                        throw new InvalidOperationException( $"{feeModel.Name} is required{cannotAccommodateQuantitySuffix}." );
                     }
                 }
             }
@@ -3536,14 +3812,23 @@ namespace Rock.Blocks.Event
 
                 if ( attribute is null )
                 {
+                    if ( MissingFieldsByFormId != null && ( !registrantInfo.IsOnWaitList || field.ShowOnWaitlist ) )
+                    {
+                        field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, null );
+                    }
+
                     continue;
                 }
 
+                var originalValue = registrant.GetAttributeValue( attribute.Key );
+                var finalValue = originalValue;
+
                 if ( IsFieldUnlockedForEditing( field, registrant, attribute.Key ) )
                 {
-                    var originalValue = registrant.GetAttributeValue( attribute.Key );
                     var newValue = registrantInfo.FieldValues.GetValueOrNull( field.Guid ).ToStringSafe();
                     newValue = PublicAttributeHelper.GetPrivateValue( attribute, newValue );
+
+                    finalValue = newValue;
 
                     registrant.SetAttributeValue( attribute.Key, newValue );
 
@@ -3564,8 +3849,11 @@ namespace Rock.Blocks.Event
                         isChanged = true;
                         History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
                     }
+                }
 
-                    field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, newValue );
+                if ( MissingFieldsByFormId != null && ( !registrantInfo.IsOnWaitList || field.ShowOnWaitlist ) )
+                {
+                    field.NoteFieldDetailsIfRequiredAndMissing( MissingFieldsByFormId, finalValue );
                 }
             }
 
@@ -3907,15 +4195,18 @@ namespace Rock.Blocks.Event
             // Determine the timeout
             int? timeoutMinutes = null;
 
-            if ( context.SpotsRemaining.HasValue && context.RegistrationSettings.TimeoutMinutes.HasValue )
+            if ( context.SpotsRemaining.HasValue && context.RegistrationSettings.IsTimeoutEnabled && context.RegistrationSettings.MaxAttendees.HasValue && context.RegistrationSettings.MaxAttendees.Value > 0 )
             {
-                var hasMetThreshold =
-                    !context.RegistrationSettings.TimeoutThreshold.HasValue ||
-                    context.SpotsRemaining.Value <= context.RegistrationSettings.TimeoutThreshold.Value;
+                var thresholdPercent = context.RegistrationSettings.TimeoutThreshold
+                    ?? RegistrationInstance.DefaultTimeoutThreshold;
+                var remainingPercent = ( decimal )context.SpotsRemaining.Value / ( decimal )context.RegistrationSettings.MaxAttendees.Value * 100m;
+
+                var hasMetThreshold = remainingPercent <= thresholdPercent;
 
                 if ( hasMetThreshold )
                 {
-                    timeoutMinutes = context.RegistrationSettings.TimeoutMinutes.Value;
+                    timeoutMinutes = context.RegistrationSettings.TimeoutMinutes
+                        ?? RegistrationInstance.DefaultTimeoutLength.Minutes;
                 }
             }
 
@@ -3987,12 +4278,107 @@ namespace Rock.Blocks.Event
                 }
             }
 
-            // Determine the starting point. External registration updates are
-            // currently only supported if we are not doing inline signatures.
-            var allowExternalRegistrationUpdates = context.RegistrationSettings.AllowExternalRegistrationUpdates && !context.RegistrationSettings.IsInlineSignatureRequired;
+            /*
+                JMH - 1/9/2026
+
+                Track whether any required fees are missing so the fee selection step is shown to the registrar
+                when necessary. This is critical when a registrant is moved off the waitlist and the registrar
+                must complete the registration and select applicable fees.
+
+                Previously, if a signature document was involved, the block always advanced directly to the
+                final step. This caused required fees to be skipped. The block now prioritizes fee selection,
+                even if it requires the signature document to be re-signed.
+             */
+            var requiredFees = fees.Where( fee => fee.IsRequired ).ToList();
+            var isAnyRequiredFeeMissing = requiredFees.Any( requiredFee =>
+            {
+                var isAnyRegistrantMissingTheRequiredFee = session.Registrants.Any( registrant =>
+                    !registrant.FeeItemQuantities.ContainsKey( requiredFee.Guid )
+                );
+
+                if ( isAnyRegistrantMissingTheRequiredFee )
+                {
+                    return true;
+                }
+
+                var doesAnyRegistrantNotHaveAnyOfTheRequiredFee = session.Registrants.Any( registrant =>
+                    registrant.FeeItemQuantities[requiredFee.Guid] <= 0
+                );
+
+                if ( doesAnyRegistrantNotHaveAnyOfTheRequiredFee )
+                {
+                    return true;
+                }
+
+                return false;
+            } );
+
+            /*
+                JMH - 1/9/2026
+
+                Handle registration fields that are configured to be visible only for non waitlist registrants.
+                When a registrar indicates that registrants are on the waitlist, or when capacity forces them
+                onto the waitlist, these fields are intentionally hidden, regardless of whether they are required,
+                and will have no values.
+
+                If a registrant is later moved off the waitlist, the registrar must be prompted to complete the
+                registration and provide values for any newly visible fields. Previously, if a signature document
+                was present, the block forced the registrar directly to the final step, causing these fields
+                to be skipped. The block now ensures all applicable fields are shown before finalizing, even if
+                this requires the signature document to be re-signed.
+             */
+            var nonWaitListRegistrants = session.Registrants
+                .Where( r => !r.IsOnWaitList )
+                .ToList();
+            var formFieldsShownOnlyToNonWaitListRegistrants = context.RegistrationSettings.Forms
+                .SelectMany( f => f.Fields.Where( ff => !ff.ShowOnWaitlist ) )
+                .ToDictionary( f => f.Guid, f => f );
+            var isAnyFieldShownOnlyToNonWaitListRegistrantsMissingAValue =
+                formFieldsShownOnlyToNonWaitListRegistrants.Any( formField =>
+                    nonWaitListRegistrants.Any( registrant =>
+                    {
+                        var isNonWaitListRegistrantMissingFormFieldShownOnlyToNonWaitListRegistrants =
+                            !registrant.FieldValues.ContainsKey( formField.Key );
+
+                        // If the registrant is missing the field entirely, then we know it's missing.
+                        if ( isNonWaitListRegistrantMissingFormFieldShownOnlyToNonWaitListRegistrants )
+                        {
+                            return true;
+                        }
+
+                        var fieldValue = registrant.FieldValues[formField.Key].ToStringSafe();
+                        var isNonWaitListRegistrantMissingValueForFieldShownOnlyToNonWaitListRegistrants = fieldValue.IsNullOrWhiteSpace();
+
+                        // If the field value is empty, then we know it's missing.
+                        if ( isNonWaitListRegistrantMissingValueForFieldShownOnlyToNonWaitListRegistrants )
+                        {
+                            return true;
+                        }
+
+                        // Some field values are stored as a ListItemBag in JSON format.
+                        // A field with a ListItemBag value is considered empty if its value property is empty.
+                        var fieldValueAsListItemBag = fieldValue.FromJsonOrNull<ListItemBag>();
+                        if ( fieldValueAsListItemBag != null && fieldValueAsListItemBag.Value.IsNullOrWhiteSpace() )
+                        {
+                            return true;
+                        }
+
+                        // This field has a value.
+                        return false;
+                    } )
+                );
+
+            // Determine the starting point. 
+            var allowExternalRegistrationUpdates =
+                // External registration updates are supported if enabled and we are not doing inline signatures...
+                ( context.RegistrationSettings.AllowExternalRegistrationUpdates && !context.RegistrationSettings.IsInlineSignatureRequired )
+                // - OR - if there are any required fees that need to be selected by the registrar (signature doc will need to be signed again, if present)
+                || isAnyRequiredFeeMissing
+                // - OR - if there are any fields that need entry for non-waitlist registrants (signature doc will need to be signed again, if present)
+                || isAnyFieldShownOnlyToNonWaitListRegistrantsMissingAValue;
             var allowRegistrationUpdates = !isExistingRegistration || allowExternalRegistrationUpdates;
-            var startAtBeginning = !isExistingRegistration ||
-                ( allowExternalRegistrationUpdates && PageParameter( PageParameterKey.StartAtBeginning ).AsBoolean() );
+            var startAtBeginning = !isExistingRegistration
+                || ( allowExternalRegistrationUpdates && PageParameter( PageParameterKey.StartAtBeginning ).AsBoolean() );
 
             // Adjust the spots remaining if this is an existing registration. Add to the Spots remaining the number of registrants that are not on the waitlist.
             var adjustedSpotsRemaining = isExistingRegistration && session != null
@@ -4122,7 +4508,7 @@ namespace Rock.Blocks.Event
 
                 EnableSaveAccount = enableSavedAccount,
                 SavedAccounts = savedAccounts,
-                DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
+                DisableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() ),
 
                 // Payment plan
                 IsPaymentPlanAllowed = isPaymentPlanAllowed,
@@ -5168,7 +5554,7 @@ namespace Rock.Blocks.Event
             var currentPerson = GetCurrentPerson();
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
-            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || string.IsNullOrWhiteSpace( SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY ) );
+            var disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
 
             // Basic check on the args to see that they appear valid
             if ( args == null )
@@ -5635,7 +6021,14 @@ namespace Rock.Blocks.Event
 
         #endregion Helpers
 
-        #region Internal Classes
+        #region Internal Types
+
+        private enum SubmitRegistrationResult
+        {
+            Success,
+            CapacityFullFailure,
+            FinancialAccountFailure
+        }
 
         /// <summary>
         /// Provides a custom registration object that is used during Lava merge
@@ -5840,6 +6233,124 @@ namespace Rock.Blocks.Event
             public string UserAgent { get; set; }
 
             public DateTime SignedDateTime { get; set; }
+        }
+
+        /// <summary>
+        /// A POCO used to hold information about a registrant that is missing required fields for logging purposes.
+        /// </summary>
+        private class LogMissingFields
+        {
+            public DateTime CurrentRockDateTime { get; set; } = RockDateTime.Now;
+            public int RegistrationTemplateId { get; set; }
+            public int RegistrationInstanceId { get; set; }
+            public string InstanceOrTemplateName { get; set; }
+            public int? RegistrationId { get; set; }
+            public int? MaxRegistrants { get; set; }
+            public int? MaxAttendees { get; set; }
+            public int? SpotsRemaining { get; set; }
+            public bool IsTimeoutEnabled { get; set; }
+            public int? TimeoutMinutes { get; set; }
+            public int? TimeoutThreshold { get; set; }
+            public bool IsWaitlistEnabled { get; set; }
+            public bool AreCurrentFamilyMembersShown { get; set; }
+            public int? CurrentPersonId { get; set; }
+            public string CurrentPersonName { get; set; }
+            public RegistrarBag Registrar { get; set; }
+            public string RegistrantIndexPosition { get; set; }
+            public RegistrantBag Registrant { get; set; }
+            public List<LogMissingField> MissingFields { get; set; }
+            public List<LogTemplateForm> ExpectedForms { get; set; }
+        }
+
+        /// <summary>
+        /// A POCO used to hold information about a missing field for logging purposes.
+        /// </summary>
+        private class LogMissingField
+        {
+            public int TemplateFormId { get; set; }
+            public Guid TemplateFormFieldGuid { get; set; }
+            public string TemplateFormFieldName { get; set; }
+        }
+
+        /// <summary>
+        /// A POCO used to hold a simplified version of a <see cref="RegistrationTemplateForm"/> for logging purposes.
+        /// </summary>
+        private class LogTemplateForm
+        {
+            public int Id { get; set; }
+            public Guid Guid { get; set; }
+            public DateTime? CreatedDateTime { get; set; }
+            public DateTime? ModifiedDateTime { get; set; }
+            public string Name { get; set; }
+            public int Order { get; set; }
+            public List<LogTemplateFormField> Fields { get; set; }
+
+            public LogTemplateForm( RegistrationTemplateForm model )
+            {
+                Id = model.Id;
+                Guid = model.Guid;
+                CreatedDateTime = model.CreatedDateTime;
+                ModifiedDateTime = model.ModifiedDateTime;
+                Name = model.Name;
+                Order = model.Order;
+                Fields = model.Fields
+                    .OrderBy( f => f.Order )
+                    .Select( f => new LogTemplateFormField( f ) )
+                    .ToList();
+            }
+        }
+
+        /// <summary>
+        /// A POCO used to hold a simplified version of a <see cref="RegistrationTemplateFormField"/> for logging purposes.
+        /// </summary>
+        private class LogTemplateFormField
+        {
+            public int Id { get; set; }
+            public Guid Guid { get; set; }
+            public DateTime? CreatedDateTime { get; set; }
+            public DateTime? ModifiedDateTime { get; set; }
+            public string FieldSource { get; set; }
+            public string PersonFieldType { get; set; }
+            public int? AttributeId { get; set; }
+            public string AttributeName { get; set; }
+            public int? AttributeFieldTypeId { get; set; }
+            public string AttributeFieldTypeName { get; set; }
+            public bool IsSharedValue { get; set; }
+            public bool IsInternal { get; set; }
+            public bool ShowCurrentValue { get; set; }
+            public string PreText { get; set; }
+            public string PostText { get; set; }
+            public bool IsGridField { get; set; }
+            public bool IsRequired { get; set; }
+            public int Order { get; set; }
+            public bool ShowOnWaitlist { get; set; }
+            public string FieldVisibilityRulesJSON { get; set; }
+            public bool IsLockedIfValuesExist { get; set; }
+
+            public LogTemplateFormField( RegistrationTemplateFormField model )
+            {
+                Id = model.Id;
+                Guid = model.Guid;
+                CreatedDateTime = model.CreatedDateTime;
+                ModifiedDateTime = model.ModifiedDateTime;
+                FieldSource = model.FieldSource.ConvertToString();
+                PersonFieldType = model.PersonFieldType.ConvertToString();
+                AttributeId = model.AttributeId;
+                AttributeName = model.Attribute?.Name;
+                AttributeFieldTypeId = model.Attribute?.FieldTypeId;
+                AttributeFieldTypeName = model.Attribute?.FieldType.Name;
+                IsSharedValue = model.IsSharedValue;
+                IsInternal = model.IsInternal;
+                ShowCurrentValue = model.ShowCurrentValue;
+                PreText = model.PreText;
+                PostText = model.PostText;
+                IsGridField = model.IsGridField;
+                IsRequired = model.IsRequired;
+                Order = model.Order;
+                ShowOnWaitlist = model.ShowOnWaitlist;
+                FieldVisibilityRulesJSON = model.FieldVisibilityRulesJSON;
+                IsLockedIfValuesExist = model.IsLockedIfValuesExist;
+            }
         }
 
         #endregion

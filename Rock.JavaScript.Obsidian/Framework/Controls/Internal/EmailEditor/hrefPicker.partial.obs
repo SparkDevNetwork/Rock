@@ -1,0 +1,232 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-sm-12">
+            <DropDownList v-model="linkType"
+                          :items="linkTypeItems"
+                          label="Link Type"
+                          :showBlankItem="false"
+                          @update:modelValue="onLinkTypeUpdated" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <RockForm v-model:submit="submit"
+                      :hideErrors="!areValidationErrorsShown"
+                      @submit="onFormSubmitted">
+                <EmailBox v-if="linkType === 'email'"
+                          v-model="email"
+                          label="Link"
+                          rules="required"
+                          @blur="onHrefBlurred" />
+
+                <PhoneNumberBox v-else-if="linkType === 'tel'"
+                                v-model="tel"
+                                label="Link"
+                                rules="required"
+                                @blur="onHrefBlurred" />
+
+                <template v-else-if="linkType === 'url'">
+                    <TextBox v-model="url"
+                            :help="urlHelpText"
+                            label="Link"
+                            :rules="['required', isEmptyOrValidUrlOrLava]"
+                            @blur="onHrefBlurred">
+                        <template #inputGroupPrepend>
+                            <span class="input-group-addon">
+                                <i class="ti ti-link"></i>
+                            </span>
+                        </template>
+                    </TextBox>
+
+                    <NotificationBox v-if="usageType === 'template'"
+                                     alertType="warning">{{ warningMessage }}</NotificationBox>
+                </template>
+            </RockForm>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { nextTick, PropType, ref, watch } from "vue";
+    import { UsageType } from "./types.partial";
+    import { get } from "./utils.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { hasLavaCommandFields, hasLavaShortcodeFields, hasLavaVariableFields } from "@Obsidian/Utility/lava";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        usageType: {
+            type: String as PropType<UsageType>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    type LinkType = "url" | "email" | "tel";
+
+    const linkTypeItems: ListItemBag[] = [
+        {
+            value: get<LinkType>("url"),
+            text: "URL"
+        },
+        {
+            value: get<LinkType>("tel"),
+            text: "Tel"
+        },
+        {
+            value: get<LinkType>("email"),
+            text: "Email"
+        }
+    ];
+
+    const urlHelpText = `Enter a URL that begins with "https://" or "http://", or include Lava to dynamically generate the link. <span class="tip tip-lava"></span>`;
+    const warningMessage = `To have Lava processed when the email is sent, wrap it in {% raw %} tags. Otherwise, it will be processed when the email is being authored.`;
+
+    // #region Values
+
+    const submit = ref<boolean>(false);
+    const areValidationErrorsShown = ref<boolean>(false);
+    const initialHref = props.modelValue ?? "";
+    const linkType = ref<LinkType>(getLinkTypeFromHref(initialHref));
+    const email = ref<string>(linkType.value === "email" ? initialHref.startsWith("mailto:") ? initialHref.substring(7) : initialHref : "");
+    const tel = ref<string>(linkType.value === "tel" ? initialHref.startsWith("tel:") ? initialHref.substring(4) : initialHref : "");
+    const url = ref<string>(linkType.value === "url" ? initialHref : "https://");
+
+    // #endregion Values
+
+    // #region Functions
+
+    function getLinkTypeFromHref(href: string): LinkType {
+        if (href.startsWith("mailto:")) {
+            return "email";
+        }
+        else if (href.startsWith("tel:")) {
+            return "tel";
+        }
+        else {
+            return "url";
+        }
+    }
+
+    function sanitizePhoneNumber(phone: string): string {
+        return phone.replace(/(?!^\+)[^\d]/g, "");
+    }
+
+    function buildHrefValue(type: LinkType, emailAddress: string, phoneNumber: string, url: string): string {
+        if (type === "email") {
+            return `mailto:${emailAddress}`;
+        }
+        else if (type === "tel") {
+            return `tel:${sanitizePhoneNumber(phoneNumber)}`;
+        }
+        else if (type === "url") {
+            return url;
+        }
+        else {
+            return "";
+        }
+    }
+
+    /**
+     * Validates that the value is empty or is a valid URL.
+     *
+     * @param val
+     * @returns
+     */
+    function isEmptyOrValidUrlOrLava(val: unknown): boolean | string {
+        if (isNullish(val) || (typeof val === "string" && val === "")) {
+            // Allow empty value to be handled by "required" rule.
+            return true;
+        }
+
+        if (typeof val === "string") {
+            try {
+                const url = new URL(val);
+
+                if (url.protocol === "http:" || url.protocol === "https:") {
+                    return true;
+                }
+            }
+            catch {
+                /* An appropriate validation error is returned below. */
+            }
+
+            if (hasLavaCommandFields(val) || hasLavaShortcodeFields(val) || hasLavaVariableFields(val)) {
+                return true;
+            }
+        }
+
+        return "must be a valid URL";
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onLinkTypeUpdated(): void {
+        // When the link type changes, clear all fields and reset the href.
+        email.value = "";
+        tel.value = "";
+        url.value = "https://";
+        const href = buildHrefValue(linkType.value, email.value, tel.value, url.value);
+        emit("update:modelValue", href);
+
+        // Hide the validation errors above the field
+        // when the link type changes so that only the field's border is red
+        // if the user has not yet interacted with it (and if it's invalid).
+        areValidationErrorsShown.value = false;
+    }
+
+    function onHrefBlurred(): void {
+        // Trigger the form submission to validate the href.
+        submit.value = true;
+
+        // Show the validation errors once the field is blurred for the first time.
+        areValidationErrorsShown.value = true;
+    }
+
+    function onFormSubmitted(): void {
+        const href = buildHrefValue(linkType.value, email.value, tel.value, url.value);
+        emit("update:modelValue", href);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        const href = props.modelValue ?? "";
+        linkType.value = getLinkTypeFromHref(href);
+        email.value = linkType.value === "email" ? href.startsWith("mailto:") ? href.substring(7) : href : "";
+        tel.value = linkType.value === "tel" ? href.startsWith("tel:") ? href.substring(4) : href : "";
+        url.value = linkType.value === "url" ? href : "";
+    });
+
+    watch([email, tel, url], async () => {
+        // Whenever any of the href fields change, resubmit the form to revalidate the value.
+        await nextTick();
+        submit.value = true;
+    }, {
+        // Force the field to immediately validate on initial load.
+        // This should show a red border around the field so the individual knows they need to enter/fix the value.
+        immediate: true
+    });
+
+    // #endregion
+</script>

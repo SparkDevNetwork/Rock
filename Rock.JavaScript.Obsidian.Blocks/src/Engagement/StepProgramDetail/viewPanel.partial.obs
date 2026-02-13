@@ -1,32 +1,36 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-        <div class="d-flex justify-content-between align-items-center mb-sm">
-            <SlidingDateRangePicker v-model="filterDate"
-                                    :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
-                                    :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year, TimeUnit.Day, TimeUnit.Hour]"
-                                    :isRangeClearable="false"
-                                    previewLocation="None" />
+        <div class="d-flex justify-content-between align-items-center mb-spacing-sm">
+            <div class="d-flex align-items-center">
+                <SlidingDateRangePicker v-model="filterDate"
+                                        :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
+                                        :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year, TimeUnit.Day, TimeUnit.Hour]"
+                                        :isRangeClearable="false"
+                                        previewLocation="None" />
+                <div v-show="isLoading">
+                    <Loading :isLoading="isLoading" />
+                </div>
+            </div>
 
             <ButtonGroup v-model="selectedStepProgramView"
                          :btnSize="BtnSize.Default"
                          :btnType="BtnType.Default"
                          :items="stepProgramViewOptions" />
         </div>
-        <ContentSection v-if="selectedStepProgramViewEnum !== StepProgramView.KPIs" class="mb-sm">
+        <ContentSection v-if="selectedStepProgramViewEnum !== StepProgramView.KPIs" class="mb-spacing-sm">
             <ContentStack>
                 <div v-if="selectedStepProgramViewEnum === StepProgramView.Flow" class="row">
-                    <RockForm @submit="fetchStepFlowData" ref="flowForm">
-                        <div class="col-md-6">
+                    <RockForm @submit="handleFlowDataFilterChange" ref="flowForm">
+                        <div class="col-md-3">
                             <NumberBox v-model="maxLevels"
                                        :decimalCount="0"
                                        :minimumValue="2"
                                        rules="required"
-                                       formGroupClasses="col"
                                        label="Max Levels to Display"
                                        help="The maximum number of levels to show in the flow. It's possible that an individual could take the same level twice in the course of completing a step program." />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-9">
                             <DropDownList v-model="startingStepTypes"
                                           :items="availableStepTypes"
                                           :multiple="true"
@@ -35,7 +39,7 @@
                     </RockForm>
                 </div>
                 <div v-else class="d-flex justify-content-between align-items-center">
-                    <div class="w-50">
+                    <div class="w-50 row">
                         <div class="col-md-6">
                             <DropDownList v-model="selectedMeasure"
                                           @update:modelValue="handleChartFilterChanged"
@@ -68,26 +72,23 @@
             </ContentStack>
         </ContentSection>
 
-        <div v-if="isLoading">
-            <Loading :isLoading="isLoading" />
-        </div>
-        <div v-else-if="notificationMessage">
+        <div v-if="notificationMessage">
             <NotificationBox alertType="warning"
-                             class="mt-sm">
+                             class="mt-spacing-sm">
                 {{ notificationMessage }}
             </NotificationBox>
         </div>
         <div v-else-if="selectedStepProgramViewEnum === StepProgramView.KPIs" v-html="kpi"></div>
-        <div v-else>
-            <h5 class="chart-title">{{ chartTitle }}</h5>
-            <p class="chart-subtitle">{{ chartSubtitle }}</p>
+        <div v-else class="d-flex flex-column">
+            <h5 class="chart-title mb-spacing-tiny pl-spacing-tiny">{{ chartTitle }}</h5>
+            <p class="chart-subtitle font-size-xs text-interface-medium pl-spacing-tiny">{{ chartSubtitle }}</p>
 
             <SankeyDiagram v-if="selectedStepProgramViewEnum === StepProgramView.Flow"
                            :flowNodes="flowNodes"
                            :flowEdges="flowEdges"
                            :isLoading="isLoading"
                            nodeTooltipActionLabel="Total Steps Taken"
-                           :settings="settings" />
+                           :settings="flowSettings" />
 
             <div v-else :style="{ height: chartHeight }">
                 <LineChart v-if="selectedStepProgramViewEnum === StepProgramView.Trends && !isBarChart"
@@ -96,6 +97,8 @@
                            :labelDateFormat="dateUnit"
                            :hideLegend="isLegendHidden"
                            :valueSuggestedMin="0"
+                           :valueSuggestedMax="3"
+                           :valuePrecision="0"
                            categoryShowGridLines />
 
                 <BarChart v-else
@@ -106,6 +109,8 @@
                           :horizontal="isHorizontal"
                           :hideLegend="isLegendHidden"
                           :valueSuggestedMin="0"
+                          :valueSuggestedMax="3"
+                          :valuePrecision="0"
                           categoryShowAllTicks
                           @click="onBarChartClicked" />
 
@@ -119,22 +124,9 @@
 </template>
 
 <style scoped>
-.mt-sm {
-    margin-top: var(--spacing-small);
-}
-
-.mb-sm {
-    margin-bottom: var(--spacing-small);
-}
-
-.chart-title {
-    margin: 0;
-    margin-bottom: var(--spacing-tiny);
-}
-
-.chart-subtitle {
-    font-size: var(--font-size-xsmall);
-    color: var(--color-interface-medium);
+/* Overrides the font-size set on the loading indicator because it was affecting the height of the flex row its in. */
+:deep(.ti-2x) {
+    font-size: 1.5em !important;
 }
 
 :deep(.flow-node-diagram-container) {
@@ -156,9 +148,6 @@
     font-weight: var(--font-weight-semibold);
 }
 
-.margin-y-xsmall {
-    margin: var(--spacing-xsmall) 0;
-}
 </style>
 
 <script setup lang="ts">
@@ -171,6 +160,8 @@
     import { ChartDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/chartDataBag";
     import { StepFlowGetDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/stepFlowGetDataBag";
     import { SankeyDiagramSettingsBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramSettingsBag";
+    import { SeriesBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/seriesBag";
+    import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { BarChartClickEvent, BarSeries, LineSeries } from "@Obsidian/Core/Controls/chart";
     import { SankeyDiagramNodeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramNodeBag";
     import { SankeyDiagramEdgeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramEdgeBag";
@@ -225,6 +216,8 @@
     const contextEntities = useContextEntities();
     const preferences = usePersonPreferences().blockPreferences;
 
+    let fetchStepAnalyticsCts: CancellationTokenSource | null = null;
+
     browserBus.subscribe(PageMessages.ContextEntityChanged, async (message: Message<ContextEntityChangedData>) => {
         if (areEqual(message.data.entityTypeGuid, EntityType.Campus)) {
             handleCampusContextChanged(message.data);
@@ -233,15 +226,15 @@
 
     const stepProgramViewOptions = enumToStandardListItemBagList(StepProgramViewDescription);
 
-    const chartStateFlags: Record<number, boolean> = {};
-    const fetchByStepProgramView: Record<number, () => Promise<void>> = {
-        [StepProgramView.KPIs]: () => fetchKPIData(),
-        [StepProgramView.Trends]: () => fetchChartData(),
-        [StepProgramView.Totals]: () => fetchChartData(),
-        [StepProgramView.Campuses]: () => fetchChartData(),
-        [StepProgramView.Flow]: () => fetchStepFlowData()
+    const programViewStateFlags: Record<number, boolean> = {};
+    const fetchByStepProgramView: Record<number, (cancellationToken: ICancellationToken) => Promise<void>> = {
+        [StepProgramView.KPIs]: (cancellationToken) => fetchKPIData(cancellationToken),
+        [StepProgramView.Trends]: (cancellationToken) => fetchChartData(cancellationToken),
+        [StepProgramView.Totals]: (cancellationToken) => fetchChartData(cancellationToken),
+        [StepProgramView.Campuses]: (cancellationToken) => fetchChartData(cancellationToken),
+        [StepProgramView.Flow]: (cancellationToken) => fetchStepFlowData(cancellationToken)
     };
-    const stepProgramViewData: Record<number, ChartDataBag | null> = {
+    const chartViewData: Record<number, ChartDataBag | null> = {
         [StepProgramView.Trends]: null,
         [StepProgramView.Totals]: null,
         [StepProgramView.Campuses]: null,
@@ -274,13 +267,13 @@
     // Step Flow refs
     const flowNodes = ref<SankeyDiagramNodeBag[]>([]);
     const flowEdges = ref<SankeyDiagramEdgeBag[]>([]);
-    // TODO - These are Block Attributes on the Step Flow Block.
-    const settings = ref<SankeyDiagramSettingsBag>({
+    // These were Block Attributes on the Step Flow Block.
+    const flowSettings = ref<SankeyDiagramSettingsBag>({
         nodeWidth: 8,
         nodeVerticalSpacing: 8,
         chartWidth: 750,
         chartHeight: 315,
-        legendHtml: props.modelValue?.stepFlowConfigurationBag?.legendHtml ?? ""
+        legendHtml: ""
     });
     const flowForm = ref<InstanceType<typeof RockForm>>();
     const startingStepTypes = ref();
@@ -288,7 +281,7 @@
     const maxLevels = ref(4);
 
     // Chart refs
-    const chartSeries = ref<LineSeries[] | BarSeries[]>([]);
+    const chartSeries = ref<SeriesBag[]>([]);
     const chartLabels = ref<string[]>([]);
     const selectedMeasure = ref("");
     const selectedStatusFilter = ref(statusOptions[0].value ?? "All");
@@ -327,9 +320,9 @@
             || selectedMeasureEnum.value === StepChartMeasure.AvgTotalStepsPerWeekendAttendee;
     });
 
-    const lineSeries = computed(() => chartSeries.value as LineSeries[]);
+    const lineSeries = computed(() => convertToLineSeries(chartSeries.value));
 
-    const barSeries = computed(() => chartSeries.value as BarSeries[]);
+    const barSeries = computed(() => convertToBarSeries(chartSeries.value));
 
     const isStacked = computed<boolean>(() => {
         if (selectedStepProgramViewEnum.value === StepProgramView.Totals) {
@@ -465,6 +458,23 @@
 
     // #region Functions
 
+    function convertToLineSeries(seriesBags: SeriesBag[]): LineSeries[] {
+        return seriesBags.map<LineSeries>(bag => ({
+            label: bag.label ?? "",
+            data: bag.data ?? [],
+            color: bag.color ?? undefined
+        }));
+    }
+
+    function convertToBarSeries(seriesBags: SeriesBag[]): BarSeries[] {
+        return seriesBags.map<BarSeries>(bag => ({
+            label: bag.label ?? "",
+            data: bag.data ?? [],
+            color: bag.color ?? undefined,
+            opacity: bag.opacity ?? undefined
+        }));
+    }
+
     /**
      * Resets all state flags to the given initial value.
      * @param initialValue The value to assign to each state flag (default: false).
@@ -472,7 +482,7 @@
     function resetAllStateFlags(initialValue = false): void {
         for (const key in StepProgramView) {
             const value = StepProgramView[key as keyof typeof StepProgramView];
-            chartStateFlags[value] = initialValue;
+            programViewStateFlags[value] = initialValue;
         }
     }
 
@@ -480,9 +490,9 @@
      * Resets all chart state flags.
      */
     function resetChartStateFlags(): void {
-        chartStateFlags[StepProgramView.Trends] = false;
-        chartStateFlags[StepProgramView.Totals] = false;
-        chartStateFlags[StepProgramView.Campuses] = false;
+        programViewStateFlags[StepProgramView.Trends] = false;
+        programViewStateFlags[StepProgramView.Totals] = false;
+        programViewStateFlags[StepProgramView.Campuses] = false;
     }
 
     /**
@@ -491,7 +501,9 @@
     function handleChartFilterChanged(): void {
         resetChartStateFlags();
 
-        fetchByStepProgramView[selectedStepProgramViewEnum.value]();
+        fetchStepAnalyticsCts?.cancel();
+        fetchStepAnalyticsCts = new CancellationTokenSource();
+        fetchByStepProgramView[selectedStepProgramViewEnum.value](fetchStepAnalyticsCts.token);
     }
 
     /**
@@ -517,7 +529,7 @@
             if (!campusItemBag?.text) {
                 chartSeries.value = chartSeries.value.map(s => ({
                     ...s,
-                    opacity: 1
+                    opacity: s.data?.map(() => 1) ?? []
                 }));
 
                 return;
@@ -527,7 +539,7 @@
 
             chartSeries.value = chartSeries.value.map(s => ({
                 ...s,
-                opacity: s.data.map((_: number, i: number) => (i === selectedIndex ? 1 : 0.25))
+                opacity: s.data?.map((_: number, i: number) => (i === selectedIndex ? 1 : 0.25))
             }));
         }
         else {
@@ -550,7 +562,7 @@
             return;
         }
 
-        const chartData = stepProgramViewData[selectedStepProgramViewEnum.value];
+        const chartData = chartViewData[selectedStepProgramViewEnum.value];
 
         if (!chartData?.campusLabels) {
             return;
@@ -610,8 +622,8 @@
      * @param chartData The chart data bag used to populate the chart.
      */
     function updateChartForView(chartData: ChartDataBag): void {
-        chartLabels.value = chartData.dateLabels ?? chartData.stringLabels ?? chartData?.campusLabels?.map(c => c.text) as string[] ?? [];
-        chartSeries.value = (chartData.series ?? []) as LineSeries[] | BarSeries[];
+        chartLabels.value = chartData.dateLabels ?? chartData.stringLabels ?? chartData?.campusLabels?.map(c => c.text ?? "") ?? [];
+        chartSeries.value = chartData.series ?? [];
 
         if (selectedStepProgramViewEnum.value === StepProgramView.Trends) {
             updateDateUnit(chartData);
@@ -619,6 +631,15 @@
         else {
             dateUnit.value = undefined;
         }
+    }
+
+    /**
+     * Fetches step flow data when its filters change
+     */
+    function handleFlowDataFilterChange(): void {
+        fetchStepAnalyticsCts?.cancel();
+        fetchStepAnalyticsCts = new CancellationTokenSource();
+        fetchStepFlowData(fetchStepAnalyticsCts.token);
     }
 
     // #endregion
@@ -656,9 +677,8 @@
     /**
      * Fetches chart data based on filter date, program view, selected measure, and selected status filter.
      */
-    async function fetchChartData(): Promise<void> {
-        if (isLoading.value) {
-            // Still Loading Previous Request. Don't want to start another one.
+    async function fetchChartData(cancellationToken: ICancellationToken): Promise<void> {
+        if (cancellationToken.isCancellationRequested) {
             return;
         }
 
@@ -683,11 +703,15 @@
             selectedStatusFilter: selectedStatusFilter.value
         });
 
+        if (cancellationToken.isCancellationRequested) {
+            return;
+        }
+
         isLoading.value = false;
 
         if (result.isSuccess && result.data) {
-            chartStateFlags[selectedStepProgramViewEnum.value] = true;
-            stepProgramViewData[selectedStepProgramViewEnum.value] = result.data;
+            programViewStateFlags[selectedStepProgramViewEnum.value] = true;
+            chartViewData[selectedStepProgramViewEnum.value] = result.data;
 
             updateChartForView(result.data);
         }
@@ -699,9 +723,8 @@
     /**
      * Fetches KPI data based on filter date.
      */
-    async function fetchKPIData(): Promise<void> {
-        if (isLoading.value) {
-            // Still Loading Previous Request. Don't want to start another one.
+    async function fetchKPIData(cancellationToken: ICancellationToken): Promise<void> {
+        if (cancellationToken.isCancellationRequested) {
             return;
         }
 
@@ -711,10 +734,14 @@
             dateRange: filterDate.value ? slidingDateRangeToString(filterDate.value as SlidingDateRange) : "DateRange||||"
         });
 
+        if (cancellationToken.isCancellationRequested) {
+            return;
+        }
+
         if (result.isSuccess && result.data) {
             kpi.value = result.data ?? "";
 
-            chartStateFlags[StepProgramView.KPIs] = true;
+            programViewStateFlags[StepProgramView.KPIs] = true;
         }
         else {
             notificationMessage.value = result.errorMessage ?? "Unknown error while trying to fetch KPI data.";
@@ -726,9 +753,8 @@
     /**
      * Fetches Step Flow Data based on filter date, max levels, and starting step types.
      */
-    async function fetchStepFlowData(): Promise<void> {
-        if (isLoading.value) {
-            // Still Loading Previous Request. Don't want to start another one.
+    async function fetchStepFlowData(cancellationToken: ICancellationToken): Promise<void> {
+        if (cancellationToken.isCancellationRequested) {
             return;
         }
 
@@ -760,14 +786,19 @@
 
         const response = await invokeBlockAction<StepFlowGetDataBag>("GetStepFlowData", request);
 
+        if (cancellationToken.isCancellationRequested) {
+            return;
+        }
+
         isLoading.value = false;
 
         if (response.data) {
             flowEdges.value = response.data.edges ?? [];
             flowNodes.value = response.data.nodes ?? [];
+            flowSettings.value.legendHtml = response.data.legendHtml ?? "";
 
             // State is up-to-date.
-            chartStateFlags[StepProgramView.Flow] = true;
+            programViewStateFlags[StepProgramView.Flow] = true;
         }
         else {
             throw new Error(response.errorMessage || "An error occurred");
@@ -787,6 +818,11 @@
             maxLevels.value = 4;
         }
 
+        // If our program view state is clean and we are not viewing a chart then we can escape the function.
+        if (programViewStateFlags[selectedStepProgramViewEnum.value] && (selectedStepProgramViewEnum.value === StepProgramView.KPIs || selectedStepProgramViewEnum.value === StepProgramView.Flow)) {
+            return;
+        }
+
         // Setting default measure values.
         if (selectedMeasure.value === "") {
             if (selectedStepProgramViewEnum.value === StepProgramView.Campuses) {
@@ -804,13 +840,15 @@
             resetChartStateFlags();
         }
 
-        // If our chart state is clean and we have data for the selected view than update chart from state.
-        if (chartStateFlags[selectedStepProgramViewEnum.value] && stepProgramViewData[selectedStepProgramViewEnum.value]) {
-            updateChartForView(stepProgramViewData[selectedStepProgramViewEnum.value]!);
+        // If our program view state is clean and we have data for the selected view than update chart from state.
+        if (programViewStateFlags[selectedStepProgramViewEnum.value] && chartViewData[selectedStepProgramViewEnum.value]) {
+            updateChartForView(chartViewData[selectedStepProgramViewEnum.value]!);
         }
         else {
-            // Chart state is dirty so feth from server.
-            fetchByStepProgramView[selectedStepProgramViewEnum.value]();
+            // Chart state is dirty so fetch from server.
+            fetchStepAnalyticsCts?.cancel();
+            fetchStepAnalyticsCts = new CancellationTokenSource();
+            fetchByStepProgramView[selectedStepProgramViewEnum.value](fetchStepAnalyticsCts.token);
         }
     });
 
@@ -818,11 +856,13 @@
         updateDateRangeText();
         resetAllStateFlags();
 
-        fetchByStepProgramView[selectedStepProgramViewEnum.value]();
+        fetchStepAnalyticsCts?.cancel();
+        fetchStepAnalyticsCts = new CancellationTokenSource();
+        fetchByStepProgramView[selectedStepProgramViewEnum.value](fetchStepAnalyticsCts.token);
     });
 
     watch([maxLevels, startingStepTypes], () => {
-        chartStateFlags[StepProgramView.Flow] = false;
+        programViewStateFlags[StepProgramView.Flow] = false;
         nextTick(() => {
             // Performs validation rules on the Max Levels Number Box everytime its data is changed.
             if (flowForm.value) {
@@ -841,6 +881,6 @@
         updateDateRangeText();
         resetAllStateFlags();
         // KPIs are populated off of the Block Initialization so its state is valid.
-        chartStateFlags[StepProgramView.KPIs] = true;
+        programViewStateFlags[StepProgramView.KPIs] = true;
     });
 </script>

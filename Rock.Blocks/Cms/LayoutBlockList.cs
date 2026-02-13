@@ -81,7 +81,11 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override IQueryable<Block> GetListQueryable( RockContext rockContext )
         {
-            if ( int.TryParse( RequestContext.PageParameters["layoutId"], out int layoutId ) )
+            int layoutId;
+            if (
+                int.TryParse( RequestContext.PageParameters["layoutId"], out layoutId )
+                || Rock.Utility.IdHasher.Instance.TryGetId( RequestContext.PageParameters["layoutId"], out layoutId )
+            )
             {
                 return base.GetListQueryable( rockContext )
                     .Include( a => a.BlockType )

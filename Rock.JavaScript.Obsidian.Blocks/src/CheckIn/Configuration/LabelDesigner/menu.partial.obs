@@ -130,12 +130,12 @@
 }
 
 .menu-item {
-    background-color: var(--theme-lightest);
+    background-color: var(--color-interface-softest);
     color: var(--theme-dark);
     font-weight: bold;
-    border-left: 1px solid var(--theme-light);
-    border-right: 1px solid var(--theme-light);
-    border-bottom: 1px solid var(--theme-light);
+    border-left: 1px solid var(--color-interface-soft);
+    border-right: 1px solid var(--color-interface-soft);
+    border-bottom: 1px solid var(--color-interface-soft);
     padding-left: 24px;
     padding-right: 24px;
 }
@@ -145,7 +145,7 @@
 }
 
 .menu-item.active {
-    background-color: var(--color-white);
+    background-color: var(--color-interface-softest);
     color: var(--color-primary);
     border: 0;
 }
@@ -160,8 +160,8 @@
 .menu-fill {
     flex-grow: 1;
     height: 100%;
-    background-color: var(--theme-lightest);
-    border: 1px solid var(--theme-light);
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
     border-top-width: 0;
 }
 

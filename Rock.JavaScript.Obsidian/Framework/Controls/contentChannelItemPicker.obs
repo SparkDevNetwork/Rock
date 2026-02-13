@@ -22,13 +22,13 @@
                                  showBlankItem
                                  enhanceForLongLists />
                 <div class="text-right">
-                    <button type=button class="btn btn-xs btn-default" @click="selectItem">Select</button>
-                    <button type=button class="btn btn-xs btn-link" @click="cancelEdit">Cancel</button>
+                    <button type="button" class="btn btn-xs btn-default" @click="selectItem">Select</button>
+                    <button type="button" class="btn btn-xs btn-link" @click="cancelEdit">Cancel</button>
                 </div>
             </div>
         </TransitionVerticalCollapse>
         <TransitionVerticalCollapse speed="fast">
-            <button v-if="mode == 'view'" @click="mode = 'edit'" type="button" title="Click to edit value" class="d-block w-100 text-left border rounded px-3 py-1" style="background: #fff; border-color:#ddd !important;">
+            <button v-if="mode == 'view'" @click="mode = 'edit'" type="button" title="Click to edit value" class="d-block w-100 text-left border rounded px-3 py-1 btn-default">
                 {{ modelValue?.text }}&nbsp;
             </button>
         </TransitionVerticalCollapse>

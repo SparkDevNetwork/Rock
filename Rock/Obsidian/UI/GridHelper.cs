@@ -155,6 +155,7 @@ namespace Rock.Obsidian.UI
                 {
                     IsBulkCommunication = true,
                     Status = Model.CommunicationStatus.Transient,
+                    CommunicationType = CommunicationType.Email,
                     AdditionalMergeFields = communicationBag.MergeFields,
                     SenderPersonAliasId = currentPersonAliasId,
                     UrlReferrer = communicationBag.FromUrl

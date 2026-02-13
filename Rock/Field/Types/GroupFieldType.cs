@@ -211,6 +211,18 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                ValueFormat = $"A guid that represents a single entity from the Group table.",
+            };
+        }
+
+        #endregion
 
         #region WebForms
 #if WEBFORMS

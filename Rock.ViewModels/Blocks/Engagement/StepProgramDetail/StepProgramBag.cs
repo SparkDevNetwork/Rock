@@ -152,11 +152,6 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         public bool IsDeletable { get; set; }
 
         /// <summary>
-        /// Gets or sets the Sep Flow Configuration settings used to display the Step Flow diagram.
-        /// </summary>
-        public SankeyDiagramSettingsBag StepFlowConfigurationBag { get; set; }
-
-        /// <summary>
         /// Gets or sets a list of ListItemBags for the Step Type dropdown list filter on the Step Flow view.
         /// </summary>
         public List<ListItemBag> StepTypes { get; set; }

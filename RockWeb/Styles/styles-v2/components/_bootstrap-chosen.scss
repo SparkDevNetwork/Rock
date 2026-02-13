@@ -65,12 +65,13 @@
       em {
         font-style: normal;
         background: #feffde;
+        color: var(--base-interface-strong);
       }
 
       &.group-result {
         display:      list-item;
         font-weight:  var(--font-weight-bold);
-        color:      #999;
+        color:      var(--color-interface-medium);
         cursor:       default;
       }
 
@@ -168,11 +169,11 @@
       cursor:     pointer;
 
       &::before {
-        font-family:  'FontAwesome';
+        font-family:  'tabler-icons';
         font-size:    var(--font-size-regular);
         font-weight:  var(--font-weight-black);
         color:        var(--color-interface-strong);
-        content:      "\f00d";
+        content:      "\eb55";
       }
 
       &:hover::before {
@@ -223,12 +224,12 @@
       position:       relative;
       left:           -28px;
       display:        inline-block;
-      font-family:    'FontAwesome';
+      font-family:    'tabler-icons';
       font-size:      var(--font-size-regular);
       font-weight:    var(--font-weight-black);
       color:          var(--color-interface-strong);
       pointer-events: none;
-      content:        '\f002';
+      content:        '\eb1c';
     }
 
     .chosen-search-input {
@@ -321,12 +322,12 @@
           display:      inline-block;
           width:        16px;
           height:       16px;
-          font-family:  'FontAwesome';
+          font-family:  'tabler-icons';
           font-size:    var(--font-size-regular);
           font-weight:  var(--font-weight-black);
           color:        var(--color-interface-strong);
           cursor:       pointer;
-          content:      "\f00d";
+          content:      "\eb55";
         }
 
         &:hover::after {
@@ -367,8 +368,6 @@
   }
   .chosen-choices {
     border:                       1px solid var(--color-primary);
-    border-bottom-left-radius:    0;
-    border-bottom-right-radius:   0;
     box-shadow:                   var(--input-focus-box-shadow);
     transition:                   border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 

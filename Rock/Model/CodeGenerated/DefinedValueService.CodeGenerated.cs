@@ -379,6 +379,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<PersonalDevice>( Context ).Queryable().Any( a => a.PlatformValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, PersonalDevice.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<PersonSearchKey>( Context ).Queryable().Any( a => a.SearchTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, PersonSearchKey.FriendlyTypeName );
@@ -412,6 +418,12 @@ namespace Rock.Model
             if ( new Service<RegistrationTemplate>( Context ).Queryable().Any( a => a.RegistrantRecordSourceValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, RegistrationTemplate.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<StepType>( Context ).Queryable().Any( a => a.OrganizationalObjectiveValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, StepType.FriendlyTypeName );
                 return false;
             }
 

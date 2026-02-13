@@ -162,7 +162,7 @@
     }
 
     function getStatusLabel(status: number): string {
-        return status == FollowingSuggestedStatus.Ignored ? "<span class='label label-warning'>Ignored</span>" : "<span class='label label-success'>Suggested</span>";
+        return status === FollowingSuggestedStatus.Ignored ? "<span class='label label-warning'>Ignored</span>" : "<span class='label label-success'>Suggested</span>";
     }
 
     // #endregion

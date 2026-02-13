@@ -14,13 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Reporting;
+using Rock.Security;
+using Rock.SystemGuid;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -60,11 +66,40 @@ namespace Rock.Field.Types
                     ["areDetailsAlwaysVisible"] = AreDetailsAlwaysVisible( privateConfigurationValues ) ? "true" : "false",
                     ["iconCssClass"] = GetItemIconCssClass( privateConfigurationValues ),
                     ["isIncludeInactiveVisible"] = IsIncludeInactiveVisible( privateConfigurationValues ) ? "true" : "false",
-                    ["searchUrl"] = GetSearchUrl( privateConfigurationValues )
+                    ["searchUrl"] = GetSearchUrl( privateConfigurationValues ),
+                    ["context"] = GetStandardContext( privateConfigurationValues )
                 };
             }
 
             return base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+        }
+
+        /// <summary>
+        /// Gets the context to send to the UI. If we are using the standard
+        /// URL then we need to provide some additional context data.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
+        /// <returns>Either the custom context data or the subclass context data.</returns>
+        private string GetStandardContext( Dictionary<string, string> privateConfigurationValues )
+        {
+            var fieldTypeGuid = GetType().GetCustomAttribute<FieldTypeGuidAttribute>()?.Guid;
+            var methodInfo = GetType().GetMethod( nameof( GetSearchUrl ), BindingFlags.NonPublic | BindingFlags.Instance );
+
+            // If they haven't overridden GetRootRestUrl() then we need to
+            // provide custom context for the standard implementation.
+            if ( fieldTypeGuid.HasValue && methodInfo != null && methodInfo.GetBaseDefinition() != methodInfo )
+            {
+                var data = new ContextData
+                {
+                    ConfigurationValues = privateConfigurationValues,
+                    Context = GetContext( privateConfigurationValues ),
+                    FieldTypeGuid = fieldTypeGuid.Value
+                };
+
+                return Encryption.EncryptString( data.ToJson() );
+            }
+
+            return GetContext( privateConfigurationValues );
         }
 
         #region Protected Methods
@@ -116,7 +151,48 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
         /// <returns>A string that represents the URL to use.</returns>
-        protected abstract string GetSearchUrl( Dictionary<string, string> privateConfigurationValues );
+        protected virtual string GetSearchUrl( Dictionary<string, string> privateConfigurationValues )
+        {
+            return "/api/v2/controls/UniversalItemSearchPickerGetItems";
+        }
+
+        /// <summary>
+        /// Gets the tree items to display in the tree view. This will be
+        /// called if you do not override <see cref="GetSearchUrl(Dictionary{string, string})"/>
+        /// to get the items to display.
+        /// </summary>
+        /// <param name="options">The options that describe this request and provide additional data.</param>
+        /// <returns>A list of <see cref="TreeItemBag"/> objects that describe the items to be rendered.</returns>
+        internal List<UniversalItemSearchPickerItemBag> GetSearchItemsInternal( UniversalItemSearchPickerGetItemsOptions options )
+        {
+            return GetSearchItems( options );
+        }
+
+        /// <summary>
+        /// Gets the tree items to display in the tree view. This will be
+        /// called if you do not override <see cref="GetSearchUrl(Dictionary{string, string})"/>
+        /// to get the items to display.
+        /// </summary>
+        /// <param name="options">The options that describe this request and provide additional data.</param>
+        /// <returns>A list of <see cref="TreeItemBag"/> objects that describe the items to be rendered.</returns>
+        protected virtual List<UniversalItemSearchPickerItemBag> GetSearchItems( UniversalItemSearchPickerGetItemsOptions options )
+        {
+            return new List<UniversalItemSearchPickerItemBag>();
+        }
+
+        /// <summary>
+        /// Gets the context string to include with all API requests. This can
+        /// be information you might need in handling the API request so that
+        /// you can return the correct data. We also recommend you encode any
+        /// context data as a JSON string to future proof yourself from changes
+        /// you might need to make.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private configuration values.</param>
+        /// <returns>A custom string.</returns>
+        protected virtual string GetContext( Dictionary<string, string> privateConfigurationValues )
+        {
+            return null;
+        }
 
         #endregion
 
@@ -162,7 +238,8 @@ namespace Rock.Field.Types
                 AreDetailsAlwaysVisible = AreDetailsAlwaysVisible( privateConfigurationValues ),
                 IconCssClass = GetItemIconCssClass( privateConfigurationValues ),
                 IsIncludeInactiveVisible = IsIncludeInactiveVisible( privateConfigurationValues ),
-                SearchUrl = GetSearchUrl( privateConfigurationValues )
+                SearchUrl = GetSearchUrl( privateConfigurationValues ),
+                UrlContext = GetStandardContext( privateConfigurationValues )
             };
         }
 
@@ -204,5 +281,14 @@ namespace Rock.Field.Types
         #endregion
 
 #endif
+
+        internal class ContextData
+        {
+            public Dictionary<string, string> ConfigurationValues { get; set; }
+
+            public string Context { get; set; }
+
+            public Guid FieldTypeGuid { get; set; }
+        }
     }
 }

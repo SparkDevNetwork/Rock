@@ -7,6 +7,10 @@
                         :light="isLight"
                         :disableCollapse="disableCollapse"
                         :overflowText="overflowText">
+            <template v-if="hasDescription" #description>
+                This is a description that will show below the icon and title.
+            </template>
+
             <template v-if="hasHeaderActions" #headerActions>
                 <span class="label label-info">Header Action</span>
             </template>
@@ -49,6 +53,7 @@
                 <CheckBox label="Light" v-model="isLight" />
                 <CheckBox label="Title" v-model="hasTitle" />
                 <CheckBox label="Icon" v-model="hasIcon" />
+                <CheckBox label="Description" v-model="hasDescription" />
                 <CheckBox label="Header Actions" v-model="hasHeaderActions" />
                 <CheckBox label="Header Secondary Actions" v-model="hasHeaderSecondaryActions" />
                 <CheckBox label="Footer Actions" v-model="hasFooterActions" />
@@ -75,6 +80,7 @@
     const isLight = ref(false);
     const hasTitle = ref(true);
     const hasIcon = ref(true);
+    const hasDescription = ref(false);
     const hasHeaderActions = ref(false);
     const hasHeaderSecondaryActions = ref(false);
     const hasFooterActions = ref(false);
@@ -101,6 +107,13 @@
         usage.addAttribute("light", isLight.value, false);
         usage.addAttribute("disableCollapse", disableCollapse.value, false);
         usage.addAttribute("overflowText", overflowText.value, "Show More");
+
+        if (hasDescription.value) {
+            usage.addBody("<template #description>");
+            usage.addBody("    This is a description that will show below the icon and title.");
+            usage.addBody("</template>");
+            usage.addBody("");
+        }
 
         if (hasHeaderActions.value) {
             usage.addBody("<template #headerActions>");

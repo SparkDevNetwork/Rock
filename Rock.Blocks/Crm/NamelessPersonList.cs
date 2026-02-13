@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -47,7 +48,7 @@ namespace Rock.Blocks.Crm
     [Rock.SystemGuid.EntityTypeGuid( "911EA779-AC00-4A93-B706-B6A642C727CB" )]
     [Rock.SystemGuid.BlockTypeGuid( "6e9672e6-ee42-4aac-b0a9-b041c3b8368c" )]
     [CustomizedGrid]
-    public class NamelessPersonList : RockListBlockType<Person>
+    public class NamelessPersonList : RockListBlockType<NamelessPersonList.NamelessPersonRow>
     {
         #region Keys
 
@@ -245,7 +246,7 @@ namespace Rock.Blocks.Crm
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<Person> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<NamelessPersonRow> GetListQueryable( RockContext rockContext )
         {
             var namelessPersonRecordTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() )?.Id;
             var currentMergeRequestQry = PersonService.GetMergeRequestQuery( rockContext );
@@ -255,95 +256,155 @@ namespace Rock.Blocks.Crm
                 .Queryable( new PersonService.PersonQueryOptions() { IncludeNameless = true } )
                 .Where( p => p.RecordTypeValueId == namelessPersonRecordTypeId )
                 .Where( p => !currentMergeRequestQry.Any( mr => mr.Items.Any( i => i.EntityId == p.Id ) ) )
-                .AsNoTracking();
+                .AsNoTracking()
+                .Select( p => new NamelessPersonRow
+                {
+                    Person = p,
+                    RecordTypeValue = p.RecordTypeValue != null ? p.RecordTypeValue.Value : string.Empty,
+                    RecordStatusValue = p.RecordStatusValue != null ? p.RecordStatusValue.Value : string.Empty,
+                    RecordStatusReasonValue = p.RecordStatusReasonValue != null ? p.RecordStatusReasonValue.Value : string.Empty,
+                    ConnectionStatusValue = p.ConnectionStatusValue != null ? p.ConnectionStatusValue.Value : string.Empty,
+                    ReviewReasonValue = p.ReviewReasonValue != null ? p.ReviewReasonValue.Value : string.Empty,
+                    TitleValue = p.TitleValue != null ? p.TitleValue.Value : string.Empty,
+                    SuffixValue = p.SuffixValue != null ? p.SuffixValue.Value : string.Empty,
+                    MaritalStatusValue = p.MaritalStatusValue != null ? p.MaritalStatusValue.Value : string.Empty,
+                    PreferredLanguageValue = p.PreferredLanguageValue != null ? p.PreferredLanguageValue.Value : string.Empty,
+                    RaceValue = p.RaceValue != null ? p.RaceValue.Value : string.Empty,
+                    EthnicityValue = p.EthnicityValue != null ? p.EthnicityValue.Value : string.Empty,
+                    PrimaryAliasId = p.PrimaryAliasId,
+
+                    PhoneNumbersFormatted = p.PhoneNumbers
+                        .Where( pn => pn.NumberFormatted != null && pn.NumberFormatted != "" )
+                        .Select( pn => pn.NumberFormatted )
+                } );
 
             return qry;
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<Person> GetOrderedListQueryable( IQueryable<Person> queryable, RockContext rockContext )
+        protected override IQueryable<NamelessPersonRow> GetOrderedListQueryable( IQueryable<NamelessPersonRow> queryable, RockContext rockContext )
         {
-            return queryable.OrderByDescending( a => a.CreatedDateTime );
+            return queryable.OrderByDescending( a => a.Person.CreatedDateTime );
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<Person> GetGridBuilder()
+        protected override GridBuilder<NamelessPersonRow> GetGridBuilder()
         {
-            return new GridBuilder<Person>()
-                .WithBlock( this )
-                .AddPersonField( "Person", a => a )
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "guid", a => a.Guid.ToString() )
-                .AddField( "id", a => a.Id )
-                .AddField( "isSystem", a => a.IsSystem.ToTrueFalse() )
-                .AddField( "recordType", a => a.RecordTypeValue?.Value )
-                .AddField( "recordStatus", a => a.RecordStatusValue?.Value )
-                .AddField( "recordStatusLastModifiedDateTime", a => a.RecordStatusLastModifiedDateTime )
-                .AddField( "recordStatusReasonValue", a => a.RecordStatusReasonValue?.Value )
-                .AddField( "connectionStatusValue", a => a.ConnectionStatusValue?.Value )
-                .AddField( "reviewReasonValue", a => a.ReviewReasonValue?.Value )
-                .AddField( "isDeceased", a => a.IsDeceased )
-                .AddField( "titleValue", a => a.TitleValue?.Value )
-                .AddField( "firstName", a => a.FirstName )
-                .AddField( "nickName", a => a.NickName )
-                .AddField( "middleName", a => a.MiddleName )
-                .AddField( "lastName", a => a.LastName )
-                .AddField( "suffixValue", a => a.SuffixValue?.Value )
-                .AddField( "photoId", a => a.PhotoId )
-                .AddField( "birthDay", a => a.BirthDay )
-                .AddField( "birthMonth", a => a.BirthMonth )
-                .AddField( "birthYear", a => a.BirthYear )
-                .AddField( "age", a => a.Age )
-                .AddField( "gender", a => a.Gender.ToString() )
-                .AddField( "martialStatusValue", a => a.MaritalStatusValue?.Value )
-                .AddField( "anniversaryDate", a => a.AnniversaryDate )
-                .AddField( "graduationYear", a => a.GraduationYear )
-                .AddField( "givingId", a => a.GivingId )
-                .AddField( "givingLeaderId", a => a.GivingLeaderId )
-                .AddField( "email", a => a.Email )
-                .AddField( "isEmailActive", a => a.IsEmailActive )
-                .AddField( "emailNote", a => a.EmailNote )
-                .AddField( "emailPreference", a => a.EmailPreference.ToString() )
-                .AddField( "communicationPreference", a => a.CommunicationPreference.ToString() )
-                .AddField( "reviewReasonNote", a => a.ReviewReasonNote )
-                .AddField( "inactiveReasonNote", a => a.InactiveReasonNote )
-                .AddField( "systemNote", a => a.SystemNote )
-                .AddField( "viewedCount", a => a.ViewedCount )
-                .AddField( "topSignalColor", a => a.TopSignalColor )
-                .AddField( "topSignalIconCssClass", a => a.TopSignalIconCssClass )
-                .AddField( "topSignalId", a => a.TopSignalId )
-                .AddField( "ageClassification", a => a.AgeClassification.ToString() )
-                .AddField( "primaryFamilyId", a => a.PrimaryFamilyId )
-                .AddField( "primaryCampusId", a => a.PrimaryCampusId )
-                .AddField( "isLockedAsChild", a => a.IsLockedAsChild )
-                .AddField( "deceasedDate", a => a.DeceasedDate )
-                .AddField( "contributionFinancialAccountId", a => a.ContributionFinancialAccountId )
-                .AddField( "accountProtectionProfile", a => a.AccountProtectionProfile.ToString() )
-                .AddField( "preferredLanguageValueId", a => a.PreferredLanguageValue?.Value )
-                .AddField( "reminderCount", a => a.ReminderCount )
-                .AddField( "raceValueId", a => a.RaceValue?.Value )
-                .AddField( "ethnicityValueId", a => a.EthnicityValue?.Value )
-                .AddField( "birthDateKey", a => a.BirthDateKey )
-                .AddField( "ageBracket", a => a.AgeBracket.ToString() )
-                .AddField( "firstNamePronounciationOverride", a => a.FirstNamePronunciationOverride )
-                .AddField( "nickNamePronounciationOverride", a => a.NickNamePronunciationOverride )
-                .AddField( "lastNamePronounciationOverride", a => a.LastNamePronunciationOverride )
-                .AddField( "pronounciationNote", a => a.PronunciationNote )
+            var blockOptions = new GridBuilderGridOptions<NamelessPersonRow>
+            {
+                LavaObject = row => row.Person
+            };
+
+            return new GridBuilder<NamelessPersonRow>()
+                .WithBlock( this, blockOptions )
+                .AddPersonField( "Person", a => a.Person )
+                .AddTextField( "idKey", a => a.Person.IdKey )
+                .AddTextField( "guid", a => a.Person.Guid.ToString() )
+                .AddField( "id", a => a.Person.Id )
+                .AddField( "isSystem", a => a.Person.IsSystem.ToTrueFalse() )
+                .AddField( "recordType", a => a.RecordTypeValue )
+                .AddField( "recordStatus", a => a.RecordStatusValue )
+                .AddField( "recordStatusLastModifiedDateTime", a => a.Person.RecordStatusLastModifiedDateTime )
+                .AddField( "recordStatusReasonValue", a => a.RecordStatusReasonValue )
+                .AddField( "connectionStatusValue", a => a.ConnectionStatusValue )
+                .AddField( "reviewReasonValue", a => a.ReviewReasonValue )
+                .AddField( "isDeceased", a => a.Person.IsDeceased )
+                .AddField( "titleValue", a => a.TitleValue )
+                .AddField( "firstName", a => a.Person.FirstName )
+                .AddField( "nickName", a => a.Person.NickName )
+                .AddField( "middleName", a => a.Person.MiddleName )
+                .AddField( "lastName", a => a.Person.LastName )
+                .AddField( "suffixValue", a => a.SuffixValue )
+                .AddField( "photoId", a => a.Person.PhotoId )
+                .AddField( "birthDay", a => a.Person.BirthDay )
+                .AddField( "birthMonth", a => a.Person.BirthMonth )
+                .AddField( "birthYear", a => a.Person.BirthYear )
+                .AddField( "age", a => a.Person.Age )
+                .AddField( "gender", a => a.Person.Gender.ToString() )
+                .AddField( "martialStatusValue", a => a.MaritalStatusValue )
+                .AddField( "anniversaryDate", a => a.Person.AnniversaryDate )
+                .AddField( "graduationYear", a => a.Person.GraduationYear )
+                .AddField( "givingId", a => a.Person.GivingId )
+                .AddField( "givingLeaderId", a => a.Person.GivingLeaderId )
+                .AddField( "email", a => a.Person.Email )
+                .AddField( "isEmailActive", a => a.Person.IsEmailActive )
+                .AddField( "emailNote", a => a.Person.EmailNote )
+                .AddField( "emailPreference", a => a.Person.EmailPreference.ToString() )
+                .AddField( "communicationPreference", a => a.Person.CommunicationPreference.ToString() )
+                .AddField( "reviewReasonNote", a => a.Person.ReviewReasonNote )
+                .AddField( "inactiveReasonNote", a => a.Person.InactiveReasonNote )
+                .AddField( "systemNote", a => a.Person.SystemNote )
+                .AddField( "viewedCount", a => a.Person.ViewedCount )
+                .AddField( "topSignalColor", a => a.Person.TopSignalColor )
+                .AddField( "topSignalIconCssClass", a => a .Person.TopSignalIconCssClass )
+                .AddField( "topSignalId", a => a.Person.TopSignalId )
+                .AddField( "ageClassification", a => a.Person.AgeClassification.ToString() )
+                .AddField( "primaryFamilyId", a => a.Person.PrimaryFamilyId )
+                .AddField( "primaryCampusId", a => a.Person.PrimaryCampusId )
+                .AddField( "isLockedAsChild", a => a.Person.IsLockedAsChild )
+                .AddField( "deceasedDate", a => a.Person.DeceasedDate )
+                .AddField( "contributionFinancialAccountId", a => a.Person.ContributionFinancialAccountId )
+                .AddField( "accountProtectionProfile", a => a.Person.AccountProtectionProfile.ToString() )
+                .AddField( "preferredLanguageValueId", a => a.PreferredLanguageValue )
+                .AddField( "reminderCount", a => a.Person.ReminderCount )
+                .AddField( "raceValueId", a => a.RaceValue )
+                .AddField( "ethnicityValueId", a => a.EthnicityValue )
+                .AddField( "birthDateKey", a => a.Person.BirthDateKey )
+                .AddField( "ageBracket", a => a.Person.AgeBracket.ToString() )
+                .AddField( "firstNamePronounciationOverride", a => a.Person.FirstNamePronunciationOverride )
+                .AddField( "nickNamePronounciationOverride", a => a.Person.NickNamePronunciationOverride )
+                .AddField( "lastNamePronounciationOverride", a => a.Person.LastNamePronunciationOverride )
+                .AddField( "pronounciationNote", a => a.Person.PronunciationNote )
                 .AddField( "primaryAliasId", a => a.PrimaryAliasId )
-                .AddField( "daysUntilBirthday", a => a.DaysUntilBirthday )
-                .AddField( "givingGroupId", a => a.GivingGroupId )
-                .AddDateTimeField( "birthDate", a => a.BirthDate )
-                .AddField( "daysUntilAnniversary", a => a.DaysUntilBirthday )
-                .AddField( "allowsInteractiveBulkIndexing", a => a.AllowsInteractiveBulkIndexing.ToTrueFalse() )
-                .AddDateTimeField( "createdDateTime", a => a.CreatedDateTime )
-                .AddDateTimeField( "modifiedDateTime", a => a.ModifiedDateTime )
-                .AddField( "createdByPersonAliasId", a => a.CreatedByPersonAliasId )
-                .AddField( "modifiedByPersonAliasId", a => a.ModifiedByPersonAliasId )
-                .AddField( "foreignId", a => a.ForeignId )
-                .AddField( "foreignGuid", a => a.ForeignGuid )
-                .AddField( "foreignKey", a => a.ForeignKey )
-                .AddTextField( "phoneNumber", a => a.PhoneNumbers.Select( pn => pn.NumberFormatted ).FirstOrDefault() )
-                .AddTextField( "personLabel", a => a.PhoneNumbers.Any() ? $"{a.PhoneNumbers.Select( pn => pn.NumberFormatted ).FirstOrDefault()} (Unknown Person)" : "Unknown Person" );
+                .AddField( "daysUntilBirthday", a => a.Person.DaysUntilBirthday )
+                .AddField( "givingGroupId", a => a.Person.GivingGroupId )
+                .AddDateTimeField( "birthDate", a => a.Person.BirthDate )
+                .AddField( "daysUntilAnniversary", a => a.Person.DaysUntilBirthday )
+                .AddField( "allowsInteractiveBulkIndexing", a => a.Person.AllowsInteractiveBulkIndexing.ToTrueFalse() )
+                .AddDateTimeField( "createdDateTime", a => a.Person.CreatedDateTime )
+                .AddDateTimeField( "modifiedDateTime", a => a.Person.ModifiedDateTime )
+                .AddField( "createdByPersonAliasId", a => a.Person.CreatedByPersonAliasId )
+                .AddField( "modifiedByPersonAliasId", a => a.Person.ModifiedByPersonAliasId )
+                .AddField( "foreignId", a => a.Person.ForeignId )
+                .AddField( "foreignGuid", a => a.Person.ForeignGuid )
+                .AddField( "foreignKey", a => a.Person.ForeignKey )
+                .AddTextField( "phoneNumber", a => a.PhoneNumbersFormatted.FirstOrDefault() )
+                .AddTextField( "personLabel", a => a.PhoneNumbersFormatted.Any() ? $"{a.PhoneNumbersFormatted.FirstOrDefault()} (Unknown Person)" : "Unknown Person" );
+        }
+
+        #endregion
+
+        #region Helper Classes
+
+        public class NamelessPersonRow
+        {
+            public Person Person { get; set; }
+
+            public string RecordTypeValue { get; set; }
+
+            public string RecordStatusValue { get; set; }
+
+            public string RecordStatusReasonValue { get; set; }
+
+            public string ConnectionStatusValue { get; set; }
+
+            public string ReviewReasonValue { get; set; }
+
+            public string TitleValue { get; set; }
+
+            public string SuffixValue { get; set; }
+
+            public string MaritalStatusValue { get; set; }
+
+            public string PreferredLanguageValue { get; set; }
+
+            public string RaceValue { get; set; }
+
+            public string EthnicityValue { get; set; }
+
+            public int? PrimaryAliasId { get; set; }
+
+            public IEnumerable<string> PhoneNumbersFormatted { get; set; }
         }
 
         #endregion

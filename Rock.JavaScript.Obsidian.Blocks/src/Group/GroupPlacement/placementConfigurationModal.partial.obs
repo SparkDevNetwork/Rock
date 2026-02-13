@@ -4,72 +4,166 @@
            cancelText="Cancel"
            saveText="Save"
            @save="onSave">
-        <div class="row">
-            <div class="col-md-3">
-                <CampusPicker v-model="campus" label="Campus Filter" includeInactive showBlankItem :forceVisible="true" />
-            </div>
-        </div>
-        <Panel v-if="placementMode === PlacementMode.TemplateMode"
-               :modelValue="true"
-               title="Registration Template Configuration"
-               :hasCollapse="true">
-            <CheckBox v-model="showRegistrationInstanceName" label="Show Registration Instance Name" />
-            <CheckBoxList v-model="includedRegistrationInstanceIds"
-                          label="Included Registration Instances"
-                          :items="placementConfigurationSettingOptions.registrationInstances ?? []"
-                          :enhanceForLongLists="true" />
-        </Panel>
-        <Panel :modelValue="true"
-               v-if="placementMode !== PlacementMode.EntitySetMode"
-               title="People To Place Configuration"
-               :hasCollapse="true">
-            <CheckBox v-if="placementMode === PlacementMode.TemplateMode || placementMode === PlacementMode.InstanceMode"
-                      v-model="areFeesDisplayed"
-                      label="Show Fees" />
-            <DropDownList v-model="sourceAttributesToDisplay"
-                          label="Displayed Source Attributes"
-                          :items="placementConfigurationSettingOptions.sourceAttributes ?? []"
-                          :enhanceForLongLists="true"
-                          :multiple="true" />
-            <CheckBox v-model="areSourceAttributesDisplayedOnDestinationGroupMembers" text="Display Source Attributes on Destination Group Members" label="" />
-        </Panel>
-        <Panel :modelValue="true"
-               title="Destination Group Configuration"
-               :hasCollapse="true">
-            <div class="row">
-                <div class="col-md-6">
+        <ContentSectionContainer :sidebar="false">
+            <ContentSection v-if="placementMode === PlacementMode.TemplateMode"
+                            title="Registration Template Configuration"
+                            icon="ti ti-template">
+                <ContentStack>
+                    <CheckBox v-model="showRegistrationInstanceName"
+                              label="Show Registration Instance Name" />
+                    <CheckBoxList v-model="includedRegistrationInstanceIds"
+                                  label="Included Registration Instances"
+                                  :items="placementConfigurationSettingOptions.registrationInstances ?? []"
+                                  :enhanceForLongLists="true" />
+                </ContentStack>
+            </ContentSection>
+            <ContentSection title="People To Place Configuration"
+                            icon="ti ti-user-share">
+                <ContentStack>
+                    <CheckBox v-if="placementMode === PlacementMode.TemplateMode || placementMode === PlacementMode.InstanceMode"
+                              v-model="areFeesDisplayed"
+                              label="Show Fees" />
+                    <DropDownList v-model="sourceAttributesToDisplay"
+                                  label="Displayed Source Attributes"
+                                  :items="placementConfigurationSettingOptions.sourceAttributes ?? []"
+                                  :enhanceForLongLists="true"
+                                  :multiple="true" />
+                    <CheckBox v-model="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                              text="Display Source Attributes on Destination Group Members"
+                              label="" />
+                </ContentStack>
+            </ContentSection>
+            <ContentSection title="Person Filters"
+                            icon="ti ti-filter">
+                <ContentStack>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <GenderPicker v-model="gender"
+                                          multiple
+                                          showUnknownLabelInDropDown
+                                          :showBlankItem="true" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <CampusPicker v-model="campuses"
+                                          label="Campuses"
+                                          includeInactive
+                                          showBlankItem
+                                          forceVisible
+                                          multiple
+                                          enhanceForLongLists
+                                          :displayStyle="PickerDisplayStyle.Condensed" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <RockLabel>Age</RockLabel>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <DropDownList v-model="ageComparisonType"
+                                              :items="ageComparisonItems" />
+                            </div>
+                            <div class="col-md-8">
+                                <NumberBox v-if="valueType == 'single'"
+                                           v-model="age" />
+                                <NumberRangeBox v-else-if="valueType == 'double'"
+                                                v-model="ageRange" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <RockLabel>Grade</RockLabel>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <DropDownList v-model="gradeComparisonType"
+                                              :items="gradeComparisonItems"
+                                              disableLabel />
+                            </div>
+                            <div class="col-md-8">
+                                <GradePicker v-if="showGradePicker"
+                                             v-model="grade"
+                                             disableLabel
+                                             showBlankItem
+                                             useGuidAsValue />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <DataViewPicker v-model="persistedDataViews"
+                                            multiple
+                                            :entityTypeGuid="EntityType.Person"
+                                            label="Persisted Data View"
+                                            displayPersistedOnly />
+                        </div>
+                    </div>
+                    <RadioButtonList v-model="applyPersonFiltersTo"
+                                     label="Apply Person Filters To"
+                                     :items="filterItems" />
+                </ContentStack>
+            </ContentSection>
+            <ContentSection title="Destination Group Configuration"
+                            icon="ti ti-users-group">
+                <ContentStack>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <CampusPicker v-model="groupCampusFilter"
+                                          label="Campus Filter"
+                                          includeInactive
+                                          showBlankItem
+                                          :forceVisible="true" />
+                        </div>
+                    </div>
+                    <CheckBox v-model="areFullGroupsHidden"
+                              label="Hide Full Groups" />
                     <DropDownList v-model="destinationGroupAttributesToDisplay"
                                   label="Displayed Group Attributes"
                                   :items="placementConfigurationSettingOptions.destinationGroupAttributes ?? []"
                                   :enhanceForLongLists="true"
                                   :multiple="true" />
-                </div>
-                <div class="col-md-6">
-                    <CheckBox v-model="areFullGroupsHidden" label="Hide Full Groups" />
-                </div>
-            </div>
-            <DropDownList v-model="destinationGroupMemberAttributesToDisplay"
-                          label="Displayed Group Member Attributes"
-                          :items="placementConfigurationSettingOptions.destinationGroupMemberAttributes ?? []"
-                          :enhanceForLongLists="true"
-                          :multiple="true" />
-        </Panel>
+                    <DropDownList v-model="destinationGroupMemberAttributesToDisplay"
+                                  label="Displayed Group Member Attributes"
+                                  :items="placementConfigurationSettingOptions.destinationGroupMemberAttributes ?? []"
+                                  :enhanceForLongLists="true"
+                                  :multiple="true" />
+                </ContentStack>
+            </ContentSection>
+        </ContentSectionContainer>
     </Modal>
 </template>
 
 <script setup lang="ts">
+    import { AppliesToPlacementConfiguration, AppliesToPlacementConfigurationDescription } from "@Obsidian/Enums/Group/appliesToPlacementConfiguration";
     import { PlacementConfigurationSettingOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingOptionsBag";
     import { PlacementConfigurationSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingsBag";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { NumberRangeModelValue } from "@Obsidian/Types/Controls/numberRangeBox";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { PropType, ref } from "vue";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { PropType, ref, computed } from "vue";
     import Modal from "@Obsidian/Controls/modal.obs";
-    import Panel from "@Obsidian/Controls/panel.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import GradePicker from "@Obsidian/Controls/gradePicker.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+
 
     const props = defineProps({
         modelValue: {
@@ -97,7 +191,7 @@
     }>();
 
     const isVisible = useVModelPassthrough(props, "modelValue", emit);
-    const campus = ref<ListItemBag>(props.placementConfigurationSettings.displayedCampus ?? {});
+    const groupCampusFilter = ref<ListItemBag>(props.placementConfigurationSettings.displayedCampus ?? {});
     const areFeesDisplayed = ref<boolean>(props.placementConfigurationSettings.areFeesDisplayed ?? false);
     const sourceAttributesToDisplay = ref<string[]>(props.placementConfigurationSettings.sourceAttributesToDisplay ?? []);
     const areSourceAttributesDisplayedOnDestinationGroupMembers = ref<boolean>(props.placementConfigurationSettings.areSourceAttributesDisplayedOnDestinationGroupMembers ?? false);
@@ -107,9 +201,84 @@
     const showRegistrationInstanceName = ref<boolean>(props.placementConfigurationSettings.showRegistrationInstanceName ?? false);
     const includedRegistrationInstanceIds = ref<string[]>(props.placementConfigurationSettings.includedRegistrationInstanceIds ?? []);
 
+    const gender = ref<string>(props.placementConfigurationSettings.personFilters?.gender?.toString() ?? "");
+    const campuses = ref<ListItemBag[]>(props.placementConfigurationSettings.personFilters?.campuses ?? []);
+    const persistedDataViews = ref<ListItemBag[]>(props.placementConfigurationSettings.personFilters?.persistedDataViews ?? []);
+
+    const ageComparisonType = ref<string>(props.placementConfigurationSettings.personFilters?.ageComparisonType?.toString() ?? "");
+    const age = ref<number | null>(toNumberOrNull(props.placementConfigurationSettings.personFilters?.age));
+    const ageRange = ref<NumberRangeModelValue>(convertDelimitedRangeValueToNumberRangeModelValue());
+
+    const gradeComparisonType = ref<string>(props.placementConfigurationSettings.personFilters?.gradeComparisonType?.toString() ?? "");
+    const grade = ref<ListItemBag | null | undefined>(props.placementConfigurationSettings.personFilters?.grade);
+    const defaultApplyPersonFiltersTo = AppliesToPlacementConfiguration.PeopleToPlace.toString();
+    const applyPersonFiltersTo = ref<string>(props.placementConfigurationSettings.personFilters?.appliesToPlacementConfiguration?.toString() ?? defaultApplyPersonFiltersTo);
+
+    const ageComparisonItems = getFilteredComparisonTypeOptions(
+        ComparisonType.EqualTo,
+        ComparisonType.NotEqualTo,
+        ComparisonType.IsBlank,
+        ComparisonType.IsNotBlank,
+        ComparisonType.GreaterThan,
+        ComparisonType.GreaterThanOrEqualTo,
+        ComparisonType.LessThan,
+        ComparisonType.LessThanOrEqualTo,
+        ComparisonType.Between
+    );
+
+    const gradeComparisonItems = getFilteredComparisonTypeOptions(
+        ComparisonType.EqualTo,
+        ComparisonType.NotEqualTo,
+        ComparisonType.IsBlank,
+        ComparisonType.IsNotBlank,
+        ComparisonType.GreaterThan,
+        ComparisonType.GreaterThanOrEqualTo,
+        ComparisonType.LessThan,
+        ComparisonType.LessThanOrEqualTo
+    );
+
+    const filterItems = enumToListItemBag(AppliesToPlacementConfigurationDescription);
+
+    const valueType = computed(() => {
+        switch (ageComparisonType.value) {
+            case ComparisonType.EqualTo.toString():
+            case ComparisonType.NotEqualTo.toString():
+            case ComparisonType.GreaterThan.toString():
+            case ComparisonType.GreaterThanOrEqualTo.toString():
+            case ComparisonType.LessThan.toString():
+            case ComparisonType.LessThanOrEqualTo.toString():
+                return "single";
+            case ComparisonType.Between.toString():
+                return "double";
+            default:
+                return "none";
+        }
+    });
+
+    const showGradePicker = computed(() => {
+        return !isNullOrWhiteSpace(gradeComparisonType.value)
+            && gradeComparisonType.value !== ComparisonType.IsBlank.toString()
+            && gradeComparisonType.value !== ComparisonType.IsNotBlank.toString();
+    });
+
+    function convertDelimitedRangeValueToNumberRangeModelValue(delimited?: string | null): NumberRangeModelValue {
+        let strVal = delimited?.trim().split(",");
+        if (!strVal || strVal.length < 2) {
+            return {
+                lower: null,
+                upper: null
+            };
+        }
+
+        return {
+            lower: toNumberOrNull(strVal[0] ?? null),
+            upper: toNumberOrNull(strVal[1] ?? null)
+        };
+    }
+
     function onSave(): void {
         const updatedSettings: PlacementConfigurationSettingsBag = {
-            displayedCampus: campus.value,
+            displayedCampus: groupCampusFilter.value,
             areFeesDisplayed: areFeesDisplayed.value,
             sourceAttributesToDisplay: sourceAttributesToDisplay.value,
             areSourceAttributesDisplayedOnDestinationGroupMembers: areSourceAttributesDisplayedOnDestinationGroupMembers.value,
@@ -117,7 +286,18 @@
             areFullGroupsHidden: areFullGroupsHidden.value,
             destinationGroupMemberAttributesToDisplay: destinationGroupMemberAttributesToDisplay.value,
             showRegistrationInstanceName: showRegistrationInstanceName.value,
-            includedRegistrationInstanceIds: includedRegistrationInstanceIds.value
+            includedRegistrationInstanceIds: includedRegistrationInstanceIds.value,
+            personFilters: {
+                gender: toNumberOrNull(gender.value),
+                campuses: campuses.value,
+                persistedDataViews: persistedDataViews.value,
+                ageComparisonType: toNumberOrNull(ageComparisonType.value),
+                age: age.value,
+                ageRangeDelimited: `${ageRange.value.lower ?? ""},${ageRange.value.upper ?? ""}`,
+                gradeComparisonType: toNumberOrNull(gradeComparisonType.value),
+                grade: grade.value,
+                appliesToPlacementConfiguration: toNumber(applyPersonFiltersTo.value ?? defaultApplyPersonFiltersTo) as AppliesToPlacementConfiguration
+            }
         };
 
         emit("save", updatedSettings);

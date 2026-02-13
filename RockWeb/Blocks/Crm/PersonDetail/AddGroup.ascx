@@ -32,6 +32,8 @@
                             <Rock:CampusPicker ID="cpCampus" runat="server" Required="true" />
                             <Rock:DefinedValuePicker ID="dvpMaritalStatus" runat="server" Label="Marital Status of Adults"
                                 Help="The marital status to use for the adults in this family." />
+                            <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source"
+                                Help="The record source to use when creating new person records." />
                         </div>
 
                         <div class="col-md-8">

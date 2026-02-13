@@ -1,0 +1,281 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          title="Person Duplicates"
+          :data="gridDataSource"
+          keyField="idKey"
+          personKeyField="personIdKey"
+          itemTerm="Person Duplicate"
+          :entityTypeGuid="EntityType.PersonDuplicate"
+          stickyHeader
+          liveUpdates
+          :isCountMessageVisible="false"
+          :selectedKeysOverride="selectedKeysOverride"
+          :isSearchVisible="false">
+
+        <SelectColumn :rowDisabled="showRowSelectCheckbox"
+                      :forceAllowSelectAll="true"
+                      :disableSort="true" />
+        <Column name="confidenceScore"
+                title="Confidence"
+                field="confidenceScore"
+                :disableSort="true">
+            <template #format="{ row }">
+                <span v-if="row.confidenceScore >= config.options!.confidenceScoreHigh" class='label label-success'>
+                    {{ (row.confidenceScore as number).toFixed(2) }}%
+                </span>
+                <span v-else-if="row.confidenceScore >= config.options!.confidenceScoreLow" class='label label-warning'>
+                    {{ (row.confidenceScore as number).toFixed(2) }}%
+                </span>
+                <span v-else-if="row.confidenceScore > 0" class='label label-default'>
+                    {{ (row.confidenceScore as number).toFixed(2) }}%
+                </span>
+            </template>
+        </Column>
+        <TextColumn v-if="config.options?.hasMultipleCampuses"
+                    name="campus"
+                    title="Campus"
+                    field="campus"
+                    :disableSort="true" />
+        <Column name="accountProtectionProfile"
+                title="Account Protection Profile"
+                field="accountProtectionProfile"
+                :disableSort="true">
+            <template #format="{ row }">
+                <span v-if="row.accountProtectionProfile === 0" class='label label-success'>Low</span>
+                <span v-else-if="row.accountProtectionProfile === 1" class='label label-warning'>Medium</span>
+                <span v-else-if="row.accountProtectionProfile === 2" class='label label-primary'>High</span>
+                <span v-else-if="row.accountProtectionProfile === 3" class='label label-danger'>Extreme</span>
+            </template>
+        </Column>
+        <TextColumn name="recordSource"
+                    title="Record Source"
+                    field="recordSource"
+                    :disableSort="true" />
+        <TextColumn name="fullName"
+                    title="Name"
+                    field="fullName"
+                    :disableSort="true" />
+        <TextColumn name="email"
+                    title="Email"
+                    field="email"
+                    :disableSort="true" />
+        <TextColumn name="gender"
+                    title="Gender"
+                    field="gender"
+                    :disableSort="true"
+                    itemClass="justify-content-center text-center"
+                    width="80" />
+        <TextColumn name="age"
+                    title="Age"
+                    field="age"
+                    :disableSort="true"
+                    itemClass="justify-content-center text-center"
+                    width="60" />
+        <Column name="addresses"
+                title="Addresses"
+                field="addresses"
+                :wrapped="false"
+                :disableSort="true">
+            <template #format="{ row }">
+                <ul class="list-unstyled">
+                    <li v-for="address in row.addresses" class="address clearfix">
+                        <strong>{{ address.groupLocationTypeValue }}</strong>
+                        <div>
+                            {{ (address.street1 as string) }}
+                        </div>
+                        <div v-if="address.street2 !== null">
+                            {{ address.street2 }}
+                        </div>
+                        <div>
+                            {{ address.city }}, {{ address.state }} {{ address.postalCode }}
+                        </div>
+                    </li>
+                </ul>
+            </template>
+        </Column>
+        <Column name="phoneNumbers"
+                title="Phone Numbers"
+                field="phoneNumbers"
+                :disableSort="true">
+            <template #format="{ row }">
+                <ul class="list-unstyled">
+                    <li v-for="phoneNumber in row.phoneNumbers" class="phone clearfix">
+                        <strong>{{ phoneNumber.phoneNumberTypeValue }}</strong>
+                        <p>{{ phoneNumber.phoneNumber }}</p>
+                    </li>
+                </ul>
+            </template>
+        </Column>
+
+        <Column name="rowActions"
+                columnType="custom"
+                width="60px">
+            <template #format="{ row }">
+                <div class="d-flex flex-column gap-3">
+                    <RockButton title="View Person"
+                                :btnSize="BtnSize.ExtraSmall"
+                                :btnType="BtnType.Default"
+                                @click="onPersonProfileClick(row.personIdKey as string)">
+                        <i class="ti ti-user"></i>
+                    </RockButton>
+                    <RockButton v-if="row.isDuplicateRow"
+                                title="Not Duplicate"
+                                :btnSize="BtnSize.ExtraSmall"
+                                :btnType="BtnType.Default"
+                                :disabled="isMarkingDuplicate"
+                                @click="onNotDuplicateClick(row.idKey as string)">
+                        <i class="ti ti-ban"></i>
+                    </RockButton>
+                    <RockButton v-if="row.isDuplicateRow"
+                                title="Ignore"
+                                :btnSize="BtnSize.ExtraSmall"
+                                :btnType="BtnType.Default"
+                                :disabled="isMarkingDuplicate"
+                                @click="onIgnoreDuplicateClick(row.idKey as string)">
+                        <i class="ti ti-bell-off"></i>
+                    </RockButton>
+                </div>
+            </template>
+        </Column>
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Grid, { Column, TextColumn, AttributeColumns, SelectColumn } from "@Obsidian/Controls/grid";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { PersonDuplicateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDuplicateDetail/personDuplicateDetailOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+
+    const config = useConfigurationValues<ListBlockBox<PersonDuplicateDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+
+    const primaryPersonIdKey = ref<string | null>(null);
+
+    const errorMessage = ref("");
+
+    const isMarkingDuplicate = ref(false);
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            if (result.data.rows && result.data.rows.length > 0) {
+                primaryPersonIdKey.value = result.data.rows[0]["personIdKey"] as string;
+            }
+            return result.data;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load person duplicate grid data.");
+        }
+    }
+
+    /**
+     * Determines if a given row should be excluded from selection.
+     * A row is excluded if it has the property 'isDuplicateRow' set to true.
+     *
+     * @param {unknown} row - The row object to evaluate.
+     * @returns {boolean} True if the row should be excluded, false otherwise.
+     */
+    function showRowSelectCheckbox(row: Record<string, unknown>): boolean {
+        if (row && "isDuplicateRow" in row) {
+            return Boolean(row["isDuplicateRow"]);
+        }
+        return false;
+    }
+
+    /**
+     * Forces the person being viewed to always be selected in the grid and
+     * for all actions, such as merge, communication, etcetera to include them.
+     *
+     * @param {string[]} selectedKeys
+     * @returns {string[]} The modified list of selected keys including the person being viewed.
+     */
+    function selectedKeysOverride(selectedKeys: string[]): string[] {
+        if (primaryPersonIdKey.value && !selectedKeys.includes(primaryPersonIdKey.value)) {
+            selectedKeys.unshift(primaryPersonIdKey.value);
+        }
+        return selectedKeys;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onPersonProfileClick(idKey: string): void {
+        if (idKey?.length > 0) {
+            window.location.href = `/person/${idKey}`;
+        }
+    }
+
+    async function onNotDuplicateClick(idKey: string): Promise<void> {
+        isMarkingDuplicate.value = true;
+        if (await confirm("Are you sure this is not a duplicate?")) {
+            const response = await invokeBlockAction("MarkNotDuplicate", {
+                personDuplicateIdKey: idKey
+            });
+
+            if (response.isSuccess) {
+                gridDataSource.value = loadGridData();
+            }
+            else if (response.errorMessage) {
+                errorMessage.value = response.errorMessage;
+            }
+            else {
+                errorMessage.value = "An unknown error occurred while trying to mark duplicate as not a duplicate.";
+            }
+        }
+        isMarkingDuplicate.value = false;
+    }
+
+    async function onIgnoreDuplicateClick(idKey: string): Promise<void> {
+        isMarkingDuplicate.value = true;
+        if (await confirm("This will ignore this potential duplicate until the score changes. Are you sure you want to ignore this as a duplicate?")) {
+            const response = await invokeBlockAction("MarkIgnoreDuplicate", {
+                personDuplicateIdKey: idKey
+            });
+
+            if (response.isSuccess) {
+                gridDataSource.value = loadGridData();
+            }
+            else if (response.errorMessage) {
+                errorMessage.value = response.errorMessage;
+            }
+            else {
+                errorMessage.value = "An unknown error occurred while trying to mark duplicate as ignored.";
+            }
+        }
+        isMarkingDuplicate.value = false;
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

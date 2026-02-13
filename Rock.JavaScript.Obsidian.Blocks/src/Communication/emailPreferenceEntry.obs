@@ -268,6 +268,12 @@
 .email-preference-entry-confirm-deactivation-footer-actions btn {
     color: var(--color-primary);
 }
+
+@media (max-width: 480px) {
+    .email-preference-entry-content {
+        padding: var(--spacing-medium);
+    }
+}
 </style>
 
 <script setup lang="ts">
@@ -729,7 +735,7 @@
         deactivateErrorMessage.value = "";
 
         const bag: DeactivateRecordRequestBag = {
-            isFamilyDeactivation: recordsToDeactivate.value == RecordsToDeactivate.Family,
+            isFamilyDeactivation: recordsToDeactivate.value === RecordsToDeactivate.Family,
             inactiveReasonValueGuid: inactiveReasonValueGuid.value,
             inactiveReasonNote: inactiveReasonNote.value
         };

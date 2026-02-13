@@ -332,7 +332,7 @@
      *
      * @param editAssignmentGuid The assignmnent unique identifier if editing an existing assignment.
      */
-    function onAddEditAssignment(editAssignmentGuid: string | null | undefined): void {
+    function onAddEditAssignment(editAssignmentGuid?: string | null | undefined): void {
         if (isBusy.value) {
             return;
         }

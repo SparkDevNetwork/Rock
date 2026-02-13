@@ -38,7 +38,12 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Presents the details of a interaction channel using Lava" )]
 
-    [CodeEditorField( "Default Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"
+    [CodeEditorField( "Default Template",
+        Description = "Lava template to use to display content",
+        EditorMode = CodeEditorMode.Lava,
+        EditorHeight = 400,
+        IsRequired = false,
+        DefaultValue = @"
     <div class='row'>
         <div class='col-md-6'>
             <dl><dt>Name</dt><dd>{{ InteractionComponent.Name }}<dd/></dl>
@@ -51,7 +56,8 @@ namespace RockWeb.Blocks.Reporting
             </div>
         {% endif %}
     </div>
-", "", 0 )]
+",
+        Order = 0 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "926261B2-CF4C-4B1F-A384-CD83696CFBC2" )]
     public partial class InteractionComponentDetail : Rock.Web.UI.RockBlock

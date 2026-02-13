@@ -928,7 +928,7 @@
                     <a id="CodeEditor"></a>
                     <h2 runat="server">Rock:CodeEditor</h2>
                     <div runat="server" class="r-example">
-                        <Rock:CodeEditor ID="ceScript" runat="server" EditorTheme="Rock" Label="Script" EditorMode="Html" EditorHeight="300">
+                        <Rock:CodeEditor ID="ceScript" runat="server" Label="Script" EditorMode="Html" EditorHeight="300">
     <h3>Hello!!!</h3>
     <p>This is a great way to edit HTML! Reasons:</p>
 

@@ -10,7 +10,7 @@
 
             <div class="panel-body">
                 <fieldset>
-                    <Rock:CodeEditor ID="tbQuery" runat="server" Label="SQL Text" Height="400" EditorMode="Sql" EditorTheme="Rock" Help="The SQL query or stored procedure name to execute." />
+                    <Rock:CodeEditor ID="tbQuery" runat="server" Label="SQL Text" Height="400" EditorMode="Sql" Help="The SQL query or stored procedure name to execute." />
 
                     <Rock:Toggle ID="tQuery" runat="server" Label="Selection Query?" OnText="Yes" OffText="No" Checked="true"
                         Help="Will the SQL Text above return rows? If so, a grid will be displayed containing the results of the query." />

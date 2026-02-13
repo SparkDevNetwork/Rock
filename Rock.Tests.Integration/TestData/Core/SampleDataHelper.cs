@@ -60,10 +60,10 @@ namespace Rock.Tests.Integration.TestData.Core
 
             else
             {
-                
+
             }
 
-            if (!isValid)
+            if ( !isValid )
             {
                 throw new Exception( $"Invalid Data Set. The data set \"{datasetIdentifier}\" could not be loaded." );
             }
@@ -74,7 +74,7 @@ namespace Rock.Tests.Integration.TestData.Core
         public static void RemoveTestDataSet( string datasetIdentifier )
         {
             if ( !GetFeatureDataLoadState( datasetIdentifier ) )
-             {
+            {
                 return;
             }
 
@@ -174,7 +174,7 @@ namespace Rock.Tests.Integration.TestData.Core
 
         private static void SetFeatureDataLoadState( string datasetName, bool isLoaded = true )
         {
-            if ( _loadedFeatureDataSets.Contains(datasetName) )
+            if ( _loadedFeatureDataSets.Contains( datasetName ) )
             {
                 if ( !isLoaded )
                 {
@@ -183,7 +183,7 @@ namespace Rock.Tests.Integration.TestData.Core
             }
             else
             {
-                if (isLoaded)
+                if ( isLoaded )
                 {
                     _loadedFeatureDataSets.Add( datasetName );
                 }

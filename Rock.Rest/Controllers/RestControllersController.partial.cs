@@ -17,11 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
+using System.Net;
 using System.Reflection;
 using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using System.Net.Http;
 
 namespace Rock.Rest.Controllers
 {
@@ -31,7 +34,9 @@ namespace Rock.Rest.Controllers
     public partial class RestControllersController
     {
         /// <summary>
-        /// Ensures that rest controllers have been registered to the Rock Database
+        /// Ensures that rest controllers have been registered to the Rock Database.
+        /// RestController records are automatically registered on Rock start, so
+        /// just return whether or not Rock has started.
         /// </summary>
         [Authenticate, Secured]
         [HttpGet]
@@ -39,7 +44,18 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "4D3BBFFD-292C-415A-BED2-2A8F8F9FC469" )]
         public bool EnsureRestControllers()
         {
-            RestControllerService.RegisterControllers();
+            if ( !RestControllerService.IsRegisterControllersFinished )
+            {
+                var response = Request.CreateErrorResponse(
+                    HttpStatusCode.ServiceUnavailable,
+                    "REST controller registration is still in progress. Please try again shortly."
+                );
+
+                // Optional but helpful for well-behaved clients.
+                response.Headers.RetryAfter = new RetryConditionHeaderValue( TimeSpan.FromSeconds( 30 ) );
+
+                throw new HttpResponseException( response );
+            }
 
             return true;
         }

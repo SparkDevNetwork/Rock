@@ -36,11 +36,11 @@
                              :recipientCount="selectedMediumRecipients.length"
                              :recipientsLabel="selectedMediumRecipientsLabel"
                              :smsRecipientCount="smsRecipients.length"
-                             :simpleCommunicationPageUrl="config.navigationUrls?.['SimpleCommunicationPage']"
+                             :simpleCommunicationPageUrl="simpleCommunicationPageUrl"
                              :title="step"
                              @update:communicationListGroupGuid="onCommunicationListGroupGuidUpdated"
                              @update:segmentCriteria="debouncedUpdateRecipients"
-                             @update:personalizationSegmentIds="debouncedUpdateRecipients"
+                             @update:personalizationSegments="debouncedUpdateRecipients"
                              @nextStep="onNextStepClicked"
                              @recipientListModified="wasRecipientListModifiedOnce = true" />
 
@@ -239,7 +239,7 @@
     import SendingStep from "./CommunicationEntryWizard/sendingStep.partial.obs";
     import SentStep from "./CommunicationEntryWizard/sentStep.partial.obs";
     import SmsEditorStep from "./CommunicationEntryWizard/smsEditorStep.partial.obs";
-    import { BinaryFileAttachment, BlockActionCallbacks, PreviewAsType } from "./CommunicationEntryWizard/types.partial";
+    import { BinaryFileAttachment, BlockActionCallbacks, NavigationUrlKey, PreviewAsType } from "./CommunicationEntryWizard/types.partial";
     import { useCache, useInvokeBlockActionHelper, usePersonPreferencesHelper } from "./CommunicationEntryWizard/utils.partial";
     import WizardStartStep from "./CommunicationEntryWizard/wizardStartStep.partial.obs";
     import { EmailEditorApi, GetHtmlResponse } from "@Obsidian/Controls/emailEditor";
@@ -308,9 +308,6 @@
                     else if (allowedMediums.value.includes(CommunicationType.SMS)) {
                         return "SMS Editor";
                     }
-                    else if (allowedMediums.value.includes(CommunicationType.PushNotification)) {
-                        return "Push Notification Editor";
-                    }
                     else {
                         return null;
                     }
@@ -324,9 +321,6 @@
             if (communicationType.value === CommunicationType.RecipientPreference) {
                 if (allowedMediums.value.includes(CommunicationType.SMS)) {
                     return "SMS Editor";
-                }
-                else if (allowedMediums.value.includes(CommunicationType.PushNotification)) {
-                    return "Push Notification Editor";
                 }
                 else {
                     return "Review & Confirm";
@@ -493,19 +487,28 @@
     });
 
     const emailRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
-        return recipients.value.filter(r => r.isEmailAllowed);
+        var isEmailMediumAllowed = allowedMediums.value.includes(CommunicationType.Email);
+
+        return recipients.value.filter(r => isEmailMediumAllowed && r.isEmailAllowed);
     });
 
     const smsRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
-        return recipients.value.filter(r => r.isSmsAllowed);
+        var isSmsMediumAllowed = allowedMediums.value.includes(CommunicationType.SMS);
+
+        return recipients.value.filter(r => isSmsMediumAllowed && r.isSmsAllowed);
     });
 
     const pushNotificationRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
-        return recipients.value.filter(r => r.isPushAllowed);
+        var isPushNotificationMediumAllowed = allowedMediums.value.includes(CommunicationType.PushNotification);
+
+        return recipients.value.filter(r => isPushNotificationMediumAllowed && r.isPushAllowed);
     });
 
     const personalPreferenceRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
-        return recipients.value.filter(r => r.isEmailAllowed || r.isSmsAllowed);
+        var isEmailMediumAllowed = allowedMediums.value.includes(CommunicationType.Email);
+        var isSmsMediumAllowed = allowedMediums.value.includes(CommunicationType.SMS);
+
+        return recipients.value.filter(r => (isEmailMediumAllowed && r.isEmailAllowed) || (isSmsMediumAllowed && r.isSmsAllowed));
     });
 
     const selectedMediumRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
@@ -659,6 +662,14 @@
             // Return the first email recipient email address.
             return emailRecipients.value[0]?.email;
         }
+    });
+
+    const simpleCommunicationPageUrl = computed<string | null>(() => {
+        if (config.navigationUrls?.[NavigationUrlKey.SimpleCommunicationPage]) {
+            return config.navigationUrls[NavigationUrlKey.SimpleCommunicationPage].replace("((Key))", (communicationId.value ?? 0).toString());
+        }
+
+        return null;
     });
 
     // #endregion Computed Values
@@ -1402,9 +1413,8 @@
 
     startRealTime();
 
-    // On initialization, if the communication is new, then copy fields from the template.
     onMounted(async () => {
-        if (!communicationId.value || !communicationTemplateGuid.value) {
+        if (config.shouldApplyTemplateToCommunication) {
             if (communicationTemplateDetail.value) {
                 populateFromCommunicationTemplateDetail(communicationTemplateDetail.value);
             }

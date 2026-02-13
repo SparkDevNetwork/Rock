@@ -53,7 +53,6 @@
                     name="medium"
                     field="medium"
                     title="Medium"
-                    width="150"
                     headerClass="text-center"
                     :filter="pickExistingValueFilter"
                     :filterValue="getMediumTextValue"
@@ -66,7 +65,6 @@
             <BooleanColumn name="delivered"
                            field="delivered"
                            title="Delivered"
-                           width="150"
                            tooltip="deliveredDateTime"
                            :filter="booleanValueFilter">
                 <template #format="{ row }">
@@ -81,7 +79,6 @@
                            name="opened"
                            field="opened"
                            title="Opened"
-                           width="150"
                            tooltip="lastOpenedDateTime"
                            :filter="booleanValueFilter" />
 
@@ -89,7 +86,6 @@
                            name="clicked"
                            field="clicked"
                            title="Clicked"
-                           width="150"
                            tooltip="lastClickedDateTime"
                            visiblePriority="xl"
                            :filter="booleanValueFilter" />
@@ -98,7 +94,6 @@
                            name="unsubscribed"
                            field="unsubscribed"
                            title="Unsubscribed"
-                           width="150"
                            tooltip="unsubscribedDateTime"
                            visiblePriority="xl"
                            :filter="booleanValueFilter" />
@@ -107,7 +102,6 @@
                            name="spam"
                            field="spam"
                            title="Spam"
-                           width="150"
                            tooltip="spamComplaintDateTime"
                            visiblePriority="xl"
                            :filter="booleanValueFilter" />
@@ -116,14 +110,12 @@
                           name="age"
                           field="age"
                           title="Age"
-                          width="150"
                           :filter="numberValueFilter" />
 
             <Column v-if="isPropertyColumnVisible(PersonPropertyName.AgeClassification)"
                     name="ageClassification"
                     field="ageClassification"
                     title="Age Classification"
-                    width="200"
                     :filter="pickExistingValueFilter"
                     :filterValue="getAgeClassificationTextValue"
                     :quickFilterValue="getAgeClassificationTextValue"
@@ -138,21 +130,18 @@
                         name="birthdate"
                         field="birthdate"
                         title="Birthdate"
-                        width="200"
                         :filter="dateValueFilter" />
 
             <TextColumn v-if="isPropertyColumnVisible(PersonPropertyName.Campus)"
                         name="campus"
                         field="campus"
                         title="Campus"
-                        width="200"
                         :filter="pickExistingValueFilter" />
 
             <TextColumn v-if="isPropertyColumnVisible(PersonPropertyName.Email)"
                         name="email"
                         field="email"
                         title="Email"
-                        width="250"
                         :filter="textValueFilter" />
 
             <Column v-if="isPropertyColumnVisible(PersonPropertyName.Gender)"
@@ -179,7 +168,6 @@
                            name="isDeceased"
                            field="isDeceased"
                            title="Deceased"
-                           width="150"
                            :filter="booleanValueFilter" />
 
             <AttributeColumns visiblePriority="md" :attributes="internalGridDefinition!.attributeFields ?? []" />
@@ -212,6 +200,10 @@
 </template>
 
 <style scoped>
+.communication-detail-recipient-details {
+    padding-top: var(--spacing-medium);
+}
+
 .communication-detail-grid-cell-failure {
     color: var(--color-danger-strong);
 }
@@ -373,7 +365,7 @@
      */
     function getIsRowIsDeliveryFailure(row: Record<string, unknown>): boolean {
         const status = (row as RecipientGridRow).status;
-        return status == CommunicationRecipientStatus.Failed;
+        return status === CommunicationRecipientStatus.Failed;
     }
 
     /**

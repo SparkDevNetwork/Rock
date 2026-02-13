@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <BaseAsyncPicker v-if="!groupTypeGuid"
+    <BaseAsyncPicker v-if="!groupTypeGuid && !hideGroupTypePicker"
                      v-model="internalTypeValue"
                      v-bind="standardProps"
                      :label="label"
@@ -43,6 +43,13 @@
         groupTypeGuid: {
             type: String as PropType<Guid | null>,
             default: null
+        },
+
+        /** If true, the group type picker will be always be hidden, even if no group type is provided. */
+        /** This was added to account for a scenario where the group type is already known and should not be selectable here. */
+        hideGroupTypePicker: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         ...standardAsyncPickerProps

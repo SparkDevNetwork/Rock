@@ -47,6 +47,7 @@
                             :class="icon === iconOption ? 'active' : ''"
                             @click.prevent="selectIcon(iconOption)"
                             :title="iconOption.Title ?? ''"
+                            type="button"
                             v-html="iconOption.IconSvg ?? ''">
                     </button>
                 </div>
@@ -97,7 +98,7 @@
 .selected-icon :deep(svg),
 .selected-icon i {
     height: 16px;
-    width: 16px;
+    width: auto;
     margin: 4px auto;
     flex: 0 1 auto;
     fill: var(--color-interface-stronger);
@@ -289,7 +290,7 @@
         icon.value = undefined;
 
         // If the library isn't loaded, load it.
-        if ((icons.value[library.value] ?? [])?.length == 0) {
+        if ((icons.value[library.value] ?? [])?.length === 0) {
             getIcons();
         }
     });

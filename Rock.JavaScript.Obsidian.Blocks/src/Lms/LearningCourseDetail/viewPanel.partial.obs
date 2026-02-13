@@ -158,7 +158,7 @@
         // Get a distinct list of requirement types and build a section for each.
         const courseRequirements = props.modelValue.courseRequirements ?? [];
         if (courseRequirements) {
-            const distinctRequirementTypes = courseRequirements.map(r => r.requirementType).filter((v, i, a) => a.indexOf(v) == i);
+            const distinctRequirementTypes = courseRequirements.map(r => r.requirementType).filter((v, i, a) => a.indexOf(v) === i);
 
             if (distinctRequirementTypes) {
                 distinctRequirementTypes.forEach(requirementType => {

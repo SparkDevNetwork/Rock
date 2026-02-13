@@ -1,6 +1,6 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :label="label || 'Gender'" :items="items" :showBlankItem="false" :rules="computedRules" :multiple="false" />
+    <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :label="label || 'Gender'" :items="items" :showBlankItem="showBlankItem" :rules="computedRules" :multiple="false" />
 </template>
 
 <script setup lang="ts">
@@ -41,7 +41,7 @@
                 return null;
             }
 
-            if (props.modelValue == "0") {
+            if (props.modelValue === "0") {
                 return {
                     text: unknownLabel.value,
                     value: props.modelValue

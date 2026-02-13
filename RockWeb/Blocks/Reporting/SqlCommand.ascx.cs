@@ -150,8 +150,9 @@ FROM
                         if ( Disallowed.IsMatch( cleaned ) )
                         {
                             nbSuccess.Title = string.Format( "Command completed successfully in {0:N0}ms<br> ", sw.ElapsedMilliseconds );
-                            
-                            nbSuccess.Text = string.Format( "<b>Warning:</b> The query contained one or more SQL commands that modify data or database state, but no changes were made because the transaction was rolled back. To allow these commands to run, set <em>Selection Query</em> to No." );
+
+                            nbSuccess.NotificationBoxType = NotificationBoxType.Warning;
+                            nbSuccess.Text = string.Format( "<br><b>Warning:</b> The query contained one or more SQL commands that modify data or database state, but no changes were made because <b>the transaction was rolled back</b>. To allow these commands to run, set <em>Selection Query</em> to <b>No</b>." );
                             nbSuccess.Visible = true;
                         }
 

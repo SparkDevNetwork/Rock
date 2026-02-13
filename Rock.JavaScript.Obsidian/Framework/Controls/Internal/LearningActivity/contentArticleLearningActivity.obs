@@ -23,7 +23,7 @@
                 <div class="assessment-item assessment-item-reorder-section">
                     <i class="ti ti-menu-2 reorder-handle" :style="reorderIconStyle"></i>
 
-                    <button aria-label="Remove this item" :disabled="disabled" class="btn btn-default btn-square remove-item-button" @click.prevent="items.splice(index, 1)">
+                    <button aria-label="Remove this item" :disabled="disabled" class="btn btn-default btn-square remove-item-button" type="button" @click.prevent="items.splice(index, 1)">
                         <i class="ti ti-x" aria-hidden="true"></i>
                     </button>
                 </div>

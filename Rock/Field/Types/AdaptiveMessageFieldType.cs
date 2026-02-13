@@ -55,9 +55,9 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        protected override List<string> GetSelectableItemTypes( Dictionary<string, string> privateConfigurationValues )
+        protected override bool GetFolderSelectionDisabled( Dictionary<string, string> privateConfigurationValues )
         {
-            return new List<string> { "Item" };
+            return true;
         }
     }
 }

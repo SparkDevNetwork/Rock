@@ -1,0 +1,304 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer sidebar>
+
+        <NotificationBox v-if="showArchivedGroupWarning" :alertType="AlertType.Warning">
+            One or more placement groups on this opportunity have been archived.
+        </NotificationBox>
+
+        <ContentSection light>
+            <div class="basic-fields">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name" label="Name" rules="required" />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="isActive" label="Active" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="publicName" label="Public Name" rules="required" />
+                    </div>
+                    <div class="col-md-4">
+                        <IconPicker v-model="iconCssClass" label="Icon" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ImageUploader v-model="photo" label="Photo" :uploadAsTemporary="false"
+                                       :binaryFileTypeGuid="BinaryFiletype.Default" uploadButtonText="Upload"
+                                       :showDeleteButton="true" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <CampusPicker label="Campuses" v-model="campuses" displayStyle="condensed" multiple />
+                    </div>
+                </div>
+            </div>
+        </ContentSection>
+
+        <!-- Overview -->
+        <ContentSection title="Overview" icon="ti ti-list-details">
+            <!-- Summary -->
+            <ContentStack title="Summary"
+                          description="The content shown as a public summary for this opportunity (e.g., in search results).">
+                <HtmlEditor v-model="summary" :editorHeight="234" :mergeFields="editorMergeFields" />
+            </ContentStack>
+
+            <!-- Details -->
+            <ContentStack title="Details"
+                          description="The full details of this opportunity, displayed on the external website to help individuals learn more about it.">
+                <HtmlEditor v-model="description" :editorHeight="234" :mergeFields="editorMergeFields" />
+            </ContentStack>
+        </ContentSection>
+
+        <!-- Opportunity Attributes -->
+        <ContentSection v-if="hasAttributes" title="Opportunity Attributes" icon="ti ti-tool">
+            <ContentStack title="Opportunity Attributes"
+                          description="Configure the attributes specifically related to this connection opportunity. These are managed in the Connection Type settings.">
+                <div class="opportunity-attributes-style">
+                    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode
+                                              :numberOfColumns="1" />
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <!-- Connection Request Attributes -->
+        <ContentSection title="Connection Request Attributes" icon="ti ti-database">
+            <ConnectionRequestAttributes v-model="connectionRequestAttributes"
+                                         :inheritedConnectionRequestAttributes="inheritedConnectionRequestAttributes" :options="props.options"
+                                         :connectionTypeName="props.modelValue.bag?.connectionTypeName ?? ''"
+                                         :connectionTypeUrl="props.modelValue.bag?.connectionTypeUrl ?? ''" />
+        </ContentSection>
+
+        <!-- Placement Group Configuration AND Placement Groups -->
+        <ContentSection title="Placement Groups" icon="ti ti-route-square">
+            <PlacementGroups v-model="placementGroupsData" @hasArchivedGroup="handleArchivedGroup" />
+        </ContentSection>
+
+        <!-- Connector Groups -->
+        <ContentSection title="Connector Groups" icon="ti ti-users-group">
+            <ConnectorGroups v-model:defaultConnectorsForCampus="defaultConnectorsForCampus" v-model="connectorGroups"
+                             :campuses="campuses" />
+        </ContentSection>
+
+        <!-- Workflows -->
+        <ContentSection title="Workflows" icon="ti ti-settings-automation">
+            <Workflows v-model="connectionWorkflows"
+                       :inheritedConnectionWorkflows="inheritedConnectionWorkflows"
+                       :connectionTypeName="props.modelValue.bag?.connectionTypeName ?? ''"
+                       :connectionTypeUrl="props.modelValue.bag?.connectionTypeUrl ?? ''" :options="props.options" />
+        </ContentSection>
+
+        <!-- Advanced Settings -->
+        <ContentSection title="Advanced Settings" icon="ti ti-adjustments-cog">
+            <ContentStack title="Configurable Options"
+                          description="Select which options to show on the Connection Request for this opportunity type.">
+                <div class="inline-checkbox-bold">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <InlineCheckBox label="Show Status On Transfer" v-model="showStatusOnTransfer"
+                                            help="When enabled, the status field will be shown. Otherwise, the status will not be changeable and will remain the same after the transfer. This allows for workflow logic to change the status and not allow the individual to change it." />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <InlineCheckBox label="Show Campus On Transfer" v-model="showCampusOnTransfer"
+                                            help="When enabled, the transfer modal will display a campus dropdown when transferring a connection request to a different opportunity." />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <InlineCheckBox label="Show Connect Button" v-model="showConnectButton"
+                                            help="When enabled, the Connect button will be shown. Hiding the connect button allows for the connection process to be automated using workflows or for use cases where the concept of 'connection' doesn't make sense." />
+                        </div>
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import { ConnectionOpportunityBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/connectionOpportunityBag";
+    import { ConnectionOpportunityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/connectionOpportunityDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import ConnectionRequestAttributes from "./connectionRequestAttributes.partial.obs";
+    import PlacementGroups from "./placementGroupSection.partial.obs";
+    import ConnectorGroups from "./connectorGroups.partial.obs";
+    import Workflows from "./workflows.partial.obs";
+    import { PlacementGroupConfigBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/placementGroupConfigBag";
+    import { PlacementGroupSectionData } from "./types.partial";
+    import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/placementGroupBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<ConnectionOpportunityBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ConnectionOpportunityDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<ConnectionOpportunityBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const campuses = ref(props.modelValue.bag?.campuses ?? []);
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const publicName = propertyRef(props.modelValue.bag?.publicName ?? "", "PublicName");
+    const iconCssClass = propertyRef(props.modelValue.bag?.iconCssClass ?? "", "IconCssClass");
+    const photo = propertyRef(props.modelValue.bag?.photo ?? null, "Photo");
+    const summary = propertyRef(props.modelValue.bag?.summary ?? "", "Summary");
+    const showStatusOnTransfer = propertyRef(props.modelValue.bag?.showStatusOnTransfer ?? false, "ShowStatusOnTransfer");
+    const showCampusOnTransfer = propertyRef(props.modelValue.bag?.showCampusOnTransfer ?? false, "ShowCampusOnTransfer");
+    const showConnectButton = propertyRef(props.modelValue.bag?.showConnectButton ?? false, "ShowConnectButton");
+
+    const connectionRequestAttributes = ref(props.modelValue?.bag?.connectionRequestAttributes ?? []);
+    const inheritedConnectionRequestAttributes = ref(props.modelValue?.bag?.inheritedConnectionRequestAttributes ?? []);
+    const placementGroupConfigs = ref(props.modelValue.bag?.placementGroupConfigs ?? []);
+    const placementGroups = ref(props.modelValue.bag?.placementGroups ?? []);
+    const connectorGroups = ref(props.modelValue.bag?.connectorGroups ?? []);
+    const defaultConnectorsForCampus = ref<Record<Guid, ListItemBag>>(props.modelValue.bag?.defaultConnectors ?? {});
+    const connectionWorkflows = ref(props.modelValue.bag?.connectionWorkflows ?? []);
+    const inheritedConnectionWorkflows = ref(props.modelValue.bag?.inheritedConnectionWorkflows ?? []);
+
+    // Merge fields available to the Summary and Details HtmlEditors
+    const editorMergeFields = [
+        "GlobalAttribute",
+        "Rock.Model.Person",
+        "Rock.Model.ConnectionOpportunity|Connection Opportunity",
+        "Rock.Model.ConnectionType|Connection Type",
+        "Rock.Model.Campus|Campus"
+    ];
+
+    const showArchivedGroupWarning = ref<boolean>(false);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, publicName, iconCssClass, photo, summary, showStatusOnTransfer, showCampusOnTransfer, showConnectButton];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const hasAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
+    });
+
+    // Combined object for PlacementGroups partial (configs + groups)
+    const placementGroupsData = computed<PlacementGroupSectionData>({
+        get: () => ({
+            configs: placementGroupConfigs.value,
+            groups: placementGroups.value
+        }),
+        set: (val: { configs: PlacementGroupConfigBag[]; groups: PlacementGroupBag[] }) => {
+            placementGroupConfigs.value = (val?.configs ?? []);
+            placementGroups.value = (val?.groups ?? []);
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function handleArchivedGroup(): void {
+        showArchivedGroupWarning.value = true;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(campuses, props.modelValue.bag?.campuses ?? []);
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(publicName, props.modelValue.bag?.publicName ?? "");
+        updateRefValue(iconCssClass, props.modelValue.bag?.iconCssClass ?? "");
+        updateRefValue(photo, props.modelValue.bag?.photo ?? null);
+        updateRefValue(summary, props.modelValue.bag?.summary ?? "");
+        updateRefValue(connectionRequestAttributes, props.modelValue?.bag?.connectionRequestAttributes ?? []);
+        updateRefValue(inheritedConnectionRequestAttributes, props.modelValue?.bag?.inheritedConnectionRequestAttributes ?? []);
+        updateRefValue(placementGroupConfigs, props.modelValue.bag?.placementGroupConfigs ?? []);
+        updateRefValue(placementGroups, props.modelValue.bag?.placementGroups ?? []);
+        updateRefValue(connectorGroups, props.modelValue.bag?.connectorGroups ?? []);
+        updateRefValue(defaultConnectorsForCampus, props.modelValue.bag?.defaultConnectors ?? {});
+        updateRefValue(connectionWorkflows, props.modelValue.bag?.connectionWorkflows ?? []);
+        updateRefValue(inheritedConnectionWorkflows, props.modelValue.bag?.inheritedConnectionWorkflows ?? []);
+        updateRefValue(showStatusOnTransfer, props.modelValue.bag?.showStatusOnTransfer ?? false);
+        updateRefValue(showCampusOnTransfer, props.modelValue.bag?.showCampusOnTransfer ?? false);
+        updateRefValue(showConnectButton, props.modelValue.bag?.showConnectButton ?? false);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, connectionRequestAttributes, campuses, placementGroupConfigs, placementGroups, connectorGroups, connectionWorkflows, defaultConnectorsForCampus, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<ConnectionOpportunityBag> = {
+            bag: { ...props.modelValue.bag } as ConnectionOpportunityBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "connectionRequestAttributes", connectionRequestAttributes.value);
+        setPropertiesBoxValue(newValue, "campuses", campuses.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "publicName", publicName.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "photo", photo.value);
+        setPropertiesBoxValue(newValue, "summary", summary.value);
+        setPropertiesBoxValue(newValue, "placementGroupConfigs", placementGroupConfigs.value);
+        setPropertiesBoxValue(newValue, "placementGroups", placementGroups.value);
+        setPropertiesBoxValue(newValue, "connectorGroups", connectorGroups.value);
+        setPropertiesBoxValue(newValue, "defaultConnectors", defaultConnectorsForCampus.value);
+        setPropertiesBoxValue(newValue, "connectionWorkflows", connectionWorkflows.value);
+        setPropertiesBoxValue(newValue, "showStatusOnTransfer", showStatusOnTransfer.value);
+        setPropertiesBoxValue(newValue, "showCampusOnTransfer", showCampusOnTransfer.value);
+        setPropertiesBoxValue(newValue, "showConnectButton", showConnectButton.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

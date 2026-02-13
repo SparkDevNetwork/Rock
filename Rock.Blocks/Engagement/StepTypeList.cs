@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
@@ -242,7 +243,6 @@ namespace Rock.Blocks.Engagement
                         CompletedCount = steps.Count( s => s.StepStatus != null && s.StepStatus.IsCompleteStatus )
                     } );
 
-
             return queryable;
         }
 
@@ -250,6 +250,10 @@ namespace Rock.Blocks.Engagement
         protected override List<StepTypeWithCounts> GetListItems( IQueryable<StepTypeWithCounts> queryable, RockContext rockContext )
         {
             var items = queryable.ToList();
+
+            // Load attribute values for the grid-selected attributes.
+            GridAttributeLoader.LoadFor( items, a => a.StepType, _gridAttributes.Value, rockContext );
+
             return items.Where( st => st.StepType.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
         }
 
@@ -262,8 +266,13 @@ namespace Rock.Blocks.Engagement
         /// <inheritdoc/>
         protected override GridBuilder<StepTypeWithCounts> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<StepTypeWithCounts>
+            {
+                LavaObject = row => row.StepType
+            };
+
             return new GridBuilder<StepTypeWithCounts>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.StepType.IdKey )
                 .AddTextField( "iconCssClass", a => a.StepType.IconCssClass )
                 .AddTextField( "name", a => a.StepType.Name )

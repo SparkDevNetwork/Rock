@@ -13,7 +13,7 @@
                     <Rock:NotificationBox runat="server" ID="nbNotAuthorized" NotificationBoxType="Warning" Title="Sorry" Text="You are not authorized to merge people. If you find duplicates through a search, a report, or any other list of people, you can submit a request from that list to have the duplicates merged." Visible="false" />
                     <Rock:NotificationBox runat="server" ID="nbMergeRequestSuccess" NotificationBoxType="Success" Title="Success" Text="Your merge request has been sent to the data integrity team to process." Visible="false" />
                     <Rock:NotificationBox runat="server" ID="nbMergeRequestAlreadySubmitted" NotificationBoxType="Info" Title="" Text="This merge has already been requested. You might be seeing this message because you are not authorized to merge records. You can update the optional note if you have more information to add." Visible="false" />
-
+                    <Rock:RockCheckBox runat="server" ID="cbShouldNotifyAfterMerge" Checked="true" Label="Notify Me When Merge Complete" Help="When enabled, you will receive an email after the merge operation has been completed." />
                     <Rock:RockTextBox runat="server" ID="tbEntitySetNote" Label="Optional Note" Rows="4" TextMode="MultiLine" Visible="false" />
                     <div class="actions">
                         <asp:LinkButton ID="btnSaveRequestNote" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveRequestNote_Click" Visible="false" />
@@ -27,6 +27,7 @@
                     <Rock:PersonPicker ID="ppAdd" runat="server" Label="Add Another Person" OnSelectPerson="ppAdd_SelectPerson" />
 
                     <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
+                    <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
 
                     <Rock:NotificationBox
                         runat="server"
@@ -153,6 +154,10 @@
             .matching-data {
                 visibility: collapse;
                 background-color: var(--color-interface-softer);
+            }
+
+            .merge-field-cell {
+                max-width: 150px;
             }
         </style>
 

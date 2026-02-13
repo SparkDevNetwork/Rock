@@ -59,6 +59,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<ConnectionRequestStatusHistory>( Context ).Queryable().Any( a => a.PreviousConnectionStatusId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", ConnectionStatus.FriendlyTypeName, ConnectionRequestStatusHistory.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<ConnectionStatusAutomation>( Context ).Queryable().Any( a => a.DestinationStatusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", ConnectionStatus.FriendlyTypeName, ConnectionStatusAutomation.FriendlyTypeName );
@@ -148,6 +154,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this ConnectionStatus target, ConnectionStatus source )
         {
             target.Id = source.Id;
+            target.AutoFutureFollowUpPauseInDays = source.AutoFutureFollowUpPauseInDays;
             target.AutoInactivateState = source.AutoInactivateState;
             target.ConnectionTypeId = source.ConnectionTypeId;
             target.Description = source.Description;
@@ -157,8 +164,11 @@ namespace Rock.Model
             target.IsActive = source.IsActive;
             target.IsCritical = source.IsCritical;
             target.IsDefault = source.IsDefault;
+            target.IsNoteRequiredOnCompletion = source.IsNoteRequiredOnCompletion;
             target.Name = source.Name;
             target.Order = source.Order;
+            target.RequestStatusDueDateOffsetInDays = source.RequestStatusDueDateOffsetInDays;
+            target.RequestStatusDueSoonOffsetInDays = source.RequestStatusDueSoonOffsetInDays;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

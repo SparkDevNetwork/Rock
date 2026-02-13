@@ -1,0 +1,172 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="check-in-details flex-fill">
+        <template v-for="(record, index) in records">
+            <div :class="getAdditionalClassesForRecord(record)" class="check-in-details-tag">
+                <span class="label label-default">{{ record.code }}</span>
+            </div>
+
+            <div class="d-flex flex-column check-in-details-group"
+                 :class="getAdditionalClassesForRecord(record)">
+                <div>
+                    {{ record.group.text }}
+                </div>
+                <div class="text-muted text-sm">
+                    {{ record.area.text }}
+                </div>
+            </div>
+
+            <div :class="getAdditionalClassesForRecord(record)" class="check-in-details-schedule">
+                <div>{{ record.schedule.text }}</div>
+            </div>
+
+            <div v-if="getStateVisible(record)"
+                 style="text-align: center;"
+                 :style="getStateStyle(record)"
+                 :class="getAdditionalClassesForRecord(record)"
+                 class="check-in-details-state"
+                 v-html="getStatusBadgeHtml(record.status)">
+            </div>
+
+            <div v-if="context.mode.value !== RosterViewMode.All"
+                 :class="getAdditionalClassesForRecord(record)" class="check-in-details-duration">
+                <div>{{ getDurationText(record.checkInDuration) }}</div>
+            </div>
+
+            <div v-if="index < records.length - 1"
+                 class="check-in-details-divider"
+                 :style="getDividerStyle(record)"></div>
+        </template>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, CSSProperties } from "vue";
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { RosterSingleAttendanceRecord, RosterViewMode } from "../types.partial";
+    import { getDurationText, getStatusBadgeHtml, useRosterContext } from "../utilities.partial";
+
+    const props = defineProps(standardCellProps);
+    const context = useRosterContext();
+
+    // #region Computed Values
+
+    /** The attendance records for the current row. */
+    const records = computed((): RosterSingleAttendanceRecord[] => {
+        if (!props.column.field) {
+            return [];
+        }
+
+        const value = props.row[props.column.field] as RosterSingleAttendanceRecord[];
+
+        if (typeof value !== "object" || !Array.isArray(value)) {
+            return [];
+        }
+
+        return value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Determines if the status badge for the given record should be visible.
+     *
+     * @param record The attendance record to check.
+     *
+     * @returns True if the status badge should be visible; otherwise false.
+     */
+    function getStateVisible(record: RosterSingleAttendanceRecord): boolean {
+        if (context.mode.value !== RosterViewMode.All) {
+            return false;
+        }
+
+        const index = records.value.indexOf(record);
+
+        if (index <= 0) {
+            return true;
+        }
+
+        // If the status is different from the previous record, show it.
+        return record.status !== records.value[index - 1].status;
+    }
+
+    /**
+     * Gets the value of the style attribute for the given attendance record.
+     *
+     * @param record The attendance record.
+     *
+     * @returns The value of the style attribute for this record.
+     */
+    function getStateStyle(record: RosterSingleAttendanceRecord): CSSProperties {
+        const index = records.value.indexOf(record);
+
+        if (index < 0) {
+            return {};
+        }
+
+        let height = 0;
+
+        // Determine how many records have the same status after this one.
+        for (let i = index; i < records.value.length; i++) {
+            if (records.value[i].status === record.status) {
+                height++;
+            }
+            else {
+                break;
+            }
+        }
+
+        return {
+            gridRowStart: (index * 2) + 1,
+            gridRowEnd: (index * 2) + (height * 2) + 1,
+            gridColumnStart: 4,
+        };
+    }
+
+    /**
+     * Gets the value of the style attribute for the divider for the given
+     * attendance record.
+     *
+     * @param record The attendance record being displayed.
+     *
+     * @returns The value of the style attribute for the divider.
+     */
+    function getDividerStyle(record: RosterSingleAttendanceRecord): CSSProperties {
+        const index = records.value.indexOf(record);
+
+        if (index < 0) {
+            return {};
+        }
+
+        let gridColumnEnd = context.mode.value === RosterViewMode.All ? 5 : 6;
+
+        if (records.value.length > index + 1) {
+            if (records.value[index + 1].status === record.status) {
+                gridColumnEnd--;
+            }
+        }
+
+        return {
+            gridRowStart: (index + 1) * 2,
+            gridColumnStart: 1,
+            gridColumnEnd,
+        };
+    }
+
+    /**
+     * Gets any additional CSS classes that should be applied to the given record.
+     *
+     * @param record The attendance record.
+     *
+     * @returns An array of additional CSS classes to apply.
+     */
+    function getAdditionalClassesForRecord(record: RosterSingleAttendanceRecord): string[] {
+        // If the record is removed and there is at least one other record that
+        // is not removed, apply a class to indicate this record is not valid.
+        return !records.value.every(r => r.isRemoved) && record.isRemoved ? ["o-50"] : [];
+    }
+
+    // #endregion
+</script>

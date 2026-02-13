@@ -30,7 +30,14 @@ namespace Rock.Jobs
     [DisplayName( "Run SQL" )]
     [Description( "This job runs quick SQL queries on a schedule." )]
 
-    [CodeEditorField( "SQL Query", "SQL query to run", CodeEditorMode.Sql, CodeEditorTheme.Rock, 200, true, "", "General", 0, "SQLQuery" )]
+    [CodeEditorField( "SQL Query",
+        Description = "SQL query to run",
+        EditorMode = CodeEditorMode.Sql,
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "General",
+        Order = 0,
+        Key = "SQLQuery" )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the SQL default (30 seconds).", false, 180, "General", 1, "CommandTimeout")]
     public class RunSQL : RockJob
     {

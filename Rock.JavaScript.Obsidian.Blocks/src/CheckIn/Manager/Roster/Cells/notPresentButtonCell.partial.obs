@@ -1,0 +1,25 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockButton btnType="default"
+                autoDisable
+                :disabled="!getSingleAttendanceRecords(record).some(a => a.isPresenceSupported)"
+                @click.stop="rosterContext.onAttendanceNotPresentClick(record)"
+                title="Not Present">
+        <i class="ti ti-user-off"></i>
+    </RockButton>
+</template>
+
+<script setup lang="ts">
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { computed } from "vue";
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { getSingleAttendanceRecords, useRosterContext } from "../utilities.partial";
+    import { RosterAttendanceRecord } from "../types.partial";
+
+    const props = defineProps(standardCellProps);
+    const rosterContext = useRosterContext();
+
+    const record = computed((): RosterAttendanceRecord => {
+        return props.row as RosterAttendanceRecord;
+    });
+</script>

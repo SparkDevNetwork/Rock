@@ -56,7 +56,6 @@ namespace RockWeb.Blocks.Connection
                             <p><strong>ConnectionTypes, DetailPage, ConnectionRequestCounts, SumTotalConnectionRequests</strong>)</p>
                          </i>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
         DefaultValue = Lava.ConnectionTypes

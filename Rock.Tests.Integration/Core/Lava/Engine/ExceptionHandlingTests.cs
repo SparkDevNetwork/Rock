@@ -62,7 +62,7 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
 
                 TestHelper.DebugWriteRenderResult( engine, input, outputText );
 
-                Assert.IsTrue( outputText.Contains("Unknown tag" ) && outputText.Contains("invalidTagName") );
+                Assert.IsTrue( outputText.Contains( "Unknown tag" ) && outputText.Contains( "invalidTagName" ) );
             } );
         }
     }

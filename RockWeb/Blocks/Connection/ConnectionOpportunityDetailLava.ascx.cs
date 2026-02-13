@@ -46,7 +46,6 @@ namespace RockWeb.Blocks.Connection
         "Lava Template",
         Description = "Lava template to use to display the package details.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = @"{% include '~~/Assets/Lava/OpportunityDetail.lava' %}",

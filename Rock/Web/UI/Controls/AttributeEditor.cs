@@ -182,6 +182,11 @@ namespace Rock.Web.UI.Controls
         protected DynamicPlaceholder _phDefaultValue;
 
         /// <summary>
+        /// The value format expected in the raw value.
+        /// </summary>
+        protected RockLiteral _lValueFormat;
+
+        /// <summary>
         /// The advanced panel widget
         /// </summary>
         protected PanelWidget _pwAdvanced;
@@ -1446,6 +1451,12 @@ namespace Rock.Web.UI.Controls
             _phDefaultValue.ID = "phDefaultValue";
             Controls.Add( _phDefaultValue );
 
+            _lValueFormat = new RockLiteral();
+            _lValueFormat.Label = "Value Format";
+            _lValueFormat.ID = "lValueFormat";
+            _lValueFormat.Visible = false;
+            Controls.Add( _lValueFormat );
+
             _pwAdvanced = new PanelWidget();
             _pwAdvanced.ID = "pwAdvanced";
             _pwAdvanced.Title = "Advanced Settings";
@@ -1634,6 +1645,12 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
+            if ( FieldTypeIdState.HasValue )
+            {
+                var configurationValues = FieldTypeQualifierStateJSON.FromJsonOrNull<Dictionary<string, ConfigurationValue>>();
+
+                UpdateFieldValueFormat( FieldTypeIdState.Value, configurationValues ?? new Dictionary<string, ConfigurationValue>() );
+            }
 
             // Hide the validation summary if there is already one on the page with the same ValidationGroup.
             var parentSummary = this.FindFirstInParentContainerWhere( x => x.GetType() == typeof( ValidationSummary ) && ( ( ValidationSummary ) x ).ValidationGroup == validationGroup );
@@ -1753,6 +1770,7 @@ namespace Rock.Web.UI.Controls
             _lFieldType.RenderControl( writer );
             _phQualifiers.RenderControl( writer );
             _phDefaultValue.RenderControl( writer );
+            _lValueFormat.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
@@ -2107,6 +2125,38 @@ namespace Rock.Web.UI.Controls
                         rockControl.Label = "Default Value";
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Updates the Value Format label to match the current field type
+        /// and configuration.
+        /// </summary>
+        /// <param name="fieldTypeId">The identifier of the configured field type.</param>
+        /// <param name="qualifiers">The configuration values for the field type.</param>
+        private void UpdateFieldValueFormat( int fieldTypeId, Dictionary<string, ConfigurationValue> qualifiers )
+        {
+            try
+            {
+                var field = FieldTypeCache.Get( fieldTypeId ).Field;
+
+                if ( field is Field.FieldType hintField )
+                {
+                    var hints = hintField.GetFieldHints( qualifiers.ToDictionary( kvp => kvp.Key, kvp => kvp.Value.Value ) );
+
+                    _lValueFormat.Text = hints?.ValueFormat;
+                    _lValueFormat.Visible = _lValueFormat.Text.IsNotNullOrWhiteSpace();
+                }
+                else
+                {
+                    _lValueFormat.Text = string.Empty;
+                    _lValueFormat.Visible = false;
+                }
+            }
+            catch
+            {
+                _lValueFormat.Text = string.Empty;
+                _lValueFormat.Visible = false;
             }
         }
 

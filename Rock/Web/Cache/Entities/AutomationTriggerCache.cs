@@ -140,16 +140,10 @@ namespace Rock.Web.Cache
         /// Creates all the monitors for the triggers that are currently active.
         /// This is intended to be used during Rock startup.
         /// </summary>
-        internal static void CreateAllMonitors()
+        /// <param name="container">The container for all the automation trigger components.</param>
+        internal static void CreateAllMonitors( AutomationTriggerContainer container )
         {
-            var container = RockApp.Current.GetService<AutomationTriggerContainer>();
-
-            if ( container == null )
-            {
-                return;
-            }
-
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Don't use cache since we might get executed before the cache
                 // is ready and valid.
@@ -199,10 +193,11 @@ namespace Rock.Web.Cache
         /// <param name="triggerId">The identifier of the automation trigger that was added, modified or deleted.</param>
         internal static void UpdateTriggerMonitor( int triggerId )
         {
-            var container = RockApp.Current.GetService<AutomationTriggerContainer>();
-
-            using ( var rockContext = new RockContext() )
+            using ( var scope = RockApp.Current.CreateScope() )
             {
+                var container = scope.ServiceProvider.GetRequiredService<AutomationTriggerContainer>();
+                var rockContext = scope.ServiceProvider.GetRequiredService<RockContext>();
+
                 // Don't use cache since we might get executed before the cache
                 // flush bus message has gone through.
                 var trigger = new AutomationTriggerService( rockContext ).Get( triggerId );

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div v-if="messagePreview" class="communication-detail-message-details">
+    <div v-if="messagePreview" class="communication-detail-message-details pt-spacing-md contentsection-list">
 
         <ContentSection title="Details" icon="ti ti-list" disableCollapse>
             <div class="communication-detail-message-details-metadata">
@@ -154,11 +154,12 @@
 </template>
 
 <style scoped>
-.communication-detail-message-details {
+/* .communication-detail-message-details {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-large);
-}
+    padding-top: var(--spacing-medium);
+} */
 
 .communication-detail-message-details-info-item {
     display: flex;
@@ -242,7 +243,7 @@
 
     const isEmail = computed((): boolean => {
         return communicationDetail.value?.type === CommunicationType.Email
-            || mediumFilter.value == CommunicationType.Email;
+            || mediumFilter.value === CommunicationType.Email;
     });
 
     const isSms = computed((): boolean => {
@@ -277,7 +278,7 @@
     });
 
     const approvedDateTimeTooltip = computed((): string => {
-        return sendRockDateTime.value?.toASPString("g") ?? "";
+        return approvedRockDateTime.value?.toASPString("g") ?? "";
     });
 
     const fromName = computed((): string => {

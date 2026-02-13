@@ -32,7 +32,7 @@ namespace Rock.Lava.Shortcodes
     [LavaShortcodeMetadata(
         Name = "Network Graph",
         TagName = "networkgraph",
-        Description = "Displays a set of data as a diagram showing how different nodes are interconnected with each other.",
+        Description = "Visualize data connections using an interactive network diagram.",
         Documentation = DocumentationMetadata,
         Parameters = ParameterNamesMetadata,
         Categories = "C3270142-E72E-4FBF-BE94-9A2505DE7D54" )]

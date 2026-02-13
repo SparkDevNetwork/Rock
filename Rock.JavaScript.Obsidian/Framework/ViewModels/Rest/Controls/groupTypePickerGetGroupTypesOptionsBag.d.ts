@@ -28,6 +28,9 @@ import { Guid } from "@Obsidian/Types";
  * the GroupTypePicker control.
  */
 export type GroupTypePickerGetGroupTypesOptionsBag = {
+    /** List of GUIDs for the group types we want to exclude */
+    excludeGroupTypes?: Guid[] | null;
+
     /** List of GUIDs for the group types we want to retrieve */
     groupTypes?: Guid[] | null;
 

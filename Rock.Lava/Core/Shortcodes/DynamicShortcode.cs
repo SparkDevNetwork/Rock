@@ -275,8 +275,11 @@ namespace Rock.Lava
                 }
             }
 
-            // Render the shortcode template in a child scope that includes the shortcode parameters.
-            context.EnterChildScope();
+            var isIsolatedScope = _shortcode.ShortcodeScopeBehavior == Enums.Cms.ShortcodeScopeBehavior.Isolated;
+            if ( isIsolatedScope )
+            {
+                context.EnterChildScope();
+            }
 
             LavaRenderResult results;
             try
@@ -303,7 +306,10 @@ namespace Rock.Lava
             }
             finally
             {
-                context.ExitChildScope();
+                if ( isIsolatedScope )
+                {
+                    context.ExitChildScope();
+                }
             }
 
             // Reset the original parameters in the context
@@ -502,6 +508,5 @@ namespace Rock.Lava
                 throw new Exception( $"Shortcode configuration error. \"{_tagName}\" is not initialized." );
             }
         }
-
     }
 }

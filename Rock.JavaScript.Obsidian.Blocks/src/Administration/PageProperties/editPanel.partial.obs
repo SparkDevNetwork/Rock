@@ -176,7 +176,6 @@
                     <CodeEditor v-model="headerContent"
                                 label="Header Content"
                                 mode="lava"
-                                theme="rock"
                                 :editorHeight="400"
                                 help="Additional HTML content to include in the &amp;lt;head&amp;gt; section of the rendered page." />
                 </div>
@@ -184,12 +183,6 @@
         </div>
     </div>
 </template>
-
-<style scoped>
-.tabbed-bar {
-    padding: 0;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";

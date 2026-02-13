@@ -196,16 +196,25 @@ namespace Rock.Field.Types
                             Value = binaryFileTypeGuid.ToString()
                         }.ToCamelCaseJson( false, true );
 
-                        configurationValues[BINARY_FILE_OPTIONS] = new BinaryFileService( rockContext )
-                            .Queryable()
-                            .Where( f => f.BinaryFileTypeId == binaryFileType.Id && !f.IsTemporary )
-                            .OrderBy( f => f.FileName )
-                            .Select( t => new ListItemBag
-                            {
-                                Value = t.Guid.ToString(),
-                                Text = t.FileName
-                            } )
-                            .ToList().ToCamelCaseJson( false, true );
+                        // Only load the file options if the field type is
+                        // either this exact instance (not a subclass) or is
+                        // the subclass LabelFieldType. All the others do not
+                        // use pickers so loading the options would be wasteful.
+                        var thisType = GetType();
+
+                        if ( thisType == typeof( BinaryFileFieldType ) || thisType == typeof( LabelFieldType ) )
+                        {
+                            configurationValues[BINARY_FILE_OPTIONS] = new BinaryFileService( rockContext )
+                                .Queryable()
+                                .Where( f => f.BinaryFileTypeId == binaryFileType.Id && !f.IsTemporary )
+                                .OrderBy( f => f.FileName )
+                                .Select( t => new ListItemBag
+                                {
+                                    Value = t.Guid.ToString(),
+                                    Text = t.FileName
+                                } )
+                                .ToList().ToCamelCaseJson( false, true );
+                        }
                     }
 
                     return configurationValues;

@@ -372,7 +372,7 @@
 
         // Clear the schedule guid value if it is no longer an option.
         const currentServiceTimes = serviceTimes.value;
-        if (!currentServiceTimes || currentServiceTimes.every(s => s.value != oldScheduleGuid)) {
+        if (!currentServiceTimes || currentServiceTimes.every(s => s.value !== oldScheduleGuid)) {
             scheduleGuid.value = null;
         }
     }

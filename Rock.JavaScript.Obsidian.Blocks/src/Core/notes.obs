@@ -15,6 +15,7 @@
                     :showAvatar="config.usePersonIcon"
                     :lightMode="config.isLightMode"
                     :autoExpandReplies="config.expandReplies"
+                    v-model:noteTypeIdKeyFilter="selectedNoteType"
                     @editNote="onEditNote"
                     @watchNote="onWatchNote"
                     @saveNote="onSaveNote"
@@ -22,8 +23,10 @@
 </template>
 
 <script setup lang="ts">
+    import { ref, watch } from "vue";
+    import { PreferenceKey } from "./Notes/types.partial";
     import NotesContainer from "@Obsidian/Controls/Internal/notesContainer.obs";
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { NotesInitializationBox } from "@Obsidian/ViewModels/Blocks/Core/Notes/notesInitializationBox";
     import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
     import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Controls/saveNoteRequestBag";
@@ -39,6 +42,9 @@
 
     // Only show the block if we have a context entity.
     const isBlockVisible = !!config.entityIdKey;
+    const preferences = usePersonPreferences().blockPreferences;
+
+    const selectedNoteType = ref(preferences.getValue(PreferenceKey.SelectedNoteType) ?? "");
 
     // #endregion
 
@@ -110,6 +116,12 @@
     }
 
     // #endregion
+
+    watch(selectedNoteType, async () => {
+        preferences.setValue(PreferenceKey.SelectedNoteType, selectedNoteType.value);
+
+        await preferences.save();
+    });
 
     onConfigurationValuesChanged(useReloadBlock());
 </script>

@@ -1,76 +1,97 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <fieldset>
-        <div class="row">
-            <div class="col-md-6">
-                <TextBox v-model="name"
-                         label="Name"
-                         rules="required" />
-            </div>
+    <ContentSectionContainer sidebar>
+        <ContentSection light>
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name"
+                                 label="Name"
+                                 rules="required" />
+                    </div>
 
-            <div class="col-md-6">
-                <CheckBox v-model="isActive"
-                          label="Active" />
-            </div>
-        </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="isActive"
+                                  label="Active" />
+                    </div>
+                </div>
 
-        <TextBox v-model="description"
-                 label="Description"
-                 textMode="multiline" />
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline" />
 
-        <div class="row">
-            <div class="col-md-6">
+                <AttributeValuesContainer v-model="coreAttributeValues" :attributes="coreAttributes" isEditMode :numberOfColumns="1" />
+
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="General"
+                        icon="ti ti-settings">
+            <ContentStack title="Campus Profile"
+                          description="Key details about the campus, including status, type, dates, and leadership.">
+
                 <DefinedValuePicker v-model="campusStatusValue"
                                     label="Status"
-                                    :definedTypeGuid="DefinedType.CampusStatus" />
+                                    :definedTypeGuid="DefinedType.CampusStatus"
+                                    :displayStyle="PickerDisplayStyle.List"
+                                    :columnCount="1"
+                                    :multiple="false" />
 
-                <DatePicker v-model="openedDate"
-                            label="Opened Date" />
+                <DefinedValuePicker v-model="campusTypeValue"
+                                    label="Type"
+                                    :definedTypeGuid="DefinedType.CampusType"
+                                    :displayStyle="PickerDisplayStyle.List"
+                                    :columnCount="1"
+                                    :multiple="false" />
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <DatePicker v-model="openedDate"
+                                    label="Opened Date" />
+                    </div>
+                    <div class="col-md-4">
+                        <DatePicker v-model="closedDate"
+                                    label="Closed Date" />
+                    </div>
+                </div>
 
                 <TextBox v-model="shortCode"
-                         label="Code" />
-
-                <DropDownList v-if="isTimeZoneVisible"
-                              v-model="timeZoneId"
-                              label="Time Zone"
-                              help="The time zone you want certain time calculations of the Campus to operate in. Leave this blank to use the default Rock TimeZone."
-                              :items="timeZoneOptions" />
+                         label="Code"
+                         help="A short identifier for this campus, useful for naming conventions and reporting (e.g., “MAIN” for “Main Campus”)." />
 
                 <PersonPicker v-model="leaderPersonAlias"
                               label="Campus Leader" />
 
-                <KeyValueList v-model="serviceTimes"
-                              label="Service Times"
-                              keyPlaceholder="Day"
-                              valuePlaceholder="Time"
-                              help="A list of days and times that this campus has services." />
-            </div>
+                <DropDownList v-if="isTimeZoneVisible"
+                              v-model="timeZoneId"
+                              label="Time Zone"
+                              help="Select the time zone for this campus. Leave blank to use Rock's default time zone."
+                              :items="timeZoneOptions" />
 
-            <div class="col-md-6">
-                <DefinedValuePicker v-model="campusTypeValue"
-                                    label="Type"
-                                    :definedTypeGuid="DefinedType.CampusType" />
+            </ContentStack>
 
-                <DatePicker v-model="closedDate"
-                            label="Closed Date" />
+            <ContentStack title="Location & Contact"
+                          description="Provides the campus's physical location and key contact details, including phone and website.">
 
-                <UrlLinkBox v-model="url"
-                            label="URL" />
+                <LocationPicker v-model="location"
+                                label="Location"
+                                help="Select the primary location for this campus."
+                                rules="required" />
 
                 <PhoneNumberBox v-model="phoneNumber"
                                 v-model:countryCode="phoneNumberCountryCode"
                                 label="Phone Number" />
 
-                <LocationPicker v-model="location"
-                                label="Location"
-                                help="Select a Campus location."
-                                rules="required" />
-            </div>
-        </div>
+                <UrlLinkBox v-model="url"
+                            label="URL" />
 
-        <div class="row">
-            <div class="col-md-6">
-                <RockLabel>Campus Schedules</RockLabel>
+            </ContentStack>
+
+        </ContentSection>
+
+        <ContentSection title="Schedules"
+                        icon="ti ti-calendar">
+            <ContentStack>
                 <Grid :data="scheduleGridData"
                       light
                       liveUpdates
@@ -80,12 +101,14 @@
                     <TextColumn name="Schedule" title="Schedule" field="schedule" />
                     <TextColumn name="Type" title="Type" field="type" />
                     <EditColumn :onClick="onEditScheduleClick" />
-                    <DeleteColumn :onClick="onDeleteScheduleClick"  />
+                    <DeleteColumn :onClick="onDeleteScheduleClick" />
                 </Grid>
-            </div>
+            </ContentStack>
+        </ContentSection>
 
-            <div class="col-md-6">
-                <RockLabel>Topics</RockLabel>
+        <ContentSection title="Topics"
+                        icon="ti ti-message-2-exclamation">
+            <ContentStack>
                 <Grid :data="topicGridData"
                       light
                       liveUpdates
@@ -96,13 +119,32 @@
                     <TextColumn name="Email" title="Email" field="email" />
                     <BooleanColumn name="Public" title="Public" field="public" />
                     <EditColumn :onClick="onEditTopicClick" />
-                    <DeleteColumn :onClick="onDeleteTopicClick"  />
+                    <DeleteColumn :onClick="onDeleteTopicClick" />
                 </Grid>
-            </div>
-        </div>
+            </ContentStack>
+        </ContentSection>
 
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
-    </fieldset>
+        <ContentSection title="Attributes"
+                        icon="ti ti-binary-tree-2">
+            <ContentStack title="Campus Attributes"
+                          description="Configure custom attributes for this campus.">
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="1" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Legacy"
+                        icon="ti ti-file-settings">
+            <ContentStack title="Service Times"
+                          description="Note: The Service Times setting will be removed in an upcoming release. Please begin transitioning to the new Campus Schedules feature, which provides improved flexibility and long-term support.">
+                <KeyValueList v-model="serviceTimes"
+                              label="Service Times"
+                              keyPlaceholder="Day"
+                              valuePlaceholder="Time"
+                              help="A list of the days and times when this campus holds services." />
+            </ContentStack>
+        </ContentSection>
+
+    </ContentSectionContainer>
 
     <!-- Campus Schedule -->
     <Modal v-model="isScheduleModalVisible"
@@ -112,9 +154,9 @@
         <SchedulePicker label="Schedule" v-model="schedule" :multiple="false" rules="required" />
 
         <DefinedValuePicker v-model="campusScheduleType"
-                        label="Schedule Type"
-                        :definedTypeGuid="DefinedType.ScheduleType"
-                        rules="required" />
+                            label="Schedule Type"
+                            :definedTypeGuid="DefinedType.ScheduleType"
+                            rules="required" />
     </Modal>
 
     <!-- Campus Topics -->
@@ -123,17 +165,17 @@
            saveText="OK"
            @save="onSaveTopic">
         <DefinedValuePicker v-model="campusTopicType"
-                        label="Topic Type"
-                        :definedTypeGuid="DefinedType.TopicType"
-                        help="A campus can only have one instance of a topic entry."
-                        rules="required" />
+                            label="Topic Type"
+                            :definedTypeGuid="DefinedType.TopicType"
+                            help="A campus can only have one instance of a topic entry."
+                            rules="required" />
 
         <EmailBox v-model="campusTopicEmail"
-                        label="Email"
-                        rules="required" />
+                  label="Email"
+                  rules="required" />
 
         <CheckBox v-model="isCampusTopicPublic"
-                        label="Public" />
+                  label="Public" />
     </Modal>
 </template>
 
@@ -153,7 +195,6 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
-    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";
     import { CampusDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusDetailOptionsBag";
@@ -167,7 +208,11 @@
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import  Grid,{ DeleteColumn, EditColumn, TextColumn, BooleanColumn } from "@Obsidian/Controls/grid";
+    import Grid, { DeleteColumn, EditColumn, TextColumn, BooleanColumn } from "@Obsidian/Controls/grid";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 
     const props = defineProps({
         modelValue: {
@@ -190,6 +235,9 @@
 
     const attributes = ref(props.modelValue.bag?.attributes ?? {});
     const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const coreAttributes = ref(props.modelValue.bag?.coreAttributes ?? {});
+    const coreAttributeValues = ref(props.modelValue.bag?.coreAttributeValues ?? {});
+
     const campusStatusValue = propertyRef(props.modelValue.bag?.campusStatusValue ?? null, "CampusStatusValueId");
     const campusTypeValue = propertyRef(props.modelValue.bag?.campusTypeValue ?? null, "CampusTypeValueId");
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
@@ -282,7 +330,7 @@
     /**
      * Called when the "+" add button on the Campus Schedules grid is clicked.
      */
-     const onAddScheduleClick = (): void => {
+    const onAddScheduleClick = (): void => {
         editingSchedule = null;
         // Default the Schedule Type to the Weekend Service : Copying over the logic from the old Webform Block.
         campusScheduleType.value = defaultScheduleType;
@@ -292,7 +340,7 @@
     /**
      * Called when the "+" add button on the Campus Topics grid is clicked.
      */
-     function onAddTopicClick(): void {
+    function onAddTopicClick(): void {
         campusTopicGuid.value = null;
         campusTopicType.value = null;
         campusTopicEmail.value = "";
@@ -305,7 +353,7 @@
      *
      * @param key The schedule key to be deleted.
      */
-     const onDeleteScheduleClick = (key: string): void => {
+    const onDeleteScheduleClick = (key: string): void => {
         campusSchedules.value = campusSchedules.value.filter(s => s.guid !== key) ?? [];
     };
 
@@ -314,8 +362,8 @@
      *
      * @param key The topic key to be deleted.
      */
-     const onDeleteTopicClick = (key: string): void => {
-        if(campusTopics.value == null) {
+    const onDeleteTopicClick = (key: string): void => {
+        if (campusTopics.value == null) {
             return;
         }
 
@@ -351,11 +399,11 @@
         isTopicsModalVisible.value = true;
     };
 
-     /**
-     * Called when a schedule is ready to be saved.
-     */
-     function onSaveSchedule(): void {
-        if(campusSchedules.value == null) {
+    /**
+    * Called when a schedule is ready to be saved.
+    */
+    function onSaveSchedule(): void {
+        if (campusSchedules.value == null) {
             return;
         }
         // The `editingSchedule` variable happens to be null if a new schedule is being added.
@@ -377,20 +425,20 @@
     }
 
 
-     /**
-     * Called when a topic is ready to be saved.
-     */
-     function onSaveTopic(): void {
-        if(campusTopics.value == null) {
+    /**
+    * Called when a topic is ready to be saved.
+    */
+    function onSaveTopic(): void {
+        if (campusTopics.value == null) {
             return;
         }
         // The `editingTopic` variable happens to be null if a new topic is being added.
         // The "if block" contains the logic to add the new topic if needed.
 
-        let editingTopic = campusTopics.value.find(c => c.type?.value === campusTopicType.value?.value ?? false) || null;
+        let editingTopic = campusTopics.value.find(c => c.type?.value === campusTopicType.value?.value) || null;
 
-        if(editingTopic === null && campusTopicGuid.value !== null) {
-            editingTopic = campusTopics.value.find(c => c.guid === campusTopicGuid.value ?? false) || null;
+        if (editingTopic === null && campusTopicGuid.value !== null) {
+            editingTopic = campusTopics.value.find(c => c.guid === campusTopicGuid.value) || null;
         }
 
         if (editingTopic === null) {
@@ -414,6 +462,8 @@
     watch(() => props.modelValue, () => {
         updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(coreAttributes, props.modelValue.bag?.coreAttributes ?? {});
+        updateRefValue(coreAttributeValues, props.modelValue.bag?.coreAttributeValues ?? {});
         updateRefValue(campusStatusValue, props.modelValue.bag?.campusStatusValue ?? null);
         updateRefValue(campusTypeValue, props.modelValue.bag?.campusTypeValue ?? null);
         updateRefValue(description, props.modelValue.bag?.description ?? "");
@@ -435,12 +485,13 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, campusSchedules, campusTopics, ...propRefs], () => {
+    watch([attributeValues, coreAttributeValues, campusSchedules, campusTopics, ...propRefs], () => {
         const newValue: ValidPropertiesBox<CampusBag> = {
             bag: { ...props.modelValue.bag } as CampusBag
         };
 
         setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "coreAttributeValues", coreAttributeValues.value);
         setPropertiesBoxValue(newValue, "campusStatusValue", campusStatusValue.value);
         setPropertiesBoxValue(newValue, "campusTypeValue", campusTypeValue.value);
         setPropertiesBoxValue(newValue, "description", description.value);

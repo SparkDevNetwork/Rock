@@ -55,12 +55,25 @@
     pointer-events: auto;
 }
 
+.contentsection-header-title-and-description {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
 .contentsection-header-title {
     display: flex;
     align-items: center;
     gap: var(--spacing-tiny);
     color: var(--color-interface-strong);
     margin: 0;
+}
+
+.contentsection-header-description {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-xsmall);
+    line-height: var(--line-height-tight);
+    margin-top: var(--spacing-tiny);
 }
 
 .contentsection .contentsection-header-actions .ti-chevron-up {
@@ -74,13 +87,19 @@
 
 /* SECTION BODY */
 
-.contentsection-body,
-contentsection-body-overflow {
+.contentsection-body {
     height: auto;
     padding: var(--spacing-large);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-large);
+
+    /* Body Collapse - This is needed in order to make the spacing of the ContentStacks work correctly when conditionally rendering stacks... wrapped within a TransitionVerticalCollapse */
+    .contentsection-body-collapse {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-large);
+    }
 }
 
 .contentsection-header + div > .contentsection-body {
@@ -92,10 +111,14 @@ contentsection-body-overflow {
     padding-top: var(--spacing-large);
 }
 
+
+
+
 /* OVERFLOW BODY */
 
 .contentsection-body-overflow-toggle {
     padding-bottom: var(--spacing-small);
+    padding-left: var(--spacing-xsmall);
 }
 
 .contentsection-body-overflow-toggle .btn {
@@ -264,7 +287,7 @@ contentsection-body-overflow {
     z-index: 10;
 }
 
-.contentsection-nav > .contentsection-nav-header {
+.contentsection-nav .contentsection-nav-header {
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -273,13 +296,13 @@ contentsection-body-overflow {
     margin-bottom: var(--spacing-tiny);
 }
 
-.contentsection-nav > .contentsection-nav-header-title {
+.contentsection-nav .contentsection-nav-header-title {
     color: var(--color-interface-medium);
     font-size: var(--font-size-small);
     padding-left: var(--spacing-small);
 }
 
-.contentsection-nav > .contentsection-nav-link {
+.contentsection-nav .contentsection-nav-link {
     border: none;
     border-radius: var(--rounded-small);
     background-color: transparent;
@@ -292,24 +315,24 @@ contentsection-body-overflow {
     margin-bottom: var(--spacing-tiny);
 }
 
-.contentsection-nav > .list-group-item i.ti {
+.contentsection-nav .list-group-item i.ti {
     font-size: var(--font-size-regular);
     margin-right: var(--spacing-xsmall);
     color: var(--color-interface-strong);
     align-self: center;
 }
 
-.contentsection-nav > .list-group-item:hover {
+.contentsection-nav .list-group-item:hover {
     background-color: var(--color-interface-softest);
 }
 
-.contentsection-nav > .list-group-item.active {
+.contentsection-nav .list-group-item.active {
     background-color: var(--color-interface-softest);
     font-weight: var(--font-weight-semibold);
     color: var(--color-interface-strong);
 }
 
-.contentsection-nav > .list-group-item.active i.ti {
+.contentsection-nav .list-group-item.active i.ti {
     color: var(--color-interface-strong);
 }
 
@@ -330,7 +353,11 @@ contentsection-body-overflow {
     height: 100%;
     flex: 0 0 20%;
     position: sticky;
-    top: 0;
+    top: calc(var(--spacing-medium) + 80px); // offset from top to account for fixed header
+}
+
+.full-work-surface .contentsection-container > .contentsection-nav {
+    top: 0; // remove offset from top when in full worksurface mode
 }
 
 .contentsection-list {
@@ -339,7 +366,6 @@ contentsection-body-overflow {
     flex: 1 1 80%;
     gap: var(--spacing-xlarge);
     height: auto;
-    overflow-y: auto;
     scroll-behavior: smooth;
 }
 
@@ -347,11 +373,29 @@ contentsection-body-overflow {
     flex-direction: row-reverse;
 }
 
-@media (max-width: 767px) {
+@media (max-width: $screen-small) {
     .contentsection-container .contentsection-nav {
         display: none;
     }
 }
 
+@media (max-width: $screen-medium) {
+    .contentsection-container .contentsection-nav {
+        top: var(--spacing-medium);
+    }
+}
+
 // ======================== END CONTENT SECTION CONTAINER ========================
 
+// ======================= MOBILE ADJUSTMENTS =======================
+
+@media (max-width: 480px) {
+    .contentsection-body {
+        padding: var(--spacing-medium);
+    }
+    .contentsection-list {
+        gap: var(--spacing-large);
+    }
+}
+
+// ======================== END MOBILE ADJUSTMENTS =======================

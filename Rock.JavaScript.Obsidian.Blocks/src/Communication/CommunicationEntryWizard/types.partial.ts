@@ -29,6 +29,11 @@ import { CommunicationEntryWizardSendResponseBag } from "@Obsidian/ViewModels/Bl
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { CommunicationEntryWizardCheckShortLinkTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCheckShortLinkTokenBag";
 
+
+export const enum NavigationUrlKey {
+    SimpleCommunicationPage = "SimpleCommunicationPage"
+}
+
 export type SendTimePreference = "now" | "later";
 
 export type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl" | "unknown";

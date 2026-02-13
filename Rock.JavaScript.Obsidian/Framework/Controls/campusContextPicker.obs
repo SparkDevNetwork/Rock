@@ -4,11 +4,12 @@
                   lazyMode="lazy"
                   showBlankItem
                   blankValue="All Campuses"
-                  :forceVisible="forceVisible"
+                  :forceVisible="forceVisible || !isNullOrWhiteSpace(selectedCampus?.value)"
                   :includeInactive="includeInactive"
                   :campusStatusFilter="campusStatusFilter"
                   :campusTypeFilter="campusTypeFilter"
-                  @update:modelValue="onSelectedCampusChanged" />
+                  @update:modelValue="onSelectedCampusChanged"
+                  @isVisible="emit('isVisible', $event)" />
 </template>
 
 <script setup lang="ts">
@@ -24,7 +25,7 @@
     import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
     import { areEqual } from "@Obsidian/Utility/guid";
     import { updateRefValue } from "@Obsidian/Utility/component";
-
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
     defineProps({
         /**
          * Forces the picker to be displayed even if only one campus can be
@@ -62,6 +63,10 @@
             required: false
         },
     });
+
+    const emit = defineEmits<{
+        (e: "isVisible", value: boolean)
+    }>();
 
     const contextEntities = useContextEntities();
     const browserBus = useBlockBrowserBus();

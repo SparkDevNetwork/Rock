@@ -34,6 +34,8 @@ using Rock.ViewModels.Rest.CheckIn;
 using Rock.Web.Cache;
 using Rock.ViewModels.CheckIn.Labels;
 using Rock.Security;
+using Rock.ViewModels.CheckIn;
+
 
 #if WEBFORMS
 using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
@@ -678,22 +680,34 @@ namespace Rock.Rest.v2
 
             var proximityDirector = new ProximityDirector( _rockContext );
 
+            ProximityAttendanceNotificationBag notification = null;
+
             if ( proximity.IsPresent )
             {
-                if ( !proximityDirector.CheckIn( RockRequestContext.CurrentPerson, beacon ) )
+                var checkInResult = proximityDirector.CheckIn( RockRequestContext.CurrentPerson, beacon, RockRequestContext.GetCommonMergeFields() );
+
+                if ( checkInResult == null || checkInResult.Attendance == null )
                 {
                     return BadRequest( "No location was available for check-in." );
                 }
+
+                notification = checkInResult.NotificationData;
             }
             else
             {
-                if ( !proximityDirector.Checkout( RockRequestContext.CurrentPerson, beacon ) )
+                var checkOutResult = proximityDirector.Checkout( RockRequestContext.CurrentPerson, beacon );
+
+                if ( checkOutResult == null || !checkOutResult.Success )
                 {
                     return BadRequest( "No location was available for checkout." );
                 }
+
+                // As of right now, this will always be null. Putting the plumbing in
+                // just in case we ever want to open it up.
+                notification = checkOutResult.NotificationData;
             }
 
-            return NoContent();
+            return Ok( notification );
         }
     }
 }

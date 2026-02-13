@@ -185,6 +185,12 @@ namespace Rock.Mobile
         public int? ChatPageId { get; set; }
 
         /// <summary>
+        /// The identifier for the page that will Outreach Toolbox touchpoints.
+        /// This page is used by push notifications sent via Outreach Toolbox.
+        /// </summary>
+        public int? OutreachToolboxTouchpointPageId { get; set; }
+
+        /// <summary>
         /// Gets or sets the person attribute categories.
         /// </summary>
         /// <value>

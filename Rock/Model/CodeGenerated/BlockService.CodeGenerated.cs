@@ -52,6 +52,12 @@ namespace Rock.Model
         public bool CanDelete( Block item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<HtmlContent>( Context ).Queryable().Any( a => a.BlockId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Block.FriendlyTypeName, HtmlContent.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

@@ -37,7 +37,7 @@ function blankIfZero(value: string): string {
  * @returns The hour in a 12-hour format.
  */
 function get12HourValue(hour: number): number {
-    if (hour == 0) {
+    if (hour === 0) {
         return 12;
     }
     else if (hour < 13) {

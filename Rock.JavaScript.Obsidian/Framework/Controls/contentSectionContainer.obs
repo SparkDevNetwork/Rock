@@ -6,13 +6,15 @@
         </div>
 
         <ContentSectionNav v-if="showSidebar"
-                           :sections="sections" />
+                           :sections="visibleSections"
+                           :waitForTransitions="container.waitForAllTransitions" />
     </div>
 </template>
 
 <script setup lang="ts">
     import ContentSectionNav from "@Obsidian/Controls/Internal/contentSectionNav.obs";
     import { IContentSectionHolder, IContentSectionContainerHolder, provideSectionContainer } from "@Obsidian/Core/Controls/contentSection";
+    import { Enumerable } from "@Obsidian/Utility/linq";
     import { computed, PropType, shallowRef } from "vue";
 
     const props = defineProps({
@@ -40,6 +42,10 @@
     let nextSectionId = 1;
     const sections = shallowRef<IContentSectionHolder[]>([]);
 
+    // Track ongoing transitions for sections in this container.
+    let activeTransitions = 0;
+    let transitionWaiters: (() => void)[] = [];
+
     const container: IContentSectionContainerHolder = {
         addSection(section) {
             section.anchor.value = `section-${nextSectionId++}`;
@@ -48,16 +54,53 @@
         },
         removeSection(section) {
             sections.value = sections.value.filter(s => s !== section);
+        },
+        onSectionTransitionStart() {
+            activeTransitions++;
+        },
+        onSectionTransitionEnd() {
+            if (activeTransitions > 0) {
+                activeTransitions--;
+            }
+            else {
+                activeTransitions = 0;
+            }
+            resolveTransitionWaitersIfIdle();
+        },
+        waitForAllTransitions() {
+            return new Promise<void>(resolve => {
+                if (activeTransitions === 0) {
+                    // layout is idle already.
+                    resolve();
+                }
+                else {
+                    transitionWaiters.push(resolve);
+                }
+            });
         }
     };
 
-    // #endregion
+    // #endregion Values
 
     // #region Computed Values
 
+    /**
+     * Filters sections to only include those that have a title.
+     */
+    const visibleSections = computed((): IContentSectionHolder[] => {
+        return Enumerable
+            .from(
+                sections.value.filter(s =>
+                    !!s.title.value
+                )
+            )
+            .orderBy(s => s.order.value)
+            .toArray();
+    });
+
     /** Determines whether the sidebar should be currently shown. */
     const showSidebar = computed((): boolean => {
-        return props.sidebar ?? sections.value.length > 1;
+        return props.sidebar ?? visibleSections.value.length > 1;
     });
 
     /**
@@ -70,7 +113,22 @@
         ];
     });
 
-    // #endregion
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Resolves any transition waiters if there are no active transitions.
+     */
+    function resolveTransitionWaitersIfIdle(): void {
+        if (activeTransitions === 0 && transitionWaiters.length > 0) {
+            const waiters = transitionWaiters;
+            transitionWaiters = [];
+            waiters.forEach(r => r());
+        }
+    }
+
+    // #endregion Functions
 
     provideSectionContainer(container);
 </script>

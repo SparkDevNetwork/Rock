@@ -23,10 +23,7 @@ using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using CSScriptLibrary;
-
 using Newtonsoft.Json;
-//using NuGet;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -84,7 +81,6 @@ namespace RockWeb.Blocks.Connection
         "Status Template",
         Description = "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         DefaultValue = StatusTemplateDefaultValue,
         Order = 5,
         Key = AttributeKey.StatusTemplate )]
@@ -93,7 +89,6 @@ namespace RockWeb.Blocks.Connection
         "Connection Request Status Icons Template",
         Description = "Lava Template that can be used to customize what is displayed for the status icons in the connection request grid.",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         DefaultValue = ConnectionRequestStatusIconsTemplateDefaultValue,
         Key = AttributeKey.ConnectionRequestStatusIconsTemplate,
         Order = 6 )]
@@ -185,7 +180,7 @@ namespace RockWeb.Blocks.Connection
     [CustomCheckboxListField(
         "Default Filtered Connection Statuses",
         "Specifies the default statuses that should be used for the Connection Statuses Filter.",
-        @"SELECT 
+        @"SELECT
     cs.[Id] AS [Value]
     , cs.[Name] + ' (' + ct.[Name] + ')' AS [Text]
 FROM [ConnectionStatus] cs
@@ -683,7 +678,7 @@ ORDER BY ct.[Name], cs.[Name]",
 
         private void LbUpdateConnections_Click( object sender, EventArgs e )
         {
-            var selectedItems = new List<int>();          
+            var selectedItems = new List<int>();
 
             if ( gRequests.SelectedKeys.Count == 0 )
             {
@@ -952,7 +947,7 @@ ORDER BY ct.[Name], cs.[Name]",
                     IncrementRequestOrder( requestsOfStatus, newIndex, rockContext );
                 }
                 // A Connection Request remained in its original status and was moved up in order.
-                else if ( newIndex < oldIndex ) 
+                else if ( newIndex < oldIndex )
                 {
                     IncrementRequestOrder( requestsOfStatus, newIndex, rockContext );
                 }
@@ -1126,7 +1121,7 @@ ORDER BY ct.[Name], cs.[Name]",
             aRequestModalViewModeProfileLink.Attributes["href"] = string.Format( "/person/{0}", viewModel.PersonId );
             btnRequestModalViewModeTransfer.Visible = DoShowTransferButton();
 
-            /* 
+            /*
                 08/09/2022 - SK
                 This is special case where we are not using viewModel.CanConnect in order to make this align with older ConnectionRequestDetail block.
                 CanConnect() method use RequiresPlacementGroupToConnect and AssignedGroupId are also being used in calculation
@@ -2279,7 +2274,7 @@ ORDER BY ct.[Name], cs.[Name]",
                 .Distinct();
 
             var workflowTypeOrder = connectionOpportunity.GetAdditionalSettingsOrNull<List<int>>( "WorkflowTypeOrder" ) ?? new List<int>();
-            
+
             var orderedManualWorkflows = manualWorkflows
                 .OrderBy( w =>
                 {
@@ -2515,12 +2510,12 @@ ORDER BY ct.[Name], cs.[Name]",
                 if ( isMergeDocumentExport )
                 {
                     // If the export is as a result of the MergeTemplate button click then the ConnectionRequest itself is used as the data source for the grid.
-                    // This is done to avoid any issues that may arise from the Grid trying to build additionalMergeProperties using the viewModel. see issue #5405 
+                    // This is done to avoid any issues that may arise from the Grid trying to build additionalMergeProperties using the viewModel. see issue #5405
                     gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => a.ConnectionRequest ).AsQueryable() );
                 }
                 else
                 {
-                    // If its an excel export the ConnectionRequestViewModel is used so the data exported is limited. 
+                    // If its an excel export the ConnectionRequestViewModel is used so the data exported is limited.
                     gRequests.SetLinqDataSource( _ConnectionRequestViewModelsWithFullModel.Select( a => ( ConnectionRequestViewModel ) a ).AsQueryable() );
                 }
             }
@@ -2810,7 +2805,7 @@ ORDER BY ct.[Name], cs.[Name]",
             {
                 // Open the workflow detail page.
                 script = $@"
-<script language='javascript' type='text/javascript'> 
+<script language='javascript' type='text/javascript'>
     Sys.Application.add_load(openWorkflowEntryPage);
     function openWorkflowEntryPage() {{
         Sys.Application.remove_load( openWorkflowEntryPage );
@@ -2823,7 +2818,7 @@ ORDER BY ct.[Name], cs.[Name]",
                 // Show a modal message dialog, and open the workflow detail page when the dialog is closed.
                 message = message.SanitizeHtml( false ).Replace( "'", "&#39;" );
                 script = $@"
-<script language='javascript' type='text/javascript'> 
+<script language='javascript' type='text/javascript'>
     Sys.Application.add_load(openWorkflowEntryPage);
     function openWorkflowEntryPage() {{
         Sys.Application.remove_load( openWorkflowEntryPage );
@@ -3289,21 +3284,6 @@ ORDER BY ct.[Name], cs.[Name]",
                     if ( newOpportunityId.HasValue && transferredActivityId > 0 )
                     {
                         var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( newOpportunityId.Value );
-
-                        // Check if a connection request in the target opportunity already exists for the same person
-                        var existingRequest = connectionRequestService.Queryable().AsNoTracking()
-                            .Where( r => r.PersonAliasId == connectionRequest.PersonAliasId && 
-                                        r.ConnectionOpportunityId == newOpportunityId.Value &&
-                                        r.Id != connectionRequest.Id &&
-                                        ( r.ConnectionState == ConnectionState.Active || r.ConnectionState == ConnectionState.FutureFollowUp ) )
-                            .FirstOrDefault();
-
-                        if ( existingRequest != null )
-                        {
-                            nbTranferFailed.Text = "This person already has an active connection request for the selected opportunity. Transfer cannot be completed.";
-                            nbTranferFailed.Visible = true;
-                            return;
-                        }
 
                         connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
                         connectionRequest.ConnectionTypeId = newOpportunity.ConnectionTypeId;
@@ -3947,6 +3927,11 @@ ORDER BY ct.[Name], cs.[Name]",
         /// <param name="e"></param>
         protected void lbApplyFilter_Click( object sender, EventArgs e )
         {
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
             SaveSettingByConnectionType( FilterKey.DateRange, sdrpLastActivityDateRangeFilter.DelimitedValues );
             SaveSettingByConnectionType( FilterKey.Requester, ppRequesterFilter.PersonId.ToStringSafe() );
             SaveSettingByConnectionType( FilterKey.Statuses, cblStatusFilter.SelectedValues.AsDelimited( DefaultDelimiter ) );
@@ -4012,6 +3997,8 @@ ORDER BY ct.[Name], cs.[Name]",
                 Text = cs.ToString().SplitCase()
             } );
             cblStateFilter.DataBind();
+
+            cblStateFilter.Required = true;
 
             cblLastActivityFilter.DataSource = GetConnectionActivityTypes().Select( cat => new
             {
@@ -6264,7 +6251,7 @@ ORDER BY ct.[Name], cs.[Name]",
             {
                 get
                 {
-                    return string.Format( @"<p>{0}</p><p class=""text-muted"">{1}</p>", ActivityTypeName, Note );
+                    return string.Format( @"<p class=""mb-0"">{0}</p><p class=""text-muted"">{1}</p>", ActivityTypeName, Note );
                 }
             }
 

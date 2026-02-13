@@ -17,7 +17,9 @@
 //  + Photo Request
 //  + Duplicate Pages
 //  + DISC & Assessments
-//  + Connection Request
+//  + Edit Person
+//  + People Merge
+//  + Giving Configuration
 // =============================================================
 
 
@@ -413,13 +415,22 @@ $badge-count-width: 18px;
   bottom:   .65em;
 }
 
-.rockbadge-personaldevice {
+.rockbadge-personaldevice,
+.rockbadge-lastvisitonsite {
   width:  .9em;
   .badge-content .metric-value {
     top:  .9em;
     left: .6em;
-    font-size: .3em;
   }
+}
+
+.rockbadge-personaldevice .badge-content .metric-value {
+  font-size: .3em;
+}
+
+.rockbadge-lastvisitonsite .badge-content .metric-value {
+  font-size: .4em;
+  top:       .6em;
 }
 
 .rockbadge-assessment {
@@ -444,7 +455,7 @@ $badge-count-width: 18px;
   }
 
   &.requested {
-    color:    var(--color-link-strong) !important;
+    color:    var(--color-link-tint) !important;
   }
 }
 
@@ -698,7 +709,7 @@ span.field-value {
 
 // ======================== FLUID BOX ========================
 #fluidbox-overlay {
-  background:     var(--color-interface-strongest);
+  background:     rgba(10, 10, 10, 0.5); // Hardcoded color with opacity to keep it consistent with JS implementation
 }
 // ====================== END FLUID BOX ======================
 
@@ -917,14 +928,49 @@ tr.inactive {
 }
 // ====================== END EDIT PERSON ======================
 
-// ======================== CONNECTION REQUEST ========================
+// ====================== PEOPLE MERGE ======================
 
-.connection-request-board .modal-open .modal-body .panel-body .photo > img {
-  width: 100%;
+.merge-field-cell {
+  max-width: 150px;
 }
 
-.connection-request-board .modal-open .modal-body .nav-tabs {
-  margin-top: var(--spacing-medium);
-}
+// ======================= END PEOPLE MERGE ======================
 
-// ======================== END CONNECTION REQUEST ========================
+
+// ====================== GIVING CONFIGURATION ======================
+
+.giving-configuration {
+
+  .rollover-container-nested {
+      transition: background-color 0.3s;
+  }
+
+  .rollover-container-nested:hover {
+      background-color: var(--color-interface-lightest);
+  }
+
+  .btn-link:hover {
+      text-decoration: underline;
+  }
+
+  .showinactive {
+      background-color: var(--color-interface-lightest);
+      border: none;
+      color: var(--color-link);
+  }
+
+  .separator {
+      margin-top: 2px;
+      margin-bottom: var(--spacing-large);
+      border: 0;
+      border-top: 1px solid var(--color-interface-soft) !important;
+      width: calc(100% + 32px);
+      margin-left: -16px;
+  }
+
+  .content-section {
+      margin-top: var(--spacing-medium);
+      margin-bottom: var(--spacing-medium);
+  }
+}
+// ==================== END GIVING CONFIGURATION ====================

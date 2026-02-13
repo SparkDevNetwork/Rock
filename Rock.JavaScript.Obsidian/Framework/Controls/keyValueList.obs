@@ -32,7 +32,7 @@
                         </div>
                     </span>
                     <div class="control-actions">
-                        <a class="btn btn-action btn-square btn-xs" href="#" @click.prevent="onAddClick"><i class="ti ti-circle-plus"></i></a>
+                        <a class="btn btn-add btn-lg" href="#" @click.prevent="onAddClick"><i class="ti ti-square-plus"></i></a>
                     </div>
                 </span>
             </div>

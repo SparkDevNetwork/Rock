@@ -191,10 +191,10 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             dataViewMales.Description = descriptionOld;
             dataContext.SaveChanges();
 
-            Assert.That.AreEqual( descriptionNew,
+            Assert.AreEqual( descriptionNew,
                 propertyValueUpdated,
                 "Cached Data View not updated." );
-            Assert.That.IsTrue( dataViewCacheMales2.ModifiedDateTime > ( dataViewCacheMales1.ModifiedDateTime ?? DateTime.MinValue ),
+            Assert.IsTrue( dataViewCacheMales2.ModifiedDateTime > ( dataViewCacheMales1.ModifiedDateTime ?? DateTime.MinValue ),
                 "Cached Data View Date Modified is invalid." );
         }
 
@@ -229,7 +229,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             dataViewFilterAge.Selection = selectionOld;
             dataContext.SaveChanges();
 
-            Assert.That.AreEqual( selectionNew, selectionUpdated, "Cached Data View Filter not updated." );
+            Assert.AreEqual( selectionNew, selectionUpdated, "Cached Data View Filter not updated." );
         }
 
         /// <summary>

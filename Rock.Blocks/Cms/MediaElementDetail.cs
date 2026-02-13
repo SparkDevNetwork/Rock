@@ -39,7 +39,7 @@ using Rock.Web.Cache;
 using Rock.Utility.ExtensionMethods;
 using Rock.Web.UI;
 using Rock.Web;
-    
+
 namespace Rock.Blocks.Cms
 {
     /// <summary>
@@ -116,8 +116,6 @@ namespace Rock.Blocks.Cms
             var box = new DetailBlockBox<MediaElementBag, MediaElementDetailOptionsBag>();
 
             SetBoxInitialEntityState( box );
-
-            RequestContext.Response.AddCssLink( "~/Styles/Blocks/Cms/MediaElementDetail.css", true);
 
             box.Options = GetBoxOptions( box.IsEditable );
 
@@ -364,7 +362,7 @@ namespace Rock.Blocks.Cms
             var playCount = interactions.Count();
             var playCountText = GetFormattedNumber( playCount );
             mediaElementBag.PlayCountText = playCountText;
-    
+
 
             var minutesWatched = ( int )( interactions.Sum( a => a.WatchMap.WatchedPercentage ) * ( mediaElement.DurationSeconds ?? 0 ) / 100 / 60 );
             var minutesWatchedText = GetFormattedNumber( minutesWatched );
@@ -606,29 +604,29 @@ namespace Rock.Blocks.Cms
                 }
 
                 var interactions = GetInteractions( mediaElement, startDate, rockContext );
-                    
+
                 var interactionsByWeek = new Dictionary<DateTime, List<InteractionData>>();
-                    
+
                 for ( int i = 0; i < 52; i++ )
                 {
                     var weekStart = currentDay.AddDays( -7 * i );
                     interactionsByWeek[weekStart] = new List<InteractionData>();
                 }
-                    
+
                 foreach ( var interaction in interactions )
                 {
                     var interactionDate = interaction.InteractionDateTime.Date;
-                        
+
                     var dayOfWeek = interactionDate.DayOfWeek;
                     var daysToMonday = dayOfWeek == DayOfWeek.Sunday ? 6 : dayOfWeek - DayOfWeek.Monday;
                     var weekStart = interactionDate.AddDays( -daysToMonday );
-                        
+
                     if (interactionsByWeek.ContainsKey( weekStart ) )
                     {
                         interactionsByWeek[weekStart].Add( interaction );
                     }
                 }
-                    
+
                 resultData = interactionsByWeek.Select( week => new InteractionDataForDate
                 {
                     Date = week.Key,
@@ -642,9 +640,9 @@ namespace Rock.Blocks.Cms
             else
             {
                 startDate = today.AddDays( -duration );
-                    
+
                 var interactions = GetInteractions( mediaElement, startDate, rockContext );
-                    
+
                 var interactionsByDay = interactions
                     .GroupBy( i => i.InteractionDateTime.Date )
                     .ToDictionary(
@@ -657,7 +655,7 @@ namespace Rock.Blocks.Cms
                             MinutesWatched = ( int )(( mediaElement.DurationSeconds ?? 0 ) * g.Sum( i => i.WatchMap.WatchedPercentage ) / 100 / 60 )
                         }
                     );
-                    
+
                 resultData = new List<InteractionDataForDate>();
                 for ( var date = startDate; date <= today; date = date.AddDays( 1 ) )
                 {
@@ -677,7 +675,7 @@ namespace Rock.Blocks.Cms
                     }
                 }
             }
-                
+
             foreach ( var item in resultData )
             {
                 dataPoints.Add( new object[]
@@ -815,7 +813,7 @@ namespace Rock.Blocks.Cms
         public BlockActionResult GetVideoEngagementData( string mediaElementId )
         {
             var rockContext = new RockContext();
-            
+
             // Try to get the media element ID from the provided string ID
             int mediaElementIdValue;
             if ( !int.TryParse( mediaElementId, out mediaElementIdValue ) )
@@ -837,11 +835,11 @@ namespace Rock.Blocks.Cms
             {
                 return ActionBadRequest( "Media element not found." );
             }
-            
+
             // Get all the interactions for this media element
             var interactionChannelId = InteractionChannelCache.Get( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS ).Id;
             var interactions = GetInteractions( mediaElement, null, rockContext );
-            
+
             if ( !interactions.Any() )
             {
                 return ActionOk( new
@@ -854,10 +852,10 @@ namespace Rock.Blocks.Cms
                     Rewatched = new int[0]
                 });
             }
-            
+
             // Get the video data
             var videoData = GetVideoData( mediaElement, interactions );
-            
+
             return ActionOk( videoData );
         }
 

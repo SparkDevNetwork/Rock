@@ -6,6 +6,7 @@
 // =============================================================
 // Table of Content
 //  + Workflow Entry
+//  + Form Builder List
 // =============================================================
 
 
@@ -27,3 +28,177 @@
 }
 
 // ====================== END WORKFLOW ENTRY ======================
+
+// ======================== FORM BUILDER LIST ========================
+
+.formlist {
+  // Wrapper for Form List Panel Body
+  .formlist-wrapper {
+      gap: var(--spacing-large);
+      display: flex;
+      height: 100%;
+      align-items: stretch;
+  }
+
+
+
+  // Aside (Category Tree) Styles
+
+  .formlist-aside {
+      width: 320px;
+      border-right: 1px solid var(--color-interface-soft);
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+  }
+
+  .formlist-aside-header {
+      padding: var(--spacing-xsmall) var(--spacing-xsmall) var(--spacing-xsmall) var(--spacing-0, 0);
+      gap: var(--spacing-xsmall);
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+  }
+
+  .formlist-aside-header-actions {
+      padding: var(--spacing-xsmall);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+  }
+
+  .formlist-aside-header-actions span {
+      color: var(--color-interface-medium);
+      font-size: var(--font-size-Small, 14px);
+      font-weight: var(--font-weight-semibold);
+      line-height: 110%;
+      margin-left: var(--spacing-medium);
+  }
+
+  // Overrides the styles on the CategoryTree picker container, viewable within categoryTree.obs
+  .formlist-aside .picker-body {
+      border: none !important;
+      border-radius: 0 !important;
+      overflow-x: visible !important;
+      overflow-y: auto !important;
+      flex: 1 1 auto;
+      min-height: 0;
+      height: auto !important;
+  }
+
+  .formlist-aside .categoryMenuOptions .dropdown-menu {
+      width: max-content;
+      min-width: unset !important;
+  }
+
+  .formlist-aside .categoryMenuOptions .dropdown-menu li > button {
+      white-space: nowrap;
+  }
+
+  .formlist-aside .categoryMenuOptions .btn-overflow {
+      padding: 0;
+  }
+
+  // Increase vertical spacing for CategoryTree rows
+  .formlist-aside ul.rocktree,
+  .formlist-aside ul.rocktree-children {
+      line-height: 45px;
+      font-size: var(--font-size-regular);
+  }
+
+  .formlist-aside .rocktree-name .icon-fw {
+      display: inline-block;
+      width: var(--spacing-large);
+      text-align: center;
+      line-height: 45px;
+      font-size: var(--font-size-regular);
+  }
+
+  .formlist-aside .rocktree-name {
+      line-height: 45px;
+  }
+
+  .formlist-aside .rocktree-name.selected {
+      font-weight: var(--font-weight-semibold);
+  }
+
+  // Main Content (Form List) Styles
+  .formlist-main {
+      display: flex;
+      flex-direction: column;
+      flex-basis: 0;
+      flex-grow: 1;
+      padding: var(--spacing-large) var(--spacing-large) var(--spacing-large) 0;
+      min-width: 0;
+  }
+
+  .formlist-main-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    width: 100%;
+    border-bottom: 1px solid var(--color-interface-soft);
+    padding-bottom: var(--spacing-large);
+    margin-bottom: var(--spacing-large);
+  }
+
+  .formlist-main-heading-content {
+      gap: var(--spacing-tiny);
+  }
+
+  .formlist-main-heading-buttons {
+      gap: var(--spacing-tiny);
+  }
+
+  .formlist-main-heading-content-title {
+      line-height: 105.469%;
+  }
+
+  .formlist-main-heading-content-description {
+      font-size: var(--font-size-Small);
+      font-weight: var(--font-weight-regular);
+      line-height: 110%;
+  }
+
+  .formlist-main-heading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .formlist-main-heading-content-title {
+    margin: 0;
+  }
+
+  .formlist-main-heading-content-description {
+    color: var(--color-interface-medium);
+  }
+
+  .formlist-main-heading-buttons {
+    display: flex;
+    align-items: center;
+  }
+
+  .formlist-main-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    width: 100%;
+  }
+
+  .formlist-main-sort {
+      padding: 0;
+  }
+
+  // Overrides the margin bottom set on the DropDownList used for Sorting
+  .formlist-main-sort .form-group,
+  .formlist-main-sort .rock-drop-down-list {
+      margin-bottom: 0 !important;
+  }
+
+}
+
+
+// ======================== END FORM BUILDER LIST ========================

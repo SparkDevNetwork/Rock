@@ -35,11 +35,13 @@ namespace Rock.Tests.Shared.Lava
 
         #region IFileProvider implementation
 
+        /// <inheritdoc>
         public IDirectoryContents GetDirectoryContents( string subpath )
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc>
         public IFileInfo GetFileInfo( string path )
         {
             if ( _files.ContainsKey( path ) )
@@ -52,12 +54,14 @@ namespace Rock.Tests.Shared.Lava
             }
         }
 
+        /// <inheritdoc>
         public MockFileProvider Add( string path, string content )
         {
             _files[path] = new MockFileInfo( path, content );
             return this;
         }
 
+        /// <inheritdoc>
         public IChangeToken Watch( string filter )
         {
             throw new NotImplementedException();
@@ -67,6 +71,7 @@ namespace Rock.Tests.Shared.Lava
 
         #region ILavaFileSystem implementation
 
+        /// <inheritdoc>
         public string ReadTemplateFile( ILavaRenderContext context, string templateName )
         {
             var fi = GetFileInfo( templateName );
@@ -92,6 +97,7 @@ namespace Rock.Tests.Shared.Lava
             return sb.ToString().Trim( '\x0' );
         }
 
+        /// <inheritdoc>
         public bool FileExists( string filePath )
         {
             return _files.ContainsKey( filePath );
@@ -100,6 +106,18 @@ namespace Rock.Tests.Shared.Lava
         IChangeToken IFileProvider.Watch( string filter )
         {
             throw new NotImplementedException();
+        }
+
+        /// <inheritdoc>
+        public DateTimeOffset? FileLastModified( string filePath )
+        {
+            return null;
+        }
+
+        /// <inheritdoc>
+        public string ResolveTemplatePath( string filePath )
+        {
+            return filePath;
         }
 
         #endregion

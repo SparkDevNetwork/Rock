@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { PersonFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personFiltersBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**
@@ -54,6 +55,9 @@ export type PlacementConfigurationSettingsBag = {
      * Note this setting only applies when in Template Mode
      */
     includedRegistrationInstanceIds?: string[] | null;
+
+    /** Gets or sets the person-level filters used to limit which people are included in placement. */
+    personFilters?: PersonFiltersBag | null;
 
     /**
      * Gets or sets a value indicating whether [show registration instance name].

@@ -499,53 +499,7 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult GetRecipientGridData()
         {
-            var communicationQuery = GetCommunicationQueryFromPageParameter();
-            if ( communicationQuery == null )
-            {
-                return ActionBadRequest();
-            }
-
-            // Eager-load related entities needed for authorization checks.
-            var communicationWithRecipientRows = communicationQuery
-                .AsNoTracking()
-                .Select( c => new
-                {
-                    Communication = c,
-                    RecipientRows = c.Recipients
-                        .Where( r => r.PersonAlias != null )
-                        .Select( r => new CommunicationRecipientRow
-                        {
-                            Person = r.PersonAlias.Person,
-                            CampusName = r.PersonAlias.Person.PrimaryCampus != null
-                                ? r.PersonAlias.Person.PrimaryCampus.Name
-                                : string.Empty,
-
-                            CommunicationRecipientId = r.Id,
-                            Status = r.Status,
-                            StatusNote = r.StatusNote,
-                            MediumEntityTypeId = r.MediumEntityTypeId,
-
-                            SendDateTime = r.SendDateTime,
-                            DeliveredDateTime = r.DeliveredDateTime,
-                            LastOpenedDateTime = r.OpenedDateTime,
-                            UnsubscribeDateTime = r.UnsubscribeDateTime,
-                            SpamComplaintDateTime = r.SpamComplaintDateTime,
-
-                            LastActivityDateTime = (
-                                    r.Status == CommunicationRecipientStatus.Failed
-                                    || r.Status == CommunicationRecipientStatus.Cancelled
-                                ) ? r.ModifiedDateTime : null
-                        } )
-                } )
-                .AsEnumerable() // Materialize the query.
-                .Select( a => new CommunicationWithRecipientRows
-                {
-                    Communication = a.Communication,
-                    RecipientRows = a.RecipientRows.ToList()
-                } )
-                .FirstOrDefault();
-
-            var communication = communicationWithRecipientRows?.Communication;
+            var communication = GetCommunicationQueryFromPageParameter()?.FirstOrDefault();
             if ( communication == null )
             {
                 return ActionBadRequest( $"Unable to find {CommunicationFriendlyName}." );
@@ -556,11 +510,43 @@ namespace Rock.Blocks.Communication
                 return ActionUnauthorized( EditModeMessage.NotAuthorizedToView( CommunicationFriendlyName ) );
             }
 
+            var recipientRows = new CommunicationRecipientService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( cr =>
+                    cr.CommunicationId == communication.Id
+                    && cr.PersonAliasId.HasValue
+                )
+                .Select( r => new CommunicationRecipientRow
+                {
+                    Person = r.PersonAlias.Person,
+                    CampusName = r.PersonAlias.Person.PrimaryCampus != null
+                                ? r.PersonAlias.Person.PrimaryCampus.Name
+                                : string.Empty,
+
+                    CommunicationRecipientId = r.Id,
+                    Status = r.Status,
+                    StatusNote = r.StatusNote,
+                    MediumEntityTypeId = r.MediumEntityTypeId,
+
+                    SendDateTime = r.SendDateTime,
+                    DeliveredDateTime = r.DeliveredDateTime,
+                    LastOpenedDateTime = r.OpenedDateTime,
+                    UnsubscribeDateTime = r.UnsubscribeDateTime,
+                    SpamComplaintDateTime = r.SpamComplaintDateTime,
+
+                    LastActivityDateTime = (
+                                    r.Status == CommunicationRecipientStatus.Failed
+                                    || r.Status == CommunicationRecipientStatus.Cancelled
+                                ) ? r.ModifiedDateTime : null
+                } )
+                .ToList();
+
             // Load interactions so we can supplement each row with this data.
             var groupedInteractions = new GroupedInteractions( GetInteractions( communication.Id ) );
 
             // A local function to ensure each row reflects the recipient's most recent activity datetime.
-            void TrySetLastActivityDateTime( CommunicationRecipientRow row, DateTime? activityDateTime )
+            static void TrySetLastActivityDateTime( CommunicationRecipientRow row, DateTime? activityDateTime )
             {
                 if ( !activityDateTime.HasValue )
                 {
@@ -573,7 +559,7 @@ namespace Rock.Blocks.Communication
                 }
             }
 
-            foreach ( var row in communicationWithRecipientRows.RecipientRows )
+            foreach ( var row in recipientRows )
             {
                 // Set the last activity datetime based on info available directly on the communication recipient record.
                 TrySetLastActivityDateTime( row, row.SendDateTime );
@@ -598,7 +584,7 @@ namespace Rock.Blocks.Communication
                 }
             }
 
-            var people = communicationWithRecipientRows.RecipientRows
+            var people = recipientRows
                 .Select( r => r.Person )
                 .ToList();
 
@@ -613,10 +599,10 @@ namespace Rock.Blocks.Communication
 
             var builder = GetRecipientGridBuilder( ( CommunicationType ) communication.CommunicationType );
             var gridDataBag = builder.Build(
-                communicationWithRecipientRows.RecipientRows
+                recipientRows
                     .OrderByDescending( r => r.LastActivityDateTime )
                     .ThenBy( r => r.Person.LastName )
-                    .ThenBy( r => r.Person.FirstName )
+                    .ThenBy( r => r.Person.NickName )
             );
 
             return ActionOk( new CommunicationRecipientGridDataBag
@@ -778,7 +764,55 @@ namespace Rock.Blocks.Communication
                 pageParams.AddOrReplace( PageParameterKey.Edit, "true" );
                 pageParams.Remove( PageParameterKey.Tab );
 
+                // Set the redirect URL to the current page with the Edit parameter.
+                // Next, we will check if we need to redirect to the Simple Communication Page instead.
                 redirectUrl = this.GetCurrentPageUrl( pageParams );
+
+                /*
+                    1/6/2026 - JMH
+                
+                    Approvers can land on either the wizard page or the simple communication page.
+                    When editing a "pending approval" communication, the Edit action must send them
+                    to a page that can actually render the communication in edit mode. That requires
+                    either the Communication Entry (simple communication) block or the
+                    Communication Entry Wizard block.
+
+                    If the communication has no template, or the template does not support the
+                    email wizard, the wizard block cannot edit it correctly. In that case, keep the
+                    approver out of the wizard flow and redirect them to the configured
+                    Simple Communication Page, if one is configured. If not, reload the current
+                    page, which is likely already the Simple Communication Page.
+                 */
+                if ( communication.CommunicationTemplate == null || !communication.CommunicationTemplate.SupportsEmailWizard() )
+                {
+                    var wizardBlock = this.PageCache.Blocks.FirstOrDefault( b =>
+                        b.BlockType.Guid == SystemGuid.BlockType.COMMUNICATION_ENTRY_WIZARD.AsGuid() // Legacy Communication Entry Wizard
+                        || b.BlockType.Guid == "9FFC7A4F-2061-4F30-AF79-D68C85EE9F27".AsGuid() // Obsidian Communication Entry Wizard
+                    );
+
+                    var simpleCommunicationPageAttributeValue = wizardBlock?.GetAttributeValue( "SimpleCommunicationPage" );
+
+                    if ( simpleCommunicationPageAttributeValue.IsNotNullOrWhiteSpace() )
+                    {
+                        var pageReference = new Rock.Web.PageReference( simpleCommunicationPageAttributeValue, pageParams != null ? new Dictionary<string, string>( pageParams ) : null );
+
+                        if ( pageReference.PageId > 0 )
+                        {
+                            // If a single route exists, use it to keep the redirect URL user friendly
+                            // rather than falling back to "/page/{id}".
+                            if ( pageReference.RouteId == 0 )
+                            {
+                                var pageCache = PageCache.Get( pageReference.PageId );
+                                if ( pageCache.PageRoutes.Count == 1 )
+                                {
+                                    pageReference.RouteId = pageCache.PageRoutes.First().Id;
+                                }
+                            }
+
+                            redirectUrl = pageReference.BuildUrl();
+                        }
+                    }
+                }
             }
             else
             {
@@ -917,7 +951,13 @@ namespace Rock.Blocks.Communication
 
             var communicationService = new CommunicationService( RockContext );
 
-            var newCommunicationId = communicationService.CopyWithBulkInsert( communication.Id, GetCurrentPerson()?.PrimaryAliasId );
+            var copyArgs = new CommunicationService.CopyArgs
+            {
+                IsRecipientCopyingDisabled = false,
+                IsFutureSendDateCopyingDisabled = true
+            };
+
+            var newCommunicationId = communicationService.Copy( communication.Id, GetCurrentPerson()?.PrimaryAliasId, copyArgs )?.Id;
             if ( !newCommunicationId.HasValue )
             {
                 return ActionInternalServerError( $"Unable to duplicate the {CommunicationFriendlyName}." );
@@ -930,11 +970,22 @@ namespace Rock.Blocks.Communication
             var pageParams = GetPageParamsForReload( newCommunicationId.Value );
             pageParams.Remove( PageParameterKey.Tab );
 
+            string communicationUrl = null;
+            if ( IsLegacyCommunication( communicationService, newCommunicationId.Value ) )
+            {
+                communicationUrl = GetLegacyCommunicationUrl( pageParams );
+            }
+
+            if ( communicationUrl.IsNullOrWhiteSpace() )
+            {
+                communicationUrl = this.GetCurrentPageUrl( pageParams );
+            }
+
             return ActionOk(
                 new CommunicationRedirectBag
                 {
                     Permissions = permissions,
-                    CommunicationUrl = this.GetCurrentPageUrl( pageParams )
+                    CommunicationUrl = communicationUrl
                 }
             );
         }
@@ -1071,6 +1122,61 @@ namespace Rock.Blocks.Communication
         #endregion Block Actions
 
         #region Private Methods
+
+        /// <summary>
+        /// Determines whether the specified communication is considered a legacy communication.
+        /// </summary>
+        /// <param name="communicationService">The service used to query communication data.</param>
+        /// <param name="communicationId">The unique identifier of the communication to evaluate.</param>
+        /// <returns><see langword="true"/> if the communication is identified as a legacy communication; otherwise, <see langword="false"/>.</returns>
+        private bool IsLegacyCommunication( CommunicationService communicationService, int communicationId )
+        {
+            var data = communicationService.Queryable()
+                .Where( c => c.Id == communicationId )
+                .Select( c => new
+                {
+                    CommunicationTemplateVersion = ( CommunicationTemplateVersion? ) c.CommunicationTemplate.Version,
+                    c.Segments
+                } )
+                .FirstOrDefault();
+
+            if ( data != null )
+            {
+                if ( data.Segments.IsNotNullOrWhiteSpace() )
+                {
+                    // Only legacy communications use DataView-based segments.
+                    // Newer communications use Personalization Segments.
+                    return true;
+                }
+
+                if ( data.CommunicationTemplateVersion == CommunicationTemplateVersion.Legacy )
+                {
+                    // Only legacy communications use legacy communication templates.
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Constructs a URL for the legacy communication page using the specified parameters.
+        /// </summary>
+        /// <param name="pageParams">A dictionary of parameters to include in the URL.</param>
+        /// <returns>A string representing the constructed URL if the page ID is valid; otherwise, <see langword="null"/>.</returns>
+        private string GetLegacyCommunicationUrl( IDictionary<string, string> pageParams )
+        {
+            var pageReference = new Rock.Web.PageReference(
+                Rock.SystemGuid.Page.NEW_COMMUNICATION,
+                new Dictionary<string, string>( pageParams ) );
+
+            if ( pageReference.PageId > 0 )
+            {
+                return pageReference.BuildUrl();
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Gets an <see cref="IQueryable{Rock.Model.Communication}"/> based on the page parameter.
@@ -1943,7 +2049,7 @@ namespace Rock.Blocks.Communication
                 {
                     Label = Gender.Male.ConvertToString(),
                     Value = GetPercentage( maleCount ),
-                    Color = "--color-info-tint"
+                    Color = "--color-gender-male-strong"
                 } );
             }
 
@@ -1953,7 +2059,7 @@ namespace Rock.Blocks.Communication
                 {
                     Label = Gender.Female.ConvertToString(),
                     Value = GetPercentage( femaleCount ),
-                    Color = "--color-danger-tint"
+                    Color = "--color-gender-female-strong"
                 } );
             }
 
@@ -2521,6 +2627,7 @@ namespace Rock.Blocks.Communication
             var pageParams = RequestContext.GetPageParameters();
             pageParams.AddOrReplace( PageParameterKey.Communication, communicationId.AsIdKey() );
             pageParams.Remove( PageParameterKey.CommunicationId );
+            pageParams.Remove( "PageId" );
 
             return pageParams;
         }

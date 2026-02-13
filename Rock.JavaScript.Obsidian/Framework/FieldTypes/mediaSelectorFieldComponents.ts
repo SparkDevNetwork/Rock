@@ -37,7 +37,7 @@ function parseKeyValueItemValue(keyValueItemValue: string | undefined): KeyValue
 
 function parseMediaSelectorMode(modeNumber: string | undefined): MediaSelectorMode {
     const mediaSelectorModeNumber = toNumber(modeNumber);
-    return mediaSelectorModeNumber == 0 ? MediaSelectorMode.Image : MediaSelectorMode.Audio;
+    return mediaSelectorModeNumber === 0 ? MediaSelectorMode.Image : MediaSelectorMode.Audio;
 }
 
 export const EditComponent = defineComponent({

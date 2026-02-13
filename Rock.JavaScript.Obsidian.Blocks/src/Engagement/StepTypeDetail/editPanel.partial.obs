@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentSectionContainer :sidebar="false">
+    <ContentSectionContainer sidebar>
         <ContentSection light>
             <ContentStack>
                 <div class="row">
@@ -33,7 +33,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <InlineCheckBox v-model="showCountOnBadge"
                                         label="Show Count on Badge"
                                         help="Determines if the count of the number of times a step has been completed should be shown on the badge for the person profile page." />
@@ -57,7 +57,8 @@
                               :help="impactWeightHelpText"
                               :items="impactWeightOptions"
                               :inputClasses="'input-width-lg'" />
-                <CheckBoxList v-model="preRequisites"
+                <CheckBoxList v-if="availablePreRequisites.length > 0"
+                              v-model="preRequisites"
                               :items="availablePreRequisites"
                               label="Prerequisite Steps"
                               help="The steps that must be completed prior to this step."
@@ -88,10 +89,10 @@
                              help="The text shown on the action button (e.g., “Join Now” or “Start Step”). Keep it short, clear, and action-oriented to encourage engagement." />
                     <TextBox v-model="callToActionLink"
                              label="Call To Action Link"
-                             help="A brief message explaining what the action is and why it matters. Helps individuals understand the purpose and importance of the next step." />
+                             help="The URL where the individual takes the next step. This can point to a form, page, or resource—wherever the action happens." />
                     <TextBox v-model="callToActionDescription"
                              label="Call To Action Description"
-                             help="The URL where the individual takes the next step. This can point to a form, page, or resource—wherever the action happens." />
+                             help="A brief message explaining what the action is and why it matters. Helps individuals understand the purpose and importance of the next step." />
                 </div>
             </ContentStack>
         </ContentSection>
@@ -210,16 +211,20 @@
         </ContentSection>
 
         <ContentSection title="Advanced Settings" icon="ti ti-adjustments-cog">
-            <ContentStack>
+            <ContentStack title="Advanced Settings" description="Configure advanced features for this Step Type. Use these settings to define how step data is auto-completed, customize the display content with Lava templates, and control whether manual edits are allowed.">
                 <div class="row">
-                    <div class="col-md-2">
+                    <div class="col-md-6">
+                        <DataViewPicker v-model="autoCompleteDataView"
+                                        label="Auto-Complete Data View"
+                                        help="A Data View that returns a list of people who should be regarded as having completed this step." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
                         <DataViewPicker v-if="audienceDataView.value"
                                         v-model="audienceDataView"
                                         label="Audience Data View"
                                         help="A Data View that returns a list of people who are eligible to take this step." />
-                        <DataViewPicker v-model="autoCompleteDataView"
-                                        label="Auto-Complete Data View"
-                                        help="A Data View that returns a list of people who should be regarded as having completed this step." />
                     </div>
                 </div>
                 <div class="row">
@@ -227,7 +232,6 @@
                         <CodeEditor v-model="cardLavaTemplate"
                                     :editorHeight="200"
                                     mode="lava"
-                                    theme="rock"
                                     label="Card Content Lava Template"
                                     help="The template to use when formatting the summary card for this step." />
                     </div>
@@ -277,7 +281,6 @@
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { EngagementType, EngagementTypeDescription } from "@Obsidian/Enums/Engagement/engagementType";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     const props = defineProps({
         modelValue: {
             type: Object as PropType<ValidPropertiesBox<StepTypeBag>>,
@@ -349,12 +352,11 @@
             Not all steps carry the same weight—some require more time and/or commitment. This value helps measure the overall impact of a program beyond just step count, giving insight into the depth of engagement.`;
     const impactWeightOptions: ListItemBag[] = [
         { text: "1 - Low Impact", value: "1" },
-        { text: "2 - Low-Medium Impact", value: "2" },
-        { text: "3 - Medium Impact", value: "3" },
-        { text: "4 - Medium-High Impact", value: "4" },
+        { text: "2", value: "2" },
+        { text: "3", value: "3" },
+        { text: "4", value: "4" },
         { text: "5 - High Impact", value: "5" }
     ];
-    const invokeBlockAction = useInvokeBlockAction();
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -375,12 +377,12 @@
 
     // #region Functions
     function getTriggerDescription(triggerType: string, primaryQualifier: string | null | undefined, secondaryQualifier: string | null | undefined): string {
-        if (triggerType == "StatusChanged") {
+        if (triggerType === "StatusChanged") {
 
-            let status = stepStatuses.value.find(x => x.value == primaryQualifier);
+            let status = stepStatuses.value.find(x => x.value === primaryQualifier);
             const fromStatus = !status?.text ? "[Any]" : status.text;
 
-            status = stepStatuses.value.find(x => x.value == secondaryQualifier);
+            status = stepStatuses.value.find(x => x.value === secondaryQualifier);
 
             const toStatus = !status?.text ? "[Any]" : status.text;
 
@@ -388,7 +390,7 @@
 
             return description;
         }
-        else if (triggerType == "IsComplete") {
+        else if (triggerType === "IsComplete") {
             return "Step Completed";
         }
         else {
@@ -409,7 +411,7 @@
     };
 
     const onEditWorkflow = (key: string): void => {
-        const workflow = stepWorkflowTriggers.value.find(x => x.idKey == key);
+        const workflow = stepWorkflowTriggers.value.find(x => x.idKey === key);
         if (workflow) {
             stepWorkflowTrigger.value = workflow;
             triggerType.value = workflow.workflowTrigger?.value ?? "";
@@ -436,7 +438,7 @@
 
     const onSaveWorkflow = (): void => {
         isWorkflowModalOpen.value = false;
-        const selectedTriggerType = triggerTypes.value.find(t => t.value == triggerType.value);
+        const selectedTriggerType = triggerTypes.value.find(t => t.value === triggerType.value);
 
         if (triggerType.value && stepWorkflowTrigger.value.workflowType?.value && workflowTriggersGridData.rows && selectedTriggerType?.value) {
             const index = stepWorkflowTriggers.value.findIndex(a => (a.idKey === stepWorkflowTrigger.value.idKey));
@@ -447,8 +449,8 @@
 
             if (index !== -1) {
                 // Get the updated WorkflowTrigger and RowItem.
-                let editedWorkflowTrigger = stepWorkflowTriggers.value.find(a => a.idKey == stepWorkflowTrigger.value.idKey);
-                let rowItem = workflowTriggersGridData.rows.find(x => x["idKey"] == stepWorkflowTrigger.value.idKey);
+                let editedWorkflowTrigger = stepWorkflowTriggers.value.find(a => a.idKey === stepWorkflowTrigger.value.idKey);
+                let rowItem = workflowTriggersGridData.rows.find(x => x["idKey"] === stepWorkflowTrigger.value.idKey);
 
                 if (editedWorkflowTrigger && rowItem) {
                     // Replace old WorkflowTrigger with updated WorkflowTrigger.
@@ -525,7 +527,7 @@
     const onDeleteAttribute = async (key: string): Promise<void> => {
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
-        const deletedAttribute = stepAttributes.value.find(a => a.attribute?.guid == key);
+        const deletedAttribute = stepAttributes.value.find(a => a.attribute?.guid === key);
         stepAttributes.value = stepAttributes.value.filter(s => s.attribute?.guid !== key);
         reservedKeyNames.value = reservedKeyNames.value.filter(r => r !== deletedAttribute?.attribute?.key);
 
@@ -546,8 +548,8 @@
 
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
-                let editedAttribute = stepAttributes.value.find(a => a.attribute?.guid == stepAttribute.value?.guid);
-                let rowItem = attributesGridData.rows.find(x => x["idKey"] == stepAttribute.value?.guid);
+                let editedAttribute = stepAttributes.value.find(a => a.attribute?.guid === stepAttribute.value?.guid);
+                let rowItem = attributesGridData.rows.find(x => x["idKey"] === stepAttribute.value?.guid);
 
                 if (editedAttribute && rowItem) {
                     // Replace old attribute with updated attribute.
@@ -579,18 +581,39 @@
         }
     };
 
-    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
-        try {
-            const result = await invokeBlockAction<string>("ReorderItem", {
-                key: item["idKey"],
-                beforeKey: beforeItem?.["idKey"] ?? null
-            });
-            return result.isSuccess;
-        }
-        catch (error) {
-            console.error("Error reordering step attributes:", error);
+    function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): boolean {
+        const itemGuid = item["idKey"] as string;
+        const beforeGuid = (beforeItem?.["idKey"] as string | undefined) ?? null;
+
+        const currentItems = [...stepAttributes.value];
+        const idx = currentItems.findIndex(i => i.attribute?.guid === itemGuid);
+
+        if (idx < 0) {
             return false;
         }
+
+        const itemToMove = currentItems.splice(idx, 1)[0];
+
+        if (beforeGuid) {
+            const beforeIndex = currentItems.findIndex(i => i.attribute?.guid === beforeGuid);
+            if (beforeIndex < 0) {
+                currentItems.push(itemToMove);
+            }
+            else {
+                currentItems.splice(beforeIndex, 0, itemToMove);
+            }
+        }
+        else {
+            currentItems.push(itemToMove);
+        }
+
+        stepAttributes.value = currentItems;
+
+        if (attributesGridData.rows) {
+            attributesGridData.rows = stepAttributes.value.map(x => getAttributeGridRowItem(x));
+        }
+
+        return true;
     }
 
     const getAttributeGridRowItem = (stepAttribute: StepAttributeBag): Record<string, unknown> => {

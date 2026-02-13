@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ComponentPropertyPanelBase :componentElement="componentElement"
-                                :componentMigrationHelper="codeComponentHelper"
                                 :hasPaddedBody="true"
                                 :ltr="ltr"
                                 title="Lava"
@@ -9,42 +8,45 @@
                                 @complete="$emit('complete')"
                                 @delete="$emit('delete')"
                                 @migrate="$emit('migrate', $event)">
-        <template v-if="componentHelper?.contentWrapper">
-            <div class="row">
-                <div class="col-sm-12">
-                    <InnerHtmlProperty :element="componentHelper.contentWrapper"
-                                       label="Code"
-                                       :mergeFields="mergeFields"
-                                       mode="code"
-                                       :usageType="usageType" />
-                </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <CodeEditor v-model="html"
+                            mode="lava" />
             </div>
+        </div>
 
-            <div class="row">
-                <div class="col-sm-12">
-                    <p class="text-muted text-sm mb-3">
-                        *Keep in mind: Most email clients do not support interactive elements like JavaScript or Flash. Use basic HTML for higher likelihood of compatibility
-                    </p>
-                </div>
-            </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <p class="text-muted text-sm mb-3">
+                    *Keep in mind: Most email clients do not support interactive elements like JavaScript or Flash. Use basic HTML for higher likelihood of compatibility
+                </p>
 
-            <div class="row">
-                <div class="col-sm-12">
-                    <PaddingProperty :element="componentHelper.marginWrapper.td"
-                                     label="Margin" />
-                </div>
+                <NotificationBox v-if="usageType === 'template'"
+                                 alertType="warning">{{ warningMessage }}</NotificationBox>
             </div>
-        </template>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <ShorthandPixelBox v-model="marginPx"
+                                   label="Margin" />
+            </div>
+        </div>
     </ComponentPropertyPanelBase>
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { onMounted, onUnmounted, PropType, ref, watch } from "vue";
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
-    import InnerHtmlProperty from "../properties/innerHtmlProperty.partial.obs";
-    import PaddingProperty from "../properties/paddingProperty.partial.obs";
-    import { UsageType } from "../types";
-    import { getCodeComponentHelper } from "../utils.partial";
+    import ShorthandPixelBox from "../shorthandPixelBox.partial.obs";
+    import { ShorthandModel, UsageType } from "../types.partial";
+    import {
+        addRockContentEditableEventListener,
+        codeComponentAdapter,
+        removeRockContentEditableEventListener
+    } from "../utils.partial";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 
     const props = defineProps({
         componentElement: {
@@ -64,7 +66,7 @@
 
         usageType: {
             type: String as PropType<UsageType>,
-            default: "email" as const
+            required: true
         }
     });
 
@@ -75,18 +77,76 @@
         (e: "migrate", value: Element): void;
     }>();
 
+    const warningMessage = `To have Lava processed when the email is sent, wrap it in {% raw %} tags. Otherwise, it will be processed when the email is being authored.`;
+
     // #region Values
 
-    const codeComponentHelper = getCodeComponentHelper();
-    const componentHelper = ref(codeComponentHelper.getElements(props.componentElement));
+    const html = ref<string>("");
+    const marginPx = ref<ShorthandModel<number | null> | null>(null);
 
     // #endregion Values
 
+    // #region Functions
+
+    function readProps(): void {
+        const localProps = codeComponentAdapter.readLocalProps(props.componentElement);
+        html.value = localProps.html;
+        marginPx.value = localProps.marginPx;
+    }
+
+    function writeProps(): void {
+        codeComponentAdapter.writeLocalProps(props.componentElement, {
+            html: html.value,
+            marginPx: marginPx.value
+        });
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onInput(): void {
+        const { html: enteredHtml } = codeComponentAdapter.readLocalProps(props.componentElement);
+        html.value = enteredHtml;
+    }
+
+    // #endregion Event Handlers
+
     // #region Watchers
 
-    watch(() => props.componentElement, () => {
-        componentHelper.value = codeComponentHelper.getElements(props.componentElement);
+    // Handle html changes separately to avoid double-writing
+    // when the user is editing the content of the element itself.
+    watch(html, (newValue) => {
+        const { html: currentHtml } = codeComponentAdapter.readLocalProps(props.componentElement);
+
+        if (currentHtml !== newValue) {
+            writeProps();
+        }
+    });
+
+    watch(() => props.componentElement, (newComponentElement, oldComponentElement) => {
+        readProps();
+
+        removeRockContentEditableEventListener(oldComponentElement, onInput);
+        addRockContentEditableEventListener(newComponentElement, onInput);
+    });
+
+    watch([marginPx], () => { // html changes are handled in their own watcher above
+        writeProps();
     });
 
     // #endregion Watchers
+
+    // #region Hooks
+
+    onMounted(() => {
+        readProps();
+        addRockContentEditableEventListener(props.componentElement, onInput);
+    });
+
+    onUnmounted(() => {
+        removeRockContentEditableEventListener(props.componentElement, onInput);
+    });
+
+    // #endregion Hooks
 </script>

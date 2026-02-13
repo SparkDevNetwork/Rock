@@ -2173,7 +2173,7 @@ btnCopyToClipboard.ClientID );
         {
             var btnResourceListSourceType = e.Item.FindControl( "btnResourceListSourceType" ) as LinkButton;
             GroupSchedulerResourceListSourceType schedulerResourceListSourceType = ( GroupSchedulerResourceListSourceType ) e.Item.DataItem;
-            btnResourceListSourceType.Text = schedulerResourceListSourceType.GetDescription() ?? schedulerResourceListSourceType.ConvertToString( true );
+            btnResourceListSourceType.Text = schedulerResourceListSourceType.GetDisplayName();
             btnResourceListSourceType.CommandArgument = schedulerResourceListSourceType.ConvertToInt().ToString();
         }
 

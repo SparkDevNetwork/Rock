@@ -188,7 +188,7 @@ export class PersonPreferenceCollection implements IPersonPreferenceCollection {
         const preferenceToBeEmitted = Object.values(this.preferences)
             .map(p => ({
                 ...p,
-                key : this.getPrefixedKey(p.key ?? "")
+                key: this.getPrefixedKey(p.key ?? "")
             })) as PersonPreferenceValueBag[];
         this.emitter.emit("preferenceSaved", preferenceToBeEmitted);
     }
@@ -197,7 +197,7 @@ export class PersonPreferenceCollection implements IPersonPreferenceCollection {
         const prefixedPreferences: PersonPreferenceValueBag[] = [];
 
         for (const key of Object.keys(this.preferences)) {
-            if (!key.startsWith(prefix) || key.length == prefix.length) {
+            if (!key.startsWith(prefix) || key.length === prefix.length) {
                 continue;
             }
 
@@ -297,7 +297,7 @@ export class PersonPreferenceCollection implements IPersonPreferenceCollection {
         this.emitter.off(event, callback);
     }
 
-    setEmitter(emitter: Emitter<PersonPreferenceEvents>) : void  {
+    setEmitter(emitter: Emitter<PersonPreferenceEvents>): void {
         this.emitter = emitter;
     }
 

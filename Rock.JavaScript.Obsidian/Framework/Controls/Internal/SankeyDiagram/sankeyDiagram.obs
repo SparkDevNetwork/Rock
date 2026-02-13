@@ -26,127 +26,6 @@
     </div>
 </template>
 
-<style>
-.flow-node-diagram-container {
-    position: relative;
-    width: max-content;
-    max-width: 100%;
-    margin: 0 auto;
-}
-
-.flow-node-diagram-container .flow-tooltip {
-    position: absolute;
-    background: #fff;
-    max-width: 260px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 8px;
-    font-size: 14px;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .05)
-}
-
-.flow-node-diagram-container svg {
-    max-width: 100%;
-    height: auto;
-    min-height: 50px;
-}
-
-.flow-node-diagram-container .loadingContainer {
-    position: absolute;
-    z-index: 0;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: rgba(255, 255, 255, .75);
-}
-
-.flow-node-diagram-container .loadingContainer h3 {
-    margin: 0;
-}
-
-.flow-node-diagram-container .fade-enter-from,
-.flow-node-diagram-container .fade-leave-to {
-    opacity: 0;
-}
-
-.flow-node-diagram-container .fade-enter-active,
-.flow-node-diagram-container .fade-leave-active {
-    transition: opacity .2s ease-in-out;
-}
-
-.step-flow-svg .edge:hover {
-    fill: rgba(170, 170, 170, 0.8);
-}
-
-.step-flow-svg .edge {
-    opacity: 0;
-    transform-origin: left center;
-    animation: flow-edges 0.25s ease-in-out forwards;
-}
-
-.step-flow-svg .edge.level-2 {
-    animation-delay: 0.25s;
-}
-
-.step-flow-svg .edge.level-3 {
-    animation-delay: .5s;
-}
-
-.step-flow-svg .edge.level-4 {
-    animation-delay: .75s;
-}
-
-.step-flow-svg .edge.level-5 {
-    animation-delay: 1s;
-}
-
-.step-flow-svg .edge.level-6 {
-    animation-delay: 1.25s;
-}
-
-@keyframes flow-edges {
-    0% {
-        opacity: 0;
-        -webkit-clip-path: inset(0 100% 0 0);
-        clip-path: inset(0 100% 0 0);
-    }
-
-    100% {
-        opacity: 1;
-        -webkit-clip-path: inset(0 0 0 0);
-        clip-path: inset(0 0 0 0);
-    }
-}
-
-.flow-legend {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin: 20px auto 0;
-    gap: 12px;
-    width: 100%;
-}
-
-.flow-key {
-    display: inline-flex;
-    align-items: center;
-    font-size: 12px;
-    line-height: 1.1;
-}
-
-.flow-key .color {
-    width: 18px;
-    height: 18px;
-    margin-right: 4px;
-    border-radius: 3px;
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
-}
-</style>
-
 <script setup lang="ts">
     import SankeyDiagramLevel from "./sankeyDiagramLevel.partial.obs";
     import { computed, PropType, reactive } from "vue";
@@ -254,7 +133,7 @@
         // Make sure nodes are in order
         const orderedNodes = [...props.flowNodes].sort((nodeA, nodeB) => nodeA.order - nodeB.order);
 
-        if (levelsCount.value == 0) {
+        if (levelsCount.value === 0) {
             return [] as FlowDiagramData;
         }
 
@@ -274,7 +153,7 @@
             flowPositionData.push([]);
 
             // Get everything flowing into the nodes at this level.
-            const levelFlows = props.flowEdges.filter(flow => flow.level == level);
+            const levelFlows = props.flowEdges.filter(flow => flow.level === level);
 
             // Total number of units flowing into this level.
             const totalLevelUnits = levelFlows.reduce((tot, { units }) => tot + units, 0);
@@ -289,9 +168,9 @@
             // Construct the base diagram nodes, which we'll fill in calculations for later.
             const levelNodes: FlowDiagramLevel = orderedNodes.map(node => {
                 // Get the flows coming into this node and order them by the order of the source nodes
-                const nodeInFlows: SankeyDiagramEdgeBag[] = levelFlows.filter(flow => flow.targetId == node.id).sort((flowA, flowB): number => {
-                    const nodeOrderA = orderedNodes.findIndex(node => node.id == flowA.sourceId);
-                    const nodeOrderB = orderedNodes.findIndex(node => node.id == flowB.sourceId);
+                const nodeInFlows: SankeyDiagramEdgeBag[] = levelFlows.filter(flow => flow.targetId === node.id).sort((flowA, flowB): number => {
+                    const nodeOrderA = orderedNodes.findIndex(node => node.id === flowA.sourceId);
+                    const nodeOrderB = orderedNodes.findIndex(node => node.id === flowB.sourceId);
 
                     return nodeOrderA - nodeOrderB;
                 });
@@ -317,7 +196,7 @@
                     nodeFlowPosition.nextLeftY += thickness;
 
                     if (level > 1) {
-                        const prevNodeFlowPosition = flowPositionData[level - 1].find(node => node.id == flow.sourceId);
+                        const prevNodeFlowPosition = flowPositionData[level - 1].find(node => node.id === flow.sourceId);
 
                         if (prevNodeFlowPosition) {
                             sourcePoint.y = prevNodeFlowPosition.nextRightY;

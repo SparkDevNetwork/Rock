@@ -24,6 +24,7 @@
                       :valueHideGridLines="valueHideGridLines"
                       :valueLabel="valueLabel"
                       :valueMaxTickCount="valueMaxTickCount"
+                      :valuePrecision="valuePrecision"
                       :valueSuggestedMax="valueSuggestedMax"
                       :valueSuggestedMin="valueSuggestedMin"
                       :valueTickCount="valueTickCount"
@@ -63,6 +64,11 @@
                                           :items="labelDateFormatItems"
                                           label="Label Date Format"
                                           @update:modelValue="labelDateFormat = <LabelDateFormat>$event" />
+
+                            <NumberBox v-model="valuePrecision"
+                                       help="Sets the number of decimal places to display. Actual values may be rounded automatically and may not always show the exact precision. Leave blank to use default formatting for ticks and tooltips."
+                                       label="Precision"
+                                       :maximumValue="20" />
 
                             <Switch :modelValue="isPercent ?? false"
                                     help="For 'percent', the data must be in decimal form (e.g., 0.1 for 10%)."
@@ -279,6 +285,7 @@
     const categoryLabel = ref<string | undefined>("Category Label");
     const valueLabel = ref<string | undefined>("Value Label");
     const title = ref<string | undefined>("Chart Title");
+    const valuePrecision = ref<number | undefined>();
     const valueSuggestedMin = ref<number | undefined>();
     const valueSuggestedMax = ref<number | undefined>();
     const opacity = ref<number | number[] | undefined>();
@@ -357,6 +364,9 @@
         }
         if (!isNullish(valueMaxTickCount.value)) {
             barChartProps.push(`:valueMaxTickCount="${valueMaxTickCount.value}"`);
+        }
+        if (!isNullish(valuePrecision.value)) {
+            barChartProps.push(`:valuePrecision="${valuePrecision.value}"`);
         }
         if (!isNullish(valueSuggestedMax.value)) {
             barChartProps.push(`:valueSuggestedMax="${valueSuggestedMax.value}"`);

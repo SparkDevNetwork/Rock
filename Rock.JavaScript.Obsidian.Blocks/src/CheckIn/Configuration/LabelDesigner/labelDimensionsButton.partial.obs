@@ -3,7 +3,7 @@
         <template #anchor>
             <RockButton btnType="default"
                         btnSize="xs"
-                        class="label-dimensions-button mr-3">
+                        class="label-dimensions-button">
                 Label Dimensions ({{ modelValue.width }}x{{ modelValue.height }})
             </RockButton>
         </template>

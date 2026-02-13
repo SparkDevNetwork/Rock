@@ -199,6 +199,13 @@ namespace Rock.CheckIn.v2
         public virtual bool IsProximityEnabled { get; }
 
         /// <summary>
+        /// Gets a value indicating the lava template that will be used to
+        /// send a push notification to the mobile device when a person is
+        /// checked in via the proximity system.
+        /// </summary>
+        public virtual string ProximityAttendanceNotificationTemplate { get; }
+
+        /// <summary>
         /// Gets a value indicating whether removing people with a "can check-in"
         /// relationship from the family is allowed. This does not allow
         /// full family members to be removed.
@@ -455,6 +462,19 @@ namespace Rock.CheckIn.v2
         public virtual Guid DefaultPersonConnectionStatusGuid { get; }
 
         /// <summary>
+        /// Controls how the family address field displayed when adding or
+        /// editing a family during registration.
+        /// </summary>
+        public virtual RequirementLevel DisplayAddressOnFamilies { get; }
+
+        /// <summary>
+        /// Gets the default person record source unique identifier when
+        /// adding a new person on the kiosk registration screen.
+        /// </summary>
+        /// <value>The default person record source unique identifier.</value>
+        public virtual Guid DefaultPersonRecordSourceGuid { get; }
+
+        /// <summary>
         /// Gets a value indicating if the birthdate field is visible and/or
         /// required for adults on the kiosk registration screen.
         /// </summary>
@@ -652,6 +672,7 @@ namespace Rock.CheckIn.v2
             IsPhotoHidden = groupTypeCache.GetAttributeValue( "core_checkin_HidePhotos" ).AsBoolean( true );
             IsPresenceEnabled = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean();
             IsProximityEnabled = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PROXIMITY_CHECKIN ).AsBoolean();
+            ProximityAttendanceNotificationTemplate = templateSettings.ProximityAttendanceNotificationTemplate;
             IsRemoveFromFamilyAtKioskAllowed = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_REMOVE_FROM_FAMILY_KIOSK ).AsBoolean();
             IsSameCodeUsedForFamily = groupTypeCache.GetAttributeValue( "core_checkin_ReuseSameCode" ).AsBoolean( false );
             IsSameOptionUsed = groupTypeCache.GetAttributeValue( "core_checkin_UseSameOptions" ).AsBoolean( false );
@@ -689,6 +710,10 @@ namespace Rock.CheckIn.v2
             AddPersonWorkflowTypeGuids = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDPERSONWORKFLOWTYPES ).SplitDelimitedValues().AsGuidList();
             CanCheckInKnownRelationshipRoleGuids = GetRelationshipRoleGuids( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES ), rockContext );
             DefaultPersonConnectionStatusGuid = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS ).AsGuidOrNull() ?? SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid();
+            DisplayAddressOnFamilies = templateSettings.DisplayAddressOnFamilies;
+            DefaultPersonRecordSourceGuid = groupTypeCache.GroupMemberRecordSourceValueId.HasValue
+                ? DefinedValueCache.Get( groupTypeCache.GroupMemberRecordSourceValueId.Value, rockContext ).Guid
+                : SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_CHECK_IN.AsGuid();
             DisplayBirthdateForAdults = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS ) );
             DisplayBirthdateForChildren = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONCHILDREN ) );
             DisplayGradeForChildren = GetRequirementLevel( groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN ) );

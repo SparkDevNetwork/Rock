@@ -1,0 +1,346 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <!-- Placement Group Configuration -->
+    <ContentStack title="Placement Group Configuration"
+                  description="Define how people are placed into groups when marked as Connected."
+                  headerLocation="top">
+        <Grid :data="configGridData"
+              keyField="guid"
+              itemTerm="Placement Group Configuration"
+              liveUpdates
+              light
+              @addItem="onAddCfg">
+            <TextColumn name="groupType" field="groupType" title="Group Type" />
+            <TextColumn name="groupMemberRole" field="groupMemberRole" title="Group Member Role" />
+            <TextColumn name="groupMemberStatus" field="groupMemberStatus" title="Group Member Status" />
+            <BooleanColumn name="useAllGroupsOfType" field="useAllGroupsOfType" title="Use All Groups of This Type" />
+            <EditColumn @click="onEditCfg" />
+            <DeleteColumn @click="onDeleteCfg" />
+        </Grid>
+        <Modal v-model="isCfgModalVisible"
+               :title="`${isEditing ? 'Edit' : 'Add'} Placement Group Configuration`"
+               saveText="Save"
+               cancelText="Cancel"
+               :onSave="onSaveCfg">
+            <div class="row">
+                <div class="col-md-4">
+                    <GroupTypePicker label="Group Type"
+                                     v-model="thePlacementGroupCfg.groupType"
+                                     rules="required"
+                                     help="The group type that the user will be placed in" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <GroupRolePicker :modelValue="thePlacementGroupCfg.groupMemberRole ?? null"
+                                     @update:modelValue="val => thePlacementGroupCfg.groupMemberRole = (Array.isArray(val) ? (val[0] ?? null) : val)"
+                                     label="Group Role"
+                                     :groupTypeGuid="thePlacementGroupCfg.groupType?.value ?? null"
+                                     :hideGroupTypePicker="true"
+                                     rules="required"
+                                     help="The role that the person will hold upon being connected" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <RadioButtonList :modelValue="(thePlacementGroupCfg.groupMemberStatus).toString()"
+                                     @update:modelValue="val => thePlacementGroupCfg.groupMemberStatus = Number(val)"
+                                     :items="groupMemberStatusItems"
+                                     label="Group Member Status"
+                                     rules="required"
+                                     help="The status of the person upon being connected." />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <Toggle v-model="thePlacementGroupCfg.useAllGroupsOfType"
+                            label="Use All Groups of This Type"
+                            falseText="No"
+                            trueText="Yes"
+                            help="All groups of this group type are used for this opportunity" />
+                </div>
+            </div>
+        </Modal>
+    </ContentStack>
+
+    <!-- Placement Groups -->
+    <ContentStack title="Placement Groups"
+                  description="Select groups available for connecting requests, filtered by campus when applicable."
+                  headerLocation="top">
+        <Grid :data="groupsGridData"
+              keyField="guid"
+              itemTerm="Placement Group"
+              liveUpdates
+              light
+              @addItem="onAddGroup">
+            <TextColumn name="groupName" field="name" title="Group">
+                <template #format="{ row }">
+                    {{ row.name }} <span v-if="row.isArchived" class="label label-warning ml-2">Archived</span>
+                </template>
+            </TextColumn>
+            <TextColumn name="groupType" field="groupType" title="Group Type" />
+            <TextColumn name="campus" field="campus" title="Campus" />
+            <DeleteColumn @click="onDeleteGroup" />
+        </Grid>
+
+        <Modal v-model="isGroupModalVisible"
+               title="Add Placement Group"
+               saveText="Add"
+               cancelText="Cancel"
+               :onSave="onSaveGroup">
+            <div class="row">
+                <div class="col-md-4">
+                    <GroupPicker label="Group"
+                                 v-model="thePlacementGroups"
+                                 :multiple="true"
+                                 :includedGroupTypeGuids="includedGroupTypeGuids"
+                                 :excludeAllByDefault="true" />
+                </div>
+            </div>
+        </Modal>
+    </ContentStack>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import Grid, { BooleanColumn, EditColumn, TextColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { PlacementGroupConfigBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/placementGroupConfigBag";
+    import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/placementGroupBag";
+    import { GroupMemberStatus, GroupMemberStatusDescription } from "@Obsidian/Enums/Group/groupMemberStatus";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import { PlacementGroupSectionData } from "./types.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<PlacementGroupSectionData>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: PlacementGroupSectionData): void;
+        (e: "hasArchivedGroup"): void;
+    }>();
+
+    function createNewConfig(): PlacementGroupConfigBag {
+        return {
+            guid: newGuid(),
+            groupType: null,
+            groupMemberRole: null,
+            groupMemberStatus: GroupMemberStatus.Active,
+            useAllGroupsOfType: false
+        };
+    }
+
+    //#region Values
+
+    const thePlacementGroupCfg = ref<PlacementGroupConfigBag>(createNewConfig());
+    const isCfgModalVisible = ref(false);
+    const isEditing = ref(false);
+    const groupMemberStatusItems = enumToListItemBag(GroupMemberStatusDescription);
+
+    // Since our <GroupPicker /> for selecting placement groups allows multiple
+    // and we can add multiple groups in one pass, we're using a ref array.
+    const thePlacementGroups = ref<ListItemBag[]>([]);
+
+    const isGroupModalVisible = ref(false);
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #endregion Values
+
+    // #region Computed Variables
+
+    const configGridData = computed(() => {
+        const rows = (props.modelValue?.configs ?? []).map(cfg => ({
+            guid: cfg.guid,
+            groupType: cfg.groupType?.text ?? "",
+            groupMemberRole: cfg.groupMemberRole?.text ?? "",
+            groupMemberStatus: GroupMemberStatusDescription[cfg.groupMemberStatus ?? GroupMemberStatus.Active] ?? "",
+            useAllGroupsOfType: cfg.useAllGroupsOfType
+        }));
+
+        return { rows };
+    });
+
+    const groupsGridData = computed(() => {
+        const rows = (props.modelValue?.groups ?? []).map(g => ({
+            guid: g.guid,
+            name: g.group?.text ?? "",
+            campus: g.campus?.text ?? "",
+            groupType: g.groupType?.text ?? "",
+            isArchived: g.isArchived
+        }));
+        return { rows };
+    });
+
+    const areAnyGroupsArchived = computed(() =>
+        props.modelValue.groups?.some(g => g.isArchived)
+    );
+
+    const includedGroupTypeGuids = computed(() =>
+        (props.modelValue?.configs ?? [])
+            .filter(cfg => cfg.groupType?.value && !cfg.useAllGroupsOfType)
+            .map(cfg => cfg.groupType?.value as Guid)
+    );
+
+    // #endregion Computed Variables
+
+    // #region Helper Functions
+
+    function filterGroupsByConfigs(configs: PlacementGroupConfigBag[], groups: PlacementGroupBag[]): PlacementGroupBag[] {
+        const groupsNeedToBeOfTypes = (configs ?? [])
+            .filter(c => c.groupType?.value && !c.useAllGroupsOfType)
+            .map(c => c.groupType?.value as Guid);
+
+        return (groups ?? []).filter(g => g.groupType?.value && groupsNeedToBeOfTypes.includes(g.groupType.value));
+    }
+
+    // #endregion Helper Functions
+
+    // #region Placement Group Configuration handlers
+
+    function onAddCfg(): void {
+        thePlacementGroupCfg.value = createNewConfig();
+        isCfgModalVisible.value = true;
+        isEditing.value = false;
+    }
+
+    function onEditCfg(guid: string): void {
+        const selectedCfg = (props.modelValue?.configs ?? []).find(x => x.guid === guid);
+        if (!selectedCfg) return;
+        thePlacementGroupCfg.value = { ...selectedCfg };
+        isCfgModalVisible.value = true;
+        isEditing.value = true;
+    }
+
+    async function onDeleteCfg(guid: string): Promise<void> {
+        const current = props.modelValue ?? { configs: [], groups: [] };
+        const updatedConfigs = (current.configs ?? []).filter(x => x.guid !== guid);
+
+        const updatedGroups = filterGroupsByConfigs(updatedConfigs, current.groups ?? []);
+
+        if (!deepEqual(updatedGroups, current.groups ?? [], false)) {
+            const ok = await confirm("Deleting this configuration will remove one or more selected placement groups that no longer match the allowed Group Types. Continue?");
+            if (!ok) {
+                return;
+            }
+        }
+
+        emit("update:modelValue", { configs: updatedConfigs, groups: updatedGroups });
+    }
+
+    async function onSaveCfg(): Promise<void> {
+        if (!thePlacementGroupCfg.value.groupType || !thePlacementGroupCfg.value.groupMemberRole) {
+            return;
+        }
+
+        const current = props.modelValue ?? { configs: [], groups: [] };
+        const idx = (current.configs ?? []).findIndex(a => a.guid === thePlacementGroupCfg.value.guid);
+
+        const updatedConfigs = [...(current.configs ?? [])];
+        if (idx >= 0) {
+            updatedConfigs.splice(idx, 1, thePlacementGroupCfg.value);
+        }
+        else {
+            updatedConfigs.push(thePlacementGroupCfg.value);
+        }
+
+        const updatedGroups = filterGroupsByConfigs(updatedConfigs, current.groups ?? []);
+
+        if (!deepEqual(updatedGroups, current.groups ?? [], false)) {
+            const ok = await confirm("These changes will remove one or more selected placement groups that no longer match the allowed Group Types. Continue?");
+            if (!ok) {
+                return;
+            }
+        }
+
+        emit("update:modelValue", { configs: updatedConfigs, groups: updatedGroups });
+        isCfgModalVisible.value = false;
+    }
+
+    // #endregion Placement Group Configuration handlers
+
+    // #region Placement Groups handlers
+
+    function onAddGroup(): void {
+        isGroupModalVisible.value = true;
+    }
+
+    function onDeleteGroup(guid: string): void {
+        const { configs = [], groups = [] } = props.modelValue ?? { configs: [], groups: [] };
+        const updatedGroups = groups.filter(g => g.guid !== guid);
+        emit("update:modelValue", { configs, groups: updatedGroups });
+    }
+
+    async function onSaveGroup(): Promise<void> {
+        const { configs = [], groups = [] } = props.modelValue ?? { configs: [], groups: [] };
+        if (!thePlacementGroups.value.length) {
+            return;
+        }
+
+        const addedGroups: PlacementGroupBag[] = thePlacementGroups.value
+            .map(grp => ({
+                guid: newGuid(),
+                group: grp,
+                groupType: null,
+                campus: null,
+                isArchived: false
+            }));
+
+        const updatedGroups: PlacementGroupBag[] = Enumerable
+            .from([
+                ...groups,
+                ...addedGroups
+            ])
+            .distinctBy(g => g.group?.value)
+            .toArray();
+
+        // Fetch the groupType since we don't have that from the <GroupPicker /> for newly added groups.
+        // We need it to be able to filter out groups that don't match the allowed Group Types if the PlacementGroupConfigs change before a database save.
+        for (const grp of updatedGroups) {
+            const key = grp.group?.value as string | undefined;
+            if (grp.groupType?.value || !key) {
+                continue;
+            }
+
+            const result = await invokeBlockAction<PlacementGroupBag>("GetSupplementalDataForNewPlacementGroup", { groupGuid: key });
+            if (result.isSuccess && result.data) {
+                grp.groupType = result.data.groupType;
+                grp.campus = result.data.campus;
+                grp.isArchived = result.data.isArchived;
+            }
+        }
+
+        emit("update:modelValue", { configs, groups: updatedGroups });
+        isGroupModalVisible.value = false;
+        thePlacementGroups.value = [];
+    }
+
+    // #endregion Placement Groups handlers
+
+    // #region Watchers
+
+
+    watch(areAnyGroupsArchived, (val) => {
+        if (val) {
+            emit("hasArchivedGroup");
+        }
+    }, { immediate: true });
+
+    // #endregion Watchers
+
+</script>

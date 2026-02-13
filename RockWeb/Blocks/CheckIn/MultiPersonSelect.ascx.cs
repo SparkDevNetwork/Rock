@@ -47,7 +47,6 @@ namespace RockWeb.Blocks.CheckIn
         Key = AttributeKey.OptionFormat,
         Description = "The format to use when displaying auto-checkin options. Merge fields include GroupType, Group, Location, Schedule, LocationCount and DisplayLocationCount (true/false).",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
         DefaultValue = PreSelectedOptionsFormatDefaultValue,
@@ -590,7 +589,7 @@ namespace RockWeb.Blocks.CheckIn
 
         protected string GetCheckboxClass( bool selected )
         {
-            return selected ? "ti ti-square-check" : "ti ti-square";
+            return selected ? "ti ti-checkbox" : "ti ti-square";
         }
 
         protected string GetPersonImageTag( object dataitem )

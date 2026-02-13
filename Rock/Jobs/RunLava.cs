@@ -34,7 +34,6 @@ namespace Rock.Jobs
         Key = AttributeKey.LavaTemplate,
         Description = "The Lava template to be run on a schedule. Common merge fields are available. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 800,
         Order = 0,
         IsRequired = true )]

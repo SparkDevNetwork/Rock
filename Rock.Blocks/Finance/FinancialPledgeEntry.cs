@@ -117,7 +117,6 @@ namespace Rock.Blocks.Finance
         Key = AttributeKey.ReceiptText,
         Description = "The text (or HTML) to display as the pledge receipt. <span class='tip tip-lava'></span> <span class='tip tip-html'>",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         Order = 10,
         DefaultValue =

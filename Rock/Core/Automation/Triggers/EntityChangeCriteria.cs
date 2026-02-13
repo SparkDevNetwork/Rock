@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
 
 using Microsoft.Extensions.Logging;
 
@@ -60,7 +61,7 @@ namespace Rock.Core.Automation.Triggers
 
         #endregion
 
-        #region Methods
+        #region Constructors
 
         /// <summary>
         /// Creates a new instance of the <see cref="EntityChangeCriteria"/> class.
@@ -78,9 +79,7 @@ namespace Rock.Core.Automation.Triggers
             {
                 try
                 {
-                    var lambda = DynamicExpressionParser.ParseLambda( false, type, typeof( bool ), advancedCriteria );
-
-                    _advancedDelegate = lambda.Compile();
+                    _advancedDelegate = CreateAdvancedFilterDelegate( type, advancedCriteria );
                 }
                 catch ( Exception ex )
                 {
@@ -99,6 +98,10 @@ namespace Rock.Core.Automation.Triggers
             }
         }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Determines if the save entry matches the criteria defined in this instance.
         /// </summary>
@@ -116,7 +119,7 @@ namespace Rock.Core.Automation.Triggers
                         return false;
                     }
 
-                    return ( bool ) _advancedDelegate.DynamicInvoke( entry.Entity );
+                    return ( bool ) _advancedDelegate.DynamicInvoke( entry.Entity, entry.OriginalValues, entry.ModifiedProperties, entry.State );
                 }
                 else
                 {
@@ -126,7 +129,7 @@ namespace Rock.Core.Automation.Triggers
                         return true;
                     }
 
-                    if ( _areAllSimpleRulesRequired)
+                    if ( _areAllSimpleRulesRequired )
                     {
                         return _simpleRules.All( r => r.IsMatch( entry ) );
                     }
@@ -144,6 +147,36 @@ namespace Rock.Core.Automation.Triggers
 
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Creates the advanced filter delegate from the criteria string.
+        /// </summary>
+        /// <param name="type">The entity type that will be passed to the delegate.</param>
+        /// <param name="criteria">The text that contains the criteria to be parsed.</param>
+        /// <returns>A delegate object.</returns>
+        public static Delegate CreateAdvancedFilterDelegate( Type type, string criteria )
+        {
+            var parameters = new[] {
+                Expression.Parameter( type, "Entity" ),
+                Expression.Parameter( typeof( IReadOnlyDictionary<string, object> ), "OriginalValues" ),
+                Expression.Parameter( typeof( IReadOnlyList<string> ), "ModifiedProperties" ),
+                Expression.Parameter( typeof( EntityContextState ), "State" )
+            };
+
+            // Disabling fallback allows us to do error checking on invalid
+            // property names. Otherwise Dynamic LINQ will just let you do
+            // something like "Entity.BadProperty" and assume it is an object
+            // type. This is because all entities implement indexor accessors
+            // so Dynamic LINQ assumes you might be trying to use that.
+            var config = new ParsingConfig
+            {
+                DisableMemberAccessToIndexAccessorFallback = true
+            };
+
+            var lambda = DynamicExpressionParser.ParseLambda( config, false, parameters, typeof( bool ), criteria );
+
+            return lambda.Compile();
         }
 
         #endregion

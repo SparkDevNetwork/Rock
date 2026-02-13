@@ -431,7 +431,7 @@ namespace Rock.Storage.AssetStorage
                 Name = name,
                 Bucket = bucketName,
                 Size = Convert.ToUInt64( asset.FileSize ),
-                Updated = asset.LastModifiedDateTime,
+                UpdatedDateTimeOffset = asset.LastModifiedDateTime?.ToRockDateTimeOffset(),
                 ContentType = System.Web.MimeMapping.GetMimeMapping( name )
             };
 #else
@@ -459,10 +459,10 @@ namespace Rock.Storage.AssetStorage
                 Type = isFolder ? AssetType.Folder : AssetType.File,
                 AssetStorageProviderId = assetStorageProvider.Id,
                 FileSize = Convert.ToInt64( googleObject.Size ?? 0ul ),
-                LastModifiedDateTime = googleObject.Updated,
+                LastModifiedDateTime = googleObject.UpdatedDateTimeOffset?.ToOrganizationDateTime(),
                 Description = $"{googleObject.ContentType} {googleObject.Size} byte{( googleObject.Size == 1 ? string.Empty : "s" )}",
                 IconPath = createThumbnail ?
-                    GetThumbnail( assetStorageProvider, googleObject.Name, googleObject.Updated ) :
+                    GetThumbnail( assetStorageProvider, googleObject.Name, googleObject.UpdatedDateTimeOffset?.ToOrganizationDateTime() ) :
                     GetFileTypeIcon( googleObject.Name )
             };
         }

@@ -11,15 +11,27 @@
 
                 <ul class="dropdown-menu dropdown-menu-right">
                     <li v-if="autoCollapse">
-                        <a href="#" @click.prevent="autoCollapse = false">
+                        <a href="#" @click.prevent="onToggleAutoCollapse(false)">
                             <i class="ti ti-viewport-short"></i>
                             Turn Off Auto Collapse
                         </a>
                     </li>
                     <li v-else>
-                        <a href="#" @click.prevent="autoCollapse = true">
+                        <a href="#" @click.prevent="onToggleAutoCollapse(true)">
                             <i class="ti ti-viewport-short"></i>
                             Turn On Auto Collapse
+                        </a>
+                    </li>
+                    <li :class="expandCollapseAllClasses">
+                        <a href="#" @click.prevent="onExpandAllClick">
+                            <i class="ti ti-chevrons-down"></i>
+                            Expand All
+                        </a>
+                    </li>
+                    <li :class="expandCollapseAllClasses">
+                        <a href="#" @click.prevent="onCollapseAllClick">
+                            <i class="ti ti-chevrons-up"></i>
+                            Collapse All
                         </a>
                     </li>
                 </ul>
@@ -32,7 +44,7 @@
            :class="{ active: section.anchor.value === activeSectionId }"
            @click.prevent.stop="onOpenSectionClick(section)">
             <i v-if="section.icon.value" :class="section.icon.value"></i>
-            {{ section.title.value || "Primary" }}
+            {{ section.title.value }}
         </a>
     </div>
 </template>
@@ -41,13 +53,19 @@
     import { IContentSectionHolder } from "@Obsidian/Core/Controls/contentSection";
     import { usePersonPreferences } from "@Obsidian/Utility/block";
     import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
-    import { onBeforeMount, onMounted, PropType, ref, watch } from "vue";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
 
     const props = defineProps({
         sections: {
             type: Array as PropType<IContentSectionHolder[]>,
             required: true
         },
+        waitForTransitions: {
+            type: Function as PropType<() => Promise<void>>,
+            required: false
+        }
     });
 
     const preferences = usePersonPreferences().blockPreferences;
@@ -57,7 +75,118 @@
     const autoCollapse = ref(asBooleanOrNull(preferences.getValue("contentsection-auto-collapse")) ?? true);
     const activeSectionId = ref(window.location.hash.replace("#", ""));
 
-    // #endregion
+    let headerOffsetPx: number | null = null;
+    let resizeObserver: ResizeObserver | null = null;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const expandCollapseAllClasses = computed((): string => {
+        return autoCollapse.value
+            ? "disabled"
+            : "";
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Scrolls the page to the specified section, accounting for any fixed or
+     * sticky headers.
+     * @param sectionId The ID of the section to scroll to.
+     */
+    function scrollToSection(sectionId: string): void {
+        if (!sectionId) {
+            return;
+        }
+
+        const element = document.getElementById(sectionId);
+        if (element) {
+            const offset = getFixedHeaderOffsetPx();
+
+            // If the section is already fully visible (accounting for the fixed
+            // header offset), don't scroll.
+            if (isSectionFullyVisible(element, offset)) {
+                return;
+            }
+
+            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+            const offsetPosition = elementPosition - offset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: "smooth"
+            });
+        }
+    }
+
+    /**
+     * Calculates the total offset height of any fixed headers so we can avoid
+     * them when scrolling to a section.
+     * @returns The total offset in pixels.
+     */
+    function getFixedHeaderOffsetPx(): number {
+        if (!isNullish(headerOffsetPx)) {
+            return headerOffsetPx;
+        }
+
+        let offset = 0;
+
+        // While this is not a perfect method of determining fixed header height,
+        // our goal is to get close enough for most scenarios without requiring
+        // additional configuration. This will scan the entire DOM for any
+        // elements that are fixed at or above the top of the viewport (that's
+        // actually in view, as determined by its bottom edge being below the
+        // top of the viewport) and sum their heights.
+        document.querySelectorAll("*").forEach(el => {
+            const style = getComputedStyle(el);
+
+            if (style.position === "fixed") {
+                const rect = el.getBoundingClientRect();
+                if (rect.top <= 0 && rect.bottom > 0) {
+                    offset += rect.height;
+                }
+            }
+        });
+
+        // Add extra padding to ensure the section header is fully visible.
+        var extraPaddingPx = parseInt(getCssVariableValue("--spacing-medium", "16"));
+
+        headerOffsetPx = offset + extraPaddingPx;
+
+        return headerOffsetPx;
+    }
+
+    /**
+     * Determines if a section element is fully visible within the viewport.
+     * @param element The section element to check.
+     * @param fixedHeaderOffset The offset in pixels for any fixed headers.
+     * @returns True if the section is fully visible; otherwise, false.
+     */
+    function isSectionFullyVisible(element: HTMLElement, fixedHeaderOffset: number): boolean {
+        const rect = element.getBoundingClientRect();
+        const visibleTop = fixedHeaderOffset;
+        const visibleBottom = window.innerHeight;
+
+        // Tiny tolerance in case of sub-pixel layout.
+        const epsilon = 1;
+
+        // Completely above visible area.
+        if (rect.bottom <= visibleTop + epsilon) {
+            return false;
+        }
+
+        // Completely below visible area.
+        if (rect.top >= visibleBottom - epsilon) {
+            return false;
+        }
+
+        return rect.top >= visibleTop - epsilon && rect.bottom <= visibleBottom + epsilon;
+    }
+
+    // #endregion Functions
 
     // #region Event Handlers
 
@@ -66,7 +195,6 @@
      */
     function onHashChange(): void {
         activeSectionId.value = window.location.hash.replace("#", "");
-
     }
 
     /**
@@ -76,7 +204,13 @@
      *
      * @param section The section that was clicked.
      */
-    function onOpenSectionClick(section: IContentSectionHolder): void {
+    async function onOpenSectionClick(section: IContentSectionHolder): Promise<void> {
+        // Disable animations for all sections to avoid jarring effects when
+        // auto-scrolling to the selected section.
+        props.sections.forEach(s => {
+            s.isAnimationDisabled.value = true;
+        });
+
         if (autoCollapse.value) {
             props.sections
                 .filter(s => !!s.title.value)
@@ -89,11 +223,84 @@
 
         section.isCollapsed.value = false;
 
-        const url = `${window.location.href.split("#")[0]}#${section.anchor.value}`;
+        const id = section.anchor.value ?? "";
+
+        const url = `${window.location.href.split("#")[0]}#${id}`;
         window.history.replaceState(null, "", url);
+
+        activeSectionId.value = id;
+
+        // Wait for Vue to flush DOM updates.
+        await nextTick();
+
+        // Wait for any ongoing transitions to complete.
+        if (props.waitForTransitions) {
+            await props.waitForTransitions();
+        }
+
+        scrollToSection(id);
+
+        // Wait for Vue to flush DOM updates then re-enable animations.
+        await nextTick();
+
+        props.sections.forEach(s => {
+            s.isAnimationDisabled.value = false;
+        });
     }
 
-    // #endregion
+    /**
+     * Toggles the auto-collapse feature on and off.
+     * If turning on auto-collapse and there is an active (previously-selected)
+     * section, all but the active section will be collapsed.
+     *
+     * @param isEnabled Whether the auto-collapse feature is enabled.
+     */
+    function onToggleAutoCollapse(isEnabled: boolean): void {
+        autoCollapse.value = isEnabled;
+
+        if (!isEnabled || !activeSectionId.value) {
+            return;
+        }
+
+        // Try to close all but the active section.
+        const activeSection = props.sections.find(s =>
+            s.anchor.value === activeSectionId.value
+        );
+
+        if (activeSection) {
+            onOpenSectionClick(activeSection);
+        }
+    }
+
+    /**
+     * Handles the "Expand All" menu item click.
+     * This will expand all sections.
+     */
+    function onExpandAllClick(): void {
+        if (autoCollapse.value) {
+            return;
+        }
+
+        props.sections.forEach(s => {
+            s.isCollapsed.value = false;
+        });
+    }
+
+    /**
+     * Handles the "Collapse All" menu item click.
+     * This will collapse all sections.
+     */
+    function onCollapseAllClick(): void {
+        if (autoCollapse.value) {
+            return;
+        }
+
+        props.sections.forEach(s => {
+            s.isCollapsed.value = true;
+        });
+    }
+
+    // #endregion Event Handlers
 
     watch(autoCollapse, () => {
         preferences.setValue("contentsection-auto-collapse", autoCollapse.value ? "true" : "false");
@@ -102,9 +309,31 @@
 
     onMounted((): void => {
         window.addEventListener("hashchange", onHashChange);
+
+        if (window.ResizeObserver) {
+            const docEl = document.documentElement;
+            let lastWidth = docEl.clientWidth;
+
+            resizeObserver = new ResizeObserver(() => {
+                const newWidth = docEl.clientWidth;
+                if (newWidth !== lastWidth) {
+                    // Clear the cached header offset so it will be recalculated
+                    // on the next section selection.
+                    headerOffsetPx = null;
+                    lastWidth = newWidth;
+                }
+            });
+
+            resizeObserver.observe(docEl);
+        }
     });
 
-    onBeforeMount((): void => {
+    onBeforeUnmount((): void => {
         window.removeEventListener("hashchange", onHashChange);
+
+        if (resizeObserver) {
+            resizeObserver.disconnect();
+            resizeObserver = null;
+        }
     });
 </script>

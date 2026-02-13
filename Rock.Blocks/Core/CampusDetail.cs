@@ -489,20 +489,26 @@ namespace Rock.Blocks.Core
                 return null;
             }
 
+            // If new campus, set default values for Campus Status and Type
+            var defaultCampusStatusValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CAMPUS_STATUS_OPEN );
+            var defaultCampusTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CAMPUS_TYPE_PHYSICAL );
+
             return new CampusBag
             {
                 IdKey = entity.IdKey,
                 CampusSchedules = ConvertCampusSchedulesToBags( entity.CampusSchedules ),
                 CampusTopics = ConvertCampusTopicsToBags( entity.CampusTopics ),
-                CampusStatusValue = entity.CampusStatusValue.ToListItemBag(),
-                CampusTypeValue = entity.CampusTypeValue.ToListItemBag(),
+                CampusStatusValue = entity.Id != 0 ? entity.CampusStatusValue.ToListItemBag() : new ViewModels.Utility.ListItemBag() { Text = defaultCampusStatusValue?.Value, Value = defaultCampusStatusValue?.Guid.ToString() },
+                CampusTypeValue = entity.Id != 0 ? entity.CampusTypeValue.ToListItemBag() : new ViewModels.Utility.ListItemBag() { Text = defaultCampusTypeValue?.Value, Value = defaultCampusTypeValue?.Guid.ToString() },
                 Description = entity.Description,
                 IsActive = !entity.IsActive.HasValue || entity.IsActive.Value,
                 IsSystem = entity.IsSystem,
                 LeaderPersonAlias = entity.LeaderPersonAlias.ToListItemBag(),
                 Location = entity.Location.ToListItemBag( entity.Location?.Name ),
                 Name = entity.Name,
+#pragma warning disable CS0612, CS0618
                 ServiceTimes = ConvertServiceTimesToBags( entity.ServiceTimes ),
+#pragma warning restore CS0612, CS0618
                 ShortCode = entity.ShortCode,
                 TimeZoneId = entity.TimeZoneId,
                 Url = entity.Url,
@@ -558,7 +564,13 @@ namespace Rock.Blocks.Core
                 bag.PhoneNumber = entity.PhoneNumber;
             }
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
+            var currentPerson = RequestContext.CurrentPerson;
+
+            // Exclude the core core attributes (such as "core_CampusColor") since we'll bind those elsewhere
+            bag.LoadAttributesAndValuesForPublicEdit( entity, currentPerson, enforceSecurity: true, attributeFilter: a=> !IsCoreAttributeIncluded( a ) );
+
+            bag.CoreAttributes = entity.GetPublicAttributesForEdit( currentPerson, enforceSecurity: true, attributeFilter: IsCoreAttributeIncluded );
+            bag.CoreAttributeValues = entity.GetPublicAttributeValuesForEdit( currentPerson, enforceSecurity: true, attributeFilter: IsCoreAttributeIncluded );
 
             return bag;
         }
@@ -625,9 +637,10 @@ namespace Rock.Blocks.Core
                         entity.PhoneNumber = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), box.Bag.PhoneNumber, false );
                     }
                 } );
-
+#pragma warning disable CS0612, CS0618
             box.IfValidProperty( nameof( box.Bag.ServiceTimes ),
                 () => entity.ServiceTimes = ConvertServiceTimesFromBags( box.Bag.ServiceTimes ) );
+#pragma warning restore CS0612, CS0618
 
             box.IfValidProperty( nameof( box.Bag.ShortCode ),
                 () => entity.ShortCode = box.Bag.ShortCode );
@@ -647,9 +660,24 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( RockContext );
+                    box.IfValidProperty( nameof( box.Bag.CoreAttributeValues ),
+                        () =>
+                        {
+                            // Combine custom and core attributes for validating and saving once.
+                            // Merge into a new dictionary where CoreAttributeValues overwrite AttributeValues on key conflicts.
+                            var mergedAttributeValues = new Dictionary<string, string>( box.Bag.AttributeValues ?? new Dictionary<string, string>() );
+                            if ( box.Bag.CoreAttributeValues != null )
+                            {
+                                foreach ( var kv in box.Bag.CoreAttributeValues )
+                                {
+                                    mergedAttributeValues.AddOrReplace( kv.Key, kv.Value );
+                                }
+                            }
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
+                            entity.LoadAttributes( RockContext );
+
+                            entity.SetPublicAttributeValues( mergedAttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
+                        } );
                 } );
 
             return true;
@@ -718,6 +746,16 @@ namespace Rock.Blocks.Core
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Determines whether if the attribute is a core attribute.
+        /// </summary>
+        /// <param name="attribute">The attribute to be checked.</param>
+        /// <returns><c>true</c> if the attribute is an core attribute; otherwise, <c>false</c>.</returns>
+        private static bool IsCoreAttributeIncluded( AttributeCache attribute )
+        {
+            return attribute.Key.StartsWith( "core_" );
         }
 
         #endregion

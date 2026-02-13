@@ -75,7 +75,7 @@ namespace Rock.Model
                 .Select( value => new ListItemBag
                 {
                     Value = value.ConvertToInt().ToString(),
-                    Text = value.GetDescription() ?? value.ToString().SplitCase()
+                    Text = value.GetDisplayName()
                 } )
                 .ToList();
         }
@@ -215,7 +215,7 @@ namespace Rock.Model
                 .Select( value => new ListItemBag
                 {
                     Value = value.ConvertToInt().ToString(),
-                    Text = value.GetDescription() ?? value.ToString().SplitCase()
+                    Text = value.GetDisplayName()
                 } )
                 .ToList();
         }

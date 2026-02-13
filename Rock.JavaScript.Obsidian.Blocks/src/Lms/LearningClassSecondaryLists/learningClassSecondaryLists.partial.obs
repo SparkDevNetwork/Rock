@@ -57,7 +57,14 @@
         </template>
     </TabbedContent>
 
-    <Modal v-model="isParticipantModalOpen" :title="modalTitle" saveText="Save" @save="onSaveParticipant" :isSaveButtonDisabled="isModalSaveButtonDisabled">
+    <Modal v-model="isParticipantModalOpen"
+           v-model:submit="isParticipantFormSubmitting"
+           :title="modalTitle"
+           saveText="Save"
+           saveThenAddText="Save Then Add"
+           @save="onSaveParticipant"
+           @saveThenAdd="onSaveThenAddParticipant"
+           :isSaveButtonDisabled="isModalSaveButtonDisabled">
         <NotificationBox v-show="participantModalError.length > 0" alertType="danger">
             {{ participantModalError }}
         </NotificationBox>
@@ -65,6 +72,7 @@
         <PersonPicker
                       formControlClasses="input-width-md margin-l-sm"
                       v-model="personAlias"
+                      v-model:isSearchModeOpen="isPersonPickerSearchModeOpen"
                       :excludeDeceased="true"
                       :enableSelfSelection="true"
                       label="Individual"
@@ -163,6 +171,9 @@
     // Participant Modal properties.
     const participantModalError = ref("");
     const isParticipantModalOpen = ref(false);
+    const isPersonPickerSearchModeOpen = ref(true);
+    const isParticipantFormSubmitting = ref(false);
+    const isSaveThenAdd = ref(false);
     const isAddingFacilitator = ref(false);
     /** Used to force a refresh of the facilitators grid. */
     const isRefreshingFacilitators = ref(false);
@@ -174,13 +185,13 @@
     const participantAttributes = ref<Record<string, PublicAttributeBag>>({});
     const participantAttributeValues = ref<Record<string, string>>({});
 
-    // #endregion
+    // #endregion Values
 
     // #region Computed Values
 
     const isModalSaveButtonDisabled = computed(() => isRefreshingStudents.value === true || isRefreshingFacilitators.value === true);
 
-    // #endregion
+    // #endregion Computed Values
 
     // #region Functions
 
@@ -210,7 +221,16 @@
         }
     }
 
-    // #endregion
+    /** Resets the refs for the Participant Modal. */
+    function resetParticipantModal(): void {
+        participantModalError.value = "";
+        personAlias.value = undefined;
+        participantNote.value = "";
+        isSaveThenAdd.value = false;
+        isPersonPickerSearchModeOpen.value = true;
+    }
+
+    // #endregion Functions
 
     // #region Event Handlers
 
@@ -372,6 +392,9 @@
         return result.isSuccess;
     }
 
+    /**
+     * Called when the the modal's save button has been clicked by the individual.
+     */
     async function onSaveParticipant(): Promise<void> {
         const participant: LearningParticipantBag = {
             currentGradePercent: 0,
@@ -416,16 +439,22 @@
             return;
         }
 
-        isParticipantModalOpen.value = false;
+        if (!isSaveThenAdd.value) {
+            isParticipantModalOpen.value = false;
+        }
+        else {
+            resetParticipantModal();
+        }
     }
 
-    /** Resets the refs for the Participant Modal. */
-    function resetParticipantModal(): void {
-        participantModalError.value = "";
-        personAlias.value = undefined;
-        participantNote.value = "";
+    /**
+     * Called when the the modal's save then add button has been clicked by the individual.
+     */
+    async function onSaveThenAddParticipant(): Promise<void> {
+        isSaveThenAdd.value = true;
+        isParticipantFormSubmitting.value = true;
     }
 
-    // #endregion
+    // #endregion Event Handlers
 
 </script>

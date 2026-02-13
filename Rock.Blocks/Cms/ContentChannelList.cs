@@ -40,14 +40,15 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of content channels." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the content channel details.",
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "de1ab18e-c973-4333-832e-a8b4754f0571" )]
-    [Rock.SystemGuid.BlockTypeGuid( "f381936b-0d8c-43f0-8da5-401383e40883" )]
+    [Rock.SystemGuid.BlockTypeGuid( "991507B6-D222-45E5-BA0D-B61EA72DFB64" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "f381936b-0d8c-43f0-8da5-401383e40883" )]
     [CustomizedGrid]
     public class ContentChannelList : RockListBlockType<ContentChannelList.ContentChannelListBag>
     {
@@ -133,8 +134,13 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override GridBuilder<ContentChannelListBag> GetGridBuilder()
         {
+            var blockOptions = new GridBuilderGridOptions<ContentChannelListBag>
+            {
+                LavaObject = row => row.ContentChannel
+            };
+
             return new GridBuilder<ContentChannelListBag>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "contentChannelType", a => a.ContentChannelType )
@@ -219,7 +225,7 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( $"{ContentChannel.FriendlyTypeName} not found." );
                 }
 
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to delete {ContentChannel.FriendlyTypeName}." );
                 }

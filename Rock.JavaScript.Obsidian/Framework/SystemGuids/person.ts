@@ -26,4 +26,9 @@ export const Person = {
     AnonymousVisitor: "7EBC167B-512D-4683-9D80-98B6BB02E1B9",
     /** The Guid of the 'Giver Anonymous' person that ships with core */
     GiverAnonymous: "802235DC-3CA5-94B0-4326-AACE71180F48",
+    /**
+     * The guid of the 'System Sender' person that ships with core. This is used as the 'from' person when sending
+     * automated communications.
+     */
+    SystemSender: "817E7C25-6CB1-4ED0-B224-FF3C4DA0B716",
 };

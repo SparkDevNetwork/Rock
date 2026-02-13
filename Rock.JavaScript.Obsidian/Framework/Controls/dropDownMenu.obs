@@ -2,9 +2,14 @@
 <template>
     <div ref="dropdownElement" :class="dropDownClasses">
         <slot name="anchor" @click.prevent="onDropDownClick">
-            <button :class="`btn btn-link btn-overflow ${anchorButtonCssClass}`" type="button" @click.prevent="onDropDownClick">
+            <button :class="anchorButtonClass"
+                    :disabled="disabled"
+                    type="button"
+                    ref="anchorButtonElement"
+                    v-bind="tooltipAttrs"
+                    @click.prevent="onDropDownClick">
                 <slot>
-                    <i class="ti ti-dots-vertical"></i>
+                    <i :class="anchorIconCssClass"></i>
                 </slot>
             </button>
         </slot>
@@ -36,8 +41,11 @@ li.disabled > button {
 
 <script setup lang="ts">
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch, onBeforeUnmount } from "vue";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { tooltip, destroyTooltip } from "@Obsidian/Utility/tooltip";
 
     const props = defineProps({
         /**
@@ -46,6 +54,17 @@ li.disabled > button {
         items: {
             type: Array as PropType<MenuAction[]>,
             required: true
+        },
+
+        /** This gets turned into a tooltip as well as being the accessibility title */
+        title: {
+            type: String
+        },
+
+        /** Whether the dropdown menu is disabled */
+        disabled: {
+            type: Boolean,
+            default: false
         },
 
         /**
@@ -66,15 +85,52 @@ li.disabled > button {
         },
 
         /**
+         * Options for the type of button to use for the anchor button.
+         */
+        anchorButtonType: {
+            type: String as PropType<BtnType>,
+            default: BtnType.Link,
+            required: false
+        },
+
+        /**
+         * Options for the size of button to use for the anchor button.
+         */
+        anchorButtonSize: {
+            type: String as PropType<BtnSize>,
+            default: BtnSize.Default,
+            required: false
+        },
+
+        /**
          * Additional CSS classes to apply to the anchor button.
          */
         anchorButtonCssClass: {
             type: String as PropType<string | null | undefined>,
             required: false
+        },
+
+        /**
+         * Icon CSS class to use for the anchor button
+         */
+        anchorIconCssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false,
+            default: "ti ti-dots-vertical"
+        },
+
+        /**
+         * Whether to show the overflow styling on the anchor button.
+         */
+        isAnchorButtonOverflow: {
+            type: Boolean,
+            required: false,
+            default: true
         }
     });
 
     // #region Values
+    const anchorButtonElement = ref();
 
     const isDropDownOpen = ref(false);
     const dropdownElement = ref<HTMLElement>();
@@ -82,6 +138,24 @@ li.disabled > button {
     // #endregion
 
     // #region Computed Values
+
+    const anchorButtonClass = computed((): string => {
+        const classes = [
+            "btn",
+            `btn-${props.anchorButtonType}`,
+            `btn-${props.anchorButtonSize}`
+        ];
+
+        if (props.isAnchorButtonOverflow) {
+            classes.push("btn-overflow");
+        }
+
+        if (props.anchorButtonCssClass) {
+            classes.push(props.anchorButtonCssClass);
+        }
+
+        return classes.join(" ");
+    });
 
     const hasAnyIcons = computed((): boolean => {
         return props.items.some(i => !!i.iconCssClass);
@@ -100,6 +174,27 @@ li.disabled > button {
     /** Additional classes to be applied to the drop down menu. */
     const additionalDropDownMenuClasses = computed((): string => {
         return `dropdown-menu-${props.align}`;
+    });
+
+    /** Attributes to be applied to the anchor button for tooltip support. */
+    const tooltipAttrs = computed(() => {
+        if (props.title) {
+            return {
+                title: props.title,
+                "data-toggle": "tooltip"
+            };
+        }
+        return {};
+    });
+
+    watch([anchorButtonElement, () => props.title], () => {
+        if (props.title && anchorButtonElement.value) {
+            tooltip(anchorButtonElement.value);
+        }
+    });
+
+    onBeforeUnmount(() => {
+        destroyTooltip(anchorButtonElement.value);
     });
 
     // #endregion

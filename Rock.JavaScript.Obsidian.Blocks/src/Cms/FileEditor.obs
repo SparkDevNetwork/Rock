@@ -1,0 +1,217 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 v-model:isFullscreen="isFullScreen"
+                 :name="panelName"
+                 :isAuditHidden="true"
+                 :isBadgesVisible="false"
+                 :isDeleteVisible="false"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
+                 :isFullScreenVisible="true"
+                 :disableDeleteConfirmation="true"
+                 @cancelEdit="onBack"
+                 @save="onSave"
+                 :worksurfaceMode="true">
+        <template #edit>
+            <CodeEditor v-model:modelValue="fileContents"
+                        editor="monaco"
+                        :theme="editorTheme"
+                        :mode="editorMode"
+                        :disabled="false"
+                        :editorHeight="isResponsiveEditor ? calculatedPanelHeight : 600"
+                        noLineWrap />
+        </template>
+        <template #view>
+            <CodeEditor v-model:modelValue="fileContents"
+                        editor="monaco"
+                        :theme="editorTheme"
+                        :mode="editorMode"
+                        :disabled="true"
+                        :editorHeight="calculatedPanelHeight"
+                        noLineWrap />
+        </template>
+    </DetailBlock>
+</template>
+<script setup lang="ts">
+    import { ref, watch, onMounted, onBeforeUnmount } from "vue";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { FileEditorBag } from "@Obsidian/ViewModels/Blocks/Cms/FileEditor/fileEditorBag";
+    import { FileEditorOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/FileEditor/fileEditorOptionsBag";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey, EditorModeValue } from "./FileEditor/types.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+    const box = useConfigurationValues<CustomBlockBox<FileEditorBag, FileEditorOptionsBag>>();
+    const bag = ref<FileEditorBag>(box.bag ?? {});
+    const options = ref<FileEditorOptionsBag>(box.options ?? { editorMode: "text", isEditable: false, isWorksurfaceLayout: true });
+
+    const panelName = "File Editor";
+    const panelMode = ref<DetailPanelMode>(options.value.isEditable ? DetailPanelMode.Edit : DetailPanelMode.View);
+
+    const editorTheme = ref<"vs" | "vs-dark">(localStorage.getItem("theme") === "dark" ? "vs-dark" : "vs");
+    const editorMode = getEditorModeValue(options.value.editorMode ?? "text");
+
+    const isEditable = options.value.isEditable ?? false;
+    const isFullScreen = ref<boolean>(false);
+    const isResponsiveEditor = options.value.isWorksurfaceLayout;
+    const calculatedPanelHeight = ref<number>(calculateMinimumLinePixels(9));
+
+    const fileContents = ref<string>(bag.value.fileContents ?? "");
+
+    const blockError = ref<string>("");
+    const errorMessage = ref<string>("");
+
+    // #endregion
+
+    // #region Functions
+
+    /** Calculates the minimum height in pixels based on the minimum number of lines to show.
+     *
+     * @param minLines The minimum number of lines to show.
+     * @return The minimum height in pixels.
+     */
+    function calculateMinimumLinePixels(minLines: number): number {
+        const lineHeight = 19; // Approximate line height in pixels
+        return lineHeight * minLines;
+    }
+
+    /**
+     * Returns the editor mode value corresponding to the given mode string.
+     * @param mode The mode string to convert.
+     * @return The corresponding EditorModeValue.
+     */
+    function getEditorModeValue(mode: string): EditorModeValue {
+        // Map string to EditorMode enum value
+        const editorModeMap: Record<string, EditorModeValue> = {
+            text: 0,
+            css: 1,
+            html: 2,
+            lava: 3,
+            javascript: 4,
+            less: 5,
+            powershell: 6,
+            sql: 7,
+            typescript: 8,
+            csharp: 9,
+            markdown: 10,
+            xml: 11,
+            json: "json"
+        };
+
+        return editorModeMap[mode] ?? 0;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    async function onBack(): Promise<boolean | string> {
+        if (box.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return box.navigationUrls[NavigationUrlKey.ParentPage];
+        }
+
+        return "./..";
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction("Save", {
+            bag: bag.value
+        });
+
+        if (result.isSuccess) {
+            if (box.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return box.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return "./..";
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save page.";
+
+        return false;
+    }
+
+    // #endregion Event Handlers
+
+    watch(fileContents, (value) => {
+        bag.value.fileContents = value;
+    });
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (box.errorMessage) {
+        blockError.value = box.errorMessage;
+    }
+
+    /** We calculate the panel height based on the available space in the container
+     * because CodeEditor is not responsive to container size changes and only
+     * accepts a fixed height.
+     */
+    onMounted(() => {
+        /** Handle light/dark mode changes. */
+        const checkTheme = (event: StorageEvent): void => {
+            if (event.key === "theme") {
+                editorTheme.value = event.newValue === "dark" ? "vs-dark" : "vs";
+            }
+        };
+
+        window.addEventListener("storage", checkTheme);
+
+        /** Handle responsiveness for Worksurface layout */
+        if (!isResponsiveEditor) {
+            return;
+        }
+
+        // Set the height of the editor based on the container size
+        const updateHeight = (): void => {
+            const container = document.querySelector(".panel-scrollable-content") as HTMLElement | null;
+
+            if (container) {
+                calculatedPanelHeight.value = Math.max(container.clientHeight - 5, 20);
+            }
+        };
+
+        // Run immediately
+        updateHeight();
+
+        // Update on resize and when panels change size
+        window.addEventListener("resize", updateHeight);
+        const observer = new ResizeObserver(updateHeight);
+        const container = document.querySelector(".panel-scrollable-content");
+        if (container) {
+            observer.observe(container);
+        }
+
+        // Cleanup
+        onBeforeUnmount(() => {
+            /** Remove event listener for light/dark mode changes. */
+            window.removeEventListener("storage", checkTheme);
+
+            /** Remove responsiveness event listeners. */
+            window.removeEventListener("resize", updateHeight);
+            observer.disconnect();
+        });
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

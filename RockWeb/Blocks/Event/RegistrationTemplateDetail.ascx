@@ -299,7 +299,7 @@
                                 <Rock:RockTextBox ID="tbSuccessTitle" runat="server" Label="Success Title" Placeholder="Congratulations"
                                     Help="The heading to display to user after successfully completing a registration of this type." />
                                 <Rock:HtmlEditor ID="heInstructions" runat="server" Label="Registration Instructions" ResizeMaxWidth="720" Height="300" Help="These instructions will appear at the beginning of the registration process." Toolbar="Light" />
-                                <Rock:CodeEditor ID="ceSuccessText" runat="server" Label="Registration Confirmation Text" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300"
+                                <Rock:CodeEditor ID="ceSuccessText" runat="server" Label="Registration Confirmation Text" EditorMode="Lava" EditorHeight="300"
                                     Help="The text to display to user after successfully completing a registration of this type. If there are costs or fees for this registration, a summary of those will be displayed after this text." />
                             </div>
                         </div>
@@ -328,7 +328,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <Rock:RockTextBox ID="tbConfirmationSubject" runat="server" Label="Subject" />
-                                    <Rock:CodeEditor ID="ceConfirmationEmailTemplate" runat="server" Label="Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
+                                    <Rock:CodeEditor ID="ceConfirmationEmailTemplate" runat="server" Label="Email Template" EditorMode="Lava" EditorHeight="300" />
                                 </div>
                             </div>
                         </Rock:PanelWidget>
@@ -345,7 +345,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <Rock:RockTextBox ID="tbReminderSubject" runat="server" Label="Subject" />
-                                    <Rock:CodeEditor ID="ceReminderEmailTemplate" runat="server" Label="Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
+                                    <Rock:CodeEditor ID="ceReminderEmailTemplate" runat="server" Label="Email Template" EditorMode="Lava" EditorHeight="300" />
                                 </div>
                             </div>
                         </Rock:PanelWidget>
@@ -362,7 +362,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <Rock:RockTextBox ID="tbPaymentReminderSubject" runat="server" Label="Subject" />
-                                    <Rock:CodeEditor ID="cePaymentReminderEmailTemplate" runat="server" Label="Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
+                                    <Rock:CodeEditor ID="cePaymentReminderEmailTemplate" runat="server" Label="Email Template" EditorMode="Lava" EditorHeight="300" />
                                 </div>
                             </div>
                             <div class="row">
@@ -389,7 +389,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <Rock:RockTextBox ID="tbWaitListTransitionSubject" runat="server" Label="Subject" />
-                                    <Rock:CodeEditor ID="ceWaitListTransitionEmailTemplate" runat="server" Label="Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
+                                    <Rock:CodeEditor ID="ceWaitListTransitionEmailTemplate" runat="server" Label="Email Template" EditorMode="Lava" EditorHeight="300" />
                                 </div>
                             </div>
                         </Rock:PanelWidget>
@@ -521,8 +521,8 @@
                     </div>
                 </div>
                 <Rock:AttributeEditor ID="edtRegistrantAttribute" runat="server" ShowActions="false" ValidationGroup="Field" Visible="false" />
-                <Rock:CodeEditor ID="ceFormFieldPreHtml" runat="server" Label="Pre-HTML" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field" />
-                <Rock:CodeEditor ID="ceFormFieldPostHtml" runat="server" Label="Post-HTML" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field" />
+                <Rock:CodeEditor ID="ceFormFieldPreHtml" runat="server" Label="Pre-HTML" EditorMode="Lava" EditorHeight="100" ValidationGroup="Field" />
+                <Rock:CodeEditor ID="ceFormFieldPostHtml" runat="server" Label="Post-HTML" EditorMode="Lava" EditorHeight="100" ValidationGroup="Field" />
             </Content>
         </Rock:ModalDialog>
 

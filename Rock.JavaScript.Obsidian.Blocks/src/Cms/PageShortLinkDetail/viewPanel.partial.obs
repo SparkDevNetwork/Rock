@@ -40,9 +40,11 @@
     import ViewAnalytics from "./viewAnalytics.partial.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
     import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
-    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         modelValue: {
@@ -96,6 +98,16 @@
             else {
                 valueBuilder.addTextValue("URL", props.modelValue.url);
             }
+        }
+
+        if (!isNullish(props.modelValue.expireInDays)) {
+            const expireRockDateTime = RockDateTime.now().addDays(props.modelValue.expireInDays);
+            const expiresInText = expireRockDateTime.toLocaleString({ day: "numeric", month: "numeric", year: "numeric" });
+            const expiresInTextSuffix = props.modelValue.expireInDays < 0 ? " (Expired)" : "";
+            valueBuilder.addTextValue(
+                "Link Expiration",
+                `${expiresInText}${expiresInTextSuffix}`
+            );
         }
 
         if (props.modelValue.category?.text) {

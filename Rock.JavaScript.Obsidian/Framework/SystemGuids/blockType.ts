@@ -129,6 +129,20 @@ export const BlockType = {
     MobileGroupsGroupScheduleToolbox: "E00F3C6D-D007-4408-8A41-AD2A6AB29D6E",
     /** The mobile groups Group Schedule Unavailability block type. */
     MobileGroupsGroupScheduleUnavailability: "AEFF246D-A514-4D46-801E-D717E1D1D209",
+    /** The mobile Add Contact &gt; Add Contact block type. */
+    MobileOutreachAddContact: "DE2F490D-2598-40E8-8170-4753DDC0A0B0",
+    /** The mobile contact profile &gt; Contact Profile block type."/&gt; */
+    MobileOutreachContactProfile: "40E200AD-1E29-4855-A8A4-8055A63753FF",
+    /** The mobile my contact &gt; My Contact block type. */
+    MobileOutreachMyContacts: "5C8E3D6E-1F2D-4A2D-8E3C-2F3B1C6D7E8F",
+    /** The mobile Outreach Beacon Dashboard &gt; Beacon Dashboard block type. */
+    MobileOutreachOutreachBeaconDashboard: "A1B2C3D4-E5F6-4789-ABCD-1234567890AB",
+    /** The mobile Outreach Onboarding &gt; Outreach Onboarding block type. */
+    MobileOutreachOutreachOnboarding: "5F1E3C4B-6D7E-4A8F-9C2B-3D4E5F6A7B8C",
+    /** The mobile outreach Recent Activity &gt; Outreach Recent Activity block type. */
+    MobileOutreachOutreachRecentActivity: "469B0581-C7F6-4F8B-913F-E20F5B49E39D",
+    /** The mobile outreach touchpoint detail &gt; Rock.Blocks.Types.Mobile.Engagement.TouchpointDetail */
+    MobileOutreachTouchpointDetail: "616DD7C7-CB7A-444E-A99E-25F2398D56EB",
     /** The mobile Prayer &gt; Prayer Card View block type. */
     MobilePrayerPrayerCardView: "CA75C558-9345-47E7-99AF-D8191D31D00D",
     /** The mobile Reminders &gt; Reminder Dashboard block type. */

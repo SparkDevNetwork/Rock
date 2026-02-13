@@ -169,28 +169,14 @@ namespace Rock.ViewModels.Blocks.Engagement.StepTypeDetail
         public List<StepTypeWorkflowTriggerBag> Workflows { get; set; }
 
         /// <summary>
-        /// Gets or sets the chart data.
+        /// Gets or sets the Step Type Details
         /// </summary>
-        /// <value>
-        /// The chart data.
-        /// </value>
-        public string ChartData { get; set; }
+        public StepTypeDetailsBag StepTypeDetailsBag { get; set; }
 
         /// <summary>
-        /// Gets or sets the kpi.
+        /// Gets or sets the error message
         /// </summary>
-        /// <value>
-        /// The kpi.
-        /// </value>
-        public string Kpi { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [show chart].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show chart]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ShowChart { get; set; }
+        public string ErrorMessage { get; set; }
 
         /// <summary>
         /// Gets or sets the default date range.

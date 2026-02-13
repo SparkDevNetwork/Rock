@@ -31,6 +31,15 @@ export type ReportPickerGetChildrenOptionsBag = {
     /** Guid of an Entity Type to filter results by the reports that relate to this entity type. */
     entityTypeGuid?: Guid | null;
 
+    /**
+     * Gets or sets the values that need to be expanded to. This is used
+     * when opening the tree view with an already selected value. Each
+     * selected value is included in this property. When getting the list
+     * of root items, you should automatically expand your results until
+     * each of these values is reached.
+     */
+    expandToValues?: string[] | null;
+
     /** A list of category GUIDs to filter the results. */
     includeCategoryGuids?: Guid[] | null;
 

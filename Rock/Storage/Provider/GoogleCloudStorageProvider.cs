@@ -242,7 +242,7 @@ namespace Rock.Storage.Provider
                 Name = name,
                 Bucket = bucketName,
                 Size = Convert.ToUInt64( binaryFile.FileSize ),
-                Updated = binaryFile.ModifiedDateTime,
+                UpdatedDateTimeOffset = binaryFile.ModifiedDateTime?.ToRockDateTimeOffset(),
 #if REVIEW_WEBFORMS
                 ContentType = System.Web.MimeMapping.GetMimeMapping( binaryFile.FileName )
 #endif

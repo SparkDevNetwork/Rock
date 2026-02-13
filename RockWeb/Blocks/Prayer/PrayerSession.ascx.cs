@@ -74,7 +74,6 @@ namespace RockWeb.Blocks.Prayer
         Key = AttributeKey.PrayerPersonLava,
         DefaultValue = PrayerPersonLavaDefaultValue,
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = true,
         Order = 4 )]
@@ -84,7 +83,6 @@ namespace RockWeb.Blocks.Prayer
         Key = AttributeKey.PrayerDisplayLava,
         DefaultValue = PrayerDisplayLavaDefaultValue,
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = true,
         Order = 5 )]

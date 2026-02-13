@@ -17,12 +17,12 @@
 
 import { Guid } from "@Obsidian/Types";
 import { PersonPreferenceCollection } from "@Obsidian/Core/Core/personPreferences";
-import { doApiCall, provideHttp } from "@Obsidian/Utility/http";
+import { doApiCall, doStreamingApiCall, provideHttp } from "@Obsidian/Utility/http";
 import { Component, computed, defineComponent, nextTick, onBeforeUnmount, onErrorCaptured, onMounted, PropType, provide, ref, watch } from "vue";
 import { useStore } from "@Obsidian/PageState";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
-import { createInvokeBlockAction, IBlockActions, provideBlockGuid, provideBlockActions, provideBlockTypeGuid, provideConfigurationValuesChanged, providePersonPreferences, provideReloadBlock, provideStaticContent, registerBlock, unregisterBlock } from "@Obsidian/Utility/block";
+import { createInvokeBlockAction, createInvokeStreamingBlockAction, IBlockActions, provideBlockGuid, provideBlockActions, provideBlockTypeGuid, provideConfigurationValuesChanged, providePersonPreferences, provideReloadBlock, provideStaticContent, registerBlock, unregisterBlock } from "@Obsidian/Utility/block";
 import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { ObsidianBlockConfigBag } from "@Obsidian/ViewModels/Cms/obsidianBlockConfigBag";
@@ -86,7 +86,7 @@ function updateConfigurationBarActions(blockContainerElement: HTMLElement, actio
     }
 
     // Find the name element, which is what we will use as our insertion point.
-    const nameElement = Array.from(configurationBar.children).find(el => el.tagName == "SPAN");
+    const nameElement = Array.from(configurationBar.children).find(el => el.tagName === "SPAN");
     if (!nameElement) {
         return;
     }
@@ -229,8 +229,24 @@ export default defineComponent({
 
         // #region Functions
 
-        const httpCall = async <T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> => {
-            return await doApiCall<T>(method, url, params, data, cancellationToken);
+        const httpCall = async <T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, options?: { headers?: Record<string, string> }, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> => {
+            const headers: Record<string, string> = options?.headers ? { ...options.headers } : {};
+
+            if (props.config.parentTrace) {
+                headers["traceparent"] = props.config.parentTrace;
+            }
+
+            return await doApiCall<T>(method, url, params, data, { headers }, cancellationToken);
+        };
+
+        const streamingHttpCall = async <T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, options?: { headers?: Record<string, string> }, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> => {
+            const headers: Record<string, string> = options?.headers ? { ...options.headers } : {};
+
+            if (props.config.parentTrace) {
+                headers["traceparent"] = props.config.parentTrace;
+            }
+
+            return await doStreamingApiCall<T>(method, url, params, data, { headers }, cancellationToken);
         };
 
         const get = async <T>(url: string, params: HttpUrlParams = undefined): Promise<HttpResult<T>> => {
@@ -238,10 +254,11 @@ export default defineComponent({
         };
 
         const post = async <T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined, cancellationToken?: ICancellationToken): Promise<HttpResult<T>> => {
-            return await httpCall<T>("POST", url, params, data, cancellationToken);
+            return await httpCall<T>("POST", url, params, data, undefined, cancellationToken);
         };
 
         const invokeBlockAction = createInvokeBlockAction(post, store.state.pageGuid, toGuidOrNull(props.config.blockGuid) ?? emptyGuid, store.state.pageParameters, store.state.sessionGuid, store.state.interactionGuid);
+        const invokeStreamingBlockAction = createInvokeStreamingBlockAction(doStreamingApiCall, store.state.pageGuid, toGuidOrNull(props.config.blockGuid) ?? emptyGuid, store.state.pageParameters, store.state.sessionGuid, store.state.interactionGuid);
 
         /**
          * Reload the block by requesting the new initialization data and then
@@ -430,7 +447,8 @@ export default defineComponent({
         });
 
         provideHttp({
-            doApiCall,
+            doApiCall: httpCall,
+            doStreamingApiCall: streamingHttpCall,
             get,
             post
         });
@@ -439,6 +457,7 @@ export default defineComponent({
             return `/api/v2/BlockActions/${store.state.pageGuid}/${props.config.blockGuid}/${actionName}`;
         });
         provide("invokeBlockAction", invokeBlockAction);
+        provide("invokeStreamingBlockAction", invokeStreamingBlockAction);
         provide("configurationValues", configurationValues);
         provideReloadBlock(reloadBlock);
         providePersonPreferences(getPreferenceProvider());

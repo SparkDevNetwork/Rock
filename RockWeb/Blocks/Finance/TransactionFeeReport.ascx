@@ -19,7 +19,7 @@
                     </div>
                     <div class="col-md-8 d-flex flex-wrap align-items-end">
                         <Rock:SlidingDateRangePicker ID="srpFilterDates" Label="Date Range" runat="server" FormGroupCssClass="mb-2" />
-                        <div class="pb-2" style="margin-bottom: 6px">
+                        <div class="pb-2">
                             <Rock:BootstrapButton ID="bbtnApply" CssClass="btn btn-primary" CausesValidation="true" runat="server" Text="Apply" OnClick="bbtnApply_Click" />
                         </div>
                     </div>

@@ -32,13 +32,6 @@
                     width="50%"
                     visiblePriority="lg" />
 
-        <NumberColumn name="count"
-                      title="Count"
-                      field="count"
-                      :filter="numberValueFilter"
-                      width="140px"
-                      visiblePriority="md" />
-
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
@@ -53,7 +46,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, booleanValueFilter, TextColumn, textValueFilter, DeleteColumn, NumberColumn, numberValueFilter, SelectColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, booleanValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AutomationTriggerListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AutomationTriggerList/automationTriggerListOptionsBag";

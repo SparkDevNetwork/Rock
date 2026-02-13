@@ -39,6 +39,7 @@ using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Workflow;
 using Rock.Web;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 using Rock.Workflow;
 
 namespace Rock.Blocks.Workflow
@@ -76,7 +77,6 @@ namespace Rock.Blocks.Workflow
         Description = "Lava template for determining the title of the block. If not specified, the name of the Workflow Type will be shown.",
         Key = AttributeKey.BlockTitleTemplate,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
-        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
         SiteTypes = SiteTypeFlags.Web,
@@ -363,6 +363,11 @@ namespace Rock.Blocks.Workflow
                 return null;
             }
 
+            if ( workflow.Id == 0 )
+            {
+                SetInitialWorkflowAttributes( workflow, null );
+            }
+
             // If the workflow type was not configured by block setting
             // or if the block is configured to always use the form name for the page title and the workflow type uses a form,
             // then update the page title to match the workflow type name.
@@ -377,7 +382,7 @@ namespace Rock.Blocks.Workflow
 
             return new WorkflowEntryOptionsBag
             {
-                IsCaptchaEnabled = !GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
+                IsCaptchaEnabled = !Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() ),
                 InitialAction = initialAction
             };
         }
@@ -1253,7 +1258,7 @@ namespace Rock.Blocks.Workflow
             }
 
             // Admin doesn't want to use captcha on the site.
-            if ( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() )
+            if ( Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() ) )
             {
                 return true;
             }

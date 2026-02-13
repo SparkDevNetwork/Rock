@@ -99,7 +99,6 @@ namespace RockWeb.Blocks.Core
     [CodeEditorField( "Lava Template",
         Description = "The Lava template to use for the header",
         EditorMode = CodeEditorMode.Lava,
-        EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         Order = 5,
         Key = AttributeKey.LavaTemplate )]

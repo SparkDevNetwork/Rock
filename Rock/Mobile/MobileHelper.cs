@@ -66,18 +66,14 @@ namespace Rock.Mobile
                 return null;
             }
 
-            //
             // Lookup the site from the App Id.
-            //
             var site = SiteCache.Get( appId.AsInteger() );
             if ( site == null )
             {
                 return null;
             }
 
-            //
             // If we have been requested to validate the Api Key then do so.
-            //
             if ( validateApiKey )
             {
                 var requestApiKey = System.Web.HttpContext.Current?.Request?.Headers?["X-Rock-Mobile-Api-Key"];
@@ -107,9 +103,7 @@ namespace Rock.Mobile
         /// <returns>The <see cref="UserLogin"/> associated with the parameters or <c>null</c> if no match was found.</returns>
         public static UserLogin GetMobileApplicationUser( int appId, string mobileApiKey, RockContext rockContext = null )
         {
-            //
             // Lookup the site from the App Id.
-            //
             var site = SiteCache.Get( appId );
             if ( site == null )
             {
@@ -130,9 +124,7 @@ namespace Rock.Mobile
         {
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
-            //
             // Ensure we have valid site configuration.
-            //
             if ( additionalSettings == null || !additionalSettings.ApiKeyId.HasValue )
             {
                 return null;
@@ -900,7 +892,6 @@ namespace Rock.Mobile
                     PageType = additionalPageSettings.PageType.ToMobile(),
                     WebPageUrl = additionalPageSettings.WebPageUrl
                 };
-
 
                 package.Pages.Add( mobilePage );
 
