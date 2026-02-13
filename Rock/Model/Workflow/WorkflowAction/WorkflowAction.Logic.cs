@@ -92,9 +92,9 @@ namespace Rock.Model
                                 entityId = Activity.Id;
                             }
 
-                            var field = attribute.FieldType.Field;
+                            var @field = attribute.FieldType.Field;
 
-                            string formattedValue = field.FormatValue( null, attribute.EntityTypeId, entityId, value, attribute.QualifierValues, false );
+                            string formattedValue = @field.FormatValue( null, attribute.EntityTypeId, entityId, value, attribute.QualifierValues, false );
 
                             var liquidFormAttribute = new LiquidFormAttribute();
                             liquidFormAttribute.Name = attribute.Name;
@@ -106,9 +106,9 @@ namespace Rock.Model
                             liquidFormAttribute.HideLabel = formAttribute.HideLabel;
                             liquidFormAttribute.PreHtml = formAttribute.PreHtml;
                             liquidFormAttribute.PostHtml = formAttribute.PostHtml;
-                            if ( field is Rock.Field.ILinkableFieldType )
+                            if ( @field is Rock.Field.ILinkableFieldType )
                             {
-                                liquidFormAttribute.Url = "~/" + ( ( Rock.Field.ILinkableFieldType ) field ).UrlLink( value, attribute.QualifierValues );
+                                liquidFormAttribute.Url = "~/" + ( ( Rock.Field.ILinkableFieldType ) @field ).UrlLink( value, attribute.QualifierValues );
                             }
 
                             attributeList.Add( liquidFormAttribute );

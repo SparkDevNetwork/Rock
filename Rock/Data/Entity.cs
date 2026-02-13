@@ -413,11 +413,11 @@ namespace Rock.Data
 
                 if ( this.AdditionalLavaFields != null )
                 {
-                    foreach ( var field in AdditionalLavaFields.Keys )
+                    foreach ( var @field in AdditionalLavaFields.Keys )
                     {
-                        if ( !availableKeys.Contains( field ) )
+                        if ( !availableKeys.Contains( @field ) )
                         {
-                            availableKeys.Add( field );
+                            availableKeys.Add( @field );
                         }
                     }
                 }

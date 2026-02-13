@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net472;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;net10.0</TargetFrameworks>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <RockWebPath>..\RockWeb</RockWebPath>
     <CopyToRockWeb>True</CopyToRockWeb>
@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Condition=" '$(TargetFramework)' == 'net6.0' " Include="Humanizer" Version="2.1.0" />
+    <PackageReference Condition=" '$(TargetFramework)' != 'net472' " Include="Humanizer" Version="2.1.0" />
     <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" />
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     <PackageReference Include="System.AppContext" Version="4.3.0" />
@@ -59,8 +59,8 @@
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Condition=" '$(TargetFramework)' == 'net472' " Include="Humanizer">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <Reference Include="Humanizer">
       <HintPath>..\libs\Humanizer.2.1.0\Humanizer.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
