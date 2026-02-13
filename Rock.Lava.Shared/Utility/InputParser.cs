@@ -25,9 +25,6 @@ using System.Runtime.CompilerServices;
  * This utility class is flagged for internal use as it will be subject to revision in the future.
  */
 [assembly: InternalsVisibleTo( "Rock.Lava" )]
-#if NET5_0_OR_GREATER
-[assembly: InternalsVisibleTo( "Rock.NG" )]
-#endif
 [assembly: InternalsVisibleTo( "Rock" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]
 

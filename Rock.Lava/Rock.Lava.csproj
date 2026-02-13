@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Condition=" '$(TargetFramework)' != 'net472' " Include="Humanizer" Version="2.1.0" />
+    <PackageReference Include="Humanizer" Version="2.1.0" />
     <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" />
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     <PackageReference Include="System.AppContext" Version="4.3.0" />
@@ -60,9 +60,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <Reference Include="Humanizer">
-      <HintPath>..\libs\Humanizer.2.1.0\Humanizer.dll</HintPath>
-    </Reference>
     <Reference Include="System.Web" />
   </ItemGroup>
 

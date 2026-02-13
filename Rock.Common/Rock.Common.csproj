@@ -14,18 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Condition=" '$(TargetFramework)' != 'net472' " Include="Humanizer" Version="2.1.0" />
+    <PackageReference Include="Humanizer" Version="2.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Condition=" '$(TargetFramework)' == 'net472' " Include="Humanizer">
-      <HintPath>..\libs\Humanizer.2.1.0\Humanizer.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

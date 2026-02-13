@@ -44,6 +44,7 @@ namespace Rock.Rest.Filters
 #if REVIEW_NET5_0_OR_GREATER
     public class RockCacheabilityAttribute : System.Attribute, IAsyncActionFilter
     {
+        /// <inheritdoc/>
         public async Task OnActionExecutionAsync( ActionExecutingContext actionContext, ActionExecutionDelegate next )
         {
             await next();
@@ -52,11 +53,23 @@ namespace Rock.Rest.Filters
             var actionMethod = actionContext.HttpContext.Request.Method;
             var controller = reflectedHttpActionDescriptor;
 
-            var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName );
-            var restActionCache = RestActionCache.Get( apiId );
+            RestActionCache restActionCache;
+            var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName, out var restActionGuid );
+
+            if (restActionGuid.HasValue)
+            {
+                restActionCache = RestActionCache.Get( restActionGuid.Value );
+            }
+            else
+            {
+#pragma warning disable CS0618 // Type or member is obsolete
+                restActionCache = RestActionCache.Get( apiId );
+#pragma warning restore CS0618 // Type or member is obsolete
+            }
+
             if ( restActionCache != null && restActionCache.CacheControlHeader.IsNotNullOrWhiteSpace() )
             {
-                actionContext.HttpContext.Response.Headers.Add( "Cache-Control", restActionCache.CacheControlHeader );
+                actionContext.HttpContext.Response.Headers["Cache-Control"] = restActionCache.CacheControlHeader;
             }
         }
     }

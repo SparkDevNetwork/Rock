@@ -450,7 +450,7 @@ namespace Rock.Rest.v2
 
                 if ( _cacheHeader.IsNotNullOrWhiteSpace() )
                 {
-                    context.HttpContext.Response.Headers.Add( "Cache-Control", _cacheHeader );
+                    context.HttpContext.Response.Headers["Cache-Control"] = _cacheHeader;
                 }
 
                 if ( _content != null )

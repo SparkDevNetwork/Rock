@@ -40,6 +40,13 @@ trim_trailing_whitespace = false
 trim_trailing_whitespace = false
 
 [*.cs]
+# These analyzers throw exceptions in our code, probably because of all the wonky attribute mapping we do.
+# They can be re-enabled at any time if they start working.
+dotnet_diagnostic.API1000.severity = none
+dotnet_diagnostic.API1001.severity = none
+dotnet_diagnostic.API1002.severity = none
+dotnet_diagnostic.MVC1004.severity = none
+
 # Style: https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
 
 csharp_prefer_braces = true
