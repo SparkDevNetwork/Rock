@@ -1,11 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.3.32804.467
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11415.280 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{585C34CC-D99C-4E21-9957-FDCB364DD275}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestApp", "TestApp\TestApp.csproj", "{7AD1926C-0A4A-4950-A6CE-AEFC667144B9}"
@@ -15,8 +16,6 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TestApp.Shared", "TestApp.Shared\TestApp.Shared.shproj", "{01911862-ECB1-4F51-AF69-CEE52A11BBEE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockWebCore", "RockWebCore\RockWebCore.csproj", "{3E04FE5C-F152-448F-8F3B-71BCF70F0415}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Blocks.NG", "Rock.Blocks\Rock.Blocks.NG.csproj", "{B7A6E43B-B027-49EA-BE75-B477AB924C43}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Web2", "Rock.Web2\Rock.Web2.csproj", "{D182E9AA-BBD0-4730-8329-BAEB1D2622FF}"
 EndProject
@@ -44,6 +43,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "Rock\Rock.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest", "Rock.Rest\Rock.Rest.csproj", "{45C0F21B-6E3B-D434-A0C0-120881CA5C96}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Blocks", "Rock.Blocks\Rock.Blocks.csproj", "{3163A746-904B-FD79-E360-C0D9DF9AB399}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Slingshot", "Rock.Slingshot\Rock.Slingshot.csproj", "{97798319-A5CB-E175-9CD0-5F0105E49FC4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Slingshot.Model", "Rock.Slingshot.Model\Rock.Slingshot.Model.csproj", "{F88A2FA0-6C25-730D-DCB5-63CED2815BBD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.NCOA", "Rock.NCOA\Rock.NCOA.csproj", "{25E97DA3-B575-E734-3183-497AF96F58EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,10 +69,6 @@ Global
 		{3E04FE5C-F152-448F-8F3B-71BCF70F0415}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E04FE5C-F152-448F-8F3B-71BCF70F0415}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E04FE5C-F152-448F-8F3B-71BCF70F0415}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B7A6E43B-B027-49EA-BE75-B477AB924C43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B7A6E43B-B027-49EA-BE75-B477AB924C43}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B7A6E43B-B027-49EA-BE75-B477AB924C43}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B7A6E43B-B027-49EA-BE75-B477AB924C43}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D182E9AA-BBD0-4730-8329-BAEB1D2622FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D182E9AA-BBD0-4730-8329-BAEB1D2622FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D182E9AA-BBD0-4730-8329-BAEB1D2622FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -114,6 +117,22 @@ Global
 		{45C0F21B-6E3B-D434-A0C0-120881CA5C96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{45C0F21B-6E3B-D434-A0C0-120881CA5C96}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{45C0F21B-6E3B-D434-A0C0-120881CA5C96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3163A746-904B-FD79-E360-C0D9DF9AB399}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3163A746-904B-FD79-E360-C0D9DF9AB399}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3163A746-904B-FD79-E360-C0D9DF9AB399}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3163A746-904B-FD79-E360-C0D9DF9AB399}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97798319-A5CB-E175-9CD0-5F0105E49FC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97798319-A5CB-E175-9CD0-5F0105E49FC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97798319-A5CB-E175-9CD0-5F0105E49FC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97798319-A5CB-E175-9CD0-5F0105E49FC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F88A2FA0-6C25-730D-DCB5-63CED2815BBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F88A2FA0-6C25-730D-DCB5-63CED2815BBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F88A2FA0-6C25-730D-DCB5-63CED2815BBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F88A2FA0-6C25-730D-DCB5-63CED2815BBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25E97DA3-B575-E734-3183-497AF96F58EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25E97DA3-B575-E734-3183-497AF96F58EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25E97DA3-B575-E734-3183-497AF96F58EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25E97DA3-B575-E734-3183-497AF96F58EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

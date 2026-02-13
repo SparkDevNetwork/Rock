@@ -22,6 +22,8 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;

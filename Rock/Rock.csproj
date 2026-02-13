@@ -8,18 +8,12 @@
     <CopyToRockWeb>True</CopyToRockWeb>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <DefineConstants Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">$(DefineConstants);WEBFORMS</DefineConstants>
-    <DefineConstants Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">$(DefineConstants);REVIEW_WEBFORMS</DefineConstants>
-    <DefineConstants Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">$(DefineConstants);REVIEW_NET5_0_OR_GREATER</DefineConstants>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <Compile Remove="**\*.NG.cs" />
     <Compile Remove="CoreShims\**\*.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <Compile Remove="**\*.WebForms.cs" />
     <Compile Remove="CheckIn\*.cs" />
     <Compile Remove="Plugin\**\*.cs" />
@@ -59,7 +53,7 @@
     </Compile>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <PackageReference Include="AngleSharp" Version="1.4.0" />
     <PackageReference Include="Antlr" Version="3.5.0.2" />
     <PackageReference Include="AWSSDK.Core" Version="4.0.3.3" />
@@ -142,7 +136,7 @@
     <PackageReference Include="Z.EntityFramework.Plus.EF6" Version="5.1.31" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <PackageReference Include="AngleSharp" Version="1.4.0" />
     <PackageReference Include="AWSSDK.Core" Version="4.0.3.3" />
     <PackageReference Include="AWSSDK.S3" Version="4.0.13.1" />

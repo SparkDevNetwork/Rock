@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472;net6.0</TargetFrameworks>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion Condition="'$(TargetFramework)' == 'net472'">8.0</LangVersion>
     <RockWebPath>..\RockWeb</RockWebPath>
     <CopyToRockWeb>True</CopyToRockWeb>
   </PropertyGroup>
@@ -16,6 +16,16 @@
 
   <ItemGroup>
     <None Remove="DefaultTvApplication.js" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
+    <Compile Remove="Crm\AttributeValues.cs" />
+    <Compile Remove="Example\LargeDatasetGrid.cs" />
+    <Compile Remove="Example\PersonDetail.cs" />
+    <Compile Remove="Example\PersonSecondary.cs" />
+    <Compile Remove="Finance\TransactionEntry.cs" />
+    <Compile Remove="Security\Login.cs" />
+    <Compile Remove="Utility\StarkDetail.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,15 +42,18 @@
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
-    <ProjectReference Include="..\Rock.NCOA\Rock.NCOA.csproj" />
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj" />
-    <ProjectReference Include="..\Rock.Slingshot\Rock.Slingshot.csproj" />
     <ProjectReference Include="..\Rock.Version\Rock.Version.csproj" />
     <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj" />
     <ProjectReference Include="..\Rock\Rock.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <ProjectReference Include="..\Rock.NCOA\Rock.NCOA.csproj" />
+    <ProjectReference Include="..\Rock.Slingshot\Rock.Slingshot.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <Reference Include="Rock.Common.Mobile">
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
     </Reference>
