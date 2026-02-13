@@ -46,20 +46,24 @@ namespace Rock.AI.Agent.Skills
 
             return Success( connectionTypes )
                 .WithHistoryContent( connectionTypes
-                    .Select( ct => new
+                    .Select( ct => new ConnectionTypeResult
                     {
-                        ct.IdKey,
-                        ct.Name,
-                        Opportunities = ct.Opportunities.Select( o => new
-                        {
-                            o.IdKey,
-                            o.Name
-                        } ),
-                        Statuses = ct.Statuses.Select( s => new
-                        {
-                            s.Id,
-                            s.Name
-                        } )
+                        Id = ct.Id,
+                        Name = ct.Name,
+                        Opportunities = ct.Opportunities
+                            .Select( o => new ConnectionOpportunityResult
+                            {
+                                Id = o.Id,
+                                Name = o.Name,
+                            } )
+                            .ToList(),
+                        Statuses = ct.Statuses
+                            .Select( s => new KeyNameResult
+                            {
+                                Id = s.Id,
+                                Name = s.Name
+                            } )
+                            .ToList(),
                     }
                 ) );
         }
@@ -68,6 +72,11 @@ namespace Rock.AI.Agent.Skills
 
         #region Helper Methods
 
+        /// <summary>
+        /// Load all the connection types, opportunities and statuses that the
+        /// current person has access to.
+        /// </summary>
+        /// <returns>A list of <see cref="ConnectionTypeResult"/> objects.</returns>
         private List<ConnectionTypeResult> LoadConnectionTypes()
         {
             var connectionTypes = ConnectionTypeCache.All( AgentRequestContext.RockContext );
