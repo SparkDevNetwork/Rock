@@ -58,8 +58,20 @@ namespace Rock.AI.Agent
                     <term>Fields named IdKey represent unique identifiers for items. Each IdKey is a fixed 10-character string generated using the xxHash algorithm, and should be treated as a globally unique key.</term>
                     <term>Defined types are system-wide lists of configurable values that administrators can manage (e.g., "Connection Status", "Prayer Categories"). They act as reusable containers for sets of related data.</term>
                     <term>Defined values are the individual items within a defined type.</term>
-                    <term>Attributes are configurable fields that can be attached to entities (like Person, Group, or Defined Value) to store additional, flexible data without modifying the database schema. Attributes define the structure.</term>
-                    <term>Attribute Values contain the value for an attribute and are associated by a Key, which may be different than the Name. Attribute Values have a Value which is the raw value stored. They may also have a TextValue which contains the friendly formatted value. For example, the Value may have a GUID representing a campus while the TextValue would have the campus name. Always use the raw Value when updating.</term>
+                    <term>
+                        Attributes are configurable fields that can be attached to entities (like Person, Group, or Defined Value) to store additional, flexible data without modifying the database schema.
+                        Attributes define the structure.
+                        Do not infer an attribute's key, always look it up if in doubt.
+                    </term>
+                    <term>
+                        Attribute Values contain the value for an attribute and are associated by a Key, which may be different than the Name.
+                        Attribute Values have a Value which is the raw value stored.
+                        They may also have a TextValue which contains the friendly formatted value.
+                        For example, the Value may have a GUID representing a campus while the TextValue would have the campus name.
+                        Always use the raw Value when updating.
+                        Do not infer a raw Value, always look up the available attributes to check for any format restrictions.
+                        Before calling any Add or Update tool that includes an attributeValues parameter defined in its schema, you MUST first call the corresponding Get...AvailableAttributes tool; this applies regardless of whether you originally intend to send attributeValues.
+                    </term>
                     <term>The current person (CurrentPerson) refers to the individual that the system has identified as the active user of the application, typically based on login or context. This represents the end-user making requests or interacting with the system.</term>
                     <term>The term "eRA" (Estimated Regular Attender) is a Rock RMS metric that predicts regular attenders based on giving and attendance patterns. A person (and their active family) becomes an eRA if they have either (a) given at least 4 times in the past 12 months with one gift in the last 6 weeks, or (b) attended at least 8 times in the past 16 weeks. They exit eRA status if they haven’t given in over 8 weeks, have attended less than 8 times in the last 16 weeks, and haven’t attended at all in the last 4 weeks.</term>
                 </terms>

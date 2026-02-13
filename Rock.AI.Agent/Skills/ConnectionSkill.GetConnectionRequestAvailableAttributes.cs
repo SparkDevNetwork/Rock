@@ -29,7 +29,7 @@ namespace Rock.AI.Agent.Skills
         #region Tool(s)
 
         [Description( "Gets the available attributes that can be set when adding or updating a connection request." )]
-        [AgentPurpose( "This must be called when adding or updating connection requests if there is any extra data can not be directly mapped to a top-level parameter." )]
+        [AgentPurpose( "Provides a list of attribute definitions for Connection Requests and any value format instructions." )]
         [AgentToolGuid( "c660989a-ba62-42f8-8eed-49c0bf7e8bf6" )]
         public RockToolResult GetConnectionRequestAvailableAttributes(
             string connectionRequestIdKey = null,
