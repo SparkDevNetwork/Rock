@@ -95,7 +95,11 @@ namespace Rock.Model
 
             if ( skill == null )
             {
+#if NET472_OR_GREATER
                 skill = rockContext.Set<AISkill>().Create();
+#else
+                skill = rockContext.Set<AISkill>().CreateProxy();
+#endif
 
                 skill.Guid = skillGuid;
                 skill.Name = name;

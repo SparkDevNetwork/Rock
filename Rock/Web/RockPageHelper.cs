@@ -316,6 +316,7 @@ Obsidian.onReady(() => {
             {
                 try
                 {
+#if REVIEW_WEBFORMS
                     var requestUrl = System.Web.HttpContext.Current.Request.Url;
                     requestUrl = requestContext.RequestUri;
 
@@ -326,6 +327,7 @@ Obsidian.onReady(() => {
                         Port = requestUrl.Port,
                         Path = "/rock-rt"
                     }.ToString();
+#endif
                 }
                 catch ( Exception ex )
                 {

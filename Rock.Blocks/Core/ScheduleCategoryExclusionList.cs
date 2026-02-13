@@ -206,7 +206,9 @@ namespace Rock.Blocks.Core
                 entityService.Delete( entity );
                 RockContext.SaveChanges();
 
+#if WEBFORMS
                 Rock.CheckIn.KioskDevice.Clear();
+#endif
 
                 return ActionOk();
         }
@@ -251,7 +253,9 @@ namespace Rock.Blocks.Core
             }
 
             RockContext.SaveChanges();
+#if WEBFORMS
             Rock.CheckIn.KioskDevice.Clear();
+#endif
 
             return ActionOk();
         }

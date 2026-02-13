@@ -30,8 +30,13 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Workflow Action Form Editor
     /// </summary>
+#if NET472_OR_GREATER
     public class WorkflowFormEditor : CompositeControl, IHasValidationGroup, INamingContainer
+#else
+    public class WorkflowFormEditor
+#endif
     {
+#if NET472_OR_GREATER
         private HiddenField _hfFormGuid;
         private RockDropDownList _ddlNotificationSystemEmail;
         private RockCheckBox _cbIncludeActions;
@@ -378,6 +383,7 @@ namespace Rock.Web.UI.Controls
                 _mdFieldVisibilityRules.Show();
             }
         }
+#endif
 
         /// <summary>
         /// Copies the editable properties from one workflow form to another
@@ -426,6 +432,7 @@ namespace Rock.Web.UI.Controls
             target.AdditionalSettingsJson = source.AdditionalSettingsJson;
         }
 
+#if NET472_OR_GREATER
         /// <summary>
         /// Gets or sets the workflow activities.
         /// </summary>
@@ -1352,5 +1359,6 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+#endif
     }
 }

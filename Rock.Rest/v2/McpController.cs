@@ -18,8 +18,6 @@ using System;
 using System.Net;
 using System.Net.Http.Headers;
 
-using Microsoft.AspNetCore.Mvc;
-
 using Rock.Enums.AI.Agent;
 using Rock.Data;
 using Rock.Rest.Filters;
@@ -38,6 +36,11 @@ using IActionResult = System.Web.Http.IHttpActionResult;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
 using RouteAttribute = System.Web.Http.RouteAttribute;
 using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
+#else
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 #endif
 
 namespace Rock.Rest.v2
@@ -104,20 +107,31 @@ namespace Rock.Rest.v2
 
                 var agent = _agentBuilder.Build( agentCache.Id );
 
+#if NET472_OR_GREATER
                 using ( var contentStream = await Request.Content.ReadAsStreamAsync() )
+#endif
                 {
                     var mcpRequest = new McpRequest
                     {
+#if NET472_OR_GREATER
                         Content = contentStream
+#else
+                        Content = Request.Body
+#endif
                     };
 
                     var mcpResponse = await _mcpServer.HandleRequestAsync( agent, mcpRequest, cancellationToken );
 
                     if ( mcpResponse.Content == null )
                     {
+#if NET472_OR_GREATER
                         return StatusCode( HttpStatusCode.Accepted );
+#else
+                        return Accepted();
+#endif
                     }
 
+#if NET472_OR_GREATER
                     var result = new HttpResponseMessage( HttpStatusCode.OK )
                     {
                         Content = new StreamContent( mcpResponse.Content )
@@ -126,6 +140,9 @@ namespace Rock.Rest.v2
                     result.Content.Headers.ContentType = new MediaTypeHeaderValue( "application/json" );
 
                     return ResponseMessage( result );
+#else
+                    return File( mcpResponse.Content, "application/json" );
+#endif
                 }
             }
         }

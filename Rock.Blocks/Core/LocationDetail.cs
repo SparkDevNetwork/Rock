@@ -670,7 +670,9 @@ namespace Rock.Blocks.Core
                 entity.SaveAttributeValues( RockContext );
             } );
 
+#if WEBFORMS
             Rock.CheckIn.KioskDevice.Clear();
+#endif
 
             if ( isNew )
             {
@@ -729,7 +731,9 @@ namespace Rock.Blocks.Core
             entityService.Delete( entity );
             RockContext.SaveChanges();
 
+#if WEBFORMS
             Rock.CheckIn.KioskDevice.Clear();
+#endif
 
             var qryParams = new Dictionary<string, string>();
             if ( parentLocationId != null )

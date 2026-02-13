@@ -284,7 +284,6 @@ namespace Rock.Model
             }
         }
 
-#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the configured SiteTypeFlags for the given C# type. This is
         /// used to populate the <see cref="BlockType.SiteTypeFlags"/> value.
@@ -476,6 +475,7 @@ namespace Rock.Model
                     continue;
                 }
 
+#if NET472_OR_GREATER
                 // Attempt to load the control
                 try
                 {
@@ -582,9 +582,9 @@ namespace Rock.Model
                         ExceptionLogService.LogException( new Exception( string.Format( "Problem processing block with path '{0}'.", path ), thrownException ), null );
                     }
                 }
+#endif
             }
         }
-#endif
 
         /// <summary>
         /// Get the list of BlockTypes that may be added to the Page Zone for the given site type

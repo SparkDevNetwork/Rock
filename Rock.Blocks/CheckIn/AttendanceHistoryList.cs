@@ -221,7 +221,7 @@ namespace Rock.Blocks.CheckIn
         protected override IQueryable<Attendance> GetListQueryable( RockContext rockContext )
         {
             var attendanceService = new AttendanceService( rockContext );
-            var queryable = attendanceService
+            IQueryable<Attendance> queryable = attendanceService
             .AsNoFilter()
             .AsNoTracking()
             .Include( a => a.Occurrence )

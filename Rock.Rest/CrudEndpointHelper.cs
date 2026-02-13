@@ -44,6 +44,7 @@ using IActionResult = System.Web.Http.IHttpActionResult;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
 #else
 using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
+using Microsoft.EntityFrameworkCore;
 #endif
 
 namespace Rock.Rest
@@ -108,7 +109,11 @@ namespace Rock.Rest
                     // check.
                     if ( !entity.IsDynamicProxyEntity() )
                     {
+#if NET472_OR_GREATER
                         var clone = rockContext.Set<TEntity>().Create();
+#else
+                        var clone = rockContext.Set<TEntity>().CreateProxy();
+#endif
 
                         service.Add( clone );
                         service.SetValues( entity, clone );

@@ -400,6 +400,8 @@ namespace Rock.Web2.Routing
 
             public bool CookiesValuesAreUrlDecoded { get; }
 
+            public IDictionary<string, object> RouteData => new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
+
             public HttpRequestWrapper( HttpRequest request )
             {
                 foreach ( var qs in request.Query )
@@ -416,6 +418,11 @@ namespace Rock.Web2.Routing
                     {
                         Headers.Add( h.Key, v );
                     }
+                }
+
+                foreach ( var d in request.RouteValues )
+                {
+                    RouteData.Add( d.Key, d.Value );
                 }
 
                 foreach ( var c in request.Cookies )

@@ -120,7 +120,11 @@ namespace Rock.Model
 
             if ( tool == null )
             {
+#if NET472_OR_GREATER
                 tool = rockContext.Set<AISkillTool>().Create();
+#else
+                tool = rockContext.Set<AISkillTool>().CreateProxy();
+#endif
 
                 tool.Guid = toolGuid.Value;
                 tool.AISkillId = skillId;
@@ -248,7 +252,11 @@ namespace Rock.Model
 
             if ( tool == null )
             {
+#if NET472_OR_GREATER
                 tool = rockContext.Set<AISkillTool>().Create();
+#else
+                tool = rockContext.Set<AISkillTool>().CreateProxy();
+#endif
 
                 tool.Guid = semanticTool.Guid;
                 tool.AISkillId = skillId;

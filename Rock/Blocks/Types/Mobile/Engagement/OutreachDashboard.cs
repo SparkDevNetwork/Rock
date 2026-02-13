@@ -244,7 +244,11 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 .Select( g => new
                 {
                     Total = g.Count(),
+#if NET6_0_OR_GREATER
+                    OnTime = g.Count( tp => tp.CompletedDateTime <= tp.ScheduledDateTime.AddDays( 1 ) )
+#else
                     OnTime = g.Count( tp => tp.CompletedDateTime <= DbFunctions.AddDays( tp.ScheduledDateTime, 1 ) )
+#endif
                 } )
                 .FirstOrDefault();
 

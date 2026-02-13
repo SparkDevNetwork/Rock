@@ -24,8 +24,14 @@ using System.Reflection;
 
 using Rock.Attribute;
 using Rock.CheckIn;
+#if NET6_0_OR_GREATER
+using Rock.CheckIn.v2;
+#endif
 using Rock.Constants;
 using Rock.Data;
+#if NET6_0_OR_GREATER
+using Rock.Enums.CheckIn;
+#endif
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;

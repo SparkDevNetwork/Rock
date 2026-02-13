@@ -20,7 +20,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+#if WEBFORMS
 using System.Web.Configuration;
+#endif
 
 using Rock;
 using Rock.Configuration;

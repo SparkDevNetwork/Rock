@@ -19,14 +19,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Web;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using Newtonsoft.Json;
-
-using RestSharp;
 
 using Rock.Configuration;
 using Rock.Enums.Cms;
@@ -38,8 +35,13 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Provides a Captcha control that verifies the user is a real person.
     /// </summary>
+#if NET472_OR_GREATER
     public class Captcha : WebControl, IRockControl, IPostBackEventHandler
+#else
+    public class Captcha
+#endif
     {
+#if NET472_OR_GREATER
         #region Fields
 
         private HiddenField _hfToken;
@@ -513,6 +515,7 @@ namespace Rock.Web.UI.Controls
         }
 
         #endregion
+#endif
 
         #region CaptchaService
 

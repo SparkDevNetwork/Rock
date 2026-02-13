@@ -2459,7 +2459,7 @@ namespace Rock.Blocks.Group
             {
                 var groupKey = this._block.GroupIdPageParameter;
 
-                var query = _groupService
+                IQueryable<Model.Group> query = _groupService
                         .GetQueryableByKey( groupKey, !this._block.PageCache.Layout.Site.DisablePredictableIds )
                         .Include( g => g.GroupType )
                         .Include( g => g.Schedule );

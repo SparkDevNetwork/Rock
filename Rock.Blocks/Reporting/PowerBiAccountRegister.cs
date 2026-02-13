@@ -1,9 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web;
+#if WEBFORMS
 using System.Web.Routing;
+#endif
 
 using OpenXmlPowerTools;
 
@@ -94,7 +96,11 @@ namespace Rock.Blocks.Reporting
 
             try
             {
+#if WEBFORMS
                 var currentUrl = HttpContext.Current.Request.Url.AbsoluteUri;
+#else
+                var currentUrl = RequestContext.RequestUri.AbsoluteUri;
+#endif
                 PowerBiAccountService.CreateAccount(accountName, accountDescription, clientId, clientSecret, redirectUrl, currentUrl);
                 return ActionOk();
             }

@@ -639,6 +639,7 @@ namespace Rock.Web.Cache
             context.Response.Redirect( "/", false );
             context.ApplicationInstance.CompleteRequest();
         }
+#endif
 
         /// <summary>
         /// Gets the login URL with return URL.
@@ -651,9 +652,12 @@ namespace Rock.Web.Cache
                 return string.Empty;
             }
 
+#if REVIEW_WEBFORMS
             var context = HttpContext.Current;
+#endif
             var pageReference = LoginPageReference;
 
+#if REVIEW_WEBFORMS
             if ( context != null )
             {
                 var parms = new Dictionary<string, string>();
@@ -666,10 +670,12 @@ namespace Rock.Web.Cache
                 parms.Add( "returnurl", returnUrl );
                 pageReference.Parameters = parms;
             }
+#endif
 
             return pageReference?.BuildUrl() ?? string.Empty;
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Redirects to login page.
         /// </summary>

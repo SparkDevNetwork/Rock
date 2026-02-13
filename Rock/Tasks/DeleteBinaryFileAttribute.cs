@@ -43,6 +43,7 @@ namespace Rock.Tasks
                 {
                     string guidAsString = binaryFile.Guid.ToString();
 
+#if NET472_OR_GREATER
                     // If any attribute still has this file as a default value, don't delete it
                     if ( new AttributeService( rockContext ).Queryable().Any( a => a.DefaultValueChecksum ==  SqlFunctions.Checksum( guidAsString ) ) )
                     {
@@ -54,6 +55,19 @@ namespace Rock.Tasks
                     {
                         return;
                     }
+#else
+                    // If any attribute still has this file as a default value, don't delete it
+                    if ( new AttributeService( rockContext ).Queryable().Any( a => a.DefaultValue == guidAsString ) )
+                    {
+                        return;
+                    }
+
+                    // If any attribute value still has this file as a value, don't delete it
+                    if ( new AttributeValueService( rockContext ).Queryable().Any( a => a.Value == guidAsString ) )
+                    {
+                        return;
+                    }
+#endif
 
                     binaryFileService.Delete( binaryFile );
 

@@ -153,7 +153,9 @@ namespace Rock.CheckIn.v2
             }
 
             // If ShowAllAreas is false, try to get the area filter from the cookie.
+#if REVIEW_WEBFORMS
             configurationGuid = Rock.CheckIn.CheckinManagerHelper.GetCheckinManagerConfigurationFromCookie().CheckinAreaGuid;
+#endif
 
             if ( configurationGuid.HasValue )
             {
@@ -509,10 +511,12 @@ namespace Rock.CheckIn.v2
                 .Where( a => a.HasValue )
                 .Select( a => a.Value );
 
+#if NET472_OR_GREATER
             foreach ( var locationId in locationIds )
             {
                 KioskLocationAttendance.Remove( locationId );
             }
+#endif
         }
 
         /// <summary>
@@ -531,10 +535,12 @@ namespace Rock.CheckIn.v2
 
             RockContext.SaveChanges();
 
+#if NET472_OR_GREATER
             foreach ( var locationId in locationIds )
             {
                 KioskLocationAttendance.Remove( locationId );
             }
+#endif
         }
 
         /// <summary>

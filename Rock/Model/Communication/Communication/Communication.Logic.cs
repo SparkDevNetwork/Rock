@@ -563,7 +563,7 @@ WHERE r.[RowNumber] > 1;";
                 return;
             }
 
-            if ( ( rockContext.Database.CommandTimeout ?? 0 ) < 90 )
+            if ( ( rockContext.Database.GetCommandTimeout() ?? 0 ) < 90 )
             {
                 /*
                     12/1/2025 - JPH

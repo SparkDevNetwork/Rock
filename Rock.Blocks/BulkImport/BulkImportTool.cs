@@ -304,12 +304,12 @@ namespace Rock.Blocks.BulkImport
         {
             var tableList = new List<string>();
 
+#if REVIEW_WEBFORMS
             if ( !string.IsNullOrWhiteSpace( foreignSystemKey ) )
             {
                 tableList = Rock.Slingshot.BulkImporter.TablesThatHaveForeignSystemKey( foreignSystemKey );
             }
 
-#if REVIEW_WEBFORMS
             var foreignSystemKeyList = BulkImporter.UsedForeignSystemKeys();
 
             var result = new

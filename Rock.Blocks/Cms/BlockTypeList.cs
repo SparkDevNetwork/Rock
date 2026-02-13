@@ -150,7 +150,7 @@ namespace Rock.Blocks.Cms
         protected override IQueryable<BlockTypeListBag> GetListQueryable( RockContext rockContext )
         {
             var blockTypeService = new BlockTypeService( rockContext );
-            var query = blockTypeService.Queryable().AsNoTracking().Include( bt => bt.EntityType );
+            IQueryable<BlockType> query = blockTypeService.Queryable().AsNoTracking().Include( bt => bt.EntityType );
 
 
             // Filters

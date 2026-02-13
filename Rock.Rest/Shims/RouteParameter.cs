@@ -16,8 +16,10 @@
 //
 namespace System.Web.Http
 {
+#if NET6_0_OR_GREATER
     public static class RouteParameter
     {
         public const string Optional = "__OptionalParameter";
     }
+#endif
 }

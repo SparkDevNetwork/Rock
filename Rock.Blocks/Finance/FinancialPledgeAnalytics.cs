@@ -219,7 +219,7 @@ namespace Rock.Blocks.Finance
             bool includeGifts = includeOption != 0;
 
             var rockContextAnalytics = new RockContextAnalytics();
-            rockContextAnalytics.Database.CommandTimeout = this.GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+            rockContextAnalytics.Database.SetCommandTimeout( this.GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
 
             DataSet ds = new FinancialPledgeService( rockContextAnalytics )
                 .GetPledgeAnalyticsDataSet(

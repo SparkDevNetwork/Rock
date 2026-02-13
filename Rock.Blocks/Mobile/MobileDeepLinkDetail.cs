@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+#if WEBFORMS
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -614,3 +615,4 @@ namespace Rock.Blocks.Mobile
         #endregion Helper Classes
     }
 }
+#endif

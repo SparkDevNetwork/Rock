@@ -21,6 +21,8 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -44,7 +46,7 @@ namespace Rock.Financial
         {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = 180;
+                rockContext.Database.SetCommandTimeout( 180 );
 
                 var journeySettings = settings.GivingJourneySettings;
                 var filters = new FinancialTransactionService( rockContext ).GetGivingAutomationFilterIds();
@@ -100,7 +102,7 @@ namespace Rock.Financial
         {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = 180;
+                rockContext.Database.SetCommandTimeout( 180 );
 
                 var filters = new FinancialTransactionService( rockContext ).GetGivingAutomationFilterIds();
 

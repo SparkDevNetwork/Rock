@@ -18,6 +18,8 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Achievement;
 using Rock.Attribute;
 using Rock.Data;
@@ -58,7 +60,7 @@ namespace Rock.Jobs.PostUpdateJobs
 
             using ( var rockContext = new RockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 var achievementTypeService = new AchievementTypeService( rockContext );
                 var brokenAchievementTypes = achievementTypeService.Queryable()

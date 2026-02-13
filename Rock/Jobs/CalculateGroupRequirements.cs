@@ -235,7 +235,11 @@ namespace Rock.Jobs
                             catch ( Exception ex )
                             {
                                 // Exception occurred (probably due to bad SQL)
+#if NET472_OR_GREATER
                                 ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+#else
+                                ExceptionLogService.LogException( ex );
+#endif
                             }
                         }
 

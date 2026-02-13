@@ -39,10 +39,12 @@ namespace Rock.Communication.Chat
         /// <inheritdoc/>
         protected override Task<HttpResponseMessage> SendAsync( HttpRequestMessage request, CancellationToken cancellationToken )
         {
+#if REVIEW_WEBFORMS
             request.Headers.TryAddWithoutValidation(
                 StreamChatProvider.HttpHeaderName.XStreamExt,
                 StreamChatProvider.HttpHeaderValue.IgnoreWebhooks
             );
+#endif
 
             return base.SendAsync( request, cancellationToken );
         }

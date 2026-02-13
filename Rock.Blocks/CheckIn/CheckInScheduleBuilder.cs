@@ -497,8 +497,10 @@ namespace Rock.Blocks.CheckIn
 
             if ( RockContext.SaveChanges() > 0 )
             {
+#if WEBFORMS
                 // Temporary until legacy check-in is removed.
                 KioskDevice.Clear();
+#endif
             }
 
             return ActionOk();

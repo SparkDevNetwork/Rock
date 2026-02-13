@@ -2038,10 +2038,12 @@ WHEN NOT MATCHED THEN
 
             internal static void Write( string message )
             {
+#if NET472_OR_GREATER
                 if ( IsEnabled && System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     Debug.WriteLine( $"\tGiving Automation {RockDateTime.Now:mm:ss.f} {message}" );
                 }
+#endif
             }
 
         }
