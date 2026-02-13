@@ -10736,6 +10736,9 @@ ul ul, ol ul, ul ol, ol ol {
 }
 .panel.panel-flex > .panel-heading .panel-header-actions .btn-panel-action,
 .panel.panel-flex > .panel-header .panel-header-actions .btn-panel-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 56px;
   width: 56px;
   margin: 0;
@@ -10757,6 +10760,15 @@ ul ul, ol ul, ul ol, ol ol {
 .panel.panel-flex > .panel-header .panel-header-actions .btn-panel-action:hover {
   background-color: var(--color-interface-soft);
   color: var(--color-interface-stronger);
+}
+.panel.panel-flex > .panel-heading .panel-header-actions .btn-panel-action.not-clickable,
+.panel.panel-flex > .panel-header .panel-header-actions .btn-panel-action.not-clickable {
+  cursor: default;
+}
+.panel.panel-flex > .panel-heading .panel-header-actions .btn-panel-action.not-clickable:hover,
+.panel.panel-flex > .panel-header .panel-header-actions .btn-panel-action.not-clickable:hover {
+  background-color: transparent;
+  color: var(--color-interface-medium);
 }
 .panel.panel-flex > .panel-heading .panel-header-actions .dropdown:has(.btn-panel-action),
 .panel.panel-flex > .panel-header .panel-header-actions .dropdown:has(.btn-panel-action) {
@@ -19856,6 +19868,9 @@ iframe.file-browser {
 }
 .panel.panel-flex > .panel-heading .panel-header-actions .btn-panel-action,
 .panel.panel-flex > .panel-header .panel-header-actions .btn-panel-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 56px;
   width: 56px;
   margin: 0;
@@ -19877,6 +19892,15 @@ iframe.file-browser {
 .panel.panel-flex > .panel-header .panel-header-actions .btn-panel-action:hover {
   background-color: var(--color-interface-soft);
   color: var(--color-interface-stronger);
+}
+.panel.panel-flex > .panel-heading .panel-header-actions .btn-panel-action.not-clickable,
+.panel.panel-flex > .panel-header .panel-header-actions .btn-panel-action.not-clickable {
+  cursor: default;
+}
+.panel.panel-flex > .panel-heading .panel-header-actions .btn-panel-action.not-clickable:hover,
+.panel.panel-flex > .panel-header .panel-header-actions .btn-panel-action.not-clickable:hover {
+  background-color: transparent;
+  color: var(--color-interface-medium);
 }
 .panel.panel-flex > .panel-heading .panel-header-actions .dropdown:has(.btn-panel-action),
 .panel.panel-flex > .panel-header .panel-header-actions .dropdown:has(.btn-panel-action) {
@@ -21920,6 +21944,51 @@ body.hide-block-role-secondary .block-instance.block-role-secondary:not(.block-r
   background-color: var(--color-interface-soft);
   padding: var(--spacing-tiny) var(--spacing-xsmall);
   border-radius: var(--rounded-xsmall);
+}
+
+.web-farm-settings .bg-disabled {
+  color: var(--color-interface-soft);
+  background: var(--color-interface-softer);
+}
+.web-farm-settings .bg-disabled .indicator {
+  background: var(--color-interface-soft);
+}
+.web-farm-settings .card-node {
+  margin-bottom: 24px;
+  border-top: 0;
+}
+.web-farm-settings .card-node .indicator {
+  height: 4px;
+}
+.web-farm-settings .card-node .card-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8px;
+  background: transparent;
+  align-items: center;
+}
+.web-farm-settings .server-meta {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  overflow: hidden;
+  font-size: 20px;
+  line-height: 36px;
+}
+.web-farm-settings .node-name {
+  margin-left: 4px;
+  font-weight: 700;
+}
+.web-farm-settings .node-type-icon {
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+.web-farm-settings .card-node .card-body {
+  padding: 0;
+}
+.web-farm-settings .card .indicator {
+  height: 4px;
 }
 
 .group-location-map {

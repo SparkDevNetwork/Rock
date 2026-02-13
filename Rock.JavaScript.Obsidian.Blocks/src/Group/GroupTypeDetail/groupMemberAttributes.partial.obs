@@ -1,10 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentStack v-if="inheritedGridData.rows.length > 0"
-                  title="Inherited Attributes"
-                  headerLocation="top"
-                  class="inherited-attributes"
-                  description="These Group Member Attributes are inherited from the selected group type defined in the 'Inherit Group Type Attributes From' setting, including all attributes within the group type's inheritance hierarchy.">
+    <ContentStack v-if="inheritedGridData.rows.length > 0" class="inherited-attributes">
+        <RockLabel help="These Group Member Attributes are inherited from the selected group type defined in the 'Inherit Group Type Attributes From' setting, including all attributes within the group type's inheritance hierarchy.">
+            Inherited Attributes
+        </RockLabel>
         <Grid :data="inheritedGridData" keyField="guid" itemTerm="Inherited Attribute" liveUpdates light
               :isFooterHidden="true">
             <TextColumn name="name" field="name" width="15%" />
@@ -28,19 +27,22 @@
     </ContentStack>
 
     <ContentStack title="Configure Group Member Attributes"
-                  description="Configure the Group Member Attributes that should be available for members of Groups of this Group Type."
+                  description="Group Member Attributes apply to all of the group members in every group of this type. Each member will have their own value for these attributes."
                   headerLocation="top">
-        <Grid :data="gridData" keyField="guid" itemTerm="Group Member Attribute" liveUpdates light @addItem="onAdd">
+        <Grid :data="gridData" keyField="guid" itemTerm="Group Member Attribute" liveUpdates light
+              :entityTypeGuid="EntityType.Attribute" @addItem="onAdd">
             <ReorderColumn @orderChanged="onOrderChanged" />
             <TextColumn name="name" field="name" title="Attribute" />
             <TextColumn name="description" field="description" title="Description" />
             <BooleanColumn name="isRequired" field="isRequired" title="Required" />
+            <SecurityColumn :itemTitle="'name'" />
             <EditColumn @click="onEdit" />
-            <DeleteColumn @click="onDelete" disableConfirmation />
+            <DeleteColumn v-if="!theAttribute?.isSystem" @click="onDelete" disableConfirmation />
         </Grid>
     </ContentStack>
 
-    <Modal v-model="isModalVisible" title="Group Member Attributes" saveText="Save" cancelText="Cancel" :onSave="onSave">
+    <Modal v-model="isModalVisible" title="Group Member Attributes" saveText="Save" cancelText="Cancel"
+           :onSave="onSave">
         <AttributeEditor v-model="theAttribute" :reservedKeyNames="reservedKeyNames" />
     </Modal>
 </template>
@@ -49,12 +51,15 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
-    import Grid, { BooleanColumn, DeleteColumn, EditColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, DeleteColumn, EditColumn, ReorderColumn, TextColumn, SecurityColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { GroupTypeInheritedAttributeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/groupTypeInheritedAttributeBag";
     import { createNewAttribute } from "./utility.partial";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 
     const props = defineProps({
         /**
@@ -71,7 +76,7 @@
         inheritedGroupMemberAttributes: {
             type: Object as PropType<GroupTypeInheritedAttributeBag[]>,
             required: true
-        },
+        }
     });
 
     const emit = defineEmits<{
@@ -185,6 +190,7 @@
             updatedAttributes.splice(idx, 1, { ...theAttribute.value });
         }
         else {
+            theAttribute.value.guid = newGuid();
             updatedAttributes = [...currentAttributes, { ...theAttribute.value }];
         }
 

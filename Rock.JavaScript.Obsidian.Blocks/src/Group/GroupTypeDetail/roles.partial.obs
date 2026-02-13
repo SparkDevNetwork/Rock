@@ -27,30 +27,30 @@
                 <div class="basic-fields">
                     <TextBox v-model="roleName" label="Name" rules="required" />
                     <TextBox v-model="roleDescription" label="Description" textMode="multiline" />
-                    <InlineCheckBox label="Designate as Leader Role" v-model="theRole.isLeader" />
+                    <InlineCheckBox label="Designate as Leader Role" v-model="theRole.isLeader" help="When enabled, individuals with this role are considered leaders of the group." />
                 </div>
             </ContentSection>
 
             <ContentSection title="Role Permissions" icon="ti ti-lock">
                 <ContentStack>
                     <div class="form-group">
-                        <InlineCheckBox label="View Group" v-model="theRole.canView" />
+                        <InlineCheckBox label="View Group" v-model="theRole.canView" help="When enabled, individuals with this role can view the group even if security settings would normally restrict access." />
                     </div>
 
                     <div class="form-group">
-                        <InlineCheckBox label="Edit Group" v-model="theRole.canEdit" />
+                        <InlineCheckBox label="Edit Group" v-model="theRole.canEdit" help="When enabled, individuals with this role can edit group details and manage members, regardless of the group's security settings." />
                     </div>
 
                     <div class="form-group">
-                        <InlineCheckBox label="Manage Members" v-model="theRole.canManageMembers" />
+                        <InlineCheckBox label="Manage Members" v-model="theRole.canManageMembers" help="When enabled, individuals with this role can add, remove, and update members in the group, regardless of security settings." />
                     </div>
 
                     <div class="form-group">
-                        <InlineCheckBox label="Check In to Group" v-model="theRole.isCheckInAllowed" />
+                        <InlineCheckBox label="Check In to Group" v-model="theRole.isCheckInAllowed" help="When enabled, individuals with this role can check in to the group. This applies only when the Check-in Rule is set to “Already Enrolled in Group” in the check-in configuration." />
                     </div>
 
                     <div class="form-group">
-                        <InlineCheckBox label="Take Attendance" v-model="theRole.canTakeAttendance" />
+                        <InlineCheckBox label="Take Attendance" v-model="theRole.canTakeAttendance" help="When enabled, individuals with this role can record attendance for the group, even if security settings would normally restrict it." />
                     </div>
                 </ContentStack>
             </ContentSection>
@@ -75,15 +75,16 @@
 
                     <div class="form-group">
                         <InlineCheckBox label="Receive Requirements Notifications"
-                                        v-model="theRole.receiveRequirementsNotifications" />
+                                        v-model="theRole.receiveRequirementsNotifications"
+                                        help="When enabled, individuals with this role receive notifications about group members who do not meet their requirements. To send these notifications, ensure the Process Group Requirements Notification job is configured." />
                     </div>
 
                     <div class="form-group">
-                        <InlineCheckBox label="Exclude from Peer Network" v-model="theRole.isExcludedFromPeerNetwork" />
+                        <InlineCheckBox label="Exclude from Peer Network" v-model="theRole.isExcludedFromPeerNetwork" help="When enabled, individuals with this role are excluded from the group’s peer network relationships." />
                     </div>
 
                     <div class="form-group">
-                        <InlineCheckBox label="Make Role Public" v-model="theRole.isPublic" />
+                        <InlineCheckBox label="Make Role Public" v-model="theRole.isPublic" help="When enabled, this role is visible in all contexts. When disabled, the role is hidden in certain areas to help prevent exposure of sensitive information." />
                     </div>
 
                     <RadioButtonList v-if="isChatAllowed" label="Default Chat Role" v-model="chatRoleValue"

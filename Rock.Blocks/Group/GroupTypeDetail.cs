@@ -1942,6 +1942,14 @@ namespace Rock.Blocks.Group
                             inheritedFromUrl = this.RequestContext.ResolveRockUrl( inheritedFromUrl );
                         }
 
+                        if ( string.IsNullOrWhiteSpace( inheritedFromUrl ) )
+                        {
+                            inheritedFromUrl = this.GetCurrentPageUrl( new Dictionary<string, string>
+                            {
+                                [PageParameterKey.GroupTypeId] = inheritedGroupType.IdKey
+                            } );
+                        }
+
                         // Inherited Group attributes
                         responseBag.InheritedGroupAttributes.AddRange(
                             attributeService.GetByEntityTypeId( groupEntityTypeId, true )

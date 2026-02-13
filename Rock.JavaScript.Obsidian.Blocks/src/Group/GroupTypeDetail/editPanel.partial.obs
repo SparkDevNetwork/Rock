@@ -17,11 +17,7 @@
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <TextBox v-model="description" label="Description" textMode="multiline" :disabled="isSystem" />
-                    </div>
-                </div>
+                <TextBox v-model="description" label="Description" textMode="multiline" :disabled="isSystem" />
 
                 <div class="row">
                     <div class="col-md-3">
@@ -46,11 +42,13 @@
                           description="Defines the overall purpose, identity, and hierarchical relationships of the group type, including what it inherits and what children it can contain.">
                 <DefinedValuePicker label="Group Type Purpose" v-model="groupTypePurposeValue" :showBlankItem="true"
                                     help="Defines the overall purpose of this group type. This field is optional. To add or edit available options, update the 'Group Type Purpose' Defined Type."
-                                    :definedTypeGuid="DefinedType.GrouptypePurpose" trailblazerField :disabled="isSystem" />
+                                    :definedTypeGuid="DefinedType.GrouptypePurpose" trailblazerField enhanceForLongLists
+                                    :disabled="isSystem" />
 
                 <GroupTypePicker label="Inherit Group Type Attributes From" v-model="inheritedGroupType"
                                  :showBlankItem="true" :excludeGroupTypes="excludedGroupTypes"
-                                 help="Select which Group Type to inherit attributes from." trailblazerField :disabled="isSystem" />
+                                 help="Select which Group Type to inherit attributes from." trailblazerField enhanceForLongLists
+                                 :disabled="isSystem" />
 
                 <div class="form-group">
                     <InlineCheckBox label="Allow Any Child Group Type" v-model="allowAnyChildGroupType"
@@ -59,7 +57,7 @@
 
                 <div v-if="!allowAnyChildGroupType" class="allow-any-child-groupType">
                     <GroupTypePicker label="Allowed Child Group Types" v-model="childGroupTypes" multiple
-                                     :showBlankItem="true"
+                                     :showBlankItem="true" enhanceForLongLists
                                      help="Defines which child group types can be added to groups of this type. This setting controls the group hierarchy. To allow an unlimited hierarchy, include this group type as one of its own allowed child types." />
                 </div>
 
@@ -118,8 +116,8 @@
                 </div>
 
                 <DropDownList label="Group Status Defined Type" v-model="groupStatusDefinedTypeValue"
-                              :items="props.options.definedTypeOptions ?? []" :showBlankItem="true"
-                              help="Specifies the Defined Type that contains the possible statuses for groups of this type."
+                              :items="props.options.definedTypeOptions ?? []" :showBlankItem="true" enhanceForLongLists
+                              help="Specifies the Defined Type used to set a group's status. Leave blank if groups of this type should not prompt for a status."
                               trailblazerField :disabled="isSystem" />
 
             </ContentStack>
@@ -127,7 +125,7 @@
             <ContentStack title="Record Source &amp; Group-Specific Settings"
                           description="Determines what record source to add to members of this group type and which group-specific settings to allow.">
                 <DefinedValuePicker label="Group Member Record Source" v-model="groupMemberRecordSourceValue"
-                                    :definedTypeGuid="DefinedType.RecordSourceType" :showBlankItem="true"
+                                    :definedTypeGuid="DefinedType.RecordSourceType" :showBlankItem="true" enhanceForLongLists
                                     help="Specifies the record source to assign to group members added to groups of this type." />
 
                 <div class="form-group">
@@ -431,12 +429,11 @@
                             {{ scheduleExclusionsErrorMessage }}
                         </NotificationBox>
                         <div class="form-group">
-                            <RockLabel
-                                    help="Defines the date ranges when groups of this type do not meet, regardless of their individual schedules.">
+                            <RockLabel help="Defines the date ranges when groups of this type do not meet, regardless of their individual schedules.">
                                 Schedule Exclusions
                             </RockLabel>
                             <Grid :data="groupScheduleExclusionsGridData" keyField="guid" itemTerm="Schedule Exclusion"
-                                liveUpdates light @addItem="onAddScheduleExclusion">
+                                  liveUpdates light @addItem="onAddScheduleExclusion">
                                 <TextColumn name="dateRange" field="dateRange" />
                                 <EditColumn @click="onEditScheduleExclusion" />
                                 <DeleteColumn @click="onDeleteScheduleExclusion" disableConfirmation />
