@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
@@ -414,11 +415,7 @@ namespace Rock.Blocks.Communication
             {
                 using ( var rockContext = new RockContext() )
                 {
-#if REVIEW_WEBFORMS
-                    rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
-#else
                     rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
-#endif
 
                     var communicationResponseService = new CommunicationResponseService( rockContext );
 
@@ -735,11 +732,7 @@ namespace Rock.Blocks.Communication
             {
                 using ( var rockContext = new RockContext() )
                 {
-#if REVIEW_WEBFORMS
-                    rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
-#else
                     rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
-#endif
                     var communicationResponseService = new CommunicationResponseService( rockContext );
                     List<CommunicationRecipientResponse> responses = communicationResponseService.GetCommunicationConversationForPerson( recipientPerson.Id, smsSystemPhoneNumber );
 

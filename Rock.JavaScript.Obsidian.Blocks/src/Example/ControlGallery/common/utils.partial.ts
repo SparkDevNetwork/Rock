@@ -55,6 +55,23 @@ export function getTemplateImportPath(fileName: string): string {
 }
 
 /**
+ * Generate a string of an import statement that imports the directive will the given file name.
+ *
+ * @param fileName Name of the directive's file.
+ * @param named Indicates whether the directive should be imported as a named import.
+ *
+ * @returns A string of code that can be used to import the given directive file.
+ */
+export function getDirectiveImportPath(fileName: string, named: boolean = false): string {
+    if (named) {
+        return `import { v${upperCaseFirstCharacter(fileName)} } from "@Obsidian/Directives/${fileName}";`;
+    }
+    else {
+        return `import v${upperCaseFirstCharacter(fileName)} from "@Obsidian/Directives/${fileName}";`;
+    }
+}
+
+/**
  * Takes a gallery component's name and converts it to a name that is useful for the header and
  * sidebar by adding spaces and stripping out the "Gallery" suffix
  *

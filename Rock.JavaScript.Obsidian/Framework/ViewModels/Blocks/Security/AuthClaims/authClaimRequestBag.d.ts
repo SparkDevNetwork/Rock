@@ -21,22 +21,20 @@
 // </copyright>
 //
 
-using Rock.Model;
-using Rock.SystemGuid;
+/** The request bag for saving an auth claim in the AuthClaims block. */
+export type AuthClaimRequestBag = {
+    /** Gets or sets the identifier key of the claim to update, or empty/null for a new claim. */
+    idKey?: string | null;
 
-namespace Rock.Rest.Controllers
-{
-    /// <summary>
-    /// SystemEmails REST API
-    /// </summary>
-    [RockObsolete( "1.10" )]
-    [System.Obsolete( "Use SystemCommunication instead." )]
-    [RestControllerGuid( "9BE35DA2-9F8C-41D4-BE02-65BE24DA0F7A" )]
-    public partial class SystemEmailsController : Rock.Rest.ApiController<Rock.Model.SystemEmail>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SystemEmailsController"/> class.
-        /// </summary>
-        public SystemEmailsController() : base( new Rock.Model.SystemEmailService( new Rock.Data.RockContext() ) ) { } 
-    }
-}
+    /** Gets or sets a flag indicating if this item is active or not. */
+    isActive: boolean;
+
+    /** Gets or sets the claim name. */
+    name?: string | null;
+
+    /** Gets or sets the public name. */
+    publicName?: string | null;
+
+    /** Gets or sets the claim value (Lava template). */
+    value?: string | null;
+};

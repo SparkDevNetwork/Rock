@@ -50,17 +50,6 @@ namespace Rock.Model
         public int? NotificationSystemCommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the notification system email identifier.
-        /// </summary>
-        /// <value>
-        /// The notification system email identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use NotificationSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? NotificationSystemEmailId { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [include actions in notification].
         /// </summary>
         /// <value>
@@ -437,17 +426,6 @@ namespace Rock.Model
         }
 
         private ICollection<WorkflowActionFormAttribute> _formAttributes;
-
-        /// <summary>
-        /// Gets or sets the notification system email.
-        /// </summary>
-        /// <value>
-        /// The notification system email.
-        /// </value>
-        [LavaVisible]
-        [Obsolete( "Use NotificationSystemCommunication instead.", true )]
-        [RockObsolete( "1.10" )]
-        public virtual SystemEmail NotificationSystemEmail { get; set; }
 
         /// <summary>
         /// Gets or sets the notification system communication.

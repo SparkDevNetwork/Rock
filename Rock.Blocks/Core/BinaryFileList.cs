@@ -246,7 +246,7 @@ namespace Rock.Blocks.Core
 
                 if ( clearDeviceCache )
                 {
-#if WEBFORMS
+#if NET472_OR_GREATER
                     Rock.CheckIn.KioskDevice.Clear();
                     Rock.CheckIn.KioskLabel.Remove( guid );
 #endif

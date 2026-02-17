@@ -161,13 +161,9 @@ namespace Rock.Blocks.Communication
         /// <inheritdoc/>
         protected override IQueryable<SystemCommunication> GetListQueryable( RockContext rockContext )
         {
-            var SystemCommunicationService = new SystemCommunicationService( rockContext );
+            var systemCommunicationService = new SystemCommunicationService( rockContext );
 
-#if REVIEW_NET5_0_OR_GREATER
-            IQueryable<SystemCommunication> systemCommunicationsQuery = SystemCommunicationService.Queryable().Include( sc => sc.Category );
-#else
-            var systemCommunicationsQuery = SystemCommunicationService.Queryable().Include( sc => sc.Category );
-#endif
+            IQueryable<SystemCommunication> systemCommunicationsQuery = systemCommunicationService.Queryable().Include( sc => sc.Category );
 
             // Filter By: Category
             if ( FilterCategory.HasValue )

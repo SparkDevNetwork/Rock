@@ -317,11 +317,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             _attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
 
-#if REVIEW_NET5_0_OR_GREATER
             IQueryable<AttendanceOccurrence> qry = _attendanceOccurrenceService
-#else
-            var qry = _attendanceOccurrenceService
-#endif
                 .Queryable()
                 .Include( ao => ao.Attendees );
 

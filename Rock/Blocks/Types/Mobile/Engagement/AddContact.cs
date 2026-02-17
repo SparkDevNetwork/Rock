@@ -23,6 +23,7 @@ using Rock.Common.Mobile.Blocks.Engagement.AddContact;
 using Rock.Common.Mobile.ViewModel;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Enums.Blocks.Mobile.Engagement.AddContact;
 using Rock.Mobile;
 using Rock.Model;
 
@@ -181,10 +182,4 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         #endregion
     }
 
-    public enum ContactMatch
-    {
-        NoMatch = 0,
-        SoftMatch = 1,
-        HardMatch = 2
-    }
 }

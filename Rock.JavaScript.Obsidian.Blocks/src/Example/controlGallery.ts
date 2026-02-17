@@ -260,7 +260,8 @@ import PieChartGallery from "./ControlGallery/pieChartGallery.partial.obs";
 import DoughnutChartGallery from "./ControlGallery/doughnutChartGallery.partial.obs";
 import ExperieceModePickerGallery from "./ControlGallery/experienceModePickerGallery.partial.obs";
 import SearchResultsSearchField from "./ControlGallery/searchResultsSearchFieldGallery.partial.obs";
-import EventItemOccurrencePickerGalleryPartial from "./ControlGallery/eventItemOccurrencePickerGallery.partial.obs";
+import EventItemOccurrencePickerGallery from "./ControlGallery/eventItemOccurrencePickerGallery.partial.obs";
+import TooltipGallery from "./ControlGallery/tooltipGallery.partial.obs";
 
 const controlGalleryComponents: Record<string, Component> = [
     NotificationBoxGallery,
@@ -466,7 +467,8 @@ const controlGalleryComponents: Record<string, Component> = [
     DoughnutChartGallery,
     ExperieceModePickerGallery,
     SearchResultsSearchField,
-    EventItemOccurrencePickerGalleryPartial,
+    EventItemOccurrencePickerGallery,
+    TooltipGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {

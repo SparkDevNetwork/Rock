@@ -130,6 +130,8 @@ namespace Rock.Blocks.Security
 
 #if REVIEW_WEBFORMS
             if ( RequestContext.CurrentUser == null || !RequestContext.CurrentUser.IsAuthenticated )
+#else
+            throw new System.NotImplementedException();
 #endif
             {
                 box.IsChangePasswordVisible = false;
@@ -224,6 +226,8 @@ namespace Rock.Blocks.Security
 
 #if REVIEW_WEBFORMS
             if ( RequestContext.CurrentUser == null || !RequestContext.CurrentUser.IsAuthenticated )
+#else
+            throw new System.NotImplementedException();
 #endif
             {
                 return ActionBadRequest( MustLoginCaption );

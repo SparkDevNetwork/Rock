@@ -66,6 +66,7 @@
         <div v-if="modalPhase === Phase.Calendar">
             <EventCalendarPicker v-model="modalSelectedCalendar"
                                  label="Select Calendar"
+                                 lazyMode="eager"
                                  :multiple="false"
                                  :showBlankItem="false"
                                  @update:modelValue="activateModalPrimaryButton" />
@@ -81,6 +82,8 @@
                 <div class="col-md-6">
                     <EventItemPicker v-model="modalSelectedCalendarItem"
                                      label="Calendar Item"
+                                     :dateRangeStart="modalSelectedDate.lowerValue ?? undefined"
+                                     :dateRangeEnd="modalSelectedDate.upperValue ?? undefined"
                                      :multiple="false"
                                      :rootCalendar="modalSelectedCalendar?.value ?? undefined"
                                      @update:modelValue="onModalSelectCalendarItem" />
@@ -258,16 +261,11 @@
      * @param selectedGroup The selected group.
      */
     async function checkGroupCompatibility(selectedGroup: ListItemBag | null): Promise<void> {
-        if (!registrationInstanceGroupTypeGuid) {
-            groupError.value = "";
-            return;
-        }
-
         if (!selectedGroup?.value) {
             groupError.value = "";
             return;
         }
-
+        
         const groupTypeGuidOrError = await fetchGroupType(selectedGroup.value);
         const selectedGroupTypeGuid = toGuidOrNull(groupTypeGuidOrError);
 

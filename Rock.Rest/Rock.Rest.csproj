@@ -8,12 +8,6 @@
     <CopyToRockWeb>True</CopyToRockWeb>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'net472' ">$(DefineConstants);WEBFORMS</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'net472' ">$(DefineConstants);REVIEW_WEBFORMS</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' != 'net472' ">$(DefineConstants);REVIEW_NET5_0_OR_GREATER</DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Remove="Swagger\CustomAssets\index.html" />
     <None Remove="Swagger\CustomAssets\screen.css" />

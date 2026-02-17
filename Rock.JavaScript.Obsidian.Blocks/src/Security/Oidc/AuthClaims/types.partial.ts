@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,28 +15,14 @@
 // </copyright>
 //
 
-using System;
-using Rock.Data;
-
-namespace Rock.Model
-{
-    /// <summary>
-    /// SystemEmail Service class
-    /// </summary>
-    [Obsolete( "Use SystemCommunicationService instead." )]
-    [RockObsolete( "1.10" )]
-    public partial class SystemEmailService : Service<SystemEmail>
-    {
-        
-    }
-
-    /// <summary>
-    /// Generated Extension Methods
-    /// </summary>
-    [Obsolete( "Use SystemCommunicationService instead." )]
-    [RockObsolete( "1.10" )]
-    public static partial class SystemEmailExtensionMethods
-    {
-        
-    }
+export const enum PreferenceKey {
+    FilterName = "filter-name",
+    FilterPublicName = "filter-public-name",
+    FilterActiveStatus = "filter-active-status",
 }
+
+export type GridSettingsOptions = {
+    name?: string | null;
+    publicName?: string | null;
+    activeStatus?: string | null;
+};

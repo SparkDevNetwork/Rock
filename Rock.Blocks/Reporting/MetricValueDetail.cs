@@ -18,9 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-#if REVIEW_WEBFORMS
-using System.Data.Entity.Core;
-#endif
 using System.Linq;
 using System.Reflection;
 

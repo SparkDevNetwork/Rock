@@ -530,7 +530,7 @@ namespace Rock.Blocks.Core
                 entity.SaveAttributeValues( RockContext );
             } );
 
-#if WEBFORMS
+#if NET472_OR_GREATER
             Rock.CheckIn.KioskLabel.Remove( entity.Guid );
 
             if ( !prevBinaryFileTypeId.Equals( entity.BinaryFileTypeId ) )

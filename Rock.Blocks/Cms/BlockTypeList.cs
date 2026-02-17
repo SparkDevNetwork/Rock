@@ -21,11 +21,9 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
-#if REVIEW_WEBFORMS
-using System.Web.Hosting;
-#endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -150,7 +148,7 @@ namespace Rock.Blocks.Cms
         protected override IQueryable<BlockTypeListBag> GetListQueryable( RockContext rockContext )
         {
             var blockTypeService = new BlockTypeService( rockContext );
-            IQueryable<BlockType> query = blockTypeService.Queryable().AsNoTracking().Include( bt => bt.EntityType );
+            var query = blockTypeService.Queryable();
 
 
             // Filters
@@ -318,17 +316,13 @@ namespace Rock.Blocks.Cms
         {
             try
             {
-#if REVIEW_NET5_0_OR_GREATER
-                throw new NotSupportedException();
-#else
                 // Get the application root path.
-                string applicationRootPath = HostingEnvironment.MapPath( "~" );
+                string applicationRootPath = RockApp.Current.MapPath( "~" );
 
                 // Call the RegisterBlockTypes method.
                 BlockTypeService.RegisterBlockTypes( applicationRootPath, true );
 
                 return ActionOk( "Block type attributes reloaded successfully." );
-#endif
             }
             catch ( Exception ex )
             {

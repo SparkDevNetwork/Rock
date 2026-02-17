@@ -497,7 +497,7 @@ namespace Rock.Blocks.CheckIn
 
             if ( RockContext.SaveChanges() > 0 )
             {
-#if WEBFORMS
+#if NET472_OR_GREATER
                 // Temporary until legacy check-in is removed.
                 KioskDevice.Clear();
 #endif

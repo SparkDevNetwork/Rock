@@ -28,6 +28,12 @@ import { Guid } from "@Obsidian/Types";
  * the EventItemPicker control.
  */
 export type EventItemPickerGetEventItemsOptionsBag = {
+    /** The end of the date range to limit event items to. */
+    dateRangeEnd?: string | null;
+
+    /** The start of the date range to limit event items to. */
+    dateRangeStart?: string | null;
+
     /** Whether or not to include inactive event items */
     includeInactive: boolean;
 

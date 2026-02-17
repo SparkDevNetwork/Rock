@@ -169,7 +169,7 @@ namespace Rock.Blocks.CheckIn
                 entity.DidAttend = false;
                 rockContext.SaveChanges();
 
-#if WEBFORMS
+#if NET472_OR_GREATER
                 if ( entity.Occurrence.LocationId != null )
                 {
                     Rock.CheckIn.KioskLocationAttendance.Remove( entity.Occurrence.LocationId.Value );

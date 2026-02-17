@@ -222,14 +222,14 @@ namespace Rock.Blocks.CheckIn
         {
             var attendanceService = new AttendanceService( rockContext );
             IQueryable<Attendance> queryable = attendanceService
-            .AsNoFilter()
-            .AsNoTracking()
-            .Include( a => a.Occurrence )
-            .Include( a => a.Occurrence.Group )
-            .Include( a => a.Occurrence.Schedule )
-            .Include( a => a.Occurrence.Location )
-            .Include( a => a.PersonAlias.Person )
-            .Include( a => a.Campus );
+                .AsNoFilter()
+                .AsNoTracking()
+                .Include( a => a.Occurrence )
+                .Include( a => a.Occurrence.Group )
+                .Include( a => a.Occurrence.Schedule )
+                .Include( a => a.Occurrence.Location )
+                .Include( a => a.PersonAlias.Person )
+                .Include( a => a.Campus );
 
             InitializeContextEntities();
 

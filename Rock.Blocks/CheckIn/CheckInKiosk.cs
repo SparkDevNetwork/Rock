@@ -626,7 +626,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         /// <returns>An instance of <see cref="PrintResponseBag"/> that contains the result of the operation.</returns>
         private PrintResponseBag PrintLegacyLabelsForAttendanceId( int attendanceId )
         {
-#if WEBFORMS
+#if NET472_OR_GREATER
             var attendance = new AttendanceService( RockContext ).Get( attendanceId );
             var attendanceIds = new List<int> { attendance.Id };
             var possibleLabels = ZebraPrint.GetLabelTypesForPerson( attendance.PersonAlias.PersonId, attendanceIds );
@@ -1278,7 +1278,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             location.IsActive = isOpen;
             RockContext.SaveChanges();
 
-#if WEBFORMS
+#if NET472_OR_GREATER
             // Clear the old v1 cache to match functionality.
             Rock.CheckIn.KioskDevice.Clear();
 #endif
@@ -1558,7 +1558,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
             if ( RockContext.SaveChanges() > 0 )
             {
-#if WEBFORMS
+#if NET472_OR_GREATER
                 // Temporary until legacy check-in is removed.
                 KioskDevice.Clear();
 #endif

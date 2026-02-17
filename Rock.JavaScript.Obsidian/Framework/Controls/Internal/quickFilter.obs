@@ -57,7 +57,7 @@
     // #region Values
 
     const quickFilterContainerElement = ref<HTMLElement>();
-    const isSearchExpanded = ref(false);
+    const isSearchExpanded = ref(!!props.modelValue);
 
     // #endregion Values
 

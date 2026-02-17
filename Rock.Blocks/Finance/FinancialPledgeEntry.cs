@@ -15,24 +15,22 @@
 // </copyright>
 //
 
-using Rock.Attribute;
-using Rock.Communication;
-using Rock.Constants;
-using Rock.Crm.RecordSource;
-using Rock.Data;
-using Rock.Model;
-using Rock.Utility;
-using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Finance.FinancialPledgeEntry;
-using Rock.ViewModels.Utility;
-using Rock.Web.Cache;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Attribute;
+using Rock.Communication;
+using Rock.Crm.RecordSource;
+using Rock.Data;
+using Rock.Model;
+using Rock.ViewModels.Blocks;
+using Rock.ViewModels.Blocks.Finance.FinancialPledgeEntry;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Finance
 {
@@ -406,15 +404,10 @@ namespace Rock.Blocks.Finance
 
             if ( pledgeDateRange.IsNotNullOrWhiteSpace() )
             {
-#if REVIEW_NET5_0_OR_GREATER
-                throw new NotImplementedException();
-#else
-                var dateRangePicker = new DateRangePicker() { DelimitedValues = pledgeDateRange };
-                var dateRange = dateRangePicker.DateRange;
+                var dateRange = DateRange.FromDelimitedValues( pledgeDateRange );
 
                 entityBag.StartDate = dateRange.Start;
                 entityBag.EndDate = dateRange.End;
-#endif
             }
 
             if ( entity.TotalAmount > 0 )

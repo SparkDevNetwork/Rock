@@ -30,9 +30,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Security.Authentication;
 using Rock.Security.Authentication.Passwordless;
-using Rock.Utility;
 using Rock.ViewModels.Blocks.Security.AccountEntry;
-using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -592,8 +590,8 @@ namespace Rock.Blocks.Security
         {
             UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = userLogin.UserName } );
             var securitySettings = new SecuritySettingsService().SecuritySettings;
-#if REVIEW_WEBFORMS
 
+#if REVIEW_WEBFORMS
             // 2FA: An individual is authenticated after registering for a new person
             // or an existing person with a user confirmed account
             // or a brand new account. Mark the auth ticket as two-factor authenticated.
@@ -603,6 +601,8 @@ namespace Rock.Blocks.Security
                 isImpersonated: false,
                 isTwoFactorAuthenticated: true,
                 TimeSpan.FromMinutes( securitySettings.PasswordlessSignInSessionDuration ) );
+#else
+            throw new NotImplementedException();
 #endif
         }
 

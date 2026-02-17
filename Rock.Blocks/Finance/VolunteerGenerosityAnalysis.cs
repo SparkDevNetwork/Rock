@@ -210,10 +210,10 @@ namespace Rock.Blocks.Finance
                 */
                 rockContext.SaveChanges( true );
 
-#if REVIEW_NET5_0_OR_GREATER
-                PersistedDatasetCache.UpdateCachedEntity( dataset.Id, EntityState.Modified );
-#else
+#if NET472_OR_GREATER
                 PersistedDatasetCache.UpdateCachedEntity( dataset.Id, System.Data.Entity.EntityState.Modified );
+#else
+                PersistedDatasetCache.UpdateCachedEntity( dataset.Id, Microsoft.EntityFrameworkCore.EntityState.Modified );
 #endif
 
                 var lastUpdated = DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss" );

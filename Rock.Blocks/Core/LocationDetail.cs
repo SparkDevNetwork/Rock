@@ -316,11 +316,7 @@ namespace Rock.Blocks.Core
                 {
                     if ( location.GeoPoint != null )
                     {
-#if REVIEW_NET5_0_OR_GREATER
                         string markerPoints = string.Format( "{0},{1}", location.Latitude, location.Longitude );
-#else
-                        string markerPoints = string.Format( "{0},{1}", location.GeoPoint.Latitude, location.GeoPoint.Longitude );
-#endif
                         string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
                         mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
                         mapLink += "&sensor=false&size=350x200&zoom=13&format=png&key=" + googleAPIKey;
@@ -438,14 +434,14 @@ namespace Rock.Blocks.Core
                     entity.State = box.Bag.AddressFields.State;
                 } );
 
-#if REVIEW_NET5_0_OR_GREATER
-            throw new System.NotImplementedException();
-#else
+#if REVIEW_WEBFORMS
             box.IfValidProperty( nameof( box.Bag.GeoPoint_WellKnownText ),
                 () => entity.GeoPoint = box.Bag.GeoPoint_WellKnownText.IsNullOrWhiteSpace() ? null : DbGeography.FromText( box.Bag.GeoPoint_WellKnownText ) );
 
             box.IfValidProperty( nameof( box.Bag.GeoFence_WellKnownText ),
                 () => entity.GeoFence = box.Bag.GeoFence_WellKnownText.IsNullOrWhiteSpace() ? null : DbGeography.PolygonFromText( box.Bag.GeoFence_WellKnownText, DbGeography.DefaultCoordinateSystemId ) );
+#else
+            throw new System.NotImplementedException();
 #endif
 
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
@@ -670,7 +666,7 @@ namespace Rock.Blocks.Core
                 entity.SaveAttributeValues( RockContext );
             } );
 
-#if WEBFORMS
+#if NET472_OR_GREATER
             Rock.CheckIn.KioskDevice.Clear();
 #endif
 
@@ -731,7 +727,7 @@ namespace Rock.Blocks.Core
             entityService.Delete( entity );
             RockContext.SaveChanges();
 
-#if WEBFORMS
+#if NET472_OR_GREATER
             Rock.CheckIn.KioskDevice.Clear();
 #endif
 

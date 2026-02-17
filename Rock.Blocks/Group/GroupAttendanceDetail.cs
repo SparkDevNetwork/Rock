@@ -26,12 +26,10 @@ using Microsoft.Extensions.Logging;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Blocks.Group.GroupAttendanceDetail;
-using Rock.Logging;
 using Rock.Model;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
 using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.GroupAttendanceDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -2322,7 +2320,7 @@ namespace Rock.Blocks.Group
                 AttendanceOccurrence attendanceOccurrence = null;
                 occurrenceData.AttendanceOccurrence = null;
 
-                var baseQuery = _attendanceOccurrenceService
+                IQueryable<AttendanceOccurrence> baseQuery = _attendanceOccurrenceService
                     .AsNoFilter()
                     .Include( a => a.Schedule )
                     .Include( a => a.Location )

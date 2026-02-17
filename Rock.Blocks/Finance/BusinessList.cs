@@ -19,9 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-#if REVIEW_WEBFORMS
-using System.Web.Http;
-#endif
 
 using Rock.Attribute;
 using Rock.Data;

@@ -213,11 +213,7 @@ namespace Rock.Blocks.Cms
             }
 
             var bag = GetCommonEntityBag( entity );
-#if REVIEW_NET5_0_OR_GREATER
-            bag.IsBlockExists = false;
-#else
             bag.IsBlockExists = entity.IsBlockExists();
-#endif
             var blocks = BlockCache.All()
                 .Where( b => b.BlockTypeId == entity.Id );
             bag.Pages = blocks

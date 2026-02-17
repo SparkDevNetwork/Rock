@@ -572,7 +572,7 @@
             if (entityUpdatedTopic) {
                 const request = {
                     connectionId: entityUpdatedTopic?.connectionId,
-                    oldLocationGuid: oldLocationGuid,
+                    oldLocationGuid: oldLocationGuid ?? null,
                     locationGuid: location.value?.value ?? null,
                 };
 

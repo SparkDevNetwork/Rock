@@ -149,11 +149,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<DefinedType> GetListQueryable( RockContext rockContext )
         {
-#if REVIEW_NET5_0_OR_GREATER
             IQueryable<DefinedType> definedTypeQry = base.GetListQueryable( rockContext )
-#else
-            var definedTypeQry = base.GetListQueryable( rockContext )
-#endif
                 .Include( a => a.Category );
 
             var categoryGuids = GetAttributeValue( AttributeKey.Categories ).SplitDelimitedValues().AsGuidList();

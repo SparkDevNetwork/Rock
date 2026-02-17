@@ -2000,8 +2000,10 @@ namespace Rock.SystemGuid
         public const string STREAK_TYPE_EXCLUSION = "1F00C782-F8A2-4CFA-B7DF-E5B3B6D36069";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.SystemEmail"/> 
+        /// The EntityType Guid for <see cref="Rock.Model.SystemEmail"/> which is made obsolete by the <see cref="Rock.Model.SystemCommunication"/>
         /// </summary>
+        [Obsolete( "This entity was replaced in Rock v10 by Rock.Model.SystemCommunication", true )]
+        [RockObsolete( "1.10" )]
         public const string SYSTEM_EMAIL = "B21FD119-893E-46C0-B42D-E4CDD5C8C49D";
 
         /// <summary>

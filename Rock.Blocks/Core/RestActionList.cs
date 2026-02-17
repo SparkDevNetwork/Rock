@@ -95,9 +95,7 @@ namespace Rock.Blocks.Core
             if ( controller != null )
             {
                 options.ControllerName = controller.Name.SplitCase();
-#if REVIEW_NET5_0_OR_GREATER
-                throw new System.NotSupportedException();
-#else
+#if NET472_OR_GREATER
                 var controllerType = Reflection.FindTypes( typeof( Rock.Rest.ApiControllerBase ) )
                     .Where( a => a.Key.Equals( controller.ClassName ) ).Select( a => a.Value ).FirstOrDefault();
 

@@ -702,10 +702,10 @@ namespace Rock.Blocks.Core
 
                 foreach ( var item in items )
                 {
-#if REVIEW_NET5_0_OR_GREATER
-                    rockContext.Entry( item ).State = EntityState.Modified;
-#else
+#if NET472_OR_GREATER
                     rockContext.Entry( item ).State = System.Data.Entity.EntityState.Modified;
+#else
+                    rockContext.Entry( item ).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
 #endif
                 }
 

@@ -302,14 +302,6 @@ namespace Rock.Blocks.Tv
                 if ( key.IsNotNullOrWhiteSpace() )
                 {
                     var pageParameters = new Dictionary<string, string>();
-#if WEBFORMS
-                    var detailBreadCrumb = pageReference.BreadCrumbs.Find( x => x.Name == "Application Screen Detail" );
-                    if ( detailBreadCrumb != null )
-                    {
-                        pageReference.BreadCrumbs.Remove( detailBreadCrumb );
-                    }
-#endif
-
                     var page = PageCache.Get( key, true );
 
                     var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );

@@ -20,11 +20,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-#if REVIEW_WEBFORMS
-using System.Web.Hosting;
 
-#endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -338,9 +336,7 @@ namespace Rock.Blocks.Cms
             }
 
             var bag = GetCommonEntityBag( entity );
-#if REVIEW_NET5_0_OR_GREATER
-            bag.AllowsCompile = false;
-#else
+#if NET472_OR_GREATER
             bag.AllowsCompile = new Rock.Web.UI.RockTheme( entity.Theme ).AllowsCompile;
 #endif
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
@@ -810,12 +806,8 @@ namespace Rock.Blocks.Cms
                 var pageService = new PageService( RockContext );
 
                 // Create the layouts for the site, and find the first one
-#if REVIEW_NET5_0_OR_GREATER
-                throw new NotSupportedException();
-#else
-                string applicationRootPath = HostingEnvironment.MapPath( "~" );
+                string applicationRootPath = RockApp.Current.MapPath( "~" );
                 LayoutService.RegisterLayouts( applicationRootPath, siteCache );
-#endif
 
                 var layoutService = new LayoutService( RockContext );
                 var layouts = layoutService.GetBySiteId( siteCache.Id );
@@ -965,6 +957,7 @@ namespace Rock.Blocks.Cms
             return ActionOk( new { editableAttribute, reservedKeyNames, modalTitle } );
         }
 
+#if NET472_OR_GREATER
         /// <summary>
         /// Handles the Click event of the CompileTheme button.
         /// </summary>
@@ -997,6 +990,7 @@ namespace Rock.Blocks.Cms
             }
 #endif
         }
+#endif
 
         #endregion
     }

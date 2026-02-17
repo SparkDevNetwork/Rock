@@ -942,10 +942,11 @@ namespace Rock.Blocks.Engagement
 
             var avgDaysToComplete = 0;
             var avgQuery = completedQuery
-#if REVIEW_NET5_0_OR_GREATER
-                .Select( s => EF.Functions.DateDiffDay( s.StartDateTime, s.CompletedDateTime ) )
-#else
+                .Where( s => s.StartDateTime != null && s.CompletedDateTime != null )
+#if NET472_OR_GREATER
                 .Select( s => SqlFunctions.DateDiff( "DAY", s.StartDateTime, s.CompletedDateTime ) )
+#else
+                .Select( s => EF.Functions.DateDiffDay( s.StartDateTime, s.CompletedDateTime ) )
 #endif
                 .Where( diff => diff.HasValue )
                 .Select( diff => diff.Value );

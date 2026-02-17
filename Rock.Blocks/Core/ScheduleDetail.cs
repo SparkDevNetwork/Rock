@@ -567,7 +567,7 @@ namespace Rock.Blocks.Core
                     entity.SaveAttributeValues( rockContext );
                 } );
 
-#if WEBFORMS
+#if NET472_OR_GREATER
                 Rock.CheckIn.KioskDevice.Clear();
 #endif
 

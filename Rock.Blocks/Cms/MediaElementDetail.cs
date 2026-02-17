@@ -36,8 +36,6 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.MediaElementDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using Rock.Utility.ExtensionMethods;
-using Rock.Web.UI;
 using Rock.Web;
 
 namespace Rock.Blocks.Cms
@@ -758,11 +756,11 @@ namespace Rock.Blocks.Cms
                     .ToList();
             });
 #else
-            interactions = filteredQuery
-                .OrderByDescending( i => i.InteractionDateTime )
-                .ThenByDescending( i => i.Id )
-                .Take( 25 )
-                .ToList();
+                interactions = filteredQuery
+                    .OrderByDescending( i => i.InteractionDateTime )
+                    .ThenByDescending( i => i.Id )
+                    .Take( 25 )
+                    .ToList();
 #endif
 
             // If we got any results then figure out the next page context.
@@ -1156,7 +1154,7 @@ namespace Rock.Blocks.Cms
             }
         }
 #endif
-        #endregion
 
+        #endregion
     }
 }

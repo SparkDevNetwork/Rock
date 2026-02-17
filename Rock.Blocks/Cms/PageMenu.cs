@@ -206,7 +206,7 @@ namespace Rock.Blocks.Cms
             }
             catch ( Exception ex )
             {
-#if WEBFORMS
+#if REVIEW_WEBFORMS
                 ExceptionLogService.LogException( ex, null, PageCache.Id, PageCache.Layout.SiteId, RequestContext.CurrentPerson?.PrimaryAlias );
 #else
                 ExceptionLogService.LogException( ex );

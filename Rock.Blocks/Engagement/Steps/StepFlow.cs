@@ -242,16 +242,8 @@ namespace Rock.Blocks.Engagement.Steps
         {
             var parameters = new Dictionary<string, object>();
 
-#if REVIEW_NET5_0_OR_GREATER
-            var delimitedValues = SlidingDateRangePicker.GetDelimitedValues( ( SlidingDateRangePicker.SlidingDateRangeType ) ( int ) date.RangeType,
-                ( SlidingDateRangePicker.TimeUnitType ) ( int ) ( date.TimeUnit ?? 0 ),
-                date.TimeValue ?? 1,
-                date.LowerDate?.DateTime,
-                date.UpperDate?.DateTime );
-
-            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( delimitedValues );
-#else
             // Generate a date range from the SlidingDateRangePicker's value
+#if REVIEW_WEBFORMS
             var testRange = new SlidingDateRangePicker
             {
                 SlidingDateRangeMode = ( SlidingDateRangePicker.SlidingDateRangeType ) ( int ) date.RangeType,
@@ -262,6 +254,14 @@ namespace Rock.Blocks.Engagement.Steps
             };
 
             var dateRange = testRange.SelectedDateRange;
+#else
+            var delimitedValues = SlidingDateRangePicker.GetDelimitedValues( ( SlidingDateRangePicker.SlidingDateRangeType ) ( int ) date.RangeType,
+                ( SlidingDateRangePicker.TimeUnitType ) ( int ) ( date.TimeUnit ?? 0 ),
+                date.TimeValue ?? 1,
+                date.LowerDate?.DateTime,
+                date.UpperDate?.DateTime );
+
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( delimitedValues );
 #endif
 
             if ( dateRange.Start != null )

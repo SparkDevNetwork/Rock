@@ -14,29 +14,28 @@
 // limitations under the License.
 // </copyright>
 
-using Rock.SystemGuid;
-
-namespace Rock.Model
+namespace Rock.Enums.Blocks.Mobile.Engagement.AddContact
 {
-    public partial class BlockType
+    /// <summary>
+    /// The type of match that was found for an existing contact.
+    /// </summary>
+    public enum ContactMatch
     {
-        #region Methods
+        /// <summary>
+        /// No contact was found that matches the provided information.
+        /// </summary>
+        NoMatch = 0,
 
         /// <summary>
-        /// Gets if the block exists.
+        /// A contact was found that could potentially match the provided
+        /// information.
         /// </summary>
-        /// <returns></returns>
-        public bool IsBlockExists()
-        {
-            if ( Path.IsNullOrWhiteSpace() )
-            {
-                return false;
-            }
+        SoftMatch = 1,
 
-            var blockPath = System.Web.HttpContext.Current.Request.MapPath( Path );
-            return System.IO.File.Exists( blockPath );
-        }
-
-        #endregion
+        /// <summary>
+        /// A contact was found taht definitely matches the provided
+        /// information.
+        /// </summary>
+        HardMatch = 2
     }
 }

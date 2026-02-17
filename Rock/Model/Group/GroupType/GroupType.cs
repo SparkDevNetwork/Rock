@@ -902,17 +902,6 @@ namespace Rock.Model
         public int? ScheduleConfirmationSystemCommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the system email to use when a person is scheduled or when the schedule has been updated
-        /// </summary>
-        /// <value>
-        /// The scheduled system email identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? ScheduleConfirmationSystemEmailId { get; set; }
-
-        /// <summary>
         /// Gets or sets the system communication to use when sending a schedule reminder.
         /// </summary>
         /// <value>
@@ -920,17 +909,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ScheduleReminderSystemCommunicationId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the system email to use when sending a schedule reminder
-        /// </summary>
-        /// <value>
-        /// The schedule reminder system email identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? ScheduleReminderSystemEmailId { get; set; }
 
         /// <summary>
         /// Gets or sets the system communication to use for sending an RSVP reminder.
@@ -1159,28 +1137,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue GroupTypePurposeValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the system email to use when a person is scheduled or when the schedule has been updated
-        /// </summary>
-        /// <value>
-        /// The scheduled system email.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use ScheduleConfirmationSystemCommunication instead.", true )]
-        [RockObsolete( "1.10" )]
-        public virtual SystemEmail ScheduleConfirmationSystemEmail { get; set; }
-
-        /// <summary>
-        /// Gets or sets the system email to use when sending a Schedule Reminder
-        /// </summary>
-        /// <value>
-        /// The schedule reminder system email.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use ScheduleReminderSystemCommunication instead.", true )]
-        [RockObsolete( "1.10" )]
-        public virtual SystemEmail ScheduleReminderSystemEmail { get; set; }
 
         /// <summary>
         /// Gets or sets the system communication to use when a person is scheduled or when the schedule has been updated

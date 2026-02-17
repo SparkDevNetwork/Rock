@@ -106,20 +106,16 @@
 
     // #region Watchers
 
-    watch(() => props.includeInactive, () => {
+    watch([
+        () => props.includeInactive,
+        () => props.dateRangeStart,
+        () => props.dateRangeEnd
+    ], () => {
         loadedItems.value = null;
     });
 
     watch(() => props.eventItem, () => {
         internalValue.value = null;
-        loadedItems.value = null;
-    });
-
-    watch(() => props.dateRangeStart, () => {
-        loadedItems.value = null;
-    });
-
-    watch(() => props.dateRangeEnd, () => {
         loadedItems.value = null;
     });
 

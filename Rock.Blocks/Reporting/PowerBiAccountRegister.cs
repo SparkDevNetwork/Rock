@@ -1,26 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Web;
-#if WEBFORMS
-using System.Web.Routing;
-#endif
 
-using OpenXmlPowerTools;
-
-using Rock.Attribute;
-using Rock.Blocks.Types.Mobile.Cms;
 using Rock.Model;
-using Rock.Obsidian.UI;
 using Rock.Reporting;
-using Rock.Utility;
-using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Reporting.PowerBiAccount;
-using Rock.ViewModels.Reporting;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
 namespace Rock.Blocks.Reporting
 {
@@ -96,7 +81,7 @@ namespace Rock.Blocks.Reporting
 
             try
             {
-#if WEBFORMS
+#if REVIEW_WEBFORMS
                 var currentUrl = HttpContext.Current.Request.Url.AbsoluteUri;
 #else
                 var currentUrl = RequestContext.RequestUri.AbsoluteUri;
