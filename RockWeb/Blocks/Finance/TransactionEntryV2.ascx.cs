@@ -196,7 +196,7 @@ namespace RockWeb.Blocks.Finance
 
     [BooleanField(
         "Disable Captcha Support",
-        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
         Key = AttributeKey.DisableCaptchaSupport,
         DefaultBooleanValue = false,
         Order = 29
@@ -998,9 +998,11 @@ mission. We are so grateful for your commitment.</p>
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             // Don't use captcha if the block is set to disable (DisableCaptchaSupport==true) it or if is not configured (IsAvailable==false)
-            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
-            cpCaptcha.Visible = !disableCaptchaSupport;
+            var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+            cpCaptcha.Visible = !( disableCaptchaSupport || !cpCaptcha.IsAvailable );
             cpCaptcha.TokenReceived += CpCaptcha_TokenReceived;
+
+            btnGiveNow.Visible = !cpCaptcha.Visible;
 
             var enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
             var enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
@@ -1009,7 +1011,7 @@ mission. We are so grateful for your commitment.</p>
                 _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
                 phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
 
-                if ( disableCaptchaSupport )
+                if ( !cpCaptcha.Visible )
                 {
                     hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
                 }
@@ -1103,6 +1105,15 @@ mission. We are so grateful for your commitment.</p>
             {
                 hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
                 cpCaptcha.Visible = false;
+                
+                btnGiveNow.Visible = true;
+            }
+            else
+            {
+                cpCaptcha.Visible = true;
+                btnGiveNow.Visible = false;
+                nbPromptForAmountsWarning.Visible = true;
+                nbPromptForAmountsWarning.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
             }
         }
 

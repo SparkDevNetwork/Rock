@@ -75,7 +75,10 @@ namespace Rock.Model
                     RootPath = theme.RelativePath,
                     PurposeValueId = websiteLegacyValueId
                 };
+
                 Add( dbTheme );
+                UpdateThemeFromJson( dbTheme, websiteValueId, checkinValueId );
+
                 anyThemesUpdated = true;
             }
 
@@ -110,38 +113,57 @@ namespace Rock.Model
                     anyThemesUpdated = true;
                 }
 
-                var themeJsonFile = Path.Combine( RockApp.Current.HostingSettings.WebRootPath, $"Themes/{dbTheme.Name}/theme.json" );
-
-                if ( !File.Exists( themeJsonFile ) )
+                if ( UpdateThemeFromJson( dbTheme, websiteValueId, checkinValueId ) )
                 {
-                    continue;
-                }
-
-                var themeJson = File.ReadAllText( themeJsonFile );
-                if ( !ThemeDefinition.TryParse( themeJson, out var themeDefinition ) )
-                {
-                    continue;
-                }
-
-                if ( dbTheme.Description != themeDefinition.Description )
-                {
-                    dbTheme.Description = themeDefinition.Description;
-                    anyThemesUpdated = true;
-                }
-
-                if ( themeDefinition.Purpose == ThemePurpose.Web && dbTheme.PurposeValueId != websiteValueId )
-                {
-                    dbTheme.PurposeValueId = websiteValueId;
-                    anyThemesUpdated = true;
-                }
-                else if ( themeDefinition.Purpose == ThemePurpose.Checkin && dbTheme.PurposeValueId != checkinValueId )
-                {
-                    dbTheme.PurposeValueId = checkinValueId;
                     anyThemesUpdated = true;
                 }
             }
 
             return anyThemesUpdated;
+        }
+
+        /// <summary>
+        /// Updates the theme from the JSON definition file on disk, if it exists.
+        /// </summary>
+        /// <param name="dbTheme">The theme to be updated.</param>
+        /// <param name="websiteValueId">The identifier for Next-Gen Website themes.</param>
+        /// <param name="checkinValueId">The identifier for Next-Gen Check-in themes.</param>
+        /// <returns><c>true</c> if the theme object was modified; otherwise <c>false</c>.</returns>
+        private static bool UpdateThemeFromJson( Theme dbTheme, int? websiteValueId, int? checkinValueId )
+        {
+            var themeJsonFile = Path.Combine( RockApp.Current.HostingSettings.WebRootPath, $"Themes/{dbTheme.Name}/theme.json" );
+
+            if ( !File.Exists( themeJsonFile ) )
+            {
+                return false;
+            }
+
+            var themeJson = File.ReadAllText( themeJsonFile );
+            if ( !ThemeDefinition.TryParse( themeJson, out var themeDefinition ) )
+            {
+                return false;
+            }
+
+            var themeUpdated = false;
+
+            if ( dbTheme.Description != themeDefinition.Description )
+            {
+                dbTheme.Description = themeDefinition.Description;
+                themeUpdated = true;
+            }
+
+            if ( themeDefinition.Purpose == ThemePurpose.Web && dbTheme.PurposeValueId != websiteValueId )
+            {
+                dbTheme.PurposeValueId = websiteValueId;
+                themeUpdated = true;
+            }
+            else if ( themeDefinition.Purpose == ThemePurpose.Checkin && dbTheme.PurposeValueId != checkinValueId )
+            {
+                dbTheme.PurposeValueId = checkinValueId;
+                themeUpdated = true;
+            }
+
+            return themeUpdated;
         }
 
         /// <summary>

@@ -12,6 +12,7 @@
         <asp:Panel ID="pnlContent" runat="server">
             <asp:HiddenField ID="hfTransactionViewMode" runat="server" />
             <asp:HiddenField ID="hfMoveToBatchId" runat="server" />
+            <asp:HiddenField ID="hfIsMoveTransactionsEnabled" runat="server" Value="False" />
 
             <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 

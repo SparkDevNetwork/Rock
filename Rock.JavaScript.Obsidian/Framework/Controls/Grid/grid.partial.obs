@@ -1672,11 +1672,16 @@
     async function onLaunchWorkflow(): Promise<void> {
         const url = props.definition?.actionUrls?.[GridActionUrlKey.LaunchWorkflow];
 
-        if (!props.keyField || !url) {
+        let keyField = props.keyField;
+        if (props.personKeyField && props.entityTypeGuid === EntityType.Person) {
+            keyField = props.personKeyField;
+        }
+
+        if (!keyField || !url) {
             return;
         }
 
-        await createEntitySetAndRedirect([props.keyField], url, undefined);
+        await createEntitySetAndRedirect([keyField], url, undefined);
     }
 
     /**

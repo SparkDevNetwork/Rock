@@ -25,14 +25,6 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
     public class StepStatusBag
     {
         /// <summary>
-        /// Gets or sets the Step Status identifier.
-        /// </summary>
-        /// <value>
-        /// The identifier.
-        /// </value>
-        public int Id { get; set; }
-
-        /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>
@@ -70,7 +62,7 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         /// <value>
         /// The unique identifier.
         /// </value>
-        public Guid? Guid { get; set; }
+        public Guid Guid { get; set; }
 
         /// <summary>
         /// Gets or sets the value indicating if this is a System Step Status.

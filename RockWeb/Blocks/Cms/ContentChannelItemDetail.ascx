@@ -61,6 +61,7 @@
                     <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
                     <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                    <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                         
                     <asp:HiddenField ID="hfContentLibraryItemGuid" runat="server" />
                     <Rock:PanelWidget ID="pwContentLibraryUploaded" runat="server" Visible="false" Title="Uploaded to Community Content Library">
@@ -267,6 +268,12 @@
         <Rock:ModalDialog ID="mdRedownload" runat="server" SaveButtonText="Yes" OnSaveClick="mdRedownload_SaveClick" Title="Re-download and Refresh">
             <Content>
                 <Rock:NotificationBox ID="nbRedownloadWarning" runat="server" NotificationBoxType="Warning" Text="The action you are about to perform will overwrite the existing content of the article. Any changes will be lost. Are you sure you want to proceed with the update?" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="mdDelete" runat="server" SaveButtonText="Delete" Title="Delete Content Item" OnSaveClick="mdDelete_SaveClick">
+            <Content>
+                <Rock:NotificationBox ID="nbDeleteWarning" runat="server" NotificationBoxType="Warning" Text="This action will permanently delete this content item. This cannot be undone. Are you sure you want to proceed?" />
             </Content>
         </Rock:ModalDialog>
 

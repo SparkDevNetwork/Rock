@@ -484,7 +484,39 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
         {
-            List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            List<string> selectedValues;
+
+            /*
+                1/6/2026 - N.A.
+
+                Added logic to handle the structure of `filterValues` for the DefinedValue field type filter. Since the
+                fix (ec3226b) introduced in v16.7 ("DefinedValue Field Type Registration Form Issue";
+                https://app.asana.com/1/20866866924293/project/1121505495628584/task/1208439345450454)),
+                the `filterValues` list is expected to include a ComparisonType when two elements are present.
+
+                - If `filterValues.Count == 2`, then:
+                    * filterValues[0] contains the ComparisonType (e.g., Contains)
+                    * filterValues[1] holds the comparison value(s)
+                - Otherwise:
+                    * filterValues[0] holds the comparison value(s)
+
+                Reason: Fix for issue #6597 which accounts for changes in how filterValues are structured after v16.7.
+            */
+
+            if ( filterValues.Count == 2 )
+            {
+                ComparisonType? comparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
+                selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                if ( comparisonType != ComparisonType.Contains && comparisonType != ComparisonType.EqualTo )
+                {
+                    throw new NotSupportedException( $"Unsupported comparison value: '{comparisonType}' used with property '{propertyName}'." );
+                }
+            }
+            else
+            {
+                selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            }
+
             if ( selectedValues.Any() )
             {
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );

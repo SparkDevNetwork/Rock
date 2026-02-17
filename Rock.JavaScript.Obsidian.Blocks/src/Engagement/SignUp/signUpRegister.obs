@@ -68,9 +68,11 @@
             <Loading :isLoading="isRegistering">
                 <div v-if="anyEligibleRegistrants" class="actions">
                     <div class="captcha-container">
-                        <Captcha v-if="!config.disableCaptchaSupport" ref="captchaElement" validationTitle="Captcha" />
+                        <div v-if="!config.disableCaptchaSupport" v-show="!isCaptchaComplete">
+                            <Captcha ref="captchaElement" validationTitle="Captcha" />
+                        </div>
                     </div>
-                    <RockButton type="submit" :btnType="BtnType.Primary" :disabled="isRegistering || !isCaptchaComplete">{{ submitButtonText }}</RockButton>
+                    <RockButton v-if="isCaptchaComplete || config.disableCaptchaSupport" type="submit" :btnType="BtnType.Primary" :disabled="isRegistering">{{ submitButtonText }}</RockButton>
                 </div>
             </Loading>
         </RockForm>
@@ -132,7 +134,6 @@
     const submitButtonText = ref(getSubmitButtonText(config.registrants));
 
     const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
-    const captchaToken = ref<string | undefined>();
     const isCaptchaComplete = ref(false);
 
     // #endregion
@@ -180,7 +181,6 @@
 
         const token = await captchaElement.value.getToken();
         isCaptchaComplete.value = !!token;
-        captchaToken.value = token;
     }
 
     /**
@@ -218,14 +218,11 @@
 
         const actionContext: BlockActionContextBag = {};
         if (!config.disableCaptchaSupport && captchaElement.value) {
-            actionContext.captcha = captchaToken.value;
+            actionContext.captcha = await captchaElement.value.getToken();
+            captchaElement.value.refreshToken();
         }
 
         const result: HttpResult<SignUpRegisterResponseBag> = await invokeBlockAction("Register", { bag }, actionContext);
-
-        if (!config.disableCaptchaSupport && captchaElement.value) {
-            captchaElement.value.refreshToken();
-        }
 
         isRegistering.value = false;
 

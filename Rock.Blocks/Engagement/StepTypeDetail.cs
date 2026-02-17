@@ -906,10 +906,18 @@ namespace Rock.Blocks.Engagement
             }
 
             // Update the Attributes that were assigned in the UI
+            // The attributes are coming from the frontend already sorted in the correct order.
+            int order = 0;
             foreach ( var attributeState in viewStateAttributes )
             {
-                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
+                var attr = Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
+                if ( attr != null )
+                {
+                    attr.Order = order++;
+                }
             }
+
+            RockContext.SaveChanges();
         }
 
         /// <summary>
@@ -1613,32 +1621,6 @@ namespace Rock.Blocks.Engagement
         }
 
         #endregion
-
-        /// <summary>
-        /// Changes the ordered position of a single step attribute.
-        /// </summary>
-        /// <param name="key">The identifier of the step attribute that will be moved.</param>
-        /// <param name="beforeKey">The identifier of the step attribute it will be placed before.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult ReorderItem( string key, string beforeKey )
-        {
-            var stepType = GetStepType();
-            if ( stepType == null )
-            {
-                return ActionBadRequest( "Step type not found." );
-            }
-
-            var items = GetStepTypeAttributes( stepType.Id.ToString() );
-
-            if ( !items.ReorderEntity( key, beforeKey ) )
-            {
-                return ActionBadRequest( "Invalid reorder attempt." );
-            }
-
-            RockContext.SaveChanges();
-            return ActionOk();
-        }
 
         private class StepStatusProjection
         {

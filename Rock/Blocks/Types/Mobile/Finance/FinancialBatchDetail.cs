@@ -31,6 +31,7 @@ using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Finance.FinancialBatchDetail;
 using Rock.Common.Mobile.ViewModel;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;
@@ -96,6 +97,26 @@ namespace Rock.Blocks.Types.Mobile.Finance
         Key = AttributeKeys.RequiredControlItemCount,
         Order = 7 )]
 
+    [DefinedValueField(
+        "Currency Types",
+        Description = "The currency type to show in the scan settings page.",
+        DefinedTypeGuid = SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE,
+        IsRequired = false,
+        AllowMultiple = true,
+        DefaultValue = null,
+        Key = AttributeKeys.CurrencyType,
+        Order = 8 )]
+
+    [DefinedValueField(
+        "Transaction Source",
+        Description = "The Transaction Source to show in the scan settings page.",
+        DefinedTypeGuid = SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
+        IsRequired = false,
+        AllowMultiple = true,
+        DefaultValue = null,
+        Key = AttributeKeys.TransactionSource,
+        Order = 9 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_FINANCE_FINANCIAL_BATCH_DETAIL_BLOCK_TYPE )]
@@ -107,6 +128,8 @@ namespace Rock.Blocks.Types.Mobile.Finance
         private List<Guid> Accounts => GetAttributeValue( AttributeKeys.Accounts ).SplitDelimitedValues().AsGuidList();
 
         #endregion
+
+        #region Keys
 
         /// <summary>
         /// Keys for the attributes used in this block.
@@ -147,12 +170,24 @@ namespace Rock.Blocks.Types.Mobile.Finance
             /// The key for the Accounts Allocation Required attribute.
             /// </summary>
             public const string AccountAllocationRequired = "AccountAllocationRequired";
+
+            /// <summary>
+            /// The key for the Currency Types attribute.
+            /// </summary>
+            public const string CurrencyType = "CurrencyTypes";
+
+            /// <summary>
+            /// The key for the Transaction Source attribute.
+            /// </summary>
+            public const string TransactionSource = "TransactionSource";
         }
 
         /// <summary>
         /// The authorization action required to reopen a batch.
         /// </summary>
         private const string AuthorizationReopenBatch = "ReopenBatch";
+
+        #endregion
 
         #region Methods
 
@@ -756,7 +791,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
             {
                 ProcessImageAndGenerateTransaction( processImageBag, image );
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex );
                 // If the image could not be loaded, return an error.
@@ -802,22 +837,48 @@ namespace Rock.Blocks.Types.Mobile.Finance
         {
             var isCheckScannerConfigured = GetAttributeValue( AttributeKeys.ApiKey ).IsNotNullOrWhiteSpace() && GetAttributeValue( AttributeKeys.EndPoint ).IsNotNullOrWhiteSpace();
 
-            var cashCurrencyType = DefinedValueCache.Get( SystemGuid.DefinedValue.CURRENCY_TYPE_CASH.AsGuid() );
-            var checkCurrencyType = DefinedValueCache.Get( SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid() );
+            var selectedCurrencyType = GetAttributeValue( AttributeKeys.CurrencyType );
+            var selectedTransactionSource = GetAttributeValue( AttributeKeys.TransactionSource );
 
-            if ( cashCurrencyType == null || checkCurrencyType == null )
+            var currencyTypeGuids = selectedCurrencyType.SplitDelimitedValues().Select( s => s.ConvertToGuidOrThrow() ).ToList();
+            List<ListItemViewModel> currencyType = new List<ListItemViewModel>();
+            if ( currencyTypeGuids.Count == 0 )
             {
-                throw new Exception( "Cash or currency type is not defined." );
-            }
-
-            var transactionSources = DefinedTypeCache.Get( SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() )
-                    .DefinedValues
+                currencyType = DefinedTypeCache.Get( SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE ).DefinedValues
                     .Select( dv => new ListItemViewModel
                     {
                         Text = dv.Value,
-                        Value = dv.IdKey
-                    } )
-                    .ToList();
+                        Value = dv.Guid.ToString(),
+                    } ).ToList();
+            }
+            else
+            {
+                currencyType = DefinedValueCache.GetMany( currencyTypeGuids ).Select( dv => new ListItemViewModel
+                {
+                    Text = dv.Value,
+                    Value = dv.Guid.ToString(),
+                } ).ToList();
+            }
+
+            var transactionSourceGuids = selectedTransactionSource.SplitDelimitedValues().Select( s => s.ConvertToGuidOrThrow() ).ToList();
+            List<ListItemViewModel> transactionSources = new List<ListItemViewModel>();
+            if ( transactionSourceGuids.Count == 0 )
+            {
+                transactionSources = DefinedTypeCache.Get( SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE ).DefinedValues
+                    .Select( dv => new ListItemViewModel
+                    {
+                        Text = dv.Value,
+                        Value = dv.IdKey,
+                    } ).ToList();
+            }
+            else
+            {
+                transactionSources = DefinedValueCache.GetMany( transactionSourceGuids ).Select( dv => new ListItemViewModel
+                {
+                    Text = dv.Value,
+                    Value = dv.IdKey,
+                } ).ToList();
+            }
 
             return new Rock.Common.Mobile.Blocks.Finance.FinancialBatchDetail.Configuration
             {
@@ -827,19 +888,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 CheckScannerEnabled = isCheckScannerConfigured,
                 TransactionDetailPageGuid = GetAttributeValue( AttributeKeys.DetailPage ).AsGuidOrNull(),
                 Accounts = GetAvailableAccounts( RockContext ),
-                CurrencyTypes = new List<ListItemViewModel>()
-                {
-                    new ListItemViewModel
-                    {
-                        Text = cashCurrencyType.Value,
-                        Value = cashCurrencyType.Guid.ToString()
-                    },
-                    new ListItemViewModel
-                    {
-                        Text = checkCurrencyType.Value,
-                        Value = checkCurrencyType.Guid.ToString()
-                    }
-                },
+                CurrencyTypes = currencyType,
                 TransactionSources = transactionSources,
             };
         }

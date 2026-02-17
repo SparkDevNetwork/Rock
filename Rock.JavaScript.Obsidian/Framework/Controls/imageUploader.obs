@@ -323,7 +323,12 @@
     });
 
     // Watch for changes to the model value and update our internal values.
-    watch(() => props.modelValue, () => {
+    watch(() => props.modelValue, (newValue, oldValue) => {
+        if (newValue?.value && !oldValue?.value && newValue.value !== oldValue?.value) {
+            // Clear the last file(s) from the underlying input.
+            onFileRemove();
+        }
+
         internalValue.value = props.modelValue;
     });
 

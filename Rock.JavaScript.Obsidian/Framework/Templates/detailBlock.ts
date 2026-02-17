@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { computed, defineComponent, PropType, ref, watch } from "vue";
+import { computed, defineComponent, onBeforeUnmount, PropType, ref, watch } from "vue";
 import Panel from "@Obsidian/Controls/panel.obs";
 import Modal from "@Obsidian/Controls/modal.obs";
 import { Guid } from "@Obsidian/Types";
@@ -36,7 +36,7 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { splitCase } from "@Obsidian/Utility/stringUtils";
 import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
-import { hideBlockRole, showBlockRole, useBlockBrowserBus, useEntityTypeGuid, useEntityTypeName } from "@Obsidian/Utility/block";
+import { hideBlockRole, showBlockRole, useBlockBrowserBus, useEntityTypeGuid, useEntityTypeName, useReloadBlock } from "@Obsidian/Utility/block";
 import { BlockMessages } from "@Obsidian/Utility/browserBus";
 import { BlockRole } from "@Obsidian/Enums/Cms/blockRole";
 
@@ -274,6 +274,7 @@ export default defineComponent({
         // #region Values
 
         const http = useHttp();
+        const reloadBlock = useReloadBlock();
         const internalMode = ref(props.mode);
         const isEditModeLoading = ref(false);
         const isEntityFollowed = ref<boolean | null>(null);
@@ -772,6 +773,38 @@ export default defineComponent({
             showAuditDetailsModal.value = true;
         };
 
+        /**
+         * Called when the page is shown.
+         *
+         * @param event The page transition event.
+         */
+        const onPageShow = (event: PageTransitionEvent): void => {
+            // When in auto-edit mode, detect when the page is being restored
+            // from the back/forward cache (bfcache) so we can reload the block
+            // to ensure we have fresh data.
+            if (!isAutoEditMode.value) {
+                return;
+            }
+
+            // event.persisted is true when restored from bfcache (common case).
+            // nav.type === "back_forward" covers some browsers that don't set
+            // persisted reliably.
+            let isBackForward = event.persisted;
+            if (!isBackForward) {
+                try {
+                    const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+                    isBackForward = nav?.type === "back_forward";
+                }
+                catch {
+                    // Fail silently.
+                }
+            }
+
+            if (isBackForward) {
+                reloadBlock();
+            }
+        };
+
         // #endregion
 
         watch(() => props.mode, () => {
@@ -826,6 +859,12 @@ export default defineComponent({
             // case when adding a new entity.
             hideBlockRole(BlockRole.Secondary);
         }
+
+        window.addEventListener("pageshow", onPageShow);
+
+        onBeforeUnmount(() => {
+            window.removeEventListener("pageshow", onPageShow);
+        });
 
         return {
             editForm,

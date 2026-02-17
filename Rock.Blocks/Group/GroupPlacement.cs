@@ -1013,9 +1013,65 @@ namespace Rock.Blocks.Group
             var placementConfiguration = GetPlacementConfiguration( groupPlacementKeys );
 
             string displayedCampusGuid = null;
-            if ( placementConfiguration.DisplayedCampus?.Value.IsNotNullOrWhiteSpace() == true)
+            if ( placementConfiguration.DisplayedCampus?.Value.IsNotNullOrWhiteSpace() == true )
             {
                 displayedCampusGuid = placementConfiguration.DisplayedCampus.Value;
+            }
+
+            // Define the subset to which the Person Filters will be applied.
+            int filterAppliesTo = ( int ) ( placementConfiguration.PersonFilters?.AppliesToPlacementConfiguration
+                ?? AppliesToPlacementConfiguration.PeopleToPlace
+            );
+
+            // Preparing params for Person Filter (Gender)
+            int? gender = placementConfiguration.PersonFilters?.Gender;
+
+            // Preparing params for Person Filter (Campuses)
+            var campusGuids = string.Join(
+                ",",
+                placementConfiguration.PersonFilters?.Campuses?.Select( c => c.Value ).Where( v => v.IsNotNullOrWhiteSpace() ) ?? new List<string>()
+            );
+
+            // Preparing params for Person Filter (Persisted Data Views)
+            var persistedDataViewGuids = string.Join(
+                ",",
+                placementConfiguration.PersonFilters?.PersistedDataViews?.Select( c => c.Value ).Where( v => v.IsNotNullOrWhiteSpace() ) ?? new List<string>()
+            );
+
+            // Preparing params for Person Filter (Age)
+            int? ageComparisonType = (int?) placementConfiguration.PersonFilters?.AgeComparisonType;
+            int? ageLow = null;
+            int? ageHigh = placementConfiguration.PersonFilters?.Age;
+            if ( placementConfiguration.PersonFilters?.AgeComparisonType == ComparisonType.Between &&
+                ( placementConfiguration.PersonFilters?.AgeRangeDelimited.IsNotNullOrWhiteSpace() ?? false ) )
+            {
+                var parts = placementConfiguration.PersonFilters.AgeRangeDelimited?.Split( ',' );
+
+                if ( parts.Length > 0 && int.TryParse( parts[0], out var lower ) )
+                {
+                    ageLow = lower;
+                }
+
+                if ( parts.Length > 1 && int.TryParse( parts[1], out var upper ) )
+                {
+                    ageHigh = upper;
+                }
+            }
+
+            // Preparing params for Person Filter (Grade)
+            int? gradeComparisonType = (int?) placementConfiguration.PersonFilters?.GradeComparisonType;
+            int currentSchoolYear = PersonService.GetCurrentGraduationYear();
+            var gradeGuid = placementConfiguration.PersonFilters?.Grade?.Value.AsGuidOrNull();
+            int? gradeOffset = gradeGuid.HasValue
+                ? DefinedValueCache.Get( gradeGuid.Value )?.Value.AsIntegerOrNull()
+                : null;
+            int? nextGradeOffset = null;
+            if ( gradeOffset.HasValue )
+            {
+                DefinedTypeCache gradeDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                DefinedValueCache nextGradeDefinedValue = gradeDefinedType.DefinedValues
+                    .OrderByDescending( a => a.Value.AsInteger() ).Where( a => a.Value.AsInteger() < gradeOffset ).FirstOrDefault();
+                nextGradeOffset = nextGradeDefinedValue != null ? nextGradeDefinedValue.Value.AsInteger() : -1;
             }
 
             if ( placementMode == PlacementMode.TemplateMode || placementMode == PlacementMode.InstanceMode )
@@ -1075,7 +1131,18 @@ namespace Rock.Blocks.Group
                                 @{nameof( displayedCampusGuid )},
                                 @{nameof( purposeKey )},
                                 @{nameof( registrationTemplatePurposeKey )},
-                                @{nameof( registrationInstancePurposeKey )}",
+                                @{nameof( registrationInstancePurposeKey )},
+                                @{nameof( filterAppliesTo )},
+                                @{nameof( gender )},
+                                @{nameof( campusGuids )},
+                                @{nameof( ageComparisonType )},
+                                @{nameof( ageLow )},
+                                @{nameof( ageHigh )},
+                                @{nameof( gradeComparisonType )},
+                                @{nameof( currentSchoolYear )},
+                                @{nameof( gradeOffset )},
+                                @{nameof( nextGradeOffset )},
+                                @{nameof( persistedDataViewGuids )}",
                 new SqlParameter( nameof( registrationTemplatePlacementEntityTypeId ), registrationTemplatePlacementEntityTypeId ),
                 new SqlParameter( nameof( registrationInstanceEntityTypeId ), registrationInstanceEntityTypeId ),
                 new SqlParameter( nameof( personEntityTypeId ), personEntityTypeId ),
@@ -1094,7 +1161,18 @@ namespace Rock.Blocks.Group
                 new SqlParameter( nameof( displayedCampusGuid ), ( object ) displayedCampusGuid ?? DBNull.Value ),
                 new SqlParameter( nameof( purposeKey ), ( object ) purposeKey ?? DBNull.Value ),
                 new SqlParameter( nameof( registrationTemplatePurposeKey ), registrationTemplatePurposeKey ),
-                new SqlParameter( nameof( registrationInstancePurposeKey ), registrationInstancePurposeKey )
+                new SqlParameter( nameof( registrationInstancePurposeKey ), registrationInstancePurposeKey ),
+                new SqlParameter( nameof( filterAppliesTo ), filterAppliesTo ),
+                new SqlParameter( nameof( gender ), ( object ) gender ?? DBNull.Value ),
+                new SqlParameter( nameof( campusGuids ), campusGuids ),
+                new SqlParameter( nameof( ageComparisonType ), ( object ) ageComparisonType ?? DBNull.Value ),
+                new SqlParameter( nameof( ageLow ), ( object ) ageLow ?? DBNull.Value ),
+                new SqlParameter( nameof( ageHigh ), ( object ) ageHigh ?? DBNull.Value ),
+                new SqlParameter( nameof( gradeComparisonType ), ( object ) gradeComparisonType ?? DBNull.Value ),
+                new SqlParameter( nameof( currentSchoolYear ), currentSchoolYear ),
+                new SqlParameter( nameof( gradeOffset ), ( object ) gradeOffset ?? DBNull.Value ),
+                new SqlParameter( nameof( nextGradeOffset ), ( object ) nextGradeOffset ?? DBNull.Value ),
+                new SqlParameter( nameof( persistedDataViewGuids ), persistedDataViewGuids )
             ).ToList();
 
             List<int> displayedSourceAttributeIds = null;

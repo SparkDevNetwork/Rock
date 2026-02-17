@@ -29,7 +29,17 @@
     const slots = useSlots();
 
     /** True if the compare column should be displayed. */
-    const hasCompareColumn = computed((): boolean => (!!slots.compare || !!props.compareLabel) && props.filterMode !== FilterMode.SimpleFilter);
+    const hasCompareColumn = computed((): boolean => {
+        if (slots.compare) {
+            return true;
+        }
+
+        if (props.compareLabel) {
+            return props.filterMode !== FilterMode.SimpleFilter;
+        }
+
+        return false;
+    });
 
     /** True if we have a plain text label to display in the compare column. */
     const hasCompareLabel = computed((): boolean => !!props.compareLabel);
@@ -53,7 +63,9 @@
             return "col-xs-12 col-md-8";
         }
         else if (props.compareLabel) {
-            return "col-xs-12 col-md-10";
+            return props.filterMode !== FilterMode.SimpleFilter
+                ? "col-xs-12 col-md-10"
+                : "col-xs-12 col-md-12";
         }
         else {
             return "col-xs-12 col-md-12";

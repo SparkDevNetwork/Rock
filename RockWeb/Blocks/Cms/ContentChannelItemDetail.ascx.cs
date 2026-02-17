@@ -548,6 +548,11 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDelete_Click( object sender, EventArgs e )
         {
+            mdDelete.Show();
+        }
+
+        protected void mdDelete_SaveClick( object sender, EventArgs e )
+        {
             RockContext rockContext = new RockContext();
             var contentItemService = new ContentChannelItemService( rockContext );
             ContentChannelItem contentItem = null;
@@ -560,8 +565,24 @@ namespace RockWeb.Blocks.Cms
                     .FirstOrDefault( t => t.Id == contentItemId );
             }
 
+            mdDelete.Hide();
+
             if ( contentItem != null )
             {
+                var authorized = contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                if ( !authorized )
+                {
+                    mdGridWarning.Show( "You are not authorized to delete this item.", ModalAlertType.Warning );
+                    return;
+                }
+
+                string errorMessage;
+                if ( !contentItemService.CanDelete( contentItem, out errorMessage ) )
+                {
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Warning );
+                    return;
+                }
+
                 contentItemService.Delete( contentItem );
                 rockContext.SaveChanges();
             }

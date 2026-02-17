@@ -35,7 +35,7 @@ const ChannelListHeader: React.FC<ChannelListHeaderProps> = ({
     onSearch,
 }) => {
     // Get the current chat view style (Community or Conversational)
-    const { chatViewStyle } = useChatConfig();
+    const { chatViewStyle, directMessageAllowed } = useChatConfig();
     // Modal context for showing modals (e.g., new DM)
     const { showModal } = useModal();
     // Directory context for showing the directory UI
@@ -65,30 +65,32 @@ const ChannelListHeader: React.FC<ChannelListHeaderProps> = ({
      * - action: Click handler function
      * - ariaLabel: Accessibility label
      */
-    const iconActions =
-        chatViewStyle === ChatViewStyle.Community
-            ? [
-                {
-                    key: "search",
-                    iconClass: "ti ti-search",
-                    action: onSearch,
-                    ariaLabel: "Search",
-                },
-                {
-                    key: "newMessage",
-                    iconClass: "ti ti-edit",
-                    action: onNewMessage,
-                    ariaLabel: "New DM",
-                },
-            ]
-            : [
-                {
-                    key: "newMessage",
-                    iconClass: "ti ti-edit",
-                    action: onNewMessage,
-                    ariaLabel: "New DM",
-                },
-            ];
+    const iconActions = [];
+    if (chatViewStyle === ChatViewStyle.Community) {
+        iconActions.push({
+            key: "search",
+            iconClass: "ti ti-search",
+            action: onSearch,
+            ariaLabel: "Search",
+        });
+        if (directMessageAllowed) {
+            iconActions.push({
+                key: "newMessage",
+                iconClass: "ti ti-edit",
+                action: onNewMessage,
+                ariaLabel: "New DM",
+            });
+        }
+    } else {
+        if (directMessageAllowed) {
+            iconActions.push({
+                key: "newMessage",
+                iconClass: "ti ti-edit",
+                action: onNewMessage,
+                ariaLabel: "New DM",
+            });
+        }
+    }
 
     // Only include actions with valid (function) handlers
     const filteredActions = iconActions.filter(
@@ -98,7 +100,7 @@ const ChannelListHeader: React.FC<ChannelListHeaderProps> = ({
     // Get current user and channel from chat context
     const { client } = useChatContext();
     // User's profile image URL (if available)
-    const profileImageSrc = client.user?.image
+    const profileImageSrc = client.user?.image;
     // Show profile image only in Community view and if image exists
     const showProfileImage = chatViewStyle == ChatViewStyle.Community && profileImageSrc;
     // Right pane context for activating member pane
@@ -119,13 +121,13 @@ const ChannelListHeader: React.FC<ChannelListHeaderProps> = ({
         const user = client.user;
         if (user) {
             setSelectedUser(user);
-            setActivePane('members');
+            setActivePane("members");
         } else {
             // No user found; do nothing (could log or handle as needed)
         }
-    }
+    };
 
-    const rootClassName = chatViewStyle == ChatViewStyle.Community ? "rocktheme-community" : "rocktheme-conversational"
+    const rootClassName = chatViewStyle == ChatViewStyle.Community ? "rocktheme-community" : "rocktheme-conversational";
 
     return (
         <div className={`${rootClassName} rock-channel-list-header-container str-chat`}>

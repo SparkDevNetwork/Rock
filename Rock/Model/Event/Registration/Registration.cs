@@ -144,10 +144,10 @@ namespace Rock.Model
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is temporary.
+        /// Gets or sets a value indicating whether this instance is temporary (started from another page).
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is temporary; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance is temporary (started from another page); otherwise, <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsTemporary { get; set; }

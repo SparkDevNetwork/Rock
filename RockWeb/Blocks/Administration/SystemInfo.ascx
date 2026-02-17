@@ -1,5 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SystemInfo.ascx.cs" Inherits="RockWeb.Blocks.Administration.SystemInfo" %>
 
+<style>
+    #routes table td {
+        word-break: break-all;
+    }
+</style>
+
 <script type="text/javascript">
 
     function pageLoad() {

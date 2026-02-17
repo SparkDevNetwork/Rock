@@ -220,7 +220,7 @@ namespace Rock.Blocks.Crm
     [BooleanField(
         "Disable Captcha Support",
         Key = AttributeKey.DisableCaptchaSupport,
-        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
         DefaultBooleanValue = false,
         Order = 20 )]
 
@@ -1674,7 +1674,7 @@ namespace Rock.Blocks.Crm
         {
             errorMessages = new List<string>();
 
-            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+            var disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
             if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
             {
                 errorMessages.Add( "Captcha was not valid." );
@@ -1999,7 +1999,7 @@ namespace Rock.Blocks.Crm
                 ChildProfilePhotoField = GetFieldBag( AttributeKey.ChildProfilePhoto ),
                 ChildRaceField = GetFieldBag( AttributeKey.ChildRaceOption ),
                 ChildEthnicityField = GetFieldBag( AttributeKey.ChildEthnicityOption ),
-                DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
+                DisableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() ),
                 AdultLabel = GetAttributeValue( AttributeKey.AdultLabel ),
                 ChildLabel = GetAttributeValue( AttributeKey.ChildLabel ),
             };

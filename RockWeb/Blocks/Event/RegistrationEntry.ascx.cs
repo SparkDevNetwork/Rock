@@ -2106,13 +2106,7 @@ namespace RockWeb.Blocks.Event
                 numHowMany.Value = registration.Registrants.Count();
 
                 // set group id
-                if ( groupId.HasValue )
-                {
-                    // Commenting out line below to improve security. More refactoring could be made to clean up this
-                    // section of code but limiting changes for now to reduce chance of introducing a bug.
-                    // GroupId = groupId;
-                }
-                else if ( !string.IsNullOrWhiteSpace( registrationSlug ) )
+                if ( !string.IsNullOrWhiteSpace( registrationSlug ) )
                 {
                     var dateTime = RockDateTime.Now;
                     var linkage = new EventItemOccurrenceGroupMapService( rockContext )
@@ -2135,6 +2129,23 @@ namespace RockWeb.Blocks.Event
                             CampusId = linkage.CampusId;
                         }
                     }
+                }
+                else if ( eventOccurrenceId.HasValue && registrationInstanceId.HasValue )
+                {
+                    var linkageGroupId = new EventItemOccurrenceService( rockContext )
+                        .Queryable()
+                        .Where( o => o.Id == eventOccurrenceId.Value )
+                        .SelectMany( o => o.Linkages )
+                        .Where( l => l.RegistrationInstanceId == registrationInstanceId.Value )
+                        .Select( l => l.GroupId )
+                        .FirstOrDefault();
+
+                    GroupId = linkageGroupId;
+                }
+                else if ( groupId.HasValue )
+                {
+                    // If there is no slug or event occurrence id then don't use/trust the groupId in the query string
+                    // GroupId = groupId;
                 }
             }
 

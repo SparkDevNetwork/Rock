@@ -1,0 +1,31 @@
+<template>
+    <NumberBox v-model="internalValue"
+               v-bind="standardProps">
+        <template #inputGroupAppend>
+            <span class="input-group-addon">px</span>
+        </template>
+    </NumberBox>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Number as PropType<number | null | undefined>,
+            required: true
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const standardProps = useStandardRockFormFieldProps(props);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: number | null | undefined): void;
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+</script>

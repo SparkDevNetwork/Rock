@@ -433,8 +433,7 @@ namespace Rock.Plugin.HotFixes {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52
-        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
             get {
@@ -1000,6 +999,27 @@ namespace Rock.Plugin.HotFixes {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to CREATE PROCEDURE [dbo].[spCrm_FamilyAnalyticsGiving]
+        ///	
+        ///AS
+        ///BEGIN
+        ///	
+        ///	-- configuration of the duration in weeks
+        ///	DECLARE @GivingDurationLongWeeks int = 52
+        ///	DECLARE @GivingDurationShortWeeks int = 6
+        ///	
+        ///	DECLARE @cACTIVE_RECORD_STATUS_VALUE_GUID uniqueidentifier = &apos;618F906C-C33D-4FA3-8AEF-E58CB7B63F1E&apos;
+        ///	DECLARE @cPERSON_RECORD_TYPE_VALUE_GUID uniqueidentifier = &apos;36CF10D6-C695-413D-8E7C-4546EFEF385E&apos;
+        ///	DECLARE @cFAMILY_GROUPTYPE_GUID uniqueidentifier = &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///	DECLARE @cA [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _267_UpdateFamilyAnalyticsStoredProcedure_spCrm_FamilyAnalyticsGiving {
+            get {
+                return ResourceManager.GetString("_267_UpdateFamilyAnalyticsStoredProcedure_spCrm_FamilyAnalyticsGiving", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to /*
         ///&lt;doc&gt;
         ///    &lt;summary&gt;
@@ -1020,6 +1040,27 @@ namespace Rock.Plugin.HotFixes {
             get {
                 return ResourceManager.GetString("_268_ImproveSyncListRecipientsPerformance_spCommunication_SynchronizeListRecipien" +
                         "ts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure retrieves placed and unplaced people for all supported
+        ///        configurations of the Group Placement block in Rock RMS. It supports filtering
+        ///        by template, instance, groups, entity sets, demographics, campus, DataView
+        ///        membership, and fee qualifications.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        A result set containing placement-eligible people along with placement status
+        ///        and contextual registration or group information.
+        ///     [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _269_UpdateGroupPlacementStoredProcedure_spGetGroupPlacementPeople {
+            get {
+                return ResourceManager.GetString("_269_UpdateGroupPlacementStoredProcedure_spGetGroupPlacementPeople", resourceCulture);
             }
         }
     }

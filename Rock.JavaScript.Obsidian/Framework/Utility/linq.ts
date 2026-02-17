@@ -486,6 +486,14 @@ export class Enumerable<T> {
     }
 
     /**
+     * Creates an empty Enumerable.
+     * @returns A new empty Enumerable instance.
+     */
+    static empty<T>(): Enumerable<T> {
+        return new Enumerable<T>(() => []);
+    }
+
+    /**
      * Creates an Enumerable from a regular iterable (e.g., Array, Set).
      * @param iterable - An iterable to create the Enumerable from.
      * @returns A new Enumerable instance.
@@ -1009,26 +1017,6 @@ export class Enumerable<T> {
         }
 
         return minItem;
-    }
-
-    /**
-     * Returns the maximum element of the sequence.
-     *
-     * @template T The type of the elements in the sequence.
-     * @param selector A function to project each element to a numeric, comparable value.
-     * @returns The maximum element or `undefined` if the sequence is empty.
-     *
-
-        let maxItem = selector(first.value);
-
-        for (let next = self.next(); !next.done; next = self.next()) {
-            const value = selector(next.value);
-            if (value > maxItem) {
-                maxItem = value;
-            }
-        }
-
-        return maxItem;
     }
 
     /**

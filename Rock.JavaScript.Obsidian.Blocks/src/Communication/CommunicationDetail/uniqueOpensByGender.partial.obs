@@ -1,9 +1,10 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div v-if="chartData" class="communication-detail-unique-opens-by-gender">
-        <Chart type="doughnut"
-               :data="chartData"
-               :options="chartOptions" />
+        <DoughnutChart :labels="labels"
+                       :series="series"
+                       :legendPosition="LegendPosition.Right"
+                       :legendAlign="LegendAlign.Center" />
     </div>
 </template>
 
@@ -15,14 +16,11 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import { useChartStyles } from "./utils.partial";
-    import Chart from "@Obsidian/Controls/chart.obs";
-    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import DoughnutChart from "@Obsidian/Controls/doughnutChart.obs";
+    import { DoughnutSeries, LegendAlign, LegendPosition } from "@Obsidian/Core/Controls/chart";
     import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
     import { isNullish } from "@Obsidian/Utility/util";
     import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
-
-    const chartStyles = useChartStyles();
 
     const props = defineProps({
         chartDataPoints: {
@@ -43,61 +41,47 @@
             ?? [];
     });
 
-    const chartData = computed((): ChartData | null => {
+    const chartData = computed<{ labels: string[]; series: DoughnutSeries[] } | null>(() => {
         if (!dataPoints.value.length) {
             return null;
         }
 
-        const labels: string[] = [];
-        const data: number[] = [];
-        const backgroundColor: string[] = [];
+        const labels = new Set<string>();
+        const seriesDataSets = new Map<string, DoughnutSeries>();
 
         dataPoints.value.forEach(dp => {
-            labels.push(dp.label!);
-            data.push(dp.value!);
-            backgroundColor.push(
-                getCssVariableValue(dp.color!, chartStyles.value.fallbackColor)
-            );
+            const seriesName = dp.seriesName!;
+            let seriesDataSet = seriesDataSets.get(seriesName);
+
+            const color = getCssVariableValue(dp.color!, "#8B8BA7");
+
+            if (!seriesDataSet) {
+                seriesDataSet = {
+                    label: "Opens",
+                    data: [],
+                    colors: [],
+                };
+
+                seriesDataSets.set(seriesName, seriesDataSet);
+            }
+
+            labels.add(dp.label!);
+            seriesDataSet.data.push(dp.value!);
+            (seriesDataSet.colors! as string[]).push(color);
         });
 
         return {
-            labels,
-            datasets: [{
-                data,
-                backgroundColor
-            }]
+            labels: Array.from(labels),
+            series: Array.from(seriesDataSets.values())
         };
     });
 
-    const chartOptions = computed((): ChartOptions => {
-        return {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: "right",
-                    labels: {
-                        boxWidth: chartStyles.value.legendBoxSize,
-                        boxHeight: chartStyles.value.legendBoxSize,
-                        font: {
-                            family: chartStyles.value.fontFamily,
-                            size: chartStyles.value.fontSize,
-                            weight: chartStyles.value.fontWeight
-                        },
-                        color: chartStyles.value.fontColor
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: context => {
-                            const label = context.dataset.label ?? "";
-                            const value = context.raw;
-                            return `${label ? `${label}: ` : ""}${value}%`;
-                        }
-                    }
-                }
-            }
-        };
+    const labels = computed((): string[] => {
+        return chartData.value ? chartData.value.labels : [];
+    });
+
+    const series = computed((): DoughnutSeries[] => {
+        return chartData.value ? chartData.value.series : [];
     });
 
     // #endregion Computed Values

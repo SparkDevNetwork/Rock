@@ -1202,7 +1202,7 @@ namespace RockWeb.Blocks.Event
 
                                 var groupMemberService = new GroupMemberService( rockContext );
                                 var groupMember = groupMemberService
-                                    .Queryable().AsNoTracking()
+                                    .Queryable()
                                     .Where( m =>
                                         m.GroupId == Registration.Group.Id &&
                                         m.PersonId == registrant.PersonId &&

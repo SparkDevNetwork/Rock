@@ -110,6 +110,7 @@ namespace Rock.Model
         ///     </para>
         /// </remarks>
         [RockInternal( "17.0" )]
+        [NotMapped]
         public bool IsOverridingGroupTypePeerNetworkConfiguration
         {
             get
@@ -171,6 +172,7 @@ namespace Rock.Model
         ///     </para>
         /// </remarks>
         [RockInternal( "17.0" )]
+		[NotMapped]
         public bool AreAnyRelationshipMultipliersCustomized
         {
             get

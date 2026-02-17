@@ -634,7 +634,7 @@ body.navbar-side-open {
     left: 0;
     width: 100%;
     display: none;
-    padding: 0 10px 0 var(--spacing-small);
+    padding: 0 var(--spacing-small) var(--spacing-xlarge) var(--spacing-small);
     overflow-x: hidden;
     overflow-y: auto;
     text-align: left;

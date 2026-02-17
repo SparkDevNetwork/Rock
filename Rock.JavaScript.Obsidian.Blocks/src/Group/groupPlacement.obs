@@ -321,7 +321,7 @@
                                  :placementConfigurationSettings="placementConfigurationSettings"
                                  :placementConfigurationSettingOptions="box.placementConfigurationSettingOptions ?? {}"
                                  :placementMode="box.placementMode"
-                                 @save="savePlacementCofigSettings" />
+                                 @save="savePlacementConfigSettings" />
 
     <AddGroupModal v-model="isAddGroupModalVisible"
                    ref="addGroupModalElement"
@@ -1791,7 +1791,7 @@
      *
      * @param bag The settings to save.
      */
-    async function savePlacementCofigSettings(bag: PlacementConfigurationSettingsBag): Promise<void> {
+    async function savePlacementConfigSettings(bag: PlacementConfigurationSettingsBag): Promise<void> {
         preferences.setValue(getPlacementConfigurationSettingsKey(), JSON.stringify(bag));
 
         isPlacementConfigModalVisible.value = false;

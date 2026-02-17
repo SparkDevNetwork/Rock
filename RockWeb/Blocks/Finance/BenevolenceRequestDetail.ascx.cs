@@ -1001,15 +1001,16 @@ namespace RockWeb.Blocks.Finance
                 {
                     benevolenceRequest = new BenevolenceRequest { Id = 0 };
                     benevolenceRequest.RequestDateTime = RockDateTime.Now;
-                    var personId = this.PageParameter( "PersonId" ).AsIntegerOrNull();
-                    if ( personId.HasValue )
+
+                    var person = new PersonService( new RockContext() ).Get(
+                        PageParameter( PageParameterKey.PersonId ),
+                        !PageCache.Layout.Site.DisablePredictableIds
+                    );
+
+                    if ( person != null )
                     {
-                        var person = new PersonService( new RockContext() ).Get( personId.Value );
-                        if ( person != null )
-                        {
-                            benevolenceRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
-                            benevolenceRequest.RequestedByPersonAlias = person.PrimaryAlias;
-                        }
+                        benevolenceRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
+                        benevolenceRequest.RequestedByPersonAlias = person.PrimaryAlias;
                     }
 
                     // hide the panel drawer that show created and last modified dates

@@ -23,11 +23,17 @@ const engine = new Liquid({
 
 const hasLavaCommandFieldsRegex: RegExp = /\{%.+%\}/;
 const hasLavaShortcodeFieldsRegex: RegExp = /\{\[.+\]\}/;
+const hasLavaVariableFieldsRegex: RegExp = /\{\{\s*[^}}]+\s*\}\}/;
 
 export function resolveMergeFields(template: string, mergeFields: Record<string, unknown>): string {
     const tpl = engine.parse(template);
 
     return engine.renderSync(tpl, mergeFields);
+}
+
+/** Determines whether the string potentially has lava variable {{ }} fields in it. */
+export function hasLavaVariableFields(template: string): boolean {
+    return hasLavaVariableFieldsRegex.test(template);
 }
 
 /** Determines whether the string potentially has lava command {% %} fields in it. */

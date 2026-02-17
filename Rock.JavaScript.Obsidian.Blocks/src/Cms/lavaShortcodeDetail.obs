@@ -229,9 +229,8 @@
                 if (parentPageUrl) {
                     window.location.href = makeUrlRedirectSafe(parentPageUrl);
                 }
-                else {
-                    return true;
-                }
+
+                return true;
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {
                 return result.data;

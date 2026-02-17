@@ -181,6 +181,23 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
+            /*
+             * 12/17/2025 - DSH
+             * 
+             * We create a new context here to ensure that we get the correct
+             * and most recent data when we pull data from the database. This
+             * is to fix issue #6623 and is a somewhat temporary fix until we
+             * come up with a better long-term solution that works for all
+             * workflow actions.
+             * 
+             * Reason: Some actions modify data in the database by using a
+             * different context. This can cause the data we retrieve using
+             * the default context to be stale since it may have been loaded
+             * before the change was made, and EF will return the in-memory
+             * object rather than querying the database again.
+             */
+            rockContext = new RockContext();
+
             var mergeFields = GetMergeFields( action );
 
             string to = GetAttributeValue( action, AttributeKey.To );

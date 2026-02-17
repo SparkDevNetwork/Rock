@@ -1318,7 +1318,7 @@ namespace Rock.Rest.v2
                 return BadRequest();
             }
 
-            var root = Rock.Security.Encryption.DecryptString( options.EncryptedRoot );
+            var root = Rock.Security.Encryption.DecryptString( options.EncryptedRoot, false );
             var fullPath = Path.Combine( root, options.FileName );
             var physicalZipFile = System.Web.HttpContext.Current.Server.MapPath( fullPath );
             var directoryPath = Path.GetDirectoryName( physicalZipFile );
@@ -1396,7 +1396,7 @@ namespace Rock.Rest.v2
 
             try
             {
-                var root = Rock.Security.Encryption.DecryptString( options.EncryptedRoot );
+                var root = Rock.Security.Encryption.DecryptString( options.EncryptedRoot, false );
 
                 if ( options.UserSpecificRoot )
                 {
@@ -1455,7 +1455,7 @@ namespace Rock.Rest.v2
                 {
                     assetStorageProviderId = assetParts[0].AsInteger();
                     var encryptedRoot = assetParts[1].Trim();
-                    var root = Rock.Security.Encryption.DecryptString( encryptedRoot );
+                    var root = Rock.Security.Encryption.DecryptString( encryptedRoot, false );
 
                     // Verify all local roots start with "~/"
                     if ( assetStorageProviderId == 0 && !root.StartsWith( "~/" ) )
@@ -3976,6 +3976,41 @@ namespace Rock.Rest.v2
                     .ToList();
 
                 return Ok( emailSection );
+            }
+        }
+
+        /// <summary>
+        /// Gets a group for the Email Editor control.
+        /// </summary>
+        /// <returns>A <see cref="ListItemBag"/> that represents the group.</returns>
+        [HttpPost]
+        [Route( "EmailEditorGetGroup" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( ListItemBag ) )]
+        [Rock.SystemGuid.RestActionGuid( "F5BD307A-FC9B-4BC2-ABDA-F338D30264B3" )]
+        public IActionResult EmailEditorGetGroup( [FromBody] EmailEditorGetGroupOptionsBag options )
+        {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            // Default security is world view. So we decided
+            // to require a custom security grant in order so that
+            // the API was not just open to the world.
+            if ( grant?.IsAccessGranted( EmailEditorSecurityGrantRule.AccessInstance, Authorization.VIEW ) != true )
+            {
+                return Unauthorized();
+            }
+
+            var group = GroupCache.Get( options.GroupGuid );
+            var groupBag = group?.ToListItemBag();
+
+            if ( groupBag != null )
+            {
+                return Ok( groupBag );
+            }
+            else
+            {
+                return NotFound();
             }
         }
 

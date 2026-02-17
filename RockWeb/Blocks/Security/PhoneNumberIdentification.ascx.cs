@@ -242,6 +242,7 @@ namespace RockWeb.Blocks.Security
                     var errorList = new List<string>();
                     if ( smsMessage.Send( out errorList ) )
                     {
+                        hfPhoneNumberLookup.Value = phoneNumber;
                         IdentityVerificationId = identityVerification.Id;
                         ShowVerificationPage();
                     }
@@ -508,7 +509,6 @@ namespace RockWeb.Blocks.Security
                     if ( user != null )
                     {
                         var userName = user.UserName;
-                        UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = userName } );
 
                         /*
                             10/20/2023 - JMH
@@ -534,6 +534,26 @@ namespace RockWeb.Blocks.Security
                             isPersisted: false,
                             isImpersonated: false,
                             isTwoFactorAuthenticated );
+
+                        /*
+                            11/25/2025 - JPH
+
+                            Since we're sure the person was authenticated at this point, let's log a record to the
+                            HistoryLogin table for auditing purposes. We won't tie it to a UserLoginId since this is
+                            a non-standard login process, and we want to properly capture the context of the login.
+
+                            Reason: Login History Accuracy
+                         */
+
+                        new HistoryLogin
+                        {
+                            UserName = hfPhoneNumberLookup.Value,
+                            PersonAliasId = person.PrimaryAliasId,
+                            SourceSiteId = PageCache?.SiteId,
+                            WasLoginSuccessful = true
+                        }
+                        .WithContext( "Phone Number Lookup" )
+                        .SaveAfterDelay();
                     }
                     else
                     {

@@ -1,0 +1,121 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <SingleSelectButtonGroup v-model="internalLineHeight"
+                             v-bind="standardFieldProps"
+                             :label="label">
+        <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType(LineHeights.tight.value)"
+                        class="btn-line-height"
+                        :title="LineHeights.tight.title"
+                        @click="selectValue(LineHeights.tight.value)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 25 12" fill="none">
+                    <line y1="1" x2="25" y2="1" />
+                    <line y1="6" x2="25" y2="6" />
+                    <line y1="11" x2="25" y2="11" />
+                </svg>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType(LineHeights.normal.value)"
+                        class="btn-line-height"
+                        :title="LineHeights.normal.title"
+                        @click="selectValue(LineHeights.normal.value)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 25 14" fill="none">
+                    <line y1="1" x2="25" y2="1" />
+                    <line y1="7" x2="25" y2="7" />
+                    <line y1="13" x2="25" y2="13" />
+                </svg>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType(LineHeights.loose.value)"
+                        class="btn-line-height"
+                        :title="LineHeights.loose.title"
+                        @click="selectValue(LineHeights.loose.value)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 25 16" fill="none">
+                    <line y1="1" x2="25" y2="1" />
+                    <line y1="8" x2="25" y2="8" />
+                    <line y1="15" x2="25" y2="15" />
+                </svg>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType(LineHeights.veryLoose.value)"
+                        class="btn-line-height"
+                        :title="LineHeights.veryLoose.title"
+                        @click="selectValue(LineHeights.veryLoose.value)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 25 18" fill="none">
+                    <line y1="1" x2="25" y2="1" />
+                    <line y1="9" x2="25" y2="9" />
+                    <line y1="17" x2="25" y2="17" />
+                </svg>
+            </RockButton>
+        </template>
+    </SingleSelectButtonGroup>
+</template>
+
+<style scoped>
+.btn-line-height {
+    display: inline-flex;
+    align-items: center;
+}
+
+svg {
+    height: 24px;
+    width: 16px;
+    stroke: var(--color-interface-strong);
+    stroke-width: 3px;
+}
+
+.btn-primary svg {
+    stroke: var(--color-interface-softer);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import SingleSelectButtonGroup from "./singleSelectButtonGroup.partial.obs";
+    import { LineHeights } from "./utils.partial";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        modelValue: {
+            type: Number as PropType<number | null>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Line Height"
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: number | null): void;
+    }>();
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+
+    // #region Computed Properties
+
+    // Set the numeric value from the element OR from the input CSS styles.
+    const internalLineHeight = computed<string>({
+        get(): string {
+            return `${props.modelValue ?? ""}`;
+        },
+        set(newValue: string): void {
+            emit("update:modelValue", toNumberOrNull(newValue));
+        }
+    });
+
+    // #endregion Computed Properties
+</script>

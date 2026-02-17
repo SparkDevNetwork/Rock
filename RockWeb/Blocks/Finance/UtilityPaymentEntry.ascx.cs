@@ -275,7 +275,7 @@ namespace RockWeb.Blocks.Finance
 
     [BooleanField(
         "Disable Captcha Support",
-        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
         Key = AttributeKey.DisableCaptchaSupport,
         DefaultBooleanValue = false,
         Order = 29 )]
@@ -925,8 +925,8 @@ mission. We are so grateful for your commitment.</p>
 
             RegisterScript();
 
-            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
-            cpCaptcha.Visible = !disableCaptchaSupport;
+            var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+            cpCaptcha.Visible = !( disableCaptchaSupport || !cpCaptcha.IsAvailable );
             cpCaptcha.TokenReceived += CpCaptcha_TokenReceived;
 
             InitializeFinancialGatewayControls();
@@ -947,13 +947,18 @@ mission. We are so grateful for your commitment.</p>
                 _hostedPaymentInfoControl.Visible = true;
                 hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
                 cpCaptcha.Visible = false;
+
+                var isSavedAccount = rblSavedAccount.SelectedValue.AsInteger() > 0;
+                btnSavedAccountPaymentInfoNext.Visible = isSavedAccount;
+                btnHostedPaymentInfoNext.Visible = !isSavedAccount;
                 return;
             }
 
             nbPaymentTokenError.Visible = true;
             nbPaymentTokenError.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
-            cpCaptcha.Visible = false;
+            cpCaptcha.Visible = true;
             btnHostedPaymentInfoNext.Visible = false;
+            btnSavedAccountPaymentInfoNext.Visible = false;
         }
 
         private void InitializeFinancialGatewayControls()
@@ -976,13 +981,23 @@ mission. We are so grateful for your commitment.</p>
             nbPaymentTokenError.Text = "Loading...";
             nbPaymentTokenError.Visible = true;
 
-            if ( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable )
+            if ( cpCaptcha.Visible )
+            {
+                btnHostedPaymentInfoNext.Visible = false;
+                btnSavedAccountPaymentInfoNext.Visible = false;
+            }
+
+            if ( Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() ) || !cpCaptcha.IsAvailable )
             {
                 hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
                 _hostedPaymentInfoControl.Visible = true;
 
                 nbPaymentTokenError.Visible = false;
                 nbPaymentTokenError.Text = string.Empty;
+
+                var isSavedAccount = rblSavedAccount.SelectedValue.AsInteger() > 0;
+                btnSavedAccountPaymentInfoNext.Visible = isSavedAccount;
+                btnHostedPaymentInfoNext.Visible = !isSavedAccount;
             }
 
             if ( _hostedPaymentInfoControl is IHostedGatewayPaymentControlTokenEvent )
@@ -2196,8 +2211,8 @@ mission. We are so grateful for your commitment.</p>
         protected void rblSavedAccount_SelectedIndexChanged( object sender, EventArgs e )
         {
             bool isSavedAccount = rblSavedAccount.SelectedValue.AsInteger() > 0;
-            btnSavedAccountPaymentInfoNext.Visible = isSavedAccount;
-            btnHostedPaymentInfoNext.Visible = !isSavedAccount;
+            btnSavedAccountPaymentInfoNext.Visible = isSavedAccount && !cpCaptcha.Visible;
+            btnHostedPaymentInfoNext.Visible = !isSavedAccount && !cpCaptcha.Visible;
             pnlPaymentInfo.Visible = !isSavedAccount;
         }
 

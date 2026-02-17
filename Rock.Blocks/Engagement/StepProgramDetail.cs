@@ -347,7 +347,6 @@ namespace Rock.Blocks.Engagement
             bag.Statuses = GetStepStatuses( entity.Id ).Select( s => new StepStatusBag()
             {
                 Guid = s.Guid,
-                Id = s.Id,
                 IsActive = s.IsActive,
                 IsCompleteStatus = s.IsCompleteStatus,
                 Name = s.Name,
@@ -366,8 +365,6 @@ namespace Rock.Blocks.Engagement
                     PrimaryQualifier = GetStepStatuses( entity.Id ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).FromStatusId )?.Guid.ToString(),
                     SecondaryQualifier = GetStepStatuses( entity.Id ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).ToStatusId )?.Guid.ToString(),
                 } ).ToList();
-
-            bag.StatusOptions = new StepStatusService( RockContext ).Queryable().Where( s => s.StepProgramId == entity.Id ).AsEnumerable().ToListItemBagList();
 
             return bag;
         }
@@ -476,9 +473,6 @@ namespace Rock.Blocks.Engagement
             box.IfValidProperty( nameof( box.Bag.Statuses ),
                 () => SaveStatuses( box.Bag, entity, RockContext ) );
 
-            box.IfValidProperty( nameof( box.Bag.WorkflowTriggers ),
-                () => SaveWorkflowTriggers( box.Bag, entity, RockContext ) );
-
             box.IfValidProperty( nameof( box.Bag.CompletionFlow ),
                 () => entity.CompletionFlow = box.Bag.CompletionFlow.Value );
 
@@ -568,10 +562,18 @@ namespace Rock.Blocks.Engagement
             }
 
             // Update the Attributes that were assigned in the UI
+            // The attributes are coming from the frontend already sorted in the correct order.
+            int order = 0;
             foreach ( var attributeState in viewStateAttributes )
             {
-                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
+                var attr = Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
+                if ( attr != null )
+                {
+                    attr.Order = order++;
+                }
             }
+
+            RockContext.SaveChanges();
         }
 
         /// <summary>
@@ -656,8 +658,10 @@ namespace Rock.Blocks.Engagement
             }
 
             // Step Statuses: Update modified Statuses
-            foreach ( var stepStatusState in bag.Statuses )
+            // The statuses are coming from the frontend already sorted in the correct order.
+            for ( int i = 0; i < bag.Statuses.Count; i++ ) 
             {
+                var stepStatusState = bag.Statuses[i];
                 var stepStatus = entity.StepStatuses.FirstOrDefault( a => a.Guid == stepStatusState.Guid );
 
                 if ( stepStatus == null )
@@ -666,10 +670,13 @@ namespace Rock.Blocks.Engagement
                     entity.StepStatuses.Add( stepStatus );
                 }
 
+                stepStatus.Guid = stepStatusState.Guid;
+
                 stepStatus.Name = stepStatusState.Name;
                 stepStatus.IsActive = stepStatusState.IsActive;
                 stepStatus.IsCompleteStatus = stepStatusState.IsCompleteStatus;
                 stepStatus.StatusColor = stepStatusState.StatusColor;
+                stepStatus.Order = i;
 
                 stepStatus.StepProgramId = entity.Id;
             }
@@ -2098,58 +2105,6 @@ namespace Rock.Blocks.Engagement
         #region Block Actions
 
         /// <summary>
-        /// Changes the ordered position of a single step status.
-        /// </summary>
-        /// <param name="key">The identifier of the step status that will be moved.</param>
-        /// <param name="beforeKey">The identifier of the step status it will be placed before.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult ReorderStepStatus( string key, string beforeKey )
-        {
-            var stepProgram = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
-            if ( stepProgram == null )
-            {
-                return ActionBadRequest( "Step program not found." );
-            }
-
-            var items = GetStepStatuses( stepProgram.Id );
-
-            if ( !items.ReorderEntity( key, beforeKey ) )
-            {
-                return ActionBadRequest( "Invalid reorder attempt." );
-            }
-
-            RockContext.SaveChanges();
-            return ActionOk();
-        }
-
-        /// <summary>
-        /// Changes the ordered position of a single step type attribute.
-        /// </summary>
-        /// <param name="key">The identifier of the step type attribute that will be moved.</param>
-        /// <param name="beforeKey">The identifier of the step type attribute it will be placed before.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult ReorderStepTypeAttribute( string key, string beforeKey )
-        {
-            var stepProgram = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
-            if ( stepProgram == null )
-            {
-                return ActionBadRequest( "Step program not found." );
-            }
-
-            var items = GetStepTypeAttributes( stepProgram.Id.ToString() );
-
-            if ( !items.ReorderEntity( key, beforeKey ) )
-            {
-                return ActionBadRequest( "Invalid reorder attempt." );
-            }
-
-            RockContext.SaveChanges();
-            return ActionOk();
-        }
-
-        /// <summary>
         /// Gets the box that will contain all the information needed to begin
         /// the edit operation.
         /// </summary>
@@ -2212,6 +2167,21 @@ namespace Rock.Blocks.Engagement
             {
                 RockContext.SaveChanges();
                 entity.SaveAttributeValues( RockContext );
+
+                /*
+                    1/3/2026 - MSE
+
+                    Newly created Step Statuses can now be selected when configuring Workflow Triggers
+                    before they are saved to the database, rather than limiting selection to
+                    previously persisted statuses only. Because Workflow Triggers serialize
+                    Step Status references using database IDs, the statuses must be saved first
+                    so those IDs exist.
+
+                    Reason: Ensure Workflow Trigger serialization uses valid Step Status IDs.
+                */
+                SaveWorkflowTriggers( box.Bag, entity, RockContext );
+
+                RockContext.SaveChanges();
             } );
 
             SaveAttributes( new StepType().TypeId, "StepProgramId", entity.Id.ToString(), box.Bag.StepProgramAttributes );
@@ -2297,6 +2267,12 @@ namespace Rock.Blocks.Engagement
 
                 foreach ( var stepType in stepTypes )
                 {
+                    if ( stepType.IsSystem )
+                    {
+                        errorMessage = $"This program contains the Step Type, '{stepType.Name}', which is a system Step Type and cannot be deleted.";
+                        return;
+                    }
+
                     if ( !stepTypeService.CanDelete( stepType, out errorMessage ) )
                     {
                         return;

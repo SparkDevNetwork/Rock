@@ -45,7 +45,7 @@
                                       label="Assigned to Person"
                                       help="The person who should receive responses to the SMS number. This person must have a phone number with SMS enabled or no response will be sent." />
 
-                        <ConditionalWell>
+                        <ConditionalWell v-if="assignedToPersonAlias">
                             <CheckBox v-model="isSmsForwardingEnabled"
                                       label="SMS Forwarding"
                                       help="Determines if messages received on this number should be forwarded to the assigned person." />
@@ -186,6 +186,10 @@
     watch([attributeValues, ...propRefs], () => {
         if (disableSmsOptInOutTracking.value) {
             suppressSmsOptInOutAutoReplies.value = true;
+        }
+
+        if (!assignedToPersonAlias.value) {
+            isSmsForwardingEnabled.value = false;
         }
 
         const newValue: SystemPhoneNumberBag = {

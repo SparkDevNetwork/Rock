@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Security
     [BooleanField(
         "Disable Captcha Support",
         Key = AttributeKey.DisableCaptchaSupport,
-        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
         DefaultBooleanValue = false,
         Order = 3 )]
     [Rock.SystemGuid.BlockTypeGuid( "3C12DE99-2D1B-40F2-A9B8-6FE7C2524B37" )]
@@ -90,8 +90,8 @@ namespace RockWeb.Blocks.Security
             {
                 if ( !Page.IsPostBack )
                 {
-                    var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
-                    if ( disableCaptchaSupport )
+                    var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+                    if ( disableCaptchaSupport || !cpCaptcha.IsAvailable )
                     {
                         pnlCaptcha.Visible = false;
                         EnableForm();

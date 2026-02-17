@@ -27,6 +27,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
 {
@@ -90,7 +91,7 @@ namespace RockWeb.Blocks.Security
     [BooleanField(
         "Disable Captcha Support",
         Key = AttributeKey.DisableCaptchaSupport,
-        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
         DefaultBooleanValue = false,
         Order = 6 )]
 
@@ -122,8 +123,8 @@ namespace RockWeb.Blocks.Security
 
             if ( !Page.IsPostBack )
             {
-                var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
-                if ( disableCaptchaSupport )
+                var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+                if ( disableCaptchaSupport || !cpCaptcha.IsAvailable )
                 {
                     pnlCaptcha.Visible = false;
                     EnableForm();

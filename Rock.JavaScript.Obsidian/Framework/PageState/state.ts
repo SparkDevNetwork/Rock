@@ -20,7 +20,6 @@ import { DebugTiming } from "@Obsidian/ViewModels/Utility/debugTiming";
 import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 
 export type State = {
-    areSecondaryBlocksShown: boolean;
     currentPerson: CurrentPersonBag | null;
     isAnonymousVisitor: boolean;
     pageParameters: Record<string, string>;
