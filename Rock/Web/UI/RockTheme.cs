@@ -20,13 +20,13 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-using Rock.Configuration;
-
 #if NET472_OR_GREATER
 using dotless.Core;
 using dotless.Core.configuration;
 using dotless.Core.Loggers;
 #endif
+
+using Rock.Configuration;
 
 namespace Rock.Web.UI
 {
@@ -108,7 +108,6 @@ namespace Rock.Web.UI
             }
         }
 
-#if NET472_OR_GREATER
         /// <summary>
         /// Compiles the Theme files into CSS
         /// </summary>
@@ -122,6 +121,7 @@ namespace Rock.Web.UI
         /// </summary>
         public bool Compile( bool onlyCompileIfNeeded, out string messages )
         {
+#if NET472_OR_GREATER
             messages = string.Empty;
             bool compiledSuccessfully = true;
             var rockWebStyleFiles = Directory.GetFiles( _rockWebStylesDirectory, "*.*", SearchOption.AllDirectories );
@@ -246,6 +246,10 @@ namespace Rock.Web.UI
             }
 
             return compiledSuccessfully;
+#else
+            messages = "Theme compilation is not supported.";
+            return false;
+#endif
         }
 
         /// <summary>
@@ -265,8 +269,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public static bool CompileAll( out string messages )
         {
-            CancellationToken cancellationToken;
-            return CompileAll( out messages, cancellationToken );
+            return CompileAll( out messages, CancellationToken.None );
         }
 
         /// <summary>
@@ -325,7 +328,6 @@ namespace Rock.Web.UI
             string messages = string.Empty;
             return CompileAll( out messages );
         }
-#endif
 
         /// <summary>
         /// Gets the themes.

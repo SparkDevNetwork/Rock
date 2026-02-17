@@ -955,7 +955,6 @@ namespace Rock.Blocks.Cms
             return ActionOk( new { editableAttribute, reservedKeyNames, modalTitle } );
         }
 
-#if NET472_OR_GREATER
         /// <summary>
         /// Handles the Click event of the CompileTheme button.
         /// </summary>
@@ -984,7 +983,6 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( string.Format( "An error occurred compiling the theme {0}. Message: {1}.", site.Theme, messages ) );
             }
         }
-#endif
 
         #endregion
     }
