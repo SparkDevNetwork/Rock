@@ -603,14 +603,10 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( errorMessage );
             }
 
-#if REVIEW_NET5_0_OR_GREATER
-            throw new NotSupportedException();
-#else
             if ( !RockTheme.DeleteTheme( entity.Name, out errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
             }
-#endif
 
             entityService.Delete( entity );
             RockContext.SaveChanges();

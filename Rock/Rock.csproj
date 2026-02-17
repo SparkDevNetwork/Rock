@@ -32,6 +32,7 @@
     <Compile Include="Web\UI\ICustomGridColumns.cs" />
     <Compile Include="Web\UI\ICustomGridOptions.cs" />
     <Compile Include="Web\UI\CustomColumnConfig.cs" />
+    <Compile Include="Web\UI\RockTheme.cs" />
     <!-- Exclude all legacy check-in workflow actions. -->
     <Compile Remove="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Remove="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
