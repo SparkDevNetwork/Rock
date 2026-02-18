@@ -385,7 +385,10 @@ namespace Rock.Web.Cache
         internal bool ContainsGeoPoint( double latitude, double longitude )
         {
 #if REVIEW_NET5_0_OR_GREATER
-            var geoPoint = new NetTopologySuite.Geometries.Point( longitude, latitude );
+            var geoPoint = new NetTopologySuite.Geometries.Point( longitude, latitude )
+            {
+                SRID = 4326,
+            };
 #else
             var geoPoint = DbGeography.FromText( $"POINT({longitude} {latitude})" );
 #endif

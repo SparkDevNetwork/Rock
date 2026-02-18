@@ -799,7 +799,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 foreach ( var groupLocation in groupLocations )
                 {
 #if REVIEW_NET5_0_OR_GREATER
-                    var geoPoint = new NetTopologySuite.Geometries.Point( longitude, latitude );
+                    var geoPoint = new NetTopologySuite.Geometries.Point( longitude, latitude )
+                    {
+                        SRID = 4326
+                    };
                     double meters = groupLocation.Location.GeoPoint.Distance( geoPoint );
 #else
                     var geoPoint = System.Data.Entity.Spatial.DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );

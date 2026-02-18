@@ -1265,7 +1265,10 @@ namespace Rock.Blocks.Engagement.SignUp
 #if REVIEW_WEBFORMS
                         geoPointOrigin = DbGeography.FromText( $"POINT({mapCoordinate.Longitude} {mapCoordinate.Latitude})" );
 #else
-                        geoPointOrigin = new NetTopologySuite.Geometries.Point( mapCoordinate.Longitude.Value, mapCoordinate.Latitude.Value );
+                        geoPointOrigin = new NetTopologySuite.Geometries.Point( mapCoordinate.Longitude.Value, mapCoordinate.Latitude.Value )
+                        {
+                            SRID = 4326,
+                        };
 #endif
                     }
                 }

@@ -274,7 +274,10 @@ namespace Rock.Model
             try
             {
 #if REVIEW_NET5_0_OR_GREATER
-                this.GeoPoint = new NetTopologySuite.Geometries.Point( longitude, latitude );
+                this.GeoPoint = new NetTopologySuite.Geometries.Point( longitude, latitude )
+                {
+                    SRID = 4326,
+                };
 #else
                 this.GeoPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
 #endif
@@ -393,7 +396,10 @@ namespace Rock.Model
 #if REVIEW_NET5_0_OR_GREATER
         public static NetTopologySuite.Geometries.Point GetGeoPoint( double latitude, double longitude )
         {
-            return new NetTopologySuite.Geometries.Point( longitude, latitude );
+            return new NetTopologySuite.Geometries.Point( longitude, latitude )
+            {
+                SRID = 4326,
+            };
 #else
         public static DbGeography GetGeoPoint( double latitude, double longitude )
         {

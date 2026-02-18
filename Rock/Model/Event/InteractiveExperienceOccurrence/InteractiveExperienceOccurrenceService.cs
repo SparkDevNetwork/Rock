@@ -543,7 +543,10 @@ namespace Rock.Model
             if ( latitude.HasValue && longitude.HasValue )
             {
 #if REVIEW_NET5_0_OR_GREATER
-                geoPoint = new Point( longitude.Value, latitude.Value );
+                geoPoint = new Point( longitude.Value, latitude.Value )
+                {
+                    SRID = 4326,
+                };
 #else
                 geoPoint = DbGeography.FromText( $"POINT({longitude} {latitude})" );
 #endif
