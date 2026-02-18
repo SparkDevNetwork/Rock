@@ -43,12 +43,6 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? NotificationSystemCommunicationId { get; private set; }
 
-        /// <inheritdoc cref="WorkflowActionForm.NotificationSystemEmailId"/>
-        [DataMember]
-        [Obsolete( "Use NotificationSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? NotificationSystemEmailId { get; private set; }
-
         /// <inheritdoc cref="WorkflowActionForm.IncludeActionsInNotification"/>
         [DataMember]
         public bool IncludeActionsInNotification { get; private set; }

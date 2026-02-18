@@ -7717,15 +7717,6 @@ hr {
   cursor: pointer;
 }
 
-ul, ol {
-  margin-top: 0;
-  margin-bottom: 12px;
-}
-
-ul ul, ol ul, ul ol, ol ol {
-  margin-bottom: 0;
-}
-
 .panel {
   margin-bottom: var(--spacing-large);
   background-color: var(--color-interface-softest);
@@ -13051,7 +13042,7 @@ div.aspNetDisabled {
   top: 0;
   left: 0;
   z-index: -1;
-  opacity: 0;
+  display: none;
 }
 
 .custom-switch {
@@ -13689,7 +13680,7 @@ div.aspNetDisabled {
 .image-editor-photo .options a {
   display: inline-block;
   padding: 6px;
-  color: var(--color-interface-stronger);
+  color: var(--color-interface-softest);
   text-decoration: none;
   cursor: pointer;
 }
@@ -20866,6 +20857,14 @@ table tbody tr td .required-indicator::after {
   content: "< HTML />";
 }
 
+.tooltip-wide .tooltip-inner {
+  max-width: 360px;
+}
+
+.tooltip-inner > * {
+  color: inherit;
+}
+
 /* ===================== BLOCK =================== */
 .choose-experience-mode {
   display: flex;
@@ -23657,18 +23656,17 @@ iframe.email-body {
   margin-left: var(--spacing-large);
 }
 
-.phonegroup.form-group {
+.account-entry .phonegroup.form-group {
   margin-bottom: 0;
 }
-
-.phonegroup-types {
+.account-entry .phonegroup-types {
   display: flex;
   gap: var(--spacing-large);
   align-items: center;
   height: 35px; /* Align with input height */
 }
-.phonegroup-types .checkbox,
-.phonegroup-types .checkbox + .checkbox {
+.account-entry .phonegroup-types .checkbox,
+.account-entry .phonegroup-types .checkbox + .checkbox {
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -33542,7 +33540,7 @@ a .bg-danger:hover, a .bg-danger:focus {
 ul,
 ol {
   margin-top: 0;
-  margin-bottom: 0;
+  margin-bottom: var(--spacing-medium);
 }
 ul ul,
 ul ol,

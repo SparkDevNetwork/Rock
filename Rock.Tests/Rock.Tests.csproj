@@ -33,7 +33,7 @@
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
     </Reference>
     <Reference Include="Slingshot.Core">
-      <HintPath>..\libs\Slingshot\Slingshot.Core.dll</HintPath>
+      <HintPath>..\libs\Slingshot\net472\Slingshot.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
   </ItemGroup>

@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net472;net10.0</TargetFrameworks>
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <RockWebPath>..\RockWeb</RockWebPath>
     <CopyToRockWeb>True</CopyToRockWeb>
@@ -13,12 +12,6 @@
     <None Remove="Swagger\CustomAssets\screen.css" />
     <None Remove="Swagger\CustomAssets\typography.css" />
     <None Remove="Swagger\CustomAssets\v2\index.html" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
-      <Link>Properties\AssemblySharedInfo.cs</Link>
-    </Compile>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' != 'net472' ">

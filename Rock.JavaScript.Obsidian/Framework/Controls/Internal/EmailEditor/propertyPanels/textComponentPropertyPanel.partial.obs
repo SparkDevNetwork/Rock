@@ -266,6 +266,8 @@
     });
 
     watch(() => props.componentElement, (newComponentElement, oldComponentElement) => {
+        readProps();
+
         removeRockContentEditableEventListener(oldComponentElement, onInput);
         addRockContentEditableEventListener(newComponentElement, onInput);
     });

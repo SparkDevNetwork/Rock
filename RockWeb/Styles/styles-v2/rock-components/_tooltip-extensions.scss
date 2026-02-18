@@ -34,3 +34,18 @@
 }
 
 // ====================== END LAVA TOOLTIP STYLE ======================
+
+// ===================== TOOLTIP WIDE =====================
+
+
+.tooltip-wide {
+  .tooltip-inner {
+    max-width: $tooltip-max-width * 1.5;
+  }
+}
+
+.tooltip-inner > * {
+  color: inherit;
+}
+
+// ====================== END TOOLTIP WIDE ======================

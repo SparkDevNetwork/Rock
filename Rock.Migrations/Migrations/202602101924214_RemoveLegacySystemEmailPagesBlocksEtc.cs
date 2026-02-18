@@ -164,6 +164,11 @@ DELETE [Category] WHERE [EntityTypeId] = @SystemEmailEntityTypeId;
 DELETE FROM [EntityType]
 WHERE [Id] = @SystemEmailEntityTypeId
     AND [Name] = 'Rock.Model.SystemEmail';
+
+-- Now, look for any attributes that were using the legacy FieldType and convert them to text
+DECLARE @TextFieldTypeId INT = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '9C204CD0-1233-41C5-818A-C5DA439445AA' ); -- Text
+DECLARE @SystemEmailFieldTypeId INT = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '08F3003B-F3E2-41EC-BDF1-A2B7AC2908CF' ); -- Rock.Field.Types.SystemEmailFieldType
+UPDATE [Attribute] SET [FieldTypeId] = @TextFieldTypeId WHERE [FieldTypeId] = @SystemEmailFieldTypeId;
 " );
         }
 

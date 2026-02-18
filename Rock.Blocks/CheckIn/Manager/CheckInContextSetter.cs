@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 
 using Rock.Attribute;
 using Rock.Enums.Cms;
@@ -127,8 +128,14 @@ namespace Rock.Blocks.CheckIn.Manager
             // issues by rendering the initial HTML server-side.
             var options = GetConfigurationOptionsBag();
 
-            return $@"
-<div class=""context-setters-container"">
+            var sb = new StringBuilder();
+
+            sb.Append( @"
+<div class=""context-setters-container"">" );
+
+            if ( options.Campuses.Count > 1 )
+            {
+                sb.Append( $@"
     <ul class=""nav navbar-nav contextsetter contextsetter-campus"">
         <li class=""dropdown"">
             <a class=""dropdown-toggle navbar-link"" href=""#"" data-toggle=""dropdown"">
@@ -137,7 +144,10 @@ namespace Rock.Blocks.CheckIn.Manager
             </a>
         </li>
     </ul>
+" );
+            }
 
+            sb.Append( $@"
     <ul class=""nav navbar-nav contextsetter contextsetter-location"">
         <div class=""control-wrapper"">
             <div>
@@ -159,7 +169,9 @@ namespace Rock.Blocks.CheckIn.Manager
             </a>
         </li>
     </ul>
-</div>";
+</div>" );
+
+            return sb.ToString();
         }
 
         /// <summary>

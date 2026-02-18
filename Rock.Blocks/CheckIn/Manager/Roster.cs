@@ -126,8 +126,15 @@ namespace Rock.Blocks.CheckIn.Manager
         DefaultValue = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_CHECK_IN_ROSTER_ALERT_ICON,
         EntityType = typeof( Rock.Model.Person ),
         AllowMultiple = false,
-        Order = 11
-        )]
+        Order = 11 )]
+
+    [DataViewsField(
+        "Data View Alert Icons",
+        Description = "The data views to use for alert icons on individuals. The data view must be a persisted data view for it to be used.",
+        EntityTypeName = "Rock.Model.Person",
+        DisplayPersistedOnly = true,
+        Key = AttributeKey.DataViewAlertIcons,
+        Order = 12 )]
 
     #endregion
 
@@ -162,6 +169,7 @@ namespace Rock.Blocks.CheckIn.Manager
             public const string EnableMarkAllAsPresentButton = "EnableMarkAllAsPresentButton";
 
             public const string CheckInRosterAlertIconCategory = "CheckInRosterAlertIconCategory";
+            public const string DataViewAlertIcons = "DataViewAlertIcons";
         }
 
         private class PageParameterKey
@@ -241,6 +249,13 @@ namespace Rock.Blocks.CheckIn.Manager
                 .ToList();
         }
 
+        private List<DataViewCache> GetAlertIconDataViews()
+        {
+            var guids = GetAttributeValue( AttributeKey.DataViewAlertIcons ).SplitDelimitedValues().AsGuidList();
+
+            return DataViewCache.GetMany( guids, RockContext ).ToList();
+        }
+
         #endregion
 
         #region Block Actions
@@ -254,6 +269,7 @@ namespace Rock.Blocks.CheckIn.Manager
         public BlockActionResult GetAttendanceData()
         {
             var badgeAttributeIds = GetBadgeAttributeIds();
+            var alertIconDataViews = GetAlertIconDataViews();
             var showAllAreas = GetAttributeValue( AttributeKey.ShowAllConfigurations ).AsBoolean();
             var checkInAreaGuid = GetAttributeValue( AttributeKey.CheckInConfigurationGuid ).AsGuidOrNull();
             var manager = new CheckInManager( RockContext, RequestContext );
@@ -266,7 +282,7 @@ namespace Rock.Blocks.CheckIn.Manager
                 .LoadFilteredAttributes( RockContext, a => badgeAttributeIds.Contains( a.Id ) );
 
             var bags = items
-                .Select( a => manager.GetAttendanceBag( a, badgeAttributeIds ) )
+                .Select( a => manager.GetAttendanceBag( a, badgeAttributeIds, alertIconDataViews ) )
                 .ToList();
 
             return ActionOk( bags );
@@ -280,6 +296,7 @@ namespace Rock.Blocks.CheckIn.Manager
         public BlockActionResult GetSingleAttendance( string key )
         {
             var badgeAttributeIds = GetBadgeAttributeIds();
+            var alertIconDataViews = GetAlertIconDataViews();
             var showAllAreas = GetAttributeValue( AttributeKey.ShowAllConfigurations ).AsBoolean();
             var checkInAreaGuid = GetAttributeValue( AttributeKey.CheckInConfigurationGuid ).AsGuidOrNull();
             var manager = new CheckInManager( RockContext, RequestContext );
@@ -299,7 +316,7 @@ namespace Rock.Blocks.CheckIn.Manager
                 return ActionOk<RosterAttendanceBag>( null );
             }
 
-            return ActionOk( manager.GetAttendanceBag( attendance, badgeAttributeIds ) );
+            return ActionOk( manager.GetAttendanceBag( attendance, badgeAttributeIds, alertIconDataViews ) );
         }
 
         [BlockAction]
@@ -341,6 +358,7 @@ namespace Rock.Blocks.CheckIn.Manager
         public BlockActionResult MarkAsPresent( List<string> idKeys )
         {
             var badgeAttributeIds = GetBadgeAttributeIds();
+            var alertIconDataViews = GetAlertIconDataViews();
             var manager = new CheckInManager( RockContext, RequestContext );
             var attendanceIds = idKeys.Select( a => IdHasher.Instance.GetId( a ) )
                 .Where( a => a.HasValue )
@@ -354,7 +372,7 @@ namespace Rock.Blocks.CheckIn.Manager
             manager.MarkAsPresent( attendances );
 
             var bags = attendances
-                .Select( a => manager.GetAttendanceBag( a, badgeAttributeIds ) )
+                .Select( a => manager.GetAttendanceBag( a, badgeAttributeIds, alertIconDataViews ) )
                 .ToList();
 
             return ActionOk( bags );
@@ -364,6 +382,7 @@ namespace Rock.Blocks.CheckIn.Manager
         public BlockActionResult MarkAsNotPresent( List<string> idKeys )
         {
             var badgeAttributeIds = GetBadgeAttributeIds();
+            var alertIconDataViews = GetAlertIconDataViews();
             var manager = new CheckInManager( RockContext, RequestContext );
             var attendanceIds = idKeys.Select( a => IdHasher.Instance.GetId( a ) )
                 .Where( a => a.HasValue )
@@ -377,7 +396,7 @@ namespace Rock.Blocks.CheckIn.Manager
             manager.MarkAsNotPresent( attendances );
 
             var bags = attendances
-                .Select( a => manager.GetAttendanceBag( a, badgeAttributeIds ) )
+                .Select( a => manager.GetAttendanceBag( a, badgeAttributeIds, alertIconDataViews ) )
                 .ToList();
 
             return ActionOk( bags );
@@ -387,6 +406,7 @@ namespace Rock.Blocks.CheckIn.Manager
         public BlockActionResult MarkAsCheckedOut( List<string> idKeys )
         {
             var badgeAttributeIds = GetBadgeAttributeIds();
+            var alertIconDataViews = GetAlertIconDataViews();
             var manager = new CheckInManager( RockContext, RequestContext );
             var attendanceIds = idKeys.Select( a => IdHasher.Instance.GetId( a ) )
                 .Where( a => a.HasValue )
@@ -400,7 +420,7 @@ namespace Rock.Blocks.CheckIn.Manager
             manager.MarkAsCheckedOut( attendances );
 
             var bags = attendances
-                .Select( a => manager.GetAttendanceBag( a, badgeAttributeIds ) )
+                .Select( a => manager.GetAttendanceBag( a, badgeAttributeIds, alertIconDataViews ) )
                 .ToList();
 
             return ActionOk( bags );
@@ -409,7 +429,6 @@ namespace Rock.Blocks.CheckIn.Manager
         [BlockAction]
         public BlockActionResult DeleteAttendances( List<string> idKeys )
         {
-            var badgeAttributeIds = GetBadgeAttributeIds();
             var manager = new CheckInManager( RockContext, RequestContext );
             var attendanceIds = idKeys.Select( a => IdHasher.Instance.GetId( a ) )
                 .Where( a => a.HasValue )
@@ -462,6 +481,7 @@ namespace Rock.Blocks.CheckIn.Manager
         public BlockActionResult StayForService( string attendanceKey, string scheduleKey )
         {
             var badgeAttributeIds = GetBadgeAttributeIds();
+            var alertIconDataViews = GetAlertIconDataViews();
             var showAllAreas = GetAttributeValue( AttributeKey.ShowAllConfigurations ).AsBoolean();
             var checkInAreaGuid = GetAttributeValue( AttributeKey.CheckInConfigurationGuid ).AsGuidOrNull();
             var manager = new CheckInManager( RockContext, RequestContext );
@@ -489,7 +509,7 @@ namespace Rock.Blocks.CheckIn.Manager
 
             var stayingAttendance = manager.CreateStayingAttendance( attendance, scheduleId.Value );
 
-            return ActionOk( manager.GetAttendanceBag( stayingAttendance, badgeAttributeIds ) );
+            return ActionOk( manager.GetAttendanceBag( stayingAttendance, badgeAttributeIds, alertIconDataViews ) );
         }
 
         /// <summary>

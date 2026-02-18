@@ -5,7 +5,7 @@
         <div>
             <span class="btn btn-default"
                   :style="buttonStyles"
-                  v-tooltip="{ content, html, immediate, showDelay, hideDelay, overflow }">
+                  v-tooltip="{ content, html, immediate, showDelay, hideDelay, overflow, wide }">
                 Hover over me.
             </span>
         </div>

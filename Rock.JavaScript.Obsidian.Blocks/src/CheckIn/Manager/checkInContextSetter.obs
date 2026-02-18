@@ -1,6 +1,7 @@
 <template>
     <div class="context-setters-container">
-        <ul class="nav navbar-nav contextsetter contextsetter-campus" style="margin: 0;">
+        <ul v-if="config.campuses && config.campuses.length > 1"
+            class="nav navbar-nav contextsetter contextsetter-campus">
             <li class="dropdown">
                 <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
                     <span class="campus-text">{{ selectedCampus?.text ?? 'Select Campus' }}</span>
@@ -19,17 +20,17 @@
 
         <div class="nav navbar-nav contextsetter contextsetter-location">
             <TreeItemPicker :modelValue="location"
-                        formGroupClasses="location-item-picker"
-                        iconCssClass=""
-                        :blankValue="!!selectedCampus ? 'Select Location' : 'Select Campus'"
-                        :provider="locationProvider"
-                        autoExpand
-                        :disabled="!selectedCampus"
-                        @update:modelValue="onLocationSelected($event as ListItemBag | null)">
+                            formGroupClasses="location-item-picker"
+                            iconCssClass=""
+                            :blankValue="!!selectedCampus ? 'Select Location' : 'Select Campus'"
+                            :provider="locationProvider"
+                            autoExpand
+                            :disabled="!selectedCampus"
+                            @update:modelValue="onLocationSelected($event as ListItemBag | null)">
             </TreeItemPicker>
         </div>
 
-        <ul class="nav navbar-nav contextsetter contextsetter-schedule" style="margin: 0;">
+        <ul class="nav navbar-nav contextsetter contextsetter-schedule">
             <li class="dropdown">
                 <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
                     <span class="schedule-text">{{ schedule?.text ?? 'All Schedules' }}</span>
@@ -58,6 +59,7 @@
     import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
     import { useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { areEqual } from "@Obsidian/Utility/guid";
     import { ITreeItemProvider, LocationTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { CheckInContextSetterOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/CheckInContextSetter/checkInContextSetterOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -97,6 +99,21 @@
         }
 
         return provider;
+    }
+
+    /**
+     * Set initial context values based on the configuration. This is primarily
+     * used to set the campus context if only one campus is configured so that
+     * the rest of the block can load with the correct context.
+     */
+    async function setInitialContextValues(): Promise<void> {
+        if (config.campuses?.length === 1) {
+            const currentCampus = await contextEntities.get("Rock.Model.Campus");
+
+            if (!areEqual(currentCampus?.value, config.campuses[0].value)) {
+                await contextEntities.set("Rock.Model.Campus", config.campuses[0]);
+            }
+        }
     }
 
     // #endregion
@@ -184,4 +201,6 @@
     // #endregion
 
     bus.subscribe(PageMessages.ContextEntityChanged, onContextEntityChanged);
+
+    setInitialContextValues();
 </script>

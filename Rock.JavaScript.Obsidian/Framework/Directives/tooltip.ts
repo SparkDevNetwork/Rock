@@ -132,7 +132,7 @@ function positionTooltip(data: TooltipData): void {
     computePosition(data.element, data.floatingElement, {
         placement: "top",
         middleware: [
-            offset(6),
+            offset(0),
             flip(),
             shift({ padding: 8 }),
             arrow({ element: data.arrowElement })
@@ -158,6 +158,7 @@ function positionTooltip(data: TooltipData): void {
             const { x: arrowX, y: arrowY } = middlewareData.arrow;
 
             Object.assign(data.arrowElement.style, {
+                marginLeft: "initial", // Override legacy bootstrap styles that interfere with positioning.
                 left: arrowX != null ? `${arrowX}px` : "",
                 top: arrowY != null ? `${arrowY}px` : "",
             });
@@ -398,7 +399,7 @@ export const vTooltip: Directive<HTMLElement, TooltipContent | (() => TooltipCon
         const config = getConfiguration(binding.value);
 
         const floatingElement = document.createElement("div");
-        floatingElement.classList.add("tooltip", "fade");
+        floatingElement.classList.add("tooltip", "fade", "top");
 
         if (binding.modifiers.wide ?? config.wide) {
             floatingElement.classList.add("tooltip-wide");
