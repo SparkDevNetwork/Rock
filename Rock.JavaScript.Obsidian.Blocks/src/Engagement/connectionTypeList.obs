@@ -18,7 +18,7 @@
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
-                    visiblePriority="lg" />
+                    visiblePriority="xs" />
 
         <TextColumn name="description"
                     title="Description"

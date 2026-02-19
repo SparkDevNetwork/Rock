@@ -61,7 +61,7 @@
                 {% endif %}
 
                 <div id="fixed-header" class="header-content flex-grow-1" role="navigation">
-                        <a href="javascript: window.location = document.referrer;" class="btn btn-square btn-back"><i class="ti ti-chevron-left"></i></a>
+                        <a href="javascript: history.back();" class="btn btn-square btn-back"><i class="ti ti-chevron-left"></i></a>
                         {% assign checkinManagerCookieData = 'CheckinManager.CheckinManagerConfiguration' | ReadCookie | FromJSON %}
                         {% assign checkinAreaType = checkinManagerCookieData.CheckinAreaGuid | FromCache:'GroupType' %}
                         <div class="site-name d-flex align-items-center">

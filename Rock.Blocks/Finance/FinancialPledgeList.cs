@@ -217,7 +217,7 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override IQueryable<FinancialPledge> GetListQueryable( RockContext rockContext )
         {
-            var query = base.GetListQueryable( rockContext )
+            IQueryable<FinancialPledge> query = base.GetListQueryable( rockContext )
                 .Include( a => a.PersonAlias.Person )
                 .Include( a => a.Account )
                 .Include( a => a.PledgeFrequencyValue )

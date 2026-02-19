@@ -94,6 +94,12 @@ export type ConnectionOpportunityBag = {
     /** Gets or sets the name of the public. */
     publicName?: string | null;
 
+    /** Gets or sets a value indicating the number of days after a connection request is made that it will be considered overdue. */
+    requestDueDateOffsetInDays?: number | null;
+
+    /** Gets or sets a value indicating the number of days before a connection request is due that it will be considered "due soon". */
+    requestDueSoonOffsetInDays?: number | null;
+
     /** Gets or sets a value indicating whether [show campus on transfer]. */
     showCampusOnTransfer: boolean;
 

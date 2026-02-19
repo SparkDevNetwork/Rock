@@ -20,9 +20,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Web.Hosting;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -804,7 +804,7 @@ namespace Rock.Blocks.Cms
                 var pageService = new PageService( RockContext );
 
                 // Create the layouts for the site, and find the first one
-                string applicationRootPath = HostingEnvironment.MapPath( "~" );
+                string applicationRootPath = RockApp.Current.MapPath( "~" );
                 LayoutService.RegisterLayouts( applicationRootPath, siteCache );
 
                 var layoutService = new LayoutService( RockContext );

@@ -206,7 +206,11 @@ namespace Rock.Blocks.Cms
             }
             catch ( Exception ex )
             {
+#if REVIEW_WEBFORMS
                 ExceptionLogService.LogException( ex, null, PageCache.Id, PageCache.Layout.SiteId, RequestContext.CurrentPerson?.PrimaryAlias );
+#else
+                ExceptionLogService.LogException( ex );
+#endif
 
                 // Create a block showing the error and the attempted content render.
                 // Show the error first to ensure that it is visible, because the rendered content may disrupt subsequent output if it is malformed.

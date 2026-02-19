@@ -210,7 +210,11 @@ namespace Rock.Blocks.Finance
                 */
                 rockContext.SaveChanges( true );
 
+#if NET472_OR_GREATER
                 PersistedDatasetCache.UpdateCachedEntity( dataset.Id, System.Data.Entity.EntityState.Modified );
+#else
+                PersistedDatasetCache.UpdateCachedEntity( dataset.Id, Microsoft.EntityFrameworkCore.EntityState.Modified );
+#endif
 
                 var lastUpdated = DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss" );
                 var estimatedRefreshTime = dataset.TimeToBuildMS.HasValue ? Math.Round( dataset.TimeToBuildMS.Value / 1000.0, 2 ) : 0.0; // Convert to seconds and round to 2 decimal places

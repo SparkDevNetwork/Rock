@@ -740,29 +740,25 @@
 
 // Inherited Attributes - Light Grid
 
-.inherited-attributes {
+.grid-light.inherited-attributes {
 
-    .grid-light {
+    .grid-content-container {
 
-        .grid-content-container {
+        .grid-body {
 
-            .grid-body {
+            .grid-row {
+                border-top: 1px solid var(--color-interface-soft);
+                border-right: 1px solid var(--color-interface-soft);
+                border-left: 1px solid var(--color-interface-soft);
+                border-bottom: none;
 
-                .grid-row {
-                    border-top: 1px solid var(--color-interface-soft);
-                    border-right: 1px solid var(--color-interface-soft);
-                    border-left: 1px solid var(--color-interface-soft);
+                &:last-child {
+                    border-bottom: 1px solid var(--color-interface-soft);
+                }
+
+                .grid-cell {
+                    background-color: var(--color-interface-softer);
                     border-bottom: none;
-
-                    &:last-child {
-                        border-bottom: 1px solid var(--color-interface-soft);
-                    }
-
-                    .grid-cell {
-                        background-color: var(--color-interface-softer);
-                        border-bottom: none;
-                    }
-
                 }
 
             }
@@ -770,7 +766,9 @@
         }
 
     }
+
 }
+
 
 // =================== END LIGHT GRID =====================
 

@@ -98,17 +98,6 @@ namespace Rock.Model
         public int? InviteSystemCommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the invite system email identifier.
-        /// </summary>
-        /// <value>
-        /// The invite system email identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use InviteSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? InviteSystemEmailId { get; set; }
-
-        /// <summary>
         /// The Lava template that will be used to build the signature document.
         /// </summary>
         [DataMember]
@@ -185,17 +174,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual BinaryFileType BinaryFileType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the system email to use when a person is invited to sign a document.
-        /// </summary>
-        /// <value>
-        /// The system email.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use InviteSystemCommunication instead.", true )]
-        [RockObsolete( "1.10" )]
-        public virtual SystemEmail InviteSystemEmail { get; set; }
 
         /// <summary>
         /// Gets or sets the system communication to use when a person is invited to sign a document.

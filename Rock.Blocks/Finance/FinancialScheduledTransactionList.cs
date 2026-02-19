@@ -20,9 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Web.ModelBinding;
 
-using Rock.Address;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -32,7 +30,6 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialScheduledTransactionList;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 using static Rock.Blocks.Finance.FinancialScheduledTransactionList;
 
@@ -295,7 +292,7 @@ namespace Rock.Blocks.Finance
                 givingGroupId = _person.GivingGroupId;
             }
 
-            var qry = new FinancialScheduledTransactionService( rockContext )
+            IQueryable<FinancialScheduledTransaction> qry = new FinancialScheduledTransactionService( rockContext )
                 .Queryable()
                 .Include( t => t.ScheduledTransactionDetails )
                 .Include( t => t.FinancialPaymentDetail.CurrencyTypeValue )

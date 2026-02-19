@@ -13,8 +13,8 @@
                 <p class="font-weight-semibold mb-spacing-none">{{ fullName }}</p>
                 <p v-if="detailText" class="text-muted font-size-sm mb-spacing-tiny">{{ detailText }}</p>
             </div>
-            <div >
-                <span v-for="badge in badges" :title="badge.text ?? undefined" class="attendee-badge">
+            <div>
+                <span v-for="badge in badges" v-tooltip="badge.text" class="attendee-badge">
                     <i :class="badge.iconCssClass" :style="getBadgeStyle(badge)"></i>
                 </span>
             </div>
@@ -24,6 +24,7 @@
 
 <script setup lang="ts">
     import { computed } from "vue";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
     import { standardCellProps } from "@Obsidian/Core/Controls/grid";
     import { RosterAttendeeBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/Roster/rosterAttendeeBag";
     import { RosterAttendeeBadgeBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/Roster/rosterAttendeeBadgeBag";

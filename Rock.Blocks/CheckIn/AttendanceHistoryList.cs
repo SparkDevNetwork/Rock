@@ -221,15 +221,15 @@ namespace Rock.Blocks.CheckIn
         protected override IQueryable<Attendance> GetListQueryable( RockContext rockContext )
         {
             var attendanceService = new AttendanceService( rockContext );
-            var queryable = attendanceService
-            .AsNoFilter()
-            .AsNoTracking()
-            .Include( a => a.Occurrence )
-            .Include( a => a.Occurrence.Group )
-            .Include( a => a.Occurrence.Schedule )
-            .Include( a => a.Occurrence.Location )
-            .Include( a => a.PersonAlias.Person )
-            .Include( a => a.Campus );
+            IQueryable<Attendance> queryable = attendanceService
+                .AsNoFilter()
+                .AsNoTracking()
+                .Include( a => a.Occurrence )
+                .Include( a => a.Occurrence.Group )
+                .Include( a => a.Occurrence.Schedule )
+                .Include( a => a.Occurrence.Location )
+                .Include( a => a.PersonAlias.Person )
+                .Include( a => a.Campus );
 
             InitializeContextEntities();
 

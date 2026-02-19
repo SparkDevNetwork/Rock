@@ -950,8 +950,13 @@ namespace Rock.Blocks.Group.Scheduling
                     Location = ( Location ) null,
                     Schedule = ( Schedule ) null,
                     e.PersonAlias,
+#if NET472_OR_GREATER
                     OccurrenceStartDate = DbFunctions.TruncateTime( e.StartDate ).Value,
                     OccurrenceEndDate = DbFunctions.TruncateTime( e.EndDate ).Value,
+#else
+                    OccurrenceStartDate = e.StartDate.Date,
+                    OccurrenceEndDate = e.EndDate.Date,
+#endif
                     ConfirmationStatus = ToolboxScheduleRowConfirmationStatus.Unavailable
                 } )
                 .ToList();

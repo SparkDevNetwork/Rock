@@ -50,7 +50,8 @@ namespace Rock.Blocks.Event
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "e09743b1-cc81-4d00-b3e1-5825a178a473" )]
-    [Rock.SystemGuid.BlockTypeGuid( "63d0dfb8-1f9e-464a-a603-2252034bc6af" )]
+    [Rock.SystemGuid.BlockTypeGuid( "39E3476D-1BA1-438D-887F-03DD23639221" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "63d0dfb8-1f9e-464a-a603-2252034bc6af" )]
     public class EventItemDetail : RockDetailBlockType
     {
         #region Keys

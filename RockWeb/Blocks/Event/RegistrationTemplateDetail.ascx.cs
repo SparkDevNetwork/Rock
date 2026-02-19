@@ -1854,6 +1854,20 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlFieldSource_SelectedIndexChanged( object sender, EventArgs e )
         {
+            // If the field source changes, that means we are adding a new field.
+            // Group Member Attribute fields can never show on wait list. So if
+            // they are switching to a group member field, turn it off. Otherwise,
+            // turn it on since they are switching to a field source that can
+            // be on the wait list and we want the default for new fields to be on.
+            if ( ddlFieldSource.SelectedValueAsEnum<RegistrationFieldSource>() == RegistrationFieldSource.GroupMemberAttribute )
+            {
+                cbShowOnWaitList.Checked = false;
+            }
+            else
+            {
+                cbShowOnWaitList.Checked = true;
+            }
+
             SetFieldDisplay();
         }
 
@@ -1960,7 +1974,15 @@ The logged-in person's information will be used to complete the registrar inform
                     }
             }
 
-            attributeFormField.ShowOnWaitlist = cbShowOnWaitList.Checked;
+            if ( attributeFormField.FieldSource != RegistrationFieldSource.GroupMemberAttribute )
+            {
+                attributeFormField.ShowOnWaitlist = cbShowOnWaitList.Checked;
+            }
+            else
+            {
+                attributeFormField.ShowOnWaitlist = false;
+            }
+
             attributeFormField.IsLockedIfValuesExist = cbLockExistingValue.Checked;
 
             if ( attributeId.HasValue )

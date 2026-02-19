@@ -18,7 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Spatial;
+#endif
 using System.Linq;
 
 using Rock.Attribute;
@@ -387,7 +389,11 @@ namespace Rock.Blocks.Core
         {
             if ( entity.Location != null )
             {
+#if REVIEW_WEBFORMS
                 entity.Location.GeoFence = bag.GeoFence.IsNullOrWhiteSpace() ? null : DbGeography.PolygonFromText( bag.GeoFence, DbGeography.DefaultCoordinateSystemId );
+#else
+                throw new NotImplementedException();
+#endif
             }
         }
 
@@ -400,7 +406,11 @@ namespace Rock.Blocks.Core
         {
             if ( entity.Location != null )
             {
+#if REVIEW_WEBFORMS
                 entity.Location.GeoPoint = bag.GeoPoint.IsNullOrWhiteSpace() ? null : DbGeography.FromText( bag.GeoPoint );
+#else
+                throw new NotImplementedException();
+#endif
             }
         }
 
@@ -535,8 +545,12 @@ namespace Rock.Blocks.Core
                 entity.Location = new Location();
             }
 
+#if REVIEW_WEBFORMS
             entity.Location.GeoPoint = bag.GeoPoint.IsNotNullOrWhiteSpace() ? DbGeography.FromText( bag.GeoPoint ) : null;
             entity.Location.GeoFence = bag.GeoFence.IsNotNullOrWhiteSpace() ? DbGeography.PolygonFromText( bag.GeoFence, DbGeography.DefaultCoordinateSystemId ) : null;
+#else
+            throw new NotImplementedException();
+#endif
 
             var locationGuids = bag.Locations.ConvertAll( l => l.Value.AsGuid() );
             // Remove any deleted locations

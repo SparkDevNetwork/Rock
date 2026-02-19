@@ -16,6 +16,7 @@
 
 using System.Data.Entity;
 
+using Rock.Configuration;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -80,6 +81,26 @@ namespace Rock.Model
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             BlockTypeCache.UpdateCachedEntity( this.Id, entityState );
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets if the block exists.
+        /// </summary>
+        /// <returns></returns>
+        public bool IsBlockExists()
+        {
+            if ( Path.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var blockPath = RockApp.Current.MapPath( Path );
+
+            return System.IO.File.Exists( blockPath );
         }
 
         #endregion

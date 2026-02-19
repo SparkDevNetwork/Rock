@@ -95,6 +95,7 @@ namespace Rock.Blocks.Core
             if ( controller != null )
             {
                 options.ControllerName = controller.Name.SplitCase();
+#if NET472_OR_GREATER
                 var controllerType = Reflection.FindTypes( typeof( Rock.Rest.ApiControllerBase ) )
                     .Where( a => a.Key.Equals( controller.ClassName ) ).Select( a => a.Value ).FirstOrDefault();
 
@@ -106,6 +107,7 @@ namespace Rock.Blocks.Core
                         options.ObsoleteWarning = $"Obsolete: {obsoleteAttribute.Message}";
                     }
                 }
+#endif
             }
 
             return options;

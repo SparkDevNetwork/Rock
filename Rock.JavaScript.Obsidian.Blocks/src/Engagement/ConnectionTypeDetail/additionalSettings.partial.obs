@@ -1,0 +1,423 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentStack title="Additional Requests to Show"
+                  description="Configure which related connection requests should appear alongside this request for additional context."
+                  headerLocation="top">
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <Grid :data="gridData" keyField="key" itemTerm="Additional Request Filter" liveUpdates light @addItem="onAdd">
+            <TextColumn name="connectionType" field="connectionType" title="Connection Type" />
+            <TextColumn name="statesToShow" field="statesToShow" title="States To Show" />
+            <TextColumn name="daysBack" field="daysBack" title="Days Back" />
+            <BooleanColumn name="familyRequests" field="familyRequests" title="Family Requests" />
+            <EditColumn @click="onEdit" />
+            <DeleteColumn @click="onDelete" />
+        </Grid>
+    </ContentStack>
+
+    <ContentStack title="Communication Templates &amp; Snippets"
+                  description="Define which communication template and SMS snippet categories are available when sending messages through Connections."
+                  headerLocation="top">
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="communicationTemplateGuidValue"
+                              label="Communication Templates Category"
+                              :items="communicationTemplateOptions"
+                              :showBlankItem="true"
+                              :multiple="false" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <CategoryPicker v-model="smsSnippetCategoryValue"
+                                label="SMS Snippets Category"
+                                :entityTypeGuid="EntityType.Snippet"
+                                :multiple="false" />
+            </div>
+        </div>
+    </ContentStack>
+
+    <ContentStack v-if="props.hasActiveAIProvider" title="AI Insights Prompt"
+                  description="Use this to tell the AI what to focus on when generating the summary shown on the Connection Request Detail page. If left blank, this feature will be hidden."
+                  headerLocation="top">
+        <TextBox v-model="aiInsightsPromptValue"
+                 textMode="multiline"
+                 :rows="4"
+                 placeholder="Example: Summarize the current status of the request, recent activity, and any signs of engagement or concern. Highlight next steps if applicable." />
+    </ContentStack>
+
+    <Modal v-model="isModalVisible"
+           title="Additional Requests to Show"
+           saveText="Save"
+           cancelText="Cancel"
+           :onSave="onSave">
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <DropDownList v-model="connectionTypeValue"
+                      label="Show Additional Requests From"
+                      :items="connectionTypeOptions"
+                      rules="required"
+                      help="Select the connection type whose requests should also appear in the Additional Requests section." />
+
+        <CheckBoxList v-model="statesToShowValues"
+                      label="States To Show"
+                      :items="stateOptions"
+                      help="Choose which request states are included when displaying additional requests. Only requests in the selected states will appear." />
+
+        <NumberBox v-model="theFilter.limitToRecentRequestsDays"
+                   label="Requests Created Within (Days)"
+                   inputClasses="input-width-md"
+                   :rules="requestsCreatedWithinDaysRules"
+                   help="Limit results to requests created within this number of days. Leave blank for no limit." />
+
+        <div class="form-group">
+            <InlineCheckBox label="Include Family Member Requests"
+                            v-model="theFilter.includeFamilyMemberRequests"
+                            help="When enabled, additional requests will include requests submitted for other members of the same family." />
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { BooleanColumn, DeleteColumn, EditColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { ConnectionState, ConnectionStateDescription } from "@Obsidian/Enums/Connection/connectionState";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
+    import { ConnectionTypeAdditionalRequestToShowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionTypeAdditionalRequestToShowBag";
+    import { ConnectionTypeAdditionalSettingsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionTypeAdditionalSettingsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    const props = defineProps({
+        /**
+         * The additional settings for this connection type, which includes the "Additional Requests to Show" list of configurations
+         * as well as other settings related to communication templates and AI insights. This is backed by the AdditionalSettingsJson column in the database.
+         */
+        additionalSettings: {
+            type: Object as PropType<ConnectionTypeAdditionalSettingsBag>,
+            required: true
+        },
+
+        /**
+         * The available communication template category options to show in the Communication Templates Category dropdown.
+         */
+        communicationTemplateOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        /**
+         * The available connection type options to show in the "Show Additional Requests From" dropdown.
+         */
+        connectionTypeOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        /**
+         * Indicates whether any active AI providers are configured.
+         */
+        hasActiveAIProvider: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:additionalSettings", value: ConnectionTypeAdditionalSettingsBag): void;
+    }>();
+
+    // #region Values
+
+    const errorMessage = ref<string | null>(null);
+    const isModalVisible = ref(false);
+    const theFilter = ref<ConnectionTypeAdditionalRequestToShowBag>(createNewAdditionalRequestFilter());
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * The full additional settings object for this connection type coming from
+     * the AdditionalSettingsJson database column.
+     */
+    const additionalSettings = computed({
+        get(): ConnectionTypeAdditionalSettingsBag {
+            return props.additionalSettings ?? {};
+        },
+        set(value: ConnectionTypeAdditionalSettingsBag) {
+            emit("update:additionalSettings", value);
+        }
+    });
+
+    /**
+     * Grid rows for the additional request filter list.
+     */
+    const gridData = computed(() => {
+        const rows = (additionalRequestsToShow.value ?? []).map(a => ({
+            key: a.key,
+            connectionType: a.connectionType?.text ?? "",
+            statesToShow: (a.statesToShow ?? [])
+                .map(s => ConnectionStateDescription[s] ?? s.toString())
+                .join(", "),
+            daysBack: a.limitToRecentRequestsDays?.toString() ?? "",
+            familyRequests: a.includeFamilyMemberRequests
+        }));
+
+        return { rows };
+    });
+
+    /**
+     * Editable collection of "Additional Requests to Show" rows.
+     */
+    const additionalRequestsToShow = computed({
+        get(): ConnectionTypeAdditionalRequestToShowBag[] {
+            return additionalSettings.value.additionalRequestsToShow ?? [];
+        },
+        set(value: ConnectionTypeAdditionalRequestToShowBag[]) {
+            additionalSettings.value = {
+                ...additionalSettings.value,
+                additionalRequestsToShow: value
+            };
+        }
+    });
+
+    const communicationTemplateGuidValue = computed({
+        get(): string {
+            return additionalSettings.value.communicationSettings?.communicationTemplateCategoryGuid ?? "";
+        },
+        set(value: string) {
+            additionalSettings.value = {
+                ...additionalSettings.value,
+                communicationSettings: {
+                    ...(additionalSettings.value.communicationSettings ?? {}),
+                    communicationTemplateCategoryGuid: value || null
+                }
+            };
+        }
+    });
+
+    const smsSnippetCategoryValue = computed({
+        get(): ListItemBag | null {
+            const guid = additionalSettings.value.communicationSettings?.smsSnippetCategoryGuid;
+
+            if (!guid) {
+                return null;
+            }
+
+            return {
+                value: guid,
+                text: ""
+            };
+        },
+        set(value: ListItemBag | null) {
+            additionalSettings.value = {
+                ...additionalSettings.value,
+                communicationSettings: {
+                    ...(additionalSettings.value.communicationSettings ?? {}),
+                    smsSnippetCategoryGuid: value?.value ?? null
+                }
+            };
+        }
+    });
+
+    const aiInsightsPromptValue = computed({
+        get(): string {
+            return additionalSettings.value.aiInsightsPrompt ?? "";
+        },
+        set(value: string) {
+            additionalSettings.value = {
+                ...additionalSettings.value,
+                aiInsightsPrompt: value
+            };
+        }
+    });
+
+    /**
+     * Selected connection type value in the modal.
+     */
+    const connectionTypeValue = computed({
+        get(): string {
+            return theFilter.value.connectionType?.value ?? "";
+        },
+        set(value: string) {
+            const options = props.connectionTypeOptions ?? [];
+            const selected = options.find(ct => ct.value === value);
+            theFilter.value.connectionType = selected
+                ? { value: selected.value, text: selected.text }
+                : null;
+        }
+    });
+
+    /**
+     * Selected connection states in the modal.
+     */
+    const statesToShowValues = computed({
+        get(): string[] {
+            const states = theFilter.value.statesToShow ?? [];
+            return states.map(s => s.toString());
+        },
+        set(value: string[]) {
+            theFilter.value.statesToShow = value
+                .map(v => parseInt(v, 10))
+                .filter(v => !Number.isNaN(v)) as ConnectionState[];
+        }
+    });
+
+    /**
+     * Display text/value options for the connection state checkbox list.
+     */
+    const stateOptions = computed((): ListItemBag[] => {
+        return enumToListItemBag(ConnectionStateDescription);
+    });
+
+    /**
+     * Validation rules for the Requests Created Within (Days) field.
+     */
+    const requestsCreatedWithinDaysRules = computed((): (ValidationRuleFunction | string)[] => {
+        return [validateRequestsCreatedWithinDays];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Creates a new additional request filter row with defaults.
+     */
+    function createNewAdditionalRequestFilter(): ConnectionTypeAdditionalRequestToShowBag {
+        return {
+            key: newGuid(),
+            connectionType: null,
+            statesToShow: [ConnectionState.Active],
+            limitToRecentRequestsDays: null,
+            includeFamilyMemberRequests: false
+        };
+    }
+
+    /**
+     * Validates the Requests Created Within (Days) field.
+     * The value can be blank; if provided, it must be greater than 0.
+     */
+    function validateRequestsCreatedWithinDays(value: unknown): ValidationResult {
+        if (value === null || value === undefined || value === "") {
+            return true;
+        }
+
+        if (typeof value !== "number" && typeof value !== "string") {
+            return "Invalid value provided.";
+        }
+
+        const numberValue = toNumber(value);
+
+        return numberValue > 0
+            ? true
+            : "Requests Created Within (Days): Value must be greater than 0, or leave blank to show all requests.";
+    }
+
+    /**
+     * Creates a representation of the AdditionalRequestToShow filter to check
+     * if a duplicate was created. Ignores the key and sorts arrays for consistent comparison.
+     */
+    function standardizeForComparison(filter: ConnectionTypeAdditionalRequestToShowBag): Record<string, unknown> {
+        return {
+            connectionType: filter.connectionType?.value ?? null,
+            statesToShow: [...(filter.statesToShow ?? [])].sort((a, b) => a - b),
+            limitToRecentRequestsDays: filter.limitToRecentRequestsDays ?? null,
+            includeFamilyMemberRequests: filter.includeFamilyMemberRequests ?? false
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Opens the modal to create a new additional request filter row.
+     */
+    function onAdd(): void {
+        errorMessage.value = null;
+        theFilter.value = createNewAdditionalRequestFilter();
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Opens the modal to edit an existing additional request filter row.
+     * Deep copies embedded objects/arrays to avoid mutating grid rows before save.
+     */
+    function onEdit(key: string): void {
+        const selected = (additionalRequestsToShow.value ?? []).find(a => a.key === key);
+
+        if (!selected) {
+            return;
+        }
+
+        errorMessage.value = null;
+        theFilter.value = {
+            ...selected,
+            connectionType: selected.connectionType ? { ...selected.connectionType } : null,
+            statesToShow: [...(selected.statesToShow ?? [])]
+        };
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Deletes an additional request filter row.
+     */
+    function onDelete(key: string): void {
+        errorMessage.value = null;
+        additionalRequestsToShow.value = (additionalRequestsToShow.value ?? []).filter(a => a.key !== key);
+    }
+
+    /**
+     * Saves the modal row into the additional request filter list.
+     * Prevents duplicate rows that are identical by content.
+     */
+    function onSave(): void {
+        const rows = [...(additionalRequestsToShow.value ?? [])];
+        const idx = rows.findIndex(r => r.key === theFilter.value.key);
+
+        const hasDuplicate = rows.some(r =>
+            r.key !== theFilter.value.key
+            && deepEqual(standardizeForComparison(r), standardizeForComparison(theFilter.value), true));
+
+        if (hasDuplicate) {
+            errorMessage.value = "This filter would duplicate another filter already in the list. Please change the criteria to make it unique.";
+            return;
+        }
+
+        let updatedRows: ConnectionTypeAdditionalRequestToShowBag[];
+        if (idx >= 0) {
+            updatedRows = [...rows];
+            updatedRows.splice(idx, 1, theFilter.value);
+        }
+        else {
+            updatedRows = [...rows, theFilter.value];
+        }
+
+        additionalRequestsToShow.value = updatedRows;
+        errorMessage.value = null;
+        isModalVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+</script>

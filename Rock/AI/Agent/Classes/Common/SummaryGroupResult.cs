@@ -63,5 +63,4 @@ namespace Rock.AI.Agent.Classes.Common
         [JsonIgnore]
         public object Source { get; set; }
     }
-
 }

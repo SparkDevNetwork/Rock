@@ -43,10 +43,11 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details for a content channel." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "c7c776c4-f1db-477d-87e3-62f8f82ba773" )]
-    [Rock.SystemGuid.BlockTypeGuid( "2bad2ab9-86ad-480e-bf38-c54f2c5c03a8" )]
+    [Rock.SystemGuid.BlockTypeGuid( "B28075DA-46C1-4F6B-933D-DFCFEFB439EE" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "2bad2ab9-86ad-480e-bf38-c54f2c5c03a8" )]
     public class ContentChannelDetail : RockEntityDetailBlockType<ContentChannel, ContentChannelBag>, IBreadCrumbBlock
     {
         // This is a cache backing field and should not be accessed directly , instead use the GetItemAttributes method to access this field. 

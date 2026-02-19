@@ -168,7 +168,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<SignatureDocument> GetListQueryable( RockContext rockContext )
         {
-            var qry = base.GetListQueryable( rockContext )
+            IQueryable<SignatureDocument> qry = base.GetListQueryable( rockContext )
                 .Include( a => a.AppliesToPersonAlias.Person )
                 .Include( a => a.AssignedToPersonAlias.Person )
                 .Include( a => a.SignedByPersonAlias.Person )

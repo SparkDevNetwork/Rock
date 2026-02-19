@@ -68,7 +68,7 @@
     import { AttendanceUpdatedMessageBag } from "@Obsidian/ViewModels/Event/attendanceUpdatedMessageBag";
     import { areEqual } from "@Obsidian/Utility/guid";
     import { Guid } from "@Obsidian/Types";
-    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { isPromise, sleep } from "@Obsidian/Utility/promiseUtils";
     import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
     import { calculateDuration, getSingleAttendanceRecords, provideRosterContext, statusMatchesMode, updateSingleGridAttendanceRecord } from "./Roster/utilities.partial";
 
@@ -105,6 +105,7 @@
     const isRoomOpen = ref(false);
 
     let isUnloading = false;
+    let lastVisibleTime = Date.now();
     let durationUpdateTimer: number | undefined;
 
     let entityUpdatedTopic: ITopic | undefined = undefined;
@@ -572,7 +573,7 @@
             if (entityUpdatedTopic) {
                 const request = {
                     connectionId: entityUpdatedTopic?.connectionId,
-                    oldLocationGuid: oldLocationGuid,
+                    oldLocationGuid: oldLocationGuid ?? null,
                     locationGuid: location.value?.value ?? null,
                 };
 
@@ -602,6 +603,17 @@
      */
     function onWindowBeforeUnload(): void {
         isUnloading = true;
+    }
+
+    /**
+     * Handles the visibilitychange event to track when the page becomes visible.
+     * This helps to know if we should display an error when the real-time
+     * connection is lost or if we should just reload automatically.
+     */
+    function onVisibilityChange(): void {
+        if (document.visibilityState === "visible") {
+            lastVisibleTime = Date.now();
+        }
     }
 
     // #endregion
@@ -849,7 +861,15 @@
             return;
         }
 
-        await alert("The connection to the server has been lost. The page must be refreshed to continue.");
+        // Wait just a moment to see if the device is waking from sleep.
+        await sleep(250);
+
+        if (Date.now() - lastVisibleTime > 5000) {
+            // If the page became visible more than 5 seconds ago, then it's
+            // likely caused by a real network disconnect rather than the device
+            // waking from sleep.
+            await alert("The connection to the server has been lost. The page must be refreshed to continue.");
+        }
 
         window.location.assign(window.location.href);
     }
@@ -858,11 +878,14 @@
 
     onMounted(() => {
         window.addEventListener("beforeunload", onWindowBeforeUnload);
+        document.addEventListener("visibilitychange", onVisibilityChange);
+
         durationUpdateTimer = window.setInterval(updateDurations, 10000);
     });
 
     onBeforeUnmount(() => {
         window.removeEventListener("beforeunload", onWindowBeforeUnload);
+        document.removeEventListener("visibilitychange", onVisibilityChange);
 
         if (durationUpdateTimer !== undefined) {
             window.clearInterval(durationUpdateTimer);

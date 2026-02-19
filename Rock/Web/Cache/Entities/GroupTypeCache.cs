@@ -540,29 +540,7 @@ namespace Rock.Web.Cache
         /// The scheduled communication template identifier.
         /// </value>
         [DataMember]
-        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? ScheduleConfirmationSystemEmailId { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the communication template to use when a person is scheduled or when the schedule has been updated
-        /// </summary>
-        /// <value>
-        /// The scheduled communication template identifier.
-        /// </value>
-        [DataMember]
         public int? ScheduleConfirmationSystemCommunicationId { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the communication template to use when sending a schedule reminder
-        /// </summary>
-        /// <value>
-        /// The schedule reminder communication template identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? ScheduleReminderSystemEmailId { get; private set; }
 
         /// <summary>
         /// Gets or sets the communication template to use when sending a schedule reminder

@@ -1498,25 +1498,75 @@ namespace Rock.AI.Agent
         #region Summary Methods
 
         /// <summary>
-        /// Populates child summary groupings for each parent group using the
-        /// specified function. This will set the <see cref="SummaryGroupResult.Groups"/>
-        /// property to the list returned by <paramref name="populate"/>.
+        /// Builds the dimension for a summary result. This handles building
+        /// the first dimension if <paramref name="parentGroups"/> is <c>null</c>
+        /// or building a child dimension for each of the
+        /// <paramref name="parentGroups"/> if not <c>null</c>.
         /// </summary>
-        /// <typeparam name="TState">The type of the state object passed to the callback function for each group.</typeparam>
-        /// <param name="parentGroups">The collection of parent summary group results to which child groupings will be added.</param>
-        /// <param name="state">A state object that provides contextual information to the callback function for each group.</param>
-        /// <param name="populate">A function that returns a list of child summary group results to associate with the parent.</param>
-        /// <returns>A list containing all child summary group results generated for the parent groups.</returns>
-        public List<SummaryGroupResult> PopulateSummaryGroupings<TState>( IEnumerable<SummaryGroupResult> parentGroups, TState state, Func<SummaryGroupResult, TState, List<SummaryGroupResult>> populate )
+        /// <typeparam name="T">The type of object that will be grouped and contains the counts.</typeparam>
+        /// <param name="parentGroups">The parent <see cref="SummaryGroupResult"/> objects to build a child dimension for or <c>null</c> to build a root dimension.</param>
+        /// <param name="rootSource">The full list of source counts if a root dimension is built. Must not be <c>null</c> if <paramref name="parentGroups"/> is also <c>null</c>.</param>
+        /// <param name="keySelector">The selector that will be used to group the <typeparamref name="T"/> objects.</param>
+        /// <param name="nameLookup">The lookup table that will be used for value to name mapping.</param>
+        /// <returns>A list of all <see cref="SummaryGroupResult"/> objects created for this dimension.</returns>
+        public List<SummaryGroupResult> BuildDimension<T>( IEnumerable<SummaryGroupResult> parentGroups, IEnumerable<T> rootSource, Func<T, int> keySelector, Dictionary<int, string> nameLookup )
+            where T : ISummaryGroupCount
         {
-            return parentGroups.SelectMany( g =>
-            {
-                var newGroups = populate( g, state );
+            return BuildDimension( parentGroups, rootSource, c => ( int? ) keySelector( c ), nameLookup );
+        }
 
-                g.Groups = newGroups;
+        /// <summary>
+        /// Builds the dimension for a summary result. This handles building
+        /// the first dimension if <paramref name="parentGroups"/> is <c>null</c>
+        /// or building a child dimension for each of the
+        /// <paramref name="parentGroups"/> if not <c>null</c>.
+        /// </summary>
+        /// <typeparam name="T">The type of object that will be grouped and contains the counts.</typeparam>
+        /// <param name="parentGroups">The parent <see cref="SummaryGroupResult"/> objects to build a child dimension for or <c>null</c> to build a root dimension.</param>
+        /// <param name="rootSource">The full list of source counts if a root dimension is built. Must not be <c>null</c> if <paramref name="parentGroups"/> is also <c>null</c>.</param>
+        /// <param name="keySelector">The selector that will be used to group the <typeparamref name="T"/> objects.</param>
+        /// <param name="nameLookup">The lookup table that will be used for value to name mapping.</param>
+        /// <returns>A list of all <see cref="SummaryGroupResult"/> objects created for this dimension.</returns>
+        public List<SummaryGroupResult> BuildDimension<T>( IEnumerable<SummaryGroupResult> parentGroups, IEnumerable<T> rootSource, Func<T, int?> keySelector, Dictionary<int, string> nameLookup )
+            where T : ISummaryGroupCount
+        {
+            return parentGroups == null
+                ? BuildDimension( rootSource, keySelector, nameLookup )
+                : parentGroups
+                    .SelectMany( g =>
+                    {
+                        var newGroups = BuildDimension( ( IEnumerable<T> ) g.Source, keySelector, nameLookup );
 
-                return newGroups;
-            } ).ToList();
+                        g.Groups = newGroups;
+
+                        return newGroups;
+                    } )
+                    .ToList();
+        }
+
+        /// <summary>
+        /// Builds the dimension for a set of source objects.
+        /// </summary>
+        /// <typeparam name="T">The type of object that will be grouped and contains the counts.</typeparam>
+        /// <param name="source">The set of source counts to build this dimension from.</param>
+        /// <param name="keySelector">The selector that will be used to group the <typeparamref name="T"/> objects.</param>
+        /// <param name="nameLookup">The lookup table that will be used for value to name mapping.</param>
+        /// <returns>A list of all <see cref="SummaryGroupResult"/> objects created for this dimension.</returns>
+        private List<SummaryGroupResult> BuildDimension<T>( IEnumerable<T> source, Func<T, int?> keySelector, Dictionary<int, string> nameLookup )
+            where T : ISummaryGroupCount
+        {
+            return source.GroupBy( keySelector )
+                .Select( g =>
+                {
+                    return new SummaryGroupResult
+                    {
+                        Id = g.Key,
+                        Name = g.Key.HasValue ? nameLookup[g.Key.Value] : null,
+                        Total = g.Sum( fc => fc.Count ),
+                        Source = g,
+                    };
+                } )
+                .ToList();
         }
 
         /// <summary>

@@ -2056,6 +2056,26 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;
+        ///        If calling this outside of C#, wrap in a transaction if you  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202602182336503_Update_spCrm_PersonMerge6572 {
+            get {
+                return ResourceManager.GetString("_202602182336503_Update_spCrm_PersonMerge6572", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {

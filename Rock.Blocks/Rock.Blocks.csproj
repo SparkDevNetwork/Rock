@@ -2,17 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <LangVersion>8.0</LangVersion>
     <RockWebPath>..\RockWeb</RockWebPath>
     <CopyToRockWeb>True</CopyToRockWeb>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
-      <Link>Properties\AssemblySharedInfo.cs</Link>
-    </Compile>
-  </ItemGroup>
 
   <ItemGroup>
     <None Remove="DefaultTvApplication.js" />
@@ -45,7 +38,7 @@
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
     </Reference>
     <Reference Include="Slingshot.Core">
-      <HintPath>..\libs\Slingshot\Slingshot.Core.dll</HintPath>
+      <HintPath>..\libs\Slingshot\net472\Slingshot.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />

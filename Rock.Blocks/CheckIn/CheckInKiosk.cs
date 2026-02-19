@@ -626,6 +626,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         /// <returns>An instance of <see cref="PrintResponseBag"/> that contains the result of the operation.</returns>
         private PrintResponseBag PrintLegacyLabelsForAttendanceId( int attendanceId )
         {
+#if NET472_OR_GREATER
             var attendance = new AttendanceService( RockContext ).Get( attendanceId );
             var attendanceIds = new List<int> { attendance.Id };
             var possibleLabels = ZebraPrint.GetLabelTypesForPerson( attendance.PersonAlias.PersonId, attendanceIds );
@@ -648,6 +649,13 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 ErrorMessages = errorMessages,
                 LegacyLabels = legacyClientLabelBags
             };
+#else
+            return new PrintResponseBag
+            {
+                ErrorMessages = new List<string> { "Legacy labels are not supported." },
+                LegacyLabels = new List<LegacyClientLabelBag>(),
+            };
+#endif
         }
 
         /// <summary>
@@ -1270,8 +1278,10 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             location.IsActive = isOpen;
             RockContext.SaveChanges();
 
+#if NET472_OR_GREATER
             // Clear the old v1 cache to match functionality.
             Rock.CheckIn.KioskDevice.Clear();
+#endif
 
             return ActionOk();
         }
@@ -1548,8 +1558,10 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
             if ( RockContext.SaveChanges() > 0 )
             {
+#if NET472_OR_GREATER
                 // Temporary until legacy check-in is removed.
                 KioskDevice.Clear();
+#endif
             }
 
             return ActionOk();

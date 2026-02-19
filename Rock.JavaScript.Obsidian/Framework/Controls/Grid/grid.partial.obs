@@ -141,7 +141,7 @@
     import { GridCommunicationBag } from "@Obsidian/ViewModels/Core/Grid/gridCommunicationBag";
     import { Guid } from "@Obsidian/Types";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
-    import { useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useBlockGuid, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { downloadFile } from "@Obsidian/Utility/file";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -149,6 +149,7 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { type Column, type Workbook, type Worksheet } from "@Obsidian/Libs/exceljs";
     import { IPersonPreferenceCollection } from "@Obsidian/Types/Core/personPreferences";
+    import { useStore } from "@Obsidian/PageState";
 
     /**
      * The preference keys used by the grid.
@@ -615,6 +616,8 @@
 
     const slots = useSlots();
     const invokeBlockAction = useInvokeBlockAction();
+    const blockGuid = useBlockGuid();
+    const store = useStore();
 
     // #region Values
 
@@ -1903,6 +1906,21 @@
         setPageSizeFromPreferences();
     }
 
+    // If we are inside a block, and we have a valid interaction guid, then check
+    // if we are navigating back to the page and if so restore the quick filter
+    // value from session storage. This allows the search to be restored when
+    // using the browser back button.
+    if (blockGuid && store.state.interactionGuid) {
+        // Check if it exists because iOS 10 didn't support this.
+        if (window.performance.getEntriesByType) {
+            var nav = window.performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
+
+            if (nav?.type === "back_forward") {
+                quickFilterValue.value = sessionStorage.getItem(`${blockGuid}-${store.state.interactionGuid}-grid-quick-filte-value`) ?? "";
+            }
+        }
+    }
+
     gridState.setFilters(quickFilterValue.value, columnFilterValues.value);
     gridState.setSort(columnSortDirection.value);
     visibleColumnDefinitions.value = gridState.visibleColumns;
@@ -1910,6 +1928,7 @@
     watch(quickFilterValue, () => {
         currentPage.value = 1;
         gridState.setFilters(quickFilterValue.value, columnFilterValues.value);
+        sessionStorage.setItem(`${blockGuid}-${store.state.interactionGuid}-grid-quick-filte-value`, quickFilterValue.value);
     });
 
     watch(columnFilterValues, () => {

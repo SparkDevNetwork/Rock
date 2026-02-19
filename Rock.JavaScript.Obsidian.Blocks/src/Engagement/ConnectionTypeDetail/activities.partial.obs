@@ -1,0 +1,281 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentStack title="Activity List"
+                  description="Define the activity types that can be recorded on connection requests to track interactions, progress, and follow-up."
+                  headerLocation="top">
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
+            {{ errorMessage }}
+        </NotificationBox>
+        <Grid :data="gridData" keyField="guid" itemTerm="Activity" liveUpdates light @addItem="onAdd">
+            <TextColumn name="name" field="name" title="Activity" />
+            <BooleanColumn name="isActive" field="isActive" title="Active" />
+            <EditColumn @click="onEdit" />
+            <DeleteColumn @click="onDelete" />
+        </Grid>
+    </ContentStack>
+
+    <Modal v-model="isModalVisible" :title="`${isEditing ? 'Edit' : 'Create'} Activity`" saveText="Save" cancelText="Cancel"
+           :onSave="onSave">
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="activityName" label="Activity Name" rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="theActivity.isActive" label="Active" />
+            </div>
+        </div>
+
+        <RadioButtonList label="Person Note Creation Behavior" v-model="personNoteCreationBehaviorValue"
+                         :items="enumToListItemBag(PersonNoteCreationBehaviorDescription)"
+                         help="Choose whether a Person Note should be created when this activity is added to a connection request." />
+
+        <div class="row">
+            <div class="col-md-6">
+                <AttributeValuesContainer v-model="activityAttributeValues"
+                                          :attributes="theActivity.attributes ?? {}"
+                                          isEditMode
+                                          :showCategoryLabel="false" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { BooleanColumn, DeleteColumn, EditColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { PersonNoteCreationBehavior, PersonNoteCreationBehaviorDescription } from "@Obsidian/Enums/Connection/personNoteCreationBehavior";
+    import { CanDeleteRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/canDeleteRequestBag";
+    import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionActivityTypeBag";
+    import { CanDeleteResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/canDeleteResponseBag";
+    import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionWorkflowBag";
+    import { ConnectionWorkflowTriggerType } from "@Obsidian/Enums/Connection/connectionWorkflowTriggerType";
+    import { EntityKey } from "./types.partial";
+
+    const props = defineProps({
+        /**
+         * The activity types configured for this connection type.
+         */
+        activityTypes: {
+            type: Array as PropType<ConnectionActivityTypeBag[]>,
+            required: true
+        },
+
+        /**
+         * The workflows configured for this connection type, used to check for references when deleting statuses.
+         */
+        workflows: {
+            type: Array as PropType<ConnectionWorkflowBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:activityTypes", value: ConnectionActivityTypeBag[]): void
+    }>();
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const theActivity = ref<ConnectionActivityTypeBag>(createNewActivity());
+    const isModalVisible = ref(false);
+    const isEditing = ref(false);
+    const errorMessage = ref<string | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const activities = computed({
+        get(): ConnectionActivityTypeBag[] {
+            return props.activityTypes ?? [];
+        },
+        set(value: ConnectionActivityTypeBag[]) {
+            emit("update:activityTypes", value);
+        }
+    });
+
+    const gridData = computed(() => {
+        const rows = (activities.value ?? []).map(a => ({
+            guid: a.guid,
+            name: a.name ?? "",
+            isActive: a.isActive
+        }));
+
+        return { rows };
+    });
+
+    const activityName = computed({
+        get(): string {
+            return theActivity.value.name ?? "";
+        },
+        set(value: string) {
+            theActivity.value.name = value;
+        }
+    });
+
+    const personNoteCreationBehaviorValue = computed({
+        get(): string {
+            return (theActivity.value.personNoteCreationBehavior ?? PersonNoteCreationBehavior.DoNotCreatePersonNote).toString();
+        },
+        set(value: string) {
+            theActivity.value.personNoteCreationBehavior = parseInt(value, 10) as PersonNoteCreationBehavior;
+        }
+    });
+
+    const activityAttributeValues = computed({
+        get(): Record<string, string> {
+            return theActivity.value.attributeValues ?? {};
+        },
+        set(value: Record<string, string>) {
+            theActivity.value.attributeValues = value;
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Creates a new activity type instance for editing in the modal.
+     */
+    function createNewActivity(): ConnectionActivityTypeBag {
+        return {
+            guid: newGuid(),
+            name: "",
+            isActive: true,
+            personNoteCreationBehavior: PersonNoteCreationBehavior.DoNotCreatePersonNote,
+            attributes: {},
+            attributeValues: {}
+        };
+    }
+
+    /**
+     * Builds the list of workflow names that reference an activity type.
+     *
+     * @param activityGuid The GUID of the activity type to find referencing workflows for.
+     * @returns An array of workflow names that reference the specified activity type.
+     */
+    function getReferencingWorkflowNames(activityGuid: string): string[] {
+        const normalizedActivityGuid = activityGuid?.trim().toLowerCase() ?? "";
+        if (!normalizedActivityGuid) {
+            return [];
+        }
+
+        return (props.workflows ?? [])
+            .filter(workflow => {
+                if (workflow?.triggerType !== ConnectionWorkflowTriggerType.ActivityAdded) {
+                    return false;
+                }
+
+                const activityQualifier = workflow.qualifierValue?.primaryQualifier?.trim().toLowerCase() ?? "";
+                return activityQualifier === normalizedActivityGuid;
+            })
+            .map(workflow => workflow.workflowType?.text?.trim() || "Workflow");
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add Activity button is clicked.
+     */
+    function onAdd(): void {
+        isEditing.value = false;
+        errorMessage.value = null;
+        theActivity.value = createNewActivity();
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Called when the Edit button for an activity row is clicked.
+     *
+     * @param guid The unique identifier of the activity to edit.
+     */
+    function onEdit(guid: string): void {
+        const selected = (activities.value ?? []).find(a => a.guid === guid);
+
+        if (!selected) {
+            return;
+        }
+
+        isEditing.value = true;
+        theActivity.value = {
+            ...selected,
+            attributeValues: { ...(selected.attributeValues ?? {}) },
+            attributes: selected.attributes ?? {}
+        };
+        errorMessage.value = null;
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Called when the Delete button for an activity row is clicked.
+     *
+     * @param guid The unique identifier of the activity to delete.
+     */
+    async function onDelete(guid: string): Promise<void> {
+        const referencingWorkflowNames = getReferencingWorkflowNames(guid);
+        if (referencingWorkflowNames.length > 0) {
+            errorMessage.value = `This activity type is referenced by ${referencingWorkflowNames.length} workflow(s): ${referencingWorkflowNames.join(", ")}. Update or remove those workflow references before deleting this activity type.`;
+            return;
+        }
+
+        const result = await invokeBlockAction<CanDeleteResponseBag>("CanDeleteEntity", {
+            request: {
+                entityKey: EntityKey.ActivityType,
+                entityGuid: guid
+            } as CanDeleteRequestBag
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage || "Unable to delete this activity type.";
+            return;
+        }
+
+        if (!result.data.canDelete) {
+            errorMessage.value = result.data.errorMessage || "This activity type cannot be deleted.";
+            return;
+        }
+
+        const updatedActivities = (activities.value ?? []).filter(a => a.guid !== guid);
+        activities.value = updatedActivities;
+        errorMessage.value = null;
+    }
+
+    /**
+     * Called when the activity modal Save button is clicked.
+     */
+    function onSave(): void {
+        const currentActivities = activities.value ?? [];
+        const idx = currentActivities.findIndex(a => a.guid === theActivity.value.guid);
+
+        let updatedActivities: ConnectionActivityTypeBag[];
+
+        if (idx >= 0) {
+            updatedActivities = [...currentActivities];
+            updatedActivities.splice(idx, 1, { ...theActivity.value });
+        }
+        else {
+            updatedActivities = [...currentActivities, { ...theActivity.value }];
+        }
+
+        activities.value = updatedActivities;
+        errorMessage.value = null;
+        isModalVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+</script>

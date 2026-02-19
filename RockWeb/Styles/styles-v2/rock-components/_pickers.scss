@@ -534,3 +534,56 @@ textarea,
 .ant-select-arrow:has(.ti.ti-square-plus):hover {
   color:          var(--color-info-soft);
 }
+
+// ===================== ICON PICKER =====================
+
+.picker.icon-picker-w-fit-content {
+    width: fit-content !important;
+
+  .icon-picker-select-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .selected-icon.custom-icon {
+      line-height: 1 !important;
+  }
+
+  .selected-icon.custom-icon > i {
+      font-size: var(--font-size-regular);
+  }
+
+  .selected-icon.svg-icon {
+      line-height: 0 !important;
+  }
+
+  .icon-picker-select-btn > svg,
+  .selected-icon svg,
+  .selected-icon i {
+      height: 16px;
+      width: auto;
+      margin: var(--spacing-tiny) auto;
+      flex: 0 1 auto;
+  }
+
+  .selected-icon i {
+      display: inline-block;
+  }
+
+  .custom-box-wrapper {
+      margin-top: calc(var(--spacing-small) * -1);
+  }
+
+  .search-box-wrapper {
+      margin-top: calc(var(--spacing-tiny) * -1);
+      margin-right: var(--spacing-small);
+  }
+
+}
+
+
+// ===================== END ICON PICKER =====================

@@ -524,23 +524,28 @@ iframe {
                 throw new Error("Unable to access the iframe document.");
             }
 
-            // Build the doctype text. If none, default to HTML5.
-            const doctypeText = sourceDoc.doctype
-                ? `<!DOCTYPE ${sourceDoc.doctype.name}${sourceDoc.doctype.publicId ? ` PUBLIC "${sourceDoc.doctype.publicId}"` : ""}${sourceDoc.doctype.systemId ? ` "${sourceDoc.doctype.systemId}"` : ""}>`
+            // Build the doctype string. Default to HTML 5 if none exists.
+            const doctype = sourceDoc.doctype;
+            const doctypeText = doctype
+                ? `<!DOCTYPE ${doctype.name}`
+                + `${doctype.publicId ? ` PUBLIC "${doctype.publicId}"` : ""}`
+                + `${doctype.systemId ? ` "${doctype.systemId}"` : ""}>`
                 : "<!DOCTYPE html>";
 
-            const cloneDocument = sourceDoc.cloneNode(true) as Document;
+            // Clone before mutation so the live iframe document is untouched.
+            const clonedDoc = sourceDoc.cloneNode(true) as Document;
 
-            removeTemporaryElements(cloneDocument);
-            removeTemporaryAttributes(cloneDocument);
-            removeTemporaryWrappers(cloneDocument);
-            removeTemporaryClasses(cloneDocument);
+            removeTemporaryElements(clonedDoc);
+            removeTemporaryAttributes(clonedDoc);
+            removeTemporaryWrappers(clonedDoc);
+            removeTemporaryClasses(clonedDoc);
 
-            const finalHtmlOuterHtml = cloneDocument.documentElement.outerHTML ?? "";
-            const html = `${doctypeText}\n${finalHtmlOuterHtml}`;
+            const sanitizedHtml = clonedDoc.documentElement.outerHTML ?? "";
+            const finalHtml = decodeLavaEntityWhereFilters(sanitizedHtml);
 
-            // Get the global body width from the source document that is attached to the iframe.
-            // This width is used by some callers to generate preview images.
+            const html = `${doctypeText}\n${finalHtml}`;
+
+            // Body width is used by some callers for preview image generation.
             const bodyWidth = bodyGlobalAdapter.readGlobalProps(sourceDoc).widthPx;
 
             options.onSuccess({
@@ -550,12 +555,73 @@ iframe {
         }
         catch (e) {
             if (options.onError) {
-                options.onError(e?.["message"] ?? "An unknown error occurred while preparing HTML.");
+                options.onError(
+                    (e as Error)?.message
+                    ?? "An unknown error occurred while preparing HTML."
+                );
             }
             else {
                 throw e;
             }
         }
+    }
+
+    /**
+     * Decodes browser-encoded Lava `where:'...'` filters inside `{% %}` blocks.
+     *
+     * Browsers automatically encode `&` as `&amp;` in the HTML editor.
+     * This turns logical operators like `&&` into `&amp;&amp;`, which breaks
+     * Rock Entity `where:` filters during server-side Lava parsing.
+     *
+     * Example: `where:'IsActive == true && CampusId == 1'`
+     *
+     * Becomes: `where:'IsActive == true &amp;&amp; CampusId == 1'`
+     *
+     * We decode HTML entities inside the quoted `where:'...'` value.
+     * Although the original issue was `&amp;&amp;`, this intentionally
+     * decodes all entities (e.g. `&gt;`, `&lt;`, `&quot;`) to restore
+     * the filter logic exactly as authored.
+     *
+     * This runs on the final HTML string, not DOM nodes, because modifying
+     * the DOM would cause the browser to re-encode `&` back to `&amp;`.
+     *
+     * Scope is intentionally narrow:
+     * - Only processes `{% %}` blocks
+     * - Only decodes the quoted `where:'...'` value
+     * - Leaves all other HTML and Lava content untouched
+     */
+    function decodeLavaEntityWhereFilters(html: string): string {
+        const lavaTagRegex = /{%[\s\S]*?%}/g;
+
+        // Used only for fast detection, avoids allocating lowercase strings.
+        const whereTestRegex = /\bwhere:\s*'/i;
+
+        // Case-insensitive replacement of where clause values.
+        const whereReplaceRegex = /\bwhere:\s*'([^']*)'/gi;
+
+        // Use the browser's HTML parser to safely decode entities
+        // instead of hand-rolled replacements.
+        const template = document.createElement("template");
+
+        return html.replace(lavaTagRegex, (tag) => {
+            // Skip tags that clearly don't need processing.
+            if (!tag.includes("&") || !whereTestRegex.test(tag)) {
+                return tag;
+            }
+
+            return tag.replace(whereReplaceRegex, (_, whereValue) => {
+                // Only decode if the where value actually contains entities.
+                if (!whereValue.includes("&")) {
+                    return `where:'${whereValue}'`;
+                }
+
+                template.innerHTML = whereValue;
+                const decoded = template.content.textContent ?? "";
+                template.innerHTML = ""; // Reset to avoid retaining references.
+
+                return `where:'${decoded}'`;
+            });
+        });
     }
 
     function isComponentElement(element: HTMLElement): element is HTMLElement {

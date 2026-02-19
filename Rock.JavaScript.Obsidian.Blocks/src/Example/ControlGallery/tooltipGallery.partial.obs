@@ -1,0 +1,123 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      demoMode>
+        <div>
+            <span class="btn btn-default"
+                  :style="buttonStyles"
+                  v-tooltip="{ content, html, immediate, showDelay, hideDelay, overflow, wide }">
+                Hover over me.
+            </span>
+        </div>
+
+        <template #settings>
+            <div class="automatic-layout">
+                <CheckBox label="HTML"
+                          v-model="html"
+                          help="Determines if the content string is treated as HTML or plaintext." />
+
+                <CheckBox label="Immediate"
+                          v-model="immediate"
+                          help="Determines if the tooltip will immediately show and hide the tooltip and ignore the delay settings." />
+
+                <CheckBox label="Wide"
+                          v-model="wide"
+                          help="Presents the tooltip in a slightly wider format to accomodate large content." />
+
+                <CheckBox label="Overflow"
+                          v-model="overflow"
+                          help="Only shows the tooltip if the content of the attached item is overflowing and hidden." />
+
+                <NumberBox label="Show Delay (ms)"
+                           :decimalCount="0"
+                           v-model="showDelay"
+                           help="The number of milliseconds to wait before showing the tooltip." />
+
+                <NumberBox label="Hide Delay (ms)"
+                           :decimalCount="0"
+                           v-model="hideDelay"
+                           help="The number of milliseconds to wait before hiding the tooltip." />
+
+                <CheckBox label="Simulate Overflow"
+                          v-model="simulateOverflow"
+                          help="Simulates content overflow for testing purposes." />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { computed, ref } from "vue";
+    import { ComponentUsage, getDirectiveImportPath } from "./common/utils.partial";
+
+    const html = ref(false);
+    const immediate = ref(false);
+    const wide = ref(false);
+    const overflow = ref(false);
+    const showDelay = ref<number>();
+    const hideDelay = ref<number>();
+    const simulateOverflow = ref(false);
+
+    const content = computed((): string | undefined => {
+        return html.value
+            ? "<p>This is a sample <b>tooltip</b> that contains HTML content.</p>"
+            : "This is a sample tooltip with only plain text content.";
+    });
+
+    const buttonStyles = computed((): Record<string, string> => {
+        if (simulateOverflow.value) {
+            return {
+                maxWidth: "100px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis"
+            };
+        }
+
+        return {};
+    });
+
+    const importCode = getDirectiveImportPath("tooltip", true);
+
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("div");
+        let attributeName = "v-tooltip";
+        let contentValue = `${content.value}`;
+
+        if (html.value) {
+            attributeName += ".html";
+        }
+
+        if (immediate.value) {
+            attributeName += ".immediate";
+        }
+
+        if (wide.value) {
+            attributeName += ".wide";
+        }
+
+        if (showDelay.value || hideDelay.value) {
+            contentValue = `{ content: '${content.value}'`;
+
+            if (showDelay.value) {
+                contentValue += `, showDelay: ${showDelay.value}`;
+            }
+
+            if (hideDelay.value) {
+                contentValue += `, hideDelay: ${hideDelay.value}`;
+            }
+
+            contentValue += " }";
+        }
+
+        usage.addAttribute(attributeName, contentValue);
+
+        usage.addBody("Hover over me.");
+
+        return usage.toString();
+    });
+</script>

@@ -22,52 +22,52 @@
         <div class="row">
             <div class="col-md-6">
                 <DropDownList label="Group Requirement Type" v-model="groupRequirementTypeValue"
-                              :items="groupRequirementTypeItems" rules="required" help="The Group Requirement Type to impose." />
+                              :items="groupRequirementTypeItems" rules="required" help="Select the requirement definition to apply to this group. These are maintained in Group Requirement Types (for example, a Background Check). When a group member is added, Rock will evaluate whether they meet the requirement (and can optionally trigger workflows)." />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6">
-                <DropDownList label="Group Role" v-model="groupRoleValue" :items="groupRoleOptions" showBlankItem
-                              help="Select the group role that this requirement applies to. Leave blank if it applies to all roles." />
+                <DropDownList label="Applies to Group Role" v-model="groupRoleValue" :items="groupRoleOptions" showBlankItem
+                              help="Specifies the group role this requirement applies to. Leave blank to apply the requirement to all roles." />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6">
                 <RadioButtonList label="Applies to Age Classification" v-model="appliesToAgeClassificationValue"
-                                 :items="enumToListItemBag(AppliesToAgeClassificationDescription)" />
+                                 :items="enumToListItemBag(AppliesToAgeClassificationDescription)" help="Specifies which age classifications this requirement applies to." />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-6">
-                <DataViewPicker label="Applies to Data View" v-model="theGroupRequirement.appliesToDataView" />
+                <DataViewPicker label="Applies to Data View" v-model="theGroupRequirement.appliesToDataView" help="Optionally select a Data View that determines which individuals the requirement applies to." />
             </div>
         </div>
 
         <div v-if="renderDueDateSection" class="row">
             <div class="col-md-6">
                 <DatePicker v-if="theGroupRequirement.dueDateType === DueDateType.ConfiguredDate"
-                            label="Requirement Due Date" v-model="theGroupRequirement.dueDateStaticDate" rules="required" />
+                            label="Requirement Due Date" v-model="theGroupRequirement.dueDateStaticDate" rules="required" help="Inherited from the selected Group Requirement Type. Specifies the date by which this requirement must be met." />
 
                 <DropDownList v-if="theGroupRequirement.dueDateType === DueDateType.GroupAttribute"
                               label="Due Date Group Attribute" v-model="dueDateAttributeValue" :items="groupAttributeOptions"
-                              rules="required" help="The group attribute that contains the due date for this requirement." />
+                              rules="required" help="Inherited from the selected Group Requirement Type. Defines which group attribute stores the requirement's due date." />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-12">
                 <InlineCheckBox label="Allow Leaders to Override Requirement"
-                                v-model="theGroupRequirement.allowLeadersToOverride" />
+                                v-model="theGroupRequirement.allowLeadersToOverride" help="When enabled, group leaders can override this requirement for their members." />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-12">
                 <InlineCheckBox label="Require Members to Meet Requirement Before Adding"
-                                v-model="theGroupRequirement.mustMeetRequirementToAddMember" />
+                                v-model="theGroupRequirement.mustMeetRequirementToAddMember" help="When enabled, individuals must meet this requirement before they can be added as group members. This applies only to Data View and SQL-based requirements, since manual requirements cannot be validated before adding." />
             </div>
         </div>
     </Modal>

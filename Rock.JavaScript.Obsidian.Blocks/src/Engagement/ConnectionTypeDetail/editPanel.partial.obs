@@ -1,0 +1,550 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer>
+        <ContentSection light>
+            <div class="basic-fields">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name" label="Name" rules="required" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <CheckBox v-model="isActive" label="Active" />
+                    </div>
+                </div>
+
+                <TextBox v-model="description" label="Description" textMode="multiline" />
+
+                <IconPicker v-model="iconCssClass" label="Icon" />
+            </div>
+        </ContentSection>
+
+        <ContentSection title="Settings" icon="ti ti-settings">
+            <ContentStack title="Features &amp; Views"
+                          description="Control how request data from this connection type can be viewed and which features are available.">
+                <CheckBoxList label="Enabled Views" v-model="enabledViewsValue" :items="enabledViewsOptions"
+                              :rules="enabledViewsRules"
+                              help="Select which views are available when managing requests for this connection type. At least one of List, Grid, or Board is required." />
+
+                <CheckBoxList label="Enabled Features" v-model="enabledFeaturesValue" :items="enabledFeaturesOptions" :itemsHelpText="enabledFeaturesItemsHelpText"
+                              help="Choose which features are available in the Connections Hub and request detail view for this connection type. NOTE: currently, Reminders and Connection Celebrations are only available on the List View." />
+            </ContentStack>
+
+            <ContentStack title="Request Type Configuration"
+                          description="Configure how requests of this type are managed, including security, activity visibility, and completion requirements.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <PagePicker v-model="connectionRequestDetailPage" label="Connection Request Detail Page"
+                                    help="Select the page used to view requests for this connection type. This allows different connection types to use different request detail pages. If left blank, the default request detail page will be used."
+                                    trailblazerField />
+                    </div>
+                </div>
+
+                <div v-if="isGroupPlacementEnabled" class="form-group">
+                    <InlineCheckBox label="Requires Placement Group to Complete"
+                                    v-model="requiresPlacementGroupToConnect"
+                                    help="Prevents a request from being completed until a Placement Group is assigned." />
+                </div>
+
+                <div class="form-group">
+                    <InlineCheckBox label="Show Full Activity List" v-model="enableFullActivityList"
+                                    help="Displays activities from other connection requests made by the same individual."
+                                    trailblazerField />
+                </div>
+
+                <div class="form-group">
+                    <InlineCheckBox label="Enable Request Security" v-model="enableRequestSecurity"
+                                    help="Allows security to be applied to individual connection requests. Assigned connectors will automatically be granted access to their own requests, even if they do not have security to the connection opportunity or type. Enabling this option can impact performance when a large number of requests exist."
+                                    trailblazerField />
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Date Settings"
+                          description="Define how due dates are calculated and when requests are considered due or due soon.">
+                <RadioButtonList label="Due Date Calculation Mode" v-model="dueDateCalculationModeValue"
+                                 :items="enumToListItemBag(DueDateCalculationModeDescription)"
+                                 help="Choose how due dates are calculated for connection requests:<br>• Type Level: Uses a fixed number of days from the request start date defined at the connection type.<br>• Opportunity Level: Uses a fixed number of days from the request start date defined per connection opportunity.<br>• Duration per Status: Calculates the due date based on how long a request can remain in its current status, updating as the request moves between statuses." />
+
+                <ConditionalWell v-if="dueDateCalculationMode === DueDateCalculationMode.FixedDaysFromStartTypeLevel">
+                    <NumberBox label="Request Due Duration (In Days)" v-model="requestDueDateOffsetInDays"
+                               inputClasses="input-width-md" :rules="dueDurationRules"
+                               help="Defines how many days a request can remain open before it is considered due." />
+
+                    <NumberBox label="Due Soon Window (In Days)" v-model="requestDueSoonOffsetInDays"
+                               inputClasses="input-width-md" :rules="dueSoonWindowRules"
+                               help="Defines the number of days before the due date during which a request is considered due soon." />
+                </ConditionalWell>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Connection Type Attributes" icon="ti ti-binary-tree-2">
+            <ConnectionTypeAttributes v-model:connectionTypeAttributes="connectionTypeAttributes"
+                                      v-model:attributeValues="attributeValues" :attributesForAttributeValueContainer="attributes" />
+        </ContentSection>
+
+        <ContentSection title="Connection Request Attributes" icon="ti ti-binary-tree-2">
+            <ConnectionRequestAttributes v-model:connectionRequestAttributes="connectionRequestAttributes" />
+        </ContentSection>
+
+        <ContentSection title="Opportunity Attributes" icon="ti ti-binary-tree-2">
+            <ConnectionOpportunityAttributes v-model:connectionOpportunityAttributes="connectionOpportunityAttributes" />
+        </ContentSection>
+
+        <ContentSection title="Activity Types" icon="ti ti-activity">
+            <ActivitiesSection v-model:activityTypes="activityTypes" :workflows="workflows" />
+        </ContentSection>
+
+        <ContentSection title="Statuses" icon="ti ti-select">
+            <StatusesSection v-model:statuses="statuses" :workflows="workflows" :dueDateCalculationMode="dueDateCalculationMode" :isFutureFollowupEnabled="enableFutureFollowup" />
+        </ContentSection>
+
+        <ContentSection title="Workflows" icon="ti ti-settings-automation">
+            <WorkflowsSection v-model:workflows="workflows" :isFutureFollowupEnabled="enableFutureFollowup" :statusOptions="statusOptions" :activityTypeOptions="activityTypeOptions" />
+        </ContentSection>
+
+        <ContentSection title="Additional Settings" icon="ti ti-file-settings">
+            <AdditionalSettingsSection v-model:additionalSettings="additionalSettings"
+                                       :communicationTemplateOptions="props.options.communicationTemplateOptions ?? []"
+                                       :connectionTypeOptions="props.options.connectionTypeOptions ?? []"
+                                       :hasActiveAIProvider="props.options.hasActiveAIProvider ?? false" />
+        </ContentSection>
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { ConnectionTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionTypeBag";
+    import { ConnectionTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionTypeDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { EnabledViewFlags, EnabledViewFlagsDescription } from "@Obsidian/Enums/Connection/enabledViewFlags";
+    import { EnabledFeatureFlags } from "@Obsidian/Enums/Connection/enabledFeatureFlags";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { FeatureOption } from "./types.partial";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import { DueDateCalculationMode, DueDateCalculationModeDescription } from "@Obsidian/Enums/Connection/dueDateCalculationMode";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import ConnectionTypeAttributes from "./connectionTypeAttributes.partial.obs";
+    import ConnectionRequestAttributes from "./connectionRequestAttributes.partial.obs";
+    import ConnectionOpportunityAttributes from "./connectionOpportunityAttributes.partial.obs";
+    import ActivitiesSection from "./activities.partial.obs";
+    import StatusesSection from "./statuses.partial.obs";
+    import WorkflowsSection from "./workflows.partial.obs";
+    import AdditionalSettingsSection from "./additionalSettings.partial.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<ConnectionTypeBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ConnectionTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<ConnectionTypeBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const enabledViewFlags = [EnabledViewFlags.List, EnabledViewFlags.Board, EnabledViewFlags.Grid, EnabledViewFlags.Snapshot]; // 'Analytics' will be added later
+    const enabledFeatureFlags = [EnabledFeatureFlags.Reminder, EnabledFeatureFlags.Celebration, EnabledFeatureFlags.GroupPlacement];
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const iconCssClass = propertyRef(props.modelValue.bag?.iconCssClass ?? "", "IconCssClass");
+    const enabledViews = propertyRef(props.modelValue.bag?.enabledViews ?? EnabledViewFlags.None, "EnabledViews");
+    const enabledFeatures = propertyRef(props.modelValue.bag?.enabledFeatures ?? EnabledFeatureFlags.None, "EnabledFeatures");
+    const enableFutureFollowup = propertyRef(props.modelValue.bag?.enableFutureFollowup ?? false, "EnableFutureFollowup");
+    const isSequentialStatusEnforced = propertyRef(props.modelValue.bag?.isSequentialStatusEnforced ?? false, "IsSequentialStatusEnforced");
+    const connectionRequestDetailPage = propertyRef(props.modelValue.bag?.connectionRequestDetailPage ?? {}, "ConnectionRequestDetailPage");
+    const requiresPlacementGroupToConnect = propertyRef(props.modelValue.bag?.requiresPlacementGroupToConnect ?? false, "RequiresPlacementGroupToConnect");
+    const enableFullActivityList = propertyRef(props.modelValue.bag?.enableFullActivityList ?? false, "EnableFullActivityList");
+    const enableRequestSecurity = propertyRef(props.modelValue.bag?.enableRequestSecurity ?? false, "EnableRequestSecurity");
+    const dueDateCalculationMode = propertyRef(props.modelValue.bag?.dueDateCalculationMode ?? DueDateCalculationMode.FixedDaysFromStartTypeLevel, "DueDateCalculationMode");
+    const requestDueDateOffsetInDays = propertyRef(props.modelValue.bag?.requestDueDateOffsetInDays ?? 0, "RequestDueDateOffsetInDays");
+    const requestDueSoonOffsetInDays = propertyRef(props.modelValue.bag?.requestDueSoonOffsetInDays ?? 0, "RequestDueSoonOffsetInDays");
+    const connectionTypeAttributes = propertyRef(props.modelValue.bag?.connectionTypeAttributes ?? [], "ConnectionTypeAttributes");
+    const connectionRequestAttributes = propertyRef(props.modelValue.bag?.connectionRequestAttributes ?? [], "ConnectionRequestAttributes");
+    const connectionOpportunityAttributes = propertyRef(props.modelValue.bag?.connectionOpportunityAttributes ?? [], "ConnectionOpportunityAttributes");
+    const activityTypes = propertyRef(props.modelValue.bag?.activityTypes ?? [], "ActivityTypes");
+    const statuses = propertyRef(props.modelValue.bag?.statuses ?? [], "Statuses");
+    const workflows = propertyRef(props.modelValue.bag?.workflows ?? [], "Workflows");
+    const additionalSettings = propertyRef(props.modelValue.bag?.additionalSettings ?? {}, "AdditionalSettings");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, iconCssClass, enabledViews, enabledFeatures, enableFutureFollowup, isSequentialStatusEnforced, connectionRequestDetailPage,
+        requiresPlacementGroupToConnect, enableFullActivityList, enableRequestSecurity, dueDateCalculationMode, requestDueDateOffsetInDays, requestDueSoonOffsetInDays,
+        connectionTypeAttributes, connectionRequestAttributes, connectionOpportunityAttributes, activityTypes, statuses, workflows, additionalSettings];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const enabledViewsValue = computed({
+        get(): string[] {
+            const value = enabledViews.value;
+            return enabledViewFlags
+                .filter(flag => (value & flag) === flag)
+                .map(flag => flag.toString());
+        },
+        set(newValue: string[]) {
+            let value = 0;
+
+            for (const val of newValue) {
+                value |= parseInt(val, 10);
+            }
+
+            enabledViews.value = value;
+
+            // Disable 'Reminders' and 'Connection Celebrations' within EnabledFeatures if
+            // 'List' view is not selected as an Enabled View.
+            if (!newValue.includes(EnabledViewFlags.List.toString())) {
+                enabledFeatures.value &= ~EnabledFeatureFlags.Reminder;
+                enabledFeatures.value &= ~EnabledFeatureFlags.Celebration;
+            }
+        }
+    });
+
+    /*
+        2/5/2026 - MSE
+
+        EnableFutureFollowup and IsSequentialStatusEnforced are not part of the
+        EnabledFeatures setting on a Connection Type.
+
+        These settings are included in the EnabledFeatures CheckBoxList only for
+        UI organization and discoverability. They are not represented in the
+        EnabledFeatures bitwise value and are instead stored as separate boolean
+        properties on the ConnectionTypeBag.
+
+        Reason: Keep these settings independent while displaying them alongside
+        feature flags for a clearer configuration experience.
+    */
+    const enabledFeaturesValue = computed({
+        get(): string[] {
+            const value = enabledFeatures.value;
+            const selected: string[] = enabledFeatureFlags
+                .filter(flag => (value & flag) === flag)
+                .map(flag => flag.toString());
+
+            if (enableFutureFollowup.value) {
+                selected.push(FeatureOption.EnableFutureFollowup);
+            }
+
+            if (isSequentialStatusEnforced.value) {
+                selected.push(FeatureOption.IsSequentialStatusEnforced);
+            }
+
+            return selected;
+        },
+        set(newValue: string[]) {
+            let value = 0;
+
+            for (const val of newValue) {
+                const flagValue = parseInt(val, 10);
+
+                if (!Number.isNaN(flagValue)) {
+                    value |= flagValue;
+                }
+            }
+
+            enabledFeatures.value = value;
+            enableFutureFollowup.value = newValue.includes(FeatureOption.EnableFutureFollowup);
+            isSequentialStatusEnforced.value = newValue.includes(FeatureOption.IsSequentialStatusEnforced);
+
+            // Disable 'Requires Placement Group to Complete' if 'Group Placement' is not selected.
+            if (!newValue.includes(EnabledFeatureFlags.GroupPlacement.toString())) {
+                requiresPlacementGroupToConnect.value = false;
+            }
+        }
+    });
+
+    const isGroupPlacementEnabled = computed(() => {
+        return (enabledFeatures.value & EnabledFeatureFlags.GroupPlacement) === EnabledFeatureFlags.GroupPlacement;
+    });
+
+    const enabledViewsOptions = computed((): ListItemBag[] => {
+        return enabledViewFlags.map(flag => ({
+            value: flag.toString(),
+            text: EnabledViewFlagsDescription[flag]
+        }));
+    });
+
+    const enabledViewsRules = computed((): (ValidationRuleFunction | string)[] => {
+        return ["required", validateEnabledViews];
+    });
+
+    /**
+     * Builds the Enabled Features options, disabling 'Reminders' and 'Connection Celebrations'
+     * when 'List' is not enabled as an Enabled View.
+     *
+     * 'Future Follow-Up' and 'Sequential Status Mode' are included in this list
+     * for UI purposes only; they are not actually part of the EnabledFeatures bitwise value,
+     * and are instead stored as separate boolean properties on the ConnectionTypeBag.
+     */
+    const enabledFeaturesOptions = computed((): ListItemBag[] => {
+        const disableListOnlyFeatures = !enabledViewsValue.value.includes(EnabledViewFlags.List.toString());
+
+        const items: ListItemBag[] = [
+            {
+                value: FeatureOption.EnableFutureFollowup,
+                text: "Future Follow-Up"
+            },
+            {
+                value: EnabledFeatureFlags.GroupPlacement.toString(),
+                text: "Group Placement"
+            },
+            {
+                value: EnabledFeatureFlags.Reminder.toString(),
+                text: "Reminders"
+            },
+            {
+                value: EnabledFeatureFlags.Celebration.toString(),
+                text: "Connection Celebrations"
+            },
+            {
+                value: FeatureOption.IsSequentialStatusEnforced,
+                text: "Sequential Status Mode"
+            }
+        ];
+
+        return items.map(item => {
+            const isListOnlyFeature = item.value === EnabledFeatureFlags.Reminder.toString()
+                || item.value === EnabledFeatureFlags.Celebration.toString();
+
+            return {
+                ...item,
+                disabled: disableListOnlyFeatures && isListOnlyFeature
+            };
+        });
+    });
+
+    const enabledFeaturesItemsHelpText: Record<string, string> = {
+        [FeatureOption.EnableFutureFollowup]: "Allows a request to be paused until a specified date, after which it will automatically return to an Active state.",
+        [EnabledFeatureFlags.GroupPlacement.toString()]: "When enabled, all opportunities in this connection type can assign requestors to placement groups after completion.",
+        [EnabledFeatureFlags.Reminder.toString()]: "When enabled, connectors can add reminders specific to requests in this connection type.",
+        [EnabledFeatureFlags.Celebration.toString()]: "When enabled, connectors can create reminders that are tied to individual requests in this connection type.",
+        [FeatureOption.IsSequentialStatusEnforced]: "When enabled, this will force each status to be completed sequentially according to the configured order."
+    };
+
+    const dueDateCalculationModeValue = computed({
+        get(): string {
+            return dueDateCalculationMode.value.toString();
+        },
+        set(newValue: string) {
+            dueDateCalculationMode.value = parseInt(newValue, 10) as DueDateCalculationMode;
+        }
+    });
+
+    /*
+        2/5/2026 - MSE
+
+        The "Due Soon Window" field must also validate against the "Due Duration" field.
+        However, validation only re-runs when that field’s own modelValue changes.
+
+        This computed property exists to force re-validation of the "Due Soon Window"
+        in the case where the "Due Duration" value changes.
+
+        This ensures a validation error appears when:
+        - Due Duration is reduced below the current Due Soon Window value, or
+        - Due Soon Window is increased above the current Due Duration value.
+
+        TL;DR... the error will be shown on the "Due Soon Window" field, no matter
+        which field was changed to cause the validation failure.
+    */
+    const dueSoonWindowRules = computed((): (ValidationRuleFunction | string)[] => {
+        void requestDueDateOffsetInDays.value;
+        return ["required", validateDueSoonWindow];
+    });
+
+    const dueDurationRules = computed((): (ValidationRuleFunction | string)[] => {
+        return ["required", validateDueDuration];
+    });
+
+    /**
+     * Builds the options for Activity Types in the Workflows section, which is based on the current list of activity types for this connection type.
+     * This allows users to select from existing activity types when configuring workflow actions and qualifiers.
+     */
+    const activityTypeOptions = computed((): ListItemBag[] => {
+        return (activityTypes.value ?? []).map(at => ({
+            value: at.guid,
+            text: at.name
+        }));
+    });
+
+    /**
+     * Builds the options for Statuses in the Workflows section, which is based on the current list of statuses for this connection type.
+     * This allows users to select from existing statuses when configuring workflow actions and qualifiers.
+     */
+    const statusOptions = computed((): ListItemBag[] => {
+        return (statuses.value ?? []).map(s => ({
+            value: s.guid,
+            text: s.name
+        }));
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Validates that at least one of List, Board, or Grid is selected.
+     * Snapshot is an optional selection and is not involved in this requirement.
+     */
+    const validateEnabledViews: ValidationRuleFunction = (value): ValidationResult => {
+        if (!Array.isArray(value)) {
+            return "invalid value";
+        }
+
+        const hasRequiredView = value.some(v => [
+            EnabledViewFlags.List.toString(),
+            EnabledViewFlags.Board.toString(),
+            EnabledViewFlags.Grid.toString()
+        ].includes(v));
+
+        return hasRequiredView ? true : "List, Board, or Grid must be selected.";
+    };
+
+    /**
+     * Validates the Due Duration field.
+     * The value is required and must be greater than 0.
+     */
+    const validateDueDuration: ValidationRuleFunction = (value): ValidationResult => {
+        if (typeof value !== "number" && typeof value !== "string") {
+            return "Invalid value provided.";
+        }
+
+        const dueDuration = toNumber(value);
+
+        // Required & positive
+        if (dueDuration <= 0) {
+            return "A number greater than 0 must be provided.";
+        }
+
+        return true;
+    };
+
+    /**
+     * Validates the Due Soon Window field.
+     * The value is required, must be greater than 0, and cannot exceed the
+     * Due Duration value.
+     */
+    const validateDueSoonWindow: ValidationRuleFunction = (value): ValidationResult => {
+        if (typeof value !== "number" && typeof value !== "string") {
+            return "Invalid value provided.";
+        }
+
+        const dueSoonWindow = toNumber(value);
+        const dueDuration = toNumber(requestDueDateOffsetInDays.value);
+
+        // Required & positive
+        if (dueSoonWindow <= 0) {
+            return "A number greater than 0 must be provided.";
+        }
+
+        // Must not exceed Due Duration
+        if (dueDuration > 0 && dueSoonWindow > dueDuration) {
+            return "This value must be less than the Request Due Duration.";
+        }
+
+        return true;
+    };
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(iconCssClass, props.modelValue.bag?.iconCssClass ?? "");
+        updateRefValue(enabledViews, props.modelValue.bag?.enabledViews ?? EnabledViewFlags.None);
+        updateRefValue(enabledFeatures, props.modelValue.bag?.enabledFeatures ?? EnabledFeatureFlags.None);
+        updateRefValue(enableFutureFollowup, props.modelValue.bag?.enableFutureFollowup ?? false);
+        updateRefValue(isSequentialStatusEnforced, props.modelValue.bag?.isSequentialStatusEnforced ?? false);
+        updateRefValue(connectionRequestDetailPage, props.modelValue.bag?.connectionRequestDetailPage ?? {});
+        updateRefValue(requiresPlacementGroupToConnect, props.modelValue.bag?.requiresPlacementGroupToConnect ?? false);
+        updateRefValue(enableFullActivityList, props.modelValue.bag?.enableFullActivityList ?? false);
+        updateRefValue(enableRequestSecurity, props.modelValue.bag?.enableRequestSecurity ?? false);
+        updateRefValue(dueDateCalculationMode, props.modelValue.bag?.dueDateCalculationMode ?? DueDateCalculationMode.FixedDaysFromStartTypeLevel);
+        updateRefValue(requestDueDateOffsetInDays, props.modelValue.bag?.requestDueDateOffsetInDays ?? 0);
+        updateRefValue(requestDueSoonOffsetInDays, props.modelValue.bag?.requestDueSoonOffsetInDays ?? 0);
+        updateRefValue(connectionTypeAttributes, props.modelValue.bag?.connectionTypeAttributes ?? []);
+        updateRefValue(connectionRequestAttributes, props.modelValue.bag?.connectionRequestAttributes ?? []);
+        updateRefValue(connectionOpportunityAttributes, props.modelValue.bag?.connectionOpportunityAttributes ?? []);
+        updateRefValue(activityTypes, props.modelValue.bag?.activityTypes ?? []);
+        updateRefValue(statuses, props.modelValue.bag?.statuses ?? []);
+        updateRefValue(workflows, props.modelValue.bag?.workflows ?? []);
+        updateRefValue(additionalSettings, props.modelValue.bag?.additionalSettings ?? {});
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<ConnectionTypeBag> = {
+            bag: { ...props.modelValue.bag } as ConnectionTypeBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "enabledViews", enabledViews.value);
+        setPropertiesBoxValue(newValue, "enabledFeatures", enabledFeatures.value);
+        setPropertiesBoxValue(newValue, "enableFutureFollowup", enableFutureFollowup.value);
+        setPropertiesBoxValue(newValue, "isSequentialStatusEnforced", isSequentialStatusEnforced.value);
+        setPropertiesBoxValue(newValue, "connectionRequestDetailPage", connectionRequestDetailPage.value);
+        setPropertiesBoxValue(newValue, "requiresPlacementGroupToConnect", requiresPlacementGroupToConnect.value);
+        setPropertiesBoxValue(newValue, "enableFullActivityList", enableFullActivityList.value);
+        setPropertiesBoxValue(newValue, "enableRequestSecurity", enableRequestSecurity.value);
+        setPropertiesBoxValue(newValue, "dueDateCalculationMode", dueDateCalculationMode.value);
+        setPropertiesBoxValue(newValue, "requestDueDateOffsetInDays", requestDueDateOffsetInDays.value);
+        setPropertiesBoxValue(newValue, "requestDueSoonOffsetInDays", requestDueSoonOffsetInDays.value);
+        setPropertiesBoxValue(newValue, "connectionTypeAttributes", connectionTypeAttributes.value);
+        setPropertiesBoxValue(newValue, "connectionRequestAttributes", connectionRequestAttributes.value);
+        setPropertiesBoxValue(newValue, "connectionOpportunityAttributes", connectionOpportunityAttributes.value);
+        setPropertiesBoxValue(newValue, "activityTypes", activityTypes.value);
+        setPropertiesBoxValue(newValue, "statuses", statuses.value);
+        setPropertiesBoxValue(newValue, "workflows", workflows.value);
+        setPropertiesBoxValue(newValue, "additionalSettings", additionalSettings.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // #endregion Watchers
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

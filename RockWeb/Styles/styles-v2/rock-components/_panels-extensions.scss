@@ -128,6 +128,9 @@
       }
 
       .btn-panel-action {
+        display:          flex;
+        align-items:      center;
+        justify-content:  center;
         height:           56px;
         width:            56px;
         margin:           0;
@@ -148,6 +151,15 @@
         &:hover {
           background-color: var(--color-interface-soft);
           color:            var(--color-interface-stronger);
+        }
+
+        &.not-clickable {
+          cursor:           default;
+
+          &:hover {
+            background-color: transparent;
+            color:            var(--color-interface-medium);
+          }
         }
       }
 

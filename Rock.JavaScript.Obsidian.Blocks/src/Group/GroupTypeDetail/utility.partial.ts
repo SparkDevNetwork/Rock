@@ -16,7 +16,6 @@
 //
 
 import { FieldType } from "@Obsidian/SystemGuids/fieldType";
-import { newGuid } from "@Obsidian/Utility/guid";
 import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
 
 /**
@@ -25,7 +24,7 @@ import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicE
  */
 export function createNewAttribute(): PublicEditableAttributeBag {
     return {
-        guid: newGuid(),
+        guid: "",
         name: "",
         description: "",
         isActive: true,

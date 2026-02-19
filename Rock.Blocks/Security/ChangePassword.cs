@@ -128,7 +128,11 @@ namespace Rock.Blocks.Security
                 IsChangePasswordVisible = true
             };
 
+#if REVIEW_WEBFORMS
             if ( RequestContext.CurrentUser == null || !RequestContext.CurrentUser.IsAuthenticated )
+#else
+            throw new System.NotImplementedException();
+#endif
             {
                 box.IsChangePasswordVisible = false;
                 box.AlertMessage = MustLoginCaption;
@@ -220,7 +224,11 @@ namespace Rock.Blocks.Security
                 return ActionBadRequest( "Captcha was not valid." );
             }
 
+#if REVIEW_WEBFORMS
             if ( RequestContext.CurrentUser == null || !RequestContext.CurrentUser.IsAuthenticated )
+#else
+            throw new System.NotImplementedException();
+#endif
             {
                 return ActionBadRequest( MustLoginCaption );
             }

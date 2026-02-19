@@ -47,7 +47,7 @@ namespace Rock.Tests.Shared
             public const string PrayerRequestFinancesOnly = "DA235296-0E77-4352-A5F7-08C66AF92726";
             public const string PrayerRequestJobOnly = "99136D63-6ACD-4496-8D08-793EE917978B";
 
-            public const string SystemEmailSystem = "9AF1FA93-089B-44B7-83A3-48E0031CCC1D";
+            public const string SystemCommunicationSystem = "CFBD6895-9685-438A-8BDA-459D6CEBC675";
         }
 
         public static class Communications

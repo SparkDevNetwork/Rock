@@ -28,7 +28,6 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.AdaptiveMessageList;
-using Rock.ViewModels.Blocks.Core.ScheduleList;
 using Rock.Web.Cache;
 
 using static Rock.Blocks.Cms.AdaptiveMessageList;
@@ -157,7 +156,7 @@ namespace Rock.Blocks.Cms
         /// <returns>A queryable for <see cref="FinancialBatch"/>.</returns>
         private IQueryable<AdaptiveMessageCategory> GetAdaptiveMessageCategoryQueryable( RockContext rockContext )
         {
-            var qry = new AdaptiveMessageCategoryService( rockContext )
+            IQueryable<AdaptiveMessageCategory> qry = new AdaptiveMessageCategoryService( rockContext )
                 .Queryable()
                 .Include( a => a.AdaptiveMessage );
 

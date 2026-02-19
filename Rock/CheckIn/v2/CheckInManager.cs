@@ -23,6 +23,7 @@ using System.Linq;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Reporting;
 using Rock.ViewModels.Blocks.CheckIn.Manager.Roster;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -185,8 +186,9 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <param name="attendance">The attendance record to be converted.</param>
         /// <param name="attributeBadgeIds">A list of badges based on person attributes to include.</param>
+        /// <param name="alertIconDataViews">A list of <see cref="DataViewCache"/> objects that represent additional alert icons to be included.</param>
         /// <returns>An instance of <see cref="RosterAttendanceBag"/> that represents the attendance record.</returns>
-        public RosterAttendanceBag GetAttendanceBag( Attendance attendance, List<int> attributeBadgeIds )
+        public RosterAttendanceBag GetAttendanceBag( Attendance attendance, List<int> attributeBadgeIds, List<DataViewCache> alertIconDataViews )
         {
             var schedule = NamedScheduleCache.Get( attendance.Occurrence.ScheduleId.Value, RockContext );
             var group = GroupCache.Get( attendance.Occurrence.GroupId.Value, RockContext );
@@ -195,7 +197,7 @@ namespace Rock.CheckIn.v2
             return new RosterAttendanceBag
             {
                 IdKey = attendance.IdKey,
-                Attendee = GetAttendeeBag( attendance.PersonAlias.Person, attributeBadgeIds ),
+                Attendee = GetAttendeeBag( attendance.PersonAlias.Person, attributeBadgeIds, alertIconDataViews ),
                 CheckInTime = attendance.StartDateTime.ToRockDateTimeOffset(),
                 PresentTime = attendance.PresentDateTime.HasValue ? attendance.PresentDateTime.Value.ToRockDateTimeOffset() : ( DateTimeOffset? ) null,
                 CheckoutTime = attendance.EndDateTime.HasValue ? attendance.EndDateTime.Value.ToRockDateTimeOffset() : ( DateTimeOffset? ) null,
@@ -220,24 +222,40 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <param name="person">The person object to be converted.</param>
         /// <param name="attributeBadgeIds">A list of badges based on person attributes to include.</param>
+        /// <param name="alertIconDataViews">A list of <see cref="DataViewCache"/> objects that represent additional alert icons to be included.</param>
         /// <returns>An instance of <see cref="RosterAttendeeBag"/> that represents the person.</returns>
-        public RosterAttendeeBag GetAttendeeBag( Person person, List<int> attributeBadgeIds )
+        public RosterAttendeeBag GetAttendeeBag( Person person, List<int> attributeBadgeIds, List<DataViewCache> alertIconDataViews )
         {
             if ( person.AttributeValues == null )
             {
                 person.LoadAttributes( RockContext );
             }
 
-            var badges = person.AttributeValues
+            var attributeBadges = person.AttributeValues
                 .OrderBy( av => person.Attributes[av.Key].Order )
                 .Where( av => attributeBadgeIds.Contains( person.Attributes[av.Key].Id ) && av.Value.Value.IsNotNullOrWhiteSpace() )
                 .Select( av => new RosterAttendeeBadgeBag
                 {
                     IconCssClass = person.Attributes[av.Key].IconCssClass.IfEmpty( "ti ti-square" ),
                     Color = person.Attributes[av.Key].AttributeColor,
-                    Text = av.Value.Value,
-                } )
-                .ToList();
+                    Text = av.Value.PersistedTextValue,
+                } );
+
+            var dataViewOptions = new GetQueryableOptions
+            {
+                DbContext = RockContext
+            };
+
+            var dataViewBadges = alertIconDataViews
+                .Where( dv => dv.IsPersisted() && dv.GetEntityIds( dataViewOptions ).Contains( person.Id ) )
+                .Select( dv => new RosterAttendeeBadgeBag
+                {
+                    IconCssClass = dv.IconCssClass.IfEmpty( "ti ti-square" ),
+                    Color = dv.HighlightColor,
+                    Text = dv.Name,
+                } );
+
+            var badges = attributeBadges.Union( dataViewBadges ).ToList();
 
             var daysToBirthdayOrNull = person.DaysToBirthdayOrNull;
             if ( daysToBirthdayOrNull.HasValue && daysToBirthdayOrNull.Value < 7 )
@@ -257,7 +275,7 @@ namespace Rock.CheckIn.v2
                     birthdayText = $"On {RockDateTime.Today.AddDays( daysToBirthdayOrNull.Value ):dddd}";
                 }
 
-                badges.Add( new RosterAttendeeBadgeBag
+                badges.Insert( 0, new RosterAttendeeBadgeBag
                 {
                     IconCssClass = "ti ti-cake",
                     Color = "#2f855a",
@@ -398,7 +416,16 @@ namespace Rock.CheckIn.v2
                 groupTypeIds = new GroupTypeService( RockContext ).GetAllCheckinAreaPaths().Select( a => a.GroupTypeId ).ToList();
             }
 
-            attendanceQry = attendanceQry.Where( a => groupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) );
+            // If we have less than 250 group type ids, use the pattern that will
+            // allow EF to cache the query plan. This number was chosen arbitrarily.
+            if ( groupTypeIds.Count <= 250 )
+            {
+                attendanceQry = CheckInDirector.WhereContains( attendanceQry, groupTypeIds, a => a.Occurrence.Group.GroupTypeId );
+            }
+            else
+            {
+                attendanceQry = attendanceQry.Where( a => groupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) );
+            }
 
             // Limit to Groups that are configured for the selected location.
             var groupLocationQry = new GroupLocationService( RockContext ).Queryable()

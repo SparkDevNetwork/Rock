@@ -702,7 +702,11 @@ namespace Rock.Blocks.Core
 
                 foreach ( var item in items )
                 {
+#if NET472_OR_GREATER
                     rockContext.Entry( item ).State = System.Data.Entity.EntityState.Modified;
+#else
+                    rockContext.Entry( item ).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+#endif
                 }
 
                 rockContext.SaveChanges();

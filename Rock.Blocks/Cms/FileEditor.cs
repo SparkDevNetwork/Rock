@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,9 +20,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Web.Hosting;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
@@ -179,7 +179,7 @@ namespace Rock.Blocks.Cms
         /// <returns>A <see cref="FileEditorBag"/> containing the resolved file path and the file's contents.</returns>
         private FileEditorBag GetBoxBag()
         {
-            var filePath = HostingEnvironment.MapPath( _fileRelativePath );
+            var filePath = RockApp.Current.MapPath( _fileRelativePath );
 
             var bag = new FileEditorBag
             {
@@ -241,7 +241,7 @@ namespace Rock.Blocks.Cms
             }
 
             // Check that the file exists
-            var fileUrl = HostingEnvironment.MapPath( relativeFilePath );
+            var fileUrl = RockApp.Current.MapPath( relativeFilePath );
             if ( !File.Exists( fileUrl ) )
             {
                 errorMessage = $"Invalid relative file path.";

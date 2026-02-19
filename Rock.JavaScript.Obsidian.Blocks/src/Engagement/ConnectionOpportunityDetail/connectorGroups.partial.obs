@@ -29,11 +29,11 @@
                 <div class="row">
                     <div class="col-md-3">
                         <DropDownList
-                                    :modelValue="defaultConnectorsForCampus?.[campus.value ?? '']?.value ?? ''"
-                                    @update:modelValue="val => updateDefaultConnector(campus.value ?? '', val)"
-                                    :items="defaultConnectorOptionsForCampus[campus.value ?? ''] ?? []"
-                                    :label="`${campus.text} Default Connector`"
-                                    :placeholder="`Select default connector for ${campus.text}`" />
+                                      :modelValue="defaultConnectorsForCampus?.[campus.value ?? '']?.value ?? ''"
+                                      @update:modelValue="val => updateDefaultConnector(campus.value ?? '', val)"
+                                      :items="defaultConnectorOptionsForCampus[campus.value ?? ''] ?? []"
+                                      :label="`${campus.text} Default Connector`"
+                                      :placeholder="`Select default connector for ${campus.text}`" />
                     </div>
                 </div>
             </div>
@@ -67,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-    import { ref, PropType, computed, watch, onMounted } from "vue";
+    import { ref, PropType, computed, watch } from "vue";
     import Grid, { EditColumn, TextColumn, DeleteColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -81,16 +81,30 @@
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { DefaultConnectorOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/defaultConnectorOptionsRequestBag";
     import { Guid } from "@Obsidian/Types";
+    import { CanDeleteRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/canDeleteRequestBag";
+    import { CanDeleteResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/canDeleteResponseBag";
+    import { EntityKey } from "./types.partial";
 
     const props = defineProps({
-        modelValue: {
+        /**
+         * The list of connector groups available to this opportunity.
+         */
+        connectorGroups: {
             type: Array as PropType<ConnectorGroupBag[]>,
             required: true
         },
+
+        /**
+         * The default connectors keyed by campus GUID.
+         */
         defaultConnectorsForCampus: {
             type: Object as PropType<Record<Guid, ListItemBag> | null>,
             required: false
         },
+
+        /**
+         * The list of campuses available for this opportunity.
+         */
         campuses: {
             type: Array as PropType<ListItemBag[]>,
             required: false
@@ -98,30 +112,45 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ConnectorGroupBag[]): void,
+        (e: "update:connectorGroups", value: ConnectorGroupBag[]): void,
         (e: "update:defaultConnectorsForCampus", value: Record<Guid, ListItemBag>): void
     }>();
 
-    function createNewConnectorGroup(): ConnectorGroupBag {
-        return {
-            guid: newGuid(),
-            connectorGroup: null,
-            campus: null
-        };
-    }
+    // #region Values
 
     const invokeBlockAction = useInvokeBlockAction();
     const errorMessage = ref("");
     const isModalVisible = ref(false);
     const theConnectorGroup = ref<ConnectorGroupBag>(createNewConnectorGroup());
+    let defaultConnectorOptionsFetchToken = 0;
 
     // Key: campus guid, Value: array of people (group members) who are able to be selected as default connectors for that campus.
     const defaultConnectorOptionsForCampus = ref<Record<Guid, ListItemBag[]>>({});
 
+    // #endregion Values
+
     // #region Computed Values
 
+    const connectorGroups = computed({
+        get(): ConnectorGroupBag[] {
+            return props.connectorGroups ?? [];
+        },
+        set(value: ConnectorGroupBag[]) {
+            emit("update:connectorGroups", value);
+        }
+    });
+
+    const defaultConnectorsForCampus = computed({
+        get(): Record<Guid, ListItemBag> {
+            return props.defaultConnectorsForCampus ?? {};
+        },
+        set(value: Record<Guid, ListItemBag>) {
+            emit("update:defaultConnectorsForCampus", value);
+        }
+    });
+
     const gridData = computed(() => {
-        const rows = (props.modelValue ?? []).map(cg => ({
+        const rows = connectorGroups.value.map(cg => ({
             guid: cg.guid,
             group: cg.connectorGroup?.text || "",
             campus: cg.campus?.text || "All Campuses"
@@ -129,7 +158,9 @@
         return { rows };
     });
 
-    // A map of campuses to their applicable group GUIDs that we can use to find eligible default connectors from.
+    /**
+     * A map of campuses to their applicable group GUIDs that we can use to find eligible default connectors from.
+     */
     const groupGuidsByCampusMap = computed<Record<Guid, string[]>>(() => {
         const out: Record<Guid, string[]> = {};
 
@@ -139,8 +170,9 @@
                 continue;
             }
 
-            out[campusGuid] = props.modelValue
-                .filter(cg => !cg.campus?.value || cg.campus.value === campus.value) // campus-agnostic group, or specific to this campus
+            // Include groups that are either campus-agnostic OR specific to this campus
+            out[campusGuid] = connectorGroups.value
+                .filter(cg => !cg.campus?.value || cg.campus.value === campus.value)
                 .map(cg => cg.connectorGroup?.value)
                 .filter((guid): guid is string => guid != null);
         }
@@ -148,6 +180,10 @@
         return out;
     });
 
+    /**
+     * Determines whether there are any default connector options to show,
+     * triggering the display of the "Default Connectors" section.
+     */
     const renderDefaultConnectorSection = computed<boolean>(() => {
         return props.campuses?.some(campus => {
             const persons = defaultConnectorOptionsForCampus.value[campus.value ?? ""];
@@ -157,50 +193,18 @@
 
     // #endregion Computed Values
 
-    // #region Event Handlers
+    // #region Functions
 
-    function onAdd(): void {
-        isModalVisible.value = true;
-        theConnectorGroup.value = createNewConnectorGroup();
+    /**
+     * Creates a new connector group bag with a new GUID and null values.
+     */
+    function createNewConnectorGroup(): ConnectorGroupBag {
+        return {
+            guid: newGuid(),
+            connectorGroup: null,
+            campus: null
+        };
     }
-
-    function onEdit(key: string): void {
-        const selected = (props.modelValue ?? []).find(cg => cg.guid === key);
-        if (!selected) return;
-        theConnectorGroup.value = { ...selected };
-        isModalVisible.value = true;
-    }
-
-    function onDelete(guid: string): void {
-        isModalVisible.value = false;
-        const current = (props.modelValue ?? []).filter(cg => cg.guid !== guid);
-        emit("update:modelValue", current);
-    }
-
-    function onSave(): void {
-        if (!theConnectorGroup.value) {
-            return;
-        }
-
-        const current = props.modelValue ?? [];
-        const idx = current.findIndex(a => a.guid === theConnectorGroup.value?.guid);
-
-        if (idx !== -1) {
-            const updated = [...current];
-            updated.splice(idx, 1, theConnectorGroup.value);
-            emit("update:modelValue", updated);
-        }
-        else {
-            const updated = [...current, theConnectorGroup.value];
-            emit("update:modelValue", updated);
-        }
-
-        isModalVisible.value = false;
-    }
-
-    // #endregion Event Handlers
-
-    // #region Helper Functions
 
     /*
         Overview of how Default Connectors work, since it's a little confusing.
@@ -218,9 +222,22 @@
        - API:
          The GetDefaultConnectorOptions() block action returns ListItemBag[] of people ( group members ) for the given groupGuids. We call this action per campus,
          and distinct by person alias (value) so a person in multiple groups appears once.
-   */
+    */
 
+    /**
+     * Builds the initial map structure for storing default connector options per campus.
+     */
     function buildDefaultConnectorOptionsMap(): void {
+        const validCampusGuids = new Set((props.campuses ?? [])
+            .map(c => c.value ?? "")
+            .filter(c => !!c));
+
+        for (const campusGuid of Object.keys(defaultConnectorOptionsForCampus.value)) {
+            if (!validCampusGuids.has(campusGuid)) {
+                delete defaultConnectorOptionsForCampus.value[campusGuid];
+            }
+        }
+
         for (const campus of props.campuses ?? []) {
             const campusGuid = campus.value ?? "";
             if (!defaultConnectorOptionsForCampus.value[campusGuid]) {
@@ -229,8 +246,14 @@
         }
     }
 
-    async function fetchDefaultConnectorOptionsPerCampus(groupGuids: string[]): Promise<ListItemBag[] | void> {
-        if (!groupGuids) return;
+    /**
+     * API call to fetch eligible people (group members) for a given list of group GUIDs.
+     * @param groupGuids Array of group GUIDs to fetch members from.
+     */
+    async function fetchDefaultConnectorOptionsPerCampus(groupGuids: string[]): Promise<{ persons: ListItemBag[]; fetchErrorMessage?: string }> {
+        if (!groupGuids) {
+            return { persons: [] };
+        }
 
         const requestBag: DefaultConnectorOptionsRequestBag = {
             groupGuids
@@ -239,28 +262,58 @@
         const result = await invokeBlockAction<ListItemBag[]>("GetDefaultConnectorOptions", { bag: requestBag });
 
         if (result.isError) {
-            errorMessage.value = result.errorMessage || "An error occurred while fetching the default connectors.";
-            return;
+            return {
+                persons: [],
+                fetchErrorMessage: result.errorMessage || "An error occurred while fetching the default connectors."
+            };
         }
 
-        return result.data?.filter(person => person?.value) ?? [];
+        return {
+            persons: result.data?.filter(person => person?.value) ?? []
+        };
     }
 
+    /**
+     * Iterates through all campuses and fetches the eligible default connectors based on
+     * the connector groups assigned to that campus.
+     */
     async function fetchAndMapDefaultConnectors(): Promise<void> {
+        const fetchToken = ++defaultConnectorOptionsFetchToken;
+        errorMessage.value = "";
         for (const campus of Object.keys(groupGuidsByCampusMap.value)) {
             if (!campus) continue;
 
             const groupGuids = groupGuidsByCampusMap.value[campus] ?? [];
             if (!groupGuids.length) {
+                if (fetchToken !== defaultConnectorOptionsFetchToken) {
+                    return;
+                }
+
                 defaultConnectorOptionsForCampus.value[campus] = [];
                 continue;
             }
 
-            const persons = await fetchDefaultConnectorOptionsPerCampus(groupGuids);
-            defaultConnectorOptionsForCampus.value[campus] = persons ?? [];
+            const fetchResult = await fetchDefaultConnectorOptionsPerCampus(groupGuids);
+            if (fetchToken !== defaultConnectorOptionsFetchToken) {
+                return;
+            }
+
+            if (fetchResult?.fetchErrorMessage) {
+                errorMessage.value = fetchResult.fetchErrorMessage;
+                defaultConnectorOptionsForCampus.value[campus] = [];
+                continue;
+            }
+
+            const persons = fetchResult?.persons ?? [];
+            defaultConnectorOptionsForCampus.value[campus] = persons;
         }
     }
 
+    /**
+     * Updates the selected default connector for a specific campus.
+     * @param campusGuid The GUID of the campus being updated.
+     * @param personAlias The selected Person Alias GUID (or array of).
+     */
     function updateDefaultConnector(campusGuid: Guid, personAlias: string | string[]): void {
         if (!campusGuid || !defaultConnectorOptionsForCampus.value[campusGuid]) return;
 
@@ -268,36 +321,104 @@
         const theDefaultConnector = defaultConnectorOptionsForCampus.value[campusGuid]?.find(person => person.value === theAlias);
 
         const newDefaultConnectors = {
-            ...(props.defaultConnectorsForCampus ?? {}),
+            ...defaultConnectorsForCampus.value,
             [campusGuid]: theDefaultConnector ?? { text: "", value: "" }
         };
 
-        emit("update:defaultConnectorsForCampus", newDefaultConnectors);
+        defaultConnectorsForCampus.value = newDefaultConnectors;
     }
 
-    // #endregion Helper Functions
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Opens the modal to add a new connector group.
+     */
+    function onAdd(): void {
+        errorMessage.value = "";
+        theConnectorGroup.value = createNewConnectorGroup();
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Opens the modal to edit an existing connector group.
+     * @param key The GUID of the connector group to edit.
+     */
+    function onEdit(key: string): void {
+        const selected = connectorGroups.value.find(cg => cg.guid === key);
+        if (!selected) {
+            return;
+        }
+
+        theConnectorGroup.value = { ...selected };
+
+        errorMessage.value = "";
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Deletes a connector group.
+     * @param guid The GUID of the connector group to delete.
+     */
+    async function onDelete(guid: string): Promise<void> {
+        isModalVisible.value = false;
+
+        const result = await invokeBlockAction<CanDeleteResponseBag>("CanDeleteEntity", {
+            request: {
+                entityKey: EntityKey.ConnectorGroup,
+                entityGuid: guid
+            } as CanDeleteRequestBag
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage || "Unable to delete this connector group.";
+            return;
+        }
+
+        if (!result.data.canDelete) {
+            errorMessage.value = result.data.errorMessage || "This connector group cannot be deleted.";
+            return;
+        }
+
+        errorMessage.value = "";
+        const current = connectorGroups.value.filter(cg => cg.guid !== guid);
+        connectorGroups.value = current;
+    }
+
+    /**
+     * Saves the current connector group (add or update) and closes the modal.
+     */
+    function onSave(): void {
+        if (!theConnectorGroup.value) {
+            return;
+        }
+
+        const current = connectorGroups.value;
+        const idx = current.findIndex(a => a.guid === theConnectorGroup.value?.guid);
+
+        let updatedConnectorGroups: ConnectorGroupBag[];
+        if (idx !== -1) {
+            updatedConnectorGroups = [...current];
+            updatedConnectorGroups.splice(idx, 1, theConnectorGroup.value);
+        }
+        else {
+            updatedConnectorGroups = [...current, theConnectorGroup.value];
+        }
+
+        connectorGroups.value = updatedConnectorGroups;
+        errorMessage.value = "";
+        isModalVisible.value = false;
+    }
+
+    // #endregion Event Handlers
 
     // #region Watchers
 
-    watch(() => props.campuses, () => {
+    watch(groupGuidsByCampusMap, () => {
         buildDefaultConnectorOptionsMap();
         fetchAndMapDefaultConnectors();
-    });
-
-    watch(() => props.modelValue, () => fetchAndMapDefaultConnectors());
-
-    watch(groupGuidsByCampusMap, () => {
-        fetchAndMapDefaultConnectors();
-    });
+    }, { immediate: true });
 
     // #endregion Watchers
-
-    // #region Lifecycle Hooks
-
-    onMounted(async () => {
-        buildDefaultConnectorOptionsMap();
-        await fetchAndMapDefaultConnectors();
-    });
-
-    // #endregion Lifecycle Hooks
 </script>

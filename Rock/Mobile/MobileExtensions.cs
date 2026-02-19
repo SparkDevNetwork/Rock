@@ -289,17 +289,17 @@ namespace Rock.Mobile
         /// </summary>
         /// <param name="state"></param>
         /// <returns></returns>
-        public static Rock.Common.Mobile.Enums.ConnectionState ToMobile( this ConnectionState state )
+        public static Rock.Common.Mobile.Enums.ConnectionState ToMobile( this Rock.Model.ConnectionState state )
         {
             switch ( state )
             {
-                case ConnectionState.Active:
+                case Model.ConnectionState.Active:
                     return Rock.Common.Mobile.Enums.ConnectionState.Active;
-                case ConnectionState.Inactive:
+                case Model.ConnectionState.Inactive:
                     return Rock.Common.Mobile.Enums.ConnectionState.Inactive;
-                case ConnectionState.FutureFollowUp:
+                case Model.ConnectionState.FutureFollowUp:
                     return Rock.Common.Mobile.Enums.ConnectionState.FutureFollowUp;
-                case ConnectionState.Connected:
+                case Model.ConnectionState.Connected:
                     return Rock.Common.Mobile.Enums.ConnectionState.Connected;
                 default:
                     return Rock.Common.Mobile.Enums.ConnectionState.Active;
@@ -311,20 +311,20 @@ namespace Rock.Mobile
         /// </summary>
         /// <param name="state"></param>
         /// <returns></returns>
-        public static ConnectionState ToNative( this Rock.Common.Mobile.Enums.ConnectionState state )
+        public static Rock.Model.ConnectionState ToNative( this Rock.Common.Mobile.Enums.ConnectionState state )
         {
             switch ( state )
             {
                 case Rock.Common.Mobile.Enums.ConnectionState.Active:
-                    return ConnectionState.Active;
+                    return Model.ConnectionState.Active;
                 case Rock.Common.Mobile.Enums.ConnectionState.Inactive:
-                    return ConnectionState.Inactive;
+                    return Model.ConnectionState.Inactive;
                 case Rock.Common.Mobile.Enums.ConnectionState.FutureFollowUp:
-                    return ConnectionState.FutureFollowUp;
+                    return Model.ConnectionState.FutureFollowUp;
                 case Rock.Common.Mobile.Enums.ConnectionState.Connected:
-                    return ConnectionState.Connected;
+                    return Model.ConnectionState.Connected;
                 default:
-                    return ConnectionState.Active;
+                    return Model.ConnectionState.Active;
             }
         }
 

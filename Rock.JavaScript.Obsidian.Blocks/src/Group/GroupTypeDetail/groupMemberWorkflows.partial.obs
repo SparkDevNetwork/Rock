@@ -31,7 +31,7 @@
             </div>
         </div>
 
-        <WorkflowTypePicker label="Start Workflow" v-model="theWorkflowTrigger.workflowType" rules="required" />
+        <WorkflowTypePicker label="Start Workflow" v-model="theWorkflowTrigger.workflowType" rules="required" help="Specifies the workflow type to start when the requirement or event is triggered." />
 
         <DropDownList label="When" v-model="workflowTriggerTypeValue"
                       :items="enumToListItemBag(GroupMemberWorkflowTriggerTypeDescription)" />
@@ -62,18 +62,18 @@
             <div v-if="theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberAttendedGroup">
                 <div class="form-group">
                     <InlineCheckBox label="Trigger on First Attendance"
-                                    v-model="theWorkflowTrigger.triggerOnFirstAttendance" />
+                                    v-model="theWorkflowTrigger.triggerOnFirstAttendance" help="When enabled, the workflow starts only the first time a person attends a group of this type. When disabled, it starts every time the person attends." />
                 </div>
             </div>
 
             <div v-if="theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberPlacedElsewhere">
                 <div class="form-group">
-                    <InlineCheckBox label="Show Note on Placement" v-model="theWorkflowTrigger.showNoteOnPlacement" />
+                    <InlineCheckBox label="Show Note on Placement" v-model="theWorkflowTrigger.showNoteOnPlacement" help="When enabled, the workflow displays a note entry field when the member is placed." />
                 </div>
 
                 <div class="form-group">
                     <InlineCheckBox label="Require Note on Placement"
-                                    v-model="theWorkflowTrigger.requireNoteOnPlacement" />
+                                    v-model="theWorkflowTrigger.requireNoteOnPlacement" help="When enabled, the workflow requires a note to be entered when the member is placed." />
                 </div>
             </div>
         </ConditionalWell>

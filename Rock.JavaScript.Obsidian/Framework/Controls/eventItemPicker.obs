@@ -22,6 +22,16 @@
             required: false
         },
 
+        dateRangeStart: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        dateRangeEnd: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
         includeInactive: {
             type: Boolean as PropType<boolean>,
             default: false
@@ -77,6 +87,8 @@
      */
     async function loadOptions(): Promise<ListItemBag[]> {
         const options: EventItemPickerGetEventItemsOptionsBag = {
+            dateRangeStart: props.dateRangeStart,
+            dateRangeEnd: props.dateRangeEnd,
             includeInactive: props.includeInactive,
             rootCalendar: toGuidOrNull(props.rootCalendar) ?? emptyGuid,
         };
@@ -97,7 +109,11 @@
 
     // #region Watchers
 
-    watch(() => props.includeInactive, () => {
+    watch([
+        () => props.includeInactive,
+        () => props.dateRangeStart,
+        () => props.dateRangeEnd
+    ], () => {
         loadedItems.value = null;
     });
 
