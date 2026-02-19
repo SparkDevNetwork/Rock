@@ -35,7 +35,7 @@ namespace Rock.AI.Agent.Skills
         [AgentPurpose( "Retrieves summary counts of connection requests." )]
         [AgentUsage( "Connectors are people who are assigned a request." )]
         [AgentToolGuid( "b3df0351-aa63-44bf-98fd-16fc56ad2d39" )]
-        public RockToolResult GetConnectionRequestsSummary(
+        public RockToolResult GetConnectionRequestSummary(
             string connectionTypeIdKey = null,
             string connectionOpportunityIdKey = null,
             string campusIdKey = null,
@@ -60,7 +60,7 @@ namespace Rock.AI.Agent.Skills
 
             // If we are grouping by opportunity, then it doesn't make sense
             // to still group by type.
-            if ( primaryDimension.Equals( "ConnectionOpportunity", StringComparison.OrdinalIgnoreCase ) )
+            if ( "ConnectionOpportunity".Equals( primaryDimension, StringComparison.OrdinalIgnoreCase ) )
             {
                 dimensions.Remove( "ConnectionType" );
             }
@@ -79,7 +79,7 @@ namespace Rock.AI.Agent.Skills
             // Perform the SQL level grouping of all data into a set of rows
             // that contain the count of each possible combination of grouped
             // values.
-            var flatCounts = query
+            var groupCounts = query
                 .GroupBy( cr => new
                 {
                     cr.ConnectionOpportunity.ConnectionTypeId,
@@ -87,7 +87,7 @@ namespace Rock.AI.Agent.Skills
                     cr.CampusId,
                     cr.ConnectionStatusId,
                 } )
-                .Select( cr => new SummaryFlatCount
+                .Select( cr => new SummaryGroupCount
                 {
                     ConnectionTypeId = cr.Key.ConnectionTypeId,
                     ConnectionOpportunityId = cr.Key.ConnectionOpportunityId,
@@ -97,9 +97,9 @@ namespace Rock.AI.Agent.Skills
                 } )
                 .ToList();
 
-            var summary = GetSummaryResult( helper, dimensions, flatCounts );
+            var summary = GetSummaryResult( helper, dimensions, groupCounts );
 
-            return Success( summary );
+            return Success( summary ).WithoutHistoryContent();
         }
 
         #endregion
@@ -112,67 +112,35 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         /// <param name="helper">The helper that will be used to process the data.</param>
         /// <param name="dimensions">The dimensions that will be constructed in order.</param>
-        /// <param name="flatCounts">The flat row counts of all possible group combinations.</param>
+        /// <param name="groupCounts">The row counts of all possible group combinations.</param>
         /// <returns>The <see cref="SummaryResult"/> object that can be returned to the language model.</returns>
-        private SummaryResult GetSummaryResult( AgentToolHelper helper, List<string> dimensions, List<SummaryFlatCount> flatCounts )
+        private SummaryResult GetSummaryResult( AgentToolHelper helper, List<string> dimensions, List<SummaryGroupCount> groupCounts )
         {
             List<SummaryGroupResult> groups = null;
-            var state = GetSummaryState( flatCounts );
+            var state = GetSummaryState( groupCounts );
             var summary = new SummaryResult
             {
                 GroupingDimensions = dimensions,
             };
 
-            foreach ( var groupLevel in dimensions )
+            foreach ( var dimension in dimensions )
             {
-                switch ( groupLevel )
+                switch ( dimension )
                 {
                     case "ConnectionType":
-                        if ( groups == null )
-                        {
-                            groups = GetConnectionTypeSummaries( null, state );
-                        }
-                        else
-                        {
-                            groups = helper.PopulateSummaryGroupings( groups, state, GetConnectionTypeSummaries );
-                        }
-
+                        groups = helper.BuildDimension( groups, groupCounts, c => c.ConnectionTypeId, state.ConnectionTypes );
                         break;
 
                     case "ConnectionOpportunity":
-                        if ( groups == null )
-                        {
-                            groups = GetConnectionOpportunitySummaries( null, state );
-                        }
-                        else
-                        {
-                            groups = helper.PopulateSummaryGroupings( groups, state, GetConnectionOpportunitySummaries );
-                        }
-
+                        groups = helper.BuildDimension( groups, groupCounts, c => c.ConnectionOpportunityId, state.ConnectionOpportunities );
                         break;
 
                     case "Campus":
-                        if ( groups == null )
-                        {
-                            groups = GetCampusSummaries( null, state );
-                        }
-                        else
-                        {
-                            groups = helper.PopulateSummaryGroupings( groups, state, GetCampusSummaries );
-                        }
-
+                        groups = helper.BuildDimension( groups, groupCounts, c => c.CampusId, state.Campuses );
                         break;
 
                     case "ConnectionStatus":
-                        if ( groups == null )
-                        {
-                            groups = GetConnectionStatusSummaries( null, state );
-                        }
-                        else
-                        {
-                            groups = helper.PopulateSummaryGroupings( groups, state, GetConnectionStatusSummaries );
-                        }
-
+                        groups = helper.BuildDimension( groups, groupCounts, c => c.ConnectionStatusId, state.ConnectionStatuses );
                         break;
                 }
 
@@ -186,14 +154,14 @@ namespace Rock.AI.Agent.Skills
 
         /// <summary>
         /// Builds the state object that contains all the information required
-        /// to build the summary. This includes the flat counts and any cached
+        /// to build the summary. This includes the group counts and any cached
         /// data.
         /// </summary>
-        /// <param name="flatCounts">The flat row counts of all possible group combinations.</param>
+        /// <param name="groupCounts">The row counts of all possible group combinations.</param>
         /// <returns>A <see cref="SummaryState"/> that can be used to build the results.</returns>
-        private SummaryState GetSummaryState( List<SummaryFlatCount> flatCounts )
+        private SummaryState GetSummaryState( List<SummaryGroupCount> groupCounts )
         {
-            var connectionOpportunityIds = flatCounts.Select( fc => fc.ConnectionOpportunityId ).Distinct().ToList();
+            var connectionOpportunityIds = groupCounts.Select( fc => fc.ConnectionOpportunityId ).Distinct().ToList();
             var connectionOpportunities = new ConnectionOpportunityService( AgentRequestContext.RockContext )
                 .Queryable()
                 .Where( co => connectionOpportunityIds.Contains( co.Id ) )
@@ -204,7 +172,7 @@ namespace Rock.AI.Agent.Skills
                 } )
                 .ToDictionary( co => co.Id, co => co.Name );
 
-            var connectionStatusIds = flatCounts.Select( fc => fc.ConnectionStatusId ).Distinct().ToList();
+            var connectionStatusIds = groupCounts.Select( fc => fc.ConnectionStatusId ).Distinct().ToList();
             var connectionStatuses = new ConnectionStatusService( AgentRequestContext.RockContext )
                 .Queryable()
                 .Where( co => connectionStatusIds.Contains( co.Id ) )
@@ -221,95 +189,7 @@ namespace Rock.AI.Agent.Skills
                 ConnectionOpportunities = connectionOpportunities,
                 ConnectionStatuses = connectionStatuses,
                 Campuses = CampusCache.All( AgentRequestContext.RockContext ).ToDictionary( c => c.Id, c => c.Name ),
-                Source = flatCounts,
             };
-        }
-
-        /// <summary>
-        /// Generates the summary groups by connection type.
-        /// </summary>
-        /// <param name="parentGroup">The parent group to generate the sub-group summaries for.</param>
-        /// <param name="state">The state object that contains our cached information.</param>
-        /// <returns>A list of <see cref="SummaryGroupResult"/> that represent the summary for each sub-group.</returns>
-        private List<SummaryGroupResult> GetConnectionTypeSummaries( SummaryGroupResult parentGroup, SummaryState state )
-        {
-            var source = ( IEnumerable<SummaryFlatCount> ) parentGroup?.Source ?? state.Source;
-
-            return source.GroupBy( fc => fc.ConnectionTypeId )
-                .Select( g =>
-                {
-                    return new SummaryGroupResult
-                    {
-                        Id = g.Key,
-                        Name = state.ConnectionTypes[g.Key],
-                        Total = g.Sum( fc => fc.Count ),
-                        Source = g,
-                    };
-                } )
-                .ToList();
-        }
-
-        /// <summary>
-        /// Generates the summary groups by connection opportunity.
-        /// </summary>
-        /// <param name="parentGroup">The parent group to generate the sub-group summaries for.</param>
-        /// <param name="state">The state object that contains our cached information.</param>
-        /// <returns>A list of <see cref="SummaryGroupResult"/> that represent the summary for each sub-group.</returns>
-        private List<SummaryGroupResult> GetConnectionOpportunitySummaries( SummaryGroupResult parentGroup, SummaryState cache )
-        {
-            var source = ( IEnumerable<SummaryFlatCount> ) parentGroup?.Source ?? cache.Source;
-
-            return source.GroupBy( fc => fc.ConnectionOpportunityId )
-                .Select( g => new SummaryGroupResult
-                {
-                    Id = g.Key,
-                    Name = cache.ConnectionOpportunities[g.Key],
-                    Total = g.Sum( fc => fc.Count ),
-                    Source = g,
-                } )
-                .ToList();
-        }
-
-        /// <summary>
-        /// Generates the summary groups by campus.
-        /// </summary>
-        /// <param name="parentGroup">The parent group to generate the sub-group summaries for.</param>
-        /// <param name="state">The state object that contains our cached information.</param>
-        /// <returns>A list of <see cref="SummaryGroupResult"/> that represent the summary for each sub-group.</returns>
-        private List<SummaryGroupResult> GetCampusSummaries( SummaryGroupResult parentGroup, SummaryState cache )
-        {
-            var source = ( IEnumerable<SummaryFlatCount> ) parentGroup?.Source ?? cache.Source;
-
-            return source.GroupBy( fc => fc.CampusId )
-                .Select( g => new SummaryGroupResult
-                {
-                    Id = g.Key ?? 0,
-                    Name = g.Key.HasValue ? cache.Campuses[g.Key.Value] : "No Campus",
-                    Total = g.Sum( fc => fc.Count ),
-                    Source = g,
-                } )
-                .ToList();
-        }
-
-        /// <summary>
-        /// Generates the summary groups by connection status.
-        /// </summary>
-        /// <param name="parentGroup">The parent group to generate the sub-group summaries for.</param>
-        /// <param name="state">The state object that contains our cached information.</param>
-        /// <returns>A list of <see cref="SummaryGroupResult"/> that represent the summary for each sub-group.</returns>
-        private List<SummaryGroupResult> GetConnectionStatusSummaries( SummaryGroupResult parentGroup, SummaryState cache )
-        {
-            var source = ( IEnumerable<SummaryFlatCount> ) parentGroup?.Source ?? cache.Source;
-
-            return source.GroupBy( fc => fc.ConnectionStatusId )
-                .Select( g => new SummaryGroupResult
-                {
-                    Id = g.Key,
-                    Name = cache.ConnectionStatuses[g.Key],
-                    Total = g.Sum( fc => fc.Count ),
-                    Source = g,
-                } )
-                .ToList();
         }
 
         #endregion
@@ -322,7 +202,7 @@ namespace Rock.AI.Agent.Skills
         /// and then use Count to store those values. This lets us quickly
         /// in-memory sum the Count values by any dimension we need.
         /// </summary>
-        private class SummaryFlatCount
+        private class SummaryGroupCount : ISummaryGroupCount
         {
             public int ConnectionTypeId { get; set; }
 
@@ -337,7 +217,7 @@ namespace Rock.AI.Agent.Skills
 
         /// <summary>
         /// The state object that contains all the cached information required
-        /// to build the summary results. This includes the flat count rows
+        /// to build the summary results. This includes the grouped row counts
         /// from SQL and any cached name lookups.
         /// </summary>
         private class SummaryState
@@ -349,8 +229,6 @@ namespace Rock.AI.Agent.Skills
             public Dictionary<int, string> ConnectionTypes { get; set; }
 
             public Dictionary<int, string> Campuses { get; set; }
-
-            public IEnumerable<SummaryFlatCount> Source { get; set; }
         }
 
         #endregion
