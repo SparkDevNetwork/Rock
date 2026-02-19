@@ -487,7 +487,9 @@ namespace Rock.Slingshot
             var slingshotPersonsWithPhotoList = this.SlingshotPersonList.Where( a => !string.IsNullOrEmpty( a.PersonPhotoUrl ) || !string.IsNullOrEmpty( a.FamilyImageUrl ) ).ToList();
             var photoImportList = new ConcurrentBag<Model.PhotoImport>();
 
+#if REVIEW_WEBFORMS
             var mimetypeLookup = ImageCodecInfo.GetImageDecoders().ToDictionary( k => k.FormatID, v => v.MimeType );
+#endif
 
             int slingshotImageCount = this.SlingshotImageFileNames.Count();
             long photoLoadProgress = 0;
@@ -516,10 +518,12 @@ namespace Rock.Slingshot
                     Interlocked.Increment( ref photoLoadProgress );
                     try
                     {
+#if REVIEW_WEBFORMS
                         using ( var image = new Bitmap( fileStream ) )
                         {
                             photoImport.MimeType = mimetypeLookup.GetValueOrNull( image.RawFormat.Guid );
                         }
+#endif
                     }
                     catch ( Exception ex )
                     {
@@ -528,7 +532,9 @@ namespace Rock.Slingshot
                     }
                     if ( string.IsNullOrEmpty( photoImport.MimeType ) )
                     {
+#if REVIEW_WEBFORMS
                         photoImport.MimeType = System.Web.MimeMapping.GetMimeMapping( imageFileInfo.FullName );
+#endif
                     }
                 }
 
@@ -715,7 +721,9 @@ namespace Rock.Slingshot
 
                 if ( photoFile.Exists )
                 {
+#if REVIEW_WEBFORMS
                     photoImport.MimeType = System.Web.MimeMapping.GetMimeMapping( photoFile.FullName );
+#endif
                     photoImport.PhotoData = Convert.ToBase64String( File.ReadAllBytes( photoFile.FullName ) );
                     photoImport.FileName = photoFile.Name;
                 }

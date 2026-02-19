@@ -42,11 +42,11 @@
     <ProjectReference Include="..\Rock\Rock.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+  <ItemGroup>
     <ProjectReference Include="..\Rock.Slingshot\Rock.Slingshot.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+  <ItemGroup Condition="'$(TargetFramework)' == '' or '$(TargetFramework)' == 'net472'">
     <Reference Include="Rock.Common.Mobile">
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
     </Reference>
@@ -56,6 +56,12 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != '' and '$(TargetFramework)' != 'net472'">
+    <Reference Include="Slingshot.Core">
+      <HintPath>..\libs\Slingshot\net10.0\Slingshot.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

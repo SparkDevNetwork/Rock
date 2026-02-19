@@ -1,5 +1,4 @@
-﻿#if REVIEW_WEBFORMS
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using Rock.Attribute;
 using Rock.Data;
@@ -144,4 +143,3 @@ namespace Rock.Blocks.Communication
         #endregion Block Actions
     }
 }
-#endif

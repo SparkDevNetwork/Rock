@@ -15,19 +15,23 @@
 // </copyright>
 //
 
-#if REVIEW_WEBFORMS
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+#if REVIEW_WEBFORMS
 using System.Web.Hosting;
+#endif
 
 using CsvHelper;
 using SlingshotCore = global::Slingshot.Core;
 
 using Rock.Attribute;
+#if REVIEW_NET5_0_OR_GREATER
+using Rock.Configuration;
+#endif
 using Rock.Model;
 using Rock.RealTime.Topics;
 using Rock.RealTime;
@@ -140,7 +144,11 @@ namespace Rock.Blocks.BulkImport
         private string GetSlingshotRootFolder()
         {
             string virtualPath = "~/App_Data/SlingshotFiles";
+#if REVIEW_WEBFORMS
             string physicalPath = HostingEnvironment.MapPath( virtualPath );
+#else
+            var physicalPath = RockApp.Current.MapPath( virtualPath );
+#endif
 
             if ( !Directory.Exists( physicalPath ) )
             {
@@ -156,7 +164,11 @@ namespace Rock.Blocks.BulkImport
         /// <returns>The physical path to the slingshot files directory.</returns>
         private string GetSlingshotPhysicalRootFolder()
         {
+#if REVIEW_WEBFORMS
             return HostingEnvironment.MapPath( GetSlingshotRootFolder() );
+#else
+            return RockApp.Current.MapPath( GetSlingshotRootFolder() );
+#endif
         }
 
         /// <summary>
@@ -529,4 +541,3 @@ namespace Rock.Blocks.BulkImport
         #endregion
     }
 }
-#endif

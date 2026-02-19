@@ -24,6 +24,10 @@ using System.Reflection;
 using System.Text;
 using System.Web;
 
+#if NET6_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#endif
+
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -962,7 +966,9 @@ namespace Rock.Slingshot
         /// <returns></returns>
         public string BulkGroupImport( List<GroupImport> groupImports, string foreignSystemKey )
         {
+#if REVIEW_WEBFORMS
             var initiatedWithWebRequest = HttpContext.Current?.Request != null;
+#endif
             var stopwatchTotal = Stopwatch.StartNew();
             var stopwatch = Stopwatch.StartNew();
 
@@ -1045,11 +1051,13 @@ namespace Rock.Slingshot
                 progress++;
                 if ( progress % 100 == 0 && groupUpdatesMS > 0 )
                 {
+#if REVIEW_WEBFORMS
                     if ( initiatedWithWebRequest && HttpContext.Current?.Response?.IsClientConnected != true )
                     {
                         // if this was called from a WebRequest (versus a job or utility), quit if the client has disconnected
                         return "Client Disconnected";
                     }
+#endif
 
                     OnProgress?.Invoke( $"Bulk Importing Group {progress} of {total}" );
                 }
@@ -1760,7 +1768,9 @@ WHERE gta.GroupTypeId IS NULL" );
                 totalRecords = personImports.Count();
             }
 
+#if REVIEW_WEBFORMS
             var initiatedWithWebRequest = HttpContext.Current?.Request != null;
+#endif
             var stopwatchTotal = Stopwatch.StartNew();
             var stopwatch = Stopwatch.StartNew();
             var rockContext = new RockContext();
@@ -1817,11 +1827,13 @@ WHERE gta.GroupTypeId IS NULL" );
                 progress++;
                 if ( progress % 100 == 0 )
                 {
+#if REVIEW_WEBFORMS
                     if ( initiatedWithWebRequest && HttpContext.Current?.Response?.IsClientConnected != true )
                     {
                         // if this was called from a WebRequest (versus a job or utility), quit if the client has disconnected
                         return new PersonImportResult() { ClientDisconnected = true }; //"Client Disconnected"
                     }
+#endif
 
                     OnProgress?.Invoke( $"Bulk Importing Person {progress} of {totalRecords}..." );
                 }
@@ -2420,7 +2432,9 @@ WHERE gta.GroupTypeId IS NULL" );
                 totalRecords = businessImports.Count();
             }
 
+#if REVIEW_WEBFORMS
             var initiatedWithWebRequest = HttpContext.Current?.Request != null;
+#endif
             var stopwatchTotal = Stopwatch.StartNew();
             var stopwatch = Stopwatch.StartNew();
             var rockContext = new RockContext();
@@ -2479,11 +2493,13 @@ WHERE gta.GroupTypeId IS NULL" );
                 progress++;
                 if ( progress % 100 == 0 && businessUpdatesMS > 0 )
                 {
+#if REVIEW_WEBFORMS
                     if ( initiatedWithWebRequest && HttpContext.Current?.Response?.IsClientConnected != true )
                     {
                         // if this was called from a WebRequest (versus a job or utility), quit if the client has disconnected
                         return new PersonImportResult() { ClientDisconnected = true }; //"Client Disconnected"
                     }
+#endif
 
                     OnProgress?.Invoke( $"Bulk Importing Business {progress} of {totalRecords}..." );
                 }
