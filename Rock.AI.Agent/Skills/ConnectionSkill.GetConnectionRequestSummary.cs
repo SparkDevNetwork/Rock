@@ -40,6 +40,11 @@ namespace Rock.AI.Agent.Skills
             string connectionOpportunityIdKey = null,
             string campusIdKey = null,
             string connectorPersonIdKey = null,
+#warning Implement dueStatus filter
+            //[Description( "Must be blank or exactly one of these values (do not infer additional values): PastDue, DueSoon, NotDue." )]
+            //string dueStatus = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
 
             [Description( "Must be blank or exactly one of these values (do not infer additional values): ConnectionType, ConnectionOpportunity, Campus, ConnectionStatus" )]
             string primaryDimension = null )
@@ -50,6 +55,16 @@ namespace Rock.AI.Agent.Skills
             var query = new ConnectionRequestService( AgentRequestContext.RockContext )
                 .Queryable()
                 .Where( cr => !cr.ConnectedDateTime.HasValue );
+
+            if ( startDate.HasValue )
+            {
+                query = query.Where( cr => cr.CreatedDateTime >= startDate.Value );
+            }
+
+            if ( endDate.HasValue )
+            {
+                query = query.Where( cr => cr.CreatedDateTime < endDate.Value );
+            }
 
             query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionTypeId, connectionTypeIdKey );
             query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionOpportunityId, connectionOpportunityIdKey );

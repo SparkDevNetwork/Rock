@@ -21,6 +21,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
+using Rock.Model;
 
 namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
 {
