@@ -1,10 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+#if NET472_OR_GREATER
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
+#endif
 using System.IO;
 using System.Linq;
 using CsvHelper;
+
+#if NET6_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+
+using NetTopologySuite.Geometries;
+#endif
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -12,6 +21,10 @@ using Rock.ViewModels.Blocks.Communication.NcoaProcess;
 using Rock.SystemKey;
 using Rock.Utility.Settings.SparkData;
 using Rock.Jobs;
+
+#if NET472_OR_GREATER
+using Point = System.Data.Entity.Spatial.DbGeography;
+#endif
 
 namespace Rock.NCOA
 {
@@ -388,9 +401,9 @@ namespace Rock.NCOA
         /// Gets the Geo points of all the campuses.
         /// </summary>
         /// <returns></returns>
-        private List<DbGeography> GetCampusGeoPoints()
+        private List<Point> GetCampusGeoPoints()
         {
-            List<DbGeography> campusGeoPoints = new List<DbGeography>();
+            var campusGeoPoints = new List<Point>();
             var campusLocations = CampusCache.All( false ).Select( c => c.Location );
             if ( campusLocations != null )
             {
@@ -400,7 +413,11 @@ namespace Rock.NCOA
                     {
                         if ( campusLocation.Longitude != null && campusLocation.Latitude != null )
                         {
+#if REVIEW_WEBFORMS
                             var geo = DbGeography.PointFromText( string.Format( "POINT({0} {1})", campusLocation.Longitude, campusLocation.Latitude ), DbGeography.DefaultCoordinateSystemId );
+#else
+                            var geo = new Point( campusLocation.Longitude.Value, campusLocation.Latitude.Value );
+#endif
                             if ( geo != null )
                             {
                                 campusGeoPoints.Add( geo );
@@ -623,7 +640,7 @@ namespace Rock.NCOA
         /// <param name="previousValueId">The previous value identifier.</param>
         /// <param name="ncoaReturnRecords">The NCOA return records.</param>
         /// <param name="campusGeoPoints">The campus Geo points.</param>
-        private string ProcessNcoaResultsFamilyMove( DefinedValueCache inactiveReason, decimal? minMoveDistance, int? homeValueId, int? previousValueId, List<NcoaReturnRecord> ncoaReturnRecords, List<DbGeography> campusGeoPoints )
+        private string ProcessNcoaResultsFamilyMove( DefinedValueCache inactiveReason, decimal? minMoveDistance, int? homeValueId, int? previousValueId, List<NcoaReturnRecord> ncoaReturnRecords, List<Point> campusGeoPoints )
         {
             List<int> ncoaIds = null;
             // Process 'Move' NCOA Types (The 'Family' move types will be processed first)
@@ -778,7 +795,7 @@ namespace Rock.NCOA
         /// <param name="campusGeoPoints">The Geo points of all the campuses.</param>
         /// <param name="ncoaReturnRecords">The NCOA return records.</param>
         /// <returns></returns>
-        private bool IsCloseToCampus( NcoaHistory ncoaHistory, decimal? minMoveDistance, List<DbGeography> campusGeoPoints, List<NcoaReturnRecord> ncoaReturnRecords )
+        private bool IsCloseToCampus( NcoaHistory ncoaHistory, decimal? minMoveDistance, List<Point> campusGeoPoints, List<NcoaReturnRecord> ncoaReturnRecords )
         {
             if ( ncoaHistory.MoveDistance.HasValue && minMoveDistance.HasValue &&
                 ncoaHistory.MoveDistance.Value >= minMoveDistance.Value )
@@ -802,13 +819,23 @@ namespace Rock.NCOA
                 {
                     try
                     {
+#if REVIEW_WEBFORMS
                         var geoPoint = DbGeography.PointFromText( string.Format( "POINT({0} {1})", ncoaReturnRecord.Longitude, ncoaReturnRecord.Latitude ), DbGeography.DefaultCoordinateSystemId );
+#else
+                        var geoPoint = new Point( ncoaReturnRecord.Longitude.AsDouble(), ncoaReturnRecord.Latitude.AsDouble() )
+                        {
+                            SRID = 4326
+                        };
+#endif
                         if ( geoPoint != null )
                         {
                             foreach ( var campusGeoPoint in campusGeoPoints )
                             {
-
+#if REVIEW_WEBFORMS
                                 var distance = campusGeoPoint.Distance( geoPoint ) ?? 0.0D * 0.00062137505D;
+#else
+                                var distance = campusGeoPoint.Distance( geoPoint ) * 0.00062137505D;
+#endif
                                 if ( distance < ( double ) minMoveDistance.Value )
                                 {
                                     isCloseToCampus = true;
@@ -913,7 +940,7 @@ namespace Rock.NCOA
         /// <param name="previousValueId">The previous value identifier.</param>
         /// <param name="ncoaReturnRecords">The NCOA return records.</param>
         /// <param name="campusGeoPoints">The campus Geo points.</param>
-        private string ProcessNcoaResultsIndividualMove( DefinedValueCache inactiveReason, decimal? minMoveDistance, int? homeValueId, int? previousValueId, List<NcoaReturnRecord> ncoaReturnRecords, List<DbGeography> campusGeoPoints )
+        private string ProcessNcoaResultsIndividualMove( DefinedValueCache inactiveReason, decimal? minMoveDistance, int? homeValueId, int? previousValueId, List<NcoaReturnRecord> ncoaReturnRecords, List<Point> campusGeoPoints )
         {
             List<int> ncoaIds = null;
             // Process 'Move' NCOA Types (For the remaining Individual move types that weren't updated with the family move)
