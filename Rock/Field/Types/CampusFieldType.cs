@@ -677,7 +677,7 @@ namespace Rock.Field.Types
 
                 if ( cblSelectableValues != null )
                 {
-                    var selectableValues = new List<string>( cblSelectableValues.SelectedValues );
+                    var selectableValues = configurationValues.GetValueOrNull( SELECTABLE_CAMPUSES_KEY )?.SplitDelimitedValues( false );
 
                     var activeCampuses = CampusCache.All( cbIncludeInactive.Checked ).Select( v => new { Text = v.Name, Value = v.Id } );
                     cblSelectableValues.DataSource = activeCampuses;
