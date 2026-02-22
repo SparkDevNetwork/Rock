@@ -155,6 +155,11 @@ namespace Rock.Transactions
                 if ( ConnectionRequestActivityGuid.HasValue )
                 {
                     connectionRequestActivity = new ConnectionRequestActivityService( rockContext ).Get( ConnectionRequestActivityGuid.Value );
+                    if ( connectionRequestActivity == null )
+                    {
+                        return;
+                    }
+
                     var workflow = Rock.Model.Workflow.Activate( workflowType, name );
 
                     List<string> workflowErrors;
