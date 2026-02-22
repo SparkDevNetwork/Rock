@@ -1092,7 +1092,7 @@ namespace Rock.Web.UI.Controls
             {
                 writer.AddAttribute( "class", "form-group" + ( localityIsVisible ? " col-sm-3" : " col-sm-6" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _tbCity.Attributes["autocomplete"] = ( localityIsVisible ? "address-level3" : "address-level2" );
+                _tbCity.Attributes["autocomplete"] = "address-level2";
                 _tbCity.RenderControl( writer );
                 writer.RenderEndTag();  // div.form-group
             }
@@ -1102,7 +1102,7 @@ namespace Rock.Web.UI.Controls
             {
                 writer.AddAttribute( "class", "form-group col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _tbCounty.Attributes["autocomplete"] = "address-level2";
+                _tbCounty.Attributes["autocomplete"] = "address-level3";
                 _tbCounty.RenderControl( writer );
                 writer.RenderEndTag();  // div.form-group
             }
