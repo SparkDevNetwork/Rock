@@ -1,4 +1,5 @@
 ﻿using Rock.AI.Agent.Classes.Common;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -21,31 +22,29 @@ namespace Rock.AI.Agent.Skills
                 return RockToolResult.Error( "CommunicationIdKey is required." );
             }
 
-            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            using var rockContext = RockApp.Current.CreateRockContext();
+            var communicationService = new CommunicationService( rockContext );
+            var draft = communicationService.Get( communicationIdKey, false );
+            if ( draft == null )
             {
-                var communicationService = new CommunicationService( rockContext );
-                var draft = communicationService.Get( communicationIdKey, false );
-                if ( draft == null )
-                {
-                    return RockToolResult.Error( "No communication record was found for that IdKey." );
-                }
-
-                if ( draft.Status != CommunicationStatus.Transient )
-                {
-                    return RockToolResult.Error( "You can not cancel a communication that is not in a transient state." );
-                }
-
-                if ( !communicationService.CanDelete( draft, out var errorMessage ) )
-                {
-                    return RockToolResult.Error( $"Unable to delete communication: {errorMessage}" );
-                }
-
-                communicationService.Delete( draft );
-
-                rockContext.SaveChanges();
-
-                return RockToolResult.Success( "The communication has been deleted." );
+                return RockToolResult.Error( "No communication record was found for that IdKey." );
             }
+
+            if ( draft.Status != CommunicationStatus.Transient )
+            {
+                return RockToolResult.Error( "You can not cancel a communication that is not in a transient state." );
+            }
+
+            if ( !communicationService.CanDelete( draft, out var errorMessage ) )
+            {
+                return RockToolResult.Error( $"Unable to delete communication: {errorMessage}" );
+            }
+
+            communicationService.Delete( draft );
+
+            rockContext.SaveChanges();
+
+            return RockToolResult.Success( "The communication has been deleted." );
         }
 
         #endregion

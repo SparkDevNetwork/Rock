@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Utility;
@@ -29,7 +30,7 @@ namespace Rock.AI.Agent.Skills
             [Description("Description of how God has answered the prayer request.")]
             string answer = "" )
         {
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
             var prayerRequestService = new PrayerRequestService( rockContext );
             var existingPrayerRequest = prayerRequestService.Get( prayerRequestIdKey, false );
 

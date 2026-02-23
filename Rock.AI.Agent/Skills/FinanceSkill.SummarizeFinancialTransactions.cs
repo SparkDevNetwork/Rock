@@ -6,6 +6,7 @@ using System.Linq;
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.FinanceSkill;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.SystemGuid;
 using Rock.Utility;
@@ -42,7 +43,7 @@ namespace Rock.AI.Agent.Skills
             DateTime? startDate = null,
             DateTime? endDate = null )
         {
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
 
             // Handle "lookup" for currency type defined values.
             if ( TryGetDefinedValueLookup( rockContext, Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, paymentMethodTypeValueIdKey ) is List<KeyNameResult> lookups )

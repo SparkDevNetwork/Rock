@@ -4,6 +4,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.AI.Agent.Classes.Common;
+using Rock.Configuration;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -54,152 +55,151 @@ namespace Rock.AI.Agent.Skills
                 return RockToolResult.Error( "The endDate must be after the startDate." );
             }
 
-            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            using var rockContext = RockApp.Current.CreateRockContext();
+            var noteService = new Rock.Model.NoteService( rockContext );
+
+            // Base query + eager loads to avoid N+1 during projection
+            var notesQuery = noteService.Queryable()
+                .AsNoTracking()
+                .Include( n => n.CreatedByPersonAlias.Person )
+                .Include( n => n.NoteType )
+                .Where( n => n.NoteType.UserSelectable );
+
+            if ( startDate.HasValue )
             {
-                var noteService = new Rock.Model.NoteService( rockContext );
+                notesQuery = notesQuery.Where( n => n.CreatedDateTime >= startDate.Value );
+            }
 
-                // Base query + eager loads to avoid N+1 during projection
-                var notesQuery = noteService.Queryable()
-                    .AsNoTracking()
-                    .Include( n => n.CreatedByPersonAlias.Person )
-                    .Include( n => n.NoteType )
-                    .Where( n => n.NoteType.UserSelectable );
+            if ( endDate.HasValue )
+            {
+                // exclusive end is usually cleaner for paging windows
+                notesQuery = notesQuery.Where( n => n.CreatedDateTime < endDate.Value );
+            }
 
-                if ( startDate.HasValue )
+            string noteTypeName = null;
+            if ( noteTypeIdKey.IsNotNullOrWhiteSpace() )
+            {
+                var noteType = NoteTypeCache.Get( noteTypeIdKey, false );
+                if ( noteType == null )
                 {
-                    notesQuery = notesQuery.Where( n => n.CreatedDateTime >= startDate.Value );
+                    return RockToolResult.Error( "Invalid note type." );
+                }
+                noteTypeName = noteType.Name;
+                notesQuery = notesQuery.Where( n => n.NoteTypeId == noteType.Id );
+            }
+
+            if ( entityIdKey.IsNotNullOrWhiteSpace() )
+            {
+                var entityId = IdHasher.Instance.GetId( entityIdKey );
+                if ( !entityId.HasValue || entityId <= 0 )
+                {
+                    return RockToolResult.Error( "Invalid entity provided." );
+                }
+                notesQuery = notesQuery.Where( n => n.EntityId == entityId.Value );
+            }
+
+            // BC TODO: Should this come from an enum?
+            // How should the LLM know what the values are?
+            if ( entityTypeIdKey.IsNotNullOrWhiteSpace() )
+            {
+                var entityTypeId = IdHasher.Instance.GetId( entityTypeIdKey );
+                if ( !entityTypeId.HasValue || entityTypeId <= 0 )
+                {
+                    return RockToolResult.Error( "Invalid entity type provided." );
                 }
 
-                if ( endDate.HasValue )
+                notesQuery = notesQuery.Where( n => n.NoteType.EntityTypeId == entityTypeId.Value );
+            }
+
+            if ( createdByPersonIdKey.IsNotNullOrWhiteSpace() )
+            {
+                var createdByPersonId = IdHasher.Instance.GetId( createdByPersonIdKey );
+                if ( !createdByPersonId.HasValue || createdByPersonId <= 0 )
                 {
-                    // exclusive end is usually cleaner for paging windows
-                    notesQuery = notesQuery.Where( n => n.CreatedDateTime < endDate.Value );
+                    return RockToolResult.Error( "Invalid created by person provided." );
                 }
 
-                string noteTypeName = null;
-                if ( noteTypeIdKey.IsNotNullOrWhiteSpace() )
+                notesQuery = notesQuery.Where( n => n.CreatedByPersonAlias.PersonId == createdByPersonId.Value );
+            }
+
+            if ( isAlert.HasValue )
+            {
+                notesQuery = notesQuery.Where( n => n.IsAlert == isAlert.Value );
+            }
+
+            if ( isPrivateNote.HasValue )
+            {
+                notesQuery = notesQuery.Where( n => n.IsPrivateNote == isPrivateNote.Value );
+            }
+
+            if ( isPinned.HasValue )
+            {
+                notesQuery = notesQuery.Where( n => n.IsPinned == isPinned.Value );
+            }
+
+            // Deterministic order (coalesce nulls)
+            var ordered = notesQuery
+                .OrderByDescending( n => n.CreatedDateTime ?? DateTime.MinValue )
+                .ThenBy( n => n.Id );
+
+            // We need enough *authorized* rows to page correctly: offset + take
+            var needed = offset + take;
+            var buffer = new List<Rock.Model.Note>( needed + pageSize );
+
+            // Pull in chunks to avoid materializing the whole result set
+            var fetched = 0;
+            var chunk = Math.Max( pageSize * 2, 50 );
+
+            while ( buffer.Count < needed )
+            {
+                var batch = ordered.Skip( fetched ).Take( chunk ).ToList();
+                if ( batch.Count == 0 )
                 {
-                    var noteType = NoteTypeCache.Get( noteTypeIdKey, false );
-                    if ( noteType == null )
+                    break;
+                }
+
+                foreach ( var n in batch )
+                {
+                    if ( n.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                     {
-                        return RockToolResult.Error( "Invalid note type." );
-                    }
-                    noteTypeName = noteType.Name;
-                    notesQuery = notesQuery.Where( n => n.NoteTypeId == noteType.Id );
-                }
-
-                if ( entityIdKey.IsNotNullOrWhiteSpace() )
-                {
-                    var entityId = IdHasher.Instance.GetId( entityIdKey );
-                    if ( !entityId.HasValue || entityId <= 0 )
-                    {
-                        return RockToolResult.Error( "Invalid entity provided." );
-                    }
-                    notesQuery = notesQuery.Where( n => n.EntityId == entityId.Value );
-                }
-
-                // BC TODO: Should this come from an enum?
-                // How should the LLM know what the values are?
-                if ( entityTypeIdKey.IsNotNullOrWhiteSpace() )
-                {
-                    var entityTypeId = IdHasher.Instance.GetId( entityTypeIdKey );
-                    if ( !entityTypeId.HasValue || entityTypeId <= 0 )
-                    {
-                        return RockToolResult.Error( "Invalid entity type provided." );
-                    }
-
-                    notesQuery = notesQuery.Where( n => n.NoteType.EntityTypeId == entityTypeId.Value );
-                }
-
-                if ( createdByPersonIdKey.IsNotNullOrWhiteSpace() )
-                {
-                    var createdByPersonId = IdHasher.Instance.GetId( createdByPersonIdKey );
-                    if ( !createdByPersonId.HasValue || createdByPersonId <= 0 )
-                    {
-                        return RockToolResult.Error( "Invalid created by person provided." );
-                    }
-
-                    notesQuery = notesQuery.Where( n => n.CreatedByPersonAlias.PersonId == createdByPersonId.Value );
-                }
-
-                if ( isAlert.HasValue )
-                {
-                    notesQuery = notesQuery.Where( n => n.IsAlert == isAlert.Value );
-                }
-
-                if ( isPrivateNote.HasValue )
-                {
-                    notesQuery = notesQuery.Where( n => n.IsPrivateNote == isPrivateNote.Value );
-                }
-
-                if ( isPinned.HasValue )
-                {
-                    notesQuery = notesQuery.Where( n => n.IsPinned == isPinned.Value );
-                }
-
-                // Deterministic order (coalesce nulls)
-                var ordered = notesQuery
-                    .OrderByDescending( n => n.CreatedDateTime ?? DateTime.MinValue )
-                    .ThenBy( n => n.Id );
-
-                // We need enough *authorized* rows to page correctly: offset + take
-                var needed = offset + take;
-                var buffer = new List<Rock.Model.Note>( needed + pageSize );
-
-                // Pull in chunks to avoid materializing the whole result set
-                var fetched = 0;
-                var chunk = Math.Max( pageSize * 2, 50 );
-
-                while ( buffer.Count < needed )
-                {
-                    var batch = ordered.Skip( fetched ).Take( chunk ).ToList();
-                    if ( batch.Count == 0 )
-                    {
-                        break;
-                    }
-
-                    foreach ( var n in batch )
-                    {
-                        if ( n.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                        buffer.Add( n );
+                        if ( buffer.Count >= needed )
                         {
-                            buffer.Add( n );
-                            if ( buffer.Count >= needed )
-                            {
-                                break;
-                            }
+                            break;
                         }
                     }
-
-                    fetched += batch.Count;
                 }
 
-                // Page over the AUTHORIZED subset (+ lookahead)
-                var pageSlice = buffer.Skip( offset ).Take( take ).ToList();
-                if ( pageSlice.Count == 0 )
-                {
-                    return RockToolResult.NoData();
-                }
+                fetched += batch.Count;
+            }
 
-                var hasMore = pageSlice.Count > pageSize;
-                if ( hasMore )
-                {
-                    pageSlice.RemoveAt( pageSlice.Count - 1 );
-                }
+            // Page over the AUTHORIZED subset (+ lookahead)
+            var pageSlice = buffer.Skip( offset ).Take( take ).ToList();
+            if ( pageSlice.Count == 0 )
+            {
+                return RockToolResult.NoData();
+            }
 
-                // Project AFTER paging (saves CPU/mem)
-                var items = pageSlice
-                    .Select( note => GetNoteResult( note, rockContext ) )
-                    .ToList();
+            var hasMore = pageSlice.Count > pageSize;
+            if ( hasMore )
+            {
+                pageSlice.RemoveAt( pageSlice.Count - 1 );
+            }
 
-                // Slim it down for the history content
-                var historyItems = items.Select( note => new
-                {
-                    IdKey = note.IdKey,
-                    Text = note.Text.Truncate( 200 ),
-                } );
+            // Project AFTER paging (saves CPU/mem)
+            var items = pageSlice
+                .Select( note => GetNoteResult( note, rockContext ) )
+                .ToList();
 
-                // Metadata
-                var meta = new Dictionary<string, object>
+            // Slim it down for the history content
+            var historyItems = items.Select( note => new
+            {
+                IdKey = note.IdKey,
+                Text = note.Text.Truncate( 200 ),
+            } );
+
+            // Metadata
+            var meta = new Dictionary<string, object>
                 {
                     { "pageNumber", pgNumber },
                     { "pageSize", pageSize },
@@ -216,14 +216,13 @@ namespace Rock.AI.Agent.Skills
                     }
                 };
 
-                return RockToolResult.Success( items )
-                    .WithHistoryContent( new
-                    {
-                        Items = historyItems,
-                        PageNumber = pageNumber
-                    }, "notes-list" )
-                    .WithMetadata( meta );
-            }
+            return RockToolResult.Success( items )
+                .WithHistoryContent( new
+                {
+                    Items = historyItems,
+                    PageNumber = pageNumber
+                }, "notes-list" )
+                .WithMetadata( meta );
         }
 
         #endregion

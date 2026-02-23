@@ -12,6 +12,7 @@ using Rock.AI.Agent.Classes;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Utility;
@@ -116,7 +117,7 @@ namespace Rock.AI.Agent.Skills
                     .WithInstructions( "Use the following data to determine the proper IdKey for the tool." );
             }
 
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
             var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
             var personService = new PersonService( rockContext );
             var person = personService.Get( IdHasher.Instance.GetId( personIdKey ) ?? 0 );

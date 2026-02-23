@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
+using Rock.Configuration;
 using Rock.Security;
 using Rock.SystemGuid;
 
@@ -28,36 +29,34 @@ namespace Rock.AI.Agent.Skills
                 return RockToolResult.Error( "You must be logged in to update a note." );
             }
 
-            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            using var rockContext = RockApp.Current.CreateRockContext();
+            var noteService = new Rock.Model.NoteService( rockContext );
+            var existingNote = noteService.Get( idKey, false );
+
+            if ( existingNote == null )
             {
-                var noteService = new Rock.Model.NoteService( rockContext );
-                var existingNote = noteService.Get( idKey, false );
-
-                if ( existingNote == null )
-                {
-                    return RockToolResult.Error( "Invalid note idKey provided." );
-                }
-
-                if ( !existingNote.NoteType.IsAuthorized( Authorization.EDIT, currentPerson ) )
-                {
-                    return RockToolResult.Error( "You are not authorized to delete this note." );
-                }
-
-                noteService.Delete( existingNote );
-
-                try
-                {
-                    rockContext.SaveChanges();
-                }
-                catch ( Exception ex )
-                {
-                    _logger.LogError( ex, "An error occurred while deleting a note." );
-                    return RockToolResult.Error( "An error occurred while deleting the note." );
-                }
-
-                return RockToolResult.Success()
-                    .WithHistoryContent( idKey, idKey );
+                return RockToolResult.Error( "Invalid note idKey provided." );
             }
+
+            if ( !existingNote.NoteType.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                return RockToolResult.Error( "You are not authorized to delete this note." );
+            }
+
+            noteService.Delete( existingNote );
+
+            try
+            {
+                rockContext.SaveChanges();
+            }
+            catch ( Exception ex )
+            {
+                _logger.LogError( ex, "An error occurred while deleting a note." );
+                return RockToolResult.Error( "An error occurred while deleting the note." );
+            }
+
+            return RockToolResult.Success()
+                .WithHistoryContent( idKey, idKey );
         }
 
         #endregion

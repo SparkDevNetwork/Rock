@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Annotations;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
@@ -46,7 +47,14 @@ namespace Rock.AI.Agent.Skills
         Order = 0 )]
     internal class GroupManagerSkill : AgentSkillComponent
     {
-        private IRockContextFactory _rockContextFactory;
+        #region Fields
+
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private readonly ILogger _logger;
+
+        #endregion
 
         #region Keys
 
@@ -57,9 +65,9 @@ namespace Rock.AI.Agent.Skills
 
         #endregion
 
-        public GroupManagerSkill( IRockContextFactory rockContextFactory, ILogger<GroupManagerSkill> logger )
+        public GroupManagerSkill( ILogger<GroupManagerSkill> logger )
         {
-            _rockContextFactory = rockContextFactory;
+            _logger = logger;
         }
 
         #region Skill Tools
@@ -94,73 +102,71 @@ namespace Rock.AI.Agent.Skills
 
             // Get the person and group to add them to
 
-            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            using var rockContext = RockApp.Current.CreateRockContext();
+            var person = new PersonService( rockContext ).Get( personId );
+
+            if ( person == null )
             {
-                var person = new PersonService( rockContext ).Get( personId );
+                return "We could not find the person you're looking to add to the group.";
+            }
 
-                if ( person == null )
+            var group = new GroupService( AgentRequestContext.RockContext ).Get( groupId );
+
+            if ( group == null )
+            {
+                return "We could not find the group to add them to.";
+            }
+
+            // If delete process the action, we don't need to worry about the role
+            if ( operation == GroupMemberOperation.Delete )
+            {
+                return DeletePersonFromGroup( rockContext, person, group );
+            }
+
+            // Get the role that we're suppose to use.
+
+            // If no role was provided return a list of roles
+            if ( groupMemberRoleId == null || groupMemberRoleId == 0 )
+            {
+                var validValues = group.GroupType.Roles.Select( r => new
                 {
-                    return "We could not find the person you're looking to add to the group.";
-                }
+                    RoleId = r.Id,
+                    RoleName = r.Name,
+                    r.IsLeader,
+                    IsDefaultRole = r.Id == group.GroupType.DefaultGroupRoleId
+                } ).ToList().ToJson();
 
-                var group = new GroupService( AgentRequestContext.RockContext ).Get( groupId );
+                return $"The groups valid roles are: {validValues}. Use this list to find the best match to the request. If no role was specified by the user then call the GroupMemberOperations using the default role. If there is no default role then ask what role they would like to use.";
+            }
 
-                if ( group == null )
-                {
-                    return "We could not find the group to add them to.";
-                }
+            // Check that the provided role is in the selected group
+            if ( !group.GroupType.Roles.Any( r => r.Id == groupMemberRoleId ) )
+            {
+                var validValues = group.GroupType.Roles.Select( r => new { r.Id, r.Name } ).ToList().ToJson();
+                return $"The role provided is not valid for a group of type {group.GroupType.Name}. Valid values: {validValues}";
+            }
 
-                // If delete process the action, we don't need to worry about the role
-                if ( operation == GroupMemberOperation.Delete )
-                {
-                    return DeletePersonFromGroup( rockContext, person, group );
-                }
+            // Get the name of the group role
+            var groupMemberRole = GroupTypeRoleCache.Get( groupMemberRoleId.Value );
 
-                // Get the role that we're suppose to use.
+            // Check that the person is not already in the group with that role
+            var groupMemberService = new GroupMemberService( AgentRequestContext.RockContext );
+            var groupMember = groupMemberService.Queryable()
+                .Where( m => m.GroupId == groupId && m.PersonId == personId ).FirstOrDefault();
 
-                // If no role was provided return a list of roles
-                if ( groupMemberRoleId == null || groupMemberRoleId == 0 )
-                {
-                    var validValues = group.GroupType.Roles.Select( r => new
-                    {
-                        RoleId = r.Id,
-                        RoleName = r.Name,
-                        r.IsLeader,
-                        IsDefaultRole = r.Id == group.GroupType.DefaultGroupRoleId
-                    } ).ToList().ToJson();
+            if ( groupMember != null && groupMember.GroupRoleId == groupMemberRoleId )
+            {
+                return $"{person.NickName} is already a {groupMember.GroupRole.Name} in the {group.Name} group.";
+            }
 
-                    return $"The groups valid roles are: {validValues}. Use this list to find the best match to the request. If no role was specified by the user then call the GroupMemberOperations using the default role. If there is no default role then ask what role they would like to use.";
-                }
-
-                // Check that the provided role is in the selected group
-                if ( !group.GroupType.Roles.Any( r => r.Id == groupMemberRoleId ) )
-                {
-                    var validValues = group.GroupType.Roles.Select( r => new { r.Id, r.Name } ).ToList().ToJson();
-                    return $"The role provided is not valid for a group of type {group.GroupType.Name}. Valid values: {validValues}";
-                }
-
-                // Get the name of the group role
-                var groupMemberRole = GroupTypeRoleCache.Get( groupMemberRoleId.Value );
-
-                // Check that the person is not already in the group with that role
-                var groupMemberService = new GroupMemberService( AgentRequestContext.RockContext );
-                var groupMember = groupMemberService.Queryable()
-                    .Where( m => m.GroupId == groupId && m.PersonId == personId ).FirstOrDefault();
-
-                if ( groupMember != null && groupMember.GroupRoleId == groupMemberRoleId )
-                {
-                    return $"{person.NickName} is already a {groupMember.GroupRole.Name} in the {group.Name} group.";
-                }
-
-                // Add or Update the person
-                if ( operation == GroupMemberOperation.Add )
-                {
-                    return AddPersonToGroup( rockContext, person, group, groupMemberRole, groupMember );
-                }
-                else
-                {
-                    return UpdatePersonInGroup( rockContext, groupMember, groupMemberRole );
-                }
+            // Add or Update the person
+            if ( operation == GroupMemberOperation.Add )
+            {
+                return AddPersonToGroup( rockContext, person, group, groupMemberRole, groupMember );
+            }
+            else
+            {
+                return UpdatePersonInGroup( rockContext, groupMember, groupMemberRole );
             }
         }
 

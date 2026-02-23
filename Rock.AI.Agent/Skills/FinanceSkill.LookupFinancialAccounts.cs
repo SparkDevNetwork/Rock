@@ -3,6 +3,7 @@ using System.Linq;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
+using Rock.Configuration;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -20,7 +21,7 @@ namespace Rock.AI.Agent.Skills
         [AgentToolGuid( "4DBAE64C-A7B9-4826-90C0-8DE4AA598FFF" )]
         public RockToolResult LookupFinancialAccounts()
         {
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
 
             // Load all top-level active accounts.
             var topLevelAccounts = FinancialAccountCache

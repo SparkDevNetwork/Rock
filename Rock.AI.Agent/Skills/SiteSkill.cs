@@ -36,7 +36,10 @@ namespace Rock.AI.Agent.Skills
     {
         #region Fields
 
-        private readonly ILogger<SiteSkill> _logger;
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private readonly ILogger _logger;
 
         #endregion
 

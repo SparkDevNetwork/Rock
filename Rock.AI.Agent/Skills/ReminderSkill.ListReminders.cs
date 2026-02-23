@@ -5,6 +5,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.AI.Agent.Classes.Common;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
@@ -48,7 +49,7 @@ namespace Rock.AI.Agent.Skills
                 return RockToolResult.Error( "The endDate must be after the startDate." );
             }
 
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
             var reminderService = new ReminderService( rockContext );
             var reminderTypeService = new ReminderTypeService( rockContext );
             var personService = new PersonService( rockContext );

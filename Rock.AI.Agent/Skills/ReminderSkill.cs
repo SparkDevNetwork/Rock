@@ -43,14 +43,9 @@ namespace Rock.AI.Agent.Skills
         #region Fields
 
         /// <summary>
-        /// The logger instance for logging messages.
+        /// The logger for this instance.
         /// </summary>
-        private readonly ILogger<ReminderSkill> _logger;
-
-        /// <summary>
-        /// The factory for creating RockContext instances.
-        /// </summary>
-        private readonly IRockContextFactory _rockContextFactory;
+        private readonly ILogger _logger;
 
         #endregion
 
@@ -59,12 +54,10 @@ namespace Rock.AI.Agent.Skills
         /// <summary>
         /// Initializes a new instance of the <see cref="ReminderSkill"/> class.
         /// </summary>
-        /// <param name="rockContextFactory">The factory for creating RockContext instances.</param>
         /// <param name="logger">The logger instance for logging messages.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="rockContextFactory"/> or <paramref name="logger"/> is null.</exception>
-        public ReminderSkill( IRockContextFactory rockContextFactory, ILogger<ReminderSkill> logger )
+        public ReminderSkill( ILogger<ReminderSkill> logger )
         {
-            _rockContextFactory = rockContextFactory ?? throw new ArgumentNullException( nameof( rockContextFactory ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }
 

@@ -3,6 +3,7 @@ using System.Linq;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
+using Rock.Configuration;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills
@@ -14,7 +15,7 @@ namespace Rock.AI.Agent.Skills
         [AgentToolGuid( "4E4A5AC6-85DC-4773-A03D-9BC1722366FD" )]
         public RockToolResult LookupPrayerCategories()
         {
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
             var queryable = GetPrayerCategoriesQueryable( rockContext );
             if ( queryable == null )
             {

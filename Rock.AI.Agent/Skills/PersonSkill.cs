@@ -47,8 +47,10 @@ namespace Rock.AI.Agent.Skills
     {
         #region Fields
 
-        private readonly IRockContextFactory _rockContextFactory = new RockContextFactory();
-        private readonly ILogger<PersonSkill> _logger;
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private readonly ILogger _logger;
 
         #endregion
 
@@ -58,9 +60,8 @@ namespace Rock.AI.Agent.Skills
         /// Initializes a new instance of the <see cref="SiteSkill"/> class.
         /// </summary>
         /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public PersonSkill( IRockContextFactory rockContextFactory, ILogger<PersonSkill> logger )
+        public PersonSkill( ILogger<PersonSkill> logger )
         {
-            _rockContextFactory = rockContextFactory ?? throw new ArgumentNullException( nameof( rockContextFactory ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }
 

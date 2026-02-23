@@ -21,8 +21,6 @@ using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
-using Nest;
-
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.ConnectionSkill;
@@ -44,9 +42,10 @@ namespace Rock.AI.Agent.Skills
     {
         #region Fields
 
-        private readonly ILogger<ConnectionSkill> _logger;
-
-        private readonly IRockContextFactory _rockContextFactory;
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private readonly ILogger _logger;
 
         #endregion
 
@@ -55,11 +54,9 @@ namespace Rock.AI.Agent.Skills
         /// <summary>
         /// The constructor for the Connection Skill.
         /// </summary>
-        /// <param name="rockContextFactory">Factory to create rock contexts.</param>
         /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public ConnectionSkill( IRockContextFactory rockContextFactory, ILogger<ConnectionSkill> logger )
+        public ConnectionSkill( ILogger<ConnectionSkill> logger )
         {
-            _rockContextFactory = rockContextFactory ?? throw new ArgumentNullException( nameof( rockContextFactory ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }
 

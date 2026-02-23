@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.AI.Agent.Classes;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -50,7 +51,7 @@ namespace Rock.AI.Agent.Skills
             SetOrClear<string> placementGroupIdKey = null,
             List<AttributeValueResult> attributeValues = null )
         {
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
             var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
 
             ConnectionRequest connectionRequest;

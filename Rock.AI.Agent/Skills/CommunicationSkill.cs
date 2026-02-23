@@ -38,16 +38,17 @@ namespace Rock.AI.Agent.Skills
     {
         #region Fields
 
-        private readonly ILogger<CommunicationSkill> _logger;
-        private readonly IRockContextFactory _rockContextFactory;
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private readonly ILogger _logger;
 
         #endregion
 
         #region Constructors
 
-        public CommunicationSkill( IRockContextFactory rockContextFactory, ILogger<CommunicationSkill> logger )
+        public CommunicationSkill( ILogger<CommunicationSkill> logger )
         {
-            _rockContextFactory = rockContextFactory ?? throw new ArgumentNullException( nameof( rockContextFactory ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }
 

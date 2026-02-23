@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.CommunicationSkill;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Tasks;
@@ -36,7 +37,7 @@ namespace Rock.AI.Agent.Skills
                     .WithInstructions( "Ask the user if they would like to draft one." );
             }
 
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
             var communicationService = new CommunicationService( rockContext );
             var communication = communicationService.Get( communicationIdKey );
 

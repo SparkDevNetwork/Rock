@@ -3,6 +3,7 @@
 using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Classes.Common;
+using Rock.Configuration;
 using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
@@ -39,70 +40,68 @@ namespace Rock.AI.Agent.Skills
                 return RockToolResult.Error( "You must be logged in to update a note." );
             }
 
-            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            using var rockContext = RockApp.Current.CreateRockContext();
+            var noteService = new Rock.Model.NoteService( rockContext );
+            var existingNote = noteService.Get( noteIdKey, false );
+
+            if ( existingNote == null )
             {
-                var noteService = new Rock.Model.NoteService( rockContext );
-                var existingNote = noteService.Get( noteIdKey, false );
-
-                if ( existingNote == null )
-                {
-                    return RockToolResult.Error( "Invalid note idKey provided." );
-                }
-
-                if ( !existingNote.NoteType.IsAuthorized( Authorization.EDIT, currentPerson ) )
-                {
-                    return RockToolResult.Error( "You are not authorized to edit this note." );
-                }
-
-                if ( note.IsNotNullOrWhiteSpace() )
-                {
-                    existingNote.Text = note;
-                }
-
-                if ( noteTypeIdKey.IsNotNullOrWhiteSpace() )
-                {
-                    var noteType = NoteTypeCache.Get( noteTypeIdKey, false );
-                    if ( noteType == null )
-                    {
-                        return RockToolResult.Error( "Invalid note type." );
-                    }
-                    if ( !noteType.IsAuthorized( Authorization.EDIT, currentPerson ) )
-                    {
-                        return RockToolResult.Error( "You are not authorized to change this note to the specified type." );
-                    }
-                    existingNote.NoteTypeId = noteType.Id;
-                }
-
-                if ( isAlert.HasValue )
-                {
-                    existingNote.IsAlert = isAlert.Value;
-                }
-
-                if ( isPrivateNote.HasValue )
-                {
-                    existingNote.IsPrivateNote = isPrivateNote.Value;
-                }
-
-                if ( isPinned.HasValue )
-                {
-                    existingNote.IsPinned = isPinned.Value;
-                }
-
-                try
-                {
-                    rockContext.SaveChanges();
-                }
-                catch ( Exception ex )
-                {
-                    _logger.LogError( ex, "An error occurred while updating a note." );
-                    return RockToolResult.Error( "An error occurred while updating the note." );
-                }
-
-                var result = GetNoteResult( existingNote, rockContext );
-
-                return RockToolResult.Success( result )
-                .WithHistoryContent( noteIdKey, noteIdKey );
+                return RockToolResult.Error( "Invalid note idKey provided." );
             }
+
+            if ( !existingNote.NoteType.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                return RockToolResult.Error( "You are not authorized to edit this note." );
+            }
+
+            if ( note.IsNotNullOrWhiteSpace() )
+            {
+                existingNote.Text = note;
+            }
+
+            if ( noteTypeIdKey.IsNotNullOrWhiteSpace() )
+            {
+                var noteType = NoteTypeCache.Get( noteTypeIdKey, false );
+                if ( noteType == null )
+                {
+                    return RockToolResult.Error( "Invalid note type." );
+                }
+                if ( !noteType.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                {
+                    return RockToolResult.Error( "You are not authorized to change this note to the specified type." );
+                }
+                existingNote.NoteTypeId = noteType.Id;
+            }
+
+            if ( isAlert.HasValue )
+            {
+                existingNote.IsAlert = isAlert.Value;
+            }
+
+            if ( isPrivateNote.HasValue )
+            {
+                existingNote.IsPrivateNote = isPrivateNote.Value;
+            }
+
+            if ( isPinned.HasValue )
+            {
+                existingNote.IsPinned = isPinned.Value;
+            }
+
+            try
+            {
+                rockContext.SaveChanges();
+            }
+            catch ( Exception ex )
+            {
+                _logger.LogError( ex, "An error occurred while updating a note." );
+                return RockToolResult.Error( "An error occurred while updating the note." );
+            }
+
+            var result = GetNoteResult( existingNote, rockContext );
+
+            return RockToolResult.Success( result )
+            .WithHistoryContent( noteIdKey, noteIdKey );
         }
 
         #endregion

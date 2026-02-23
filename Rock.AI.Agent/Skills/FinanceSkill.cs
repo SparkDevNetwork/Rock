@@ -24,8 +24,10 @@ namespace Rock.AI.Agent.Skills
     {
         #region Fields
 
-        private readonly ILogger<FinanceSkill> _logger;
-        private readonly IRockContextFactory _rockContextFactory;
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private readonly ILogger _logger;
 
         #endregion
 
@@ -35,11 +37,9 @@ namespace Rock.AI.Agent.Skills
         /// Initializes a new instance of the <see cref="FinanceSkill"/> class.
         /// </summary>
         /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        /// <param name="rockContextFactory">Factory used to create Rock data contexts.</param>
-        public FinanceSkill( ILogger<FinanceSkill> logger, IRockContextFactory rockContextFactory )
+        public FinanceSkill( ILogger<FinanceSkill> logger )
         {
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
-            _rockContextFactory = rockContextFactory ?? throw new ArgumentNullException( nameof( rockContextFactory ) );
         }
 
         #endregion
@@ -61,7 +61,7 @@ namespace Rock.AI.Agent.Skills
             // C. If both accounts and campus are specified, find all parent accounts. If a parent account has `Uses Campus Child Accounts` enabled, include only child accounts for the specified campus.
             if ( campusId.IsNullOrWhiteSpace() && !originalAccountIds.Any() )
             {
-                return new List<FinancialAccountCache>();
+                return [];
             }
 
             var results = new List<FinancialAccountCache>();

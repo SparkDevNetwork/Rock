@@ -10,6 +10,7 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Utilities.CommunicationSkill;
 using Rock.AI.Agent.Utilities.CommunicationSkill.Mediums;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -63,145 +64,143 @@ namespace Rock.AI.Agent.Skills
                 return RockToolResult.Error( "The current person is not available. Ensure the agent is properly initialized." );
             }
 
-            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            using var rockContext = RockApp.Current.CreateRockContext();
+            var personService = new PersonService( rockContext );
+            var communicationService = new CommunicationService( rockContext );
+
+            var recipient = personService.Get( recipientIdKey, false );
+            if ( recipient == null )
             {
-                var personService = new PersonService( rockContext );
-                var communicationService = new CommunicationService( rockContext );
+                return RockToolResult.Error( $"No valid recipient found for the provided recipientIdKey: {recipientIdKey}." )
+                    .WithInstructions( "Verify the recipientIdKey and try again." );
+            }
 
-                var recipient = personService.Get( recipientIdKey, false );
-                if ( recipient == null )
+            int? fromNumberId = null;
+
+            if ( communicationType == AgentCommunicationType.Sms )
+            {
+                if ( fromNumberIdKey.IsNotNullOrWhiteSpace() )
                 {
-                    return RockToolResult.Error( $"No valid recipient found for the provided recipientIdKey: {recipientIdKey}." )
-                        .WithInstructions( "Verify the recipientIdKey and try again." );
-                }
-
-                int? fromNumberId = null;
-
-                if ( communicationType == AgentCommunicationType.Sms )
-                {
-                    if ( fromNumberIdKey.IsNotNullOrWhiteSpace() )
+                    var fromNumber = SystemPhoneNumberCache.Get( fromNumberIdKey, false );
+                    if ( fromNumber == null || !fromNumber.IsActive || !fromNumber.IsSmsEnabled )
                     {
-                        var fromNumber = SystemPhoneNumberCache.Get( fromNumberIdKey, false );
-                        if ( fromNumber == null || !fromNumber.IsActive || !fromNumber.IsSmsEnabled )
-                        {
-                            return RockToolResult.Error( "The provided fromNumberIdKey does not correspond to a valid active SMS-enabled system phone number." );
-                        }
-
-                        fromNumberId = fromNumber.Id;
+                        return RockToolResult.Error( "The provided fromNumberIdKey does not correspond to a valid active SMS-enabled system phone number." );
                     }
-                    else
-                    {
-                        fromNumberId = GetDefaultSmsPhoneNumber()?.Id;
 
-                        if ( !fromNumberId.HasValue )
-                        {
-                            return RockToolResult.Error( "No valid default SMS 'from' number could be determined for the current person. Please provide a fromNumberIdKey." )
-                                .WithInstructions( "Call the LookupSystemPhoneNumbers function, and prompt the user to pick from the list." );
-                        }
-                    }
-                }
-
-                var medium = TryGetCommunicationMedium( communicationType, rockContext, fromNumberId );
-                if ( medium == null )
-                {
-                    return RockToolResult.Error( $"The communication type '{communicationType}' is not supported." );
-                }
-
-                Rock.Model.Communication draftCommunication = null;
-                if ( existingDraftIdKey.IsNotNullOrWhiteSpace() )
-                {
-                    draftCommunication = communicationService.Get( existingDraftIdKey );
-                    if ( draftCommunication == null )
-                    {
-                        return RockToolResult.Error( $"No valid draft communication found for the provided existingDraftIdKey: {existingDraftIdKey}." )
-                            .WithInstructions( "Ask the user if they would like you to generate a new one." );
-                    }
-                    else if ( draftCommunication.Status != CommunicationStatus.Transient )
-                    {
-                        return RockToolResult.Error( "This draft is not in a transient state. It has likely already been sent." )
-                            .WithInstructions( "Ask the user if they would prefer you create a new draft." );
-                    }
-                }
-
-                var recipients = new List<Rock.Model.Person> { recipient };
-                var recipientValidation = medium.ValidateRecipients( recipients );
-                if ( recipientValidation.Count > 0 )
-                {
-                    return RockToolResult.Error( recipientValidation );
-                }
-
-                string emailSignature = string.Empty;
-                if ( communicationType == AgentCommunicationType.Email )
-                {
-                    var prefs = AgentRequestContext.RockRequestContext.GetGlobalPersonPreferences();
-                    emailSignature = prefs.GetValue( PersonPreferenceKey.EMAIL_CLOSING_PHRASE );
-                }
-
-                var draftRequest = new DraftRequest( communicationType, subjectHint, draftGuidance, referenceData, tone, currentPerson, recipients, emailSignature );
-
-                DraftResult draftResult;
-                try
-                {
-                    draftResult = await medium.DraftAsync( AgentRequestContext.ChatAgent, draftRequest );
-                }
-                catch ( Exception ex )
-                {
-                    _logger.LogError( ex, "Failed to draft communication." );
-                    return RockToolResult.Error( "Failed to draft the communication. Check the logs for details." );
-                }
-
-                if ( draftResult == null )
-                {
-                    return RockToolResult.Error( "The draft content is null. Ensure the medium's DraftAsync method is implemented correctly." );
-                }
-
-                if ( draftCommunication != null )
-                {
-                    draftCommunication = medium.UpdateCommunication( draftRequest, recipients, draftCommunication, draftResult );
+                    fromNumberId = fromNumber.Id;
                 }
                 else
                 {
-                    draftCommunication = medium.BuildCommunication( draftRequest, recipients, draftResult );
-                    if ( draftCommunication == null )
+                    fromNumberId = GetDefaultSmsPhoneNumber()?.Id;
+
+                    if ( !fromNumberId.HasValue )
                     {
-                        return RockToolResult.Error( "Failed to build the communication object." );
+                        return RockToolResult.Error( "No valid default SMS 'from' number could be determined for the current person. Please provide a fromNumberIdKey." )
+                            .WithInstructions( "Call the LookupSystemPhoneNumbers function, and prompt the user to pick from the list." );
                     }
-
-                    communicationService.Add( draftCommunication );
                 }
-
-                try
-                {
-                    rockContext.SaveChanges();
-                }
-                catch ( Exception ex )
-                {
-                    _logger.LogError( ex, "Failed to save communication." );
-                    return RockToolResult.Error( "Failed to save the communication. Check the logs for details." );
-                }
-
-                // Update our draft result with the newly saved communication.
-                draftResult.CommunicationIdKey = draftCommunication.IdKey;
-
-                var returnInstructions = "Never call SendCommunication directly after this.";
-
-                if ( draftResult.VerificationText.IsNotNullOrWhiteSpace() )
-                {
-                    returnInstructions += "\r\nAsk the user for verification on the following fields: \r\n";
-                    returnInstructions += draftResult.VerificationText;
-                }
-
-                var historyContent = new
-                {
-                    Recipient = new KeyNameResult( recipient.IdKey, recipient.FullName ),
-                    CommunicationIdKey = draftCommunication.IdKey
-                };
-
-                return RockToolResult.Success( draftResult )
-                    .WithInstructions( returnInstructions )
-                    .WithHistoryContent( historyContent, draftCommunication.IdKey )
-                    .WithReferenceRoute( AgentRequestContext.RockRequestContext, "Draft Communication", $"/Communication/{draftCommunication.Id}", false );
             }
+
+            var medium = TryGetCommunicationMedium( communicationType, rockContext, fromNumberId );
+            if ( medium == null )
+            {
+                return RockToolResult.Error( $"The communication type '{communicationType}' is not supported." );
+            }
+
+            Rock.Model.Communication draftCommunication = null;
+            if ( existingDraftIdKey.IsNotNullOrWhiteSpace() )
+            {
+                draftCommunication = communicationService.Get( existingDraftIdKey );
+                if ( draftCommunication == null )
+                {
+                    return RockToolResult.Error( $"No valid draft communication found for the provided existingDraftIdKey: {existingDraftIdKey}." )
+                        .WithInstructions( "Ask the user if they would like you to generate a new one." );
+                }
+                else if ( draftCommunication.Status != CommunicationStatus.Transient )
+                {
+                    return RockToolResult.Error( "This draft is not in a transient state. It has likely already been sent." )
+                        .WithInstructions( "Ask the user if they would prefer you create a new draft." );
+                }
+            }
+
+            var recipients = new List<Rock.Model.Person> { recipient };
+            var recipientValidation = medium.ValidateRecipients( recipients );
+            if ( recipientValidation.Count > 0 )
+            {
+                return RockToolResult.Error( recipientValidation );
+            }
+
+            string emailSignature = string.Empty;
+            if ( communicationType == AgentCommunicationType.Email )
+            {
+                var prefs = AgentRequestContext.RockRequestContext.GetGlobalPersonPreferences();
+                emailSignature = prefs.GetValue( PersonPreferenceKey.EMAIL_CLOSING_PHRASE );
+            }
+
+            var draftRequest = new DraftRequest( communicationType, subjectHint, draftGuidance, referenceData, tone, currentPerson, recipients, emailSignature );
+
+            DraftResult draftResult;
+            try
+            {
+                draftResult = await medium.DraftAsync( AgentRequestContext.ChatAgent, draftRequest );
+            }
+            catch ( Exception ex )
+            {
+                _logger.LogError( ex, "Failed to draft communication." );
+                return RockToolResult.Error( "Failed to draft the communication. Check the logs for details." );
+            }
+
+            if ( draftResult == null )
+            {
+                return RockToolResult.Error( "The draft content is null. Ensure the medium's DraftAsync method is implemented correctly." );
+            }
+
+            if ( draftCommunication != null )
+            {
+                draftCommunication = medium.UpdateCommunication( draftRequest, recipients, draftCommunication, draftResult );
+            }
+            else
+            {
+                draftCommunication = medium.BuildCommunication( draftRequest, recipients, draftResult );
+                if ( draftCommunication == null )
+                {
+                    return RockToolResult.Error( "Failed to build the communication object." );
+                }
+
+                communicationService.Add( draftCommunication );
+            }
+
+            try
+            {
+                rockContext.SaveChanges();
+            }
+            catch ( Exception ex )
+            {
+                _logger.LogError( ex, "Failed to save communication." );
+                return RockToolResult.Error( "Failed to save the communication. Check the logs for details." );
+            }
+
+            // Update our draft result with the newly saved communication.
+            draftResult.CommunicationIdKey = draftCommunication.IdKey;
+
+            var returnInstructions = "Never call SendCommunication directly after this.";
+
+            if ( draftResult.VerificationText.IsNotNullOrWhiteSpace() )
+            {
+                returnInstructions += "\r\nAsk the user for verification on the following fields: \r\n";
+                returnInstructions += draftResult.VerificationText;
+            }
+
+            var historyContent = new
+            {
+                Recipient = new KeyNameResult( recipient.IdKey, recipient.FullName ),
+                CommunicationIdKey = draftCommunication.IdKey
+            };
+
+            return RockToolResult.Success( draftResult )
+                .WithInstructions( returnInstructions )
+                .WithHistoryContent( historyContent, draftCommunication.IdKey )
+                .WithReferenceRoute( AgentRequestContext.RockRequestContext, "Draft Communication", $"/Communication/{draftCommunication.Id}", false );
         }
 
         #endregion

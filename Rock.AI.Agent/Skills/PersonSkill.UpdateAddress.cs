@@ -14,6 +14,7 @@ using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.PersonSkill;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.SystemKey;
@@ -63,7 +64,7 @@ namespace Rock.AI.Agent.Skills
             }
 
             
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
 
             // Load the person to ensure they exist
             var personService = new PersonService( rockContext );

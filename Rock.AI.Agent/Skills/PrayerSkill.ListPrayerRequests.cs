@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Utility;
@@ -91,129 +92,128 @@ namespace Rock.AI.Agent.Skills
             }
 
             // Query
-            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            using var rockContext = RockApp.Current.CreateRockContext();
+            var service = new PrayerRequestService( rockContext );
+            int? requestedByPersonAliasId = null;
+
+            if ( requestedByPersonIdKey.IsNotNullOrWhiteSpace() )
             {
-                var service = new PrayerRequestService( rockContext );
-                int? requestedByPersonAliasId = null;
+                var personService = new PersonService( rockContext );
+                var requestedByPersonId = IdHasher.Instance.GetId( requestedByPersonIdKey );
 
-                if ( requestedByPersonIdKey.IsNotNullOrWhiteSpace() )
+                if ( requestedByPersonId == null )
                 {
-                    var personService = new PersonService( rockContext );
-                    var requestedByPersonId = IdHasher.Instance.GetId( requestedByPersonIdKey );
-
-                    if ( requestedByPersonId == null )
-                    {
-                        return RockToolResult.Error( "The requestedByPersonIdKey is not valid." );
-                    }
-
-                    var requestedByPerson = personService.Get( requestedByPersonId.Value );
-                    if ( requestedByPerson == null )
-                    {
-                        return RockToolResult.Error( "The requestedByPersonIdKey is not valid." );
-                    }
-
-                    requestedByPersonAliasId = requestedByPerson.PrimaryAliasId;
+                    return RockToolResult.Error( "The requestedByPersonIdKey is not valid." );
                 }
 
-                // Base query (no tracking for read-only)
-                var qry = service.Queryable().AsNoTracking();
-
-                // Category filter
-                if ( category != null )
+                var requestedByPerson = personService.Get( requestedByPersonId.Value );
+                if ( requestedByPerson == null )
                 {
-                    qry = qry.Where( pr => pr.CategoryId == category.Id );
-                }
-                else if ( parentCategory != null )
-                {
-                    // Only direct children of the parent category 
-                    qry = qry.Where( pr => pr.Category != null && pr.Category.ParentCategoryId == parentCategory.Id );
-                }
-                // Date range
-                if ( startDate.HasValue )
-                {
-                    qry = qry.Where( pr => pr.EnteredDateTime >= startDate.Value );
-                }
-                if ( endDate.HasValue )
-                {
-                    // exclusive end is usually cleaner for paging windows
-                    qry = qry.Where( pr => pr.EnteredDateTime < endDate.Value );
+                    return RockToolResult.Error( "The requestedByPersonIdKey is not valid." );
                 }
 
-                // Optional flags
-                if ( isPublic.HasValue )
+                requestedByPersonAliasId = requestedByPerson.PrimaryAliasId;
+            }
+
+            // Base query (no tracking for read-only)
+            var qry = service.Queryable().AsNoTracking();
+
+            // Category filter
+            if ( category != null )
+            {
+                qry = qry.Where( pr => pr.CategoryId == category.Id );
+            }
+            else if ( parentCategory != null )
+            {
+                // Only direct children of the parent category 
+                qry = qry.Where( pr => pr.Category != null && pr.Category.ParentCategoryId == parentCategory.Id );
+            }
+            // Date range
+            if ( startDate.HasValue )
+            {
+                qry = qry.Where( pr => pr.EnteredDateTime >= startDate.Value );
+            }
+            if ( endDate.HasValue )
+            {
+                // exclusive end is usually cleaner for paging windows
+                qry = qry.Where( pr => pr.EnteredDateTime < endDate.Value );
+            }
+
+            // Optional flags
+            if ( isPublic.HasValue )
+            {
+                qry = qry.Where( pr => pr.IsPublic == isPublic.Value );
+            }
+            if ( isUrgent.HasValue )
+            {
+                qry = qry.Where( pr => pr.IsUrgent == isUrgent.Value );
+            }
+
+            if ( isActive.HasValue )
+            {
+                qry = qry.Where( pr => pr.IsActive == isActive.Value );
+            }
+
+            // Either match on the requested by person alias id, or first/last name
+            if ( requestedByPersonAliasId.HasValue )
+            {
+                qry = qry.Where( pr => pr.RequestedByPersonAliasId == requestedByPersonAliasId.Value );
+            }
+            else
+            {
+                if ( firstName.IsNotNullOrWhiteSpace() )
                 {
-                    qry = qry.Where( pr => pr.IsPublic == isPublic.Value );
-                }
-                if ( isUrgent.HasValue )
-                {
-                    qry = qry.Where( pr => pr.IsUrgent == isUrgent.Value );
-                }
-
-                if ( isActive.HasValue )
-                {
-                    qry = qry.Where( pr => pr.IsActive == isActive.Value );
-                }
-
-                // Either match on the requested by person alias id, or first/last name
-                if ( requestedByPersonAliasId.HasValue )
-                {
-                    qry = qry.Where( pr => pr.RequestedByPersonAliasId == requestedByPersonAliasId.Value );
-                }
-                else
-                {
-                    if ( firstName.IsNotNullOrWhiteSpace() )
-                    {
-                        var fn = firstName.Trim();
-                        qry = qry.Where( pr => pr.FirstName.Contains( fn ) );
-                    }
-
-                    else if ( lastName.IsNotNullOrWhiteSpace() )
-                    {
-                        var ln = lastName.Trim();
-                        qry = qry.Where( pr => pr.LastName.Contains( ln ) );
-                    }
-                }
-
-                // Sort: newest first; tie-break by Id for determinism
-                qry = qry.OrderByDescending( pr => pr.EnteredDateTime ).ThenBy( pr => pr.Id );
-
-                var includeCategoryInItem = category == null;
-
-                // If there is a specific category filter, we don't need to include the Category in each item.
-                // We need to separate this out so there is no EF join to Category if we don't need it.
-                var items = qry
-                    .Skip( offset ).Take( take )
-                    .Select( prayerRequest => new PrayerRequestResult
-                    {
-                        Id = prayerRequest.Id,
-                        Text = prayerRequest.Text,
-                        EnteredDateTime = prayerRequest.EnteredDateTime,
-                        IsUrgent = prayerRequest.IsUrgent,
-                        IsActive = prayerRequest.IsActive,
-                        IsApproved = prayerRequest.IsApproved,
-                        IsPublic = prayerRequest.IsPublic,
-                        PrayerCount = prayerRequest.PrayerCount,
-                        Category = ( includeCategoryInItem && prayerRequest.Category != null )
-                            ? new KeyNameResult { Id = prayerRequest.Category.Id, Name = prayerRequest.Category.Name }
-                            : null
-                    } )
-                    .ToList();
-
-                var hasMore = items.Count > pageSize;
-                if ( hasMore )
-                {
-                    items.RemoveAt( items.Count - 1 );
+                    var fn = firstName.Trim();
+                    qry = qry.Where( pr => pr.FirstName.Contains( fn ) );
                 }
 
-                // Slim it down for the history content
-                var historyItems = items.Select( pr => new
+                else if ( lastName.IsNotNullOrWhiteSpace() )
                 {
-                    IdKey = pr.IdKey,
-                    Text = pr.Text.Truncate( 200 ),
-                } );
+                    var ln = lastName.Trim();
+                    qry = qry.Where( pr => pr.LastName.Contains( ln ) );
+                }
+            }
 
-                // Metadata 
-                var meta = new Dictionary<string, object>
+            // Sort: newest first; tie-break by Id for determinism
+            qry = qry.OrderByDescending( pr => pr.EnteredDateTime ).ThenBy( pr => pr.Id );
+
+            var includeCategoryInItem = category == null;
+
+            // If there is a specific category filter, we don't need to include the Category in each item.
+            // We need to separate this out so there is no EF join to Category if we don't need it.
+            var items = qry
+                .Skip( offset ).Take( take )
+                .Select( prayerRequest => new PrayerRequestResult
+                {
+                    Id = prayerRequest.Id,
+                    Text = prayerRequest.Text,
+                    EnteredDateTime = prayerRequest.EnteredDateTime,
+                    IsUrgent = prayerRequest.IsUrgent,
+                    IsActive = prayerRequest.IsActive,
+                    IsApproved = prayerRequest.IsApproved,
+                    IsPublic = prayerRequest.IsPublic,
+                    PrayerCount = prayerRequest.PrayerCount,
+                    Category = ( includeCategoryInItem && prayerRequest.Category != null )
+                        ? new KeyNameResult { Id = prayerRequest.Category.Id, Name = prayerRequest.Category.Name }
+                        : null
+                } )
+                .ToList();
+
+            var hasMore = items.Count > pageSize;
+            if ( hasMore )
+            {
+                items.RemoveAt( items.Count - 1 );
+            }
+
+            // Slim it down for the history content
+            var historyItems = items.Select( pr => new
+            {
+                IdKey = pr.IdKey,
+                Text = pr.Text.Truncate( 200 ),
+            } );
+
+            // Metadata 
+            var meta = new Dictionary<string, object>
                 {
                     { "pageNumber", pgNumber },
                     { "pageSize", pageSize },
@@ -233,14 +233,13 @@ namespace Rock.AI.Agent.Skills
                     }
                 };
 
-                return RockToolResult.Success( items )
-                    .WithMetadata( meta )
-                    .WithHistoryContent( new
-                    {
-                        Items = historyItems,
-                        PageNumber = pageNumber
-                    } );
-            }
+            return RockToolResult.Success( items )
+                .WithMetadata( meta )
+                .WithHistoryContent( new
+                {
+                    Items = historyItems,
+                    PageNumber = pageNumber
+                } );
         }
 
         #endregion

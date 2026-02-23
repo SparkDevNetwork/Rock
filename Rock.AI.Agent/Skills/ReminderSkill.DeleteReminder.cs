@@ -2,6 +2,7 @@
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -21,7 +22,7 @@ namespace Rock.AI.Agent.Skills
         [AgentGuardrail( "This action will permanently delete the specified reminder. Ensure that this action is intentional and that you have the correct identifier before proceeding." )]
         public RockToolResult DeleteReminder( string reminderIdKey )
         {
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
             var reminderService = new ReminderService( rockContext );
             var reminder = reminderService.Get( reminderIdKey, false );
 

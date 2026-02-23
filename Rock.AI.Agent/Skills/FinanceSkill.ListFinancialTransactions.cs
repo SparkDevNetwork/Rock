@@ -6,6 +6,7 @@ using System.Linq;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.FinanceSkill;
+using Rock.Configuration;
 using Rock.SystemGuid;
 using Rock.Utility;
 
@@ -57,7 +58,7 @@ namespace Rock.AI.Agent.Skills
                     .WithInstructions( "Call the SummarizeFinancialTransactions tool to get an aggregated form of the request." );
             }
 
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
 
             var personId = personIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( personIdKey ) : null;
             var campusId = campusIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( campusIdKey ) : null;

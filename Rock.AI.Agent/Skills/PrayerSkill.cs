@@ -25,8 +25,10 @@ namespace Rock.AI.Agent.Skills
     {
         #region Fields
 
-        private readonly ILogger<PrayerSkill> _logger;
-        private readonly IRockContextFactory _rockContextFactory;
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private readonly ILogger _logger;
 
         #endregion
 
@@ -35,11 +37,9 @@ namespace Rock.AI.Agent.Skills
         /// <summary>
         /// Initializes a new instance of the <see cref="PrayerSkill"/> class.
         /// </summary>
-        /// <param name="rockContextFactory">Factory to create rock contexts.</param>
         /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public PrayerSkill( IRockContextFactory rockContextFactory, ILogger<PrayerSkill> logger )
+        public PrayerSkill( ILogger<PrayerSkill> logger )
         {
-            _rockContextFactory = rockContextFactory ?? throw new ArgumentNullException( nameof( rockContextFactory ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }
 

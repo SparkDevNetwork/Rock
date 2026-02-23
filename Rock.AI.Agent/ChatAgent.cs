@@ -246,27 +246,25 @@ namespace Rock.AI.Agent
                 throw new Exception( "Cannot start a new session without a current person." );
             }
 
-            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            using var rockContext = _rockContextFactory.CreateRockContext();
+            var sessionService = new AIAgentSessionService( rockContext );
+            var session = new AIAgentSession
             {
-                var sessionService = new AIAgentSessionService( rockContext );
-                var session = new AIAgentSession
-                {
-                    AIAgentId = _agentConfiguration.AgentId,
-                    PersonAliasId = _requestContext.CurrentPerson.PrimaryAliasId,
-                    RelatedEntityTypeId = entityTypeId,
-                    RelatedEntityId = entityId
-                };
+                AIAgentId = _agentConfiguration.AgentId,
+                PersonAliasId = _requestContext.CurrentPerson.PrimaryAliasId,
+                RelatedEntityTypeId = entityTypeId,
+                RelatedEntityId = entityId
+            };
 
-                sessionService.Add( session );
+            sessionService.Add( session );
 
-                rockContext.SaveChanges();
+            rockContext.SaveChanges();
 
-                _context.Clear();
-                AddSystemMessages();
+            _context.Clear();
+            AddSystemMessages();
 
-                SessionId = session.Id;
-                _sessionNeedsName = true;
-            }
+            SessionId = session.Id;
+            _sessionNeedsName = true;
 
             return Task.CompletedTask;
         }
@@ -274,75 +272,73 @@ namespace Rock.AI.Agent
         /// <inheritdoc/>
         public Task LoadSessionAsync( int sessionId, CancellationToken cancellationToken )
         {
-            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            using var rockContext = _rockContextFactory.CreateRockContext();
+            var session = new AIAgentSessionService( rockContext ).Get( sessionId )
+                ?? throw new Exception( "The specified session could not be found." );
+
+            // Get all the messages by either the user or the assistant.
+            var messages = new AIAgentSessionHistoryService( rockContext ).Queryable()
+                .Where( s => s.AIAgentSessionId == sessionId
+                    && s.IsCurrentlyInContext )
+                .OrderBy( s => s.MessageDateTime )
+                .ThenBy( s => s.Id )
+                .Select( s => new
+                {
+                    s.MessageRole,
+                    s.Message,
+                    s.TokenCount
+                } )
+                .ToList();
+
+            // Get all entity anchors that are still active.
+            var anchors = new AIAgentSessionAnchorService( rockContext ).Queryable()
+                .Where( a => a.AIAgentSessionId == sessionId
+                    && a.IsActive )
+                .OrderByDescending( a => a.AddedDateTime )
+                .Select( a => new
+                {
+                    a.EntityTypeId,
+                    a.PayloadJson
+                } )
+                .ToList();
+
+            _context.Clear();
+            AddSystemMessages();
+
+            // Add all the entity anchors, skipping any duplicates.
+            var anchorEntities = new List<int>( anchors.Count );
+            foreach ( var anchor in anchors )
             {
-                var session = new AIAgentSessionService( rockContext ).Get( sessionId )
-                    ?? throw new Exception( "The specified session could not be found." );
-
-                // Get all the messages by either the user or the assistant.
-                var messages = new AIAgentSessionHistoryService( rockContext ).Queryable()
-                    .Where( s => s.AIAgentSessionId == sessionId
-                        && s.IsCurrentlyInContext )
-                    .OrderBy( s => s.MessageDateTime )
-                    .ThenBy( s => s.Id )
-                    .Select( s => new
-                    {
-                        s.MessageRole,
-                        s.Message,
-                        s.TokenCount
-                    } )
-                    .ToList();
-
-                // Get all entity anchors that are still active.
-                var anchors = new AIAgentSessionAnchorService( rockContext ).Queryable()
-                    .Where( a => a.AIAgentSessionId == sessionId
-                        && a.IsActive )
-                    .OrderByDescending( a => a.AddedDateTime )
-                    .Select( a => new
-                    {
-                        a.EntityTypeId,
-                        a.PayloadJson
-                    } )
-                    .ToList();
-
-                _context.Clear();
-                AddSystemMessages();
-
-                // Add all the entity anchors, skipping any duplicates.
-                var anchorEntities = new List<int>( anchors.Count );
-                foreach ( var anchor in anchors )
+                if ( anchorEntities.Contains( anchor.EntityTypeId ) )
                 {
-                    if ( anchorEntities.Contains( anchor.EntityTypeId ) )
-                    {
-                        continue;
-                    }
-
-                    anchorEntities.Add( anchor.EntityTypeId );
-
-                    _context.AddAnchor( anchor.EntityTypeId, anchor.PayloadJson );
+                    continue;
                 }
 
-                // Add all the user and assistant messages.
-                foreach ( var message in messages )
-                {
-                    if ( message.MessageRole == AuthorRole.User )
-                    {
-                        _context.AddUserMessage( message.Message );
-                    }
-                    else if ( message.MessageRole == AuthorRole.Assistant )
-                    {
-                        _context.AddAssistantMessage( message.Message );
-                    }
-                    else if ( message.MessageRole == AuthorRole.Tool )
-                    {
-                        _context.AddToolResultMessage( message.Message );
-                    }
-                }
+                anchorEntities.Add( anchor.EntityTypeId );
 
-                SessionId = sessionId;
-                _historyNeedsSummary = messages.Sum( m => m.TokenCount ) >= _agentConfiguration.AutoSummarizeThreshold;
-                _sessionNeedsName = session.Name.IsNullOrWhiteSpace();
+                _context.AddAnchor( anchor.EntityTypeId, anchor.PayloadJson );
             }
+
+            // Add all the user and assistant messages.
+            foreach ( var message in messages )
+            {
+                if ( message.MessageRole == AuthorRole.User )
+                {
+                    _context.AddUserMessage( message.Message );
+                }
+                else if ( message.MessageRole == AuthorRole.Assistant )
+                {
+                    _context.AddAssistantMessage( message.Message );
+                }
+                else if ( message.MessageRole == AuthorRole.Tool )
+                {
+                    _context.AddToolResultMessage( message.Message );
+                }
+            }
+
+            SessionId = sessionId;
+            _historyNeedsSummary = messages.Sum( m => m.TokenCount ) >= _agentConfiguration.AutoSummarizeThreshold;
+            _sessionNeedsName = session.Name.IsNullOrWhiteSpace();
 
             return Task.CompletedTask;
         }
@@ -376,29 +372,27 @@ namespace Rock.AI.Agent
                     await SummarizeChatHistoryAsync( cancellationToken );
                 }
 
-                using ( var rockContext = _rockContextFactory.CreateRockContext() )
+                using var rockContext = _rockContextFactory.CreateRockContext();
+                var historyService = new AIAgentSessionHistoryService( rockContext );
+
+                var history = new AIAgentSessionHistory
                 {
-                    var historyService = new AIAgentSessionHistoryService( rockContext );
+                    AIAgentSessionId = SessionId.Value,
+                    MessageRole = role,
+                    Message = message,
+                    IsCurrentlyInContext = true,
+                    MessageDateTime = RockDateTime.Now,
+                    TokenCount = tokenCount,
+                    ConsumedTokenCount = consumedTokenCount
+                };
 
-                    var history = new AIAgentSessionHistory
-                    {
-                        AIAgentSessionId = SessionId.Value,
-                        MessageRole = role,
-                        Message = message,
-                        IsCurrentlyInContext = true,
-                        MessageDateTime = RockDateTime.Now,
-                        TokenCount = tokenCount,
-                        ConsumedTokenCount = consumedTokenCount
-                    };
+                historyService.Add( history );
 
-                    historyService.Add( history );
+                var session = new AIAgentSessionService( rockContext ).Get( SessionId.Value );
 
-                    var session = new AIAgentSessionService( rockContext ).Get( SessionId.Value );
+                session.LastMessageDateTime = RockDateTime.Now;
 
-                    session.LastMessageDateTime = RockDateTime.Now;
-
-                    rockContext.SaveChanges();
-                }
+                rockContext.SaveChanges();
             }
 
             if ( role == AuthorRole.User )
@@ -427,21 +421,19 @@ namespace Rock.AI.Agent
                 IsActive = true
             };
 
-            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            using var rockContext = _rockContextFactory.CreateRockContext();
+            AIAgentSessionAnchorService.UpdateFromEntity( anchor, rockContext );
+
+            if ( SessionId.HasValue )
             {
-                AIAgentSessionAnchorService.UpdateFromEntity( anchor, rockContext );
+                InactivateEntityAnchor( entityTypeId );
 
-                if ( SessionId.HasValue )
-                {
-                    InactivateEntityAnchor( entityTypeId );
+                var anchorService = new AIAgentSessionAnchorService( rockContext );
 
-                    var anchorService = new AIAgentSessionAnchorService( rockContext );
+                anchor.AIAgentSessionId = SessionId.Value;
+                anchorService.Add( anchor );
 
-                    anchor.AIAgentSessionId = SessionId.Value;
-                    anchorService.Add( anchor );
-
-                    rockContext.SaveChanges();
-                }
+                rockContext.SaveChanges();
             }
 
             _context.AddAnchor( anchor.EntityTypeId, anchor.PayloadJson );
@@ -468,19 +460,17 @@ namespace Rock.AI.Agent
         /// <param name="entityTypeId">The identifier of the <see cref="EntityType"/> whose anchor should be marked inactive.</param>
         private void InactivateEntityAnchor( int entityTypeId )
         {
-            using ( var rockContext = _rockContextFactory.CreateRockContext() )
-            {
-                var anchorService = new AIAgentSessionAnchorService( rockContext );
-                var anchorsToInactivate = anchorService.Queryable()
-                    .Where( a => a.AIAgentSessionId == SessionId.Value
-                        && a.EntityTypeId == entityTypeId
-                        && a.IsActive )
-                    .ToList();
+            using var rockContext = _rockContextFactory.CreateRockContext();
+            var anchorService = new AIAgentSessionAnchorService( rockContext );
+            var anchorsToInactivate = anchorService.Queryable()
+                .Where( a => a.AIAgentSessionId == SessionId.Value
+                    && a.EntityTypeId == entityTypeId
+                    && a.IsActive )
+                .ToList();
 
-                anchorsToInactivate.ForEach( a => a.IsActive = false );
+            anchorsToInactivate.ForEach( a => a.IsActive = false );
 
-                rockContext.SaveChanges();
-            }
+            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -546,52 +536,50 @@ namespace Rock.AI.Agent
         /// </summary>
         async private Task SummarizeChatHistoryAsync( CancellationToken cancellationToken )
         {
-            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            using var rockContext = _rockContextFactory.CreateRockContext();
+            var messages = new AIAgentSessionHistoryService( rockContext ).Queryable()
+                .Where( s => s.AIAgentSessionId == SessionId.Value
+                    && s.IsCurrentlyInContext )
+                .OrderBy( s => s.MessageDateTime )
+                .ThenBy( s => s.Id )
+                .ToList();
+
+            if ( messages.Count == 0 )
             {
-                var messages = new AIAgentSessionHistoryService( rockContext ).Queryable()
-                    .Where( s => s.AIAgentSessionId == SessionId.Value
-                        && s.IsCurrentlyInContext )
-                    .OrderBy( s => s.MessageDateTime )
-                    .ThenBy( s => s.Id )
-                    .ToList();
-
-                if ( messages.Count == 0 )
-                {
-                    return;
-                }
-
-                var chatHistoryText = string.Join( "\n", messages.Select( m => $"{m.MessageRole}: {m.Message}" ) );
-                var prompt = AutoSummarizePrompt + chatHistoryText;
-
-                var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
-                var result = await chat.GetChatMessageContentAsync(
-                    new ChatHistory { new ChatMessageContent( Microsoft.SemanticKernel.ChatCompletion.AuthorRole.User, prompt ) },
-                    executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
-                    kernel: _kernel
-                );
-
-                var historyService = new AIAgentSessionHistoryService( rockContext );
-                var usage = GetMetricUsageFromResult( result );
-
-                messages.ForEach( m => m.IsCurrentlyInContext = false );
-
-                var history = new AIAgentSessionHistory
-                {
-                    AIAgentSessionId = SessionId.Value,
-                    MessageRole = AuthorRole.Assistant,
-                    Message = result.Content,
-                    IsCurrentlyInContext = true,
-                    IsSummary = true,
-                    MessageDateTime = RockDateTime.Now,
-                    TokenCount = usage?.OutputTokenCount ?? CountTokens( result.Content ),
-                    ConsumedTokenCount = usage?.TotalTokenCount ?? 0
-                };
-
-                historyService.Add( history );
-
-                rockContext.SaveChanges();
-                _historyNeedsSummary = false;
+                return;
             }
+
+            var chatHistoryText = string.Join( "\n", messages.Select( m => $"{m.MessageRole}: {m.Message}" ) );
+            var prompt = AutoSummarizePrompt + chatHistoryText;
+
+            var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
+            var result = await chat.GetChatMessageContentAsync(
+                [new ChatMessageContent( Microsoft.SemanticKernel.ChatCompletion.AuthorRole.User, prompt )],
+                executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
+                kernel: _kernel
+            );
+
+            var historyService = new AIAgentSessionHistoryService( rockContext );
+            var usage = GetMetricUsageFromResult( result );
+
+            messages.ForEach( m => m.IsCurrentlyInContext = false );
+
+            var history = new AIAgentSessionHistory
+            {
+                AIAgentSessionId = SessionId.Value,
+                MessageRole = AuthorRole.Assistant,
+                Message = result.Content,
+                IsCurrentlyInContext = true,
+                IsSummary = true,
+                MessageDateTime = RockDateTime.Now,
+                TokenCount = usage?.OutputTokenCount ?? CountTokens( result.Content ),
+                ConsumedTokenCount = usage?.TotalTokenCount ?? 0
+            };
+
+            historyService.Add( history );
+
+            rockContext.SaveChanges();
+            _historyNeedsSummary = false;
 
             // Reload the session data.
             await LoadSessionAsync( SessionId.Value, cancellationToken );
@@ -781,55 +769,53 @@ namespace Rock.AI.Agent
 
             // Tool messages have a key associated.
             // We want to go cleanup any existing tool messages (with the same key) before adding a new one.
-            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            using var rockContext = _rockContextFactory.CreateRockContext();
+            var historyService = new AIAgentSessionHistoryService( rockContext );
+
+            var existingToolMessages = historyService.Queryable()
+                .Where( h => h.AIAgentSessionId == SessionId
+                    && h.MessageRole == AuthorRole.Tool )
+                .ToList();
+
+            bool needsRefresh = false;
+            foreach ( var toolMessage in existingToolMessages )
             {
-                var historyService = new AIAgentSessionHistoryService( rockContext );
-
-                var existingToolMessages = historyService.Queryable()
-                    .Where( h => h.AIAgentSessionId == SessionId
-                        && h.MessageRole == AuthorRole.Tool )
-                    .ToList();
-
-                bool needsRefresh = false;
-                foreach ( var toolMessage in existingToolMessages )
+                // Parse the tool content to get the key.
+                var toolResultContent = JsonSerializer.Deserialize<ToolResultContent>( toolMessage.Message, serializerOptions )?.Result;
+                if ( toolResultContent.HistoryToken.IsNotNullOrWhiteSpace() && toolMessageContent.HistoryToken == toolResultContent.HistoryToken )
                 {
-                    // Parse the tool content to get the key.
-                    var toolResultContent = JsonSerializer.Deserialize<ToolResultContent>( toolMessage.Message, serializerOptions )?.Result;
-                    if ( toolResultContent.HistoryToken.IsNotNullOrWhiteSpace() && toolMessageContent.HistoryToken == toolResultContent.HistoryToken )
-                    {
-                        // This is the same tool message, remove it.
-                        historyService.Delete( toolMessage );
-                        needsRefresh = true;
-                    }
+                    // This is the same tool message, remove it.
+                    historyService.Delete( toolMessage );
+                    needsRefresh = true;
                 }
-
-                if ( needsRefresh )
-                {
-                    rockContext.SaveChanges();
-                    await LoadSessionAsync( SessionId.Value, token );
-                }
-
-                var history = new AIAgentSessionHistory
-                {
-                    AIAgentSessionId = SessionId.Value,
-                    MessageRole = AuthorRole.Tool,
-                    Message = message,
-                    IsCurrentlyInContext = true,
-                    MessageDateTime = RockDateTime.Now,
-                    TokenCount = tokenCount,
-                    ConsumedTokenCount = consumedTokenCount
-                };
-
-                historyService.Add( history );
-
-                var session = new AIAgentSessionService( rockContext ).Get( SessionId.Value );
-
-                session.LastMessageDateTime = RockDateTime.Now;
-
-                rockContext.SaveChanges();
-
-                _context.AddToolResultMessage( message );
             }
+
+            if ( needsRefresh )
+            {
+                rockContext.SaveChanges();
+                await LoadSessionAsync( SessionId.Value, token );
+            }
+
+            var history = new AIAgentSessionHistory
+            {
+                AIAgentSessionId = SessionId.Value,
+                MessageRole = AuthorRole.Tool,
+                Message = message,
+                IsCurrentlyInContext = true,
+                MessageDateTime = RockDateTime.Now,
+                TokenCount = tokenCount,
+                ConsumedTokenCount = consumedTokenCount
+            };
+
+            historyService.Add( history );
+
+            var session = new AIAgentSessionService( rockContext ).Get( SessionId.Value );
+
+            session.LastMessageDateTime = RockDateTime.Now;
+
+            rockContext.SaveChanges();
+
+            _context.AddToolResultMessage( message );
         }
 
         /// <summary>
@@ -874,31 +860,29 @@ namespace Rock.AI.Agent
         /// <returns>A name that can be used as the default session name.</returns>
         private async Task<string> GenerateSessionNameAsync( IChatCompletionService chat )
         {
-            using ( var sessionRockContext = _rockContextFactory.CreateRockContext() )
+            using var sessionRockContext = _rockContextFactory.CreateRockContext();
+            var session = new AIAgentSessionService( sessionRockContext ).Get( SessionId.Value );
+
+            if ( session == null || session.AIAgentSessionHistories.Count == 0 )
             {
-                var session = new AIAgentSessionService( sessionRockContext ).Get( SessionId.Value );
-
-                if ( session == null || session.AIAgentSessionHistories.Count == 0 )
-                {
-                    return null;
-                }
-
-                var message = session.AIAgentSessionHistories.First().Message;
-                var prompt = $"Please provide a name for this session (7 words or less, but it should read like proper english) title, without markup, for a new chat session with the initial message: {message}";
-
-                var sessionResult = await chat.GetChatMessageContentAsync(
-                    new ChatHistory { new ChatMessageContent( Microsoft.SemanticKernel.ChatCompletion.AuthorRole.User, prompt ) },
-                    executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
-                    kernel: _kernel
-                );
-
-                session.Name = sessionResult.Content.Truncate( 100 );
-                sessionRockContext.SaveChanges();
-
-                _sessionNeedsName = false;
-
-                return session.Name;
+                return null;
             }
+
+            var message = session.AIAgentSessionHistories.First().Message;
+            var prompt = $"Please provide a name for this session (7 words or less, but it should read like proper english) title, without markup, for a new chat session with the initial message: {message}";
+
+            var sessionResult = await chat.GetChatMessageContentAsync(
+                [new ChatMessageContent( Microsoft.SemanticKernel.ChatCompletion.AuthorRole.User, prompt )],
+                executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
+                kernel: _kernel
+            );
+
+            session.Name = sessionResult.Content.Truncate( 100 );
+            sessionRockContext.SaveChanges();
+
+            _sessionNeedsName = false;
+
+            return session.Name;
         }
 
         /// <summary>
@@ -930,7 +914,7 @@ namespace Rock.AI.Agent
                     {
                         preamble = $"Calling {functionCallContent.Name}";
 
-                        var parts = functionCallContent.Name.Split( new[] { '_', '-' } );
+                        var parts = functionCallContent.Name.Split( ['_', '-'] );
 
                         if ( parts.Length == 2 )
                         {

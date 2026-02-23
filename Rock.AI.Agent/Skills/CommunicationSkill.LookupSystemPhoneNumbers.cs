@@ -3,6 +3,7 @@ using System.Linq;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -23,7 +24,7 @@ namespace Rock.AI.Agent.Skills
         [AgentToolGuid( "FD3F160F-ABCA-4A18-B69F-0E21D61B6874" )]
         public RockToolResult LookupSystemPhoneNumbers( bool? smsEnabled = null )
         {
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
 
             var spnResults = GetSystemPhoneNumbers( rockContext, smsEnabled );
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -24,7 +25,7 @@ namespace Rock.AI.Agent.Skills
         [AgentGuardrail( "This action will permanently delete the specified prayer request. Ensure that this action is intentional and that you have the correct prayer request identifier before proceeding." )]
         public RockToolResult DeletePrayerRequest( string idKey )
         {
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
             var prayerRequestService = new PrayerRequestService( rockContext );
             var existingPrayerRequest = prayerRequestService.Get( idKey, false );
             if ( existingPrayerRequest == null )

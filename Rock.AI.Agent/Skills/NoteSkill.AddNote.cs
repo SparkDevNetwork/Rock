@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
+using Rock.Configuration;
 using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Utility;
@@ -62,7 +63,7 @@ namespace Rock.AI.Agent.Skills
                 return RockToolResult.Error( "Invalid entity provided." );
             }
 
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
             var noteService = new Rock.Model.NoteService( rockContext );
 
             var newNote = new Rock.Model.Note

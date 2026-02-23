@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -48,7 +49,7 @@ namespace Rock.AI.Agent.Skills
                 return RockToolResult.Error( "You must be logged in to add a reminder." );
             }
 
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
             var reminderService = new ReminderService( rockContext );
             var reminderTypeService = new ReminderTypeService( rockContext );
             var personService = new PersonService( rockContext );

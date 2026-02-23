@@ -26,14 +26,9 @@ namespace Rock.AI.Agent.Skills
         #region Fields
 
         /// <summary>
-        /// The logger instance for logging messages.
+        /// The logger for this instance.
         /// </summary>
-        private readonly ILogger<NoteSkill> _logger;
-
-        /// <summary>
-        /// The factory for creating RockContext instances.
-        /// </summary>
-        private readonly IRockContextFactory _rockContextFactory;
+        private readonly ILogger _logger;
 
         #endregion
 
@@ -42,11 +37,9 @@ namespace Rock.AI.Agent.Skills
         /// <summary>
         /// Initializes a new instance of the <see cref="NoteSkill"/> class.
         /// </summary>
-        /// <param name="rockContextFactory">Factory to create rock contexts.</param>
         /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public NoteSkill( IRockContextFactory rockContextFactory, ILogger<NoteSkill> logger )
+        public NoteSkill( ILogger<NoteSkill> logger )
         {
-            _rockContextFactory = rockContextFactory ?? throw new ArgumentNullException( nameof( rockContextFactory ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }
 

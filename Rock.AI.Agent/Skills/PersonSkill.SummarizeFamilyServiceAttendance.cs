@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.PersonSkill;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -24,7 +25,7 @@ namespace Rock.AI.Agent.Skills
         [AgentToolReturnDescription( "Returns the family's last recorded Sunday date and the list of family check-ins from that service week. Also includes the family's: monthly completion, first-time check-in, and the number of weeks attended out of the last 16." )]
         public RockToolResult SummarizeFamilyServiceAttendance( string personIdKey )
         {
-            using var rockContext = _rockContextFactory.CreateRockContext();
+            using var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var person = personService.Get( personIdKey, false );
 
