@@ -1,0 +1,236 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!config" alertType="warning">
+        The exception could not be found.
+    </NotificationBox>
+
+    <Panel v-if="config"
+           :title="panelTitle"
+           titleIconCssClass="ti ti-bug">
+
+        <fieldset>
+            <ValueDetailList :modelValue="summaryValues" />
+
+            <div v-if="config.hasCookies || config.hasServerVariables" class="panel-actions">
+                <RockButton v-if="config.hasCookies"
+                            btnType="default"
+                            @click="isCookiesVisible = !isCookiesVisible">
+                    <i class="ti ti-device-laptop"></i>
+                    {{ isCookiesVisible ? "Hide" : "Show" }} Cookies
+                </RockButton>
+
+                <RockButton v-if="config.hasServerVariables"
+                            btnType="default"
+                            @click="isServerVariablesVisible = !isServerVariablesVisible">
+                    <i class="ti ti-server-2"></i>
+                    {{ isServerVariablesVisible ? "Hide" : "Show" }} Server Variables
+                </RockButton>
+            </div>
+        </fieldset>
+
+        <div v-if="config.hasCookies && isCookiesVisible">
+            <fieldset>
+                <h4>Cookies</h4>
+                <!-- eslint-disable-next-line vue/no-v-html -->
+                <div v-html="config.cookies"></div>
+            </fieldset>
+        </div>
+
+        <div v-if="config.hasServerVariables && isServerVariablesVisible">
+            <fieldset>
+                <h4>Server Variables</h4>
+                <!-- eslint-disable-next-line vue/no-v-html -->
+                <div v-html="config.serverVariables"></div>
+            </fieldset>
+        </div>
+
+        <fieldset>
+            <h4>Details</h4>
+            <p>
+                This list shows the complete exception hierarchy with a full call-stack trace.
+                The top-level exception is listed first, and subsequent entries provide more
+                specific detail about the origin of the error.
+            </p>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Exception Type</th>
+                            <th>Source</th>
+                            <th>Description</th>
+                            <th>&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template v-for="item in config.exceptionItems" :key="item.id">
+                            <tr>
+                                <td>{{ item.id }}</td>
+                                <td>{{ item.exceptionType }}</td>
+                                <td>{{ item.source }}</td>
+                                <td class="wrap-contents">{{ item.description }}</td>
+                                <td style="text-align: center;">
+                                    <RockButton v-if="item.hasStackTrace"
+                                                btnType="default"
+                                                @click="toggleStackTrace(item.id ?? 0)">
+                                        <i class="ti ti-stack"></i>
+                                        {{ visibleStackTraces.has(item.id ?? 0) ? "Hide" : "Show" }} Stack Trace
+                                    </RockButton>
+                                </td>
+                            </tr>
+                            <tr v-if="item.hasStackTrace && visibleStackTraces.has(item.id ?? 0)">
+                                <td colspan="5">
+                                    <pre style="white-space: pre-wrap;">{{ item.stackTrace }}</pre>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </fieldset>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ExceptionDetailBag } from "@Obsidian/ViewModels/Blocks/Core/ExceptionDetail/exceptionDetailBag";
+
+    const config = useConfigurationValues<ExceptionDetailBag | null>();
+
+    // #region Values
+
+    const isCookiesVisible = ref(false);
+    const isServerVariablesVisible = ref(false);
+
+    /** Tracks which exception item stack traces are currently expanded. */
+    const visibleStackTraces = ref(new Set<number>());
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The title shown in the panel header. Displays the exception date and
+     * a truncated description matching the original WebForms block behavior.
+     */
+    const panelTitle = computed((): string => {
+        if (!config) {
+            return "Exception Detail";
+        }
+
+        const date = config.exceptionDate
+            ? RockDateTime.parseISO(config.exceptionDate)?.toASPString("g") ?? ""
+            : "";
+
+        const description = config.description
+            ? config.description.substring(0, 100)
+            : "";
+
+        return date ? `(${date}) ${description}` : description;
+    });
+
+    /** Summary field values shown in the ValueDetailList beneath the panel header. */
+    const summaryValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!config) {
+            return valueBuilder.build();
+        }
+
+        if (config.exceptionDate) {
+            const formatted = RockDateTime.parseISO(config.exceptionDate)?.toASPString("g") ?? config.exceptionDate;
+            valueBuilder.addTextValue("Exception Date", formatted);
+        }
+
+        if (config.description) {
+            valueBuilder.addTextValue("Description", config.description.substring(0, 255));
+        }
+
+        if (config.siteName) {
+            valueBuilder.addTextValue("Site", config.siteName);
+        }
+
+        if (config.pageUrl || config.pageName) {
+            const displayName = config.pageName ?? config.pageUrl ?? "";
+            const url = config.pageUrl ?? "";
+
+            if (url) {
+                valueBuilder.addHtmlValue("Page", `<a href="${escapeHtml(url)}" target="_blank">${escapeHtml(displayName)}</a>`);
+            }
+            else {
+                valueBuilder.addTextValue("Page", displayName);
+            }
+        }
+
+        if (config.queryString) {
+            const items = parseQueryString(config.queryString);
+            const html = `<ul type="disc">${items.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
+            valueBuilder.addHtmlValue("Query String", html);
+        }
+
+        if (config.userName) {
+            valueBuilder.addTextValue("User", config.userName);
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Escapes a string for safe insertion into HTML attributes or content.
+     */
+    function escapeHtml(value: string): string {
+        return value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    /**
+     * Parses a raw query string into an array of "Key: Value" display strings.
+     */
+    function parseQueryString(queryString: string): string[] {
+        return queryString
+            .replace(/^\?/, "")
+            .split("&")
+            .filter(part => part.length > 0)
+            .map(part => {
+                const eqIndex = part.indexOf("=");
+                if (eqIndex > -1) {
+                    return `${part.substring(0, eqIndex)}: ${part.substring(eqIndex + 1)}`;
+                }
+                return part;
+            });
+    }
+
+    /**
+     * Toggles the stack trace visibility for the given exception item ID.
+     */
+    function toggleStackTrace(id: number): void {
+        if (visibleStackTraces.value.has(id)) {
+            visibleStackTraces.value.delete(id);
+        }
+        else {
+            visibleStackTraces.value.add(id);
+        }
+
+        // Trigger Vue reactivity since Set mutations are not automatically tracked.
+        visibleStackTraces.value = new Set(visibleStackTraces.value);
+    }
+
+    // #endregion
+</script>
