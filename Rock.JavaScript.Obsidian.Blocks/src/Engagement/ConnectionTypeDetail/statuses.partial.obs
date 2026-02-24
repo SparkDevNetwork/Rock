@@ -733,6 +733,7 @@
             currentItems.push(itemToMove);
         }
 
+        statuses.value = currentItems;
         return true;
     }
 
@@ -884,6 +885,8 @@
         else {
             currentItems.push(itemToMove);
         }
+
+        theStatus.value.automations = currentItems;
 
         return true;
     }

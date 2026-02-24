@@ -1,0 +1,277 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="packagedetail">
+            <div class="panel-headerimage">
+                <img class="packagedetail-image" :src="modelValue?.packageIconImageUrl ?? ''" alt="Package image" />
+            </div>
+
+            <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-9">
+                    <h1>
+                        {{ modelValue?.name }}
+                        <small>by {{ modelValue?.vendorName }}</small>
+                    </h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <div v-if="modelValue?.storeKey || modelValue?.isFree">
+                        <div class="pricelabel" :class="modelValue?.isFree ? 'free' : 'cost'">
+                            <h4>{{ modelValue?.isFree ? 'Free' : `$${modelValue?.price}` }}</h4>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-install" :disabled="modelValue?.installedStatusMessage?.toLowerCase() === 'installed'" @click="onSelectInstall">
+                            {{ modelValue?.installedStatusMessage }}
+                        </button>
+                        <small v-if="modelValue?.isPurchased && !modelValue?.isFree">Purchased {{ modelValue?.purchasedDate }}</small>
+                    </div>
+                    <div class="clearfix margin-v-lg">
+                        <div class="text-center margin-b-sm" style="color:#ffc870;">
+                            <i
+                               v-for="n in Math.floor(modelValue?.rating ?? 0)"
+                               :key="'filled-' + n"
+                               class="ti ti-star-filled">
+                            </i>
+
+                            <i
+                               v-for="n in 5 - Math.floor(modelValue?.rating ?? 0)"
+                               :key="'empty-' + n"
+                               class="ti ti-star">
+                            </i>
+                        </div>
+                        <a class="btn btn-default btn-block" v-if="modelValue?.isPurchased" :href="modelValue?.ratePostBackUrl ?? ''">Add a rating</a>
+                    </div>
+                    <dl>
+                        <dt>Last Updated</dt>
+                        <dd>{{ modelValue?.latestVersion?.date }}</dd>
+                        <dt>Required Rock Version</dt>
+                        <dd>{{ modelValue?.latestVersion?.requiredRockVersionDisplay }}</dd>
+                        <dt>Author</dt>
+                        <dd><a :href="modelValue?.vendorUrl ?? ''" target="_blank">{{ modelValue?.vendorName }}</a></dd>
+                        <dt>Documentation</dt>
+                        <dd><a :href="modelValue?.latestVersion?.documentationUrl ?? ''" target="_blank">Documentation Link</a></dd>
+                        <dt>Support</dt>
+                        <dd><a :href="modelValue?.supportUrl ?? ''" target="_blank">Support Link</a></dd>
+                    </dl>
+                </div>
+                <div class="col-md-9">
+                    <h4>Package Description</h4>
+                    <div class="margin-b-lg clearfix" v-html="modelValue?.description"></div>
+                    <p class="clearfix margin-t-md">
+                        <a class="btn btn-default btn-sm pull-right" :href="modelValue?.supportUrl ?? ''" target="_blank"><i class="ti ti-device-desktop"></i> Package Website</a>
+                    </p>
+                    <div class='alert alert-info' v-if="modelValue?.requiresRockUpdate">A newer version of this item is available but requires Rock {{ modelValue?.rockUpdateRequirement }}.</div>
+                    <div class="row d-flex flex-wrap">
+                        <div class="col-xs-12 col-sm-6"
+                             v-for="image in modelValue?.latestVersion?.screenshotURLs"
+                             :key="image">
+                            <img :src="image" style="width: 100%" class="margin-b-lg cursor-pointer" alt="Package screenshot" @click.prevent="openImage(image)" />
+                        </div>
+                    </div>
+                    <h2>
+                        {{ modelValue?.latestVersion?.versionLabel }}
+                        <small>released {{ modelValue?.latestVersion?.displayDate }}</small>
+                    </h2>
+                    <div class="margin-b-lg clearfix" v-html="modelValue?.latestVersion?.description"></div>
+                    <div class="d-flex flex-column">
+                        <h4>Reviews</h4>
+                        <span v-if="modelValue?.latestVersionRatings?.length == 0">No Reviews exist.</span>
+                        <div v-for="rating in modelValue?.latestVersionRatings" :key="rating.rating" class="d-inline-flex gap-3 margin-b-lg">
+                            <img class="img-circle" :src="rating.reviewerPhoto ?? ''" alt="Reviewer photo" style="width: 50px; height: 50px;" />
+                            <div>
+                                <div class="d-inline-flex gap-2">
+                                    <div style="color:#ffc870">
+                                        <i
+                                           v-for="n in Math.floor(rating.rating)"
+                                           :key="'filled-' + n"
+                                           class="ti ti-star-filled">
+                                        </i>
+
+                                        <i
+                                           v-for="n in 5 - Math.floor(rating.rating)"
+                                           :key="'empty-' + n"
+                                           class="ti ti-star">
+                                        </i>
+                                    </div>
+                                    <strong>{{ rating.reviewerName }}</strong>
+                                </div>
+                                <p>{{ rating.comment }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex">
+                        <button type="button" class="btn btn-xs btn-default ml-auto" @click="toggleAdditionalVersions">
+                            Additional Versions <i class="ti ti-chevron-down" :class="{ 'chev-rotated': showAdditionalVersions }"></i>
+                        </button>
+                    </div>
+                    <transition name="additional-versions">
+                        <div v-if="showAdditionalVersions" class="additional-versions-wrap">
+                            <div v-for="version in modelValue?.versions" :key="version.id" class="additional-version">
+                                <div class="d-flex align-items-center gap-3">
+                                    <h4>{{ version.versionLabel }}</h4>
+                                    <div class="d-inline-flex gap-2">
+                                        <div>
+                                            <i
+                                               v-for="n in Math.floor(version.rating)"
+                                               :key="'filled-' + n"
+                                               class="ti ti-star-filled">
+                                            </i>
+
+                                            <i
+                                               v-for="n in 5 - Math.floor(version.rating)"
+                                               :key="'empty-' + n"
+                                               class="ti ti-star">
+                                            </i>
+                                        </div>
+                                    </div>
+                                    <small class="ml-auto text-muted">Released {{ version.displayDate }}</small>
+                                </div>
+                                <div class="margin-b-lg" v-html="version.description"></div>
+                            </div>
+                        </div>
+                    </transition>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+    <transition name="img-zoom">
+        <div
+             v-if="zoomedImage"
+             class="image-zoom-overlay"
+             @click="closeImage">
+            <img :src="zoomedImage" />
+        </div>
+    </transition>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import { PackageBag } from "@Obsidian/ViewModels/Blocks/Store/PackageDetail/packageBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<PackageBag | null>,
+            required: false
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "selectInstall"): void;
+    }>();
+
+    function onSelectInstall(): void {
+        emit("selectInstall");
+    }
+
+    const zoomedImage = ref<string | null>(null);
+    const showAdditionalVersions = ref(false);
+
+    // Handle zooming of images on click
+    function openImage(image: string) {
+        zoomedImage.value = image;
+    }
+
+    function closeImage() {
+        zoomedImage.value = null;
+    }
+
+    function toggleAdditionalVersions() {
+        showAdditionalVersions.value = !showAdditionalVersions.value;
+    }
+
+</script>
+<style scoped>
+.packagedetail h1 > small,
+.packagedetail h2 > small {
+    color: var(--color-interface-medium);
+}
+
+.panel-headerimage {
+    margin-bottom: var(--spacing-medium);
+}
+
+.packagedetail-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.packagedetail dl dt {
+    font-weight: var(--font-weight-semibold);
+    margin-top: var(--spacing-small);
+}
+
+.packagedetail dl dd {
+    margin-left: 0;
+    margin-bottom: var(--spacing-xsmall);
+}
+
+/* Fullscreen overlay */
+.image-zoom-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    cursor: zoom-out;
+}
+
+/* Fullscreen image */
+.image-zoom-overlay img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+}
+
+/* Transition for overlay */
+.img-zoom-enter-active,
+.img-zoom-leave-active {
+    transition: opacity 300ms ease;
+}
+
+.img-zoom-enter-from,
+.img-zoom-leave-to {
+    opacity: 0;
+}
+
+/* Transition for the image inside the overlay */
+.img-zoom-enter-active img,
+.img-zoom-leave-active img {
+    transition: transform 300ms ease;
+}
+
+.img-zoom-enter-from img,
+.img-zoom-leave-to img {
+    transform: scale(0.9);
+}
+
+/* Rotate chevron when open */
+.ti-chevron-down {
+    display: inline-block;
+    transition: transform 200ms ease;
+}
+
+.chev-rotated {
+    transform: rotate(180deg);
+}
+
+/* Slide + fade container */
+.additional-versions-enter-active,
+.additional-versions-leave-active {
+    transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.additional-versions-enter-from,
+.additional-versions-leave-to {
+    opacity: 0;
+    transform: translateY(-6px);
+}
+
+.additional-versions-enter-to,
+.additional-versions-leave-from {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>

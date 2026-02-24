@@ -11791,12 +11791,6 @@ hr {
 .grid-obsidian:not(:has(.grid-footing > *)) .grid-row:not(:has(~ .grid-row)) .grid-cell:last-child {
   border-bottom-right-radius: var(--rounded-medium);
 }
-.grid-obsidian:not(:has(.grid-footing > *)) .grid-column-header-row .grid-column-header:first-child {
-  border-top-left-radius: var(--rounded-medium);
-}
-.grid-obsidian:not(:has(.grid-footing > *)) .grid-column-header-row .grid-column-header:last-child {
-  border-top-right-radius: var(--rounded-medium);
-}
 
 .grid-obsidian:not(:has(.grid-column-header-row)):has(.grid-footing > *) .grid-body,
 .grid-obsidian:not(:has(.grid-column-header-row)):has(.grid-footing > *) .grid-row,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -184,12 +184,7 @@ namespace RockWeb.Blocks.Event
             {
                 ShowDialog();
 
-                EventItemOccurrence eventItemOccurrence;
-                using ( var rockContext = new RockContext() )
-                {
-                    eventItemOccurrence = new EventItemOccurrenceService( rockContext ).Get( hfEventItemOccurrenceId.Value.AsInteger() );
-                }
-
+                var eventItemOccurrence = new EventItemOccurrenceService( new RockContext() ).Get( hfEventItemOccurrenceId.Value.AsInteger() );
                 eventItemOccurrence = eventItemOccurrence ?? new EventItemOccurrence();
                 ShowOccurrenceAttributes( eventItemOccurrence, false );
             }
@@ -571,10 +566,7 @@ namespace RockWeb.Blocks.Event
             }
 
             EventItemOccurrence oldOccurrence;
-            using ( var rockContext = new RockContext() )
-            {
-                oldOccurrence = new EventItemOccurrenceService( rockContext ).Get( copyFromOccurrenceKey, IsAllowingPredictableIds );
-            }
+            oldOccurrence = new EventItemOccurrenceService( new RockContext() ).Get( copyFromOccurrenceKey, IsAllowingPredictableIds );
 
             if ( oldOccurrence != null )
             {

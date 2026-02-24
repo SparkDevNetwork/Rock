@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentStack>
+    <ContentStack title="Connector Group List" headerLocation="top" description="Define the groups responsible for handling incoming requests. Each group represents a team of people—called Connectors—who will receive and work requests as they come in.">
         <NotificationBox v-if="errorMessage" alertType="danger">
             {{ errorMessage }}
         </NotificationBox>

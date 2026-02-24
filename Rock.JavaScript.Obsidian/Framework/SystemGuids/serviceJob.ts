@@ -195,6 +195,8 @@ export const ServiceJob = {
     DataMigrations181AddFinancialbatchIndex: "EA5D69D8-8ABB-42CD-A664-48F6BC5E2C7F",
     /** The job to run Post v18.1 Data Migrations to add indexes to improve communication prep performance. */
     DataMigrations181AddIndexesForCommunicationPrep: "88C42A48-6713-4CB1-BF6B-A12AB2E292E7",
+    /** The job to run Post v18.3 Data Migrations to fix any possible broken achievement types. */
+    DataMigrations183FixBrokenAchievementTypes: "2463AB43-8CB2-400E-BAAF-F96FC3E1A43D",
     /** The job to run Post v19.0 Data Migrations to add an index to ensure the Communication Unsubscribe Report performs efficiently. */
     DataMigrations190AddCommunicationUnsubscribeReportIndex: "ECBC94C0-7646-491E-A804-1CA228F0FFAD",
     /** The Job to run Post v19.0 Data Migrations to perform the final chop of the File and Asset Manager (webforms) Blocks. */

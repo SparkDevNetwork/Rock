@@ -104,6 +104,8 @@ namespace Rock.Reporting
         /// return <c>null</c> to indicate Obsidian is not supported and an empty
         /// string to indicate it is supported but no UI is required.
         /// </summary>
+        [Obsolete( "Use GetComponentDefinition instead." )]
+        [RockObsolete( "19.0" )]
         public virtual string ObsidianFileUrl => null;
 
         #endregion

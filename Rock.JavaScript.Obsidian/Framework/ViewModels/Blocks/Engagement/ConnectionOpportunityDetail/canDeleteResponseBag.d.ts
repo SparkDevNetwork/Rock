@@ -29,9 +29,6 @@ export type CanDeleteResponseBag = {
     /** Gets or sets a value indicating whether the entity can be deleted. */
     canDelete: boolean;
 
-    /**
-     * Gets or sets the error message explaining why the entity cannot be deleted.
-     * This value should be null or empty when Rock.ViewModels.Blocks.Engagement.ConnectionOpportunityDetail.CanDeleteResponseBag.CanDelete is true.
-     */
+    /** Gets or sets the error message explaining why the entity cannot be deleted. */
     errorMessage?: string | null;
 };

@@ -40,7 +40,7 @@
         </div>
     </ContentStack>
 
-    <ContentStack v-if="props.hasActiveAIProvider" title="AI Insights Prompt"
+    <ContentStack v-if="store.state.trailblazerMode && props.hasActiveAIProvider" title="AI Insights Prompt"
                   description="Use this to tell the AI what to focus on when generating the summary shown on the Connection Request Detail page. If left blank, this feature will be hidden."
                   headerLocation="top">
         <TextBox v-model="aiInsightsPromptValue"
@@ -85,6 +85,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
+    import { useStore } from "@Obsidian/PageState";
     import Grid, { BooleanColumn, DeleteColumn, EditColumn, TextColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
@@ -151,6 +152,7 @@
     const errorMessage = ref<string | null>(null);
     const isModalVisible = ref(false);
     const theFilter = ref<ConnectionTypeAdditionalRequestToShowBag>(createNewAdditionalRequestFilter());
+    const store = useStore();
 
     // #endregion Values
 

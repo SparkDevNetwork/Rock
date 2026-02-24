@@ -466,16 +466,6 @@ namespace Rock.Blocks.Communication
                     entity.SaveAttributeValues( rockContext );
                 } );
 
-                try
-                {
-                    SystemPhoneNumberService.UpdateLegacyPhoneNumber( entity.Id );
-                }
-                catch ( Exception ex )
-                {
-                    // Log the exception, but don't return an error.
-                    ExceptionLogService.LogException( ex );
-                }
-
                 if ( isNew )
                 {
                     return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
@@ -517,8 +507,6 @@ namespace Rock.Blocks.Communication
                 entityService.Delete( entity );
 
                 rockContext.SaveChanges();
-
-                SystemPhoneNumberService.DeleteLegacyPhoneNumber( entity );
 
                 return ActionOk( this.GetParentPageUrl() );
             }

@@ -11,7 +11,7 @@
         <Teleport v-if="isPopupOpen"
                   :to="popupTarget"
                   :disabled="!popupTarget">
-            <ul ref="dropDownMenuElement" class="dropdown-menu dropdown-menu-right"
+            <ul ref="dropDownMenuElement" class="action-button-cell dropdown-menu dropdown-menu-right"
                 :style="popupStyle">
                 <li v-if="showDelete">
                     <a href="#"

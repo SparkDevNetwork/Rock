@@ -1208,6 +1208,26 @@ namespace Rock.AI.Agent
                 return queryable;
             }
 
+            var property = ExtractProperty( propertyExpression );
+
+            if ( "lookup".Equals( parameter, StringComparison.OrdinalIgnoreCase ) )
+            {
+                var definedValueAttribute = property.GetCustomAttribute<DefinedValueAttribute>();
+
+                if ( definedValueAttribute != null && definedValueAttribute.DefinedTypeGuid.HasValue )
+                {
+                    var definedTypeCache = DefinedTypeCache.Get( definedValueAttribute.DefinedTypeGuid.Value, _rockContext );
+                    var lookupValues = definedTypeCache.DefinedValues
+                        .Select( dv => new KeyNameResult( dv.Id, dv.Value ) )
+                        .ToList();
+
+                    AddMetadata( $"{parameterExpression}Lookup", lookupValues );
+                    AddError( $"Lookup requested for {parameterExpression}. Metadata contains valid values." );
+
+                    return queryable.Where( a => false );
+                }
+            }
+
             var id = IdHasher.Instance.GetId( parameter );
 
             if ( !id.HasValue )
@@ -1217,7 +1237,6 @@ namespace Rock.AI.Agent
                 return queryable.Where( a => false );
             }
 
-            var property = ExtractProperty( propertyExpression );
             var memberExpression = propertyExpression.Body;
 
             // If the property is a value type, it will be boxed, so handle UnaryExpression
@@ -1279,6 +1298,83 @@ namespace Rock.AI.Agent
             var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
 
             return queryable.Where( lambda );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by a parameter. If the parameter
+        /// is required then an error will be added if it is not provided. Any
+        /// errors will cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="lowerParameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="upperParameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="isRequired">If <c>true</c> then either <paramref name="lowerParameter"/> or <paramref name="upperParameter"/> value must be specified.</param>
+        /// <param name="lowerParameterExpression">The expression that describes what was passed to <paramref name="lowerParameter"/>, this is used when generating error messages.</param>
+        /// <param name="upperParameterExpression">The expression that describes what was passed to <paramref name="upperParameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        private IQueryable<TSource> WherePropertyBetween<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty?>> propertyExpression, TProperty? lowerParameter, TProperty? upperParameter, bool isRequired, [CallerArgumentExpression( nameof( lowerParameter ) )] string lowerParameterExpression = null, [CallerArgumentExpression( nameof( upperParameter ) )] string upperParameterExpression = null )
+            where TProperty : struct
+        {
+            if ( lowerParameterExpression.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentNullException( nameof( lowerParameterExpression ), "The lowerParameterExpression must be provided. It will be provided automatically if using C# 10, otherwise use 'nameof()' to get the name of the passed parameter." );
+            }
+
+            if ( upperParameterExpression.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentNullException( nameof( upperParameterExpression ), "The upperParameterExpression must be provided. It will be provided automatically if using C# 10, otherwise use 'nameof()' to get the name of the passed parameter." );
+            }
+
+            if ( !lowerParameter.HasValue && !upperParameter.HasValue )
+            {
+                if ( isRequired )
+                {
+                    AddError( $"Either {lowerParameterExpression} or {upperParameterExpression} is required." );
+                    return queryable.Where( a => false );
+                }
+
+                return queryable;
+            }
+
+            var property = ExtractProperty( propertyExpression );
+            var memberExpression = propertyExpression.Body;
+
+            // If the property is a value type, it will be boxed, so handle UnaryExpression
+            if ( memberExpression is UnaryExpression unaryExpression )
+            {
+                memberExpression = unaryExpression.Operand;
+            }
+
+            if ( lowerParameter.HasValue && upperParameter.HasValue )
+            {
+                var lowerValueExpression = Expression.Constant( lowerParameter.Value, property.PropertyType );
+                var lowerBody = Expression.GreaterThanOrEqual( memberExpression, lowerValueExpression );
+                var upperValueExpression = Expression.Constant( upperParameter.Value, property.PropertyType );
+                var upperBody = Expression.LessThanOrEqual( memberExpression, upperValueExpression );
+                var body = Expression.AndAlso( lowerBody, upperBody );
+                var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
+
+                return queryable.Where( lambda );
+            }
+            else if ( lowerParameter.HasValue )
+            {
+                var lowerValueExpression = Expression.Constant( lowerParameter.Value, property.PropertyType );
+                var body = Expression.GreaterThanOrEqual( memberExpression, lowerValueExpression );
+                var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
+
+                return queryable.Where( lambda );
+            }
+            else
+            {
+                var upperValueExpression = Expression.Constant( upperParameter.Value, property.PropertyType );
+                var body = Expression.LessThanOrEqual( memberExpression, upperValueExpression );
+                var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
+
+                return queryable.Where( lambda );
+            }
         }
 
         /// <summary>
@@ -1418,6 +1514,60 @@ namespace Rock.AI.Agent
         public IQueryable<TSource> WhereRequiredProperty<TSource>( IQueryable<TSource> queryable, Expression<Func<TSource, string>> propertyExpression, string parameter, [CallerArgumentExpression( nameof( parameter ) )] string parameterExpression = null )
         {
             return WhereProperty( queryable, propertyExpression, parameter, isRequired: true, parameterExpression: parameterExpression );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by ensuring a property value is between
+        /// two parameter values. If both the parameters are <c>null</c> then no
+        /// filtering will be performed. Both the lower and upper values are
+        /// inclusive. Any errors will cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="lowerParameter">The parameter that contains the lower value to be filtered against.</param>
+        /// <param name="upperParameter">The parameter that contains the upper value to be filtered against.</param>
+        /// <param name="lowerParameterExpression">The expression that describes what was passed to <paramref name="lowerParameter"/>, this is used when generating error messages.</param>
+        /// <param name="upperParameterExpression">The expression that describes what was passed to <paramref name="upperParameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        public IQueryable<TSource> WhereOptionalPropertyBetween<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty?>> propertyExpression, TProperty? lowerParameter, TProperty? upperParameter, [CallerArgumentExpression( nameof( lowerParameter ) )] string lowerParameterExpression = null, [CallerArgumentExpression( nameof( upperParameter ) )] string upperParameterExpression = null )
+            where TProperty : struct
+        {
+            return WherePropertyBetween( queryable,
+                propertyExpression,
+                lowerParameter,
+                upperParameter,
+                isRequired: false,
+                lowerParameterExpression: lowerParameterExpression,
+                upperParameterExpression: upperParameterExpression );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by ensuring a property value is between
+        /// two parameter values. If both the parameters are <c>null</c> then an
+        /// error will be reported. Both the lower and upper values are
+        /// inclusive. Any errors will cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="lowerParameter">The parameter that contains the lower value to be filtered against.</param>
+        /// <param name="upperParameter">The parameter that contains the upper value to be filtered against.</param>
+        /// <param name="lowerParameterExpression">The expression that describes what was passed to <paramref name="lowerParameter"/>, this is used when generating error messages.</param>
+        /// <param name="upperParameterExpression">The expression that describes what was passed to <paramref name="upperParameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        public IQueryable<TSource> WhereRequiredPropertyBetween<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty?>> propertyExpression, TProperty? lowerParameter, TProperty? upperParameter, [CallerArgumentExpression( nameof( lowerParameter ) )] string lowerParameterExpression = null, [CallerArgumentExpression( nameof( upperParameter ) )] string upperParameterExpression = null )
+            where TProperty : struct
+        {
+            return WherePropertyBetween( queryable,
+                propertyExpression,
+                lowerParameter,
+                upperParameter,
+                isRequired: false,
+                lowerParameterExpression: lowerParameterExpression,
+                upperParameterExpression: upperParameterExpression );
         }
 
         #endregion

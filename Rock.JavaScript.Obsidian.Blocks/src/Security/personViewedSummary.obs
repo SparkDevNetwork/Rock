@@ -4,10 +4,8 @@
           :data="gridDataSource"
           :title="title"
           keyField="idKey"
-          itemTerm="Person Viewed"
+          itemTerm="Person View"
           :entityTypeGuid="EntityType.PersonViewed"
-          liveUpdates
-          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
         <TextColumn name="name"
@@ -42,11 +40,13 @@
                         :filter="dateValueFilter"
                         visiblePriority="xs" />
 
-        <TextColumn name="viewedCount"
-                    title="Times Viewed"
-                    field="viewedCount"
-                    :filter="numberValueFilter"
-                    visiblePriority="xs" />
+        <NumberColumn name="viewedCount"
+                      title="Times Viewed"
+                      field="viewedCount"
+                      headerClass="text-left"
+                      itemClass="justify-content-start text-left"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs" />
     </Grid>
 </template>
 
@@ -55,7 +55,7 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { DateTimeColumn, textValueFilter, numberValueFilter, NumberColumn, TextColumn, dateValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { PersonViewedSummaryOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/PersonViewedSummary/personViewedSummaryOptions";
+    import { PersonViewedSummaryOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/PersonViewedSummary/personViewedSummaryOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./PersonViewedSummary/types.partial";
     import { reactive, ref } from "vue";
@@ -106,15 +106,6 @@
     function onSelectItem(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
-        }
-    }
-
-    /**
-     * Called when the Add button has been clicked by the individual.
-     */
-    function onAddItem(): void {
-        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
     }
 

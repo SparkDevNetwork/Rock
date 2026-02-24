@@ -19,7 +19,7 @@
                 <Rock:RockTextBox ID="tbSearch" runat="server" CssClass="js-search" Label="Search by Name" PrependText="<i class='ti ti-search'></i>" spellcheck="false" onkeydown="javascript:return handleSearchBoxKeyPress(this, event.keyCode);" />
 
                 <div class="actions margin-t-md">
-                    <asp:LinkButton ID="btnApplyFilter" runat="server" CssClass="filter btn btn-action btn-xs" Text="Apply Filter" OnClick="btnApplyFilter_Click" ValidationGroup="vgFilterCriteria" CausesValidation="true" />
+                    <asp:LinkButton ID="btnApplyFilter" runat="server" CssClass="filter btn btn-outline-primary btn-xs" Text="Apply Filter" OnClick="btnApplyFilter_Click" ValidationGroup="vgFilterCriteria" CausesValidation="true" />
                     <asp:LinkButton ID="btnClearFilter" runat="server" CssClass="filter-clear btn btn-default btn-xs" Text="Clear Filter" OnClick="btnClearFilter_Click" CausesValidation="false" />
                 </div>
             </div>
@@ -34,7 +34,7 @@
                             <Rock:RockBoundField DataField="ServiceTimes" HeaderText="Service Times" HeaderStyle-CssClass="d-none d-sm-table-cell" ItemStyle-CssClass="service-times d-none d-sm-table-cell align-middle" />
                             <Rock:RockLiteralField ID="lLocation" HeaderText="Room" Visible="true" HeaderStyle-CssClass="print-last-col" ItemStyle-CssClass="align-middle print-last-col" />
 
-                            <Rock:LinkButtonField ID="btnMovePerson" HeaderStyle-CssClass="d-print-none" ItemStyle-CssClass="grid-columnaction d-print-none" CssClass="btn btn-default btn-square" Text="<i class='ti ti-external-link'></i>" ToolTip="Move Person" OnClick="btnMovePerson_Click" />
+                            <Rock:LinkButtonField ID="btnMovePerson" HeaderStyle-CssClass="d-print-none" ItemStyle-CssClass="grid-columnaction d-print-none" CssClass="btn btn-default btn-square" Text="<i class='ti ti-transfer'></i>" ToolTip="Move Person" OnClick="btnMovePerson_Click" />
                         </Columns>
                     </Rock:Grid>
                 </div>

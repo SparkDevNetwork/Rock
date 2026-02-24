@@ -10,6 +10,7 @@
           :entityTypeGuid="EntityType.PersonDuplicate"
           stickyHeader
           liveUpdates
+          :mergeTemplateAsPerson="true"
           :isCountMessageVisible="false"
           :selectedKeysOverride="selectedKeysOverride"
           :isSearchVisible="false">
@@ -170,7 +171,7 @@
 
     const gridDataSource = ref<Promise<GridDataBag>>();
 
-    const primaryPersonIdKey = ref<string | null>(null);
+    const primaryRowIdKey = ref<string | null>(null);
 
     const errorMessage = ref("");
 
@@ -188,7 +189,7 @@
 
         if (result.isSuccess && result.data) {
             if (result.data.rows && result.data.rows.length > 0) {
-                primaryPersonIdKey.value = result.data.rows[0]["personIdKey"] as string;
+                primaryRowIdKey.value = result.data.rows[0]["idKey"] as string;
             }
             return result.data;
         }
@@ -199,7 +200,7 @@
 
     /**
      * Determines if a given row should be excluded from selection.
-     * A row is excluded if it has the property 'isDuplicateRow' set to true.
+     * A row is excluded if it has the property 'isDuplicateRow' set to false (i.e. it is the primary person row).
      *
      * @param {unknown} row - The row object to evaluate.
      * @returns {boolean} True if the row should be excluded, false otherwise.
@@ -219,8 +220,8 @@
      * @returns {string[]} The modified list of selected keys including the person being viewed.
      */
     function selectedKeysOverride(selectedKeys: string[]): string[] {
-        if (primaryPersonIdKey.value && !selectedKeys.includes(primaryPersonIdKey.value)) {
-            selectedKeys.unshift(primaryPersonIdKey.value);
+        if (primaryRowIdKey.value && !selectedKeys.includes(primaryRowIdKey.value)) {
+            selectedKeys.unshift(primaryRowIdKey.value);
         }
         return selectedKeys;
     }

@@ -3628,7 +3628,8 @@ namespace Rock.Blocks.Event
                         registrantFee.Cost = feeItemModel.Cost;
                     }
 
-                    if ( feeModel.IsRequired && !hasRequiredFeeItem )
+                    // Only check if a required fee is missing if the fee is currently active. Inactive fees are not required.
+                    if ( feeModel.IsActive && feeModel.IsRequired && !hasRequiredFeeItem )
                     {
                         var cannotAccommodateQuantitySuffix = isFeeUsageAutoReduced
                                 ? $", but is no longer available{( feeModel.AllowMultiple ? " in the selected quantity" : string.Empty )}"

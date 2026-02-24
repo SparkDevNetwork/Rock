@@ -39,7 +39,7 @@
                 :filter="pickExistingValueFilter"
                 :filterValue="getRowCalendarsFilterValue"
                 :quickFilterValue="getRowCalendarsFilterValue"
-                visiblePriority="md">
+                visiblePriority="xs">
             <template #format="{ row }">
                 <template v-for="calendar in row.calendars">
                     {{ calendar }}<br>
@@ -53,7 +53,7 @@
                 :filter="pickExistingValueFilter"
                 :quickFilterValue="getRowAudiencesFilterValue"
                 :filterValue="getRowAudiencesFilterValue"
-                visiblePriority="md">
+                visiblePriority="xs">
             <template #format="{ row }">
                 <template v-for="audience in row.audiences">
                     {{ audience }}<br>
@@ -70,7 +70,7 @@
                            :infoMinimum="1"
                            :warningMinimum="0"
                            :warningMaximum="0"
-                           visiblePriority="md" />
+                           visiblePriority="xs" />
 
         <Column name="isActive"
                 title="Status"
@@ -78,7 +78,7 @@
                 :filter="pickExistingValueFilter"
                 :filterValue="getActiveStatusFilterValue"
                 :quickFilterValue="getActiveStatusFilterValue"
-                visiblePriority="md">
+                visiblePriority="xs">
             <template #format="{ row }">
                 <span v-if="row.isActive" class="label label-success">
                     Active
@@ -95,7 +95,7 @@
                 :filter="pickExistingValueFilter"
                 :filterValue="getApprovalStatusRowFilterValue"
                 :quickFilterValue="getApprovalStatusRowFilterValue"
-                visiblePriority="md">
+                visiblePriority="xs">
             <template #format="{ row }">
                 <span v-if="row.isApproved" class="label label-info">
                     Approved

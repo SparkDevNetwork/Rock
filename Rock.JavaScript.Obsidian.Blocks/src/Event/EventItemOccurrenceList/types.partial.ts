@@ -18,15 +18,3 @@
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
-
-export const enum PreferenceKey {
-    FilterStartDate = "filter-start-date",
-
-    FilterEndDate = "filter-end-date",
-}
-
-export type GridSettingsOptions = {
-    startDate?: string | null;
-
-    endDate?: string | null;
-};

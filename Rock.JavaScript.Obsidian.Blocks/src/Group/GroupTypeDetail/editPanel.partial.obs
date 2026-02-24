@@ -604,7 +604,7 @@
         </ContentSection>
 
         <!-- GROUP MEMBER WORKFLOWS -->
-        <ContentSection v-if="store.state.trailblazerMode" title="Group Member Workflows" icon="ti ti-arrow-fork">
+        <ContentSection v-if="store.state.trailblazerMode" title="Group Member Workflows" icon="ti ti-settings-cog">
             <GroupMemberWorkflows v-model:groupMemberWorkflowTriggers="groupMemberWorkflowTriggers"
                                   :groupRoleOptions="groupRoleOptions" />
         </ContentSection>

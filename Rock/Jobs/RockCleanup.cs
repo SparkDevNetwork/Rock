@@ -338,8 +338,6 @@ namespace Rock.Jobs
 
             RunCleanupTask( "non-default chrome engines", () => RemoveNonDefaultChromeEngines() );
 
-            RunCleanupTask( "legacy sms phone numbers", () => SynchronizeLegacySmsPhoneNumbers() );
-
             RunCleanupTask( "remove old notification messages", () => RemoveOldNotificationMessages() );
 
             RunCleanupTask( "remove old notification message types", () => RemoveOldNotificationMessageTypes() );
@@ -2187,7 +2185,10 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Delete group membership duplicates if they are not allowed by web.config and return the
-        /// number of records deleted.
+        /// number of records deleted. Before deleting, re-map any GroupMemberAssignment rows that
+        /// reference a non-oldest duplicate to reference the oldest GroupMember for that person/group/role.
+        /// If the remap would violate the unique index on (GroupMemberId, GroupId, LocationId, ScheduleId),
+        /// delete the newer conflicting assignment instead.
         /// </summary>
         /// <returns>The number of records deleted</returns>
         private int GroupMembershipCleanup()
@@ -2205,30 +2206,116 @@ namespace Rock.Jobs
 
             var groupMemberService = new GroupMemberService( rockContext );
             var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
+            var groupMemberAssignmentService = new GroupMemberAssignmentService( rockContext );
 
-            var duplicateQuery = groupMemberService.Queryable()
-
-                // Duplicates are the same person, group, and role occurring more than once
+            // Build a per-duplicate mapping: (Duplicate GroupMemberId) -> (Oldest GroupMemberId)
+            // We need this so we can remap any GroupMemberAssignemnts to the surviving GroupMember record.
+            // NOTE: ThenBy(Id) gives deterministic ordering when CreatedDateTime ties.
+            var remapDict = groupMemberService.Queryable()
                 .GroupBy( m => new { m.PersonId, m.GroupId, m.GroupRoleId } )
-
-                // Filter out sets with only one occurrence because those are not duplicates
                 .Where( g => g.Count() > 1 )
+                .SelectMany( g =>
+                    g.OrderBy( gm => gm.CreatedDateTime ?? DateTime.MinValue )
+                     .ThenBy( gm => gm.Id )
+                     .Skip( 1 )
+                     .Select( dup => new
+                     {
+                         DuplicateId = dup.Id,
+                         OldestId = g.OrderBy( gm => gm.CreatedDateTime ?? DateTime.MinValue )
+                                     .ThenBy( gm => gm.Id )
+                                     .Select( gm => gm.Id )
+                                     .FirstOrDefault()
+                     } ) )
+                .ToDictionary( x => x.DuplicateId, x => x.OldestId );
 
-                // Leave the oldest membership and delete the others
-                .SelectMany( g => g.OrderBy( gm => gm.CreatedDateTime ).Skip( 1 ) );
+            if ( !remapDict.Any() )
+            {
+                return 0;
+            }
 
-            // Get the IDs to delete the history
-            var groupMemberIds = duplicateQuery.Select( d => d.Id );
+            var duplicateGroupMemberIds = remapDict.Keys.ToList();
+            var oldestIds = remapDict.Values.Distinct().ToList();
+
+            // Step 1: Re-map GroupMemberAssignments, handling unique index collisions
+            // Unique index columns: GroupMemberId, GroupId, LocationId, ScheduleId
+            // If target exists, delete the newer assignment instead of remapping.
+
+            Func<int, int, int?, int?, string> key = ( groupMemberId, groupId, locationId, scheduleId ) =>
+                $"{groupMemberId}|{groupId}|{locationId?.ToString() ?? "NULL"}|{scheduleId?.ToString() ?? "NULL"}";
+
+            // Load source assignments (ones pointing at duplicates).
+            var sourceAssignments = groupMemberAssignmentService.Queryable()
+                .Where( a => duplicateGroupMemberIds.Contains( a.GroupMemberId ) )
+                .ToList();
+
+            // Load existing assignments for oldest ids (to detect collisions).
+            var existingTargetKeys = new HashSet<string>(
+                groupMemberAssignmentService.Queryable()
+                    .Where( a => oldestIds.Contains( a.GroupMemberId ) )
+                    .Select( a => new
+                    {
+                        a.GroupMemberId,
+                        a.GroupId,
+                        a.LocationId,
+                        a.ScheduleId
+                    } )
+                    .ToList()
+                    .Select( x => key( x.GroupMemberId, x.GroupId, x.LocationId, x.ScheduleId ) )
+            );
+
+            // Reserve keys for assignments that already exist, after they are moved (prevents collisions within the batch).
+            var duplicateAssignmentIdsToDelete = new List<int>();
+
+            foreach ( var assignment in sourceAssignments )
+            {
+                int oldestGroupMemberId;
+                if ( !remapDict.TryGetValue( assignment.GroupMemberId, out oldestGroupMemberId ) || oldestGroupMemberId <= 0 )
+                {
+                    continue;
+                }
+
+                if ( assignment.GroupMemberId == oldestGroupMemberId )
+                {
+                    continue;
+                }
+
+                var targetKey = key( oldestGroupMemberId, assignment.GroupId, assignment.LocationId, assignment.ScheduleId );
+
+                if ( existingTargetKeys.Contains( targetKey ) )
+                {
+                    duplicateAssignmentIdsToDelete.Add( assignment.Id );
+                    continue;
+                }
+
+                // Point this assignment to the oldest, surviving group member id
+                assignment.GroupMemberId = oldestGroupMemberId;
+                existingTargetKeys.Add( targetKey );
+            }
+
+            // Delete any assignments that were going to be duplicates.
+            if ( duplicateAssignmentIdsToDelete.Any() )
+            {
+                var assignmentsToDeleteQuery = groupMemberAssignmentService.Queryable()
+                    .Where( a => duplicateAssignmentIdsToDelete.Contains( a.Id ) );
+
+                groupMemberAssignmentService.DeleteRange( assignmentsToDeleteQuery );
+            }
+
+            // Step 2: Delete history rows for duplicates.
             var historyQuery = groupMemberHistoricalService.Queryable()
-                .Where( gmh => groupMemberIds.Contains( gmh.GroupMemberId ) );
+                .Where( gmh => duplicateGroupMemberIds.Contains( gmh.GroupMemberId ) );
 
-            // Delete the history and duplicate memberships
+            // Step 3: Delete duplicate GroupMember rows (non-oldest).
+            var duplicatesQuery = groupMemberService.Queryable()
+                .Where( gm => duplicateGroupMemberIds.Contains( gm.Id ) );
+
             groupMemberHistoricalService.DeleteRange( historyQuery );
-            groupMemberService.DeleteRange( duplicateQuery );
+            groupMemberService.DeleteRange( duplicatesQuery );
+
             rockContext.SaveChanges();
 
             // Return the count of memberships deleted
-            return groupMemberIds.Count();
+            return duplicateGroupMemberIds.Count;
         }
 
         private int DeleteDuplicatePreviousFamilyLocations()
@@ -3013,43 +3100,6 @@ INNER JOIN [AverageAttendance] aa ON c.[Id] = aa.[CampusId]";
             }
 
             return totalRemoved;
-        }
-
-        /// <summary>
-        /// Ensures that the legacy SMS phone numbers in the Defined Value
-        /// table are in sync with the new System Phone Number table.
-        /// </summary>
-        /// <remarks>
-        /// The detail block automatically updates the legacy phone numbers,
-        /// but we need to account for other ways they can be edited. This
-        /// code can be removed when legacy phone numbers are no longer
-        /// supported. System Phone Numbers were added in Rock 1.15.0.
-        /// </remarks>
-        /// <returns>The number of legacy phone numbers.</returns>
-        private int SynchronizeLegacySmsPhoneNumbers()
-        {
-            List<int> systemPhoneNumberIds;
-
-            using ( var rockContext = CreateRockContext() )
-            {
-                systemPhoneNumberIds = new SystemPhoneNumberService( rockContext )
-                    .Queryable()
-                    .Select( spn => spn.Id )
-                    .ToList();
-            }
-
-            // Create or update any legacy phone numbers that are somehow
-            // out of sync.
-            foreach ( var systemPhoneNumberId in systemPhoneNumberIds )
-            {
-                SystemPhoneNumberService.UpdateLegacyPhoneNumber( systemPhoneNumberId );
-            }
-
-            // Delete any legacy phone numbers that no longer have an associated
-            // system phone number.
-            SystemPhoneNumberService.DeleteExtraLegacyPhoneNumbers();
-
-            return systemPhoneNumberIds.Count;
         }
 
         /// <summary>

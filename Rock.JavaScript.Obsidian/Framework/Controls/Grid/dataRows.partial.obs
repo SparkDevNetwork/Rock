@@ -35,8 +35,6 @@
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
 
-    const element = ref<HTMLElement>();
-
     const props = defineProps({
         /**
          * The array of columns that should be displayed in the data rows.
@@ -118,6 +116,15 @@
         (e: "width", width: { offsetWidth: number, scrollWidth: number }): void
     }>();
 
+    // #region Values
+
+    const element = ref<HTMLElement>();
+    let resizeObserver: ResizeObserver | undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
     /** Whether or not there are any rows given */
     const hasRows = computed(() => {
         return props.rows.length > 0;
@@ -128,14 +135,9 @@
         return pluralize(props.itemTerm);
     });
 
-    /**
-     * Called when a single row has been clicked.
-     *
-     * @param key The key of the row that was clicked.
-     */
-    function onRowClick(key: string): void {
-        emit("click", key);
-    }
+    // #endregion
+
+    // #region Functions
 
     /**
      * Determine the class to apply to each row
@@ -152,10 +154,22 @@
         return undefined;
     }
 
-    let resizeObserver: ResizeObserver | undefined;
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a single row has been clicked.
+     *
+     * @param key The key of the row that was clicked.
+     */
+    function onRowClick(key: string): void {
+        emit("click", key);
+    }
+
+    // #endregion
 
     onMounted(() => {
-
         if (typeof ResizeObserver !== "undefined" && element.value) {
 
             resizeObserver = new ResizeObserver(() => {

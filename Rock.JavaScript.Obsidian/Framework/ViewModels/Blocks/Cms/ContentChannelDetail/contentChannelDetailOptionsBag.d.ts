@@ -37,9 +37,6 @@ export type ContentChannelDetailOptionsBag = {
     /** Gets or sets the content control types. */
     contentControlTypes?: ListItemBag[] | null;
 
-    /** Gets or sets the content library attributes. */
-    contentLibraryAttributes?: ListItemBag[] | null;
-
     /** Gets or sets the current page URL. */
     currentPageUrl?: string | null;
 

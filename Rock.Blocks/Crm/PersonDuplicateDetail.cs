@@ -372,7 +372,7 @@ namespace Rock.Blocks.Crm
             projection = wrappers.First().Projection;
             personRecord.DTO = new PersonDuplicateDetailDto
             {
-                DuplicateRecordIdKey = projection.DuplicateRecordIdKey,
+                DuplicateRecordIdKey = "PRIMARY_PERSON",
                 PersonIdKey = projection.Person.PersonIdKey,
                 IsDuplicateRow = false,
                 ConfidenceScore = 0d,

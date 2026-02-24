@@ -73,7 +73,7 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Connection Request Attributes" icon="ti ti-binary-tree-2">
+        <ContentSection v-if="store.state.trailblazerMode" title="Request Attributes" icon="ti ti-binary-tree-2">
             <ConnectionRequestAttributes v-model:connectionRequestAttributes="connectionRequestAttributes"
                                          :inheritedConnectionRequestAttributes="inheritedConnectionRequestAttributes"
                                          :options="props.options"
@@ -91,14 +91,14 @@
                              :campuses="campuses" />
         </ContentSection>
 
-        <ContentSection title="Workflows" icon="ti ti-settings-automation">
+        <ContentSection v-if="store.state.trailblazerMode" title="Workflows" icon="ti ti-settings-cog">
             <Workflows v-model:connectionWorkflows="connectionWorkflows"
                        :inheritedConnectionWorkflows="inheritedConnectionWorkflows"
                        :connectionTypeName="props.modelValue.bag?.connectionTypeName ?? ''"
                        :connectionTypeUrl="props.modelValue.bag?.connectionTypeUrl ?? ''" :options="props.options" />
         </ContentSection>
 
-        <ContentSection title="Advanced Settings" icon="ti ti-adjustments-cog">
+        <ContentSection v-if="store.state.trailblazerMode" title="Advanced Settings" icon="ti ti-adjustments-cog">
             <ContentStack title="Configurable Options"
                           description="Select which options to show on the Connection Request for this opportunity type.">
                 <div class="inline-checkbox-bold">
@@ -129,6 +129,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
+    import { useStore } from "@Obsidian/PageState";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -194,6 +195,7 @@
     const showConnectButton = propertyRef(props.modelValue.bag?.showConnectButton ?? false, "ShowConnectButton");
     const requestDueDateOffsetInDays = propertyRef(props.modelValue.bag?.requestDueDateOffsetInDays ?? 0, "RequestDueDateOffsetInDays");
     const requestDueSoonOffsetInDays = propertyRef(props.modelValue.bag?.requestDueSoonOffsetInDays ?? 0, "RequestDueSoonOffsetInDays");
+    const store = useStore();
 
     const connectionRequestAttributes = propertyRef(props.modelValue?.bag?.connectionRequestAttributes ?? [], "ConnectionRequestAttributes");
     const inheritedConnectionRequestAttributes = ref(props.modelValue?.bag?.inheritedConnectionRequestAttributes ?? []);

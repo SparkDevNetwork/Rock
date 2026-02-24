@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -81,14 +81,6 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelDetail
         ///   <c>true</c> if the store is configured; otherwise, <c>false</c>.
         /// </value>
         public bool IsOrganizationConfigured { get; set; }
-
-        /// <summary>
-        /// Gets or sets the content library attributes.
-        /// </summary>
-        /// <value>
-        /// The content library attributes.
-        /// </value>
-        public List<ListItemBag> ContentLibraryAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the content channel list.

@@ -1546,11 +1546,6 @@ export const Page = {
      */
     SystemEmailCategoriesCommunications: "B55323CD-F494-43E7-97BF-4E13DAB58E0B",
     /**
-     * Gets the System Email Categories page guid
-     * ParentPage: System Emails
-     */
-    SystemEmailCategoriesSystemEmails: "66FAF7A6-7523-475C-A88D-51C75178A785",
-    /**
      * Gets the System Information page guid
      * ParentPage: System Dialogs
      */

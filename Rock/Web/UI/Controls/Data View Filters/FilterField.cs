@@ -513,6 +513,7 @@ namespace Rock.Web.UI.Controls
                             obsidianWrapper.ComponentDefinition = definition;
                             obsidianWrapper.ComponentData = component.GetObsidianComponentData( FilteredEntityType, value, rockContext, requestContext );
                         }
+#pragma warning disable CS0618 // Type or member is obsolete
                         else if ( component.ObsidianFileUrl != null )
                         {
                             if ( component.ObsidianFileUrl.Length > 0 )
@@ -520,6 +521,7 @@ namespace Rock.Web.UI.Controls
                                 obsidianWrapper.ComponentData = component.GetObsidianComponentData( FilteredEntityType, value, rockContext, requestContext );
                             }
                         }
+#pragma warning restore CS0618 // Type or member is obsolete
                     }
                 }
                 else
@@ -578,10 +580,12 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             if ( component.ObsidianFileUrl != null || ( filterControls.Length >= 1 && filterControls[0] is ObsidianDynamicComponentWrapper ) )
             {
                 return null;
             }
+#pragma warning restore CS0618 // Type or member is obsolete
 
             if ( component is IRelatedChildDataView relatedDataViewComponent )
             {
@@ -631,6 +635,7 @@ namespace Rock.Web.UI.Controls
                     {
                         var definition = component.GetComponentDefinition( FilteredEntityType, string.Empty, rockContext, requestContext );
 
+#pragma warning disable CS0618 // Type or member is obsolete
                         if ( definition == null && component.ObsidianFileUrl != null )
                         {
                             definition = new ViewModels.Controls.DynamicComponentDefinitionBag
@@ -638,6 +643,7 @@ namespace Rock.Web.UI.Controls
                                 Url = ResolveUrl( component.ObsidianFileUrl )
                             };
                         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
                         if ( definition != null )
                         {

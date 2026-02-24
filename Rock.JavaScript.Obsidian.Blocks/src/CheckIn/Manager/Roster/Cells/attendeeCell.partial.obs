@@ -15,7 +15,7 @@
             </div>
             <div>
                 <span v-for="badge in badges" v-tooltip="badge.text" class="attendee-badge">
-                    <i :class="badge.iconCssClass" :style="getBadgeStyle(badge)"></i>
+                    <i :class="getBadgeIconClass(badge)" :style="getBadgeStyle(badge)"></i>
                 </span>
             </div>
         </div>
@@ -135,6 +135,19 @@
         }
 
         return styles;
+    }
+
+    /**
+     * Gets the CSS class for the badge icon.
+     *
+     * @param badge The badge to be displayed.
+     */
+    function getBadgeIconClass(badge: RosterAttendeeBadgeBag): string | null | undefined {
+        if (badge.iconCssClass?.includes(" fa-")) {
+            return `fa-fw ${badge.iconCssClass}`;
+        }
+
+        return badge.iconCssClass;
     }
 
     // #endregion

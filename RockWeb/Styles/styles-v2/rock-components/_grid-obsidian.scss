@@ -558,15 +558,6 @@
         }
     }
 
-    .grid-column-header-row {
-
-        .grid-column-header:first-child {
-            border-top-left-radius: var(--rounded-medium);
-        }
-        .grid-column-header:last-child {
-            border-top-right-radius: var(--rounded-medium);
-        }
-    }
 }
 
 // When there are column headers but no footer, round the bottom corners of the empty row to match the rounded grid panel.

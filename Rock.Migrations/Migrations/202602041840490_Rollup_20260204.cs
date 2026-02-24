@@ -103,7 +103,15 @@ WHERE [BlockType].[Guid] IN (
 
         private void PS_RenameBeaconDashboardToOutreachDashboard_Up()
         {
-            RockMigrationHelper.UpdateBlockTypeByGuid( "Outreach Dashboard", "Outreach dashboard allows you to view your touchpoint statistic and as well as start connecting with your contact.", null, "Engagement", "A1B2C3D4-E5F6-4789-ABCD-1234567890AB" );
+            RockMigrationHelper.RenameEntityType(
+                "A3D9F1C4-E3C1-4D3A-8C2E-7F4B5B6D9F1C",
+                "Rock.Blocks.Types.Mobile.Engagement.OutreachDashboard",
+                "Outreach Dashboard",
+                "Rock.Blocks.Types.Mobile.Engagement.OutreachDashboard, Rock, Version=19.0.5.0, Culture=neutral, PublicKeyToken=null",
+                false,
+                false );
+
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "Outreach Dashboard", "Outreach dashboard allows you to view your touchpoint statistic and as well as start connecting with your contact.", "Rock.Blocks.Types.Mobile.Engagement.OutreachDashboard", "Engagement", "A1B2C3D4-E5F6-4789-ABCD-1234567890AB" );
         }
 
         /// <summary>
@@ -142,7 +150,15 @@ END
 
         private void PS_RenameBeaconDashboardToOutreachDashboard_Down()
         {
-            RockMigrationHelper.UpdateBlockTypeByGuid( "Beacon Dashboard", "Beacon dashboard allows you to view your touchpoint statistic and as well as start connecting with your contact.", null, "Engagement", "A1B2C3D4-E5F6-4789-ABCD-1234567890AB" );
+            RockMigrationHelper.RenameEntityType(
+                "A3D9F1C4-E3C1-4D3A-8C2E-7F4B5B6D9F1C",
+                "Rock.Blocks.Types.Mobile.Engagement.BeaconDashboard",
+                "Beacon Dashboard",
+                "Rock.Blocks.Types.Mobile.Engagement.BeaconDashboard, Rock, Version=19.0.5.0, Culture=neutral, PublicKeyToken=null",
+                false,
+                false );
+
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "Beacon Dashboard", "Beacon dashboard allows you to view your touchpoint statistic and as well as start connecting with your contact.", "Rock.Blocks.Types.Mobile.Engagement.BeaconDashboard", "Engagement", "A1B2C3D4-E5F6-4789-ABCD-1234567890AB" );
         }
     }
 }

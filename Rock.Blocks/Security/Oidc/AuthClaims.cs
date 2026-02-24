@@ -52,36 +52,7 @@ namespace Rock.Blocks.Security.Oidc
             public const string ScopeId = "ScopeId";
         }
 
-        private static class PreferenceKey
-        {
-            public const string FilterName = "filter-name";
-            public const string FilterPublicName = "filter-public-name";
-            public const string FilterActiveStatus = "filter-active-status";
-        }
-
         #endregion Keys
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the name filter value from person preferences.
-        /// </summary>
-        protected string FilterName => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterName );
-
-        /// <summary>
-        /// Gets the public name filter value from person preferences.
-        /// </summary>
-        protected string FilterPublicName => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterPublicName );
-
-        /// <summary>
-        /// Gets the active status filter value from person preferences.
-        /// </summary>
-        protected string FilterActiveStatus => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterActiveStatus );
-
-        #endregion Properties
 
         #region Methods
 
@@ -160,32 +131,6 @@ namespace Rock.Blocks.Security.Oidc
             }
 
             queryable = queryable.Where( ac => ac.ScopeId == authScope.Id );
-
-            // Apply name filter.
-            if ( FilterName.IsNotNullOrWhiteSpace() )
-            {
-                queryable = queryable.Where( ac => ac.Name.Contains( FilterName ) );
-            }
-
-            // Apply public name filter.
-            if ( FilterPublicName.IsNotNullOrWhiteSpace() )
-            {
-                queryable = queryable.Where( ac => ac.PublicName.Contains( FilterPublicName ) );
-            }
-
-            // Apply active status filter.
-            if ( FilterActiveStatus.IsNotNullOrWhiteSpace() )
-            {
-                switch ( FilterActiveStatus )
-                {
-                    case "active":
-                        queryable = queryable.Where( ac => ac.IsActive );
-                        break;
-                    case "inactive":
-                        queryable = queryable.Where( ac => !ac.IsActive );
-                        break;
-                }
-            }
 
             return queryable;
         }

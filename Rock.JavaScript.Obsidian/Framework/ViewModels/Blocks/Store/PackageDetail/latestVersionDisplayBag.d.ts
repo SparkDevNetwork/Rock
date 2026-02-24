@@ -21,7 +21,28 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Person Viewed List block. */
-export type PersonViewedSummaryOptionsBag = {
-    seeProfilesViewed: boolean
+import { ScreenshotBag } from "@Obsidian/ViewModels/Blocks/Store/PackageDetail/screenshotBag";
+
+/** Aggregated display data for the latest compatible package version. */
+export type LatestVersionDisplayBag = {
+    /** Pre-formatted added date string (e.g., "March 4, 2025"). */
+    addedDateDisplay?: string | null;
+
+    /** Description of the version. */
+    description?: string | null;
+
+    /** Documentation link for this version. */
+    documentationUrl?: string | null;
+
+    /** Version identifier. */
+    id: number;
+
+    /** Pre-formatted Rock version requirement string. */
+    requiredRockVersionDisplay?: string | null;
+
+    /** Screenshots associated with this version. */
+    screenshots?: ScreenshotBag[] | null;
+
+    /** Display label for the version. */
+    versionLabel?: string | null;
 };

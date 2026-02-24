@@ -144,7 +144,7 @@
 
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
-                <asp:Panel ID="pnlNavHeading" runat="server" CssClass="panel-header cursor-pointer clearfix">
+                <asp:Panel ID="pnlNavHeading" runat="server" CssClass="panel-header cursor-pointer">
                     <asp:PlaceHolder runat="server">
                         <div class="pull-left">
                             <i class="ti ti-chevron-left"></i>

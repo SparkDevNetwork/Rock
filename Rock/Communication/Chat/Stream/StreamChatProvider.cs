@@ -3618,7 +3618,7 @@ namespace Rock.Communication.Chat
                                 var personAliasGuid = ChatHelper.GetPersonAliasGuid( deleteCommand.ChatPersonKey );
 
                                 throw new ChatSyncException(
-                                    $"Chat Person with key '{deleteCommand.ChatPersonKey}' no longer exists in Stream; Rock will now clear the corresponding Person Alias Name and Foreign Key values to prevent repeated failures (where Person Alias GUID = '{personAliasGuid}'). The previous chat sync request has been cancelled as it's unrecoverable. Run the 'Chat Sync' Job to ensure Rock is in sync with Stream.",
+                                    $"Chat Person with key '{deleteCommand.ChatPersonKey}' no longer exists in Stream; Rock will now mark the corresponding Person Alias as deleted to prevent repeated failures (where Person Alias GUID = '{personAliasGuid}'). The previous chat sync request has been cancelled as it's unrecoverable. Run the 'Chat Sync' Job to ensure Rock is in sync with Stream.",
                                     streamChatException
                                 );
                             }

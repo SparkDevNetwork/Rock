@@ -1,9 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ContentStack title="Attribute List"
-                  description="Define custom attributes that apply to all all opportunities under this connection type. Note: to set the values to any newly configured attributes, first save the Connection Type."
+                  description="Define custom attributes for this connection type to store configuration details. Note: After adding new attributes, save the Connection Type before setting their values."
                   headerLocation="top">
-        <Grid :data="gridData" keyField="guid" itemTerm="Connection Type Attribute" liveUpdates light @addItem="onAdd">
+        <Grid :data="gridData" keyField="guid" itemTerm="Type Attribute" liveUpdates light @addItem="onAdd">
             <ReorderColumn @orderChanged="onOrderChanged" />
             <TextColumn name="name" field="name" title="Attribute" />
             <TextColumn name="description" field="description" title="Description" />
@@ -23,7 +23,7 @@
                                   :showCategoryLabel="false" />
     </ContentStack>
 
-    <Modal v-model="isModalVisible" title="Connection Type Attributes" saveText="Save" cancelText="Cancel"
+    <Modal v-model="isModalVisible" title="Type Attributes" saveText="Save" cancelText="Cancel"
            :onSave="onSave">
         <AttributeEditor v-model="theAttribute" :reservedKeyNames="reservedKeyNames" />
     </Modal>

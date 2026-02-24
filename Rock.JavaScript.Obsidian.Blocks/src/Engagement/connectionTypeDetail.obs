@@ -13,7 +13,7 @@
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
-                 :isFollowVisible="true"
+                 :isFollowVisible="false"
                  :isSecurityHidden="false"
                  :footerSecondaryActions="footerSecondaryActions"
                  @cancelEdit="onCancelEdit"

@@ -168,7 +168,7 @@
         </ContentSection>
 
         <ContentSection title="Workflows"
-                        icon="ti ti-route-alt-right">
+                        icon="ti ti-settings-cog">
             <ContentStack>
                 <Grid :data="workflowGridData"
                       keyField="key"
