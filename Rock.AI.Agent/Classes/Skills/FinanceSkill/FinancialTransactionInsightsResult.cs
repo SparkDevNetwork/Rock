@@ -5,7 +5,7 @@ namespace Rock.AI.Agent.Classes.Skills.FinanceSkill
     /// <summary>
     /// DTO representing the analytic summary payload returned by <see cref="SummarizeFinancialTransactions"/>.
     /// </summary>
-    internal sealed class FinancialTransactionSummaryResult
+    internal sealed class FinancialTransactionInsightsResult
     {
         /// <summary>
         /// ISO 4217 currency code (e.g., USD) if a single currency context is known; otherwise <c>null</c>.

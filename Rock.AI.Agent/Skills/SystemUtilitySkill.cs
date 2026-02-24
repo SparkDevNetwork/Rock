@@ -28,7 +28,7 @@ namespace Rock.AI.Agent.Skills
     [Description( "Provides common, non-domain-specific helper functions that can be used across multiple skills." )]
     [AgentPurpose( "Provides common, non-domain-specific helper functions that can be used across multiple skills." )]
     [AgentPurpose( "These include utilities for working with dates, times, and simple data conversions." )]
-    [AgentUsage( "ALWAYS call DetermineDateRange for natural-language date/time prompts (e.g., \"past 3 years\", \"yesterday\", \"Q2\", \"this week\", specific dates)." )]
+    [AgentUsage( "ALWAYS call either CalculateSlidingDateRange or DetermineDateRange for natural-language date/time prompts (e.g., \"past 3 years\", \"yesterday\", \"Q2\", \"this week\", specific dates)." )]
     [AgentSkillGuid( "3406D2DC-6718-45A2-99D3-1DAA32BF2EFD" )]
     [EntityTypeGuid( "35CD02D0-1FF7-4256-B495-FBBFBC9A2C9C" )]
     internal sealed partial class SystemUtilitySkill : AgentSkillComponent

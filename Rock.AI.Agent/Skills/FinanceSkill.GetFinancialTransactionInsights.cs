@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.FinanceSkill;
-using Rock.Configuration;
 using Rock.Data;
+using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -30,12 +29,12 @@ namespace Rock.AI.Agent.Skills
         /// <param name="paymentMethodTypeValueIdKey">Optional currency / tender defined value IdKey or the literal "lookup".</param>
         /// <param name="startDate">Inclusive start date filter.</param>
         /// <param name="endDate">Inclusive end date filter.</param>
-        /// <returns>Analytics wrapped in <see cref="FinancialTransactionSummaryResult"/>.</returns>
+        /// <returns>Analytics wrapped in <see cref="FinancialTransactionInsightsResult"/>.</returns>
         [AgentToolGuid( "8AE2C3D2-6965-47E2-AC82-0D422A1EF2FC" )]
         [AgentUsage( "Any argument ending with 'ValueIdKey' must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the chosen IdKey." )]
         [AgentUsage( "Only provide a personIdKey if the request is about a specific person. Do not assume that the current person should be used." )]
         [AgentToolReturnDescription( "Summary of matching transactions: count, total, average, median, and std-dev of per-transaction amounts. Includes fund and payment-type breakdowns with amount, share of total, and contributing-transaction counts." )]
-        public RockToolResult SummarizeFinancialTransactions(
+        public RockToolResult GetFinancialTransactionInsights(
             string personIdKey = null,
             string campusIdKey = null,
             List<string> accountIdKeys = null,
@@ -43,78 +42,51 @@ namespace Rock.AI.Agent.Skills
             DateTime? startDate = null,
             DateTime? endDate = null )
         {
-            using var rockContext = RockApp.Current.CreateRockContext();
+            var helper = new AgentToolHelper( AgentRequestContext, _logger );
+            var qry = new FinancialTransactionService( AgentRequestContext.RockContext ).Queryable();
 
-            // Handle "lookup" for currency type defined values.
-            if ( TryGetDefinedValueLookup( rockContext, Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, paymentMethodTypeValueIdKey ) is List<KeyNameResult> lookups )
+            helper.WhereOptionalIdKey( qry, ft => ft.AuthorizedPersonAlias.PersonId, personIdKey );
+            helper.WhereOptionalIdKey( qry, ft => ft.Batch.CampusId, campusIdKey );
+            helper.WhereOptionalIdKey( qry, ft => ft.FinancialPaymentDetail.CurrencyTypeValueId, paymentMethodTypeValueIdKey );
+            helper.WhereOptionalPropertyBetween( qry, ft => ft.TransactionDateTime, startDate, endDate );
+
+            if ( !TryGetMatchingAccountIds( accountIdKeys, campusIdKey, out var accountIds ) )
             {
-                return RockToolResult.Error( "Lookups Required" )
-                    .WithContent( lookups )
-                    .WithInstructions( "Use the following data to determine the proper IdKey for the tool." );
+                return RockToolResult.NoData()
+                    .WithInstructions( "No active financial accounts matched the supplied accountIdKeys and/or campusIdKey." );
             }
 
-            // Decode IdKeys.
-            var personId = personIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( personIdKey ) : null;
-            var campusId = campusIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( campusIdKey ) : null;
-            var paymentMethodTypeId = paymentMethodTypeValueIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( paymentMethodTypeValueIdKey ) : null;
-
-
-            var options = new FinancialTransactionQueryOptions
+            if ( helper.HasErrors )
             {
-                PersonId = personId,
-                //BatchCampusId = campusId,
-                PaymentMethodTypeId = paymentMethodTypeId,
-                StartDate = startDate,
-                EndDate = endDate
-            };
-
-            // Base transaction scope (no AccountId filter here on purpose).
-            var baseQry = GetFinancialTransactionsQueryable( rockContext, options )
-                .AsNoTracking();
-
-            List<int> accountIds = new List<int>();
-
-            if ( accountIdKeys?.Any() ?? false || campusIdKey.IsNotNullOrWhiteSpace() )
-            {
-                accountIds = GetFinancialAccountsForQuery( accountIdKeys ?? new List<string>(), campusIdKey, rockContext )
-                    .Select( a => a.Id )
-                    .ToList();
-
-                if ( !accountIds.Any() )
-                {
-                    return RockToolResult.NoData()
-                        .WithInstructions( "No active financial accounts matched the supplied accountIdKeys and/or campusIdKey." );
-                }
+                return helper.ErrorResult;
             }
 
-            var hasAccountFilter = accountIds?.Any() == true;
+            var hasAccountFilter = accountIds.Any();
 
             // Project per-transaction, with detail amount filtered by provided account ids if any.
-            var txAggQry = baseQry.Select( t => new
+            var txAggQry = qry.Select( t => new
             {
                 t.Id,
                 t.TransactionDateTime,
-                CurrencyTypeId = ( int? ) t.FinancialPaymentDetail.CurrencyTypeValueId,
+                CurrencyTypeId = t.FinancialPaymentDetail.CurrencyTypeValueId,
                 CurrencyType = t.FinancialPaymentDetail.CurrencyTypeValue != null
                     ? t.FinancialPaymentDetail.CurrencyTypeValue.Value
                     : "Unknown",
-                AmountFiltered = ( hasAccountFilter
+                AmountFiltered = hasAccountFilter
                     ? t.TransactionDetails
                         .Where( d => accountIds.Contains( d.AccountId ) )
-                        .Select( d => ( decimal? ) d.Amount )
-                        .Sum()
+                        .Sum( d => ( decimal? ) d.Amount ) ?? 0m
                     : t.TransactionDetails
-                        .Select( d => ( decimal? ) d.Amount )
-                        .Sum() ) ?? 0m
+                        .Sum( d => ( decimal? ) d.Amount ) ?? 0m,
             } );
 
             // Materialize once for stats and currency breakdown.
             var txAgg = txAggQry.ToList();
 
             // Effective set for stats: if filtering by accounts only include transactions that contributed (>0), else all.
-            var effectiveAmounts = ( hasAccountFilter
-                ? txAgg.Where( x => x.AmountFiltered > 0m )
-                : txAgg ).Select( x => x.AmountFiltered ).ToList();
+            var effectiveAmounts = hasAccountFilter
+                ? txAgg.Where( x => x.AmountFiltered > 0m ).Select( x => x.AmountFiltered ).ToList()
+                : txAgg.Select( x => x.AmountFiltered ).ToList();
 
             var uniqueTransactionCount = effectiveAmounts.Count;
             var totalAmount = effectiveAmounts.Sum();
@@ -134,7 +106,7 @@ namespace Rock.AI.Agent.Skills
             }
 
             // Fund (account) rollup detail level honoring multi-account filter if provided.
-            var detailProj = baseQry
+            var detailProj = qry
                 .SelectMany( t => t.TransactionDetails.Select( d => new
                 {
                     TransactionId = t.Id,
@@ -186,7 +158,7 @@ namespace Rock.AI.Agent.Skills
                 PercentOfTotal = totalAmount == 0m ? 0m : ( r.TotalAmount / totalAmount )
             } ).ToList();
 
-            var result = new FinancialTransactionSummaryResult
+            var result = new FinancialTransactionInsightsResult
             {
                 Currency = "USD",
                 Totals = new FinancialTotalsBreakdown
@@ -201,7 +173,7 @@ namespace Rock.AI.Agent.Skills
                 CurrencyTypes = currencyTypes
             };
 
-            return RockToolResult.Success( result );
+            return Success( result );
         }
 
         #endregion

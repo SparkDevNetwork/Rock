@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
-using Rock.AI.Agent.Classes.Skills.FinanceSkill;
-using Rock.Configuration;
+using Rock.Model;
 using Rock.SystemGuid;
-using Rock.Utility;
 
 namespace Rock.AI.Agent.Skills
 {
@@ -54,142 +51,73 @@ namespace Rock.AI.Agent.Skills
                 && !startDate.HasValue
                 && !endDate.HasValue )
             {
-                return RockToolResult.Error( "At least one filter must be provided to list financial transactions." )
-                    .WithInstructions( "Call the SummarizeFinancialTransactions tool to get an aggregated form of the request." );
+                return Error( "At least one filter must be provided to list financial transactions." )
+                    .WithInstructions( $"Call the {nameof( GetFinancialTransactionInsights )} tool to get an aggregated form of the request." );
             }
 
-            using var rockContext = RockApp.Current.CreateRockContext();
+            var helper = new AgentToolHelper( AgentRequestContext, _logger );
+            var qry = new FinancialTransactionService( AgentRequestContext.RockContext ).Queryable();
 
-            var personId = personIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( personIdKey ) : null;
-            var campusId = campusIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( campusIdKey ) : null;
-            var paymentMethodTypeId = paymentMethodTypeValueIdKey.IsNotNullOrWhiteSpace() ? IdHasher.Instance.GetId( paymentMethodTypeValueIdKey ) : null;
+            helper.WhereOptionalIdKey( qry, ft => ft.AuthorizedPersonAlias.PersonId, personIdKey );
+            helper.WhereOptionalIdKey( qry, ft => ft.Batch.CampusId, campusIdKey );
+            helper.WhereOptionalIdKey( qry, ft => ft.FinancialPaymentDetail.CurrencyTypeValueId, paymentMethodTypeValueIdKey );
+            helper.WhereOptionalPropertyBetween( qry, ft => ft.TransactionDateTime, startDate, endDate );
 
-            var options = new FinancialTransactionQueryOptions
+            if ( !TryGetMatchingAccountIds( accountIdKeys, campusIdKey, out var accountIds ) )
             {
-                PersonId = personId,
-                // BatchCampusId = campusId,
-                PaymentMethodTypeId = paymentMethodTypeId,
-                StartDate = startDate,
-                EndDate = endDate
-            };
-
-            List<int> accountIds = new List<int>();
-            if ( ( accountIdKeys?.Any() ?? false ) || campusIdKey.IsNotNullOrWhiteSpace() )
-            {
-                accountIds = GetFinancialAccountsForQuery( accountIdKeys ?? new List<string>(), campusIdKey, rockContext )
-                    .Select( a => a.Id )
-                    .ToList();
-
-                if ( !accountIds.Any() )
-                {
-                    return RockToolResult.NoData()
-                        .WithInstructions( "No active financial accounts matched the supplied accountIdKeys and/or campusIdKey." );
-                }
+                return RockToolResult.NoData()
+                    .WithInstructions( "No active financial accounts matched the supplied accountIdKeys and/or campusIdKey." );
             }
 
-            var hasAccountFilter = accountIds?.Any() == true;
-
-            // Paging (offset with N+1 lookahead) 
-            var pgNumber = Math.Max( 1, pageNumber );
-            const int basePageSize = 50;
-            var offset = ( pgNumber - 1 ) * basePageSize;
-            var take = basePageSize + 1; // ask for one extra row to detect hasMore
-
-            // Base query + deterministic ordering (date desc, then id desc)
-            var baseQry = GetFinancialTransactionsQueryable( rockContext, options )
-                .Include( t => t.AuthorizedPersonAlias.Person )
-                .Include( t => t.TransactionDetails.Select( d => d.Account ) );
+            var hasAccountFilter = accountIds.Any();
 
             // If we have an account filter, only return transactions that actually contribute (>0)
             // to one of the filtered accounts (mirror Summarize's "effective" set).
             if ( hasAccountFilter )
             {
-                baseQry = baseQry.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) ) );
+                qry = qry.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) ) );
             }
 
-            baseQry = baseQry.OrderByDescending( t => t.TransactionDateTime )
+            qry = qry.OrderByDescending( t => t.TransactionDateTime )
                 .ThenByDescending( t => t.Id );
 
             // Project AFTER ordering, BEFORE paging
-            var projectedQry = baseQry.Select( ft => new FinancialTransactionResult
+            var projectedQry = qry.Select( ft => new FinancialTransactionResult
             {
                 Id = ft.Id,
-                AuthorizedPerson = new PersonResult
-                {
-                    Id = ft.AuthorizedPersonAlias.PersonId,
-                    NickName = ft.AuthorizedPersonAlias.Person.NickName,
-                    LastName = ft.AuthorizedPersonAlias.Person.LastName,
-                    IncludePublicProfile = false,
-                    IncludeAvatarUrl = false
-                },
+                AuthorizedPerson = PersonResult.NameOnly( ft.AuthorizedPersonAlias ),
                 TransactionDateTime = ft.TransactionDateTime,
 
                 // Only sum details that match the resolved account set (if any)
-                TotalAmount =
-                    ft.TransactionDetails
-                        .Where( d => !hasAccountFilter || accountIds.Contains( d.AccountId ) )
-                        .Sum( d => ( decimal? ) d.Amount ) ?? 0m,
+                TotalAmount = ft.TransactionDetails
+                    .Where( d => !hasAccountFilter || accountIds.Contains( d.AccountId ) )
+                    .Sum( d => ( decimal? ) d.Amount ) ?? 0m,
 
                 // And only list those matching account details
-                Accounts =
-                    ft.TransactionDetails
-                        .Where( td => !hasAccountFilter || accountIds.Contains( td.AccountId ) )
-                        .Select( td => new FinancialAccountTransactionSummaryResult
-                        {
-                            Amount = td.Amount,
-                            Name = td.Account.Name
-                        } )
-                        .ToList()
+                Accounts = ft.TransactionDetails
+                    .Where( td => !hasAccountFilter || accountIds.Contains( td.AccountId ) )
+                    .Select( td => new FinancialAccountTransactionSummaryResult
+                    {
+                        Amount = td.Amount,
+                        Name = td.Account.Name
+                    } )
+                    .ToList()
             } );
 
-            var rows = projectedQry
-                .Skip( offset )
-                .Take( take )
-                .ToList();
-
-            var hasMore = rows.Count > basePageSize;
-            if ( hasMore )
+            if ( helper.HasErrors )
             {
-                rows.RemoveAt( rows.Count - 1 ); // drop lookahead row
+                return helper.ErrorResult;
             }
 
-            var meta = new Dictionary<string, object>
-            {
-                { "filters", new Dictionary<string, object>
-                    {
-                        { "personIdKey", personIdKey },
-                        { "campusIdKey", campusIdKey },
-                        { "accountIdKeys", accountIdKeys },
-                        { "paymentMethodTypeValueIdKey", paymentMethodTypeValueIdKey },
-                        { "startDate", startDate },
-                        { "endDate", endDate }
-                    }
-                },
-                { "pageNumber", pgNumber },
-                { "pageSize", basePageSize },
-                { "returnedRows", rows.Count },
-                { "hasMore", hasMore }
-            };
-
-            if ( rows.Count == 0 )
-            {
-                return RockToolResult.NoData()
-                    .WithMetadata( meta );
-            }
+            var page = helper.GetPaginatedItems( projectedQry, pageNumber );
 
             // Trimmed history content (unchanged)
-            var trimmedForHistory = rows.Select( r => new
+            var historyItems = page.Items.Select( r => new
             {
                 r.Id,
                 r.TransactionDateTime,
                 r.TotalAmount,
-                AuthorizedPerson = new
-                {
-                    r.AuthorizedPerson.Id,
-                    r.AuthorizedPerson.NickName,
-                    r.AuthorizedPerson.LastName
-                },
-                PageNumber = pgNumber
+                r.AuthorizedPerson,
             } ).ToList();
 
             // History key should include all accountIdKeys to keep variants distinct
@@ -201,9 +129,8 @@ namespace Rock.AI.Agent.Skills
                 startDate?.ToString( "o" ),
                 endDate?.ToString( "o" ) ).XxHash();
 
-            return RockToolResult.Success( rows )
-                .WithMetadata( meta )
-                .WithHistoryContent( trimmedForHistory, historyKey );
+            return helper.GetPaginatedResult( page, page.WithItems( historyItems ) )
+                .WithHistoryKey( historyKey );
         }
 
         #endregion

@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Annotations;
+using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.FinanceSkill;
 using Rock.Data;
 using Rock.Model;
@@ -51,9 +52,8 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         /// <param name="originalAccountIds">The account ids requested to be filtered on.</param>
         /// <param name="campusId">The campus id requested to be filtered on.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private List<FinancialAccountCache> GetFinancialAccountsForQuery( List<string> originalAccountIds, string campusId, RockContext rockContext )
+        private List<FinancialAccountCache> GetFinancialAccountsForQuery( List<string> originalAccountIds, string campusId )
         {
             // The filtering for accounts will be handled as such:
             // A. If no accounts are specified, but a campus is specified, find all accounts for that campus. 
@@ -90,7 +90,7 @@ namespace Rock.AI.Agent.Skills
 
                 foreach ( var acctId in accountIds )
                 {
-                    var acct = FinancialAccountCache.Get( acctId, rockContext );
+                    var acct = FinancialAccountCache.Get( acctId, AgentRequestContext.RockContext );
                     if ( acct == null )
                     {
                         continue;
@@ -104,7 +104,7 @@ namespace Rock.AI.Agent.Skills
 
                         foreach ( var child in children )
                         {
-                            var childAcct = FinancialAccountCache.Get( child.Id, rockContext );
+                            var childAcct = FinancialAccountCache.Get( child.Id, AgentRequestContext.RockContext );
                             if ( childAcct != null && !accounts.Any( a => a.Id == childAcct.Id ) )
                             {
                                 accounts.Add( childAcct );
@@ -132,7 +132,7 @@ namespace Rock.AI.Agent.Skills
 
                 foreach ( var acctId in accountIds )
                 {
-                    var acct = FinancialAccountCache.Get( acctId, rockContext );
+                    var acct = FinancialAccountCache.Get( acctId, AgentRequestContext.RockContext );
                     if ( acct == null )
                     {
                         continue;
@@ -146,7 +146,7 @@ namespace Rock.AI.Agent.Skills
 
                         foreach ( var child in children )
                         {
-                            var childAcct = FinancialAccountCache.Get( child.Id, rockContext );
+                            var childAcct = FinancialAccountCache.Get( child.Id, AgentRequestContext.RockContext );
 
                             if ( childAcct != null && !accounts.Any( a => a.Id == childAcct.Id ) )
                             {
@@ -163,56 +163,30 @@ namespace Rock.AI.Agent.Skills
         }
 
         /// <summary>
-        /// Builds the base <see cref="IQueryable{FinancialTransaction}"/> applying only transaction-scope filters.
-        /// Account (fund) filtering is intentionally deferred to detail-level projections to avoid excluding
-        /// multi-fund transactions from analytic calculations.
+        /// Gets the financial accounts to be used for filtering based on the
+        /// supplied account keys and campus key.
         /// </summary>
-        /// <param name="rockContext">The Rock context.</param>
-        /// <param name="options">User-supplied query options.</param>
-        /// <returns>A filtered queryable of transactions.</returns>
-        private IQueryable<FinancialTransaction> GetFinancialTransactionsQueryable( RockContext rockContext, FinancialTransactionQueryOptions options )
+        /// <param name="accountIdKeys">The account ids requested to be filtered on.</param>
+        /// <param name="campusIdKey">The campus id requested to be filtered on.</param>
+        /// <param name="accountIds">The resulting account ids to filter on.</param>
+        /// <returns><c>false</c> if filtering was performed and no accounts were available; otherwise <c>true</c>.</returns>
+        private bool TryGetMatchingAccountIds( List<string> accountIdKeys, string campusIdKey, out IList<int> accountIds )
         {
-            var financialTransactionService = new FinancialTransactionService( rockContext );
-
-            // Pull what we need and leave AccountId out here on purpose.
-            var qry = financialTransactionService
-                .Queryable()
-                .Include( t => t.TransactionDetails )
-                .Include( t => t.FinancialPaymentDetail )
-                .Include( t => t.Batch ); // for CampusId
-
-            if ( options.PersonId.HasValue )
+            // If they specified any accoun tkeys or a campus key, then we need
+            // to resolve the account ids to filter on.
+            if ( accountIdKeys?.Any() == true || campusIdKey.IsNotNullOrWhiteSpace() )
             {
-                qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == options.PersonId.Value );
+                accountIds = GetFinancialAccountsForQuery( accountIdKeys ?? [], campusIdKey )
+                    .Select( a => a.Id )
+                    .ToList();
+
+                return accountIds.Any();
             }
 
-            // Prefer the canonical link: Transaction -> Batch -> CampusId
-            if ( options.BatchCampusId.HasValue )
-            {
-                var campusId = options.BatchCampusId.Value;
-                qry = qry.Where( t => t.Batch != null && t.Batch.CampusId == campusId );
-            }
-
-            // DO NOT filter by AccountId at the transaction level.
-            // That would exclude valid transactions that include other funds.
-            // We'll respect AccountId only when aggregating details.
-
-            if ( options.PaymentMethodTypeId.HasValue )
-            {
-                qry = qry.Where( t => t.FinancialPaymentDetail.CurrencyTypeValueId == options.PaymentMethodTypeId.Value );
-            }
-
-            if ( options.StartDate.HasValue )
-            {
-                qry = qry.Where( t => t.TransactionDateTime >= options.StartDate.Value );
-            }
-
-            if ( options.EndDate.HasValue )
-            {
-                qry = qry.Where( t => t.TransactionDateTime <= options.EndDate.Value );
-            }
-
-            return qry;
+            // If they didn't specify either, then we can skip this step and not
+            // filter on account at all.
+            accountIds = [];
+            return true;
         }
 
         #endregion
