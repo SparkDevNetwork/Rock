@@ -24,8 +24,6 @@ namespace Rock.AI.Agent.Skills
             var reminderTypeService = new ReminderTypeService( AgentRequestContext.RockContext );
 
             var reminderTypes = reminderTypeService.Queryable()
-                .AsNoTracking()
-                .Include( rt => rt.EntityType )
                 .Where( rt => rt.IsActive )
                 .OrderByDescending( rt => rt.Order )
                 .Select( rt => new ReminderTypeResult
@@ -44,7 +42,7 @@ namespace Rock.AI.Agent.Skills
 
             if ( !reminderTypes.Any() )
             {
-                return RockToolResult.NoData();
+                return NoData();
             }
 
             var trimmedForHistory = reminderTypes.Select( rt => new
@@ -53,7 +51,7 @@ namespace Rock.AI.Agent.Skills
                 rt.Name,
             } ).ToList();
 
-            return RockToolResult.Success( reminderTypes )
+            return Success( reminderTypes )
                 .WithHistoryContent( trimmedForHistory, "reminder-types" );
         }
 

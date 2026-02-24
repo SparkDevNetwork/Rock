@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.AI.Agent.Classes.Common;
-using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
@@ -36,65 +34,26 @@ namespace Rock.AI.Agent.Skills
             DateTime? startDate = null,
             DateTime? endDate = null,
             bool? isComplete = null,
-            int? pageNumber = 1 )
+            int pageNumber = 1 )
         {
-            // Normalize and validate inputs.
-            var pgNumber = ( pageNumber ?? 1 ) < 1 ? 1 : ( pageNumber ?? 1 );
-            const int pageSize = 25;
-            var offset = ( pgNumber - 1 ) * pageSize;
-            var take = pageSize + 1; // lookahead for hasMore
+            var helper = new AgentToolHelper( AgentRequestContext, _logger );
 
-            if ( startDate.HasValue && endDate.HasValue && endDate.Value <= startDate.Value )
+            var qry = new ReminderService( AgentRequestContext.RockContext )
+                .Queryable();
+
+            qry = helper.WhereOptionalPropertyBetween( qry, r => r.ReminderDate, startDate, endDate );
+            qry = helper.WhereOptionalIdKey( qry, r => r.PersonAlias.PersonId, assignedToPersonIdKey );
+            qry = helper.WhereOptionalProperty( qry, r => r.IsComplete, isComplete );
+
+            var selectedTypes = reminderTypeIdKeys
+                ?.Select( idKey => helper.GetRequiredEntity<ReminderType>( idKey, parameterExpression: nameof( reminderTypeIdKeys ) ) )
+                .ToList()
+                ?? [];
+            var selectedTypeIds = selectedTypes.Select( rt => rt.Id ).ToList();
+
+            if ( selectedTypeIds.Any() )
             {
-                return RockToolResult.Error( "The endDate must be after the startDate." );
-            }
-
-            using var rockContext = RockApp.Current.CreateRockContext();
-            var reminderService = new ReminderService( rockContext );
-            var reminderTypeService = new ReminderTypeService( rockContext );
-            var personService = new PersonService( rockContext );
-            var personAliasService = new PersonAliasService( rockContext );
-
-            // Base query + eager loads to avoid N+1 for type/entity-type names
-            var query = reminderService.Queryable()
-                .AsNoTracking()
-                .Include( r => r.ReminderType.EntityType )
-                .Include( r => r.PersonAlias.Person );
-
-            // Date window (exclusive end makes paging windows clean)
-            if ( startDate.HasValue )
-            {
-                var s = startDate.Value.Date;
-                query = query.Where( r => r.ReminderDate >= s );
-            }
-
-            if ( endDate.HasValue )
-            {
-                var e = endDate.Value.Date;
-                query = query.Where( r => r.ReminderDate < e );
-            }
-
-            // Filter by 0..N reminder types
-            var selectedTypes = new List<ReminderType>();
-            var selectedTypeIds = new List<int>();
-            var selectedTypeNames = new List<string>();
-
-            if ( reminderTypeIdKeys != null && reminderTypeIdKeys.Any() )
-            {
-                foreach ( var key in reminderTypeIdKeys.Distinct() )
-                {
-                    var rt = reminderTypeService.Get( key, false );
-                    if ( rt == null )
-                    {
-                        return RockToolResult.Error( $"An invalid reminder type key was provided: {key}" );
-                    }
-
-                    selectedTypes.Add( rt );
-                    selectedTypeIds.Add( rt.Id );
-                    selectedTypeNames.Add( rt.Name );
-                }
-
-                query = query.Where( r => selectedTypeIds.Contains( r.ReminderTypeId ) );
+                qry = qry.Where( r => selectedTypeIds.Contains( r.ReminderTypeId ) );
             }
 
             // Entity filter rules:
@@ -117,107 +76,55 @@ namespace Rock.AI.Agent.Skills
                 var targetEntityTypeId = distinctEntityTypeIds[0];
                 var personAliasEntityType = EntityTypeCache.Get<PersonAlias>();
 
-                int entityId;
-
                 if ( targetEntityTypeId == personAliasEntityType.Id )
                 {
-                    // Accept either Person IdKey or PersonAlias IdKey
-                    var person = personService.Get( entityIdKey, false );
-                    if ( person?.PrimaryAliasId != null )
+                    var person = helper.GetRequiredEntity<Model.Person>( entityIdKey, checkSecurity: false );
+
+                    if ( person != null )
                     {
-                        entityId = person.PrimaryAliasId.Value;
-                    }
-                    else
-                    {
-                        var alias = personAliasService.Get( entityIdKey, false );
-                        if ( alias == null )
-                        {
-                            return RockToolResult.Error( "Invalid person or person alias for entity filter." );
-                        }
-                        entityId = alias.Id;
+                        qry = qry.Where( r => r.EntityId == person.PrimaryAliasId.Value );
                     }
                 }
                 else
                 {
                     var entityType = EntityTypeCache.Get( targetEntityTypeId ).GetEntityType();
-                    var entity = Rock.Reflection.GetIEntityForEntityType( entityType, entityIdKey, rockContext );
-                    if ( entity == null )
+                    var entity = Rock.Reflection.GetIEntityForEntityType( entityType, entityIdKey, AgentRequestContext.RockContext );
+
+                    if ( entity != null )
                     {
-                        return RockToolResult.Error( "Invalid entity for the selected reminder type(s)." );
+                        qry = qry.Where( r => r.EntityId == entity.Id );
                     }
-                    entityId = entity.Id;
-                }
-
-                query = query.Where( r => r.EntityId == entityId );
-            }
-
-            // Filter by assigned-to person (accept Person IdKey or PersonAlias IdKey)
-            if ( assignedToPersonIdKey.IsNotNullOrWhiteSpace() )
-            {
-                int? aliasId = null;
-
-                var person = personService.Get( assignedToPersonIdKey, false );
-                if ( person?.PrimaryAliasId != null )
-                {
-                    aliasId = person.PrimaryAliasId;
-                }
-                else
-                {
-                    var alias = personAliasService.Get( assignedToPersonIdKey, false );
-                    if ( alias != null )
+                    else
                     {
-                        aliasId = alias.Id;
+                        helper.AddError( "Invalid entity for the selected reminder type(s)." );
                     }
                 }
-
-                if ( !aliasId.HasValue )
-                {
-                    return RockToolResult.Error( "Invalid assigned-to person." );
-                }
-
-                query = query.Where( r => r.PersonAliasId == aliasId.Value );
-            }
-
-            if ( isComplete.HasValue )
-            {
-                query = query.Where( r => r.IsComplete == isComplete.Value );
             }
 
             // Deterministic order: earliest reminders first, then Id
-            var ordered = query
+            var orderedQry = qry
                 .OrderBy( r => r.ReminderDate )
                 .ThenBy( r => r.Id );
 
-            // Page directly
-            var pageSlice = ordered.Skip( offset ).Take( take ).ToList();
-            if ( pageSlice.Count == 0 )
-            {
-                return RockToolResult.NoData();
-            }
-
-            var hasMore = pageSlice.Count > pageSize;
-            if ( hasMore )
-            {
-                pageSlice.RemoveAt( pageSlice.Count - 1 );
-            }
+            var page = helper.GetPaginatedItems( orderedQry, pageNumber );
 
             // Helper to get a friendly entity name without blowing up.
-            string ResolveEntityName( Rock.Model.Reminder r )
+            string ResolveEntityName( Reminder r )
             {
                 try
                 {
-                    var etc = r.ReminderType?.EntityTypeId != null
-                        ? EntityTypeCache.Get( r.ReminderType.EntityTypeId )
+                    var clrType = r.ReminderType?.EntityTypeId != null
+                        ? EntityTypeCache.Get( r.ReminderType.EntityTypeId, AgentRequestContext.RockContext )?.GetEntityType()
                         : null;
 
-                    var clrType = etc?.GetEntityType();
                     if ( clrType == null )
                     {
                         return "Entity";
                     }
 
-                    var entity = Rock.Reflection.GetIEntityForEntityType( clrType, r.EntityId.ToString(), rockContext );
-                    return entity?.ToStringSafe() ?? "Entity";
+                    var entity = Rock.Reflection.GetIEntityForEntityType( clrType, r.EntityId.ToString(), AgentRequestContext.RockContext );
+
+                    return entity?.ToString() ?? "Entity";
                 }
                 catch
                 {
@@ -225,45 +132,21 @@ namespace Rock.AI.Agent.Skills
                 }
             }
 
-            // Project AFTER paging
-            var items = pageSlice
+            // Project AFTER paging so we can get the entity name.
+            var items = page.Items
                 .Select( r => GetReminderResult( r, ResolveEntityName( r ) ) )
                 .ToList();
 
-            // Trim for history
-            var historyItems = items.Select( r => new
+            var projectedPage = page.WithItems( items );
+            var historyPage = page.WithItems( page.Items.Select( r => new
             {
-                IdKey = r.IdKey,
+                r.IdKey,
                 Date = r.ReminderDate.ToShortDateString(),
                 Note = ( r.Note ?? string.Empty ).Truncate( 120 )
-            } );
+            } ) );
 
-            // Metadata for the caller
-            var meta = new Dictionary<string, object>
-                {
-                    { "pageNumber", pgNumber },
-                    { "pageSize", pageSize },
-                    { "returnedRows", items.Count },
-                    { "hasMore", hasMore },
-                    { "startDate", startDate?.Date },
-                    { "endDate", endDate?.Date },
-                    { "filters", new Dictionary<string, object>
-                        {
-                            { "reminderTypes", selectedTypeNames.Any() ? string.Join( ", ", selectedTypeNames ) : "Any" },
-                            { "entityFiltered", entityIdKey.IsNotNullOrWhiteSpace() },
-                            { "assignedTo", assignedToPersonIdKey ?? "Any" },
-                            { "isComplete", isComplete?.ToString() ?? "Any" }
-                        }
-                    }
-                };
-
-            return RockToolResult.Success( items )
-                .WithHistoryContent( new
-                {
-                    Items = historyItems,
-                    PageNumber = pgNumber
-                }, "reminders-list" )
-                .WithMetadata( meta );
+            return Success( projectedPage )
+                .WithHistoryContent( historyPage );
         }
 
         #endregion

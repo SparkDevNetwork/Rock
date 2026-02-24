@@ -17,30 +17,31 @@ namespace Rock.AI.Agent.Skills
         /// <summary>
         /// Deletes a note by its identifier key.
         /// </summary>
-        /// <param name="idKey">The identifier key of the note to delete.</param>
+        /// <param name="noteIdKey">The identifier key of the note to delete.</param>
         /// <returns>A <see cref="RockToolResult"/> indicating the success or failure of the operation.</returns>
         [AgentToolGuid( "DC4F7ABA-50F1-4ADD-A1E0-A9DAE8D51D2D" )]
         [AgentGuardrail( "This action will permanently delete the specified note. Ensure that this action is intentional and that you have the correct note identifier before proceeding." )]
-        public RockToolResult DeleteNote( string idKey )
+        public RockToolResult DeleteNote( string noteIdKey )
         {
             var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
             if ( currentPerson == null )
             {
-                return RockToolResult.Error( "You must be logged in to update a note." );
+                return Error( "You must be logged in to update a note." );
             }
 
             using var rockContext = RockApp.Current.CreateRockContext();
+            var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
             var noteService = new Rock.Model.NoteService( rockContext );
-            var existingNote = noteService.Get( idKey, false );
+            var existingNote = helper.GetRequiredEntity<Model.Note>( noteIdKey );
 
-            if ( existingNote == null )
+            if ( helper.HasErrors )
             {
-                return RockToolResult.Error( "Invalid note idKey provided." );
+                return helper.ErrorResult;
             }
 
             if ( !existingNote.NoteType.IsAuthorized( Authorization.EDIT, currentPerson ) )
             {
-                return RockToolResult.Error( "You are not authorized to delete this note." );
+                return Error( "You are not authorized to delete this note." );
             }
 
             noteService.Delete( existingNote );
@@ -52,11 +53,10 @@ namespace Rock.AI.Agent.Skills
             catch ( Exception ex )
             {
                 _logger.LogError( ex, "An error occurred while deleting a note." );
-                return RockToolResult.Error( "An error occurred while deleting the note." );
+                return Error( "An error occurred while deleting the note." );
             }
 
-            return RockToolResult.Success()
-                .WithHistoryContent( idKey, idKey );
+            return Success( "The note has been deleted." );
         }
 
         #endregion

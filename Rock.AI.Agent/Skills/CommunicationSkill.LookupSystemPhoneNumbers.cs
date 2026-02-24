@@ -24,9 +24,7 @@ namespace Rock.AI.Agent.Skills
         [AgentToolGuid( "FD3F160F-ABCA-4A18-B69F-0E21D61B6874" )]
         public RockToolResult LookupSystemPhoneNumbers( bool? smsEnabled = null )
         {
-            using var rockContext = RockApp.Current.CreateRockContext();
-
-            var spnResults = GetSystemPhoneNumbers( rockContext, smsEnabled );
+            var spnResults = GetSystemPhoneNumbers( smsEnabled );
 
             // Trim down for history
             var trimmedSpns = spnResults.Select( spn => new KeyNameResult
@@ -37,7 +35,7 @@ namespace Rock.AI.Agent.Skills
 
             var historyKey = smsEnabled.HasValue ? $"system-phone-numbers-sms-{smsEnabled.Value}" : "system-phone-numbers-all";
 
-            return RockToolResult.Success( spnResults )
+            return Success( spnResults )
                 .WithHistoryContent( trimmedSpns, historyKey );
         }
 
@@ -48,49 +46,35 @@ namespace Rock.AI.Agent.Skills
         /// <summary>
         /// Gets the system phone numbers, optionally filtering to only SMS-enabled numbers.
         /// </summary>
-        /// <param name="rockContext"></param>
         /// <param name="smsEnabled"></param>
         /// <returns></returns>
-        private List<SystemPhoneNumberResult> GetSystemPhoneNumbers( RockContext rockContext, bool? smsEnabled = null )
+        private List<SystemPhoneNumberResult> GetSystemPhoneNumbers( bool? smsEnabled = null )
         {
-            var spns = SystemPhoneNumberCache.All()
+            return SystemPhoneNumberCache.All( AgentRequestContext.RockContext )
                 .Where( spn => spn.IsActive )
-                .Where( spn => !smsEnabled.HasValue || spn.IsSmsEnabled == smsEnabled.Value );
-
-            // Filter out based on security.
-            spns = spns.Where( spn => spn.IsAuthorized( Authorization.VIEW, AgentRequestContext.RockRequestContext.CurrentPerson ) ).ToList();
-
-            var spnResults = new List<SystemPhoneNumberResult>();
-            foreach ( var spn in spns )
-            {
-                var spnResult = new SystemPhoneNumberResult
+                .Where( spn => !smsEnabled.HasValue || spn.IsSmsEnabled == smsEnabled.Value )
+                .Where( spn => spn.IsAuthorized( Authorization.VIEW, AgentRequestContext.RockRequestContext.CurrentPerson ) )
+                .Select( spn =>
                 {
-                    Id = spn.Id,
-                    Name = spn.Name,
-                    Description = spn.Description,
-                    Number = spn.Number,
-                    IsSmsEnabled = spn.IsSmsEnabled,
-                };
-
-                if ( spn.AssignedToPersonAliasId.HasValue )
-                {
-                    var person = new PersonAliasService( rockContext ).GetPerson( spn.AssignedToPersonAliasId.Value );
-
-                    if ( person != null )
+                    var spnResult = new SystemPhoneNumberResult
                     {
-                        spnResult.AssignedToPerson = new PersonResult
-                        {
-                            FirstName = person.FirstName,
-                            LastName = person.LastName,
-                            Id = person.Id,
-                        };
+                        Id = spn.Id,
+                        Name = spn.Name,
+                        Description = spn.Description,
+                        Number = spn.Number,
+                        IsSmsEnabled = spn.IsSmsEnabled,
+                    };
+
+                    if ( spn.AssignedToPersonAliasId.HasValue )
+                    {
+                        var person = new PersonAliasService( AgentRequestContext.RockContext ).GetPerson( spn.AssignedToPersonAliasId.Value );
+
+                        spnResult.AssignedToPerson = PersonResult.NameOnly( person );
                     }
-                }
 
-                spnResults.Add( spnResult );
-            }
-
-            return spnResults;
+                    return spnResult;
+                } )
+                .ToList();
         }
 
         #endregion

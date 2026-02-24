@@ -108,14 +108,9 @@ namespace Rock.AI.Agent.Skills
         /// <returns></returns>
         private IQueryable<Rock.Model.Category> GetPrayerCategoriesQueryable( RockContext rockContext )
         {
-            var prayerRequestEntityType = EntityTypeCache.Get<PrayerRequest>( false );
-
-            if ( prayerRequestEntityType == null )
-            {
-                return null;
-            }
-
+            var prayerRequestEntityType = EntityTypeCache.Get<PrayerRequest>( true, rockContext );
             var categoryService = new CategoryService( rockContext );
+
             return categoryService.GetByEntityTypeId( prayerRequestEntityType.Id );
         }
 

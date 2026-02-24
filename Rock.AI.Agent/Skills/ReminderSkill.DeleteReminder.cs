@@ -23,18 +23,19 @@ namespace Rock.AI.Agent.Skills
         public RockToolResult DeleteReminder( string reminderIdKey )
         {
             using var rockContext = RockApp.Current.CreateRockContext();
+            var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
             var reminderService = new ReminderService( rockContext );
-            var reminder = reminderService.Get( reminderIdKey, false );
 
-            if ( reminder == null )
+            var reminder = helper.GetRequiredEntity<Reminder>( reminderIdKey );
+
+            if ( helper.HasErrors )
             {
-                return RockToolResult.Error( "The specified reminder was not found." );
+                return helper.ErrorResult;
             }
 
             reminderService.Delete( reminder );
 
-            return RockToolResult.Success( "The reminder has succesfully been deleted." )
-                .WithHistoryContent( reminder.IdKey, reminder.IdKey );
+            return Success( "The reminder has succesfully been deleted." );
         }
 
         #endregion

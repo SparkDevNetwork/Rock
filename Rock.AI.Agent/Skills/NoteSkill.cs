@@ -85,14 +85,7 @@ namespace Rock.AI.Agent.Skills
 
             return new NoteResult
             {
-                Author = note.CreatedByPersonAlias != null
-                    ? new PersonResult
-                    {
-                        Id = note.CreatedByPersonAlias.Person.Id,
-                        NickName = note.CreatedByPersonAlias.Person.NickName,
-                        LastName = note.CreatedByPersonAlias.Person.LastName
-                    }
-                    : null,
+                Author = PersonResult.NameOnly( note.CreatedByPersonAlias ),
                 NoteType = new NoteTypeResult
                 {
                     EntityType = new KeyNameResult

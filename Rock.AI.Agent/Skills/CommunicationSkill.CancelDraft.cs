@@ -23,28 +23,31 @@ namespace Rock.AI.Agent.Skills
             }
 
             using var rockContext = RockApp.Current.CreateRockContext();
+            var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
             var communicationService = new CommunicationService( rockContext );
-            var draft = communicationService.Get( communicationIdKey, false );
-            if ( draft == null )
+
+            var draft = helper.GetRequiredEntity<Model.Communication>( communicationIdKey, checkSecurity: false );
+
+            if ( helper.HasErrors )
             {
-                return RockToolResult.Error( "No communication record was found for that IdKey." );
+                return helper.ErrorResult;
             }
 
             if ( draft.Status != CommunicationStatus.Transient )
             {
-                return RockToolResult.Error( "You can not cancel a communication that is not in a transient state." );
+                return Error( "You can not cancel a communication that is not in a transient state." );
             }
 
             if ( !communicationService.CanDelete( draft, out var errorMessage ) )
             {
-                return RockToolResult.Error( $"Unable to delete communication: {errorMessage}" );
+                return Error( $"Unable to delete communication: {errorMessage}" );
             }
 
             communicationService.Delete( draft );
 
             rockContext.SaveChanges();
 
-            return RockToolResult.Success( "The communication has been deleted." );
+            return Success( "The communication has been deleted." );
         }
 
         #endregion

@@ -27,7 +27,7 @@ namespace Rock.AI.Agent.Skills
 
             if ( currentPerson == null )
             {
-                return RockToolResult.Error( "The current person is not available. Ensure the agent is properly initialized." )
+                return Error( "The current person is not available. Ensure the agent is properly initialized." )
                     .WithInstructions( "Make sure the agent has access to the current person context." );
             }
 
@@ -38,18 +38,19 @@ namespace Rock.AI.Agent.Skills
             }
 
             using var rockContext = RockApp.Current.CreateRockContext();
+            var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
             var communicationService = new CommunicationService( rockContext );
-            var communication = communicationService.Get( communicationIdKey );
+            var communication = helper.GetRequiredEntity<Model.Communication>( communicationIdKey );
 
-            if ( communication == null )
+            if ( communication != null && communication.Status != CommunicationStatus.Transient )
             {
-                return RockToolResult.Error( $"No valid communication found for the provided communicationIdKey: {communicationIdKey}." );
+                helper.AddError( "The communication is not in a transient state and cannot be sent." );
+                helper.AddInstructions( "Ensure the communication is in a transient state before sending." );
             }
 
-            if ( communication.Status != CommunicationStatus.Transient )
+            if ( helper.HasErrors )
             {
-                return RockToolResult.Error( "The communication is not in a transient state and cannot be sent." )
-                    .WithInstructions( "Ensure the communication is in a transient state before sending." );
+                return helper.ErrorResult;
             }
 
             communication.Status = CommunicationStatus.Approved;
@@ -63,12 +64,20 @@ namespace Rock.AI.Agent.Skills
             catch ( Exception ex )
             {
                 _logger.LogError( ex, "Failed to update communication status." );
-                return RockToolResult.Error( "Failed to update the communication status. Check the logs for details." );
+                return Error( "Failed to update the communication status. Check the logs for details." );
             }
 
             SendCommunication( communication.Id );
 
-            var instructions = "The communication has been queued to be sent. The user can view the details of the communication via the reference url.";
+            var result = new SendCommunicationResult
+            {
+                CommunicationIdKey = communicationIdKey,
+            };
+
+            var toolResult = Success( result )
+                .WithInstructions( "The communication has been queued to be sent. The user can view the details of the communication via the reference url." )
+                .WithHistoryKey( communicationIdKey )
+                .WithReferenceRoute( AgentRequestContext.RockRequestContext, "Communication", $"/Communication/{communication.Id}", false );
 
             // If the communication is SMS and came from a different number than the user's default, prompt the user
             // to see if we should update their default.
@@ -80,17 +89,11 @@ namespace Rock.AI.Agent.Skills
 
                 if ( !userDefaultFromNumberId.HasValue || fromNumberId != userDefaultFromNumberId.Value )
                 {
-                    instructions += "\r\nAsk the user if they would like to use this number as their default for future messages.";
+                    toolResult.WithInstructions( "Ask the user if they would like to use this number as their default for future messages." );
                 }
             }
 
-            return RockToolResult.Success( new SendCommunicationResult
-            {
-                CommunicationIdKey = communication.IdKey
-            } )
-            .WithInstructions( instructions )
-            .WithHistoryKey( communicationIdKey )
-            .WithReferenceRoute( AgentRequestContext.RockRequestContext, "Communication", $"/Communication/{communication.Id}", false );
+            return toolResult;
         }
 
         #endregion

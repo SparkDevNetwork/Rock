@@ -3,6 +3,7 @@ using System.Linq;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.SiteSkill;
+using Rock.Enums.AI.Agent;
 using Rock.SystemGuid;
 
 using Rock.Web.Cache;
@@ -22,16 +23,8 @@ namespace Rock.AI.Agent.Skills
         [AgentToolGuid( "6234BB68-99B8-4B7C-884D-0D760B1F081C" )]
         public RockToolResult LookupSites()
         {
-            var sites = SiteCache.All( AgentRequestContext.RockContext );
-
-            if ( !sites.Any() )
-            {
-                return RockToolResult.NoData();
-            }
-
-            // If the agent is running in an internal context (e.g., staff user), include inactive sites.
-            var isInternal = AgentRequestContext.AudienceType == Enums.AI.Agent.AudienceType.Internal;
-            sites = sites.Where( s => isInternal || s.IsActive ).ToList();
+            var sites = SiteCache.All( AgentRequestContext.RockContext )
+                .Where( s => s.IsActive || AgentRequestContext.AudienceType == AudienceType.Internal );
 
             var siteList = sites.Select( s => new SiteResult
             {
@@ -42,6 +35,11 @@ namespace Rock.AI.Agent.Skills
                 ExternalUrl = s.ExternalUrl
             } ).ToList();
 
+            if ( !siteList.Any() )
+            {
+                return NoData();
+            }
+
             // Store only essential properties in session context to keep it lean.
             var trimmedForHistory = siteList.Select( site => new
             {
@@ -50,7 +48,7 @@ namespace Rock.AI.Agent.Skills
                 site.SiteType,
             } );
 
-            return RockToolResult.Success( siteList )
+            return Success( siteList )
                 .WithHistoryContent( trimmedForHistory, "site-list" );
         }
 
