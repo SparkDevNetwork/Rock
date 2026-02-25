@@ -16,7 +16,8 @@
 
     <ContentStack v-if="hasAttributes"
                   title="Set Attribute Values"
-                  description="Add values to the attributes you configured above.">
+                  description="Add values to the attributes you configured above."
+                  headerLocation="top">
         <AttributeValuesContainer v-model="internalAttributeValues"
                                   :attributes="attributesForAttributeValueContainer"
                                   isEditMode

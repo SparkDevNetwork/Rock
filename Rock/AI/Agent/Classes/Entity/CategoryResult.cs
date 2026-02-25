@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-using System.Text.Json.Serialization;
-
 namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
@@ -32,7 +30,6 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// The category description.
         /// </summary>
-        [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingNull )]
         public string Description { get; set; }
     }
 }

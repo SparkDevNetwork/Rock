@@ -40,11 +40,11 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// Indicates if this attribute is required.
         /// </summary>
-        public bool IsRequired { get; set; }
+        public bool? IsRequired { get; set; }
 
         /// <summary>
         /// Indicates that this attribute's values are read-only and can't be changed.
         /// </summary>
-        public bool IsReadOnly { get; set; }
+        public bool? IsReadOnly { get; set; }
     }
 }

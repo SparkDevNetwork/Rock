@@ -2381,7 +2381,17 @@ Sys.Application.add_load(function () {
                 return;
             }
 
-            var rockSessionGuid = Session["RockSessionId"]?.ToString().AsGuidOrNull() ?? Guid.Empty;
+            // Session_Start in Global.asax.cs sets RockSessionId for new sessions, so this should
+            // almost always be set. In the rare case it isn't, fall back to RequestContext.SessionGuid
+            // (which itself falls back to a fresh Guid.NewGuid()) rather than Guid.Empty. Using
+            // Guid.Empty would cause every affected session to share the same InteractionSession row
+            // making unrelated people's interactions appear to belong to the same session.
+            var rockSessionGuid = Session["RockSessionId"]?.ToString().AsGuidOrNull();
+            if ( rockSessionGuid == null )
+            {
+                rockSessionGuid = RequestContext.SessionGuid;
+                Session["RockSessionId"] = rockSessionGuid;
+            }
 
             // Construct the page interaction data object that will be returned to the client.
             // This object is serialized into the page script, so we must be sure to sanitize values
@@ -2390,7 +2400,7 @@ Sys.Application.add_load(function () {
             {
                 Guid = RequestContext.RelatedInteractionGuid,
                 ActionName = "View",
-                BrowserSessionGuid = rockSessionGuid,
+                BrowserSessionGuid = rockSessionGuid.Value,
                 PageId = this.PageId,
                 PageRequestUrl = Request.UrlProxySafe().ToString(),
                 PageRequestDateTime = RockDateTime.Now,

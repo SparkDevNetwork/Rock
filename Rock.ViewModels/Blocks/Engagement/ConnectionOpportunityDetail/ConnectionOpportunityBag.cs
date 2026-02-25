@@ -64,11 +64,6 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionOpportunityDetail
         public bool ShowCampusOnTransfer { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [show connect button].
-        /// </summary>
-        public bool ShowConnectButton { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [show status on transfer].
         /// </summary>
         public bool ShowStatusOnTransfer { get; set; }

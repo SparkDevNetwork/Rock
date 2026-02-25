@@ -381,11 +381,11 @@
     };
 
     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
-        const itemGuid = item["guid"] as string;
-        const beforeItemGuid = beforeItem?.["guid"] as string | null;
+        const itemKey = item["key"] as string;
+        const beforeItemKey = beforeItem?.["key"] as string | null;
 
         const currentItems = [...(eventOccurenceAttributes.value ?? [])];
-        const idx = currentItems.findIndex(i => i.attribute?.guid === itemGuid);
+        const idx = currentItems.findIndex(i => i.attribute?.key === itemKey);
 
         if (idx < 0) {
             return false;
@@ -393,8 +393,8 @@
 
         const itemToMove = currentItems.splice(idx, 1)[0];
 
-        if (beforeItemGuid) {
-            const beforeIndex = currentItems.findIndex(i => i.attribute?.guid === beforeItemGuid);
+        if (beforeItemKey) {
+            const beforeIndex = currentItems.findIndex(i => i.attribute?.key === beforeItemKey);
             if (beforeIndex < 0) {
                 currentItems.push(itemToMove);
             }

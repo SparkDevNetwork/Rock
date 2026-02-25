@@ -1,20 +1,22 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentStack title="Inherited Workflows" description="Workflows listed here are inherited from this opportunity's associated Connection Type." headerLocation="top" v-if="inheritedGridData.rows.length > 0">
+    <ContentStack v-if="inheritedGridData.rows.length > 0" title="Inherited Workflows"
+                  description="Workflows listed here are inherited from this opportunity's associated Connection Type."
+                  headerLocation="top">
 
-        <Grid :data="inheritedGridData" keyField="guid" itemTerm="Inherited Workflow" liveUpdates light>
-            <TextColumn name="workflowType"
-                        field="workflowType"
-                        title="Workflow Type" />
-            <TextColumn name="trigger"
-                        field="trigger"
-                        title="Trigger" />
-            <TextColumn name="inheritedFrom"
-                        field="inheritedFrom"
-                        title="Inherited From">
+        <Grid :data="inheritedGridData" class="inherited-attributes" keyField="guid" itemTerm="Inherited Workflow"
+              liveUpdates light :isFooterHidden="true">
+            <TextColumn name="workflowType" field="workflowType" />
+            <TextColumn name="trigger" field="trigger" />
+            <TextColumn name="inheritedFrom" field="inheritedFrom">
                 <template #format>
                     <template v-if="connectionTypeUrl">
-                        <a :href="connectionTypeUrl" target="_blank" class="fw-bold">{{ connectionTypeName }}</a>
+                        <span>
+                            (Inherited from
+                            <a :href="connectionTypeUrl" target="_blank" class="fw-bold">
+                                {{ connectionTypeName }}
+                            </a>)
+                        </span>
                     </template>
                     <span v-else class="fw-bold">Connection Type: ({{ connectionTypeName }})</span>
                 </template>
@@ -22,7 +24,9 @@
         </Grid>
     </ContentStack>
 
-    <ContentStack title="Configure Workflows" description="Configure the workflows that should be launched for connection requests associated with this opportunity." headerLocation="top">
+    <ContentStack title="Configure Workflows"
+                  description="Configure the workflows that should be launched for connection requests associated with this opportunity."
+                  headerLocation="top">
         <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
             {{ errorMessage }}
         </NotificationBox>

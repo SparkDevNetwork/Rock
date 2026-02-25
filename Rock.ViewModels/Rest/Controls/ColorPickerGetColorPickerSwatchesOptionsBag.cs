@@ -15,17 +15,19 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Security.PersonViewedSummary
+namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The additional configuration options for the Person Viewed List block.
+    /// The options that can be passed to the ColorPickerGetColorPickerSwatches API action of
+    /// the ColorPicker control.
     /// </summary>
-    public class PersonViewedSummaryOptionsBag
+    public class ColorPickerGetColorPickerSwatchesOptionsBag
     {
         /// <summary>
-        /// Determines if profiles that have been viewed by the person
-        /// should be displayed.
+        /// Gets or sets the security grant token to use when performing
+        /// authorization checks.
         /// </summary>
-        public bool SeeProfilesViewed { get; set; }
+        /// <value>The security grant token.</value>
+        public string SecurityGrantToken { get; set; }
     }
 }

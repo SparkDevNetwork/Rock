@@ -235,6 +235,13 @@
                             :groupMemberTerm="groupMemberTerm" />
         </ContentSection>
 
+        <!-- GROUP TYPE ATTRIBUTES -->
+        <ContentSection title="Type Attributes" icon="ti ti-binary-tree-2">
+            <GroupTypeAttributes v-model:groupTypeAttributes="groupTypeAttributes"
+                                 v-model:attributeValues="attributeValues" :inheritedGroupTypeAttributes="inheritedGroupTypeAttributes"
+                                 :attributesForAttributeValueContainer="attributes" />
+        </ContentSection>
+
         <!-- GROUP ATTRIBUTES -->
         <ContentSection title="Group Attributes" icon="ti ti-users-group">
             <GroupAttributes v-model:groupAttributes="groupAttributes"
@@ -245,13 +252,6 @@
         <ContentSection title="Member Attributes" icon="ti ti-user-cog">
             <GroupMemberAttributes v-model:groupMemberAttributes="groupMemberAttributes"
                                    :inheritedGroupMemberAttributes="inheritedGroupMemberAttributes" />
-        </ContentSection>
-
-        <!-- GROUP TYPE ATTRIBUTES -->
-        <ContentSection title="Group Type Attributes" icon="ti ti-binary-tree-2">
-            <GroupTypeAttributes v-model:groupTypeAttributes="groupTypeAttributes"
-                                 v-model:attributeValues="attributeValues" :inheritedGroupTypeAttributes="inheritedGroupTypeAttributes"
-                                 :attributesForAttributeValueContainer="attributes" />
         </ContentSection>
 
         <!-- SCHEDULING -->

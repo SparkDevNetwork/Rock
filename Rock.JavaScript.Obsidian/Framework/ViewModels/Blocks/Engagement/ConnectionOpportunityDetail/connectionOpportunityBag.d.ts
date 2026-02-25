@@ -103,9 +103,6 @@ export type ConnectionOpportunityBag = {
     /** Gets or sets a value indicating whether [show campus on transfer]. */
     showCampusOnTransfer: boolean;
 
-    /** Gets or sets a value indicating whether [show connect button]. */
-    showConnectButton: boolean;
-
     /** Gets or sets a value indicating whether [show status on transfer]. */
     showStatusOnTransfer: boolean;
 

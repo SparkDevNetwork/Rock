@@ -5,25 +5,26 @@
                   values for these attributes."
                   headerLocation="top">
 
-        <Grid :data="inheritedGridData" keyField="guid" itemTerm="Inherited Attribute" liveUpdates light>
-            <TextColumn name="attribute" field="attribute" title="Attribute" />
-            <TextColumn name="description" field="description" title="Description" />
-            <TextColumn name="inheritedFrom" field="inheritedFrom" title="Inherited From">
+        <Grid :data="inheritedGridData" class="inherited-attributes" keyField="guid" itemTerm="Inherited Attribute" liveUpdates light :isFooterHidden="true">
+            <TextColumn name="attribute" field="attribute" />
+            <TextColumn name="description" field="description" />
+            <TextColumn name="inheritedFrom" field="inheritedFrom">
                 <template #format>
                     <template v-if="connectionTypeUrl">
-                        <a :href="connectionTypeUrl" target="_blank" class="fw-bold">{{ connectionTypeName }}</a>
+                        <span>
+                            (Inherited from
+                            <a :href="connectionTypeUrl" target="_blank" class="fw-bold">
+                                {{ connectionTypeName }}
+                            </a>)
+                        </span>
                     </template>
-                    <span v-else class="fw-bold">Connection Type: ({{ connectionTypeName }})</span>
+                    <span v-else class="fw-bold">(Inherited from {{ connectionTypeName }})</span>
                 </template>
             </TextColumn>
         </Grid>
     </ContentStack>
 
     <ContentStack title="Configure Request Attributes" description="Configure the connection request attributes that should be available for connection requests associated with this opportunity." headerLocation="top">
-        <NotificationBox v-if="inheritedGridData.rows.length == 0" :alertType="AlertType.Info">
-            Connection Request Attributes apply to requests within this opportunity. Each request will have its own
-            values for these attributes.
-        </NotificationBox>
         <Grid :data="gridData" keyField="guid" itemTerm="Connection Request Attribute" liveUpdates light
               @addItem="onAdd">
 
@@ -46,12 +47,10 @@
 
 <script setup lang="ts">
     import { ref, watch, PropType, computed } from "vue";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import Grid, { BooleanColumn, EditColumn, TextColumn, DeleteColumn, ReorderColumn, SecurityColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
-    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";

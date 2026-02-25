@@ -39,7 +39,7 @@ namespace Rock.AI.Agent.Classes.Common
         /// <summary>
         /// The total number of items in the summary result.
         /// </summary>
-        public int Total { get; set; }
+        public int? Total { get; set; }
     }
 
 }

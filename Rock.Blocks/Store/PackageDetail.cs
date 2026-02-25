@@ -194,7 +194,7 @@ namespace Rock.Blocks.Store
 
             var packageService = new PackageService();
 
-            var package = packageService.GetPackage( packageId.Value );
+            var package = packageService.GetPackage( packageId.Value, out _ );
 
             return package;
         }

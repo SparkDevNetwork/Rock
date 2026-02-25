@@ -528,7 +528,6 @@ namespace Rock.Blocks.Engagement
                 Photo = entity.Photo.ToListItemBag(),
                 PublicName = entity.PublicName,
                 ShowCampusOnTransfer = entity.ShowCampusOnTransfer,
-                ShowConnectButton = entity.ShowConnectButton,
                 ShowStatusOnTransfer = entity.ShowStatusOnTransfer,
                 Summary = entity.Summary,
                 RequestDueDateOffsetInDays = entity.RequestDueDateOffsetInDays,
@@ -748,9 +747,6 @@ namespace Rock.Blocks.Engagement
 
             box.IfValidProperty( nameof( box.Bag.ShowCampusOnTransfer ),
                 () => entity.ShowCampusOnTransfer = box.Bag.ShowCampusOnTransfer );
-
-            box.IfValidProperty( nameof( box.Bag.ShowConnectButton ),
-                () => entity.ShowConnectButton = box.Bag.ShowConnectButton );
 
             box.IfValidProperty( nameof( box.Bag.ShowStatusOnTransfer ),
                 () => entity.ShowStatusOnTransfer = box.Bag.ShowStatusOnTransfer );
@@ -1052,7 +1048,6 @@ namespace Rock.Blocks.Engagement
 
                     var connectionOpportunityCampusService = new ConnectionOpportunityCampusService( RockContext );
                     var existingCampusesByCampusGuid = connectionOpportunityCampusService.Queryable()
-                        .AsNoTracking()
                         .Include( c => c.Campus )
                         .Where( c => c.ConnectionOpportunityId == entity.Id && c.Campus != null )
                         .ToList()

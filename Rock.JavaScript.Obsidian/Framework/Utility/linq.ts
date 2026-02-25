@@ -646,6 +646,48 @@ export class Enumerable<T> {
     }
 
     /**
+     * Splits the sequence into chunks of the specified size.
+     * - Deferred execution
+     * - Each chunk is an array of size `size`
+     * - The final chunk may contain fewer elements
+     * - Throws if size < 1
+     *
+     * @param size The maximum size of each chunk. Must be greater than 0.
+     * @returns An Enumerable of arrays, each containing up to `size` elements.
+     *
+     * @example
+     * Enumerable.from([1, 2, 3, 4, 5])
+     *   .chunk(2)
+     *   .toArray();
+     * // [[1, 2], [3, 4], [5]]
+     */
+    chunk(size: number): Enumerable<T[]> {
+        if (size < 1) {
+            throw new Error("Chunk size must be greater than 0.");
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+
+        return new Enumerable<T[]>(function* () {
+            let buffer: T[] = [];
+
+            for (const item of self) {
+                buffer.push(item);
+
+                if (buffer.length === size) {
+                    yield buffer;
+                    buffer = [];
+                }
+            }
+
+            if (buffer.length > 0) {
+                yield buffer;
+            }
+        });
+    }
+
+    /**
      * Concatenates the current sequence with another sequence.
      * @param second - The second sequence to concatenate.
      * @returns A new Enumerable containing the concatenated elements.

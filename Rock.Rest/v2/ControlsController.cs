@@ -3044,6 +3044,64 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Color Picker
+
+        /// <summary>
+        /// Retrieves the list of available color swatches for the color picker, filtered by authorization and activity status.
+        /// </summary>
+        /// <remarks>
+        /// Only swatches that are active and for which the current user has view authorization
+        /// are included in the result. The response includes display location information for each swatch, which may be
+        /// "Custom" if not specified.
+        /// </remarks>
+        /// <param name="options">An object containing options for retrieving color picker swatches, including security grant information. Cannot be null.</param>
+        /// <returns>An HTTP response containing a collection of color picker swatch items if found; otherwise, a NotFound
+        /// response.</returns>
+        [HttpPost]
+        [Route( "ColorPickerGetColorPickerSwatches" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ColorPickerSwatchBag> ) )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "22F2083E-CB15-4D19-893C-4218C6E06323" )]
+        public IActionResult ColorPickerGetColorPickerSwatches( ColorPickerGetColorPickerSwatchesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COLOR_PICKER_SWATCHES.AsGuid() );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( definedType == null || !definedType.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return NotFound();
+                }
+
+                var definedValues = definedType.DefinedValues
+                    .Where( v => ( v.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( v, Security.Authorization.VIEW ) == true )
+                        && ( v.IsActive ) )
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Value )
+                    .ToList();
+
+                definedValues.LoadAttributes();
+
+                var displayLocationAttributeKey = AttributeCache.Get( SystemGuid.Attribute.DEFINED_TYPE_COLOR_PICKER_SWATCHES_DISPLAY_LOCATION )?.Key;
+
+                var result = definedValues
+                    .Select( dv => new ColorPickerSwatchBag
+                    {
+                        Value = dv.Value,
+                        Description = dv.Description,
+                        DisplayLocation = displayLocationAttributeKey.IsNotNullOrWhiteSpace() ? dv.GetAttributeValue( displayLocationAttributeKey ) : "Custom"
+                    } )
+                    .ToList();
+
+                return Ok( result );
+            }
+        }
+
+        #endregion Color Picker
+
         #region Communication Recipient Activity
 
         /// <summary>

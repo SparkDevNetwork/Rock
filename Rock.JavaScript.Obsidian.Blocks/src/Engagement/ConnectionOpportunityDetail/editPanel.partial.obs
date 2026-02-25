@@ -114,12 +114,6 @@
                                             help="When enabled, the transfer modal will display a campus dropdown when transferring a connection request to a different opportunity." />
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <InlineCheckBox label="Show Connect Button" v-model="showConnectButton"
-                                            help="When enabled, the Connect button will be shown. Hiding the connect button allows for the connection process to be automated using workflows or for use cases where the concept of 'connection' doesn't make sense." />
-                        </div>
-                    </div>
                 </div>
             </ContentStack>
         </ContentSection>
@@ -192,7 +186,6 @@
     const summary = propertyRef(props.modelValue.bag?.summary ?? "", "Summary");
     const showStatusOnTransfer = propertyRef(props.modelValue.bag?.showStatusOnTransfer ?? false, "ShowStatusOnTransfer");
     const showCampusOnTransfer = propertyRef(props.modelValue.bag?.showCampusOnTransfer ?? false, "ShowCampusOnTransfer");
-    const showConnectButton = propertyRef(props.modelValue.bag?.showConnectButton ?? false, "ShowConnectButton");
     const requestDueDateOffsetInDays = propertyRef(props.modelValue.bag?.requestDueDateOffsetInDays ?? 0, "RequestDueDateOffsetInDays");
     const requestDueSoonOffsetInDays = propertyRef(props.modelValue.bag?.requestDueSoonOffsetInDays ?? 0, "RequestDueSoonOffsetInDays");
     const store = useStore();
@@ -220,7 +213,7 @@
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [campuses, description, isActive, name, publicName, iconCssClass, photo, summary, showStatusOnTransfer,
-        showCampusOnTransfer, showConnectButton, connectionRequestAttributes, placementGroupConfigs, placementGroups, connectorGroups,
+        showCampusOnTransfer, connectionRequestAttributes, placementGroupConfigs, placementGroups, connectorGroups,
         defaultConnectorsForCampus, connectionWorkflows, requestDueDateOffsetInDays, requestDueSoonOffsetInDays];
 
     // #endregion Values
@@ -360,7 +353,6 @@
         updateRefValue(inheritedConnectionWorkflows, props.modelValue.bag?.inheritedConnectionWorkflows ?? []);
         updateRefValue(showStatusOnTransfer, props.modelValue.bag?.showStatusOnTransfer ?? false);
         updateRefValue(showCampusOnTransfer, props.modelValue.bag?.showCampusOnTransfer ?? false);
-        updateRefValue(showConnectButton, props.modelValue.bag?.showConnectButton ?? false);
         updateRefValue(requestDueDateOffsetInDays, props.modelValue.bag?.requestDueDateOffsetInDays ?? 0);
         updateRefValue(requestDueSoonOffsetInDays, props.modelValue.bag?.requestDueSoonOffsetInDays ?? 0);
     });
@@ -389,7 +381,6 @@
         setPropertiesBoxValue(newValue, "connectionWorkflows", connectionWorkflows.value);
         setPropertiesBoxValue(newValue, "showStatusOnTransfer", showStatusOnTransfer.value);
         setPropertiesBoxValue(newValue, "showCampusOnTransfer", showCampusOnTransfer.value);
-        setPropertiesBoxValue(newValue, "showConnectButton", showConnectButton.value);
         setPropertiesBoxValue(newValue, "requestDueDateOffsetInDays", requestDueDateOffsetInDays.value);
         setPropertiesBoxValue(newValue, "requestDueSoonOffsetInDays", requestDueSoonOffsetInDays.value);
 

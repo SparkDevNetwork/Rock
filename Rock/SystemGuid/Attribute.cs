@@ -516,6 +516,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DEFINED_TYPE_FINANCIAL_FREQUENCY_INTERVAL_DAYS = "E18CB1D2-08A9-4D12-BCEA-33369193C869";
 
+        /// <summary>
+        /// The Display Location of the Color Picker Swatches Defined Type.
+        /// </summary>
+        public const string DEFINED_TYPE_COLOR_PICKER_SWATCHES_DISPLAY_LOCATION = "2B3F5FD0-52C1-48BD-B633-FA565E886A74";
+        
         #endregion
 
         #region Device Type Attributes

@@ -13,19 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
-namespace Rock.ViewModels.Blocks.Security.PersonViewedSummary
+namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The additional configuration options for the Person Viewed List block.
+    /// Bag containing the swatch information needed for the Color Picker control.
     /// </summary>
-    public class PersonViewedSummaryOptionsBag
+    public class ColorPickerSwatchBag
     {
         /// <summary>
-        /// Determines if profiles that have been viewed by the person
-        /// should be displayed.
+        /// Gets or sets the color description.
         /// </summary>
-        public bool SeeProfilesViewed { get; set; }
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color value.
+        /// </summary>
+        public string Value { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display location in the color picker.
+        /// </summary>
+        public string DisplayLocation { get; set; }
     }
 }

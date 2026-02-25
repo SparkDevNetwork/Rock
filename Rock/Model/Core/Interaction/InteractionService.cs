@@ -604,6 +604,17 @@ namespace Rock.Model
         /// <returns></returns>
         private int GetInteractionSessionId( Guid browserSessionId, string ipAddress, int? interactionDeviceTypeId, int? interactionDateKey = null, int? interactionSessionLocationId = null )
         {
+            // Guid.Empty is not a valid browser session identifier. This typically
+            // occurs when a RockPage falls through to the Guid.Empty fallback before
+            // embedding the session GUID in the client-side script (see RockPage.cs).
+            // Using Guid.Empty would cause every interaction without a real session
+            // identifier to be linked to the same InteractionSession row, making
+            // unrelated people's interactions appear to share a session.
+            if ( browserSessionId == Guid.Empty )
+            {
+                browserSessionId = Guid.NewGuid();
+            }
+
             object deviceTypeId = DBNull.Value;
             if ( interactionDeviceTypeId != null )
             {
