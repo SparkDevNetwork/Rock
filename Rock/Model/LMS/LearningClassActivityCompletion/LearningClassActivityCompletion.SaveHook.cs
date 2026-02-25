@@ -51,11 +51,22 @@ namespace Rock.Model
             {
                 base.PreSave();
 
-                // Ensure the WasCompletedOnTime property stays current
-                // when changes are made to the DueDate of the Completion.
-                if ( Entity.IsStudentCompleted || Entity.IsFacilitatorCompleted )
+                // Only recalculate WasCompletedOnTime when the student first submits the activity
+                // (IsStudentCompleted transitions from false to true) or when the DueDate changes
+                // for an already-completed activity. This prevents facilitator grading or other
+                // saves that occur after the due date from incorrectly overwriting an on-time
+                // submission as late.
+                var originalIsStudentCompleted = ( this.Entry.OriginalValues?["IsStudentCompleted"] as bool? ).GetValueOrDefault();
+                var originalDueDate = ( DateTime? ) this.Entry.OriginalValues?["DueDate"];
+
+                var isStudentCompletingNow = !originalIsStudentCompleted && Entity.IsStudentCompleted;
+                var isDueDateChangedForCompletedActivity = Entity.IsStudentCompleted && Entity.DueDate != originalDueDate;
+
+                if ( isStudentCompletingNow || isDueDateChangedForCompletedActivity )
                 {
-                    Entity.WasCompletedOnTime = Entity.DueDate >= RockDateTime.Now;
+                    // Use date-only comparison since DueDate is stored without a time component.
+                    // A submission on the due date should always be considered on time.
+                    Entity.WasCompletedOnTime = !Entity.DueDate.HasValue || Entity.DueDate.Value.Date >= RockDateTime.Today.Date;
                 }
 
                 SetWasRegraded();
