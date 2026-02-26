@@ -22,7 +22,7 @@ namespace Rock.AI.Agent.Skills
         /// <param name="smsEnabled"></param>
         /// <returns></returns>
         [AgentToolGuid( "FD3F160F-ABCA-4A18-B69F-0E21D61B6874" )]
-        public RockToolResult LookupSystemPhoneNumbers( bool? smsEnabled = null )
+        public IAgentToolResult LookupSystemPhoneNumbers( bool? smsEnabled = null )
         {
             var spnResults = GetSystemPhoneNumbers( smsEnabled );
 
@@ -53,7 +53,7 @@ namespace Rock.AI.Agent.Skills
             return SystemPhoneNumberCache.All( AgentRequestContext.RockContext )
                 .Where( spn => spn.IsActive )
                 .Where( spn => !smsEnabled.HasValue || spn.IsSmsEnabled == smsEnabled.Value )
-                .Where( spn => spn.IsAuthorized( Authorization.VIEW, AgentRequestContext.RockRequestContext.CurrentPerson ) )
+                .Where( spn => spn.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
                 .Select( spn =>
                 {
                     var spnResult = new SystemPhoneNumberResult

@@ -21,9 +21,9 @@ namespace Rock.AI.Agent.Skills
         /// <param name="communicationIdKey"></param>
         /// <returns></returns>
         [AgentToolGuid( "2BB35960-77C6-4EAD-9645-F0ACB0EF132B" )]
-        public RockToolResult SendCommunication( string communicationIdKey )
+        public IAgentToolResult SendCommunication( string communicationIdKey )
         {
-            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
+            var currentPerson = AgentRequestContext.CurrentPerson;
 
             if ( currentPerson == null )
             {
@@ -33,7 +33,7 @@ namespace Rock.AI.Agent.Skills
 
             if ( communicationIdKey.IsNullOrWhiteSpace() )
             {
-                return RockToolResult.Error( "A communicationIdKey is required to send a communication." )
+                return Error( "A communicationIdKey is required to send a communication." )
                     .WithInstructions( "Ask the user if they would like to draft one." );
             }
 
@@ -77,7 +77,7 @@ namespace Rock.AI.Agent.Skills
             var toolResult = Success( result )
                 .WithInstructions( "The communication has been queued to be sent. The user can view the details of the communication via the reference url." )
                 .WithHistoryKey( communicationIdKey )
-                .WithReferenceRoute( AgentRequestContext.RockRequestContext, "Communication", $"/Communication/{communication.Id}", false );
+                .WithReferenceRoute( AgentRequestContext, "Communication", $"/Communication/{communication.Id}", false );
 
             // If the communication is SMS and came from a different number than the user's default, prompt the user
             // to see if we should update their default.

@@ -21,13 +21,13 @@ namespace Rock.AI.Agent.Skills
         /// <returns></returns>
         [Description( "Lists personal devices for the provided person." )]
         [AgentToolGuid( "29B7A989-59C4-4956-9C45-1D1297D3E673" )]
-        public RockToolResult ListPersonalDevicesForPerson( string personIdKey )
+        public IAgentToolResult ListPersonalDevicesForPerson( string personIdKey )
         {
             var personId = IdHasher.Instance.GetId( personIdKey );
 
             if ( !personId.HasValue )
             {
-                return RockToolResult.Error( "The personIdKey is required." )
+                return Error( "The personIdKey is required." )
                     .WithInstructions( "You can call SearchPerson to find the corresponding key." );
             }
 
@@ -35,7 +35,7 @@ namespace Rock.AI.Agent.Skills
 
             if ( person == null )
             {
-                return RockToolResult.Error( "No person could be found with the provided personIdKey." );
+                return Error( "No person could be found with the provided personIdKey." );
             }
 
             var personalDeviceService = new PersonalDeviceService( AgentRequestContext.RockContext );
@@ -46,7 +46,7 @@ namespace Rock.AI.Agent.Skills
 
             if ( !devices.Any() )
             {
-                return RockToolResult.NoData();
+                return NoData();
             }
 
             var results = devices
@@ -77,7 +77,7 @@ namespace Rock.AI.Agent.Skills
                 }
             );
 
-            return RockToolResult.Success( results )
+            return Success( results )
                 .WithHistoryContent( historyContent, $"{personIdKey}-devices" );
         }
 

@@ -75,7 +75,7 @@ namespace Rock.AI.Agent
         /// <param name="function">The function to be executed.</param>
         /// <param name="args">The arguments from the language model that will be passed to the Lava template.</param>
         /// <returns>The output from the Lava template.</returns>
-        public RockToolResult ExecuteLava( AgentTool function, KernelArguments args )
+        public IAgentToolResult ExecuteLava( AgentTool function, KernelArguments args )
         {
             var mergeFields = _rockRequestContext.GetCommonMergeFields();
             var proxyFunctionResponse = new Dictionary<string, object>();
@@ -92,17 +92,17 @@ namespace Rock.AI.Agent
             {
                 var output = function.Prompt.ResolveMergeFields( mergeFields, "All", throwExceptionOnErrors: true ).Trim();
 
-                if ( proxyFunctionResponse.TryGetValue( "ToolResult", out var resultObject ) && resultObject is RockToolResult toolResult )
+                if ( proxyFunctionResponse.TryGetValue( "ToolResult", out var resultObject ) && resultObject is AgentToolResult toolResult )
                 {
                     return toolResult;
                 }
                 else if ( output.IsNotNullOrWhiteSpace() )
                 {
-                    return RockToolResult.Success( output );
+                    return AgentToolResult.Success( output );
                 }
                 else
                 {
-                    return RockToolResult.NoData();
+                    return AgentToolResult.NoData();
                 }
             }
             catch ( LavaToolException ex ) when ( ex.ErrorResult != null )
@@ -111,7 +111,7 @@ namespace Rock.AI.Agent
             }
             catch ( Exception ex )
             {
-                return RockToolResult.Error( $"An error occurred while executing the function: {ex.Message}" )
+                return AgentToolResult.Error( $"An error occurred while executing the function: {ex.Message}" )
                     .WithInstructions( "An internal error has occurred. The error message should be displayed so the user can diagnose the problem." );
             }
         }

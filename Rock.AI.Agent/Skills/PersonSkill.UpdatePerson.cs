@@ -30,7 +30,7 @@ namespace Rock.AI.Agent.Skills
         [AgentToolExample( "Update Ted Decker's record status to Inactive: 1) call with recordStatusValueIdKey='lookup'; 2) choose the IdKey for 'Inactive'; 3) call again with recordStatusValueIdKey='<IdKey>'" )]
         [AgentToolExample( "Clear middle name: pass middleName=\"\" and leave other fields null." )]
         [AgentToolExample( "Set suffix to Jr.: pass suffixValueIdKey='<IdKey for Jr.>' (or use 'lookup' first to find it)." )]
-        public RockToolResult UpdatePerson(
+        public IAgentToolResult UpdatePerson(
             string personIdKey,
             string nickName = null,
             string firstName = null,
@@ -97,7 +97,7 @@ namespace Rock.AI.Agent.Skills
                 var definedType = DefinedTypeCache.Get( definedTypeGuid );
                 if ( definedType == null )
                 {
-                    return RockToolResult.Error( "The system is misconfigured. Please contact your system administrator." );
+                    return Error( "The system is misconfigured. Please contact your system administrator." );
                 }
 
                 var definedValues = definedType.DefinedValues
@@ -112,7 +112,7 @@ namespace Rock.AI.Agent.Skills
             // If we have any lookup results to return, do so now.
             if ( lookupResults.Count > 0 )
             {
-                return RockToolResult.Error( "Lookups Required" )
+                return Error( "Lookups Required" )
                     .WithContent( lookupResults )
                     .WithInstructions( "Use the following data to determine the proper IdKey for the tool." );
             }
@@ -121,26 +121,26 @@ namespace Rock.AI.Agent.Skills
             var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
             var personService = new PersonService( rockContext );
             var person = personService.Get( IdHasher.Instance.GetId( personIdKey ) ?? 0 );
-            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
+            var currentPerson = AgentRequestContext.CurrentPerson;
             var inactivePersonRecordStatusGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid();
             var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid(), rockContext );
             var deceasedReason = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid(), rockContext );
 
             if ( person == null )
             {
-                return RockToolResult.Error( "No person could be found with the provided personIdKey." );
+                return Error( "No person could be found with the provided personIdKey." );
             }
 
             // Name properties, gender.
             if ( !TryUpdateBasicPersonProperties( person, nickName, firstName, middleName, lastName, gender, out var errorMessage ) )
             {
-                return RockToolResult.Error( errorMessage );
+                return Error( errorMessage );
             }
 
             // Email & is active.
             if ( !TryUpdatePersonEmailProperties( person, email, isEmailActive, emailNote, out errorMessage ) )
             {
-                return RockToolResult.Error( errorMessage );
+                return Error( errorMessage );
             }
 
             // Anniversary Date.
@@ -237,7 +237,7 @@ namespace Rock.AI.Agent.Skills
                 return helper.ErrorResult;
             }
 
-            return RockToolResult.Success( new PersonResult
+            return Success( new PersonResult
             {
                 Id = person.Id,
                 FirstName = person.FirstName,

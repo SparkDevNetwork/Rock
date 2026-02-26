@@ -32,7 +32,7 @@ namespace Rock.AI.Agent.Skills
         [Description( "Updates a person's address." )]
         //[AgentUsage( "The phoneTypeValueIdKey must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the appropriate IdKey." )]
         [AgentToolGuid( "D34E7821-36E0-F2BC-4496-7A82E1CE4475" )]
-        public RockToolResult UpdateAddress(
+        public IAgentToolResult UpdateAddress(
             string personIdKey,
             string locationTypeValueIdKey,
             string street1 = null,
@@ -57,7 +57,7 @@ namespace Rock.AI.Agent.Skills
                     .Select( dv => new KeyNameResult { Id = dv.Id, Name = dv.Value } )
                     .ToList();
 
-                return RockToolResult.Error( "Lookups Required" )
+                return Error( "Lookups Required" )
                     .WithContent( locationTypes )
                     .WithHistoryContent( locationTypes )
                     .WithInstructions( "Use the following location types to determine the proper IdKey for the tool." );
@@ -72,7 +72,7 @@ namespace Rock.AI.Agent.Skills
 
             if ( person == null )
             {
-                return RockToolResult.Error( "No person could be found with the provided personIdKey." );
+                return Error( "No person could be found with the provided personIdKey." );
             }
 
             // Add/Update the new address
@@ -88,7 +88,7 @@ namespace Rock.AI.Agent.Skills
                 // If no address exists today we should at least have street1, city and postal code
                 if ( street1.IsNullOrWhiteSpace() || city.IsNullOrWhiteSpace() || postalCode.IsNullOrWhiteSpace() )
                 {
-                    return RockToolResult.Error( "At minimum, street1, city, and postal code must be provided when adding a new address." );
+                    return Error( "At minimum, street1, city, and postal code must be provided when adding a new address." );
                 }
 
                 // If adding and no state was provided we'll set the state to the global default
@@ -182,7 +182,7 @@ namespace Rock.AI.Agent.Skills
 
             rockContext.SaveChanges();
 
-            return RockToolResult.Success( $"The {locationTypeValue.Value} address for {person.FullName} has been updated to {groupLocation.Location.GetFullStreetAddress()}." );
+            return Success( $"The {locationTypeValue.Value} address for {person.FullName} has been updated to {groupLocation.Location.GetFullStreetAddress()}." );
         }
 
         #endregion

@@ -13,7 +13,7 @@ namespace Rock.AI.Agent.Skills
 
         [Description( "Provides a list of prayer categories." )]
         [AgentToolGuid( "4E4A5AC6-85DC-4773-A03D-9BC1722366FD" )]
-        public RockToolResult LookupPrayerCategories()
+        public IAgentToolResult LookupPrayerCategories()
         {
             var queryable = GetPrayerCategoriesQueryable( AgentRequestContext.RockContext );
 
@@ -33,7 +33,7 @@ namespace Rock.AI.Agent.Skills
                 Name = pc.Name,
             } ).ToList();
 
-            return RockToolResult.Success( prayerCategories )
+            return Success( prayerCategories )
                 .WithHistoryContent( trimmedCategories );
         }
 

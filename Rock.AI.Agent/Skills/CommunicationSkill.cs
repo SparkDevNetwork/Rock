@@ -62,13 +62,13 @@ namespace Rock.AI.Agent.Skills
         /// <returns></returns>
         private SystemPhoneNumberCache GetDefaultSmsPhoneNumber()
         {
-            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
+            var currentPerson = AgentRequestContext.CurrentPerson;
             if ( currentPerson == null )
             {
                 return null;
             }
 
-            var prefs = AgentRequestContext.RockRequestContext.GetGlobalPersonPreferences();
+            var prefs = PersonPreferenceCache.GetPersonPreferenceCollection( currentPerson );
             var savedId = prefs.GetValue( PersonPreferenceKey.DEFAULT_SMS_PHONE_NUMBER ).AsIntegerOrNull();
 
             // If a saved default exists, use it—unless it's gone or inactive, then fall back.

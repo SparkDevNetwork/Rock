@@ -39,7 +39,7 @@ namespace Rock.AI.Agent.Skills
         [AgentToolExample( "has Alisha Marble visted the giving page in the past 30 days" )]
         [AgentToolExample( "has Pete been active on our platform?" )]
         [AgentToolGuid( "EFDBC338-CC1C-46D2-A7F6-7AE5081147AE" )]
-        public RockToolResult SummarizePageVisitsForPerson( string personIdKey, DateTime? startDate = null, DateTime? endDate = null, string siteIdKey = "", int pageNumber = 1 )
+        public IAgentToolResult SummarizePageVisitsForPerson( string personIdKey, DateTime? startDate = null, DateTime? endDate = null, string siteIdKey = "", int pageNumber = 1 )
         {
             var errors = new List<string>();
 
@@ -64,7 +64,7 @@ namespace Rock.AI.Agent.Skills
 
             if ( errors.Count > 0 )
             {
-                return RockToolResult.Error( errors );
+                return Error( errors );
             }
 
             // Defaults: past year → now (safety in case nothing was provided)
@@ -126,18 +126,18 @@ namespace Rock.AI.Agent.Skills
 
                 if ( !rows.Any() )
                 {
-                    return RockToolResult.NoData()
+                    return NoData()
                         .WithMetadata( meta );
                 }
 
-                return RockToolResult.Success( rows )
+                return Success( rows )
                     .WithMetadata( meta )
                     .WithoutHistoryContent();
             }
             catch ( Exception ex )
             {
                 _logger.LogError( ex, "SummarizePageVisitsForPerson failed for PersonId={PersonId}, SiteId={SiteId}", personId, siteId );
-                return RockToolResult.Error( "Failed to retrieve site analytics. " + ex.Message );
+                return Error( "Failed to retrieve site analytics. " + ex.Message );
             }
         }
 

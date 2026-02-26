@@ -21,9 +21,9 @@ namespace Rock.AI.Agent.Skills
         /// <returns>A <see cref="RockToolResult"/> indicating the success or failure of the operation.</returns>
         [AgentToolGuid( "DC4F7ABA-50F1-4ADD-A1E0-A9DAE8D51D2D" )]
         [AgentGuardrail( "This action will permanently delete the specified note. Ensure that this action is intentional and that you have the correct note identifier before proceeding." )]
-        public RockToolResult DeleteNote( string noteIdKey )
+        public IAgentToolResult DeleteNote( string noteIdKey )
         {
-            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
+            var currentPerson = AgentRequestContext.CurrentPerson;
             if ( currentPerson == null )
             {
                 return Error( "You must be logged in to update a note." );

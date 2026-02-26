@@ -15,7 +15,7 @@ namespace Rock.AI.Agent.Skills
         #region Tool(s)
         [Description( "Lists people in the provided person's peer network." )]
         [AgentToolGuid( "39244A1E-57BF-476B-AF88-65EBC205F25D" )]
-        public RockToolResult ListPeerNetworkForPerson( string personIdKey )
+        public IAgentToolResult ListPeerNetworkForPerson( string personIdKey )
         {
             var rockContext = AgentRequestContext.RockContext;
 
@@ -45,10 +45,10 @@ namespace Rock.AI.Agent.Skills
 
             if ( !results.Any() )
             {
-                return RockToolResult.NoData();
+                return NoData();
             }
 
-            return RockToolResult.Success( results );
+            return Success( results );
         }
 
         #endregion

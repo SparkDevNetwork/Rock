@@ -34,7 +34,7 @@ namespace Rock.AI.Agent.Skills
         /// <param name="pageNumber">1-based page number.</param>
         /// <returns>Collection of <see cref="FinancialTransactionResult"/> records.</returns>
         [AgentToolGuid( "20FF0B2E-E403-48CE-B0C9-0CB6D80A7291" )]
-        public RockToolResult ListFinancialTransactions(
+        public IAgentToolResult ListFinancialTransactions(
             string personIdKey = null,
             string campusIdKey = null,
             List<string> accountIdKeys = null,
@@ -65,7 +65,7 @@ namespace Rock.AI.Agent.Skills
 
             if ( !TryGetMatchingAccountIds( accountIdKeys, campusIdKey, out var accountIds ) )
             {
-                return RockToolResult.NoData()
+                return NoData()
                     .WithInstructions( "No active financial accounts matched the supplied accountIdKeys and/or campusIdKey." );
             }
 

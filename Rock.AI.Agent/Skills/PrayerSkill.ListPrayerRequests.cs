@@ -19,7 +19,7 @@ namespace Rock.AI.Agent.Skills
         [AgentUsage( "Most filters are optional. If none are provided, the most recent prayer requests are returned." )]
         [AgentUsage( "Use either the first and last name filter or the requested by IdKey, not both." )]
         [AgentUsage( "Results are paginated (PageNumber is required)." )]
-        public RockToolResult ListPrayerRequests(
+        public IAgentToolResult ListPrayerRequests(
             string categoryIdKey = "",
 
             [Description("Optional. If provided, only prayer requests that are children of this category will be returned.")]
@@ -138,7 +138,7 @@ namespace Rock.AI.Agent.Skills
                 Text = pr.Text.Truncate( 200 ),
             } ) );
 
-            return RockToolResult.Success( page )
+            return Success( page )
                 .WithHistoryContent( historyPage );
         }
 

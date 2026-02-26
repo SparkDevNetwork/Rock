@@ -31,11 +31,11 @@ namespace Rock.AI.Agent.Skills
         [AgentToolReturnDescription( "A collection of summaries about the matched people. These are not full profiles. Call `GetPersonProfile` passing the personIdKey to get a person's full profile." )]
         [Description( "Does a name search based on a partial search (e.g. 't dec')." )]
         [AgentToolGuid( "873AFC46-1872-999F-4E6C-94409654F6BC" )]
-        public RockToolResult SearchPersonPartial( string searchPattern, int maxResults = 20, string campusIdKey = null )
+        public IAgentToolResult SearchPersonPartial( string searchPattern, int maxResults = 20, string campusIdKey = null )
         {
             if ( searchPattern == null || searchPattern.IsNullOrWhiteSpace() )
             {
-                return RockToolResult.Error( "Search pattern is required." )
+                return Error( "Search pattern is required." )
                     .WithInstructions( "The searchPattern parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
             }
 
@@ -49,7 +49,7 @@ namespace Rock.AI.Agent.Skills
 
                 if ( !campusId.HasValue || campusId <= 0 )
                 {
-                    return RockToolResult.Error( "Invalid CampusIdKey provided." );
+                    return Error( "Invalid CampusIdKey provided." );
                 }
 
                 // Confirm that the campusId is valid and filter the search results.
@@ -57,7 +57,7 @@ namespace Rock.AI.Agent.Skills
 
                 if ( campus == null )
                 {
-                    return RockToolResult.Error( "Invalid CampusIdKey provided." );
+                    return Error( "Invalid CampusIdKey provided." );
                 }
 
                 searchQueryable = ( IOrderedQueryable<Model.Person> ) searchQueryable
@@ -109,9 +109,9 @@ namespace Rock.AI.Agent.Skills
                     { "hasMore", hasMore }
                 };
 
-            return RockToolResult.Success( results )
+            return Success( results )
                 .WithInstructions( "This data represents results that match the search query. All results should be displayed, even if they don't match exactly what was provided." )
-                .WithReferenceRoute( RockRequestContextAccessor.Current, "Additional Search Options", $"/Person/Search/name/?SearchTerm={searchPattern}" )
+                .WithReferenceRoute( AgentRequestContext, "Additional Search Options", $"/Person/Search/name/?SearchTerm={searchPattern}", true )
                 .WithMetadata( meta );
         }
 

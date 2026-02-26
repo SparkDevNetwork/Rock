@@ -20,7 +20,7 @@ namespace Rock.AI.Agent.Skills
         [AgentUsage( "If a personIdKey is provided, first and last name will be determined from their Person record." )]
         [AgentToolPrerequisite( "Call the LookupPrayerCategories function to determine available categories. Select one that matches the prayer request sentiment." )]
         [AgentToolPrerequisite( "Call the SearchPerson function to first determine if there is an idKey you can use instead of first/last name." )]
-        public RockToolResult AddOrUpdatePrayerRequest(
+        public IAgentToolResult AddOrUpdatePrayerRequest(
             string prayerRequestIdKey = null,
             string requestText = null,
             string categoryIdKey = null,

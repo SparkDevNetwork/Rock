@@ -34,7 +34,7 @@ namespace Rock.AI.Agent.Skills
         [AgentUsage( "Any argument ending with 'ValueIdKey' must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the chosen IdKey." )]
         [AgentUsage( "Only provide a personIdKey if the request is about a specific person. Do not assume that the current person should be used." )]
         [AgentToolReturnDescription( "Summary of matching transactions: count, total, average, median, and std-dev of per-transaction amounts. Includes fund and payment-type breakdowns with amount, share of total, and contributing-transaction counts." )]
-        public RockToolResult GetFinancialTransactionInsights(
+        public IAgentToolResult GetFinancialTransactionInsights(
             string personIdKey = null,
             string campusIdKey = null,
             List<string> accountIdKeys = null,
@@ -52,7 +52,7 @@ namespace Rock.AI.Agent.Skills
 
             if ( !TryGetMatchingAccountIds( accountIdKeys, campusIdKey, out var accountIds ) )
             {
-                return RockToolResult.NoData()
+                return NoData()
                     .WithInstructions( "No active financial accounts matched the supplied accountIdKeys and/or campusIdKey." );
             }
 

@@ -21,7 +21,7 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         [Description( "Retrieves all configured websites in Rock." )]
         [AgentToolGuid( "6234BB68-99B8-4B7C-884D-0D760B1F081C" )]
-        public RockToolResult LookupSites()
+        public IAgentToolResult LookupSites()
         {
             var sites = SiteCache.All( AgentRequestContext.RockContext )
                 .Where( s => s.IsActive || AgentRequestContext.AudienceType == AudienceType.Internal );

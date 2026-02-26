@@ -19,7 +19,7 @@ namespace Rock.AI.Agent.Skills
         /// <returns>A <see cref="RockToolResult"/> containing the list of reminder types or an error message.</returns>
         [Description( "Looks up reminder types." )]
         [AgentToolGuid( "2452B308-F805-4DE6-83DE-1E340767A4EF" )]
-        public RockToolResult LookupReminderTypes()
+        public IAgentToolResult LookupReminderTypes()
         {
             var reminderTypeService = new ReminderTypeService( AgentRequestContext.RockContext );
 

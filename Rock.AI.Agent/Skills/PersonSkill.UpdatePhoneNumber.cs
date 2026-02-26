@@ -27,7 +27,7 @@ namespace Rock.AI.Agent.Skills
         [Description( "Updates a person's phone number." )]
         [AgentUsage( "The phoneTypeValueIdKey must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the appropriate IdKey." )]
         [AgentToolGuid( "89A9F9C5-87F2-9197-46DA-5C96D0BDA628" )]
-        public RockToolResult UpdatePhoneNumber(
+        public IAgentToolResult UpdatePhoneNumber(
             string personIdKey,
             string phoneNumber,
             string phoneTypeValueIdKey = null,
@@ -45,7 +45,7 @@ namespace Rock.AI.Agent.Skills
                     .Select( dv => new KeyNameResult { Id = dv.Id, Name = dv.Value } )
                     .ToList();
 
-                return RockToolResult.Error( "Lookups Required" )
+                return Error( "Lookups Required" )
                     .WithContent( phoneTypes )
                     .WithHistoryContent( phoneTypes )
                     .WithInstructions( "Use the following phone types to determine the proper IdKey for the tool." );
@@ -60,7 +60,7 @@ namespace Rock.AI.Agent.Skills
 
             if ( person == null )
             {
-                return RockToolResult.Error( "No person could be found with the provided personIdKey." );
+                return Error( "No person could be found with the provided personIdKey." );
             }
 
             // Save the phone number
@@ -80,7 +80,7 @@ namespace Rock.AI.Agent.Skills
 
             rockContext.SaveChanges();
 
-            return RockToolResult.Success( $"The phone number for {person.FullName} has been updated to {personPhone.NumberFormatted} with messaging set to {isMessagingEnabled} and unlisted set to {isUnlisted}." );
+            return Success( $"The phone number for {person.FullName} has been updated to {personPhone.NumberFormatted} with messaging set to {isMessagingEnabled} and unlisted set to {isUnlisted}." );
         }
 
         #endregion

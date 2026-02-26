@@ -18,14 +18,14 @@ namespace Rock.AI.Agent.Skills
 
         [Description( "Provides information on the campuses." )]
         [AgentToolGuid( "1FDDC83F-2911-5E86-4219-DB4A5F10BD42" )]
-        public RockToolResult LookupCampuses()
+        public IAgentToolResult LookupCampuses()
         {
             var campusResults = RockCache.GetOrAddExisting( "rock.core.aiagent.lookupcampuses", null, () =>
             {
                 return LoadCampuses();
             }, TimeSpan.FromMinutes( 3 ) ) as List<CampusResult>;
 
-            return RockToolResult.Success( campusResults );
+            return Success( campusResults );
         }
 
         #endregion

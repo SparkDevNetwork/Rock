@@ -15,11 +15,11 @@ namespace Rock.AI.Agent.Skills
         /// <param name="communicationIdKey"></param>
         /// <returns></returns>
         [AgentToolGuid( "8EC76EA6-83BE-4796-9B91-6B4A34C0C3AD" )]
-        public RockToolResult CancelDraft( string communicationIdKey )
+        public IAgentToolResult CancelDraft( string communicationIdKey )
         {
             if ( communicationIdKey.IsNullOrWhiteSpace() )
             {
-                return RockToolResult.Error( "CommunicationIdKey is required." );
+                return Error( "CommunicationIdKey is required." );
             }
 
             using var rockContext = RockApp.Current.CreateRockContext();

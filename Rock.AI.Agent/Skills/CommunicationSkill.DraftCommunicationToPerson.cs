@@ -39,7 +39,7 @@ namespace Rock.AI.Agent.Skills
         [AgentUsage( "The function automatically resolves the recipient's actual contact details from the IdKey." )]
         [AgentToolPrerequisite( "If a corresponding draft already exists and has not been sent, pass existingDraftIdKey to update it instead of creating a new draft." )]
         [AgentToolGuid( "4EEF6200-AA05-4F26-AB4D-19C73DEB3BDD" )]
-        public async Task<RockToolResult> DraftCommunicationToPerson(
+        public async Task<IAgentToolResult> DraftCommunicationToPerson(
                     [Description("The IdKey of the person to whom the communication will be sent. Used to fetch the contact information for the person.")]
                     string recipientIdKey,
 
@@ -58,7 +58,7 @@ namespace Rock.AI.Agent.Skills
                     [Description("An optional parameter to update an existing draft as opposed to saving a new one.")]
                     string existingDraftIdKey = "" )
         {
-            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
+            var currentPerson = AgentRequestContext.CurrentPerson;
             if ( currentPerson == null )
             {
                 return Error( "The current person is not available. Ensure the agent is properly initialized." );
@@ -111,7 +111,7 @@ namespace Rock.AI.Agent.Skills
             string emailSignature = string.Empty;
             if ( communicationType == AgentCommunicationType.Email )
             {
-                var prefs = AgentRequestContext.RockRequestContext.GetGlobalPersonPreferences();
+                var prefs = PersonPreferenceCache.GetPersonPreferenceCollection( currentPerson );
                 emailSignature = prefs.GetValue( PersonPreferenceKey.EMAIL_CLOSING_PHRASE );
             }
 
@@ -178,7 +178,7 @@ namespace Rock.AI.Agent.Skills
             return Success( draftResult )
                 .WithInstructions( returnInstructions )
                 .WithHistoryContent( historyContent, draftCommunication.IdKey )
-                .WithReferenceRoute( AgentRequestContext.RockRequestContext, "Draft Communication", $"/Communication/{draftCommunication.Id}", false );
+                .WithReferenceRoute( AgentRequestContext, "Draft Communication", $"/Communication/{draftCommunication.Id}", false );
         }
 
         #endregion

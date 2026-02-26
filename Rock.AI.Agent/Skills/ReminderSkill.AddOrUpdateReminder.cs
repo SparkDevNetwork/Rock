@@ -35,7 +35,7 @@ namespace Rock.AI.Agent.Skills
         [AgentToolGuid( "AF90FA26-9A98-45EF-877C-6CF0EDE7035E" )]
         [AgentUsage( "Provide a repeatEveryXDays value with no repeatAmount to repeat indefinitely every X days. Provide both to repeat a specific number of times." )]
         [AgentToolPrerequisite( "Call LookupReminderTypes to determine available reminder types." )]
-        public RockToolResult AddOrUpdateReminder(
+        public IAgentToolResult AddOrUpdateReminder(
             string reminderIdKey = null,
             string entityIdKey = null,
             string reminderTypeIdKey = null,
@@ -47,11 +47,11 @@ namespace Rock.AI.Agent.Skills
         {
             var rockContext = RockApp.Current.CreateRockContext();
             var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
-            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
+            var currentPerson = AgentRequestContext.CurrentPerson;
 
             if ( currentPerson == null )
             {
-                return RockToolResult.Error( "You must be logged in to add a reminder." );
+                return Error( "You must be logged in to add a reminder." );
             }
 
             Reminder reminder;

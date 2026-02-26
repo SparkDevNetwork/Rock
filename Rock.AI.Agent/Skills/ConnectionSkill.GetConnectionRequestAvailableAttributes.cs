@@ -31,7 +31,7 @@ namespace Rock.AI.Agent.Skills
         [Description( "Gets the available attributes that can be set when adding or updating a connection request." )]
         [AgentPurpose( "Provides a list of attribute definitions for Connection Requests and any value format instructions." )]
         [AgentToolGuid( "c660989a-ba62-42f8-8eed-49c0bf7e8bf6" )]
-        public RockToolResult GetConnectionRequestAvailableAttributes(
+        public IAgentToolResult GetConnectionRequestAvailableAttributes(
             string connectionRequestIdKey = null,
             string connectionOpportunityIdKey = null )
         {
@@ -66,7 +66,7 @@ namespace Rock.AI.Agent.Skills
 
             connectionRequest.LoadAttributes( AgentRequestContext.RockContext );
 
-            return RockToolResult.Success( helper.GetAvailableAttributes( connectionRequest ) );
+            return Success( helper.GetAvailableAttributes( connectionRequest ) );
         }
 
 

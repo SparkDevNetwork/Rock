@@ -23,19 +23,19 @@ namespace Rock.AI.Agent.Skills
         [AgentPurpose( "Retrieves media views for a specific person, optionally filtered by date and/or site." )]
         [AgentUsage( "The results are paginated (and the 'PageNumber' parameter is required.)" )]
         [AgentToolGuid( "AB6CB80C-352A-F895-4233-09BA9DA69CCC" )]
-        public RockToolResult ListMediaViewsForPerson( string personIdKey, int pageNumber = 1, DateTime? startDate = null, DateTime? endDate = null )
+        public IAgentToolResult ListMediaViewsForPerson( string personIdKey, int pageNumber = 1, DateTime? startDate = null, DateTime? endDate = null )
         {
             // Validate person
             var personId = IdHasher.Instance.GetId( personIdKey );
             if ( !personId.HasValue || personId <= 0 )
             {
-                RockToolResult.Error( "The personIdKey is not valid. Please provide a valid value." );
+                Error( "The personIdKey is not valid. Please provide a valid value." );
             }
 
             // Validate date range
             if ( startDate.HasValue && endDate.HasValue && startDate > endDate )
             {
-                RockToolResult.Error( "Invalid date range. Start date cannot be after end date." );
+                Error( "Invalid date range. Start date cannot be after end date." );
             }
 
             // Defaults: past year → now
@@ -89,20 +89,20 @@ namespace Rock.AI.Agent.Skills
 
                 if ( !rows.Any() )
                 {
-                    return RockToolResult.NoData()
+                    return NoData()
                         .WithMetadata( meta );
                 }
 
                 // Do some quick clean-up of the media data
                 CleanMediaViews( rows );
 
-                return RockToolResult.Success( rows )
+                return Success( rows )
                     .WithMetadata( meta );
             }
             catch ( Exception ex )
             {
                 _logger.LogError( ex, "ListMediaViewsForPerson failed for PersonId={PersonId}", personId );
-                return RockToolResult.Error( "Failed to retrieve media views. " + ex.Message );
+                return Error( "Failed to retrieve media views. " + ex.Message );
             }
         }
 

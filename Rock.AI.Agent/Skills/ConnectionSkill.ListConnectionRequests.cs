@@ -36,7 +36,7 @@ namespace Rock.AI.Agent.Skills
         [AgentPurpose( "Retrieves a list of connection requests." )]
         [AgentUsage( "Requests can be filtered by connection type, connection opportunity, requester or connector. Connectors are people who are assigned a request." )]
         [AgentToolGuid( "DC03271E-2C54-D5AF-4F18-9CCC69F25202" )]
-        public RockToolResult ListConnectionRequests(
+        public IAgentToolResult ListConnectionRequests(
             string connectionTypeIdKey = null,
             string connectionOpportunityIdKey = null,
             string requesterPersonIdKey = null,
@@ -44,7 +44,7 @@ namespace Rock.AI.Agent.Skills
             string cursor = null )
         {
             var helper = new AgentToolHelper( AgentRequestContext, _logger );
-            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
+            var currentPerson = AgentRequestContext.CurrentPerson;
 
             var query = new ConnectionRequestService( AgentRequestContext.RockContext )
                 .Queryable()

@@ -21,21 +21,13 @@ namespace Rock.AI.Agent.Skills
         [Description( "Gets details about the person currently logged in and interacting with the agent." )]
         [AgentPurpose( "Gets details about the user/person currently logged in, including contact information and family members" )]
         [AgentToolGuid( "cb9f23f1-3d21-4451-80c3-4efbd18a7fbc" )]
-        public RockToolResult GetCurrentPerson()
+        public IAgentToolResult GetCurrentPerson()
         {
-            // We have to load a new Person. Because this could be inside a
-            // streaming response, the original RockContext that was used to
-            // load CurrentPerson may have been disposed by the time this tool
-            // is called. That will make navigation properties explode.
-            using var rockContext = RockApp.Current.CreateRockContext();
-            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson != null
-                ? new PersonService( rockContext ).Get( AgentRequestContext.RockRequestContext.CurrentPerson.Id )
-                : null;
+            var currentPerson = AgentRequestContext.CurrentPerson;
 
             if ( currentPerson == null )
             {
                 return Error( "There is no person currently logged in." );
-
             }
 
             var result = PersonResult.Basic( currentPerson );

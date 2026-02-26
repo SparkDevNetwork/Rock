@@ -27,11 +27,11 @@ namespace Rock.AI.Agent.Skills
         [AgentUsage( "Only use this function if a full name is provided." )]
         [AgentToolReturnDescription( "A collection of summaries about the matched people. These are not full profiles. Call `GetPersonProfile` passing the personIdKey to get a person's full profile. " )]
         [AgentToolGuid( "03093B11-A02D-F794-4A5E-9AEA2C6EF63E" )]
-        public RockToolResult SearchPerson( string fullName, int maxResults = 20, string campusIdKey = null )
+        public IAgentToolResult SearchPerson( string fullName, int maxResults = 20, string campusIdKey = null )
         {
             if ( fullName == null || fullName.IsNullOrWhiteSpace() )
             {
-                return RockToolResult.Error( "Full name is required." )
+                return Error( "Full name is required." )
                     .WithInstructions( "The FullName parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
             }
 
@@ -55,7 +55,7 @@ namespace Rock.AI.Agent.Skills
                     specificErrorInstructions = "Please retry providing the suffix of Jr. instead of Junior";
                 }
 
-                return RockToolResult.Error( "Could not find anyone with the name provided." )
+                return Error( "Could not find anyone with the name provided." )
                     .WithInstructions( "Could not find anyone with the name provided. You must now call SearchPersonPartial with a modified search term. Provide only the first two characters of the first name and three characters of the last name. Example: If the term was 'ted decker' pass 'te dec' to SearchPersonPartial. You must describe the results as possible matches." );
             }
 
@@ -66,7 +66,7 @@ namespace Rock.AI.Agent.Skills
 
                 if ( !campusId.HasValue || campusId <= 0 )
                 {
-                    return RockToolResult.Error( "Invalid CampusIdKey provided." );
+                    return Error( "Invalid CampusIdKey provided." );
                 }
 
                 // Confirm that the campusId is valid and filter the search results.
@@ -74,7 +74,7 @@ namespace Rock.AI.Agent.Skills
 
                 if ( campus == null )
                 {
-                    return RockToolResult.Error( "Invalid CampusIdKey provided." );
+                    return Error( "Invalid CampusIdKey provided." );
                 }
 
                 searchQueryable = searchQueryable
@@ -127,9 +127,9 @@ namespace Rock.AI.Agent.Skills
                     { "hasMore", hasMore }
                 };
 
-            return RockToolResult.Success( results )
+            return Success( results )
                 .WithInstructions( "This data represents results that match the search query. These are both exact matches and those that are similar based on metaphone sounds like. All results should be displayed, even if they don't match exactly what was provided." )
-                .WithReferenceRoute( AgentRequestContext.RockRequestContext, "Additional Search Options", $"/Person/Search/name/?SearchTerm={fullName}" )
+                .WithReferenceRoute( AgentRequestContext, "Additional Search Options", $"/Person/Search/name/?SearchTerm={fullName}", true )
                 .WithMetadata( meta );
         }
 

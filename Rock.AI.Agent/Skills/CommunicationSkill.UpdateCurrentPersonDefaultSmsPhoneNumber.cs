@@ -15,9 +15,9 @@ namespace Rock.AI.Agent.Skills
         /// <param name="numberIdKey"></param>
         /// <returns></returns>
         [AgentToolGuid( "56278E81-B81A-46CC-A529-E164DBE35AD3" )]
-        public RockToolResult UpdateCurrentPersonDefaultSmsPhoneNumber( string numberIdKey )
+        public IAgentToolResult UpdateCurrentPersonDefaultSmsPhoneNumber( string numberIdKey )
         {
-            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
+            var currentPerson = AgentRequestContext.CurrentPerson;
             if ( currentPerson == null )
             {
                 return Error( "The current person is not available. Ensure the agent is properly initialized." );
@@ -36,7 +36,7 @@ namespace Rock.AI.Agent.Skills
                     .WithInstructions( "Ask the user to select one of their available SMS 'from' numbers." );
             }
 
-            var prefs = AgentRequestContext.RockRequestContext.GetGlobalPersonPreferences();
+            var prefs = PersonPreferenceCache.GetPersonPreferenceCollection( currentPerson );
             prefs.SetValue( PersonPreferenceKey.DEFAULT_SMS_PHONE_NUMBER, spn.Id.ToString() );
             prefs.Save();
 

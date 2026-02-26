@@ -14,7 +14,7 @@ namespace Rock.AI.Agent.Skills
         /// <param name="noteIdKey">The identifier key of the note to retrieve.</param>
         /// <returns>A <see cref="RockToolResult"/> containing the note details or an error message.</returns>
         [AgentToolGuid( "C5690ED4-5CB3-4299-9E75-1D4E6FF7D323" )]
-        public RockToolResult GetNote( string noteIdKey )
+        public IAgentToolResult GetNote( string noteIdKey )
         {
             var helper = new AgentToolHelper( AgentRequestContext, _logger );
             var note = helper.GetRequiredEntity<Model.Note>( noteIdKey );
@@ -24,7 +24,7 @@ namespace Rock.AI.Agent.Skills
                 return helper.ErrorResult;
             }
 
-            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
+            var currentPerson = AgentRequestContext.CurrentPerson;
             if ( !note.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
             {
                 return Error( "You are not authorized to view this note." );

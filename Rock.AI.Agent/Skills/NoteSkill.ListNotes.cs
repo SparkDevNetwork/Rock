@@ -32,7 +32,7 @@ namespace Rock.AI.Agent.Skills
         /// <param name="pageNumber">The page number for pagination (optional).</param>
         /// <returns>A <see cref="RockToolResult"/> containing the list of notes or an error message.</returns>
         [AgentToolGuid( "22B609E6-5D0A-4588-8BB9-456EF6F7D4A4" )]
-        public RockToolResult ListNotes(
+        public IAgentToolResult ListNotes(
             DateTime? startDate = null,
             DateTime? endDate = null,
             string noteTypeIdKey = null,
@@ -44,7 +44,7 @@ namespace Rock.AI.Agent.Skills
             bool? isPinned = null,
             string cursor = null )
         {
-            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
+            var currentPerson = AgentRequestContext.CurrentPerson;
             var helper = new AgentToolHelper( AgentRequestContext, _logger );
             var noteService = new Rock.Model.NoteService( AgentRequestContext.RockContext );
 

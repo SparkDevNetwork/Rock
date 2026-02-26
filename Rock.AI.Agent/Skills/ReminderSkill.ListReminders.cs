@@ -27,7 +27,7 @@ namespace Rock.AI.Agent.Skills
         /// <returns>A <see cref="RockToolResult"/> containing the list of reminders or an error message.</returns>
         [Description( "Lists reminders." )]
         [AgentToolGuid( "AA2EA764-8CB6-48B1-815B-0FDCCDC742DE" )]
-        public RockToolResult ListReminders(
+        public IAgentToolResult ListReminders(
             List<string> reminderTypeIdKeys = null,
             string entityIdKey = null,
             string assignedToPersonIdKey = null,
@@ -64,13 +64,13 @@ namespace Rock.AI.Agent.Skills
             {
                 if ( !selectedTypes.Any() )
                 {
-                    return RockToolResult.Error( "Filtering by entity requires at least one reminder type." );
+                    return Error( "Filtering by entity requires at least one reminder type." );
                 }
 
                 var distinctEntityTypeIds = selectedTypes.Select( t => t.EntityTypeId ).Distinct().ToList();
                 if ( distinctEntityTypeIds.Count != 1 )
                 {
-                    return RockToolResult.Error( "Filtering by entity requires all selected reminder types to share the same entity type." );
+                    return Error( "Filtering by entity requires all selected reminder types to share the same entity type." );
                 }
 
                 var targetEntityTypeId = distinctEntityTypeIds[0];

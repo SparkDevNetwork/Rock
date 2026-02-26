@@ -40,7 +40,7 @@ namespace Rock.AI.Agent.Skills
         [AgentPurpose( "Retrieves a list of all of the connection types and their configuration. This includes Connection Opportunities and Activity Types." )]
         [AgentPurpose( "This tool does not return any information about specific connection requests." )]
         [AgentToolGuid( "21870C06-126F-0882-47E3-DBFC1846BD92" )]
-        public RockToolResult LookupConnectionTypesAndOpportunities()
+        public IAgentToolResult LookupConnectionTypesAndOpportunities()
         {
             var connectionTypes = LoadConnectionTypes();
 
@@ -86,7 +86,7 @@ namespace Rock.AI.Agent.Skills
                 return [];
             }
 
-            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
+            var currentPerson = AgentRequestContext.CurrentPerson;
 
             var connectionTypeResults = connectionTypes
                 .Where( cr => cr.IsActive )

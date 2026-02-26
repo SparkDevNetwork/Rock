@@ -18,7 +18,7 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         /// <returns>A <see cref="RockToolResult"/> containing the accounts or <c>NoData</c> if none.</returns>
         [AgentToolGuid( "4DBAE64C-A7B9-4826-90C0-8DE4AA598FFF" )]
-        public RockToolResult LookupFinancialAccounts()
+        public IAgentToolResult LookupFinancialAccounts()
         {
             // Load all top-level active accounts.
             var topLevelAccounts = FinancialAccountCache

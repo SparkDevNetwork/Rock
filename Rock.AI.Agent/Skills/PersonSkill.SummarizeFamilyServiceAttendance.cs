@@ -23,7 +23,7 @@ namespace Rock.AI.Agent.Skills
         [AgentToolGuid( "544F23D7-6D28-41EA-BD43-249C976BEBA0" )]
         [AgentPurpose( "Fetches service attendance for a person's family." )]
         [AgentToolReturnDescription( "Returns the family's last recorded Sunday date and the list of family check-ins from that service week. Also includes the family's: monthly completion, first-time check-in, and the number of weeks attended out of the last 16." )]
-        public RockToolResult SummarizeFamilyServiceAttendance( string personIdKey )
+        public IAgentToolResult SummarizeFamilyServiceAttendance( string personIdKey )
         {
             using var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
@@ -31,13 +31,13 @@ namespace Rock.AI.Agent.Skills
 
             if ( person == null )
             {
-                return RockToolResult.Error( "No person could be found with the provided personIdKey." )
+                return Error( "No person could be found with the provided personIdKey." )
                     .WithInstructions( "You can call SearchPerson to find the corresponding key." );
             }
 
             if ( !person.PrimaryAliasId.HasValue )
             {
-                return RockToolResult.Error( "The person does not have a primary alias." );
+                return Error( "The person does not have a primary alias." );
             }
 
             var parameters = new Dictionary<string, object>
@@ -49,13 +49,13 @@ namespace Rock.AI.Agent.Skills
             DataSet ds = ExecuteFamilyAttendanceQuery( parameters );
             if ( ds == null || ds.Tables.Count < 6 )
             {
-                return RockToolResult.Error( "There was an unexpected error executing the query." );
+                return Error( "There was an unexpected error executing the query." );
             }
 
             var result = ParseFamilyAttendanceResults( ds );
             if ( result == null )
             {
-                return RockToolResult.NoData();
+                return NoData();
             }
 
             var hasAnyCheckIns = result.CheckIns?.Any() ?? false;
@@ -63,7 +63,7 @@ namespace Rock.AI.Agent.Skills
 
             if ( !hasAnyCheckIns )
             {
-                return RockToolResult.NoData()
+                return NoData()
                     .WithInstructions( "No one in the family has checked in for a service." );
             }
 
@@ -78,7 +78,7 @@ namespace Rock.AI.Agent.Skills
                 instructions += "Provided is the attendance data for the given family. The person and potentially members of their family were present.";
             }
 
-            return RockToolResult.Success( result )
+            return Success( result )
                 .WithInstructions( instructions )
                 .WithoutHistoryContent(); // BC TODO: Figure out what to store in history.
         }

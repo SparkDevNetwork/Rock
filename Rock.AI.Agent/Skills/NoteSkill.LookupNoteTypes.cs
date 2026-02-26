@@ -19,17 +19,17 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         /// <returns>A <see cref="RockToolResult"/> containing the list of note types or an error message.</returns>
         [AgentToolGuid( "51046397-D246-4296-A1C0-EC6BF0D01FAA" )]
-        public RockToolResult LookupNoteTypes()
+        public IAgentToolResult LookupNoteTypes()
         {
-            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
+            var currentPerson = AgentRequestContext.CurrentPerson;
             var noteTypes = GetNoteTypes( currentPerson );
 
             if ( !noteTypes.Any() )
             {
-                return RockToolResult.NoData();
+                return NoData();
             }
 
-            return RockToolResult.Success( noteTypes )
+            return Success( noteTypes )
                 .WithHistoryKey( "note-types" );
         }
 

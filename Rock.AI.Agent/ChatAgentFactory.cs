@@ -174,7 +174,7 @@ namespace Rock.AI.Agent
         private IKernelBuilder CreateKernelBuilder( AgentProviderComponent provider, Action<IServiceCollection> configureServices )
         {
             var kernelBuilder = Kernel.CreateBuilder();
-            kernelBuilder.Services.AddSingleton( _ => new AgentRequestContext( _requestContextAccessor.RockRequestContext, _rockContextFactory.CreateRockContext() ) );
+            kernelBuilder.Services.AddSingleton( _ => new AgentRequestContext( _requestContextAccessor.RockRequestContext, _agentConfiguration, _rockContextFactory.CreateRockContext() ) );
             kernelBuilder.Services.AddSingleton( _loggerFactory );
             kernelBuilder.Services.AddSingleton( typeof( ILogger<> ), typeof( Logger<> ) );
 
@@ -366,7 +366,7 @@ namespace Rock.AI.Agent
                     var proxySkill = new LavaToolExecutor( kernelServiceProvider.GetRequiredService<AgentRequestContext>(), requestContext );
 
                     var proxyFunction = KernelFunctionFactory.CreateFromMethod(
-                        method: ( Func<KernelArguments, RockToolResult> ) ( args => proxySkill.ExecuteLava( function, args ) ),
+                        method: ( Func<KernelArguments, IAgentToolResult> ) ( args => proxySkill.ExecuteLava( function, args ) ),
                         functionName: function.Key,
                         description: InstructionFormatter.FormatInstructions( function.Instructions ),
                         parameters: parameters,
@@ -429,7 +429,7 @@ namespace Rock.AI.Agent
 
                     if ( unknownArguments.Count > 0 )
                     {
-                        var error = RockToolResult.Error( "Unrecognized arguments were provided to this tool." )
+                        var error = AgentToolResult.Error( "Unrecognized arguments were provided to this tool." )
                             .WithMetadata( "unknownArguments", unknownArguments );
 
                         context.Result = new FunctionResult( context.Function, error );
@@ -455,7 +455,7 @@ namespace Rock.AI.Agent
 
                 try
                 {
-                    var rockToolResult = functionResult.GetValue<RockToolResult>();
+                    var agentToolResult = functionResult.GetValue<AgentToolResult>();
 
                     // Replace the result with one that is properly serialized
                     // into JSON. At the end of the call chain, Semantic Kernel
@@ -464,20 +464,20 @@ namespace Rock.AI.Agent
                     // That means it doesn't properly handle our custom serializer
                     // settings. So we encode it into a ChatMessageContent here
                     // which causes it to use the raw string value of our own JSON.
-                    var resultJson = JsonSerializer.Serialize( rockToolResult, context.Function.JsonSerializerOptions ?? _serializerOptions );
+                    var resultJson = JsonSerializer.Serialize( agentToolResult, context.Function.JsonSerializerOptions ?? _serializerOptions );
                     var messageResult = new ChatMessageContent
                     {
                         Content = resultJson,
-                        InnerContent = rockToolResult
+                        InnerContent = agentToolResult
                     };
                     context.Result = new FunctionResult( context.Function, resultJson, functionResult.Culture, functionResult.Metadata );
 
-                    if ( rockToolResult?.HistoryContent != null )
+                    if ( agentToolResult?.HistoryContent != null )
                     {
-                        var key = rockToolResult.HistoryContentKey.IsNotNullOrWhiteSpace() ? rockToolResult.HistoryContentKey : context.ToolCallId;
+                        var key = agentToolResult.HistoryContentKey.IsNotNullOrWhiteSpace() ? agentToolResult.HistoryContentKey : context.ToolCallId;
                         var historyContent = new HistoryContentBag
                         {
-                            Content = rockToolResult.HistoryContent,
+                            Content = agentToolResult.HistoryContent,
                             HistoryToken = key,
                         };
 

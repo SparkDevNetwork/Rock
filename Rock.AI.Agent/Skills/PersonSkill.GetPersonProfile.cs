@@ -20,23 +20,19 @@ namespace Rock.AI.Agent.Skills
         [AgentPurpose( "Retrieves the complete profile of a person." )]
         [AgentPurpose( "Serves as the primary entry point for gaining insights into an individual." )]
         [AgentToolGuid( "2142A382-6AB2-0995-4480-69B641AE2CDC" )]
-        public RockToolResult GetPersonProfile( string personIdKey )
+        public IAgentToolResult GetPersonProfile( string personIdKey )
         {
             if ( personIdKey.IsNullOrWhiteSpace() )
             {
-                return RockToolResult.Error( "The personIdKey is required." );
+                return Error( "The personIdKey is required." );
             }
 
             var person = new PersonService( AgentRequestContext.RockContext ).Get( personIdKey );
 
             if ( person == null )
             {
-                return RockToolResult.Error( "No person could be found with the provided personIdKey." );
+                return Error( "No person could be found with the provided personIdKey." );
             }
-
-            // Get the request context
-            var requestContext = AgentRequestContext.RockRequestContext;
-            var currentPerson = requestContext?.CurrentPerson;
 
             var profileResult = new PersonResult();
 
@@ -177,7 +173,7 @@ namespace Rock.AI.Agent.Skills
             }
 
             // Add latest notes
-            var currentPersonId = currentPerson != null ? currentPerson.Id : 0;
+            var currentPersonId = AgentRequestContext.CurrentPerson?.Id ?? 0;
             var personEntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>().Value;
 
             profileResult.Notes = new NoteService( AgentRequestContext.RockContext ).Queryable()
@@ -188,7 +184,7 @@ namespace Rock.AI.Agent.Skills
                 .OrderByDescending( n => n.CreatedDateTime )
                 .Take( 20 )
                 .ToList()
-                .Where( x => x.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .Where( x => x.IsAuthorized( Rock.Security.Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
                 .Select( x => new NoteResult
                 {
                     Id = x.Id,
@@ -225,11 +221,11 @@ namespace Rock.AI.Agent.Skills
 
             if ( !securityCheckPassed )
             {
-                return RockToolResult.Error( "You do not have permission to view this person's profile." );
+                return Error( "You do not have permission to view this person's profile." );
             }
 
-            return RockToolResult.Success( profileResult )
-                .WithReferenceRoute( requestContext, "View Profile", $"/person/{profileResult.IdKey}", false );
+            return Success( profileResult )
+                .WithReferenceRoute( AgentRequestContext, "View Profile", $"/person/{profileResult.IdKey}", false );
         }
 
         #endregion
