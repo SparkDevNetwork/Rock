@@ -23,5 +23,9 @@
 
 /** The additional configuration options for the Person Viewed List block. */
 export type PersonViewedSummaryOptionsBag = {
+    /**
+     * Determines if profiles that have been viewed by the person
+     * should be displayed.
+     */
     seeProfilesViewed: boolean;
 };

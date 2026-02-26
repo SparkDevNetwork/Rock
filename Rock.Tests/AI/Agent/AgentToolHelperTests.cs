@@ -56,7 +56,7 @@ namespace Rock.Tests.AI.Agent
         public void Constructor_WithNullLogger_ThrowsArgumentNullException()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
 
             Assert.ThrowsExactly<ArgumentNullException>( () =>
             {
@@ -73,7 +73,7 @@ namespace Rock.Tests.AI.Agent
         public void Constructor_WithNullRockContext_ThrowsArgumentNullException()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             Assert.ThrowsExactly<ArgumentNullException>( () =>
@@ -90,7 +90,7 @@ namespace Rock.Tests.AI.Agent
         public void GetErrorResult_WithoutErrors_ThrowsInvalidOperationException()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -105,7 +105,7 @@ namespace Rock.Tests.AI.Agent
         public void GetErrorResult_WithErrors_IncludesAllErrors()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -113,7 +113,7 @@ namespace Rock.Tests.AI.Agent
             helper.AddError( "First error." );
             helper.AddError( "Second error." );
 
-            var result = helper.ErrorResult;
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
             Assert.Contains( "First error.", result.ErrorMessages );
             Assert.Contains( "Second error.", result.ErrorMessages );
@@ -123,7 +123,7 @@ namespace Rock.Tests.AI.Agent
         public void GetErrorResult_WithInstructions_IncludesAllInstructions()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -132,7 +132,7 @@ namespace Rock.Tests.AI.Agent
             helper.AddInstructions( "First instructions." );
             helper.AddInstructions( "Second instructions." );
 
-            var result = helper.ErrorResult;
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
             Assert.Contains( "First instructions.", result.Instructions );
             Assert.Contains( "Second instructions.", result.Instructions );
@@ -142,7 +142,7 @@ namespace Rock.Tests.AI.Agent
         public void GetErrorResult_WithMetadata_IncludesAllMetadata()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -151,7 +151,7 @@ namespace Rock.Tests.AI.Agent
             helper.AddMetadata( "one", 1 );
             helper.AddMetadata( "two", 2 );
 
-            var result = helper.ErrorResult;
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
             Assert.Contains( "one", result.Meta.Keys );
             Assert.AreEqual( 1, result.Meta["one"] );
@@ -168,12 +168,12 @@ namespace Rock.Tests.AI.Agent
         public void GetPaginatedResult_WithEmptyItems_ReturnsNoDataResult()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
 
-            var result = helper.GetPaginatedResult( new PaginatedResult<string> { Items = new string[0] } );
+            var result = ( AgentToolResult ) helper.GetPaginatedResult( new PaginatedResult<string> { Items = new string[0] } );
 
             Assert.AreEqual( ToolStatus.NoData, result.Status );
         }
@@ -182,12 +182,12 @@ namespace Rock.Tests.AI.Agent
         public void GetPaginatedResult_WithItems_ReturnsSuccessResult()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
 
-            var result = helper.GetPaginatedResult( new PaginatedResult<string> { Items = new string[] { "item 1" } } );
+            var result = ( AgentToolResult ) helper.GetPaginatedResult( new PaginatedResult<string> { Items = new string[] { "item 1" } } );
 
             Assert.AreEqual( ToolStatus.Success, result.Status );
         }
@@ -196,7 +196,7 @@ namespace Rock.Tests.AI.Agent
         public void GetPaginatedResult_WithInstructions_IncludesAllInstructions()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
@@ -204,7 +204,7 @@ namespace Rock.Tests.AI.Agent
             helper.AddInstructions( "First instructions." );
             helper.AddInstructions( "Second instructions." );
 
-            var result = helper.GetPaginatedResult( new PaginatedResult<string> { Items = new string[] { "item 1" } } );
+            var result = ( AgentToolResult ) helper.GetPaginatedResult( new PaginatedResult<string> { Items = new string[] { "item 1" } } );
 
             Assert.Contains( "First instructions.", result.Instructions );
             Assert.Contains( "Second instructions.", result.Instructions );
@@ -214,7 +214,7 @@ namespace Rock.Tests.AI.Agent
         public void GetPaginatedResult_WithMetadata_IncludesAllMetadata()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
@@ -222,7 +222,7 @@ namespace Rock.Tests.AI.Agent
             helper.AddMetadata( "one", 1 );
             helper.AddMetadata( "two", 2 );
 
-            var result = helper.GetPaginatedResult( new PaginatedResult<string> { Items = new string[] { "item 1" } } );
+            var result = ( AgentToolResult ) helper.GetPaginatedResult( new PaginatedResult<string> { Items = new string[] { "item 1" } } );
 
             Assert.Contains( "one", result.Meta.Keys );
             Assert.AreEqual( 1, result.Meta["one"] );
@@ -235,38 +235,38 @@ namespace Rock.Tests.AI.Agent
         public void GetPaginatedResult_WithQueryableAndSanitize_CallsSanitizeMethod()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
 
             var itemMock = new Mock<EntityResultBase>();
-            itemMock.Setup( m => m.Sanitize( It.IsAny<AgentRequestContext>() ) ).Returns( true );
+            itemMock.Setup( m => m.Sanitize( It.IsAny<IAgentRequestContext>() ) ).Returns( true );
 
             var originalItems = new[] { itemMock.Object };
 
             var result = helper.GetPaginatedResult( new PaginatedResult<EntityResultBase> { Items = originalItems }, sanitizeForSecurity: true );
 
-            itemMock.Verify( m => m.Sanitize( It.IsAny<AgentRequestContext>() ), Times.Once );
+            itemMock.Verify( m => m.Sanitize( It.IsAny<IAgentRequestContext>() ), Times.Once );
         }
 
         [TestMethod]
         public void GetPaginatedResult_WithQueryableAndNoSanitize_DoesNotCallSanitizeMethod()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
 
             var itemMock = new Mock<EntityResultBase>();
-            itemMock.Setup( m => m.Sanitize( It.IsAny<AgentRequestContext>() ) ).Returns( true );
+            itemMock.Setup( m => m.Sanitize( It.IsAny<IAgentRequestContext>() ) ).Returns( true );
 
             var originalItems = new[] { itemMock.Object };
 
             var result = helper.GetPaginatedResult( new PaginatedResult<EntityResultBase> { Items = originalItems }, sanitizeForSecurity: false );
 
-            itemMock.Verify( m => m.Sanitize( It.IsAny<AgentRequestContext>() ), Times.Never );
+            itemMock.Verify( m => m.Sanitize( It.IsAny<IAgentRequestContext>() ), Times.Never );
         }
 
         #endregion
@@ -277,14 +277,14 @@ namespace Rock.Tests.AI.Agent
         public void AddError_WithValue_IncludesErrorInResult()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
 
             helper.AddError( "text" );
 
-            var result = helper.ErrorResult;
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
             Assert.Contains( "text", result.ErrorMessages );
         }
@@ -297,7 +297,7 @@ namespace Rock.Tests.AI.Agent
         public void AddInstructions_WithValue_IncludesInstructionsInResult()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -305,7 +305,7 @@ namespace Rock.Tests.AI.Agent
             helper.AddError( "junk" );
             helper.AddInstructions( "text" );
 
-            var result = helper.ErrorResult;
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
             Assert.Contains( "text", result.Instructions );
         }
@@ -318,7 +318,7 @@ namespace Rock.Tests.AI.Agent
         public void AddMetadata_WithValue_IncludesMetadataInResult()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -326,7 +326,7 @@ namespace Rock.Tests.AI.Agent
             helper.AddError( "junk" );
             helper.AddMetadata( "key", "value" );
 
-            var result = helper.ErrorResult;
+            var result = ( AgentToolResult ) helper.ErrorResult;
 
             Assert.Contains( "key", result.Meta.Keys );
             Assert.AreEqual( "value", result.Meta["key"] );
@@ -340,7 +340,7 @@ namespace Rock.Tests.AI.Agent
         public void GetPaginatedItems_WithQueryableAndPageNumber_ReturnsExpectedItems()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -362,7 +362,7 @@ namespace Rock.Tests.AI.Agent
         public void GetPaginatedItems_WithEnumerableAndPageNumber_ReturnsExpectedItems()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -387,7 +387,7 @@ namespace Rock.Tests.AI.Agent
         public void GetCursorPaginatedItems_WithCursor_ReturnsExpectedItems()
         {
             var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+            var agentRequestContext = CreateAgentRequestContext( rockContext );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -417,7 +417,7 @@ namespace Rock.Tests.AI.Agent
         public void GetOptionalEntity_WithoutParameterExpression_ThrowsArgumentNullException()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -432,7 +432,7 @@ namespace Rock.Tests.AI.Agent
         public void GetOptionalEntity_WithoutParameter_ReturnsNullWithoutError()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -447,7 +447,7 @@ namespace Rock.Tests.AI.Agent
         public void GetOptionalEntity_WithMissingEntity_ReturnsNullWithError()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -468,7 +468,7 @@ namespace Rock.Tests.AI.Agent
             campusMock.Object.Id = 1;
             rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -491,7 +491,7 @@ namespace Rock.Tests.AI.Agent
             campusMock.Object.Id = 1;
             rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -514,7 +514,7 @@ namespace Rock.Tests.AI.Agent
             campusMock.Object.Id = 1;
             rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -537,7 +537,7 @@ namespace Rock.Tests.AI.Agent
             personMock.Object.PrimaryAliasId = null;
             rockContextMock.Object.Set<Person>().Add( personMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -558,7 +558,7 @@ namespace Rock.Tests.AI.Agent
             personMock.Object.PrimaryAliasId = 2;
             rockContextMock.Object.Set<Person>().Add( personMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -578,7 +578,7 @@ namespace Rock.Tests.AI.Agent
         public void TryGetOptionalEntity_WithoutParameterExpression_ThrowsArgumentNullException()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -593,7 +593,7 @@ namespace Rock.Tests.AI.Agent
         public void TryGetOptionalEntity_WithoutParameter_ReturnsFalseWithoutError()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -609,7 +609,7 @@ namespace Rock.Tests.AI.Agent
         public void TryGetOptionalEntity_WithMissingEntity_ReturnsFalseWithError()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -631,7 +631,7 @@ namespace Rock.Tests.AI.Agent
             campusMock.Object.Id = 1;
             rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -655,7 +655,7 @@ namespace Rock.Tests.AI.Agent
             campusMock.Object.Id = 1;
             rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -679,7 +679,7 @@ namespace Rock.Tests.AI.Agent
             campusMock.Object.Id = 1;
             rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -703,7 +703,7 @@ namespace Rock.Tests.AI.Agent
             personMock.Object.PrimaryAliasId = null;
             rockContextMock.Object.Set<Person>().Add( personMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -725,7 +725,7 @@ namespace Rock.Tests.AI.Agent
             personMock.Object.PrimaryAliasId = 2;
             rockContextMock.Object.Set<Person>().Add( personMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -746,7 +746,7 @@ namespace Rock.Tests.AI.Agent
         public void GetRequiredEntity_WithoutParameterExpression_ThrowsArgumentNullException()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -761,7 +761,7 @@ namespace Rock.Tests.AI.Agent
         public void GetRequiredEntity_WithoutParameter_ReturnsNullWithError()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -776,7 +776,7 @@ namespace Rock.Tests.AI.Agent
         public void GetRequiredEntity_WithMissingEntity_ReturnsNullWithError()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -800,7 +800,7 @@ namespace Rock.Tests.AI.Agent
 
             rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -826,7 +826,7 @@ namespace Rock.Tests.AI.Agent
 
             rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -852,7 +852,7 @@ namespace Rock.Tests.AI.Agent
 
             rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -880,7 +880,7 @@ namespace Rock.Tests.AI.Agent
 
             rockContextMock.Object.Set<Person>().Add( person );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -906,7 +906,7 @@ namespace Rock.Tests.AI.Agent
 
             rockContextMock.Object.Set<Person>().Add( person );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -926,7 +926,7 @@ namespace Rock.Tests.AI.Agent
         public void TryGetRequiredEntity_WithoutParameterExpression_ThrowsArgumentNullException()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -941,7 +941,7 @@ namespace Rock.Tests.AI.Agent
         public void TryGetRequiredEntity_WithoutParameter_ReturnsFalseWithError()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -957,7 +957,7 @@ namespace Rock.Tests.AI.Agent
         public void TryGetRequiredEntity_WithMissingEntity_ReturnsFalseWithError()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -982,7 +982,7 @@ namespace Rock.Tests.AI.Agent
 
             rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -1009,7 +1009,7 @@ namespace Rock.Tests.AI.Agent
 
             rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -1036,7 +1036,7 @@ namespace Rock.Tests.AI.Agent
 
             rockContextMock.Object.Set<Campus>().Add( campusMock.Object );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -1065,7 +1065,7 @@ namespace Rock.Tests.AI.Agent
 
             rockContextMock.Object.Set<Person>().Add( person );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -1092,7 +1092,7 @@ namespace Rock.Tests.AI.Agent
 
             rockContextMock.Object.Set<Person>().Add( person );
 
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
             var key = IdHasher.Instance.GetHash( 1 );
 
@@ -1113,7 +1113,7 @@ namespace Rock.Tests.AI.Agent
         public void GetAvailableAttributes_WithNullEntity_ReturnsEmpty()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -1143,7 +1143,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -1174,10 +1174,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext )
-                {
-                    AudienceType = AudienceType.Internal
-                };
+                var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Internal );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 campus.LoadAttributes( rockContext );
@@ -1217,10 +1214,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext )
-                {
-                    AudienceType = AudienceType.Public
-                };
+                var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Public );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 campus.LoadAttributes( rockContext );
@@ -1261,7 +1255,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 campus.LoadAttributes( rockContext );
@@ -1302,7 +1296,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 campus.LoadAttributes( rockContext );
@@ -1352,7 +1346,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 campus.LoadAttributes( rockContext );
@@ -1403,7 +1397,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 campus.LoadAttributes( rockContext );
@@ -1444,7 +1438,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 campus.LoadAttributes( rockContext );
@@ -1465,7 +1459,7 @@ namespace Rock.Tests.AI.Agent
         public void SetAttributeValues_WithNullEntity_DoesNotThrowException()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContextMock.Object );
+            var agentRequestContext = CreateAgentRequestContext( rockContextMock.Object );
             var logger = new Mock<ILogger>().Object;
 
             var helper = new AgentToolHelper( agentRequestContext, logger );
@@ -1485,7 +1479,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 campus.LoadAttributes( rockContext );
 
@@ -1514,7 +1508,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -1537,7 +1531,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 campus.LoadAttributes( rockContext );
 
@@ -1554,7 +1548,10 @@ namespace Rock.Tests.AI.Agent
                 helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "does not exist" ) ) );
+
+                var result = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "does not exist" ) ) );
             }
         }
 
@@ -1578,10 +1575,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext )
-                {
-                    AudienceType = AudienceType.Internal,
-                };
+                var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Internal );
 
                 campus.LoadAttributes( rockContext );
 
@@ -1622,10 +1616,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext )
-                {
-                    AudienceType = AudienceType.Public,
-                };
+                var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Public );
 
                 campus.LoadAttributes( rockContext );
 
@@ -1642,7 +1633,10 @@ namespace Rock.Tests.AI.Agent
                 helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is not available" ) ) );
+
+                var result = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not available" ) ) );
             }
         }
 
@@ -1666,10 +1660,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext )
-                {
-                    AudienceType = AudienceType.Public,
-                };
+                var agentRequestContext = CreateAgentRequestContext( rockContext, AudienceType.Public );
 
                 campus.LoadAttributes( rockContext );
 
@@ -1719,7 +1710,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 campus.LoadAttributes( rockContext );
 
@@ -1736,7 +1727,10 @@ namespace Rock.Tests.AI.Agent
                 helper.SetAttributeValues( campus, attributeValues, enforceSecurity: true );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "do not have permission" ) ) );
+
+                var result = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "do not have permission" ) ) );
             }
         }
 
@@ -1769,7 +1763,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 campus.LoadAttributes( rockContext );
 
@@ -1809,7 +1803,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 campus.LoadAttributes( rockContext );
                 campus.SetAttributeValue( "TestAttribute", "some value" );
@@ -1853,7 +1847,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 campus.LoadAttributes( rockContext );
 
@@ -1863,7 +1857,10 @@ namespace Rock.Tests.AI.Agent
                 helper.SetAttributeValues( campus, attributeValues, enforceSecurity: false );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
+
+                var result = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
             }
         }
 
@@ -1887,7 +1884,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 campus.LoadAttributes( rockContext );
 
@@ -1937,7 +1934,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 campus.LoadAttributes( rockContext );
 
@@ -1980,7 +1977,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 campus.LoadAttributes( rockContext );
 
@@ -1990,7 +1987,10 @@ namespace Rock.Tests.AI.Agent
                 helper.SetAttributeValues( campus, attributeValues, enforceSecurity: true );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
+
+                var result = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
             }
         }
 
@@ -2010,7 +2010,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2060,7 +2060,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2083,7 +2083,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2106,7 +2106,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2130,7 +2130,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2154,7 +2154,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2178,7 +2178,7 @@ namespace Rock.Tests.AI.Agent
 
                 var errorClass = new HelperErrorClass();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var value = new SetOrClear<int?> { Value = 0 };
@@ -2186,7 +2186,10 @@ namespace Rock.Tests.AI.Agent
                 helper.UpdateProperty( errorClass, e => e.NullableIntProperty, value, parameterExpression: "parameterExpression" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
+
+                var result = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
             }
         }
 
@@ -2202,7 +2205,7 @@ namespace Rock.Tests.AI.Agent
 
                 var errorClass = new HelperErrorClass();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var value = new SetOrClear<int> { Value = 0 };
@@ -2210,7 +2213,10 @@ namespace Rock.Tests.AI.Agent
                 helper.UpdateProperty( errorClass, e => e.NullableIntProperty, value, parameterExpression: "parameterExpression" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
+
+                var result = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
             }
         }
 
@@ -2226,7 +2232,7 @@ namespace Rock.Tests.AI.Agent
 
                 var errorClass = new HelperErrorClass();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var value = ( int? ) 2;
@@ -2234,7 +2240,10 @@ namespace Rock.Tests.AI.Agent
                 helper.UpdateProperty( errorClass, e => e.NullableIntProperty, value, parameterExpression: "parameterExpression" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
+
+                var result = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
             }
         }
 
@@ -2254,7 +2263,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2277,7 +2286,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2300,7 +2309,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2324,7 +2333,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2348,7 +2357,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2372,7 +2381,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2395,14 +2404,17 @@ namespace Rock.Tests.AI.Agent
 
                 var errorClass = new HelperErrorClass();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
                 helper.UpdateProperty( errorClass, e => e.IntProperty, 3, parameterExpression: "parameterExpression" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
+
+                var result = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
             }
         }
 
@@ -2422,7 +2434,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2445,7 +2457,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2468,7 +2480,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2492,7 +2504,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2517,7 +2529,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2541,14 +2553,17 @@ namespace Rock.Tests.AI.Agent
 
                 var errorClass = new HelperErrorClass();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
                 helper.UpdateProperty( errorClass, e => e.StringProperty, "value", parameterExpression: "parameterExpression" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
+
+                var result = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
             }
         }
 
@@ -2564,7 +2579,7 @@ namespace Rock.Tests.AI.Agent
 
                 var errorClass = new HelperErrorClass();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var value = new SetOrClear<string> { Value = "value" };
@@ -2572,7 +2587,10 @@ namespace Rock.Tests.AI.Agent
                 helper.UpdateProperty( errorClass, e => e.StringProperty, value, parameterExpression: "parameterExpression" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
+
+                var result = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
             }
         }
 
@@ -2594,7 +2612,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2622,7 +2640,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2648,7 +2666,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2674,7 +2692,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2700,7 +2718,7 @@ namespace Rock.Tests.AI.Agent
 
                 var errorClass = new HelperErrorClass();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var value = new SetOrClear<string> { Value = "123" };
@@ -2726,7 +2744,7 @@ namespace Rock.Tests.AI.Agent
 
                 var errorClass = new HelperErrorClass();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var value = new SetOrClear<string> { Value = "123" };
@@ -2752,7 +2770,7 @@ namespace Rock.Tests.AI.Agent
 
                 var errorClass = new HelperErrorClass();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var value = new SetOrClear<string> { ClearValue = true };
@@ -2760,7 +2778,10 @@ namespace Rock.Tests.AI.Agent
                 helper.UpdateNavigationProperty( errorClass, e => e.RequiredForeignKey, value, parameterExpression: "parameterExpression" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
+
+                var result = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
             }
         }
 
@@ -2776,7 +2797,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var value = new SetOrClear<string> { ClearValue = true };
@@ -2803,7 +2824,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2825,7 +2846,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 rockContext.Set<Group>().Add( new Group
                 {
@@ -2854,7 +2875,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2876,7 +2897,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
                 var personAlias = new PersonAlias
                 {
                     Id = 123,
@@ -2917,7 +2938,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2945,7 +2966,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2971,7 +2992,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -2997,7 +3018,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -3023,7 +3044,7 @@ namespace Rock.Tests.AI.Agent
 
                 var errorClass = new HelperErrorClass();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var value = new SetOrClear<string> { Value = "123" };
@@ -3049,7 +3070,7 @@ namespace Rock.Tests.AI.Agent
 
                 var errorClass = new HelperErrorClass();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var value = new SetOrClear<string> { Value = "123" };
@@ -3075,7 +3096,7 @@ namespace Rock.Tests.AI.Agent
 
                 var errorClass = new HelperErrorClass();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var value = new SetOrClear<string> { ClearValue = true };
@@ -3083,7 +3104,10 @@ namespace Rock.Tests.AI.Agent
                 helper.UpdateDefinedValueProperty( errorClass, e => e.RequiredDefinedValueForeignKey, value, parameterExpression: "parameterExpression" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
+
+                var result = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is required" ) ) );
             }
         }
 
@@ -3099,7 +3123,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var value = new SetOrClear<string> { ClearValue = true };
@@ -3126,7 +3150,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -3148,7 +3172,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 rockContext.Set<DefinedType>().Add( new DefinedType
                 {
@@ -3184,7 +3208,7 @@ namespace Rock.Tests.AI.Agent
 
                 var errorClass = new HelperErrorClass();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 rockContext.Set<DefinedValue>().Add( new DefinedValue
                 {
@@ -3214,7 +3238,7 @@ namespace Rock.Tests.AI.Agent
 
                 var campus = new Campus();
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 rockContext.Set<DefinedType>().Add( new DefinedType
                 {
@@ -3233,7 +3257,10 @@ namespace Rock.Tests.AI.Agent
                 helper.UpdateDefinedValueProperty( campus, c => c.CampusTypeValue, 123.AsIdKey(), parameterExpression: "parameterExpression" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
+
+                var result = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( result.ErrorMessages.Any( e => e.Contains( "is not valid" ) ) );
             }
         }
 
@@ -3252,7 +3279,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -3275,7 +3302,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -3297,7 +3324,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3308,7 +3335,10 @@ namespace Rock.Tests.AI.Agent
                 var result = helper.WhereOptionalIdKey( query, c => c.Id, "bad", parameterExpression: "parameter" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
+
+                var errorResult = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
                 Assert.IsEmpty( result );
             }
         }
@@ -3324,7 +3354,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3351,7 +3381,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -3374,7 +3404,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -3396,7 +3426,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3407,7 +3437,10 @@ namespace Rock.Tests.AI.Agent
                 var result = helper.WhereOptionalIdKey( query, c => c.TeamGroupId, "bad", parameterExpression: "parameter" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
+
+                var errorResult = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
                 Assert.IsEmpty( result );
             }
         }
@@ -3423,7 +3456,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3454,7 +3487,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -3477,7 +3510,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3488,7 +3521,10 @@ namespace Rock.Tests.AI.Agent
                 var result = helper.WhereRequiredIdKey( query, c => c.Id, string.Empty, parameterExpression: "parameter" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
+
+                var errorResult = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
                 Assert.IsEmpty( result );
             }
         }
@@ -3504,7 +3540,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3515,7 +3551,10 @@ namespace Rock.Tests.AI.Agent
                 var result = helper.WhereRequiredIdKey( query, c => c.Id, "bad", parameterExpression: "parameter" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
+
+                var errorResult = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
                 Assert.IsEmpty( result );
             }
         }
@@ -3531,7 +3570,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3558,7 +3597,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -3581,7 +3620,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3592,7 +3631,10 @@ namespace Rock.Tests.AI.Agent
                 var result = helper.WhereRequiredIdKey( query, c => c.TeamGroupId, string.Empty, parameterExpression: "parameter" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
+
+                var errorResult = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
                 Assert.IsEmpty( result );
             }
         }
@@ -3608,7 +3650,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3619,7 +3661,10 @@ namespace Rock.Tests.AI.Agent
                 var result = helper.WhereRequiredIdKey( query, c => c.TeamGroupId, "bad", parameterExpression: "parameter" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
+
+                var errorResult = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is not valid." ) ) );
                 Assert.IsEmpty( result );
             }
         }
@@ -3635,7 +3680,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3666,7 +3711,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -3689,7 +3734,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -3711,7 +3756,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3738,7 +3783,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -3761,7 +3806,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -3783,7 +3828,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3810,7 +3855,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -3833,7 +3878,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -3855,7 +3900,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3886,7 +3931,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -3909,7 +3954,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3920,7 +3965,10 @@ namespace Rock.Tests.AI.Agent
                 var result = helper.WhereRequiredProperty( query, c => c.Id, ( int? ) null, parameterExpression: "parameter" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
+
+                var errorResult = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
                 Assert.IsEmpty( result );
             }
         }
@@ -3936,7 +3984,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3963,7 +4011,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -3986,7 +4034,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -3997,7 +4045,10 @@ namespace Rock.Tests.AI.Agent
                 var result = helper.WhereRequiredProperty( query, c => c.TeamGroupId, ( int? ) null, parameterExpression: "parameter" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
+
+                var errorResult = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
                 Assert.IsEmpty( result );
             }
         }
@@ -4013,7 +4064,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -4040,7 +4091,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>().AsQueryable();
@@ -4063,7 +4114,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -4074,7 +4125,10 @@ namespace Rock.Tests.AI.Agent
                 var result = helper.WhereRequiredProperty( query, c => c.Name, null, parameterExpression: "parameter" );
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
+
+                var errorResult = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "is required." ) ) );
                 Assert.IsEmpty( result );
             }
         }
@@ -4090,7 +4144,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
                 var query = new List<Campus>()
@@ -4121,7 +4175,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -4145,14 +4199,17 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
 
                 helper.SaveChanges();
 
                 Assert.IsTrue( helper.HasErrors );
-                Assert.IsTrue( helper.ErrorResult.ErrorMessages.Any( e => e.Contains( "error occurred" ) ) );
+
+                var errorResult = ( AgentToolResult ) helper.ErrorResult;
+
+                Assert.IsTrue( errorResult.ErrorMessages.Any( e => e.Contains( "error occurred" ) ) );
             }
         }
 
@@ -4174,7 +4231,7 @@ namespace Rock.Tests.AI.Agent
                 } );
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var campus = new Campus();
                 rockContext.Set<Campus>().Add( campus );
@@ -4214,7 +4271,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( agentRequestContext, logger );
 
@@ -4238,7 +4295,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
 
@@ -4262,7 +4319,7 @@ namespace Rock.Tests.AI.Agent
                 var rockContext = rockContextMock.Object;
 
                 var logger = new Mock<ILogger>().Object;
-                var agentRequestContext = new AgentRequestContext( new RockRequestContext(), rockContext );
+                var agentRequestContext = CreateAgentRequestContext( rockContext );
 
                 var helper = new AgentToolHelper( rockContext, agentRequestContext, logger );
 
@@ -4275,6 +4332,16 @@ namespace Rock.Tests.AI.Agent
         #endregion
 
         #region Support
+
+        private IAgentRequestContext CreateAgentRequestContext( RockContext rockContext, AudienceType audienceType = AudienceType.Internal )
+        {
+            var mock = new Mock<IAgentRequestContext>();
+
+            mock.Setup( m => m.RockContext ).Returns( rockContext );
+            mock.Setup( m => m.AudienceType ).Returns( audienceType );
+
+            return mock.Object;
+        }
 
         private class HelperErrorClass : Entity<HelperErrorClass>
         {

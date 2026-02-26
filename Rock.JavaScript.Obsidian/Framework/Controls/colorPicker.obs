@@ -1594,11 +1594,27 @@
         }
 
         const trimmed = newValue?.trim() ?? "";
-        displayValue.value = trimmed;
-
-        currentFormat.value = detectFormat(trimmed);
 
         const hex = normalizeToHex(trimmed);
+
+        if (props.modelModifiers?.hex) {
+            if (hex) {
+                displayValue.value = hex;
+                currentFormat.value = "hex";
+                syncFromHex(hex);
+            }
+            else {
+                displayValue.value = trimmed;
+                currentFormat.value = null;
+            }
+
+            return;
+        }
+
+        // Non-hex mode
+        displayValue.value = trimmed;
+        currentFormat.value = detectFormat(trimmed);
+
         if (hex) {
             syncFromHex(hex);
         }

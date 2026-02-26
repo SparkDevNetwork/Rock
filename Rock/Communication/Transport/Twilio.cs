@@ -689,7 +689,15 @@ namespace Rock.Communication.Transport
                 return text;
             }
 
-            // This is from https://www.twilio.com/docs/messaging/services/smart-encoding-char-list
+            // Based on Twilio's Smart Encoding character list:
+            // https://www.twilio.com/docs/messaging/services/smart-encoding-char-list.
+            //
+            // Replaces stylistic, fullwidth, presentation-form, and invisible Unicode
+            // characters with ASCII equivalents to help keep messages in GSM-7 encoding
+            // and reduce SMS segment costs.
+            //
+            // Intentionally semantic characters (for example ©, ®, ™, and certain math
+            // operators) are not replaced and may result in UCS-2 encoding.
             var replacements = new Dictionary<string, string>
             {
                 // Quotes
@@ -697,8 +705,6 @@ namespace Rock.Communication.Transport
                 { "\u00BB", "\"" }, // Right pointing double angle quotation mark (»)
                 { "\u201C", "\"" }, // Left double quotation mark (“)
                 { "\u201D", "\"" }, // Right double quotation mark (”)
-                { "\u02BA", "\"" }, // Modifier letter double prime (ʺ)
-                { "\u02EE", "\"" }, // Modifier letter double apostrophe (ˮ)
                 { "\u201F", "\"" }, // Double high reversed 9 quotation mark (‟)
                 { "\u275D", "\"" }, // Heavy double turned comma quotation mark ornament (❝)
                 { "\u275E", "\"" }, // Heavy double comma quotation mark ornament (❞)
@@ -710,25 +716,13 @@ namespace Rock.Communication.Transport
                 // Apostrophes and single quotes
                 { "\u2018", "'" }, // Left single quotation mark (‘)
                 { "\u2019", "'" }, // Right single quotation mark (’)
-                { "\u02BB", "'" }, // Modifier letter turned comma (ʻ)
-                { "\u02C8", "'" }, // Modifier letter vertical line (ˈ)
-                { "\u02BC", "'" }, // Modifier letter apostrophe (ʼ)
-                { "\u02BD", "'" }, // Modifier letter reversed comma (ʽ)
-                { "\u02B9", "'" }, // Modifier letter prime (ʹ)
                 { "\u201B", "'" }, // Single high reversed 9 quotation mark (‛)
                 { "\uFF07", "'" }, // Fullwidth apostrophe (＇)
                 { "\u00B4", "'" }, // Acute accent (´)
-                { "\u02CA", "'" }, // Modifier letter acute accent (ˊ)
-                { "\u0060", "'" }, // Grave accent (`)
-                { "\u02CB", "'" }, // Modifier letter grave accent (ˋ)
                 { "\u275B", "'" }, // Heavy single turned comma quotation mark ornament (❛)
                 { "\u275C", "'" }, // Heavy single comma quotation mark ornament (❜)
-                { "\u0313", "'" }, // Combining comma above ( ̓)
-                { "\u0314", "'" }, // Combining reversed comma above ( ̔)
                 { "\uFE10", "'" }, // Presentation form for vertical comma (︐)
                 { "\uFE11", "'" }, // Presentation form for vertical ideographic comma (︑)
-                { "\u00A0", "'" }, // No break space
-                { "\u2000", "'" }, // En quad
 
                 // Vulgar fractions
                 { "\u00BC", "1/4" }, // Vulgar fraction one quarter (¼)
@@ -736,42 +730,23 @@ namespace Rock.Communication.Transport
                 { "\u00BE", "3/4" }, // Vulgar fraction three quarters (¾)
 
                 // Forward slashes
-                { "\u00F7", "/" }, // Division sign (÷)
-                { "\u29F8", "/" }, // Big solidus (⧸)
-                { "\u0337", "/" }, // Combining short solidus overlay (̷)
-                { "\u0338", "/" }, // Combining long solidus overlay (̸)
-                { "\u2044", "/" }, // Fraction slash (⁄)
-                { "\u2215", "/" }, // Division slash (∕)
                 { "\uFF0F", "/" }, // Fullwidth solidus (／)
 
                 // Backslashes
-                { "\u29F9", "\\" }, // Big reverse solidus (⧹)
-                { "\u29F5", "\\" }, // Reverse solidus operator (⧵)
-                { "\u20E5", "\\" }, // Combining reverse solidus overlay (⃥)
                 { "\uFE68", "\\" }, // Small reverse solidus (﹨)
                 { "\uFF3C", "\\" }, // Fullwidth reverse solidus (＼)
 
                 // Underscores and low lines
-                { "\u0332", "_" }, // Combining low line (̲)
                 { "\uFF3F", "_" }, // Fullwidth low line (＿)
-                { "\u2017", "_" }, // Double low line (‗)
 
                 // Vertical bars and similar
-                { "\u20D2", "|" }, // Combining long vertical line overlay (⃒)
-                { "\u20D3", "|" }, // Combining short vertical line overlay (⃓)
-                { "\u2223", "|" }, // Divides sign (∣)
                 { "\uFF5C", "|" }, // Fullwidth vertical line (｜)
-                { "\u23B8", "|" }, // Left vertical box line (⎸)
-                { "\u23B9", "|" }, // Right vertical box line (⎹)
-                { "\u23D0", "|" }, // Vertical line extension (⏐)
-                { "\u239C", "|" }, // Left parenthesis upper hook (⎜)
-                { "\u239F", "|" }, // Left parenthesis lower hook (⎟)
     
                 // Dashes and bullets
+                { "\u2011", "-" }, // Non-breaking hyphen (-)
+                { "\u2012", "-" }, // Figure dash (‒)
                 { "\u2014", "-" }, // Em dash (—)
                 { "\u2013", "-" }, // En dash (–)
-                { "\u23BC", "-" }, // Horizontal scan line 1 (⎼)
-                { "\u23BD", "-" }, // Horizontal scan line 3 (⎽)
                 { "\u2015", "-" }, // Horizontal bar (―)
                 { "\uFE63", "-" }, // Small hyphen minus (﹣)
                 { "\uFF0D", "-" }, // Fullwidth hyphen minus (－)
@@ -788,7 +763,6 @@ namespace Rock.Communication.Transport
                 { "\uFF04", "$" }, // Fullwidth dollar sign (＄)
 
                 // Exclamation marks
-                { "\u01C3", "!" }, // Latin letter retroflex click (ǃ)
                 { "\uFE15", "!" }, // Presentation form for vertical exclamation mark (︕)
                 { "\uFE57", "!" }, // Small exclamation mark (﹗)
                 { "\uFF01", "!" }, // Fullwidth exclamation mark (！)
@@ -805,41 +779,32 @@ namespace Rock.Communication.Transport
                 { "\uFE60", "&" }, // Small ampersand (﹠)
                 { "\uFF06", "&" }, // Fullwidth ampersand (＆)
 
-                // Commas and colons to comma
+                // Commas
                 { "\u201A", "," }, // Single low 9 quotation mark (‚)
-                { "\u0326", "," }, // Combining comma below ( ̦)
                 { "\uFE50", "," }, // Small comma (﹐)
                 { "\u3001", "," }, // Ideographic comma (、)
                 { "\uFE51", "," }, // Small ideographic comma (﹑)
                 { "\uFF0C", "," }, // Fullwidth comma (，)
                 { "\uFF64", "," }, // Halfwidth ideographic comma (､)
-                { "\u02D0", "," }, // Modifier letter triangular colon (ː)
-                { "\u02F8", "," }, // Modifier letter raised colon (˸)
-                { "\u2982", "," }, // Z notation type colon (⦂)
-                { "\uA789", "," }, // Modifier letter colon (꞉)
-                { "\uFE13", "," }, // Presentation form for vertical colon (︓)
-                { "\uFF1A", "," }, // Fullwidth colon (：)
+
+                // Colons
+                { "\uFE13", ":" }, // Presentation form for vertical colon (︓)
+                { "\uFF1A", ":" }, // Fullwidth colon (：)
 
                 // Left parentheses
                 { "\u2768", "(" }, // Medium left parenthesis ornament (❨)
                 { "\u276A", "(" }, // Medium flattened left parenthesis ornament (❪)
                 { "\uFE59", "(" }, // Small left parenthesis (﹙)
                 { "\uFF08", "(" }, // Fullwidth left parenthesis (（)
-                { "\u27EE", "(" }, // Mathematical left flattened parenthesis (⟮)
-                { "\u2985", "(" }, // Left white parenthesis (⦅)
 
                 // Right parentheses
                 { "\u2769", ")" }, // Medium right parenthesis ornament (❩)
                 { "\u276B", ")" }, // Medium flattened right parenthesis ornament (❫)
                 { "\uFE5A", ")" }, // Small right parenthesis (﹚)
-                { "\uFF09", ")" }, // Fullwidth right parenthesis (）
-                { "\u27EF", ")" }, // Mathematical right flattened parenthesis (⟯)
-                { "\u2986", ")" }, // Right white parenthesis (⦆)
+                { "\uFF09", ")" }, // Fullwidth right parenthesis (）)
 
                 // Asterisks and asterisk like marks
                 { "\u204E", "*" }, // Low asterisk (⁎)
-                { "\u2217", "*" }, // Asterisk operator (∗)
-                { "\u229B", "*" }, // Circled asterisk operator (⊛)
                 { "\u2722", "*" }, // Four teardrop spoked asterisk (✢)
                 { "\u2723", "*" }, // Heavy teardrop spoked asterisk (✣)
                 { "\u2724", "*" }, // Snowflake symbol (✤)
@@ -855,12 +820,10 @@ namespace Rock.Communication.Transport
                 { "\u2749", "*" }, // Balloon spoked asterisk (❉)
                 { "\u274A", "*" }, // Heavy eight teardrop spoked asterisk (❊)
                 { "\u274B", "*" }, // Heavy eight balloon spoked asterisk (❋)
-                { "\u29C6", "*" }, // Square with diagonal crosshatch fill (⧆)
                 { "\uFE61", "*" }, // Small asterisk (﹡)
                 { "\uFF0A", "*" }, // Fullwidth asterisk (＊)
 
                 // Plus signs
-                { "\u02D6", "+" }, // Modifier letter plus sign (˖)
                 { "\uFE62", "+" }, // Small plus sign (﹢)
                 { "\uFF0B", "+" }, // Fullwidth plus sign (＋)
 
@@ -883,7 +846,6 @@ namespace Rock.Communication.Transport
                 { "\uFF19", "9" }, // Fullwidth digit nine (９)
 
                 // Semicolons
-                { "\u204F", ";" }, // Reversed semicolon (⁏)
                 { "\uFE14", ";" }, // Presentation form for vertical semicolon (︔)
                 { "\uFE54", ";" }, // Small semicolon (﹔)
                 { "\uFF1B", ";" }, // Fullwidth semicolon (；)
@@ -891,16 +853,12 @@ namespace Rock.Communication.Transport
                 // Less than signs and similar
                 { "\uFE64", "<" }, // Small less than sign (﹤)
                 { "\uFF1C", "<" }, // Fullwidth less than sign (＜)
-                { "\u203A", "<" }, // Single right pointing angle quotation mark (›)
 
                 // Equals signs and similar
-                { "\u0347", "=" }, // Combining equals sign below ( ̻̇ note: equals below)
-                { "\uA78A", "=" }, // Latin letter saltillo like equals (꞊)
                 { "\uFE66", "=" }, // Small equals sign (﹦)
                 { "\uFF1D", "=" }, // Fullwidth equals sign (＝)
     
                 // Greater than signs and similar
-                { "\u2039", ">" }, // Single left pointing angle quotation mark (‹)
                 { "\uFE65", ">" }, // Small greater than sign (﹥)
                 { "\uFF1E", ">" }, // Fullwidth greater than sign (＞)
 
@@ -1013,9 +971,7 @@ namespace Rock.Communication.Transport
 
                 // Carets and modifiers
                 { "\u02C6", "^" }, // Modifier letter circumflex accent (ˆ)
-                { "\u0302", "^" }, // Combining circumflex accent ( ̂)
                 { "\uFF3E", "^" }, // Fullwidth circumflex accent (＾)
-                { "\u1DCD", "^" }, // Combining double circumflex above ( ͍̂ note: double circumflex)
 
                 // Braces
                 { "\u2774", "{" }, // Medium left curly bracket ornament (❴)
@@ -1031,29 +987,25 @@ namespace Rock.Communication.Transport
                 { "\uFF3D", "]" }, // Fullwidth right square bracket (］)
 
                 // Tildes and similar
-                { "\u02DC", "~" }, // Small tilde (˜)
-                { "\u02F7", "~" }, // Modifier letter low tilde (˷)
-                { "\u0303", "~" }, // Combining tilde ( ̃)
-                { "\u0330", "~" }, // Combining tilde below ( ̰)
-                { "\u0334", "~" }, // Combining tilde overlay ( ̴)
-                { "\u223C", "~" }, // Tilde operator (∼)
                 { "\uFF5E", "~" }, // Fullwidth tilde (～)
 
-                // Spaces and separators to empty
-                { "\u2001", string.Empty }, // Em quad
-                { "\u2002", string.Empty }, // En space
-                { "\u2003", string.Empty }, // Em space
-                { "\u2004", string.Empty }, // Three per em space
-                { "\u2005", string.Empty }, // Four per em space
-                { "\u2006", string.Empty }, // Six per em space
-                { "\u2007", string.Empty }, // Figure space
-                { "\u2008", string.Empty }, // Punctuation space
-                { "\u2009", string.Empty }, // Thin space
-                { "\u200A", string.Empty }, // Hair space
+                // Spaces and separators
+                { "\u00A0", " " }, // No break space
+                { "\u2000", " " }, // En quad
+                { "\u2001", " " }, // Em quad
+                { "\u2002", " " }, // En space
+                { "\u2003", " " }, // Em space
+                { "\u2004", " " }, // Three per em space
+                { "\u2005", " " }, // Four per em space
+                { "\u2006", " " }, // Six per em space
+                { "\u2007", " " }, // Figure space
+                { "\u2008", " " }, // Punctuation space
+                { "\u2009", " " }, // Thin space
+                { "\u200A", " " }, // Hair space
                 { "\u200B", string.Empty }, // Zero width space
-                { "\u202F", string.Empty }, // Narrow no break space
-                { "\u205F", string.Empty }, // Medium mathematical space
-                { "\u3000", string.Empty }, // Ideographic space
+                { "\u202F", " " }, // Narrow no break space
+                { "\u205F", " " }, // Medium mathematical space
+                { "\u3000", " " }, // Ideographic space
                 { "\uFEFF", string.Empty }, // Zero width no break space
                 { "\u008D", string.Empty }, // C1 control: Reverse line feed
                 { "\u009F", string.Empty }, // C1 control: Application program command
@@ -1061,7 +1013,7 @@ namespace Rock.Communication.Transport
                 { "\u0090", string.Empty }, // C1 control: Device control string
                 { "\u009B", string.Empty }, // C1 control: Control sequence introducer
                 { "\u0010", string.Empty }, // C0 control: Data link escape
-                { "\u0009", string.Empty }, // C0 control: Horizontal tab
+                { "\u0009", " " }, // C0 control: Horizontal tab
                 { "\u0000", string.Empty }, // C0 control: Null
                 { "\u0003", string.Empty }, // C0 control: End of text
                 { "\u0004", string.Empty }, // C0 control: End of transmission
@@ -1071,8 +1023,8 @@ namespace Rock.Communication.Transport
                 { "\u0012", string.Empty }, // C0 control: Device control two
                 { "\u0013", string.Empty }, // C0 control: Device control three
                 { "\u0014", string.Empty }, // C0 control: Device control four
-                { "\u2028", string.Empty }, // Line separator
-                { "\u2029", string.Empty }, // Paragraph separator
+                { "\u2028", "\n" }, // Line separator
+                { "\u2029", "\n" }, // Paragraph separator
                 { "\u2060", string.Empty }, // Word joiner
 
                 // Double punctuation expansions
@@ -1080,6 +1032,10 @@ namespace Rock.Communication.Transport
 
                 // Ellipsis
                 { "\u2026", "..." }, // Horizontal ellipsis (…)
+
+                { "\u00AD", string.Empty }, // Soft hyphen (­)
+                { "\u200C", string.Empty }, // Zero width non-joiner (‌)
+                { "\u200D", string.Empty }, // Zero width joiner (‍)
             };
 
             // Aggregate the replacements into character classes to improve performance.

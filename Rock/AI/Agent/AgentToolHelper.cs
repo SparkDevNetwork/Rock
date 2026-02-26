@@ -64,14 +64,14 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Indicates that the <see cref="_rockContext"/> is read-only and
         /// should not be used to save changes. This is set when the context
-        /// comes from the <see cref="AgentRequestContext"/>.
+        /// comes from the <see cref="IAgentRequestContext"/>.
         /// </summary>
         private readonly bool _isContextReadOnly;
 
         /// <summary>
         /// The context of the current agent request.
         /// </summary>
-        private readonly AgentRequestContext _agentRequestContext;
+        private readonly IAgentRequestContext _agentRequestContext;
 
         /// <summary>
         /// The logger to use for logging errors and information.
@@ -110,12 +110,12 @@ namespace Rock.AI.Agent
         public bool HasErrors => _errors.Count > 0;
 
         /// <summary>
-        /// Gets the <see cref="RockToolResult"/> that contains all the errors
+        /// Gets the <see cref="IAgentToolResult"/> that contains all the errors
         /// encountered during processing. Any information will also be
         /// included. This will throw an exception if no errors have been
         /// encountered.
         /// </summary>
-        public RockToolResult ErrorResult => GetErrorResult();
+        public IAgentToolResult ErrorResult => GetErrorResult();
 
         #endregion
 
@@ -127,7 +127,7 @@ namespace Rock.AI.Agent
         /// <param name="rockContext">The database context to use for reading and writing to the database.</param>
         /// <param name="agentRequestContext">The context of the current agent request.</param>
         /// <param name="logger">The logger to use for logging errors and information.</param>
-        public AgentToolHelper( RockContext rockContext, AgentRequestContext agentRequestContext, ILogger logger )
+        public AgentToolHelper( RockContext rockContext, IAgentRequestContext agentRequestContext, ILogger logger )
         {
             _rockContext = rockContext ?? throw new ArgumentNullException( nameof( rockContext ) );
             _agentRequestContext = agentRequestContext ?? throw new ArgumentNullException( nameof( agentRequestContext ) );
@@ -143,7 +143,7 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="agentRequestContext">The context of the current agent request.</param>
         /// <param name="logger">The logger to use for logging errors and information.</param>
-        public AgentToolHelper( AgentRequestContext agentRequestContext, ILogger logger )
+        public AgentToolHelper( IAgentRequestContext agentRequestContext, ILogger logger )
         {
             _agentRequestContext = agentRequestContext ?? throw new ArgumentNullException( nameof( agentRequestContext ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
@@ -156,19 +156,19 @@ namespace Rock.AI.Agent
         #region Result Methods
 
         /// <summary>
-        /// Gets the <see cref="RockToolResult"/> that contains all the errors and
+        /// Gets the <see cref="IAgentToolResult"/> that contains all the errors and
         /// additional information encountered during processing. If no errors
         /// have been encountered then an exception will be thrown.
         /// </summary>
-        /// <returns>A new instance of <see cref="RockToolResult"/>.</returns>
-        private RockToolResult GetErrorResult()
+        /// <returns>A new instance of <see cref="IAgentToolResult"/>.</returns>
+        private IAgentToolResult GetErrorResult()
         {
             if ( _errors.Count == 0 )
             {
                 throw new InvalidOperationException( "Unexpected call to GetErrorResult with no errors." );
             }
 
-            var result = RockToolResult.Error( _errors );
+            var result = AgentToolResult.Error( _errors );
 
             foreach ( var instruction in _instructions )
             {
@@ -195,15 +195,15 @@ namespace Rock.AI.Agent
         /// helper.
         /// </para>
         /// <para>
-        /// The returned <see cref="RockToolResult"/> object will be configured
+        /// The returned <see cref="IAgentToolResult"/> object will be configured
         /// to not have any history content.
         /// </para>
         /// </summary>
         /// <typeparam name="T">The type of object to be paginated.</typeparam>
         /// <param name="page">The items to be included in the results.</param>
-        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
-        /// <returns>A <see cref="RockToolResult"/> that contains the result data and any standard metadata.</returns>
-        public RockToolResult GetPaginatedResult<T>( PaginatedResult<T> page, bool sanitizeForSecurity = true )
+        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(IAgentRequestContext)"/>.</param>
+        /// <returns>A <see cref="IAgentToolResult"/> that contains the result data and any standard metadata.</returns>
+        public IAgentToolResult GetPaginatedResult<T>( PaginatedResult<T> page, bool sanitizeForSecurity = true )
         {
             return GetPaginatedResult<T, object>( page, null, sanitizeForSecurity );
         }
@@ -220,7 +220,7 @@ namespace Rock.AI.Agent
         /// helper.
         /// </para>
         /// <para>
-        /// The returned <see cref="RockToolResult"/> object will be configured
+        /// The returned <see cref="IAgentToolResult"/> object will be configured
         /// to not have any history content.
         /// </para>
         /// </summary>
@@ -228,11 +228,11 @@ namespace Rock.AI.Agent
         /// <typeparam name="THistory">The type of object to be used in the history.</typeparam>
         /// <param name="page">The items to be included in the results.</param>
         /// <param name="historyPage">The page result to use for the history content.</param>
-        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
-        /// <returns>A <see cref="RockToolResult"/> that contains the result data and any standard metadata.</returns>
-        public RockToolResult GetPaginatedResult<T, THistory>( PaginatedResult<T> page, PaginatedResult<THistory> historyPage, bool sanitizeForSecurity = true )
+        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(IAgentRequestContext)"/>.</param>
+        /// <returns>A <see cref="IAgentToolResult"/> that contains the result data and any standard metadata.</returns>
+        public IAgentToolResult GetPaginatedResult<T, THistory>( PaginatedResult<T> page, PaginatedResult<THistory> historyPage, bool sanitizeForSecurity = true )
         {
-            RockToolResult result;
+            IAgentToolResult result;
 
             if ( sanitizeForSecurity == true && typeof( EntityResultBase ).IsAssignableFrom( typeof( T ) ) )
             {
@@ -244,11 +244,11 @@ namespace Rock.AI.Agent
 
             if ( !page.Items.Any() )
             {
-                result = RockToolResult.NoData();
+                result = AgentToolResult.NoData();
             }
             else
             {
-                result = RockToolResult.Success( page );
+                result = AgentToolResult.Success( page );
             }
 
             foreach ( var instruction in _instructions )
@@ -441,7 +441,7 @@ namespace Rock.AI.Agent
             // Perform the security check if requested and applicable.
             if ( checkSecurity && entity is ISecured securedEntity )
             {
-                if ( !securedEntity.IsAuthorized( Authorization.VIEW, _agentRequestContext.RockRequestContext.CurrentPerson ) )
+                if ( !securedEntity.IsAuthorized( Authorization.VIEW, _agentRequestContext.CurrentPerson ) )
                 {
                     _errors.Add( $"The {parameterExpression} is not valid." );
 
@@ -600,7 +600,7 @@ namespace Rock.AI.Agent
                         continue;
                     }
 
-                    if ( enforceSecurity && !attribute.IsAuthorized( Authorization.EDIT, _agentRequestContext.RockRequestContext.CurrentPerson ) )
+                    if ( enforceSecurity && !attribute.IsAuthorized( Authorization.EDIT, _agentRequestContext.CurrentPerson ) )
                     {
                         AddError( $"You do not have permission to edit the attribute '{kvp.Key}'." );
                         continue;
@@ -634,7 +634,7 @@ namespace Rock.AI.Agent
                     continue;
                 }
 
-                if ( enforceSecurity && !attribute.IsAuthorized( Authorization.EDIT, _agentRequestContext.RockRequestContext.CurrentPerson ) )
+                if ( enforceSecurity && !attribute.IsAuthorized( Authorization.EDIT, _agentRequestContext.CurrentPerson ) )
                 {
                     continue;
                 }
@@ -675,7 +675,7 @@ namespace Rock.AI.Agent
 
             return entity.Attributes.Values
                 .Where( a => isInternal || a.IsPublic )
-                .Where( a => !enforceSecurity || a.IsAuthorized( Authorization.VIEW, _agentRequestContext.RockRequestContext.CurrentPerson ) )
+                .Where( a => !enforceSecurity || a.IsAuthorized( Authorization.VIEW, _agentRequestContext.CurrentPerson ) )
                 .Select( a =>
                 {
                     var attr = new AttributeResult
@@ -683,7 +683,7 @@ namespace Rock.AI.Agent
                         Key = a.Key,
                         Name = a.Name,
                         IsRequired = a.IsRequired,
-                        IsReadOnly = enforceSecurity && !a.IsAuthorized( Authorization.EDIT, _agentRequestContext.RockRequestContext.CurrentPerson ),
+                        IsReadOnly = enforceSecurity && !a.IsAuthorized( Authorization.EDIT, _agentRequestContext.CurrentPerson ),
                     };
 
                     if ( a.FieldType?.Field is Field.FieldType fieldType )

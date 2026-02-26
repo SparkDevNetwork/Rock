@@ -536,47 +536,84 @@ export class RockColor {
                 .trim();
 
             // Split alpha using slash first (modern syntax).
-            const [channelPart, alphaPart] = inner.split("/").map(p => p.trim());
+            const parts = inner.split("/").map(p => p.trim());
+            const channelPart = parts[0] ?? "";
+            const alphaPart = parts.length > 1 ? parts.slice(1).join(" / ").trim() : undefined;
 
             // Now split channels by either comma OR whitespace.
             const channels = channelPart
                 .split(/[\s,]+/)
                 .filter(p => p.length > 0);
 
-            if (channels.length >= 3) {
-                const parseRgbChannel = (value: string): number => {
-                    if (value.endsWith("%")) {
-                        const percent = asFloat(value.slice(0, -1));
-                        return normalize(percent * 2.55, 0, 255);
-                    }
+            const hasSlashAlpha = inner.includes("/");
 
-                    return normalize(asFloat(value), 0, 255);
-                };
-
-                const parseAlphaChannel = (value: string): number => {
-                    if (value.endsWith("%")) {
-                        const percent = asFloat(value.slice(0, -1));
-                        return normalize(percent / 100, 0, 1);
-                    }
-
-                    return normalize(asFloat(value), 0, 1);
-                };
-
-                this.rgbInternal[0] = parseRgbChannel(channels[0]);
-                this.rgbInternal[1] = parseRgbChannel(channels[1]);
-                this.rgbInternal[2] = parseRgbChannel(channels[2]);
-
-                let alphaValue = 1;
-
-                if (alphaPart !== undefined) {
-                    alphaValue = parseAlphaChannel(alphaPart);
-                }
-                else if (channels.length === 4) {
-                    alphaValue = parseAlphaChannel(channels[3]);
-                }
-
-                this.alphaInternal = alphaValue;
+            // Invalid: more than 4 total params in any form, or malformed use of slash
+            // Examples to reject:
+            // - rgba(255,255,255,1,2)  -> channels = 5
+            // - rgb(1 2 3 0.4 / 0.5)   -> channels = 4 plus slash alpha
+            // - rgb(1 2 / 0.5)         -> channels < 3
+            if (channels.length > 4) {
+                this.rgbInternal[0] = 0;
+                this.rgbInternal[1] = 0;
+                this.rgbInternal[2] = 0;
+                this.alphaInternal = 1;
+                return;
             }
+
+            if (hasSlashAlpha) {
+                // With slash syntax we require exactly 3 channels (rgb) and optional alphaPart.
+                // Also reject if someone tried to include a 4th channel plus slash alpha.
+                if (channels.length !== 3) {
+                    this.rgbInternal[0] = 0;
+                    this.rgbInternal[1] = 0;
+                    this.rgbInternal[2] = 0;
+                    this.alphaInternal = 1;
+                    return;
+                }
+            }
+            else {
+                // Without slash syntax, allow 3 (rgb) or 4 (rgba). Anything else is invalid.
+                if (channels.length !== 3 && channels.length !== 4) {
+                    this.rgbInternal[0] = 0;
+                    this.rgbInternal[1] = 0;
+                    this.rgbInternal[2] = 0;
+                    this.alphaInternal = 1;
+                    return;
+                }
+            }
+
+            const parseRgbChannel = (value: string): number => {
+                if (value.endsWith("%")) {
+                    const percent = asFloat(value.slice(0, -1));
+                    return normalize(percent * 2.55, 0, 255);
+                }
+
+                return normalize(asFloat(value), 0, 255);
+            };
+
+            const parseAlphaChannel = (value: string): number => {
+                if (value.endsWith("%")) {
+                    const percent = asFloat(value.slice(0, -1));
+                    return normalize(percent / 100, 0, 1);
+                }
+
+                return normalize(asFloat(value), 0, 1);
+            };
+
+            this.rgbInternal[0] = parseRgbChannel(channels[0]);
+            this.rgbInternal[1] = parseRgbChannel(channels[1]);
+            this.rgbInternal[2] = parseRgbChannel(channels[2]);
+
+            let alphaValue = 1;
+
+            if (alphaPart !== undefined) {
+                alphaValue = parseAlphaChannel(alphaPart);
+            }
+            else if (channels.length === 4) {
+                alphaValue = parseAlphaChannel(channels[3]);
+            }
+
+            this.alphaInternal = alphaValue;
         }
 
         // Check for modern CSS Color Level 4 format:

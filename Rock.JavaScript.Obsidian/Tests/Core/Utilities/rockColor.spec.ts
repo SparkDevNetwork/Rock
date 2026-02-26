@@ -98,7 +98,6 @@ describe("RockColor", () => {
         test.each([
             ["rgba(255)"],
             ["rgba(255, 255)"],
-            ["rgba(255, 255, 255)"],
             ["rgba(255, 255, 255, 255, 255)"]
         ])("Invalid color '%s' is black", stringToExpectedBlack);
 
@@ -126,7 +125,6 @@ describe("RockColor", () => {
         test.each([
             ["rgb(255)"],
             ["rgb(255, 255)"],
-            ["rgb(255, 255, 255, 255)"]
         ])("Invalid color '%s' is black", stringToExpectedBlack);
 
         test.each([

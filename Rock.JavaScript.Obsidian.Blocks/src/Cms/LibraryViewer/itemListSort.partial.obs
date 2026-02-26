@@ -12,18 +12,6 @@
     </div>
 </template>
 
-<style scoped>
-.library-viewer-item-list-sort-container {
-    display: flex;
-    flex-direction: column;
-}
-
-.library-viewer-item-list-sort-button {
-    text-align: left;
-    border: none;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, onMounted, PropType, ref, watch } from "vue";
     import ToolbarMenu from "./toolbarMenu.partial.obs";

@@ -36,10 +36,10 @@ namespace Rock.AI.Agent
         #region Constants
 
         /// <summary>
-        /// The expression for <see cref="GetAttributeValueResults(IEnumerable{QueryableAttributeValue}, AgentRequestContext)"/>
+        /// The expression for <see cref="GetAttributeValueResults(IEnumerable{QueryableAttributeValue}, IAgentRequestContext)"/>
         /// and <see cref="GetAttributeValueResultsExpression"/>.
         /// </summary>
-        private static readonly Expression<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>> _getAttributeValueResultsExpression = ( attributeValues, context ) => attributeValues
+        private static readonly Expression<Func<IEnumerable<QueryableAttributeValue>, IAgentRequestContext, IEnumerable<AttributeValueResult>>> _getAttributeValueResultsExpression = ( attributeValues, context ) => attributeValues
             .Where( a => context.AudienceType == AudienceType.Internal || a.IsPublic )
             .Select( a => new AttributeValueResult
             {
@@ -51,16 +51,16 @@ namespace Rock.AI.Agent
             } );
 
         /// <summary>
-        /// The compiled function for <see cref="GetAttributeValueResults(IEnumerable{QueryableAttributeValue}, AgentRequestContext)"/>.
+        /// The compiled function for <see cref="GetAttributeValueResults(IEnumerable{QueryableAttributeValue}, IAgentRequestContext)"/>.
         /// </summary>
-        private static readonly Lazy<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>> _getAttributeValueResultsFunc =
-            new Lazy<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>>( () => _getAttributeValueResultsExpression.Compile() );
+        private static readonly Lazy<Func<IEnumerable<QueryableAttributeValue>, IAgentRequestContext, IEnumerable<AttributeValueResult>>> _getAttributeValueResultsFunc =
+            new Lazy<Func<IEnumerable<QueryableAttributeValue>, IAgentRequestContext, IEnumerable<AttributeValueResult>>>( () => _getAttributeValueResultsExpression.Compile() );
 
         /// <summary>
-        /// The expression for <see cref="GetGridAttributeValueResults(IEnumerable{QueryableAttributeValue}, AgentRequestContext)"/>
+        /// The expression for <see cref="GetGridAttributeValueResults(IEnumerable{QueryableAttributeValue}, IAgentRequestContext)"/>
         /// and <see cref="GetGridAttributeValueResultsExpression"/>.
         /// </summary>
-        private static readonly Expression<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>> _getGridAttributeValueResultsExpression = ( attributeValues, context ) => attributeValues
+        private static readonly Expression<Func<IEnumerable<QueryableAttributeValue>, IAgentRequestContext, IEnumerable<AttributeValueResult>>> _getGridAttributeValueResultsExpression = ( attributeValues, context ) => attributeValues
             .Where( a => ( context.AudienceType == AudienceType.Internal || a.IsPublic )
                 && a.IsGridColumn )
             .Select( a => new AttributeValueResult
@@ -73,10 +73,10 @@ namespace Rock.AI.Agent
             } );
 
         /// <summary>
-        /// The compiled function for <see cref="GetGridAttributeValueResults(IEnumerable{QueryableAttributeValue}, AgentRequestContext)"/>.
+        /// The compiled function for <see cref="GetGridAttributeValueResults(IEnumerable{QueryableAttributeValue}, IAgentRequestContext)"/>.
         /// </summary>
-        private static readonly Lazy<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>> _getGridAttributeValueResultsFunc =
-            new Lazy<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>>( () => _getGridAttributeValueResultsExpression.Compile() );
+        private static readonly Lazy<Func<IEnumerable<QueryableAttributeValue>, IAgentRequestContext, IEnumerable<AttributeValueResult>>> _getGridAttributeValueResultsFunc =
+            new Lazy<Func<IEnumerable<QueryableAttributeValue>, IAgentRequestContext, IEnumerable<AttributeValueResult>>>( () => _getGridAttributeValueResultsExpression.Compile() );
 
         #endregion
 
@@ -91,7 +91,7 @@ namespace Rock.AI.Agent
         /// <param name="agentRequestContext">The agent's request context, this is used to perform additional security checks.</param>
         /// <returns>A collection of <see cref="AttributeValueResult"/> objects that represent the attribute values.</returns>
         [Expandable( nameof( GetAttributeValueResultsExpression ) )]
-        public static IEnumerable<AttributeValueResult> GetAttributeValueResults( this IEnumerable<QueryableAttributeValue> attributeValues, AgentRequestContext agentRequestContext )
+        public static IEnumerable<AttributeValueResult> GetAttributeValueResults( this IEnumerable<QueryableAttributeValue> attributeValues, IAgentRequestContext agentRequestContext )
         {
             if ( attributeValues == null )
             {
@@ -109,7 +109,7 @@ namespace Rock.AI.Agent
         /// <param name="entity">The entity whose attributes need to be retrieved.</param>
         /// <param name="agentRequestContext"></param>
         /// <returns>A collection of <see cref="AttributeValueResult"/> objects that represent the attribute values.</returns>
-        public static IEnumerable<AttributeValueResult> GetAttributeValueResults( this IHasAttributes entity, AgentRequestContext agentRequestContext )
+        public static IEnumerable<AttributeValueResult> GetAttributeValueResults( this IHasAttributes entity, IAgentRequestContext agentRequestContext )
         {
             if ( entity == null )
             {
@@ -141,7 +141,7 @@ namespace Rock.AI.Agent
         /// directly from the database without materializing the entity.
         /// </summary>
         /// <returns>An expression that can be used in LINQ to SQL to gather the attribute values.</returns>
-        private static Expression<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>> GetAttributeValueResultsExpression()
+        private static Expression<Func<IEnumerable<QueryableAttributeValue>, IAgentRequestContext, IEnumerable<AttributeValueResult>>> GetAttributeValueResultsExpression()
         {
             return _getAttributeValueResultsExpression;
         }
@@ -156,7 +156,7 @@ namespace Rock.AI.Agent
         /// <param name="agentRequestContext">The agent's request context, this is used to perform additional security checks.</param>
         /// <returns>A collection of <see cref="AttributeValueResult"/> objects that represent the attribute values.</returns>
         [Expandable( nameof( GetGridAttributeValueResultsExpression ) )]
-        public static IEnumerable<AttributeValueResult> GetGridAttributeValueResults( this IEnumerable<QueryableAttributeValue> attributeValues, AgentRequestContext agentRequestContext )
+        public static IEnumerable<AttributeValueResult> GetGridAttributeValueResults( this IEnumerable<QueryableAttributeValue> attributeValues, IAgentRequestContext agentRequestContext )
         {
             if ( attributeValues == null )
             {
@@ -174,7 +174,7 @@ namespace Rock.AI.Agent
         /// <param name="entity">The entity whose attributes need to be retrieved.</param>
         /// <param name="agentRequestContext"></param>
         /// <returns>A collection of <see cref="AttributeValueResult"/> objects that represent the attribute values.</returns>
-        public static IEnumerable<AttributeValueResult> GetGridAttributeValueResults( this IHasAttributes entity, AgentRequestContext agentRequestContext )
+        public static IEnumerable<AttributeValueResult> GetGridAttributeValueResults( this IHasAttributes entity, IAgentRequestContext agentRequestContext )
         {
             if ( entity == null )
             {
@@ -207,7 +207,7 @@ namespace Rock.AI.Agent
         /// directly from the database without materializing the entity.
         /// </summary>
         /// <returns>An expression that can be used in LINQ to SQL to gather the attribute values.</returns>
-        private static Expression<Func<IEnumerable<QueryableAttributeValue>, AgentRequestContext, IEnumerable<AttributeValueResult>>> GetGridAttributeValueResultsExpression()
+        private static Expression<Func<IEnumerable<QueryableAttributeValue>, IAgentRequestContext, IEnumerable<AttributeValueResult>>> GetGridAttributeValueResultsExpression()
         {
             return _getGridAttributeValueResultsExpression;
         }

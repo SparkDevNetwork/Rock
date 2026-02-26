@@ -17,8 +17,6 @@
 
 using System;
 
-using Rock.AI.Agent.Classes.Common;
-
 namespace Rock.AI.Agent
 {
     /// <summary>
@@ -31,7 +29,7 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Gets the result representing an error state for the tool operation.
         /// </summary>
-        public RockToolResult ErrorResult { get; }
+        public IAgentToolResult ErrorResult { get; }
 
         /// <summary>
         /// Initializes a new instance of the LavaToolException class with a specified error message and the associated
@@ -48,7 +46,7 @@ namespace Rock.AI.Agent
         /// tool result.
         /// </summary>
         /// <param name="result">The RockToolResult object containing details about the tool operation that caused the exception.</param>
-        public LavaToolException( RockToolResult result )
+        public LavaToolException( IAgentToolResult result )
             : base( "Internal error processing Lava Tool." )
         {
             ErrorResult = result;

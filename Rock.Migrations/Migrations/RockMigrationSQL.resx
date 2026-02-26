@@ -439,4 +439,10 @@
   <data name="_202602182336503_Update_spCrm_PersonMerge6572" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>202602182336503_Update_spCrm_PersonMerge6572.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
+  <data name="_202602251704362_Rollup_20260225_277_ExcludeArchivedAndDuplicateListMembers_spCommunication_SynchronizeListRecipients" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202602251704362_Rollup_20260225_277_ExcludeArchivedAndDuplicateListMembers_spCommunication_SynchronizeListRecipients.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_202602251704362_Rollup_20260225_268_ImproveSyncListRecipientsPerformance_spCommunication_SynchronizeListRecipients" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202602251704362_Rollup_20260225_268_ImproveSyncListRecipientsPerformance_spCommunication_SynchronizeListRecipients.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

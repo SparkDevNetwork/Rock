@@ -49,28 +49,6 @@
     </div>
 </template>
 
-<style>
-
-.library-viewer-item-list-filters-container {
-    width: 410px;
-    max-width: 100%;
-    overflow: hidden;
-}
-
-.library-viewer-item-list-filters-container .rc-virtual-list-holder {
-    max-height: 200px;
-    overflow-y: hidden;
-}
-
-.library-viewer-item-list-filters-container .ant-select-loading {
-    display: none;
-}
-
-.ant-select {
-    position: relative !important;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, onMounted, PropType, ref, watch } from "vue";
     import { PersonPreferenceKey } from "./types.partial";

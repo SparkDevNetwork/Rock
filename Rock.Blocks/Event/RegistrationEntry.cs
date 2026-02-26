@@ -1220,14 +1220,36 @@ namespace Rock.Blocks.Event
             /*
                 8/15/2023 - JPH
 
-                The following log message prefix will be used when logging any missing form data.
+                In order to successfully save the registration form values that were provided by the registrar, we must
+                have each [RegistrationTemplateForm].[Fields] collection loaded into memory below. Several individuals have
+                reported seeing missing registrant data within completed registrations, so it's possible that these Fields
+                collections are somehow empty.
+
+                The TryLoadMissingFields() method is a failsafe to ensure we have the data we need to properly save the
+                registration. This method will:
+                    1) Attempt to load any missing Fields collections;
+                    2) Return a list of any Form IDs that were actually missing Fields so we can log them to prove that
+                       this was a likely culprit for failed, past registration attempts (and so we can know to look into
+                       the issue further from this angle).
 
                 Reason: Registration entries are sometimes missing registration form data.
                 https://github.com/SparkDevNetwork/Rock/issues/5091
              */
+            var enableMissingFieldDiagnostics = GetAttributeValue( AttributeKey.EnableMissingFieldDiagnostics ).AsBoolean();
             var logInstanceOrTemplateName = context?.RegistrationSettings?.Name;
             var logCurrentPersonDetails = $"Current Person Name: {this.RequestContext.CurrentPerson?.FullName} (Person ID: {this.RequestContext.CurrentPerson?.Id});";
             var logMsgPrefix = $"Obsidian{( logInstanceOrTemplateName.IsNotNullOrWhiteSpace() ? $@" ""{logInstanceOrTemplateName}""" : string.Empty )} Registration; {logCurrentPersonDetails}{Environment.NewLine}";
+
+            if ( enableMissingFieldDiagnostics )
+            {
+                var (wereFieldsMissing, missingFieldsDetails) = new RegistrationTemplateFormService( rockContext ).TryLoadMissingFields( context?.RegistrationSettings?.Forms );
+                if ( wereFieldsMissing )
+                {
+                    var logMissingFieldsMsg = $"{logMsgPrefix}RegistrationTemplateForm(s) missing Fields data when trying to save Registration.{Environment.NewLine}{missingFieldsDetails}";
+
+                    ExceptionLogService.LogException( new RegistrationTemplateFormFieldException( logMissingFieldsMsg ) );
+                }
+            }
 
             errorMessage = string.Empty;
             var currentPerson = GetCurrentPerson();
@@ -1635,7 +1657,7 @@ namespace Rock.Blocks.Event
 
                     bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
-                    MissingFieldsByFormId = GetAttributeValue( AttributeKey.EnableMissingFieldDiagnostics ).AsBoolean() && isNewRegistrant
+                    MissingFieldsByFormId = enableMissingFieldDiagnostics && isNewRegistrant
                         ? new Dictionary<int, Dictionary<Guid, string>>()
                         : null;
 
