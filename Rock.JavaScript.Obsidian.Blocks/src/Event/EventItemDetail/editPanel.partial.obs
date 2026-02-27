@@ -80,7 +80,10 @@
         </Panel>
 
         <Panel title="Event Occurrence Attributes" hasCollapse>
-            <Grid :data="occurenceAttributesGridData" keyField="key" itemTerm="Event Occurrence Attributes" liveUpdates light @addItem="onAddAttribute">
+            <Grid :data="occurenceAttributesGridData" keyField="key" itemTerm="Event Occurrence Attributes" liveUpdates
+                  light @addItem="onAddAttribute">
+                <ReorderColumn @orderChanged="onOrderChanged" />
+
                 <TextColumn name="name"
                             field="name"
                             title="Attribute" />
@@ -157,7 +160,7 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { EventItemOccurenceAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventItemOccurenceAttributeBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -376,6 +379,36 @@
     const onStartSaveAttribute = (): void => {
         submitEditAttribute.value = true;
     };
+
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const itemKey = item["key"] as string;
+        const beforeItemKey = beforeItem?.["key"] as string | null;
+
+        const currentItems = [...(eventOccurenceAttributes.value ?? [])];
+        const idx = currentItems.findIndex(i => i.attribute?.key === itemKey);
+
+        if (idx < 0) {
+            return false;
+        }
+
+        const itemToMove = currentItems.splice(idx, 1)[0];
+
+        if (beforeItemKey) {
+            const beforeIndex = currentItems.findIndex(i => i.attribute?.key === beforeItemKey);
+            if (beforeIndex < 0) {
+                currentItems.push(itemToMove);
+            }
+            else {
+                currentItems.splice(beforeIndex, 0, itemToMove);
+            }
+        }
+        else {
+            currentItems.push(itemToMove);
+        }
+
+        eventOccurenceAttributes.value = currentItems;
+        return true;
+    }
 
     // #endregion
 

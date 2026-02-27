@@ -35,7 +35,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <value>
         ///   <c>true</c> if the reminder is complete; otherwise, <c>false</c>.
         /// </value>
-        public bool IsComplete { get; set; }
+        public bool? IsComplete { get; set; }
 
         /// <summary>
         /// Gets or sets the number of days between renewals.
@@ -67,7 +67,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <value>
         /// The date of the reminder.
         /// </value>
-        public DateTime ReminderDate { get; set; }
+        public DateTime? ReminderDate { get; set; }
 
         /// <summary>
         /// Gets or sets the note associated with the reminder.

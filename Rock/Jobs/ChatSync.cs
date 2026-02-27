@@ -209,6 +209,14 @@ namespace Rock.Jobs
                     // encountered during a given operation. This allows us to continue processing other tasks, and
                     // aggregate all exceptions at the end of the job run.
 
+                    // Always attempt to clean up "marked as deleted" chat person aliases.
+                    await chatHelper.CleanUpMarkedAsDeletedChatPersonAliasesAsync();
+
+                    if ( GetAttributeValue( AttributeKey.DeleteMergedChatUsers ).AsBoolean() )
+                    {
+                        await DeleteMergedChatUsersAsync( rockContext, chatHelper );
+                    }
+
                     if ( GetAttributeValue( AttributeKey.SynchronizeData ).AsBoolean() )
                     {
                         await SynchronizeDataAsync( rockContext, chatHelper );
@@ -217,11 +225,6 @@ namespace Rock.Jobs
                     if ( GetAttributeValue( AttributeKey.CreateInteractions ).AsBoolean() )
                     {
                         await CreateInteractionsAsync( rockContext, chatHelper );
-                    }
-
-                    if ( GetAttributeValue( AttributeKey.DeleteMergedChatUsers ).AsBoolean() )
-                    {
-                        await DeleteMergedChatUsersAsync( rockContext, chatHelper );
                     }
                 }
             } );

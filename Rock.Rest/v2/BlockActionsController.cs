@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -37,10 +38,7 @@ using Rock.Utility.CaptchaApi;
 using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
 using Rock.Security;
-using Rock.ViewModels.Rest.Controls;
 using Rock.Configuration;
-
-
 
 #if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Http;
@@ -579,6 +577,8 @@ namespace Rock.Rest.v2
 #else
                 ExceptionLogService.LogException( ex.InnerException );
 #endif
+                Activity.Current?.AddException( ex );
+                Activity.Current?.SetStatus( ActivityStatusCode.Error, ex.Message );
                 result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
             catch ( Exception ex )
@@ -588,6 +588,8 @@ namespace Rock.Rest.v2
 #else
                 ExceptionLogService.LogException( ex );
 #endif
+                Activity.Current?.AddException( ex );
+                Activity.Current?.SetStatus( ActivityStatusCode.Error, ex.Message );
                 result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
 

@@ -412,5 +412,14 @@ namespace Rock.Model
                     pa => pa.Id
                 );
         }
+
+        /// <summary>
+        /// Gets a Queryable of chat-specific <see cref="PersonAlias"/>es that are marked as deleted.
+        /// </summary>
+        /// <returns>A Queryable of chat-specific <see cref="PersonAlias"/>es that are marked as deleted.</returns>
+        internal IQueryable<PersonAlias> GetMarkedAsDeletedChatPersonAliasesQuery()
+        {
+            return this.Queryable().Where( a => a.Name == ChatHelper.ChatPersonAliasDeletedName );
+        }
     }
 }

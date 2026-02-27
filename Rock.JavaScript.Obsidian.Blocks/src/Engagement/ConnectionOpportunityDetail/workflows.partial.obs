@@ -1,21 +1,22 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- Inherited Workflows from Connection Type -->
-    <ContentStack title="Inherited Workflows" description="Workflows listed here are inherited from this opportunity's associated Connection Type." headerLocation="top" v-if="inheritedGridData.rows.length > 0">
+    <ContentStack v-if="inheritedGridData.rows.length > 0" title="Inherited Workflows"
+                  description="Workflows listed here are inherited from this opportunity's associated Connection Type."
+                  headerLocation="top">
 
-        <Grid :data="inheritedGridData" keyField="guid" itemTerm="Inherited Workflow" liveUpdates light>
-            <TextColumn name="workflowType"
-                        field="workflowType"
-                        title="Workflow Type" />
-            <TextColumn name="trigger"
-                        field="trigger"
-                        title="Trigger" />
-            <TextColumn name="inheritedFrom"
-                        field="inheritedFrom"
-                        title="Inherited From">
+        <Grid :data="inheritedGridData" class="inherited-attributes" keyField="guid" itemTerm="Inherited Workflow"
+              liveUpdates light :isFooterHidden="true">
+            <TextColumn name="workflowType" field="workflowType" />
+            <TextColumn name="trigger" field="trigger" />
+            <TextColumn name="inheritedFrom" field="inheritedFrom">
                 <template #format>
                     <template v-if="connectionTypeUrl">
-                        <a :href="connectionTypeUrl" target="_blank" class="fw-bold">{{ connectionTypeName }}</a>
+                        <span>
+                            (Inherited from
+                            <a :href="connectionTypeUrl" target="_blank" class="fw-bold">
+                                {{ connectionTypeName }}
+                            </a>)
+                        </span>
                     </template>
                     <span v-else class="fw-bold">Connection Type: ({{ connectionTypeName }})</span>
                 </template>
@@ -23,8 +24,13 @@
         </Grid>
     </ContentStack>
 
-    <!-- Opportunity-Specific Workflows -->
-    <ContentStack title="Configure Workflows" description="Configure the workflows that should be launched for connection requests associated with this opportunity." headerLocation="top">
+    <ContentStack title="Configure Workflows"
+                  description="Configure the workflows that should be launched for connection requests associated with this opportunity."
+                  headerLocation="top">
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
+            {{ errorMessage }}
+        </NotificationBox>
+
         <Grid :data="gridData"
               keyField="guid"
               itemTerm="Workflow"
@@ -54,83 +60,103 @@
 
         <div class="row">
             <div class="col-md-6">
-                <DropDownList :modelValue="theConnectionWorkflow.triggerType.toString()"
-                              @update:modelValue="val => theConnectionWorkflow.triggerType = Number(val)"
-                              :items="triggerTypes"
-                              label="Launch Workflow When"
+                <DropDownList label="Trigger Event" v-model="triggerTypeValue" :items="triggerTypeOptions"
                               rules="required" />
-            </div>
-
-            <div class="col-md-6">
-                <WorkflowTypePicker v-model="theConnectionWorkflow.workflowType" label="Workflow Type" rules="required" />
             </div>
         </div>
 
-        <section v-if="theConnectionWorkflow.triggerType === ConnectionWorkflowTriggerType.StateChanged || theConnectionWorkflow.triggerType === ConnectionWorkflowTriggerType.StatusChanged">
-            <div class="row">
-                <div class="col-md-6">
-                    <DropDownList v-model="primaryQualifier"
-                                  :items="qualifierOptions"
-                                  label="From" />
-                </div>
+        <div class="row" v-if="triggerTypeValue === ConnectionWorkflowTriggerType.StateChanged.toString()">
+            <div class="col-md-6">
+                <ConditionalWell>
+                    <DropDownList v-model="primaryQualifier" :items="stateChangedOptions" label="From" />
+                    <DropDownList v-model="secondaryQualifier" :items="stateChangedOptions" label="To" />
+                </ConditionalWell>
             </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <DropDownList v-model="secondaryQualifier"
-                                  :items="qualifierOptions"
-                                  label="To" />
-                </div>
-            </div>
-        </section>
+        </div>
 
-        <section v-else-if="theConnectionWorkflow.triggerType === ConnectionWorkflowTriggerType.ActivityAdded">
-            <div class="row">
-                <div class="col-md-4">
-                    <DropDownList v-model="primaryQualifier"
-                                  :items="qualifierOptions"
-                                  label="Activity Type" />
-                </div>
+        <div class="row" v-else-if="triggerTypeValue === ConnectionWorkflowTriggerType.StatusChanged.toString()">
+            <div class="col-md-6">
+                <ConditionalWell>
+                    <DropDownList v-model="primaryQualifier" :items="qualifierOptions" label="From" />
+                    <DropDownList v-model="secondaryQualifier" :items="qualifierOptions" label="To" />
+                </ConditionalWell>
             </div>
-        </section>
+        </div>
 
-        <section v-else-if="theConnectionWorkflow.triggerType === ConnectionWorkflowTriggerType.Manual">
-            <div class="row">
-                <div class="col-md-4">
-                    <RadioButtonList label="Manual Trigger Status Filter"
-                                     :modelValue="theConnectionWorkflow.manualTriggerFilterConnectionStatusId?.toString()"
-                                     @update:modelValue="val => theConnectionWorkflow.manualTriggerFilterConnectionStatusId = val ? Number(val) : null"
-                                     :items="qualifierOptions"
-                                     :horizontal="true"
-                                     help="Filters workflows to display based on the current status of the connection request." />
-                </div>
+        <div class="row"
+             v-else-if="triggerTypeValue === ConnectionWorkflowTriggerType.StatusBecomesDue.toString() || triggerTypeValue === ConnectionWorkflowTriggerType.StatusBecomesDueSoon.toString()">
+            <div class="col-md-6">
+                <ConditionalWell>
+                    <DropDownList v-model="primaryQualifier" :items="qualifierOptions" label="Status" />
+                </ConditionalWell>
             </div>
-            <div class="row">
-                <div class="col-md-4">
-                    <RadioButtonList label="Applies to Age Classification"
-                                     :modelValue="theConnectionWorkflow.appliesToAgeClassification?.toString()"
-                                     @update:modelValue="val => theConnectionWorkflow.appliesToAgeClassification = val ? Number(val) : 0"
-                                     :items="appliesToAgeClassificationOptions"
-                                     :horizontal="true"
-                                     help="Restrict this workflow to requests for people of a certain age classification (All, Adults, Children)." />
-                </div>
+        </div>
 
-                <div class="col-md-4">
+        <div class="row" v-else-if="triggerTypeValue === ConnectionWorkflowTriggerType.StatusBecomesOverdue.toString()">
+            <div class="col-md-6">
+                <ConditionalWell>
+                    <DropDownList v-model="primaryQualifier" :items="qualifierOptions" label="Status" />
+
+                    <NumberBox :modelValue="toNumber(secondaryQualifier)"
+                               @update:modelValue="val => secondaryQualifier = val?.toString() ?? ''" :minimumValue="1"
+                               label="Days Overdue"
+                               help="Specify how many days after the request becomes overdue the workflow should be triggered. Must be greater than 0. If left blank, the workflow will trigger after 1 day." />
+                </ConditionalWell>
+            </div>
+        </div>
+
+        <div class="row"
+             v-else-if="triggerTypeValue === ConnectionWorkflowTriggerType.RequestBecomesOverdue.toString()">
+            <div class="col-md-6">
+                <ConditionalWell>
+                    <NumberBox :modelValue="toNumber(primaryQualifier)"
+                               @update:modelValue="val => primaryQualifier = val?.toString() ?? ''" :minimumValue="1"
+                               label="Days Overdue"
+                               help="Specify how many days after the request becomes overdue the workflow should be triggered. Must be greater than 0. If left blank, the workflow will trigger after 1 day." />
+                </ConditionalWell>
+            </div>
+        </div>
+
+        <div class="row" v-else-if="triggerTypeValue === ConnectionWorkflowTriggerType.ActivityAdded.toString()">
+            <div class="col-md-6">
+                <ConditionalWell>
+                    <DropDownList v-model="primaryQualifier" :items="qualifierOptions" label="Activity Type" />
+                </ConditionalWell>
+            </div>
+        </div>
+
+        <div class="row" v-else-if="triggerTypeValue === ConnectionWorkflowTriggerType.Manual.toString()">
+            <div class="col-md-6">
+                <ConditionalWell>
+                    <DropDownList label="Status Filter"
+                                  v-model="manualTriggerFilterConnectionStatusValue"
+                                  :items="manualTriggerStatusOptions"
+                                  help="Filters the available workflows based on the current status of the connection request. Leave blank to include all statuses." />
+
+                    <RadioButtonList label="Age Classification Filter" v-model="appliesToAgeClassificationValue"
+                                     :items="enumToListItemBag(AppliesToAgeClassificationDescription)"
+                                     help="Restrict this workflow to requests for individuals within a specific age classification." />
+
                     <DataViewPicker label="Include Data View Filter"
                                     v-model="theConnectionWorkflow.includeDataViewId"
                                     :displayOnlyPersisted="true"
                                     :showBlankItem="true"
-                                    help="Only show this workflow for requests where the person is included in this Data View. Leave blank for no filter." />
-                </div>
+                                    help="Only show this workflow for requests where the individual is included in the selected Data View. Leave blank to apply no filter." />
 
-                <div class="col-md-4">
                     <DataViewPicker label="Exclude Data View Filter"
                                     v-model="theConnectionWorkflow.excludeDataViewId"
                                     :displayOnlyPersisted="true"
                                     :showBlankItem="true"
-                                    help="Hide this workflow for requests where the person is included in this Data View. Leave blank for no filter." />
-                </div>
+                                    help="Hide this workflow for requests where the individual is included in the selected Data View. Leave blank to apply no filter." />
+                </ConditionalWell>
             </div>
-        </section>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <WorkflowTypePicker v-model="theConnectionWorkflow.workflowType" label="Workflow Type" rules="required" />
+            </div>
+        </div>
     </Modal>
 </template>
 
@@ -140,86 +166,109 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { newGuid } from "@Obsidian/Utility/guid";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { ConnectionOpportunityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/connectionOpportunityDetailOptionsBag";
     import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/connectionWorkflowBag";
+    import { ConnectionWorkflowQualifierValueBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/connectionWorkflowQualifierValueBag";
     import { InheritedConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/inheritedConnectionWorkflowBag";
     import { ConnectionWorkflowQualifierOptionsResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/connectionWorkflowQualifierOptionsResponseBag";
     import { ConnectionWorkflowTriggerTypeDescription, ConnectionWorkflowTriggerType } from "@Obsidian/Enums/Connection/connectionWorkflowTriggerType";
+    import { ConnectionState, ConnectionStateDescription } from "@Obsidian/Enums/Connection/connectionState";
     import { AppliesToAgeClassificationDescription } from "@Obsidian/Enums/Group/appliesToAgeClassification";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { CanDeleteRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/canDeleteRequestBag";
+    import { CanDeleteResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/canDeleteResponseBag";
+    import { EntityKey } from "./types.partial";
 
     const props = defineProps({
-        modelValue: {
+        /**
+         * The list of connection workflows specific to this opportunity.
+         */
+        connectionWorkflows: {
             type: Array as PropType<ConnectionWorkflowBag[]>,
             required: true
         },
+
+        /**
+         * Options for configuring the detail block, including visibility settings.
+         */
+        options: {
+            type: Object as PropType<ConnectionOpportunityDetailOptionsBag>,
+            required: true
+        },
+
+        /**
+         * The list of connection workflows inherited from the connection type.
+         */
         inheritedConnectionWorkflows: {
             type: Array as PropType<InheritedConnectionWorkflowBag[]>,
             required: false,
             default: () => []
         },
+
+        /**
+         * The name of the connection type, used for display in inherited workflows.
+         */
         connectionTypeName: {
             type: String,
             required: false,
             default: ""
         },
+
+        /**
+         * The URL to the connection type detail page, if available.
+         */
         connectionTypeUrl: {
             type: String,
             required: false,
             default: ""
-        },
-        options: {
-            type: Object as PropType<ConnectionOpportunityDetailOptionsBag>,
-            required: true
-        },
+        }
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ConnectionWorkflowBag[]): void
+        (e: "update:connectionWorkflows", value: ConnectionWorkflowBag[]): void
     }>();
 
     const invokeBlockAction = useInvokeBlockAction();
-
-    function createNewConnectionWorkflow(): ConnectionWorkflowBag {
-        return {
-            guid: newGuid(),
-            workflowType: { text: "", value: "" },
-            triggerType: ConnectionWorkflowTriggerType.Manual,
-            qualifierValue: "",
-            manualTriggerFilterConnectionStatusId: null,
-            appliesToAgeClassification: 0,
-            includeDataViewId: null,
-            excludeDataViewId: null
-        };
-    }
 
     // #region Values
 
     const isModalVisible = ref(false);
     const theConnectionWorkflow = ref<ConnectionWorkflowBag>(createNewConnectionWorkflow());
-    const triggerTypes = enumToListItemBag(ConnectionWorkflowTriggerTypeDescription);
 
     const qualifierOptions = ref<ListItemBag[]>([]);
     const primaryQualifier = ref<string>("");
     const secondaryQualifier = ref<string>("");
-
-    const appliesToAgeClassificationOptions = enumToListItemBag(AppliesToAgeClassificationDescription);
+    const errorMessage = ref<string | null>(null);
 
     // #endregion Values
 
     // #region Computed Values
 
+    const connectionWorkflows = computed({
+        get(): ConnectionWorkflowBag[] {
+            return props.connectionWorkflows ?? [];
+        },
+        set(value: ConnectionWorkflowBag[]) {
+            emit("update:connectionWorkflows", value);
+        }
+    });
+
     const gridData = computed(() => {
-        const rows = (props.modelValue ?? []).map(wf => ({
+        const rows = connectionWorkflows.value.map(wf => ({
             guid: wf.guid,
             workflowType: wf.workflowType?.text ?? "",
-            trigger: ConnectionWorkflowTriggerTypeDescription[wf.triggerType] ?? ""
+            trigger: getTriggerTypeText(wf.triggerType)
         }));
         return { rows };
     });
@@ -228,41 +277,179 @@
         const rows = (props.inheritedConnectionWorkflows ?? []).map(wf => ({
             guid: wf.guid,
             workflowType: wf.workflowType?.text ?? "",
-            trigger: ConnectionWorkflowTriggerTypeDescription[wf.triggerType] ?? "",
+            trigger: getTriggerTypeText(wf.triggerType),
             inheritedFrom: `${props.connectionTypeName}`
         }));
         return { rows };
     });
 
+    const triggerTypeValue = computed({
+        get(): string {
+            return theConnectionWorkflow.value.triggerType.toString() ?? ConnectionWorkflowTriggerType.RequestStarted.toString();
+        },
+        set(value: string) {
+            theConnectionWorkflow.value.triggerType = parseInt(value, 10) as ConnectionWorkflowTriggerType;
+        }
+    });
+
+    const manualTriggerFilterConnectionStatusValue = computed({
+        get(): string {
+            return theConnectionWorkflow.value.manualTriggerFilterConnectionStatusId?.toString() ?? "";
+        },
+        set(value: string) {
+            theConnectionWorkflow.value.manualTriggerFilterConnectionStatusId = value ? Number(value) : null;
+        }
+    });
+
+    const appliesToAgeClassificationValue = computed({
+        get(): string {
+            return theConnectionWorkflow.value.appliesToAgeClassification?.toString() ?? "0";
+        },
+        set(value: string) {
+            theConnectionWorkflow.value.appliesToAgeClassification = value ? Number(value) : 0;
+        }
+    });
+
+    /**
+     * The list of available trigger types for Connection Workflows.
+     */
+    const triggerTypeOptions = computed(() => {
+        const options = enumToListItemBag(ConnectionWorkflowTriggerTypeDescription);
+        const requestConnectedOption = options.find(o => o.value === ConnectionWorkflowTriggerType.RequestConnected.toString());
+
+        if (requestConnectedOption) {
+            requestConnectedOption.text = "Request Completed";
+        }
+
+        return options;
+    });
+
+    /**
+     * The list of available connection states, which is used for configuring workflows with a "State Changed" trigger type.
+     */
+    const stateChangedOptions = computed(() => {
+        let options = enumToListItemBag(ConnectionStateDescription);
+
+        if (!props.options?.isFutureFollowupEnabled) {
+            options = options.filter(o => o.value !== ConnectionState.FutureFollowUp.toString());
+        }
+
+        return options;
+    });
+
+    /**
+     * The list of available connection statuses, which is used for configuring workflows with a "Manual" trigger type.
+     */
+    const manualTriggerStatusOptions = computed((): ListItemBag[] => {
+        return [
+            { text: "All", value: "" },
+            ...qualifierOptions.value
+        ];
+    });
+
     // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Creates a new connection workflow bag with default values.
+     */
+    function createNewConnectionWorkflow(): ConnectionWorkflowBag {
+        return {
+            guid: newGuid(),
+            workflowType: null,
+            triggerType: ConnectionWorkflowTriggerType.RequestStarted,
+            qualifierValue: { primaryQualifier: "", secondaryQualifier: "" },
+            manualTriggerFilterConnectionStatusId: null,
+            appliesToAgeClassification: 0,
+            includeDataViewId: null,
+            excludeDataViewId: null
+        };
+    }
+
+    /**
+     * Gets the text representation of a Connection Workflow Trigger Type.
+     * @param triggerType The trigger type to get the text for.
+     */
+    function getTriggerTypeText(triggerType: ConnectionWorkflowTriggerType): string {
+        if (triggerType === ConnectionWorkflowTriggerType.RequestConnected) {
+            return "Request Completed";
+        }
+
+        return ConnectionWorkflowTriggerTypeDescription[triggerType] ?? "";
+    }
+
+    // #endregion Functions
 
     // #region Event Handlers
 
+    /**
+     * Opens the modal to add a new connection workflow.
+     */
     function onAdd(): void {
         isModalVisible.value = true;
+        errorMessage.value = null;
         theConnectionWorkflow.value = createNewConnectionWorkflow();
         primaryQualifier.value = "";
         secondaryQualifier.value = "";
     }
 
+    /**
+     * Opens the modal to edit an existing connection workflow.
+     * @param key The GUID of the connection workflow to edit.
+     */
     function onEdit(key: string): void {
-        const selected = (props.modelValue ?? []).find(wf => wf.guid === key);
-        if (!selected) return;
-        theConnectionWorkflow.value = { ...selected };
+        const selected = connectionWorkflows.value.find(wf => wf.guid === key);
+
+        if (!selected) {
+            return;
+        }
+
+        theConnectionWorkflow.value = {
+            ...selected,
+            qualifierValue: {
+                primaryQualifier: selected.qualifierValue?.primaryQualifier ?? "",
+                secondaryQualifier: selected.qualifierValue?.secondaryQualifier ?? ""
+            }
+        };
+
+        primaryQualifier.value = theConnectionWorkflow.value?.qualifierValue?.primaryQualifier ?? "";
+        secondaryQualifier.value = theConnectionWorkflow.value?.qualifierValue?.secondaryQualifier ?? "";
+
+        errorMessage.value = null;
         isModalVisible.value = true;
-
-        const qv = theConnectionWorkflow.value?.qualifierValue ?? "";
-        const parts = qv.split("|");
-        primaryQualifier.value = parts.length > 1 ? (parts[1] ?? "") : "";
-        secondaryQualifier.value = parts.length > 2 ? (parts[2] ?? "") : "";
     }
 
-    function onDelete(guid: string): void {
-        isModalVisible.value = false;
-        const current = (props.modelValue ?? []).filter(wf => wf.guid !== guid);
-        emit("update:modelValue", current);
+    /**
+     * Deletes a connection workflow.
+     * @param guid The GUID of the connection workflow to delete.
+     */
+    async function onDelete(guid: string): Promise<void> {
+        const result = await invokeBlockAction<CanDeleteResponseBag>("CanDeleteEntity", {
+            request: {
+                entityKey: EntityKey.ConnectionWorkflow,
+                entityGuid: guid
+            } as CanDeleteRequestBag
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage || "Unable to delete this connection workflow.";
+            return;
+        }
+
+        if (!result.data.canDelete) {
+            errorMessage.value = result.data.errorMessage || "This connection workflow cannot be deleted.";
+            return;
+        }
+
+        const updatedWorkflows = connectionWorkflows.value.filter(wf => wf.guid !== guid);
+        connectionWorkflows.value = updatedWorkflows;
+        errorMessage.value = null;
     }
 
+    /**
+     * Saves the current connection workflow (add or update) and closes the modal.
+     */
     function onSave(): void {
         if (!theConnectionWorkflow.value) {
             return;
@@ -270,7 +457,10 @@
 
         const primary = primaryQualifier.value ?? "";
         const secondary = secondaryQualifier.value ?? "";
-        theConnectionWorkflow.value.qualifierValue = `|${primary}|${secondary}|`;
+        theConnectionWorkflow.value.qualifierValue = {
+            primaryQualifier: primary,
+            secondaryQualifier: secondary
+        } as ConnectionWorkflowQualifierValueBag;
 
         // These properties are only relevant for Workflows with "Manual" trigger type
         if (theConnectionWorkflow.value.triggerType !== ConnectionWorkflowTriggerType.Manual) {
@@ -280,29 +470,35 @@
             theConnectionWorkflow.value.excludeDataViewId = null;
         }
 
-        const current = props.modelValue ?? [];
-        const idx = current.findIndex(wf => wf.guid === theConnectionWorkflow.value?.guid);
+        const currentWorkflows = connectionWorkflows.value;
+        const idx = currentWorkflows.findIndex(wf => wf.guid === theConnectionWorkflow.value?.guid);
 
+        let updatedWorkflows: ConnectionWorkflowBag[];
         if (idx !== -1) {
-            const updated = [...current];
-            updated.splice(idx, 1, theConnectionWorkflow.value);
-            emit("update:modelValue", updated);
+            updatedWorkflows = [...currentWorkflows];
+            updatedWorkflows.splice(idx, 1, { ...theConnectionWorkflow.value });
         }
         else {
-            const updated = [...current, theConnectionWorkflow.value];
-            emit("update:modelValue", updated);
+            updatedWorkflows = [...currentWorkflows, { ...theConnectionWorkflow.value }];
         }
 
+        connectionWorkflows.value = updatedWorkflows;
+        errorMessage.value = null;
         isModalVisible.value = false;
     }
 
     // #endregion Event Handlers
 
+    /**
+     * Handles reordering of workflows in the grid.
+     * @param item The item being moved.
+     * @param beforeItem The item to place it before (null if moved to end).
+     */
     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
         const itemGuid = item["guid"] as string;
         const beforeItemGuid = beforeItem?.["guid"] as string | null;
 
-        const currentItems = [...(props.modelValue ?? [])];
+        const currentItems = [...connectionWorkflows.value];
         const idx = currentItems.findIndex(i => i.guid === itemGuid);
 
         if (idx < 0) {
@@ -324,17 +520,22 @@
             currentItems.push(itemToMove);
         }
 
-        emit("update:modelValue", currentItems);
+        connectionWorkflows.value = currentItems;
         return true;
     }
 
     // #region Watchers
 
+    /**
+     * Watches for changes in the workflow trigger type to fetch relevant qualifier options.
+     */
     watch(() => theConnectionWorkflow.value?.triggerType, async (trigger) => {
         qualifierOptions.value = [];
 
         if (trigger === ConnectionWorkflowTriggerType.StatusChanged
-            || trigger === ConnectionWorkflowTriggerType.StateChanged
+            || trigger === ConnectionWorkflowTriggerType.StatusBecomesDue
+            || trigger === ConnectionWorkflowTriggerType.StatusBecomesDueSoon
+            || trigger === ConnectionWorkflowTriggerType.StatusBecomesOverdue
             || trigger === ConnectionWorkflowTriggerType.ActivityAdded
             || trigger === ConnectionWorkflowTriggerType.Manual) {
 
@@ -347,15 +548,11 @@
             }
         }
 
-        if (trigger === ConnectionWorkflowTriggerType.ActivityAdded) {
+        if (trigger === ConnectionWorkflowTriggerType.ActivityAdded
+            || trigger === ConnectionWorkflowTriggerType.StatusBecomesDue
+            || trigger === ConnectionWorkflowTriggerType.StatusBecomesDueSoon
+            || trigger === ConnectionWorkflowTriggerType.RequestBecomesOverdue) {
             secondaryQualifier.value = "";
-        }
-
-        if (trigger === ConnectionWorkflowTriggerType.Manual) {
-            qualifierOptions.value = [
-                { text: "All", value: "" },
-                ...qualifierOptions.value
-            ];
         }
 
     }, { immediate: true });

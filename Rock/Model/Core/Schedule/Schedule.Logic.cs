@@ -960,7 +960,7 @@ namespace Rock.Model
                     }
                     else if ( dates.Count() == 1 )
                     {
-                        result = "Once at " + calendarEvent.DtStart.Value.ToShortDateTimeString();
+                        result = "Once on " + dates.First().ToString( "MMMM d, yyyy" ) + " at " + dates.First().ToString( "h:mm tt" );
                     }
                     else
                     {

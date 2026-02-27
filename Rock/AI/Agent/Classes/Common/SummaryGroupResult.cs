@@ -48,7 +48,7 @@ namespace Rock.AI.Agent.Classes.Common
         /// all child groups. This usually reflects the total number of items
         /// represented by <see cref="Source"/>.
         /// </summary>
-        public int Total { get; set; }
+        public int? Total { get; set; }
 
         /// <summary>
         /// Child summary groups that further break down the summary results.
@@ -63,5 +63,4 @@ namespace Rock.AI.Agent.Classes.Common
         [JsonIgnore]
         public object Source { get; set; }
     }
-
 }

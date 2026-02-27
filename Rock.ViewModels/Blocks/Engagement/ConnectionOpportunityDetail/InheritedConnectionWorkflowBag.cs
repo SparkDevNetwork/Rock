@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Engagement.ConnectionOpportunityDetail
@@ -38,6 +39,6 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionOpportunityDetail
         /// <summary>
         /// Gets or sets the trigger type.
         /// </summary>
-        public int TriggerType { get; set; }
+        public ConnectionWorkflowTriggerType TriggerType { get; set; }
     }
 }

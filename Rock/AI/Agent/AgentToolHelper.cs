@@ -64,14 +64,14 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Indicates that the <see cref="_rockContext"/> is read-only and
         /// should not be used to save changes. This is set when the context
-        /// comes from the <see cref="AgentRequestContext"/>.
+        /// comes from the <see cref="IAgentRequestContext"/>.
         /// </summary>
         private readonly bool _isContextReadOnly;
 
         /// <summary>
         /// The context of the current agent request.
         /// </summary>
-        private readonly AgentRequestContext _agentRequestContext;
+        private readonly IAgentRequestContext _agentRequestContext;
 
         /// <summary>
         /// The logger to use for logging errors and information.
@@ -110,12 +110,12 @@ namespace Rock.AI.Agent
         public bool HasErrors => _errors.Count > 0;
 
         /// <summary>
-        /// Gets the <see cref="RockToolResult"/> that contains all the errors
+        /// Gets the <see cref="IAgentToolResult"/> that contains all the errors
         /// encountered during processing. Any information will also be
         /// included. This will throw an exception if no errors have been
         /// encountered.
         /// </summary>
-        public RockToolResult ErrorResult => GetErrorResult();
+        public IAgentToolResult ErrorResult => GetErrorResult();
 
         #endregion
 
@@ -127,7 +127,7 @@ namespace Rock.AI.Agent
         /// <param name="rockContext">The database context to use for reading and writing to the database.</param>
         /// <param name="agentRequestContext">The context of the current agent request.</param>
         /// <param name="logger">The logger to use for logging errors and information.</param>
-        public AgentToolHelper( RockContext rockContext, AgentRequestContext agentRequestContext, ILogger logger )
+        public AgentToolHelper( RockContext rockContext, IAgentRequestContext agentRequestContext, ILogger logger )
         {
             _rockContext = rockContext ?? throw new ArgumentNullException( nameof( rockContext ) );
             _agentRequestContext = agentRequestContext ?? throw new ArgumentNullException( nameof( agentRequestContext ) );
@@ -143,7 +143,7 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="agentRequestContext">The context of the current agent request.</param>
         /// <param name="logger">The logger to use for logging errors and information.</param>
-        public AgentToolHelper( AgentRequestContext agentRequestContext, ILogger logger )
+        public AgentToolHelper( IAgentRequestContext agentRequestContext, ILogger logger )
         {
             _agentRequestContext = agentRequestContext ?? throw new ArgumentNullException( nameof( agentRequestContext ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
@@ -156,19 +156,19 @@ namespace Rock.AI.Agent
         #region Result Methods
 
         /// <summary>
-        /// Gets the <see cref="RockToolResult"/> that contains all the errors and
+        /// Gets the <see cref="IAgentToolResult"/> that contains all the errors and
         /// additional information encountered during processing. If no errors
         /// have been encountered then an exception will be thrown.
         /// </summary>
-        /// <returns>A new instance of <see cref="RockToolResult"/>.</returns>
-        private RockToolResult GetErrorResult()
+        /// <returns>A new instance of <see cref="IAgentToolResult"/>.</returns>
+        private IAgentToolResult GetErrorResult()
         {
             if ( _errors.Count == 0 )
             {
                 throw new InvalidOperationException( "Unexpected call to GetErrorResult with no errors." );
             }
 
-            var result = RockToolResult.Error( _errors );
+            var result = AgentToolResult.Error( _errors );
 
             foreach ( var instruction in _instructions )
             {
@@ -195,15 +195,15 @@ namespace Rock.AI.Agent
         /// helper.
         /// </para>
         /// <para>
-        /// The returned <see cref="RockToolResult"/> object will be configured
+        /// The returned <see cref="IAgentToolResult"/> object will be configured
         /// to not have any history content.
         /// </para>
         /// </summary>
         /// <typeparam name="T">The type of object to be paginated.</typeparam>
         /// <param name="page">The items to be included in the results.</param>
-        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
-        /// <returns>A <see cref="RockToolResult"/> that contains the result data and any standard metadata.</returns>
-        public RockToolResult GetPaginatedResult<T>( PaginatedResult<T> page, bool sanitizeForSecurity = true )
+        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(IAgentRequestContext)"/>.</param>
+        /// <returns>A <see cref="IAgentToolResult"/> that contains the result data and any standard metadata.</returns>
+        public IAgentToolResult GetPaginatedResult<T>( PaginatedResult<T> page, bool sanitizeForSecurity = true )
         {
             return GetPaginatedResult<T, object>( page, null, sanitizeForSecurity );
         }
@@ -220,7 +220,7 @@ namespace Rock.AI.Agent
         /// helper.
         /// </para>
         /// <para>
-        /// The returned <see cref="RockToolResult"/> object will be configured
+        /// The returned <see cref="IAgentToolResult"/> object will be configured
         /// to not have any history content.
         /// </para>
         /// </summary>
@@ -228,11 +228,11 @@ namespace Rock.AI.Agent
         /// <typeparam name="THistory">The type of object to be used in the history.</typeparam>
         /// <param name="page">The items to be included in the results.</param>
         /// <param name="historyPage">The page result to use for the history content.</param>
-        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
-        /// <returns>A <see cref="RockToolResult"/> that contains the result data and any standard metadata.</returns>
-        public RockToolResult GetPaginatedResult<T, THistory>( PaginatedResult<T> page, PaginatedResult<THistory> historyPage, bool sanitizeForSecurity = true )
+        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(IAgentRequestContext)"/>.</param>
+        /// <returns>A <see cref="IAgentToolResult"/> that contains the result data and any standard metadata.</returns>
+        public IAgentToolResult GetPaginatedResult<T, THistory>( PaginatedResult<T> page, PaginatedResult<THistory> historyPage, bool sanitizeForSecurity = true )
         {
-            RockToolResult result;
+            IAgentToolResult result;
 
             if ( sanitizeForSecurity == true && typeof( EntityResultBase ).IsAssignableFrom( typeof( T ) ) )
             {
@@ -244,11 +244,11 @@ namespace Rock.AI.Agent
 
             if ( !page.Items.Any() )
             {
-                result = RockToolResult.NoData();
+                result = AgentToolResult.NoData();
             }
             else
             {
-                result = RockToolResult.Success( page );
+                result = AgentToolResult.Success( page );
             }
 
             foreach ( var instruction in _instructions )
@@ -441,7 +441,7 @@ namespace Rock.AI.Agent
             // Perform the security check if requested and applicable.
             if ( checkSecurity && entity is ISecured securedEntity )
             {
-                if ( !securedEntity.IsAuthorized( Authorization.VIEW, _agentRequestContext.RockRequestContext.CurrentPerson ) )
+                if ( !securedEntity.IsAuthorized( Authorization.VIEW, _agentRequestContext.CurrentPerson ) )
                 {
                     _errors.Add( $"The {parameterExpression} is not valid." );
 
@@ -600,7 +600,7 @@ namespace Rock.AI.Agent
                         continue;
                     }
 
-                    if ( enforceSecurity && !attribute.IsAuthorized( Authorization.EDIT, _agentRequestContext.RockRequestContext.CurrentPerson ) )
+                    if ( enforceSecurity && !attribute.IsAuthorized( Authorization.EDIT, _agentRequestContext.CurrentPerson ) )
                     {
                         AddError( $"You do not have permission to edit the attribute '{kvp.Key}'." );
                         continue;
@@ -634,7 +634,7 @@ namespace Rock.AI.Agent
                     continue;
                 }
 
-                if ( enforceSecurity && !attribute.IsAuthorized( Authorization.EDIT, _agentRequestContext.RockRequestContext.CurrentPerson ) )
+                if ( enforceSecurity && !attribute.IsAuthorized( Authorization.EDIT, _agentRequestContext.CurrentPerson ) )
                 {
                     continue;
                 }
@@ -675,7 +675,7 @@ namespace Rock.AI.Agent
 
             return entity.Attributes.Values
                 .Where( a => isInternal || a.IsPublic )
-                .Where( a => !enforceSecurity || a.IsAuthorized( Authorization.VIEW, _agentRequestContext.RockRequestContext.CurrentPerson ) )
+                .Where( a => !enforceSecurity || a.IsAuthorized( Authorization.VIEW, _agentRequestContext.CurrentPerson ) )
                 .Select( a =>
                 {
                     var attr = new AttributeResult
@@ -683,7 +683,7 @@ namespace Rock.AI.Agent
                         Key = a.Key,
                         Name = a.Name,
                         IsRequired = a.IsRequired,
-                        IsReadOnly = enforceSecurity && !a.IsAuthorized( Authorization.EDIT, _agentRequestContext.RockRequestContext.CurrentPerson ),
+                        IsReadOnly = enforceSecurity && !a.IsAuthorized( Authorization.EDIT, _agentRequestContext.CurrentPerson ),
                     };
 
                     if ( a.FieldType?.Field is Field.FieldType fieldType )
@@ -1208,6 +1208,26 @@ namespace Rock.AI.Agent
                 return queryable;
             }
 
+            var property = ExtractProperty( propertyExpression );
+
+            if ( "lookup".Equals( parameter, StringComparison.OrdinalIgnoreCase ) )
+            {
+                var definedValueAttribute = property.GetCustomAttribute<DefinedValueAttribute>();
+
+                if ( definedValueAttribute != null && definedValueAttribute.DefinedTypeGuid.HasValue )
+                {
+                    var definedTypeCache = DefinedTypeCache.Get( definedValueAttribute.DefinedTypeGuid.Value, _rockContext );
+                    var lookupValues = definedTypeCache.DefinedValues
+                        .Select( dv => new KeyNameResult( dv.Id, dv.Value ) )
+                        .ToList();
+
+                    AddMetadata( $"{parameterExpression}Lookup", lookupValues );
+                    AddError( $"Lookup requested for {parameterExpression}. Metadata contains valid values." );
+
+                    return queryable.Where( a => false );
+                }
+            }
+
             var id = IdHasher.Instance.GetId( parameter );
 
             if ( !id.HasValue )
@@ -1217,7 +1237,6 @@ namespace Rock.AI.Agent
                 return queryable.Where( a => false );
             }
 
-            var property = ExtractProperty( propertyExpression );
             var memberExpression = propertyExpression.Body;
 
             // If the property is a value type, it will be boxed, so handle UnaryExpression
@@ -1279,6 +1298,83 @@ namespace Rock.AI.Agent
             var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
 
             return queryable.Where( lambda );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by a parameter. If the parameter
+        /// is required then an error will be added if it is not provided. Any
+        /// errors will cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="lowerParameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="upperParameter">The parameter that contains the value to be filtered against.</param>
+        /// <param name="isRequired">If <c>true</c> then either <paramref name="lowerParameter"/> or <paramref name="upperParameter"/> value must be specified.</param>
+        /// <param name="lowerParameterExpression">The expression that describes what was passed to <paramref name="lowerParameter"/>, this is used when generating error messages.</param>
+        /// <param name="upperParameterExpression">The expression that describes what was passed to <paramref name="upperParameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        private IQueryable<TSource> WherePropertyBetween<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty?>> propertyExpression, TProperty? lowerParameter, TProperty? upperParameter, bool isRequired, [CallerArgumentExpression( nameof( lowerParameter ) )] string lowerParameterExpression = null, [CallerArgumentExpression( nameof( upperParameter ) )] string upperParameterExpression = null )
+            where TProperty : struct
+        {
+            if ( lowerParameterExpression.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentNullException( nameof( lowerParameterExpression ), "The lowerParameterExpression must be provided. It will be provided automatically if using C# 10, otherwise use 'nameof()' to get the name of the passed parameter." );
+            }
+
+            if ( upperParameterExpression.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentNullException( nameof( upperParameterExpression ), "The upperParameterExpression must be provided. It will be provided automatically if using C# 10, otherwise use 'nameof()' to get the name of the passed parameter." );
+            }
+
+            if ( !lowerParameter.HasValue && !upperParameter.HasValue )
+            {
+                if ( isRequired )
+                {
+                    AddError( $"Either {lowerParameterExpression} or {upperParameterExpression} is required." );
+                    return queryable.Where( a => false );
+                }
+
+                return queryable;
+            }
+
+            var property = ExtractProperty( propertyExpression );
+            var memberExpression = propertyExpression.Body;
+
+            // If the property is a value type, it will be boxed, so handle UnaryExpression
+            if ( memberExpression is UnaryExpression unaryExpression )
+            {
+                memberExpression = unaryExpression.Operand;
+            }
+
+            if ( lowerParameter.HasValue && upperParameter.HasValue )
+            {
+                var lowerValueExpression = Expression.Constant( lowerParameter.Value, property.PropertyType );
+                var lowerBody = Expression.GreaterThanOrEqual( memberExpression, lowerValueExpression );
+                var upperValueExpression = Expression.Constant( upperParameter.Value, property.PropertyType );
+                var upperBody = Expression.LessThanOrEqual( memberExpression, upperValueExpression );
+                var body = Expression.AndAlso( lowerBody, upperBody );
+                var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
+
+                return queryable.Where( lambda );
+            }
+            else if ( lowerParameter.HasValue )
+            {
+                var lowerValueExpression = Expression.Constant( lowerParameter.Value, property.PropertyType );
+                var body = Expression.GreaterThanOrEqual( memberExpression, lowerValueExpression );
+                var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
+
+                return queryable.Where( lambda );
+            }
+            else
+            {
+                var upperValueExpression = Expression.Constant( upperParameter.Value, property.PropertyType );
+                var body = Expression.LessThanOrEqual( memberExpression, upperValueExpression );
+                var lambda = Expression.Lambda<Func<TSource, bool>>( body, propertyExpression.Parameters[0] );
+
+                return queryable.Where( lambda );
+            }
         }
 
         /// <summary>
@@ -1420,6 +1516,60 @@ namespace Rock.AI.Agent
             return WhereProperty( queryable, propertyExpression, parameter, isRequired: true, parameterExpression: parameterExpression );
         }
 
+        /// <summary>
+        /// Handles filtering a queryable by ensuring a property value is between
+        /// two parameter values. If both the parameters are <c>null</c> then no
+        /// filtering will be performed. Both the lower and upper values are
+        /// inclusive. Any errors will cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="lowerParameter">The parameter that contains the lower value to be filtered against.</param>
+        /// <param name="upperParameter">The parameter that contains the upper value to be filtered against.</param>
+        /// <param name="lowerParameterExpression">The expression that describes what was passed to <paramref name="lowerParameter"/>, this is used when generating error messages.</param>
+        /// <param name="upperParameterExpression">The expression that describes what was passed to <paramref name="upperParameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        public IQueryable<TSource> WhereOptionalPropertyBetween<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty?>> propertyExpression, TProperty? lowerParameter, TProperty? upperParameter, [CallerArgumentExpression( nameof( lowerParameter ) )] string lowerParameterExpression = null, [CallerArgumentExpression( nameof( upperParameter ) )] string upperParameterExpression = null )
+            where TProperty : struct
+        {
+            return WherePropertyBetween( queryable,
+                propertyExpression,
+                lowerParameter,
+                upperParameter,
+                isRequired: false,
+                lowerParameterExpression: lowerParameterExpression,
+                upperParameterExpression: upperParameterExpression );
+        }
+
+        /// <summary>
+        /// Handles filtering a queryable by ensuring a property value is between
+        /// two parameter values. If both the parameters are <c>null</c> then an
+        /// error will be reported. Both the lower and upper values are
+        /// inclusive. Any errors will cause the queryable to return no results.
+        /// </summary>
+        /// <typeparam name="TSource">The type of object being queried.</typeparam>
+        /// <typeparam name="TProperty">The type of property being queried.</typeparam>
+        /// <param name="queryable">The original queryable to chain with an additional where clause.</param>
+        /// <param name="propertyExpression">The expression that maps to the property that will be filtered on.</param>
+        /// <param name="lowerParameter">The parameter that contains the lower value to be filtered against.</param>
+        /// <param name="upperParameter">The parameter that contains the upper value to be filtered against.</param>
+        /// <param name="lowerParameterExpression">The expression that describes what was passed to <paramref name="lowerParameter"/>, this is used when generating error messages.</param>
+        /// <param name="upperParameterExpression">The expression that describes what was passed to <paramref name="upperParameter"/>, this is used when generating error messages.</param>
+        /// <returns>A new <see cref="IQueryable{T}"/> that has the additional filter applied.</returns>
+        public IQueryable<TSource> WhereRequiredPropertyBetween<TSource, TProperty>( IQueryable<TSource> queryable, Expression<Func<TSource, TProperty?>> propertyExpression, TProperty? lowerParameter, TProperty? upperParameter, [CallerArgumentExpression( nameof( lowerParameter ) )] string lowerParameterExpression = null, [CallerArgumentExpression( nameof( upperParameter ) )] string upperParameterExpression = null )
+            where TProperty : struct
+        {
+            return WherePropertyBetween( queryable,
+                propertyExpression,
+                lowerParameter,
+                upperParameter,
+                isRequired: false,
+                lowerParameterExpression: lowerParameterExpression,
+                upperParameterExpression: upperParameterExpression );
+        }
+
         #endregion
 
         #region Save Methods
@@ -1498,25 +1648,75 @@ namespace Rock.AI.Agent
         #region Summary Methods
 
         /// <summary>
-        /// Populates child summary groupings for each parent group using the
-        /// specified function. This will set the <see cref="SummaryGroupResult.Groups"/>
-        /// property to the list returned by <paramref name="populate"/>.
+        /// Builds the dimension for a summary result. This handles building
+        /// the first dimension if <paramref name="parentGroups"/> is <c>null</c>
+        /// or building a child dimension for each of the
+        /// <paramref name="parentGroups"/> if not <c>null</c>.
         /// </summary>
-        /// <typeparam name="TState">The type of the state object passed to the callback function for each group.</typeparam>
-        /// <param name="parentGroups">The collection of parent summary group results to which child groupings will be added.</param>
-        /// <param name="state">A state object that provides contextual information to the callback function for each group.</param>
-        /// <param name="populate">A function that returns a list of child summary group results to associate with the parent.</param>
-        /// <returns>A list containing all child summary group results generated for the parent groups.</returns>
-        public List<SummaryGroupResult> PopulateSummaryGroupings<TState>( IEnumerable<SummaryGroupResult> parentGroups, TState state, Func<SummaryGroupResult, TState, List<SummaryGroupResult>> populate )
+        /// <typeparam name="T">The type of object that will be grouped and contains the counts.</typeparam>
+        /// <param name="parentGroups">The parent <see cref="SummaryGroupResult"/> objects to build a child dimension for or <c>null</c> to build a root dimension.</param>
+        /// <param name="rootSource">The full list of source counts if a root dimension is built. Must not be <c>null</c> if <paramref name="parentGroups"/> is also <c>null</c>.</param>
+        /// <param name="keySelector">The selector that will be used to group the <typeparamref name="T"/> objects.</param>
+        /// <param name="nameLookup">The lookup table that will be used for value to name mapping.</param>
+        /// <returns>A list of all <see cref="SummaryGroupResult"/> objects created for this dimension.</returns>
+        public List<SummaryGroupResult> BuildDimension<T>( IEnumerable<SummaryGroupResult> parentGroups, IEnumerable<T> rootSource, Func<T, int> keySelector, Dictionary<int, string> nameLookup )
+            where T : ISummaryGroupCount
         {
-            return parentGroups.SelectMany( g =>
-            {
-                var newGroups = populate( g, state );
+            return BuildDimension( parentGroups, rootSource, c => ( int? ) keySelector( c ), nameLookup );
+        }
 
-                g.Groups = newGroups;
+        /// <summary>
+        /// Builds the dimension for a summary result. This handles building
+        /// the first dimension if <paramref name="parentGroups"/> is <c>null</c>
+        /// or building a child dimension for each of the
+        /// <paramref name="parentGroups"/> if not <c>null</c>.
+        /// </summary>
+        /// <typeparam name="T">The type of object that will be grouped and contains the counts.</typeparam>
+        /// <param name="parentGroups">The parent <see cref="SummaryGroupResult"/> objects to build a child dimension for or <c>null</c> to build a root dimension.</param>
+        /// <param name="rootSource">The full list of source counts if a root dimension is built. Must not be <c>null</c> if <paramref name="parentGroups"/> is also <c>null</c>.</param>
+        /// <param name="keySelector">The selector that will be used to group the <typeparamref name="T"/> objects.</param>
+        /// <param name="nameLookup">The lookup table that will be used for value to name mapping.</param>
+        /// <returns>A list of all <see cref="SummaryGroupResult"/> objects created for this dimension.</returns>
+        public List<SummaryGroupResult> BuildDimension<T>( IEnumerable<SummaryGroupResult> parentGroups, IEnumerable<T> rootSource, Func<T, int?> keySelector, Dictionary<int, string> nameLookup )
+            where T : ISummaryGroupCount
+        {
+            return parentGroups == null
+                ? BuildDimension( rootSource, keySelector, nameLookup )
+                : parentGroups
+                    .SelectMany( g =>
+                    {
+                        var newGroups = BuildDimension( ( IEnumerable<T> ) g.Source, keySelector, nameLookup );
 
-                return newGroups;
-            } ).ToList();
+                        g.Groups = newGroups;
+
+                        return newGroups;
+                    } )
+                    .ToList();
+        }
+
+        /// <summary>
+        /// Builds the dimension for a set of source objects.
+        /// </summary>
+        /// <typeparam name="T">The type of object that will be grouped and contains the counts.</typeparam>
+        /// <param name="source">The set of source counts to build this dimension from.</param>
+        /// <param name="keySelector">The selector that will be used to group the <typeparamref name="T"/> objects.</param>
+        /// <param name="nameLookup">The lookup table that will be used for value to name mapping.</param>
+        /// <returns>A list of all <see cref="SummaryGroupResult"/> objects created for this dimension.</returns>
+        private List<SummaryGroupResult> BuildDimension<T>( IEnumerable<T> source, Func<T, int?> keySelector, Dictionary<int, string> nameLookup )
+            where T : ISummaryGroupCount
+        {
+            return source.GroupBy( keySelector )
+                .Select( g =>
+                {
+                    return new SummaryGroupResult
+                    {
+                        Id = g.Key,
+                        Name = g.Key.HasValue ? nameLookup[g.Key.Value] : null,
+                        Total = g.Sum( fc => fc.Count ),
+                        Source = g,
+                    };
+                } )
+                .ToList();
         }
 
         /// <summary>

@@ -31,7 +31,7 @@ namespace Rock.Tests.Performance.Benchmarks
 
         private readonly Consumer _consumer = new Consumer();
 
-        private AgentToolHelper _agentToolHelper;
+        //private AgentToolHelper _agentToolHelper;
 
         #endregion
 
@@ -39,9 +39,9 @@ namespace Rock.Tests.Performance.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
-            var rockContext = new RockContext( "bogus" );
+            //var rockContext = new RockContext( "bogus" );
 
-            _agentToolHelper = new AgentToolHelper( rockContext, new AgentRequestContext( null, rockContext ), NullLogger.Instance);
+            //_agentToolHelper = new AgentToolHelper( rockContext, new AgentRequestContext( null, rockContext ), NullLogger.Instance);
         }
 
         [Benchmark( Baseline = true )]
@@ -53,14 +53,14 @@ namespace Rock.Tests.Performance.Benchmarks
             return _campusQry.Where( c => c.Name == campusName );
         }
 
-        [Benchmark]
-        [BenchmarkCategory( "Where" )]
-        public object WherePropertyHelper()
-        {
-            var campusName = "Test";
+        //[Benchmark]
+        //[BenchmarkCategory( "Where" )]
+        //public object WherePropertyHelper()
+        //{
+        //    var campusName = "Test";
 
-            return _agentToolHelper.WhereRequiredProperty( _campusQry, c => c.Name, campusName );
-        }
+        //    return _agentToolHelper.WhereRequiredProperty( _campusQry, c => c.Name, campusName );
+        //}
 
         [Benchmark( Baseline = true )]
         [BenchmarkCategory( "Select" )]

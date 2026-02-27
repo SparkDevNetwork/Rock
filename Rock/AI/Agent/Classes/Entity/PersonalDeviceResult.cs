@@ -59,12 +59,12 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// Gets or sets a value indicating whether OS-level beacon (Bluetooth proximity) monitoring is enabled for this device/app pairing.
         /// </summary>
-        public bool IsBeaconMonitoringEnabled { get; set; }
+        public bool? IsBeaconMonitoringEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether precise/high‑accuracy location collection is enabled (as opposed to coarse/fuzzy location).
         /// </summary>
-        public bool IsPreciseLocationEnabled { get; set; }
+        public bool? IsPreciseLocationEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets the date/time when the user disabled location permission (if applicable). Null when permission has not been explicitly revoked.
@@ -79,7 +79,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// Gets or sets a value indicating whether push or local notifications are enabled for the application on this device.
         /// </summary>
-        public bool NotificationsEnabled { get; set; }
+        public bool? NotificationsEnabled { get; set; }
 
         /// <summary>
         /// Gets the platform name (e.g., "iOS", "Android", "Windows").
@@ -146,7 +146,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Setting this property automatically updates <see cref="LocationPermissionStatus"/>.
         /// </summary>
         [JsonIgnore]
-        public LocationPermissionStatus LocationPermissionStatusValue
+        public LocationPermissionStatus? LocationPermissionStatusValue
         {
             get => _locationPermissionStatusValue;
             set
@@ -155,6 +155,6 @@ namespace Rock.AI.Agent.Classes.Entity
                 LocationPermissionStatus = value.ConvertToString();
             }
         }
-        private LocationPermissionStatus _locationPermissionStatusValue;
+        private LocationPermissionStatus? _locationPermissionStatusValue;
     }
 }

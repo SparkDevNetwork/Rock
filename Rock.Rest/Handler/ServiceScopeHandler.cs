@@ -49,40 +49,62 @@ namespace Rock.Rest.Handler
         /// <inheritdoc/>
         protected override async Task<HttpResponseMessage> SendAsync( HttpRequestMessage request, CancellationToken cancellationToken )
         {
-            using ( var scope = _serviceProvider.CreateScope() )
+            var scope = _serviceProvider.CreateScope();
+
+            try
             {
                 var accessor = scope.ServiceProvider.GetRequiredService<IRockRequestContextAccessor>();
                 var rockContext = scope.ServiceProvider.GetRequiredService<RockContext>();
 
-                try
+                request.Properties["RockServiceProvider"] = scope.ServiceProvider;
+
+                var wrapper = new HttpRequestMessageWrapper( request );
+                var responseContext = new RockMessageResponseContext( wrapper );
+                var user = UserLoginService.GetCurrentUser( false, rockContext );
+                var rockRequestContext = new RockRequestContext( wrapper, responseContext, user );
+
+                if ( accessor is RockRequestContextAccessor internalAccessor )
                 {
-                    request.Properties["RockServiceProvider"] = scope.ServiceProvider;
-
-                    var wrapper = new HttpRequestMessageWrapper( request );
-                    var responseContext = new RockMessageResponseContext( wrapper );
-                    var user = UserLoginService.GetCurrentUser( false, rockContext );
-                    var rockRequestContext = new RockRequestContext( wrapper, responseContext, user );
-
-                    if ( accessor is RockRequestContextAccessor internalAccessor )
-                    {
-                        internalAccessor.RockRequestContext = rockRequestContext;
-                    }
-
-                    if ( rockRequestContext.IsClientForbidden() )
-                    {
-                        return request.CreateResponse( HttpStatusCode.Forbidden );
-                    }
-
-                    var responseMessage = await base.SendAsync( request, cancellationToken );
-
-                    responseContext.Update( responseMessage );
-
-                    return responseMessage;
+                    internalAccessor.RockRequestContext = rockRequestContext;
                 }
-                finally
+
+                if ( rockRequestContext.IsClientForbidden() )
                 {
-                    request.Properties.Remove( "RockServiceProvider" );
+                    return request.CreateResponse( HttpStatusCode.Forbidden );
                 }
+
+                var responseMessage = await base.SendAsync( request, cancellationToken );
+
+                // If we are using a PushStreamContent, we need to wrap it so
+                // we can dispose of the scope after the stream is finished.
+                // This will mimic the ASP.Net Core behavior of disposing the
+                // scope after the response is sent. Otherwise we get errors
+                // because the DbContext is disposed and navigation properties
+                // can fail to work.
+                if ( responseMessage.Content is PushStreamContent pushStreamContent )
+                {
+                    var originalContent = responseMessage.Content;
+
+                    responseMessage.Content = new ScopedPushStreamContent( scope, pushStreamContent );
+                }
+                else
+                {
+                    // No content? Dispose immediately.
+                    scope.Dispose();
+                }
+
+                responseContext.Update( responseMessage );
+
+                return responseMessage;
+            }
+            catch
+            {
+                scope.Dispose();
+                throw;
+            }
+            finally
+            {
+                request.Properties.Remove( "RockServiceProvider" );
             }
         }
     }

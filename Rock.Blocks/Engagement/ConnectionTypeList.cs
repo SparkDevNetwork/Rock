@@ -39,14 +39,15 @@ namespace Rock.Blocks.Engagement
     [Category( "Engagement" )]
     [Description( "Displays a list of connection types." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the connection type details.",
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "7d78f300-3df7-4ed7-bc2b-813d4f866220" )]
-    [Rock.SystemGuid.BlockTypeGuid( "45f30ea2-f93b-4a63-806f-7cd375daacab" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "45f30ea2-f93b-4a63-806f-7cd375daacab" )]
+    [Rock.SystemGuid.BlockTypeGuid( "D25F0658-3038-45B0-A6AA-DFFC4053EE13" )]
     [CustomizedGrid]
     public class ConnectionTypeList : RockEntityListBlockType<ConnectionType>
     {

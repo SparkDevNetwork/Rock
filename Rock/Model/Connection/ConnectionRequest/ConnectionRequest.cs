@@ -211,12 +211,14 @@ namespace Rock.Model
         /// The due date for this request.
         /// </summary>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime? DueDate { get; set; }
 
         /// <summary>
         /// The date when this request becomes considered due soon.
         /// </summary>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime? DueSoonDate { get; set; }
 
         /// <summary>

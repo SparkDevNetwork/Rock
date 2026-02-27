@@ -2127,7 +2127,7 @@ namespace Rock.Utility
                         PersonAliasId = _peopleAliasDictionary[personGuid],
                         Comments = comment,
                         ConnectionStatus = noContact,
-                        ConnectionState = global::ConnectionState.Active,
+                        ConnectionState = Rock.Model.ConnectionState.Active,
                         CreatedDateTime = date
                     };
 

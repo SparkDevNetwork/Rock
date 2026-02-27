@@ -14,9 +14,6 @@
                   :entityTypeGuid="EntityType.AuthClaim"
                   stickyHeader
                   liveUpdates
-                  gridSettings
-                  :gridSettingsActive="hasSettingsFilters"
-                  @gridSettingsClick="isGridSettingsVisible = true"
                   :showLaunchWorkflow="false"
                   :onAddItem="config.isAddEnabled ? onAddItem : undefined"
                   @selectItem="onSelectItem">
@@ -90,15 +87,13 @@
                     </div>
                 </div>
             </Modal>
-
-            <GridSettingsModal v-model="gridSettings"
-                               v-model:visible="isGridSettingsVisible" />
         </template>
     </template>
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { reactive, ref } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import Grid, { BooleanColumn, TextColumn, textValueFilter, booleanValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import Modal from "@Obsidian/Controls/modal.obs";
@@ -106,32 +101,21 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import GridSettingsModal from "./AuthClaims/gridSettingsModal.partial.obs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AuthClaimsOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/AuthClaims/authClaimsOptionsBag";
     import { AuthClaimBag } from "@Obsidian/ViewModels/Blocks/Security/AuthClaims/authClaimBag";
     import { AuthClaimRequestBag } from "@Obsidian/ViewModels/Blocks/Security/AuthClaims/authClaimRequestBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { PreferenceKey, GridSettingsOptions } from "./AuthClaims/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
 
     const config = useConfigurationValues<ListBlockBox<AuthClaimsOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
-    const isGridSettingsVisible = ref(false);
-
-    const gridSettings = ref<GridSettingsOptions>({
-        name: preferences.getValue(PreferenceKey.FilterName),
-        publicName: preferences.getValue(PreferenceKey.FilterPublicName),
-        activeStatus: preferences.getValue(PreferenceKey.FilterActiveStatus),
-    });
 
     const isModalVisible = ref(false);
     const idKey = ref("");
@@ -146,35 +130,7 @@
 
     // #region Computed Values
 
-    /**
-     * Returns `true` if the grid settings filters are active; otherwise `false`.
-     */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.name
-            || !!gridSettings.value.publicName
-            || !!gridSettings.value.activeStatus;
-    });
-
     // #endregion Computed Values
-
-    // #region Watchers
-
-    /**
-     * Watch for changes to the grid settings and update the preferences as needed.
-     */
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterName, gridSettings.value.name ?? "");
-        preferences.setValue(PreferenceKey.FilterPublicName, gridSettings.value.publicName ?? "");
-        preferences.setValue(PreferenceKey.FilterActiveStatus, gridSettings.value.activeStatus ?? "");
-
-        // Save the preferences
-        await preferences.save();
-
-        // Reload the grid data
-        gridDataSource.value = loadGridData();
-    });
-
-    // #endregion Watchers
 
     // #region Functions
 

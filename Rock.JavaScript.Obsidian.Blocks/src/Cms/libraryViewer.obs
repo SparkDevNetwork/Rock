@@ -46,35 +46,6 @@
     </div>
 </template>
 
-<style scoped>
-.library-viewer-container :deep(.panel-toolbar) {
-    gap: 4px;
-}
-
-.library-viewer-body {
-    display: flex;
-    flex-direction: row;
-    overflow: hidden;
-    height: 100%;
-}
-
-:deep(.styled-scroll *::-webkit-scrollbar),
-:deep(.styled-scroll *::-webkit-scrollbar-thumb) {
-    /* Transitions don't work for visibility
-       and opacity doesn't work for scrollbars. */
-    visibility: visible;
-}
-
-:deep(.styled-scroll *:active::-webkit-scrollbar),
-:deep(.styled-scroll *:focus::-webkit-scrollbar),
-:deep(.styled-scroll *:hover::-webkit-scrollbar),
-:deep(.styled-scroll *:active::-webkit-scrollbar-thumb),
-:deep(.styled-scroll *:focus::-webkit-scrollbar-thumb),
-:deep(.styled-scroll *:hover::-webkit-scrollbar-thumb) {
-    visibility: visible;
-}
-</style>
-
 <script setup lang="ts">
     import { ref } from "vue";
     import ItemList from "./LibraryViewer/itemList.partial.obs";

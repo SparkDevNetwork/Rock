@@ -101,7 +101,11 @@ namespace Rock
         /// <returns></returns>
         public static string Sha1Hash( this string str )
         {
+#if NET9_0_OR_GREATER
+            using ( var crypt = SHA1.Create() )
+#else
             using ( var crypt = new SHA1Managed() )
+#endif
             {
                 var hash = crypt.ComputeHash( Encoding.UTF8.GetBytes( str ) );
                 var sb = new StringBuilder( hash.Length * 2 );
@@ -123,7 +127,11 @@ namespace Rock
         /// <returns></returns>
         public static string Sha256Hash( this string str )
         {
+#if NET9_0_OR_GREATER
+            using ( var crypt = SHA256.Create() )
+#else
             using ( var crypt = new System.Security.Cryptography.SHA256Managed() )
+#endif
             {
                 var hash = crypt.ComputeHash( Encoding.UTF8.GetBytes( str ) );
                 var sb = new StringBuilder();
@@ -726,8 +734,12 @@ namespace Rock
             {
                 // Unicode Encode Covering all characterset
                 byte[] byteContents = Encoding.Unicode.GetBytes( str );
+#if NET9_0_OR_GREATER
+                var hash = SHA256.Create();
+#else
                 System.Security.Cryptography.SHA256 hash =
                 new System.Security.Cryptography.SHA256CryptoServiceProvider();
+#endif
                 byte[] hashText = hash.ComputeHash( byteContents );
 
                 long hashCodeStart = BitConverter.ToInt64( hashText, 0 );

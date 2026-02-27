@@ -472,11 +472,27 @@ namespace Rock.Model
             {
                 var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.Group } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
 
-                result = groupByQry.ToList().Select( a => new SummaryData
+                var dataItems = groupByQry.ToList();
+
+                // Identify group IDs whose names are shared with at least one other group.
+                // When multiple groups share the same name, their SeriesName must be unique
+                // to prevent the chart from merging them into a single series and displaying
+                // incorrect counts for all identically-named groups.
+                var duplicateNameGroupIds = dataItems
+                    .Select( a => new { a.Key.Series.Id, a.Key.Series.Name } )
+                    .Distinct()
+                    .GroupBy( g => g.Name )
+                    .Where( g => g.Count() > 1 )
+                    .SelectMany( g => g.Select( x => x.Id ) )
+                    .ToHashSet();
+
+                result = dataItems.Select( a => new SummaryData
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesName = a.Key.Series.Name,
+                    SeriesName = duplicateNameGroupIds.Contains( a.Key.Series.Id )
+                        ? $"{a.Key.Series.Name} (Id: {a.Key.Series.Id})"
+                        : a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
             }
@@ -496,11 +512,27 @@ namespace Rock.Model
             {
                 var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.Location } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
 
-                result = groupByQry.ToList().Select( a => new SummaryData
+                var dataItems = groupByQry.ToList();
+
+                // Identify location IDs whose names are shared with at least one other item.
+                // When multiple locations share the same name, their SeriesName must be unique
+                // to prevent the chart from merging them into a single series and displaying
+                // incorrect counts for all identically-named locations.
+                var duplicateNameLocationIds = dataItems
+                    .Select( a => new { a.Key.Series.Id, a.Key.Series.Name } )
+                    .Distinct()
+                    .GroupBy( l => l.Name )
+                    .Where( l => l.Count() > 1 )
+                    .SelectMany( l => l.Select( x => x.Id ) )
+                    .ToHashSet();
+
+                result = dataItems.Select( a => new SummaryData
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesName = a.Key.Series.Name,
+                    SeriesName = duplicateNameLocationIds.Contains( a.Key.Series.Id )
+                        ? $"{a.Key.Series.Name} (Id: {a.Key.Series.Id})"
+                        : a.Key.Series.Name,
                     YValue = a.Count
                 } ).ToList();
             }

@@ -609,7 +609,7 @@ export const EntityType = {
     MobileOutreachAddContactBlockType: "2742790B-031B-4CF3-9489-B84E50EA99BA",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Engagement.ContactProfile */
     MobileOutreachContactProfileBlockType: "5A8E8F2C-1F1E-4D3A-9C8E-3B6D9F1C4E2B",
-    /** The GUID for the entity Rock.Blocks.Types.Mobile.Engagement.MyContacts. */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Engagement.MyContact. */
     MobileOutreachMyContactsBlockType: "D1CFF2E3-0E3A-4F2D-8F1D-4C3E3F2B6F2A",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Engagement.OutreachDashboard. */
     MobileOutreachOutreachDashboardBlockType: "A3D9F1C4-E3C1-4D3A-8C2E-7F4B5B6D9F1C",
@@ -849,7 +849,7 @@ export const EntityType = {
     StreakTypeExclusion: "1F00C782-F8A2-4CFA-B7DF-E5B3B6D36069",
     /** The guid for the system communication entity */
     SystemCommunication: "D0CAD7C0-10FE-41EF-B89D-E6F0D22456C4",
-    /** The EntityType Guid for Rock.Model.SystemEmail  */
+    /** The EntityType Guid for Rock.Model.SystemEmail which is made obsolete by the Rock.Model.SystemCommunication */
     SystemEmail: "B21FD119-893E-46C0-B42D-E4CDD5C8C49D",
     /** The EntityType Guid for Rock.Model.SystemPhoneNumber  */
     SystemPhoneNumber: "66D62A9F-13CD-4160-8653-211B2A4ABF16",

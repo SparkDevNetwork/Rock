@@ -123,8 +123,7 @@ namespace Rock.Web.Cache.Entities
         /// <returns>An instance of <see cref="SkillConfiguration"/> that represents the skill and tools, or <c>null</c> if the skill should not be used.</returns>
         private static SkillConfiguration GetSkillConfiguration( AISkillCache skill, AgentSkillSettings agentSkillSettings, Person currentPerson, bool isSecurityEnabled, RockContext rockContext )
         {
-            var tools = new AISkillToolService( rockContext )
-                .Queryable()
+            var tools = AISkillToolCache.All( rockContext )
                 .Where( f => f.AISkillId == skill.Id )
                 .ToList()
                 .Where( f => !isSecurityEnabled || f.IsAuthorized( Authorization.VIEW, currentPerson ) );

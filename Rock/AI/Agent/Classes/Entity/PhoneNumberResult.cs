@@ -36,11 +36,11 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// Indicates if SMS is enabled for this phone number.
         /// </summary>
-        public bool IsMessagingEnabled { get; set; }
+        public bool? IsMessagingEnabled { get; set; }
 
         /// <summary>
         /// Indicates if this phone number is unlisted.
         /// </summary>
-        public bool IsUnlisted { get; set; }
+        public bool? IsUnlisted { get; set; }
     }
 }

@@ -22,6 +22,13 @@ export const enum NavigationUrlKey {
     ParentPage = "ParentPage",
 }
 
+export const enum EntityKey {
+    PlacementGroupConfig = "PlacementGroupConfig",
+    PlacementGroup = "PlacementGroup",
+    ConnectorGroup = "ConnectorGroup",
+    ConnectionWorkflow = "ConnectionWorkflow",
+}
+
 export type PlacementGroupSectionData = {
     configs: PlacementGroupConfigBag[];
     groups: PlacementGroupBag[];

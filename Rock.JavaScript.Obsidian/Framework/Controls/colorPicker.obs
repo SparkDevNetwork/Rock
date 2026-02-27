@@ -1,54 +1,266 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-model="internalValue"
+    <RockFormField :modelValue="modelValue"
                    v-bind="standardFieldProps"
                    formGroupClasses="rock-color-picker"
                    name="colorpicker">
         <template #default="{ uniqueId, field }">
-            <div class="control-wrapper">
-                <slot name="prepend" :isInputGroupSupported="true" />
+            <div class="control-wrapper"
+                 :style="{ '--color': displayValue }">
+                <slot name="prepend"
+                      :isInputGroupSupported="true"></slot>
 
-                <div ref="colorPicker" class="input-group input-width-lg">
-                    <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                <div ref="colorPicker"
+                     class="input-group input-width-lg">
+                    <slot name="inputGroupPrepend"
+                          :isInputGroupSupported="true"></slot>
 
-                    <input v-model="internalValue" :id="uniqueId" type="text" class="form-control" v-bind="field" :placeholder="placeholder" />
-                    <span class="input-group-addon">
-                        <i></i>
+                    <input v-model="displayValue"
+                           :id="uniqueId"
+                           type="text"
+                           class="form-control"
+                           v-bind="field"
+                           :placeholder="placeholder"
+                           @focus="isTyping = true"
+                           @blur="onBlur" />
+                    <span class="input-group-addon color-preview-wrapper"
+                          :class="{ 'is-selected': isOpen }"
+                          ref="popoverButton"
+                          @click="onPopoverButtonClick()">
+                        <span class="color-preview"></span>
                     </span>
 
-                    <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                    <slot name="inputGroupAppend"
+                          :isInputGroupSupported="true"></slot>
+
+                    <teleport to="body">
+                        <div v-if="isOpen && !isAdvancedViewVisible"
+                             ref="popover"
+                             class="color-picker-popover color-picker-popover-simple"
+                             :style="popoverStyle"
+                             @pointerdown.stop>
+                            <div class="color-picker-popover-body">
+                                <div class="swatch-list-form-group">
+                                    <div class="swatch-list-label">Palette</div>
+                                    <div class="swatch-list-group">
+                                        <div v-for="(chunk, index) in chunkedDefaultSwatches"
+                                             :key="index"
+                                             class="swatch-list">
+                                            <div v-for="(s, subIndex) in chunk"
+                                                 :key="subIndex"
+                                                 class="swatch"
+                                                 :class="{ 'is-selected': selectedSimpleViewSwatchItem?.color === s.color, 'has-border': s.isBorderRequired }"
+                                                 :style="{ background: s.color }"
+                                                 v-tooltip.html="getTooltipContent(s.name, s.color)"
+                                                 @click="onSelectPalette(s.color)">
+                                            </div>
+                                        </div>
+                                        <div class="swatch-list">
+                                            <div v-for="(s, index) in definedValuePaletteColorSwatchItems"
+                                                 :key="index"
+                                                 class="swatch"
+                                                 :class="{ 'is-selected': selectedSimpleViewSwatchItem?.color === s.color, 'has-border': s.isBorderRequired }"
+                                                 :style="{ background: s.color }"
+                                                 v-tooltip.html="getTooltipContent(s.name, s.color)"
+                                                 @click="onSelectPalette(s.color)">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div v-if="selectedSimpleViewSwatchItem?.shades"
+                                     class="swatch-list-form-group">
+                                    <div class="swatch-list-label">{{ selectedSimpleViewSwatchItem.name }} Shades</div>
+                                    <div class="swatch-list">
+                                        <div v-for="(shade, index) in selectedSimpleViewSwatchItem?.shades"
+                                             :key="index"
+                                             class="swatch"
+                                             :class="{ 'is-selected': isSwatchSelected(shade), 'has-border': shade.isBorderRequired }"
+                                             :style="{ background: shade.color }"
+                                             v-tooltip.html="getTooltipContent(shade.name, shade.color)"
+                                             @click="onSelectSwatch(shade.color)">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="color-picker-popover-footer">
+                                <div class="color-picker-actions">
+                                    <div class="color-picker-commit-actions">
+                                        <RockButton btnType="primary"
+                                                    btnSize="sm"
+                                                    type="button"
+                                                    @click="onSelectClick">
+                                            Select
+                                        </RockButton>
+
+                                        <RockButton btnType="link"
+                                                    btnSize="sm"
+                                                    type="button"
+                                                    @click="onCancelClick">
+                                            Cancel
+                                        </RockButton>
+                                    </div>
+
+                                    <RockButton btnSize="sm"
+                                                isSquare
+                                                title="Switch to Advanced View"
+                                                @click="isAdvancedViewVisible = true">
+                                        <i class="ti ti-palette"></i>
+                                    </RockButton>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="isOpen && isAdvancedViewVisible"
+                             ref="popover"
+                             class="color-picker-popover color-picker-popover-advanced"
+                             :style="popoverStyle"
+                             @pointerdown.stop>
+                            <div class="color-picker-popover-body">
+                                <div class="color-picker-row">
+                                    <div ref="svArea"
+                                         class="sv-area"
+                                         :style="svStyle"
+                                         @pointerdown="onStartSVDrag">
+                                        <div class="sv-indicator"
+                                             :style="svIndicatorStyle"></div>
+                                    </div>
+
+                                    <div ref="hueArea"
+                                         class="hue-slider"
+                                         @pointerdown="onStartHueDrag">
+                                        <div class="hue-indicator"
+                                             :style="hueIndicatorStyle"></div>
+                                    </div>
+
+                                    <div ref="alphaArea"
+                                         class="alpha-slider"
+                                         :style="alphaStyle"
+                                         @pointerdown="onStartAlphaDrag">
+                                        <div class="alpha-indicator"
+                                             :style="alphaIndicatorStyle"></div>
+                                    </div>
+
+                                </div>
+
+                                <div class="color-preview-bar"
+                                     :style="previewStyle">
+                                </div>
+
+                                <div class="swatch-list">
+                                    <div v-for="(s, index) in definedValueCustomSwatchItems"
+                                         :key="index"
+                                         class="swatch"
+                                         :class="{ 'is-selected': isSwatchSelected(s) }"
+                                         :style="{ background: s.color }"
+                                         v-tooltip.html="getTooltipContent(s.name, s.color)"
+                                         @click="onSelectSwatch(s.color)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="color-picker-popover-footer">
+                                <div class="color-picker-actions">
+                                    <div class="color-picker-commit-actions">
+                                        <RockButton btnType="primary"
+                                                    btnSize="sm"
+                                                    type="button"
+                                                    @click="onSelectClick">
+                                            Select
+                                        </RockButton>
+
+                                        <RockButton btnType="link"
+                                                    btnSize="sm"
+                                                    type="button"
+                                                    @click="onCancelClick">
+                                            Cancel
+                                        </RockButton>
+                                    </div>
+
+                                    <RockButton btnSize="sm"
+                                                btnType="default"
+                                                class="active focus"
+                                                isSquare
+                                                title="Switch to Simple View"
+                                                @click="isAdvancedViewVisible = false">
+                                        <i class="ti ti-palette"></i>
+                                    </RockButton>
+                                </div>
+                            </div>
+                        </div>
+                    </teleport>
                 </div>
 
-                <slot name="append" :isInputGroupSupported="true" />
+                <slot name="append"
+                      :isInputGroupSupported="true"></slot>
             </div>
         </template>
     </RockFormField>
 </template>
 
+<style scoped>
+/*Do not migrate this to global, the v-bind will not work.*/
+.color-picker-popover-simple {
+    --swatch-horizontal-count: v-bind(SIMPLE_VIEW_SWATCHES_PER_ROW);
+    --swatch-size: 20px;
+    --swatch-horizontal-gap: var(--spacing-tiny);
+}
+
+/*Do not migrate this to global, the v-bind will not work.*/
+.color-picker-popover-advanced {
+    --swatch-horizontal-count: v-bind(ADVANCED_VIEW_SWATCHES_PER_ROW);
+    --swatch-size: 28px;
+    --swatch-horizontal-gap: var(--spacing-xsmall);
+}
+</style>
+
 <script setup lang="ts">
-    import { onMounted, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onMounted, onUnmounted, PropType, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { DefinedValuePickerGetDefinedValuesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetDefinedValuesOptionsBag";
+    import { ColorPickerSwatchBag } from "@Obsidian/ViewModels/Rest/Controls/colorPickerSwatchBag";
+    import { ColorPickerGetColorPickerSwatchesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/colorPickerGetColorPickerSwatchesOptionsBag";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
-    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
-    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { isElement } from "@Obsidian/Utility/dom";
 
-    // TODO: This should be replaced with a version that does not require jQuery.
+    type ColorFormat = "hex" | "rgb" | "named";
+    type ShadeStop = "50" | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900" | "950";
 
-    const http = useHttp();
+    /** Represents a color swatch item that can be displayed in the color picker */
+    type SwatchItem = {
+        name: string;
+        color: string;
+        normalizedHex: string;
+        shades?: ShadeSwatchItem[];
+        isBorderRequired: boolean;
+    };
+
+    /** Represents a shade swatch item that can be displayed in the color picker */
+    type ShadeSwatchItem = Omit<SwatchItem, "shades"> & {
+        stop: string;
+    };
+
+    type SwatchItemWithLocation = SwatchItem & {
+        displayLocation: "Palette Color" | "Custom";
+    };
+
+    type DragTarget = "sv" | "hue" | "alpha";
 
     const props = defineProps({
         modelValue: {
             type: String as PropType<string>,
             required: true
         },
+
         placeholder: {
             type: String as PropType<string>,
             default: ""
         },
+
         modelModifiers: {
             type: Object as PropType<{ hex?: boolean } | undefined>
         },
@@ -59,89 +271,664 @@
         (e: "update:modelValue", value: string): void;
     }>();
 
+    const http = useHttp();
     const standardFieldProps = useStandardRockFormFieldProps(props);
 
-    const internalValue = ref(getModifiedValue(props.modelValue));
+    let shadowHost: HTMLElement | null = null;
+    let shadowProbe: HTMLElement | null = null;
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const MIN_SWATCH_CONTRAST = 1.2;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const SIMPLE_VIEW_SWATCHES_PER_ROW = 11;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const ADVANCED_VIEW_SWATCHES_PER_ROW = 7;
+
+    const backgroundColorCssVariable = "--color-interface-softest";
+    const popupBg = new RockColor(getComputedStyle(document.documentElement).getPropertyValue(backgroundColorCssVariable));
+
+    let activePointerId: number | null = null;
+
+    // From https://tailwindcss.com/docs/colors
+    const defaultSimpleViewSwatchItems: SwatchItem[] = [
+        createSwatchItem("Slate", "#62748e", {
+            "50": "#f8fafc",
+            "100": "#f1f5f9",
+            "200": "#e2e8f0",
+            "300": "#cad5e2",
+            "400": "#90a1b9",
+            "500": "#62748e",
+            "600": "#45556c",
+            "700": "#314158",
+            "800": "#1d293d",
+            "900": "#0f172b",
+            "950": "#020618"
+        }),
+        createSwatchItem("Gray", "#6a7282", {
+            "50": "#f9fafb",
+            "100": "#f3f4f6",
+            "200": "#e5e7eb",
+            "300": "#d1d5dc",
+            "400": "#99a1af",
+            "500": "#6a7282",
+            "600": "#4a5565",
+            "700": "#364153",
+            "800": "#1e2939",
+            "900": "#101828",
+            "950": "#030712"
+        }),
+        createSwatchItem("Zinc", "#71717b", {
+            "50": "#fafafa",
+            "100": "#f4f4f5",
+            "200": "#e4e4e7",
+            "300": "#d4d4d8",
+            "400": "#9f9fa9",
+            "500": "#71717b",
+            "600": "#52525c",
+            "700": "#3f3f46",
+            "800": "#27272a",
+            "900": "#18181b",
+            "950": "#09090b"
+        }),
+        createSwatchItem("Neutral", "#737373", {
+            "50": "#fafafa",
+            "100": "#f5f5f5",
+            "200": "#e5e5e5",
+            "300": "#d4d4d4",
+            "400": "#a1a1a1",
+            "500": "#737373",
+            "600": "#525252",
+            "700": "#404040",
+            "800": "#262626",
+            "900": "#171717",
+            "950": "#0a0a0a"
+        }),
+        createSwatchItem("Stone", "#79716b", {
+            "50": "#fafaf9",
+            "100": "#f5f5f4",
+            "200": "#e7e5e4",
+            "300": "#d6d3d1",
+            "400": "#a6a09b",
+            "500": "#79716b",
+            "600": "#57534d",
+            "700": "#44403b",
+            "800": "#292524",
+            "900": "#1c1917",
+            "950": "#0c0a09"
+        }),
+        createSwatchItem("Red", "#ef4444", {
+            "50": "#fef2f2",
+            "100": "#fee2e2",
+            "200": "#fecaca",
+            "300": "#fca5a5",
+            "400": "#f87171",
+            "500": "#ef4444",
+            "600": "#dc2626",
+            "700": "#b91c1c",
+            "800": "#991b1b",
+            "900": "#7f1d1d",
+            "950": "#450a0a"
+        }),
+        createSwatchItem("Orange", "#ff6900", {
+            "50": "#fff7ed",
+            "100": "#ffedd4",
+            "200": "#ffd6a7",
+            "300": "#ffb86a",
+            "400": "#ff8904",
+            "500": "#ff6900",
+            "600": "#f54900",
+            "700": "#ca3500",
+            "800": "#9f2d00",
+            "900": "#7e2a0c",
+            "950": "#441306"
+        }),
+        createSwatchItem("Amber", "#fe9a00", {
+            "50": "#fffbeb",
+            "100": "#fef3c6",
+            "200": "#fee685",
+            "300": "#ffd230",
+            "400": "#ffb900",
+            "500": "#fe9a00",
+            "600": "#e17100",
+            "700": "#bb4d00",
+            "800": "#973c00",
+            "900": "#7b3306",
+            "950": "#461901"
+        }),
+        createSwatchItem("Yellow", "#f0b100", {
+            "50": "#fefce8",
+            "100": "#fef9c2",
+            "200": "#fff085",
+            "300": "#ffdf20",
+            "400": "#fdc700",
+            "500": "#f0b100",
+            "600": "#d08700",
+            "700": "#a65f00",
+            "800": "#894b00",
+            "900": "#733e0a",
+            "950": "#432004"
+        }),
+        createSwatchItem("Lime", "#7ccf00", {
+            "50": "#f7fee7",
+            "100": "#ecfcca",
+            "200": "#d8f999",
+            "300": "#bbf451",
+            "400": "#9ae600",
+            "500": "#7ccf00",
+            "600": "#5ea500",
+            "700": "#497d00",
+            "800": "#3c6300",
+            "900": "#35530e",
+            "950": "#192e03"
+        }),
+        createSwatchItem("Green", "#00c950", {
+            "50": "#f0fdf4",
+            "100": "#dcfce7",
+            "200": "#b9f8cf",
+            "300": "#7bf1a8",
+            "400": "#05df72",
+            "500": "#00c950",
+            "600": "#00a63e",
+            "700": "#008236",
+            "800": "#016630",
+            "900": "#0d542b",
+            "950": "#032e15"
+        }),
+        createSwatchItem("Emerald", "#00bc7d", {
+            "50": "#ecfdf5",
+            "100": "#d0fae5",
+            "200": "#a4f4cf",
+            "300": "#5ee9b5",
+            "400": "#00d492",
+            "500": "#00bc7d",
+            "600": "#009966",
+            "700": "#007a55",
+            "800": "#006045",
+            "900": "#004f3b",
+            "950": "#002c22"
+        }),
+        createSwatchItem("Teal", "#00bba7", {
+            "50": "#f0fdfa",
+            "100": "#cbfbf1",
+            "200": "#96f7e4",
+            "300": "#46ecd5",
+            "400": "#00d5be",
+            "500": "#00bba7",
+            "600": "#009689",
+            "700": "#00786f",
+            "800": "#005f5a",
+            "900": "#0b4f4a",
+            "950": "#022f2e"
+        }),
+        createSwatchItem("Cyan", "#00b8db", {
+            "50": "#ecfeff",
+            "100": "#cefafe",
+            "200": "#a2f4fd",
+            "300": "#53eafd",
+            "400": "#00d3f2",
+            "500": "#00b8db",
+            "600": "#0092b8",
+            "700": "#007595",
+            "800": "#005f78",
+            "900": "#104e64",
+            "950": "#053345"
+        }),
+        createSwatchItem("Sky", "#00a6f4", {
+            "50": "#f0f9ff",
+            "100": "#dff2fe",
+            "200": "#b8e6fe",
+            "300": "#74d4ff",
+            "400": "#00bcff",
+            "500": "#00a6f4",
+            "600": "#0084d1",
+            "700": "#0069a8",
+            "800": "#00598a",
+            "900": "#024a70",
+            "950": "#052f4a"
+        }),
+        createSwatchItem("Blue", "#2b7fff", {
+            "50": "#eff6ff",
+            "100": "#dbeafe",
+            "200": "#bedbff",
+            "300": "#8ec5ff",
+            "400": "#51a2ff",
+            "500": "#2b7fff",
+            "600": "#155dfc",
+            "700": "#1447e6",
+            "800": "#193cb8",
+            "900": "#1c398e",
+            "950": "#162456"
+        }),
+        createSwatchItem("Indigo", "#615fff", {
+            "50": "#eef2ff",
+            "100": "#e0e7ff",
+            "200": "#c6d2ff",
+            "300": "#a3b3ff",
+            "400": "#7c86ff",
+            "500": "#615fff",
+            "600": "#4f39f6",
+            "700": "#432dd7",
+            "800": "#372aac",
+            "900": "#312c85",
+            "950": "#1e1a4d"
+        }),
+        createSwatchItem("Violet", "#8e51ff", {
+            "50": "#f5f3ff",
+            "100": "#ede9fe",
+            "200": "#ddd6ff",
+            "300": "#c4b4ff",
+            "400": "#a684ff",
+            "500": "#8e51ff",
+            "600": "#7f22fe",
+            "700": "#7008e7",
+            "800": "#5d0ec0",
+            "900": "#4d179a",
+            "950": "#2f0d68"
+        }),
+        createSwatchItem("Purple", "#ad46ff", {
+            "50": "#faf5ff",
+            "100": "#f3e8ff",
+            "200": "#e9d4ff",
+            "300": "#dab2ff",
+            "400": "#c27aff",
+            "500": "#ad46ff",
+            "600": "#9810fa",
+            "700": "#8200db",
+            "800": "#6e11b0",
+            "900": "#59168b",
+            "950": "#3c0366"
+        }),
+        createSwatchItem("Fuchsia", "#e12afb", {
+            "50": "#fdf4ff",
+            "100": "#fae8ff",
+            "200": "#f6cfff",
+            "300": "#f4a8ff",
+            "400": "#ed6aff",
+            "500": "#e12afb",
+            "600": "#c800de",
+            "700": "#a800b7",
+            "800": "#8a0194",
+            "900": "#721378",
+            "950": "#4b004f"
+        }),
+        createSwatchItem("Pink", "#f6339a", {
+            "50": "#fdf2f8",
+            "100": "#fce7f3",
+            "200": "#fccee8",
+            "300": "#fda5d5",
+            "400": "#fb64b6",
+            "500": "#f6339a",
+            "600": "#e60076",
+            "700": "#c6005c",
+            "800": "#a3004c",
+            "900": "#861043",
+            "950": "#510424"
+        }),
+        createSwatchItem("Rose", "#ff2056", {
+            "50": "#fff1f2",
+            "100": "#ffe4e6",
+            "200": "#ffccd3",
+            "300": "#ffa1ad",
+            "400": "#ff637e",
+            "500": "#ff2056",
+            "600": "#ec003f",
+            "700": "#c70036",
+            "800": "#a50036",
+            "900": "#8b0836",
+            "950": "#4d0218"
+        }),
+    ];
+
+    const chunkedDefaultSwatches = Enumerable
+        .from(defaultSimpleViewSwatchItems)
+        .chunk(SIMPLE_VIEW_SWATCHES_PER_ROW)
+        .toArray();
+
+    // #region Values
+
+    // UI state
     const colorPicker = ref<HTMLElement>();
+    const popoverButton = ref<HTMLElement>();
+    const popover = ref<HTMLElement>();
+    const popoverStyle = ref<Record<string, string>>({});
+    const isOpen = ref(false);
+    const svArea = ref<HTMLElement>();
+    const hueArea = ref<HTMLElement>();
+    const alphaArea = ref<HTMLElement>();
+    const isTyping = ref(false);
+    const currentFormat = ref<ColorFormat | null>(null);
+    const displayValue = ref(props.modelValue ?? "");
+    const openBaselineValue = ref<string>("");
+    const isAdvancedViewVisible = ref(false);
+    const activeDrag = ref<DragTarget | null>(null);
+    const hue = ref<number>(0);          // 0–360
+    const saturation = ref<number>(100); // 0–100
+    const value = ref<number>(100);      // 0–100
+    const alpha = ref<number>(1); // 0–1
+    const definedValueSwatchItems = ref<SwatchItemWithLocation[]>([]);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let $colorPicker: any;
+    // #endregion Values
 
-    watch(() => props.modelValue, (newValue) => {
-        newValue = getModifiedValue(newValue);
+    // #region Computed Values
 
-        if (newValue) {
-            if (newValue !== internalValue.value) {
-                $colorPicker?.colorpicker("setValue", newValue);
-            }
+    const selectedSimpleViewSwatchItem = computed<SwatchItem | null>(() => {
+        const selectedHexValue = selectedHex.value;
+        if (!selectedHexValue) {
+            return null;
         }
-        else if ($colorPicker) {
-            // When we try to call setValue with an empty string it freaks out
-            // and puts "#aN" in the text box.
-            const c = $colorPicker?.data("colorpicker").createColor("");
-            $colorPicker.data("colorpicker").color = c;
-            $colorPicker?.data("colorpicker").updateComponent("transparent");
+
+        // Select the first matching palette color, checking both base and shades for a match.
+        // This allows the selected color to be highlighted in the palette even if it's not an exact match for the base color (e.g., a shade of the palette color).
+        // It also prevents highlighting multiple matches when the palette contains both a base color and one of its shades that are the same as the selected color.
+        let foundSwatchItem = Enumerable
+            .from(definedValuePaletteColorSwatchItems.value)
+            .firstOrDefault(c =>
+                c.normalizedHex === selectedHexValue
+                || !!c.shades?.some(s => s.normalizedHex === selectedHexValue)
+            );
+
+        if (foundSwatchItem) {
+            return foundSwatchItem;
         }
 
-        internalValue.value = newValue;
+        foundSwatchItem = Enumerable
+            .from(defaultSimpleViewSwatchItems)
+            .firstOrDefault(c =>
+                c.normalizedHex === selectedHexValue
+                || !!c.shades?.some(s => s.normalizedHex === selectedHexValue)
+            );
+
+        return foundSwatchItem ?? null;
     });
 
-    watch(internalValue, (newValue) => {
-        newValue = getModifiedValue(newValue);
-
-        if (newValue !== getModifiedValue(props.modelValue)) {
-            emit("update:modelValue", newValue);
-        }
+    const definedValuePaletteColorSwatchItems = computed<SwatchItem[]>(() => {
+        return definedValueSwatchItems.value.filter(
+            s => s.displayLocation === "Palette Color" && !!s.color
+        );
     });
 
-    function getModifiedValue(value: string): string {
-        if (props.modelModifiers?.hex && value) {
-            if (value.startsWith("#") && value.length < 7) {
-                // The color is being entered manually so do not modify it yet.
-                return value;
-            }
+    const definedValueCustomSwatchItems = computed<SwatchItem[]>(() => {
+        return definedValueSwatchItems.value.filter(
+            s => s.displayLocation === "Custom"
+        );
+    });
 
-            const color = new RockColor(value);
-            const hex = color.toHex();
-            const hexToCompare = hex.toLowerCase();
+    const svStyle = computed(() => ({
+        background: `
+            linear-gradient(to top, black, transparent),
+            linear-gradient(to right, white, transparent),
+            hsl(${hue.value}, 100%, 50%)
+        `
+    }));
 
-            const isHexBlack = hexToCompare === "#000000"
-                || hexToCompare === "#000"
-                || hexToCompare === "#000f"
-                || hexToCompare === "#000000ff";
+    const svIndicatorStyle = computed(() => ({
+        left: `${saturation.value}%`,
+        top: `${100 - value.value}%`
+    }));
 
-            const valueToCompare = value.toLowerCase().replace(/ /g, "");
-            const isValueBlack = valueToCompare === "#000000"
-                || valueToCompare === "#000"
-                || valueToCompare === "#000f"
-                || valueToCompare === "#000000ff"
-                || valueToCompare === "black"
-                || valueToCompare === "rgb(0,0,0)"
-                || valueToCompare === "rgba(0,0,0,1)";
 
-            if (isHexBlack && !isValueBlack) {
-                // Do not modify value. It is likely being entered manually by the user.
-                return value;
-            }
-            else {
+    const hueIndicatorStyle = computed(() => ({
+        top: `${(1 - hue.value / 360) * 100}%`
+    }));
+
+    const alphaStyle = computed(() => {
+        const transparent = hsvToHex(
+            hue.value,
+            saturation.value,
+            value.value,
+            0
+        );
+
+        const opaque = hsvToHex(
+            hue.value,
+            saturation.value,
+            value.value,
+            1
+        );
+
+        return {
+            background: `
+            linear-gradient(to top,
+                ${transparent},
+                ${opaque}
+            ),
+            repeating-conic-gradient(var(--color-interface-soft) 0% 25%, var(--color-interface-softest) 0% 50%) 0 0 / calc(var(--alpha-square-size) * 2) calc(var(--alpha-square-size) * 2)
+        `
+        };
+    });
+
+    const alphaIndicatorStyle = computed(() => ({
+        top: `${(1 - alpha.value) * 100}%`
+    }));
+
+    const previewHex = computed(() =>
+        hsvToHex(hue.value, saturation.value, value.value, alpha.value)
+    );
+
+    const previewStyle = computed(() => ({
+        background: `
+        linear-gradient(${previewHex.value}, ${previewHex.value}),
+        repeating-conic-gradient(var(--color-interface-soft) 0% 25%, var(--color-interface-softest) 0% 50%) 0 0 / calc(var(--alpha-square-size) * 2) calc(var(--alpha-square-size) * 2)
+    `
+    }));
+
+    const selectedHex = computed(() => {
+        return normalizeToHex(displayValue.value ?? "") ?? null;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function isPrimaryPointer(e: PointerEvent): boolean {
+        // Ignore non primary pointers and right click
+        return e.isPrimary && e.button === 0;
+    }
+
+    function formatHexForOutput(hex: string): string {
+        if (props.modelModifiers?.hex) {
+            return hex;
+        }
+
+        switch (currentFormat.value) {
+            case "rgb":
+                return new RockColor(hex).toRgba();
+
+            case "named":
+                return RockColor.getKeywordFromColor(hex) ?? hex;
+
+            case "hex":
+            default:
                 return hex;
-            }
+        }
+    }
+
+    function createSwatchItem(name: string, color: string, shades?: Record<ShadeStop, string>): SwatchItem {
+        const rockColor = new RockColor(color);
+        return {
+            name,
+            color,
+            normalizedHex: rockColor.toHex(),
+            isBorderRequired: isBorderRequired(rockColor, popupBg),
+            shades: shades
+                ? Enumerable
+                    .from(Object.entries(shades))
+                    .select<ShadeSwatchItem>(([shadeStop, shadeColor]) => {
+                        const shadeRockColor = new RockColor(shadeColor);
+                        return {
+                            name: `${name} - ${shadeStop}`,
+                            color: shadeColor,
+                            normalizedHex: shadeRockColor.toHex(),
+                            isBorderRequired: isBorderRequired(shadeRockColor, popupBg),
+                            stop: shadeStop
+                        };
+                    })
+                    .toArray()
+                : undefined
+        };
+    }
+
+    function getShadowProbe(): HTMLElement {
+        if (shadowProbe) {
+            return shadowProbe;
         }
 
-        // The color picker wants things in lower case.
-        return value.toLowerCase();
+        shadowHost = document.createElement("div");
+        shadowHost.style.position = "absolute";
+        shadowHost.style.width = "0";
+        shadowHost.style.height = "0";
+        shadowHost.style.overflow = "hidden";
+        shadowHost.style.pointerEvents = "none";
+
+        const shadowRoot = shadowHost.attachShadow({ mode: "closed" });
+
+        shadowProbe = document.createElement("div");
+        shadowRoot.appendChild(shadowProbe);
+
+        document.body.appendChild(shadowHost);
+
+        return shadowProbe;
+    }
+
+    /**
+     * Normalize a CSS color string to a consistent RGB format.
+     * @param value The CSS color string to normalize.
+     * @returns The normalized RGB color string or null if the color is invalid.
+     */
+    function tryNormalizeToRgb(value: string): string | null {
+        if (!("attachShadow" in Element.prototype)) {
+            const el = document.createElement("div");
+            el.style.setProperty("color", value, "important");
+            document.body.appendChild(el);
+            const computedColor = getComputedStyle(el).color;
+            document.body.removeChild(el);
+            const rgbColor = new RockColor(computedColor).toRgba();
+            return rgbColor;
+        }
+        else {
+            const probe = getShadowProbe();
+            probe.style.color = "";
+            probe.style.setProperty("color", value, "important");
+
+            if (!probe.style.color) {
+                return null;
+            }
+
+            const computedColor = getComputedStyle(probe).color;
+            const rgbColor = new RockColor(computedColor).toRgba();
+            return rgbColor;
+        }
+    }
+
+    function normalizeToHex(value: string): string | undefined {
+        if (!value) {
+            return;
+        }
+
+        const trimmed = value.trim();
+
+        let hex = tryNormalizeToHex(trimmed);
+        if (hex) {
+            return hex;
+        }
+
+        const rgb = tryNormalizeToRgb(trimmed);
+        if (rgb) {
+            return new RockColor(rgb).toHex();
+        }
+
+        return;
+    }
+
+    function detectFormat(value: string): ColorFormat | null {
+        if (!value) {
+            return null;
+        }
+
+        const trimmed = value.trim();
+
+        if (/^#([0-9a-f]{3,8})$/i.test(trimmed)) {
+            return "hex";
+        }
+
+        if (/^rgba?\(/i.test(trimmed)) {
+            return "rgb";
+        }
+
+        if (RockColor.getColorFromKeyword(trimmed.toLowerCase()) !== null) {
+            return "named";
+        }
+
+        return null;
+    }
+
+    function updateFromHsv(): void {
+        const hex = hsvToHex(
+            hue.value,
+            saturation.value,
+            value.value,
+            alpha.value
+        );
+
+        displayValue.value = formatHexForOutput(hex);
+    }
+
+    function updatePopoverPosition(): void {
+        if (!colorPicker.value || !popover.value) {
+            return;
+        }
+
+        const triggerRect = colorPicker.value.getBoundingClientRect();
+        const popRect = popover.value.getBoundingClientRect();
+
+        const placement = calculatePlacement(
+            triggerRect,
+            popRect.width,
+            popRect.height
+        );
+
+        let position = calculatePosition(
+            triggerRect,
+            placement,
+            popRect.width,
+            popRect.height
+        );
+
+        if (!position) {
+            return;
+        }
+
+        const margin = 8;
+
+        // Clamp horizontally
+        position.left = clamp(
+            position.left,
+            margin,
+            window.innerWidth - popRect.width - margin
+        );
+
+        // Clamp vertically
+        position.top = clamp(
+            position.top,
+            margin,
+            window.innerHeight - popRect.height - margin
+        );
+
+        popoverStyle.value = {
+            position: "fixed",
+            top: `${position.top}px`,
+            left: `${position.left}px`
+        };
     }
 
     /**
      * Load color swatch defined type from server to display at the bottom of the picker.
      */
-    async function loadColorSwatches(): Promise<ListItemBag[]> {
-        const options: DefinedValuePickerGetDefinedValuesOptionsBag = {
-            definedTypeGuid: toGuidOrNull(DefinedType.ColorPickerSwatches) ?? emptyGuid,
-            includeInactive: false,
-        };
-        const url = "/api/v2/Controls/DefinedValuePickerGetDefinedValues";
-        const result = await http.post<ListItemBag[]>(url, undefined, options);
+    async function loadColorSwatches(): Promise<ColorPickerSwatchBag[]> {
+        const options: ColorPickerGetColorPickerSwatchesOptionsBag = {};
+
+        const url = "/api/v2/Controls/ColorPickerGetColorPickerSwatches";
+        const result = await http.post<ColorPickerSwatchBag[]>(url, undefined, options);
 
         if (result.isSuccess && result.data) {
             return result.data;
@@ -152,23 +939,601 @@
         }
     }
 
-    onMounted(async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        $colorPicker = (<any>window[<any>"$"])(colorPicker.value);
-        const colorSwatches = await loadColorSwatches();
+    function hsvToHex(h: number, s: number, v: number, a: number): string {
+        s /= 100;
+        v /= 100;
+        h = h % 360;
 
-        $colorPicker.colorpicker({
-            colorSelectors: colorSwatches.map(c => c.text)
-        });
+        const c = v * s;
+        const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+        const m = v - c;
 
-        // Vue will not detect the change if it happens from jQuery, so we need
-        // to detect the change and make sure Vue knows.
-        $colorPicker.on("changeColor", () => {
-            const newValue = getModifiedValue(<string>$colorPicker.find("> input").val() ?? "");
+        let r = 0, g = 0, b = 0;
 
-            if (internalValue.value !== newValue) {
-                internalValue.value = newValue;
-            }
-        });
+        if (h < 60) [r, g, b] = [c, x, 0];
+        else if (h < 120) [r, g, b] = [x, c, 0];
+        else if (h < 180) [r, g, b] = [0, c, x];
+        else if (h < 240) [r, g, b] = [0, x, c];
+        else if (h < 300) [r, g, b] = [x, 0, c];
+        else[r, g, b] = [c, 0, x];
+
+        const to255 = (n: number): number =>
+            Math.round((n + m) * 255);
+
+        const r255 = to255(r);
+        const g255 = to255(g);
+        const b255 = to255(b);
+
+        if (a < 1) {
+            const a255 = Math.round(a * 255);
+            return `#${r255.toString(16).padStart(2, "0")}${g255.toString(16).padStart(2, "0")}${b255.toString(16).padStart(2, "0")}${a255.toString(16).padStart(2, "0")}`;
+        }
+
+        return `#${r255.toString(16).padStart(2, "0")}${g255.toString(16).padStart(2, "0")}${b255.toString(16).padStart(2, "0")}`;
+    }
+
+    function hexToHsv(hex: string): { h: number, s: number, v: number, a: number } | undefined {
+        if (!hex) {
+            return;
+        }
+
+        const color = new RockColor(hex);
+
+        const r = color.r / 255;
+        const g = color.g / 255;
+        const b = color.b / 255;
+
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const delta = max - min;
+
+        let h = 0;
+
+        if (delta !== 0) {
+            if (max === r) h = 60 * (((g - b) / delta) % 6);
+            else if (max === g) h = 60 * ((b - r) / delta + 2);
+            else h = 60 * ((r - g) / delta + 4);
+        }
+
+        if (h < 0) h += 360;
+
+        const s = max === 0 ? 0 : delta / max;
+        const v = max;
+
+        return {
+            h: Math.round(h),
+            s: Math.round(s * 100),
+            v: Math.round(v * 100),
+            a: color.alpha ?? 1 // NaN fallback to 1
+        };
+    }
+
+    function syncFromHex(hex: string): void {
+        const hsv = hexToHsv(hex);
+        if (!hsv) {
+            return;
+        }
+
+        if (hue.value !== hsv.h) hue.value = hsv.h;
+        if (saturation.value !== hsv.s) saturation.value = hsv.s;
+        if (value.value !== hsv.v) value.value = hsv.v;
+        if (alpha.value !== hsv.a) alpha.value = hsv.a;
+    }
+
+    function tryNormalizeToHex(value: string): string | undefined {
+        if (!value) {
+            return;
+        }
+
+        const trimmed = value.trim();
+
+        // Modern CSS also supports alpha channels (transparency).
+        // This pattern accounts for 3-digit (#RGB), 4-digit (#RGBA), 6-digit (#RRGGBB), and 8-digit (#RRGGBBAA) formats.
+        const isFullHex = /^#([A-Fa-f0-9]{3,4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/.test(trimmed);
+
+        // This pattern handles the legacy comma format and the newer space-separated format
+        // with a slash for alpha, e.g., rgb(255 255 255 / 0.5) and rgba(255, 255, 255, 0.5).
+        const isFullRgb = /^rgba?\(\s*(\d{1,3}(?:\s*,\s*|\s+)){2}\d{1,3}\s*(?:(?:\s*,\s*|\s*\/\s*)(?:0|1|0?\.\d+))?\s*\)$/.test(trimmed);
+
+        const isNamed = RockColor.getColorFromKeyword(trimmed.toLowerCase()) !== null;
+
+        if (!isFullHex && !isFullRgb && !isNamed) {
+            return;
+        }
+
+        return new RockColor(trimmed).toHex();
+    }
+
+    function commitSelection(): void {
+        const trimmed = displayValue.value.trim();
+        emit("update:modelValue", trimmed);
+        isOpen.value = false;
+    }
+
+    function cancelSelection(): void {
+        const baseline = openBaselineValue.value ?? "";
+        displayValue.value = baseline;
+
+        const hex = normalizeToHex(baseline);
+        if (hex) {
+            syncFromHex(hex);
+        }
+
+        isOpen.value = false;
+    }
+
+    function getTooltipContent(name: string, color: string): string {
+        return `${name}<br>${color.toUpperCase()}`;
+    }
+
+    function isSwatchSelected(item: SwatchItem): boolean {
+        return selectedHex.value === item.normalizedHex;
+    }
+
+    function clamp(value: number, min: number, max: number): number {
+        return Math.min(Math.max(value, min), max);
+    }
+
+    function isBorderRequired(
+        swatch: RockColor,
+        popupBg: RockColor
+    ): boolean {
+        const contrast = RockColor.calculateContrastRatio(swatch, popupBg);
+
+        // If the contrast ratio is less than the minimum swatch contrast,
+        // it means the swatch color is very similar to the popup background,
+        // so we should add a border to ensure it's distinguishable.
+        return contrast < MIN_SWATCH_CONTRAST;
+    }
+
+    function calculatePosition(
+        triggerRect: DOMRect,
+        placement: "bottom" | "top" | "right" | "left",
+        popoverWidth: number,
+        popoverHeight: number
+    ): { top: number, left: number } {
+        switch (placement) {
+            case "bottom":
+                return {
+                    top: triggerRect.bottom,
+                    left: triggerRect.right - popoverWidth
+                };
+
+            case "top":
+                return {
+                    top: triggerRect.top - popoverHeight,
+                    left: triggerRect.left
+                };
+
+            case "right":
+                return {
+                    top: triggerRect.top,
+                    left: triggerRect.right
+                };
+
+            case "left":
+                return {
+                    top: triggerRect.top,
+                    left: triggerRect.left - popoverWidth
+                };
+        }
+    }
+
+    function calculatePlacement(
+        triggerRect: DOMRect,
+        popoverWidth: number,
+        popoverHeight: number
+    ): "bottom" | "top" | "right" | "left" {
+        const spaceBelow = window.innerHeight - triggerRect.bottom;
+        const spaceAbove = triggerRect.top;
+        const spaceRight = window.innerWidth - triggerRect.right;
+        const spaceLeft = triggerRect.left;
+
+        if (spaceBelow >= popoverHeight) return "bottom";
+        if (spaceAbove >= popoverHeight) return "top";
+        if (spaceRight >= popoverWidth) return "right";
+        if (spaceLeft >= popoverWidth) return "left";
+
+        const verticalMax = Math.max(spaceBelow, spaceAbove);
+        const horizontalMax = Math.max(spaceRight, spaceLeft);
+
+        if (verticalMax >= horizontalMax) {
+            return spaceBelow >= spaceAbove ? "bottom" : "top";
+        }
+
+        return spaceRight >= spaceLeft ? "right" : "left";
+    }
+
+    function beginDrag(
+        e: PointerEvent,
+        target: DragTarget,
+        areaRef: HTMLElement,
+        updateHandler: (e: PointerEvent) => void
+    ): void {
+        if (!isPrimaryPointer(e)) {
+            return;
+        }
+
+        activeDrag.value = target;
+        activePointerId = e.pointerId;
+
+        areaRef.setPointerCapture(e.pointerId);
+        updateHandler(e);
+
+        window.addEventListener("pointermove", onPointerMove, { passive: false });
+        window.addEventListener("pointerup", onStopPointerDrag, { passive: true });
+        window.addEventListener("pointercancel", onStopPointerDrag, { passive: true });
+    }
+
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onSelectClick(): void {
+        commitSelection();
+    }
+
+    function onCancelClick(): void {
+        cancelSelection();
+    }
+
+    function onBlur(): void {
+        isTyping.value = false;
+
+        if (!props.modelModifiers?.hex) {
+            return;
+        }
+
+        const trimmed = displayValue.value.trim();
+        if (!trimmed) {
+            return;
+        }
+
+        const hex = normalizeToHex(trimmed);
+        if (!hex) {
+            return;
+        }
+
+        if (displayValue.value !== hex) {
+            displayValue.value = hex;
+            emit("update:modelValue", hex);
+        }
+
+        currentFormat.value = "hex";
+        syncFromHex(hex);
+    }
+
+    function onStartSVDrag(e: PointerEvent): void {
+        if (svArea.value) {
+            beginDrag(e, "sv", svArea.value, onUpdateSV);
+        }
+    }
+
+    function onStartHueDrag(e: PointerEvent): void {
+        if (hueArea.value) {
+            beginDrag(e, "hue", hueArea.value, onUpdateHue);
+        }
+    }
+
+    function onStartAlphaDrag(e: PointerEvent): void {
+        if (alphaArea.value) {
+            beginDrag(e, "alpha", alphaArea.value, onUpdateAlpha);
+        }
+    }
+
+    function onPointerMove(e: PointerEvent): void {
+        // If another finger touches the screen, ignore it
+        if (activePointerId === null || e.pointerId !== activePointerId) {
+            return;
+        }
+
+        // Prevent scrolling while dragging (works with passive: false)
+        e.preventDefault();
+
+        switch (activeDrag.value) {
+            case "sv":
+                onUpdateSV(e);
+                break;
+            case "hue":
+                onUpdateHue(e);
+                break;
+            case "alpha":
+                onUpdateAlpha(e);
+                break;
+        }
+    }
+
+    function onUpdateAlpha(e: PointerEvent): void {
+        if (!alphaArea.value) {
+            return;
+        }
+
+        const rect = alphaArea.value.getBoundingClientRect();
+        const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+
+        const raw = 1 - (y / rect.height);
+        alpha.value = Math.min(1, Math.max(0, Math.round(raw * 100) / 100));
+
+        updateFromHsv();
+    }
+
+    function onStopPointerDrag(e: PointerEvent): void {
+        if (activePointerId === null || e.pointerId !== activePointerId) {
+            return;
+        }
+
+        switch (activeDrag.value) {
+            case "sv":
+                svArea.value?.releasePointerCapture(e.pointerId);
+                break;
+            case "hue":
+                hueArea.value?.releasePointerCapture(e.pointerId);
+                break;
+            case "alpha":
+                alphaArea.value?.releasePointerCapture(e.pointerId);
+                break;
+        }
+
+        activeDrag.value = null;
+        activePointerId = null;
+
+        window.removeEventListener("pointermove", onPointerMove);
+        window.removeEventListener("pointerup", onStopPointerDrag);
+        window.removeEventListener("pointercancel", onStopPointerDrag);
+    }
+
+    function onUpdateSV(e: PointerEvent): void {
+        if (!svArea.value) {
+            return;
+        }
+
+        const rect = svArea.value.getBoundingClientRect();
+        const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+        const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+
+        saturation.value = Math.round((x / rect.width) * 100);
+        value.value = Math.round(100 - (y / rect.height) * 100);
+
+        updateFromHsv();
+    }
+
+    function onUpdateHue(e: PointerEvent): void {
+        if (!hueArea.value) {
+            return;
+        }
+
+        const rect = hueArea.value.getBoundingClientRect();
+        const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+
+        const raw = 360 - (y / rect.height) * 360;
+        hue.value = clamp(Math.round(raw), 0, 360);
+
+        updateFromHsv();
+    }
+
+    function onSelectPalette(base: string): void {
+        const hex = normalizeToHex(base);
+        if (!hex) {
+            return;
+        }
+
+        displayValue.value = formatHexForOutput(hex);
+
+        syncFromHex(hex);
+    }
+
+    function onSelectSwatch(color: string): void {
+        const hex = normalizeToHex(color);
+        if (!hex) {
+            return;
+        }
+
+        displayValue.value = formatHexForOutput(hex);
+
+        syncFromHex(hex);
+    }
+
+    function onViewportChange(): void {
+        if (isOpen.value) {
+            updatePopoverPosition();
+        }
+    }
+
+    function onPopoverButtonClick(): void {
+        isOpen.value = !isOpen.value;
+    }
+
+    function onClickOutside(e: PointerEvent): void {
+        if (!isOpen.value) {
+            // Skip if not open.
+            return;
+        }
+
+        if (popover.value && popover.value.contains(e.target as Node)) {
+            // Avoid closing the popover when clicking inside it.
+            return;
+        }
+
+        if (popoverButton.value && popoverButton.value.contains(e.target as Node)) {
+            // Avoid closing the popover when clicking the button that toggles it.
+            // That button has its own click handler that will close/open the popover.
+            return;
+        }
+
+
+        if (isElement(e.target) && e.target.closest(".tooltip")) {
+            // Avoid closing the popover when interacting with tooltips.
+            return;
+        }
+
+        cancelSelection();
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(popover, () => {
+        if (popover.value && isOpen.value) {
+            requestAnimationFrame(updatePopoverPosition);
+        }
     });
+
+    watch(() => props.modelValue, (newValue) => {
+        if (isTyping.value) {
+            return;
+        }
+
+        const trimmed = newValue?.trim() ?? "";
+
+        const hex = normalizeToHex(trimmed);
+
+        if (props.modelModifiers?.hex) {
+            if (hex) {
+                displayValue.value = hex;
+                currentFormat.value = "hex";
+                syncFromHex(hex);
+            }
+            else {
+                displayValue.value = trimmed;
+                currentFormat.value = null;
+            }
+
+            return;
+        }
+
+        // Non-hex mode
+        displayValue.value = trimmed;
+        currentFormat.value = detectFormat(trimmed);
+
+        if (hex) {
+            syncFromHex(hex);
+        }
+    });
+
+    watch(displayValue, (newValue) => {
+        if (!isTyping.value) {
+            return;
+        }
+
+        const trimmed = newValue?.trim() ?? "";
+
+        const detected = detectFormat(trimmed);
+        if (detected) {
+            currentFormat.value = detected;
+        }
+
+        const hex = normalizeToHex(trimmed);
+        if (hex) {
+            syncFromHex(hex);
+        }
+
+        if (!isOpen.value) {
+            emit("update:modelValue", trimmed);
+        }
+    });
+
+    watch(isOpen, async (open) => {
+        if (!open) {
+            // Reset the simple/advanced view when closing the popover to ensure the palette is always shown first when reopening.
+            isAdvancedViewVisible.value = false;
+            document.removeEventListener("pointerdown", onClickOutside);
+            return;
+        }
+
+        document.addEventListener("pointerdown", onClickOutside);
+        openBaselineValue.value = props.modelValue ?? "";
+
+        const hex = normalizeToHex(displayValue.value ?? "");
+
+        if (!hex) {
+            isAdvancedViewVisible.value = false;
+        }
+        else {
+            // If no matching simple swatch exists, show advanced view.
+            isAdvancedViewVisible.value = selectedSimpleViewSwatchItem.value === null;
+        }
+
+        await nextTick();
+        requestAnimationFrame(updatePopoverPosition);
+    });
+
+    watch(
+        () => props.modelModifiers?.hex,
+        (isHexEnabled) => {
+            if (isHexEnabled) {
+                currentFormat.value = "hex";
+
+                const hex = normalizeToHex(displayValue.value);
+                if (hex) {
+                    displayValue.value = hex;
+                    emit("update:modelValue", hex);
+                    syncFromHex(hex);
+                }
+            }
+            else {
+                // Restore format detection from current display value
+                currentFormat.value = detectFormat(displayValue.value);
+
+                const hex = normalizeToHex(displayValue.value);
+                if (hex) {
+                    syncFromHex(hex);
+                }
+            }
+        }
+    );
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onMounted(async () => {
+        window.addEventListener("resize", onViewportChange);
+        window.addEventListener("scroll", onViewportChange, true);
+
+        const initial = displayValue.value;
+        const hex = normalizeToHex(initial);
+
+        if (props.modelModifiers?.hex) {
+            currentFormat.value = "hex";
+
+            if (hex && initial !== hex) {
+                displayValue.value = hex;
+                emit("update:modelValue", hex);
+            }
+        }
+        else {
+            // Preserve original format
+            currentFormat.value = detectFormat(initial);
+        }
+
+        if (hex) {
+            syncFromHex(hex);
+        }
+
+        const colors = await loadColorSwatches();
+        definedValueSwatchItems.value = Enumerable
+            .from(colors)
+            .where(c => !!c.value)
+            .select<SwatchItemWithLocation>(c => {
+                return {
+                    ...createSwatchItem(c.description ?? c.value!, c.value!),
+                    displayLocation: c.displayLocation === "Palette Color" ? "Palette Color" : "Custom"
+                };
+            })
+            .toArray();
+    });
+
+    onUnmounted(() => {
+        window.removeEventListener("pointermove", onPointerMove);
+        window.removeEventListener("pointerup", onStopPointerDrag);
+        window.removeEventListener("pointercancel", onStopPointerDrag);
+
+        window.removeEventListener("resize", onViewportChange);
+        document.removeEventListener("pointerdown", onClickOutside);
+        window.removeEventListener("scroll", onViewportChange, true);
+    });
+
+    // #endregion Hooks
 </script>

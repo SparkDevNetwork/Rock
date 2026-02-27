@@ -61,15 +61,6 @@ export const DefinedType = {
     CommunicationPhoneCountryCode: "45E9EF7C-91C7-45AB-92C1-1D6219293847",
     /** The domains that are safe to send from */
     CommunicationSafeSenderDomains: "DB91D0E9-DCA6-45A9-8276-AEF032BE8AED",
-    /**
-     * The list of values that SMS messages can be sent from.  Depending on provider, these may
-     * be phone numbers or short codes.
-     * 
-     * The DefinedValue.Value will be the SMS Phone Number( or ShortCode). For example, '+16235551234'. 
-     * 
-     * The DefinedValue.Description will just be any description, such as 'Rock Solid Church SMS Number'.
-     */
-    CommunicationSmsFrom: "611BDE1F-7405-4D16-8626-CCFEDB0E62BE",
     /** Guid for the Communication Topic. */
     CommunicationTopic: "A798492C-F0A4-496E-9142-97D9336C3E99",
     /** Guid for Content Channel Audience Type */

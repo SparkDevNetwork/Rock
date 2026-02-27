@@ -84,18 +84,6 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_SAFE_SENDER_DOMAINS = "DB91D0E9-DCA6-45A9-8276-AEF032BE8AED";
 
         /// <summary>
-        /// The list of values that SMS messages can be sent from.  Depending on provider, these may
-        /// be phone numbers or short codes.
-        /// <br />
-        /// The DefinedValue.Value will be the SMS Phone Number( or ShortCode). For example, '+16235551234'. 
-        /// <br />
-        /// The DefinedValue.Description will just be any description, such as 'Rock Solid Church SMS Number'.
-        /// </summary>
-        [Obsolete( "Use the new SystemPhoneNumber model." )]
-        [RockObsolete( "1.15" )]
-        public const string COMMUNICATION_SMS_FROM = "611BDE1F-7405-4D16-8626-CCFEDB0E62BE";
-
-        /// <summary>
         /// The list of phone country code formats and how to format their numbers 
         /// </summary>
         public const string COMMUNICATION_PHONE_COUNTRY_CODE = "45E9EF7C-91C7-45AB-92C1-1D6219293847";

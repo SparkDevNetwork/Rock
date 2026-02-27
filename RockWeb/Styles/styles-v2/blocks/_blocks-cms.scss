@@ -14,6 +14,7 @@
 //  + Control Gallery
 //  + SMS Pipeline - Used for managing SMS communications
 //  + Active Users - Used for displaying active users on internal homepage
+//  + Library Viewer
 // =============================================================
 
 
@@ -955,3 +956,228 @@ ul.activeusers {
 }
 
 // ==================== END ACTIVE USERS =====================
+
+// ===================== LIBRARY VIEWER =====================
+
+.library-viewer {
+
+  .library-viewer-container {
+
+    .library-viewer-item-list-filters-container {
+      width: 410px;
+      max-width: 100%;
+      overflow: hidden;
+
+      .rc-virtual-list-holder {
+        max-height: 200px;
+        overflow-y: hidden;
+      }
+
+      .ant-select-loading {
+        display: none;
+      }
+
+      .ant-select {
+        position: relative !important;
+      }
+
+      .panel-toolbar {
+        gap: var(--spacing-tiny);
+      }
+
+    }
+
+    .library-viewer-item-list-sort {
+      display: flex;
+      flex-direction: column;
+
+      .library-viewer-item-list-sort-button {
+        text-align: left;
+        border: none;
+      }
+    }
+
+    .library-viewer-body {
+      display: flex;
+      flex-direction: row;
+      overflow: hidden;
+      height: 100%;
+
+      .panel-body-flush.styled-scroll *::-webkit-scrollbar,
+      .panel-body-flush.styled-scroll *::-webkit-scrollbar-thumb {
+          /* Transitions don't work for visibility
+            and opacity doesn't work for scrollbars. */
+          visibility: visible;
+      }
+
+      .panel-body-flush.styled-scroll *:active::-webkit-scrollbar,
+      .panel-body-flush.styled-scroll *:focus::-webkit-scrollbar,
+      .panel-body-flush.styled-scroll *:hover::-webkit-scrollbar,
+      .panel-body-flush.styled-scroll *:active::-webkit-scrollbar-thumb,
+      .panel-body-flush.styled-scroll *:focus::-webkit-scrollbar-thumb,
+      .panel-body-flush.styled-scroll *:hover::-webkit-scrollbar-thumb {
+          visibility: visible;
+      }
+
+      .library-viewer-list {
+        width: 479px;
+        max-width: 40%;
+        flex-shrink: 0;
+        border-right: 1px solid var(--color-interface-soft);
+        overflow: auto;
+
+        .library-viewer-list-item {
+          cursor: pointer;
+          border-bottom: 1px solid var(--color-interface-soft);
+          display: flex;
+          flex-direction: column;
+          flex-wrap: nowrap;
+          padding: var(--spacing-medium) var(--spacing-large);
+          gap: var(--spacing-medium);
+        }
+
+        .library-viewer-list-item:hover {
+          background: var(--color-interface-softer);
+        }
+
+        .library-viewer-list-item:active,
+        .library-viewer-list-item.active {
+          background: var(--color-interface-softer);
+        }
+
+        .library-viewer-list-item-header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--spacing-small);
+        }
+
+        .library-viewer-list-item-header .stamps {
+            align-self: flex-start;
+        }
+
+        .library-viewer-list-item-summary {
+          flex: 1;
+          position: relative;
+          overflow: hidden;
+          /* clamp to 4 lines */
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          /* truncate text with ellipsis */
+          text-overflow: ellipsis;
+          white-space: normal;
+        }
+
+        .library-viewer-list-item-publish-info {
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+          flex-shrink: 0;
+          font-size: var(--font-size-small);
+        }
+
+        .library-viewer-list-item-footer {
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+          flex-shrink: 0;
+        }
+      }
+
+      .library-viewer-item-badge-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-tiny);
+      }
+
+      .library-viewer-item-downloads-label {
+        font-size: var(--font-size-xsmall);
+        flex-shrink: 0;
+      }
+
+      .library-viewer-item-preview {
+        min-width: 0;
+        padding: var(--spacing-large);
+        width: 100%;
+        overflow-x: hidden;
+
+        .library-viewer-item-preview-container {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          max-width: 90ch;
+          margin: 0 auto;
+          gap: var(--spacing-large);
+
+          .library-viewer-item-stamp-list {
+            display: flex;
+            flex-shrink: 0;
+            gap: var(--spacing-tiny);
+          }
+
+        }
+
+        .library-viewer-item-preview-header h1 {
+            margin: 0;
+        }
+
+        .library-viewer-item-preview-header > * + * {
+            margin-top: var(--spacing-xsmall);
+        }
+
+        .library-viewer-item-preview-author-and-stamps {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            font-size: var(--font-size-small);
+        }
+
+        .library-viewer-item-preview-meta-and-download {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: var(--spacing-medium) var(--spacing-xsmall);
+        }
+
+        @media screen and (min-width: 992px) {
+            .library-viewer-item-preview-meta-and-download {
+                flex-direction: row;
+            }
+        }
+
+        .library-viewer-item-preview-image {
+            width: 100%;
+        }
+
+        .library-viewer-item-preview-meta {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-medium);
+            font-size: var(--font-size-small);
+        }
+
+        .library-viewer-item-preview-meta > div {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-small);
+        }
+
+        .library-viewer-item-preview-download-button-label {
+            margin-left: var(--spacing-xsmall);
+        }
+
+      }
+
+    }
+
+  }
+
+}
+
+// ==================== END LIBRARY VIEWER =====================

@@ -1,4 +1,4 @@
-﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField :modelValue="internalValue"
                    v-bind="standardProps"
@@ -15,6 +15,7 @@
                         <label v-for="item in items" class="checkbox-inline" :for="uniqueIdForItem(uniqueId, item)">
                             <input v-bind="field" :disabled="((disabled || item.disabled) as boolean)" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
                             <span class="label-text">{{ textForItem(item) }}</span>
+                            <HelpBlock v-if="helpTextForItem(item)" :text="helpTextForItem(item)" />
                         </label>
                     </template>
                     <template v-else>
@@ -22,6 +23,7 @@
                             <label :for="uniqueIdForItem(uniqueId, item)" :class="labelClasses(item)">
                                 <input v-bind="field" :disabled="((disabled || item.disabled) as boolean)" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
                                 <span class="label-text">{{ textForItem(item) }}</span>
+                                <HelpBlock v-if="helpTextForItem(item)" :text="helpTextForItem(item)" />
                             </label>
                         </div>
                     </template>
@@ -37,6 +39,7 @@
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField.obs";
+    import HelpBlock from "./helpBlock.obs";
     import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
 
@@ -55,6 +58,11 @@
         items: {
             type: Array as PropType<Array<ListItemBag>>,
             required: true
+        },
+
+        itemsHelpText: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
         },
 
         repeatColumns: {
@@ -90,6 +98,7 @@
 
     const valueForItem = (item: ListItemBag): string => item.value ?? "";
     const textForItem = (item: ListItemBag): string => item.text ?? "";
+    const helpTextForItem = (item: ListItemBag): string => props.itemsHelpText[valueForItem(item)] ?? "";
 
     const uniqueIdForItem = (uniqueId: string, item: ListItemBag): string => `${uniqueId}-${(item.value ?? "").replace(" ", "-")}`;
 

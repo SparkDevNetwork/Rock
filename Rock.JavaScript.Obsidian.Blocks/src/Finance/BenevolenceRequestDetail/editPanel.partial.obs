@@ -368,11 +368,6 @@
     const isSavingAttachment = ref<boolean>(false);
     const isSavingPersonRecord = ref<boolean>(false);
 
-    const documentLimit = props.options.benevolenceRequestTypes?.find(type => type.id === benevolenceTypeId.value)?.options?.maximumDocuments ?? 6;
-    const isAtDocumentLimit = computed(() => {
-        return requestDocuments.value.filter(doc => doc.isMarkedForDeletion === false).length >= documentLimit;
-    });
-
     const createRecordError = ref<string>("");
     const createRecordNotes = ref<string>("");
 
@@ -397,6 +392,14 @@
     // #endregion Values
 
     // #region Computed Values
+
+    const documentLimit = computed(() => {
+        return props.options.benevolenceRequestTypes?.find(type => type.id === benevolenceTypeId.value)?.options?.maximumDocuments ?? 6;
+    });
+
+    const isAtDocumentLimit = computed(() => {
+        return requestDocuments.value.filter(doc => doc.isMarkedForDeletion === false).length >= documentLimit.value;
+    });
 
     /** Whether the race attribute is enabled in the block properties. */
     const isRaceEnabled = computed(() => {

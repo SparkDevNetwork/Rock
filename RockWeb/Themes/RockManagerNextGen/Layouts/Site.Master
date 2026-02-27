@@ -55,7 +55,7 @@
             <nav class="navbar navbar-fixed-top rock-top-header d-print-none">
                 <Rock:Lava ID="siteNameLava" runat="server">
                 {% if CurrentPerson %}
-                <div class="navbar-toggle navbar-toggle-side-left collapsed" data-toggle="collapse" data-target=".navbar-static-side">
+                <div class="navbar-toggle navbar-toggle-side-left collapsed" data-toggle="collapse" data-target="#navbar-static-side">
                     <i class="ti ti-menu-2"></i>
                 </div>
                 {% endif %}
@@ -74,7 +74,7 @@
                 <Rock:Zone Name="Login" runat="server" CssClass="navbar-zone-login" />
             </nav>
 
-            <nav class="navbar-default navbar-static-side collapse d-print-none d-flex flex-column justify-content-between pb-spacing-md" role="navigation">
+            <nav id="navbar-static-side" class="navbar-default navbar-static-side collapse d-print-none d-flex flex-column justify-content-between pb-spacing-md" role="navigation">
                 <Rock:Zone Name="Navigation" runat="server" />
                 <div class="themeswitcher-container">
                     <button id="themeSwitchButton" class="theme-toggle" type="button">

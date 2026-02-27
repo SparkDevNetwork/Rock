@@ -217,7 +217,7 @@ export const EditComponent = defineComponent({
                 name="definedvalue"
                 #default="{uniqueId}">
         <div :id="uniqueId">
-            <DropDownList v-if="!isMultiple" :multiple="isMultiple" v-model="internalValue" :items="options">
+            <DropDownList v-if="!isMultiple" :multiple="isMultiple" v-model="internalValue" :enhanceForLongLists="enhanceForLongLists" :items="options">
                 <template #inputGroupAppend v-if="allowAdd">
                     <span class="input-group-btn">
                         <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="ti ti-plus" aria-hidden></i></RockButton>

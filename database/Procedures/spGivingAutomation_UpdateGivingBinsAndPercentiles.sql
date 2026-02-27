@@ -168,7 +168,7 @@ BEGIN
             ELSE CAST(FLOOR(gb.Percentile * 100) AS INT)
         END AS PercentileValue
     INTO #GivingData
-    FROM GiverBins gb
+FROM GiverBins gb
     JOIN dbo.Person p ON p.GivingId = gb.GivingId
     WHERE p.GivingId IS NOT NULL
       AND p.GivingId <> ''

@@ -45,6 +45,7 @@
                                title="Group"
                                field="group.text"
                                detailField="area.text"
+                               :quickFilterValue="getGroupFilterValue"
                                width="240px"
                                :visiblePriority="rosterMode === RosterViewMode.All ? 'md' : 'lg'">
             <template #format="{ row }: { row: RosterSingleAttendanceRecord }">
@@ -131,6 +132,7 @@
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { RosterOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/Roster/rosterOptionsBag";
     import { confirm } from "@Obsidian/Utility/dialogs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         config: {
@@ -227,6 +229,17 @@
 
         return actions;
     });
+
+    // #endregion
+
+    // #region Functions
+
+    function getGroupFilterValue(row: Record<string, unknown>): string {
+        const group = row.group as ListItemBag | undefined;
+        const area = row.area as ListItemBag | undefined;
+
+        return `${group?.text} ${area?.text}`;
+    }
 
     // #endregion
 </script>

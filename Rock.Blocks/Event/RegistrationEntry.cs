@@ -1235,16 +1235,20 @@ namespace Rock.Blocks.Event
                 Reason: Registration entries are sometimes missing registration form data.
                 https://github.com/SparkDevNetwork/Rock/issues/5091
              */
+            var enableMissingFieldDiagnostics = GetAttributeValue( AttributeKey.EnableMissingFieldDiagnostics ).AsBoolean();
             var logInstanceOrTemplateName = context?.RegistrationSettings?.Name;
             var logCurrentPersonDetails = $"Current Person Name: {this.RequestContext.CurrentPerson?.FullName} (Person ID: {this.RequestContext.CurrentPerson?.Id});";
             var logMsgPrefix = $"Obsidian{( logInstanceOrTemplateName.IsNotNullOrWhiteSpace() ? $@" ""{logInstanceOrTemplateName}""" : string.Empty )} Registration; {logCurrentPersonDetails}{Environment.NewLine}";
 
-            var (wereFieldsMissing, missingFieldsDetails) = new RegistrationTemplateFormService( rockContext ).TryLoadMissingFields( context?.RegistrationSettings?.Forms );
-            if ( wereFieldsMissing )
+            if ( enableMissingFieldDiagnostics )
             {
-                var logMissingFieldsMsg = $"{logMsgPrefix}RegistrationTemplateForm(s) missing Fields data when trying to save Registration.{Environment.NewLine}{missingFieldsDetails}";
+                var (wereFieldsMissing, missingFieldsDetails) = new RegistrationTemplateFormService( rockContext ).TryLoadMissingFields( context?.RegistrationSettings?.Forms );
+                if ( wereFieldsMissing )
+                {
+                    var logMissingFieldsMsg = $"{logMsgPrefix}RegistrationTemplateForm(s) missing Fields data when trying to save Registration.{Environment.NewLine}{missingFieldsDetails}";
 
-                ExceptionLogService.LogException( new RegistrationTemplateFormFieldException( logMissingFieldsMsg ) );
+                    ExceptionLogService.LogException( new RegistrationTemplateFormFieldException( logMissingFieldsMsg ) );
+                }
             }
 
             errorMessage = string.Empty;
@@ -1653,7 +1657,7 @@ namespace Rock.Blocks.Event
 
                     bool isCreatedAsRegistrant = context.RegistrationSettings.RegistrarOption == RegistrarOption.UseFirstRegistrant && registrantInfo == args.Registrants.FirstOrDefault();
 
-                    MissingFieldsByFormId = GetAttributeValue( AttributeKey.EnableMissingFieldDiagnostics ).AsBoolean() && isNewRegistrant
+                    MissingFieldsByFormId = enableMissingFieldDiagnostics && isNewRegistrant
                         ? new Dictionary<int, Dictionary<Guid, string>>()
                         : null;
 
@@ -3628,7 +3632,8 @@ namespace Rock.Blocks.Event
                         registrantFee.Cost = feeItemModel.Cost;
                     }
 
-                    if ( feeModel.IsRequired && !hasRequiredFeeItem )
+                    // Only check if a required fee is missing if the fee is currently active. Inactive fees are not required.
+                    if ( feeModel.IsActive && feeModel.IsRequired && !hasRequiredFeeItem )
                     {
                         var cannotAccommodateQuantitySuffix = isFeeUsageAutoReduced
                                 ? $", but is no longer available{( feeModel.AllowMultiple ? " in the selected quantity" : string.Empty )}"

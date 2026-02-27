@@ -92,7 +92,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// </summary>
         /// <param name="agentRequestContext">The context that describes the current request.</param>
         /// <returns><c>false</c> if the entire result should be excluded. This is used when nested properties to fully remove them.</returns>
-        public virtual bool Sanitize( AgentRequestContext agentRequestContext )
+        public virtual bool Sanitize( IAgentRequestContext agentRequestContext )
         {
             SanitizeNestedProperties( agentRequestContext );
             SanitizeAttributeSecurity( agentRequestContext );
@@ -106,7 +106,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// </summary>
         /// <param name="agentRequestContext">The context that describes the current request.</param>
         /// <returns><c>false</c> if the entire result should be excluded. This is used when nested properties to fully remove them.</returns>
-        protected virtual bool SanitizeResult( AgentRequestContext agentRequestContext )
+        protected virtual bool SanitizeResult( IAgentRequestContext agentRequestContext )
         {
             return true;
         }
@@ -115,7 +115,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Sanitizes any nested properties for security related to the request context.
         /// </summary>
         /// <param name="agentRequestContext">The context that describes the current request.</param>
-        protected void SanitizeNestedProperties( AgentRequestContext agentRequestContext )
+        protected void SanitizeNestedProperties( IAgentRequestContext agentRequestContext )
         {
             var cache = _nestedPropertiesCache.GetOrAdd( GetType(), rt =>
             {
@@ -175,14 +175,14 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Removes any attributes that the current person does not have view access to.
         /// </summary>
         /// <param name="agentRequestContext">The context that describes the current request.</param>
-        protected void SanitizeAttributeSecurity( AgentRequestContext agentRequestContext )
+        protected void SanitizeAttributeSecurity( IAgentRequestContext agentRequestContext )
         {
             if ( AttributeValues == null )
             {
                 return;
             }
 
-            var currentPerson = agentRequestContext.RockRequestContext.CurrentPerson;
+            var currentPerson = agentRequestContext.CurrentPerson;
 
             for ( int i = AttributeValues.Count - 1; i >= 0; i-- )
             {

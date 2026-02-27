@@ -877,10 +877,11 @@ namespace RockWeb.Blocks.CheckIn.Config
                     var descendantGroupTypeIds = new GroupTypeService( rockContext ).GetCheckinAreaDescendants( groupType.Id ).Select( a => a.Id );
                     scheduleList = new GroupLocationService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( a =>
-                            a.Group.GroupType.Id == groupType.Id ||
-                            descendantGroupTypeIds.Contains( a.Group.GroupTypeId ) )
-                        .SelectMany( a => a.Schedules )
+                        .Where( gl =>
+                            gl.Group.GroupType.Id == groupType.Id ||
+                            descendantGroupTypeIds.Contains( gl.Group.GroupTypeId ) )
+                        .Where( gl => gl.Group.IsActive && !gl.Group.IsArchived )
+                        .SelectMany( gl => gl.Schedules )
                         .Where( s => s.IsActive )
                         .Select( s => s.Name )
                         .Distinct()

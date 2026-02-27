@@ -47,6 +47,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public string Description { get; private set; }
 
+        /// <inheritdoc cref="StepProgram.IsActive"/>
+        [DataMember]
+        public bool IsActive { get; private set; }
+
         /// <summary>
         /// Gets or sets the term used for steps within this program. This property is required.
         /// </summary>
@@ -106,6 +110,7 @@ namespace Rock.Web.Cache
 
             Name = sourceModel.Name;
             Description = sourceModel.Description;
+            IsActive = sourceModel.IsActive;
             StepTerm = sourceModel.StepTerm;
             IconCssClass = sourceModel.IconCssClass;
             CategoryId = sourceModel.CategoryId;

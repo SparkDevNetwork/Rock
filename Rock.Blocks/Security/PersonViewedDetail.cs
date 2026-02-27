@@ -104,8 +104,8 @@ namespace Rock.Blocks.Security
             if ( targetPerson != null && viewerPerson != null )
             {
                 options.Title = viewedBy
-                    ? $"{targetPerson.FullName} Viewed by {viewerPerson.FullName}"
-                    : $"{viewerPerson.FullName} Viewed {targetPerson.FullName}";
+                    ? $"{viewerPerson.FullName} Viewed {targetPerson.FullName}"
+                    : $"{targetPerson.FullName} Viewed by {viewerPerson.FullName}";
             }
 
             return options;

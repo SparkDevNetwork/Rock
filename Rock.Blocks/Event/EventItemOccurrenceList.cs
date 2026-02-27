@@ -93,14 +93,6 @@ namespace Rock.Blocks.Event
             public const string CopyFromId = "CopyFromId";
         }
 
-        private static class PreferenceKey
-        {
-            public const string FilterStartDate = "filter-start-date";
-            public const string FilterEndDate = "filter-end-date";
-            public const string FilterCampus = "filter-campus";
-            public const string FilterContact = "filter-contact";
-        }
-
         #endregion Keys
 
         #region Fields
@@ -110,38 +102,7 @@ namespace Rock.Blocks.Event
         /// </summary>
         private EventItem _eventItem = null;
 
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the date from which to start filtering the results.
-        /// </summary>
-        protected DateTime? FilterStartDate => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterStartDate )
-            .AsDateTime();
-
-        /// <summary>
-        /// Gets the date to which to filter the results to.
-        /// </summary>
-        protected DateTime? FilterEndDate => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterEndDate )
-            .AsDateTime();
-
-        /// <summary>
-        /// The list of campus Guids to filter the results by.
-        /// </summary>
-        protected List<Guid> FilterCampus => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterCampus )
-            .FromJsonOrNull<List<Guid>>() ?? new List<Guid>();
-
-        /// <summary>
-        /// Gets the contact by which the results should be filtered.
-        /// </summary>
-        protected string FilterContact => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterContact );
-
-        #endregion
+        #endregion Fields
 
         #region Methods
 
@@ -237,25 +198,6 @@ namespace Rock.Blocks.Event
         }
 
         /// <inheritdoc/>
-        protected override List<EventItemOccurrence> GetListItems( IQueryable<EventItemOccurrence> queryable, RockContext rockContext )
-        {
-            var eventItemOccurrences = queryable.ToList();
-
-            // if a date range was specified, need to get all dates for items and filter based on any that have an occurrence within the date range.
-            if ( FilterStartDate.HasValue || FilterEndDate.HasValue )
-            {
-                // If only one value was included, default the other to be a years difference
-                var lowerDateRange = FilterStartDate ?? FilterEndDate.Value.AddYears( -1 ).AddDays( 1 );
-                var upperDateRange = FilterEndDate ?? FilterStartDate.Value.AddYears( 1 ).AddDays( -1 );
-
-                // Filter out calendar items with no dates within range
-                eventItemOccurrences = eventItemOccurrences.Where( i => i.GetStartTimes( lowerDateRange, upperDateRange.AddDays( 1 ) ).Any() ).ToList();
-            }
-
-            return eventItemOccurrences;
-        }
-
-        /// <inheritdoc/>
         protected override GridBuilder<EventItemOccurrence> GetGridBuilder()
         {
             return new GridBuilder<EventItemOccurrence>()
@@ -282,32 +224,16 @@ namespace Rock.Blocks.Event
         /// <returns></returns>
         private DateTimeOffset? GetNextStartDateTime( EventItemOccurrence eventItemOccurrence )
         {
-            DateTime? nextStartDate = null;
+            var nextStartDate = eventItemOccurrence.NextStartDateTime;
 
-            if ( FilterStartDate.HasValue || FilterEndDate.HasValue )
+            var lowerDateRange = RockDateTime.Today;
+            var upperDateRange = lowerDateRange.AddYears( 1 ).AddDays( -1 );
+
+            var startDateTimes = eventItemOccurrence.GetStartTimes( lowerDateRange, upperDateRange.AddDays( 1 ) );
+
+            if ( startDateTimes.Count > 0 )
             {
-                var lowerDateRange = FilterStartDate ?? FilterEndDate.Value.AddYears( -1 ).AddDays( 1 );
-                var upperDateRange = FilterEndDate ?? FilterStartDate.Value.AddYears( 1 ).AddDays( -1 );
-
-                var startDateTimes = eventItemOccurrence.GetStartTimes( lowerDateRange, upperDateRange.AddDays( 1 ) );
-
-                if ( startDateTimes.Count > 0 )
-                {
-                    nextStartDate = startDateTimes.Min();
-                }
-            }
-            else
-            {
-                nextStartDate = eventItemOccurrence.NextStartDateTime;
-                var lowerDateRange = RockDateTime.Today;
-                var upperDateRange = lowerDateRange.AddYears( 1 ).AddDays( -1 );
-
-                var startDateTimes = eventItemOccurrence.GetStartTimes( lowerDateRange, upperDateRange.AddDays( 1 ) );
-
-                if ( startDateTimes.Count > 0 )
-                {
-                    nextStartDate = startDateTimes.Min();
-                }
+                nextStartDate = startDateTimes.Min();
             }
 
             return nextStartDate.HasValue ? nextStartDate.Value.ToRockDateTimeOffset() : ( DateTimeOffset? ) null;
@@ -378,7 +304,7 @@ namespace Rock.Blocks.Event
             return string.Empty;
         }
 
-        #endregion
+        #endregion Methods
 
         #region Block Actions
 
@@ -446,6 +372,6 @@ namespace Rock.Blocks.Event
             return ActionOk( linkedPageUrl );
         }
 
-        #endregion
+        #endregion Block Actions
     }
 }

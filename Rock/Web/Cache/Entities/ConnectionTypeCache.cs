@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Enums.Connection;
 
 namespace Rock.Web.Cache
 {
@@ -79,6 +80,18 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool EnableFullActivityList { get; private set; }
 
+
+        /// <summary>
+        /// Flags that specify which optional features are enabled for this connection type.
+        /// </summary>
+        [DataMember]
+        public EnabledFeatureFlags EnabledFeatures { get; private set; }
+
+        /// <summary>
+        /// Determines how the due date for a request is calculated.
+        /// </summary>
+        [DataMember]
+        public DueDateCalculationMode DueDateCalculationMode { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this connection type requires a placement group to connect.
@@ -232,7 +245,9 @@ namespace Rock.Web.Cache
             IconCssClass = sourceModel.IconCssClass;
             EnableFullActivityList = sourceModel.EnableFullActivityList;
             EnableFutureFollowup = sourceModel.EnableFutureFollowup;
+            EnabledFeatures = sourceModel.EnabledFeatures;
             RequiresPlacementGroupToConnect = sourceModel.RequiresPlacementGroupToConnect;
+            DueDateCalculationMode = sourceModel.DueDateCalculationMode;
             OwnerPersonAliasId = sourceModel.OwnerPersonAliasId;
             DaysUntilRequestIdle = sourceModel.DaysUntilRequestIdle;
             EnableRequestSecurity = sourceModel.EnableRequestSecurity;

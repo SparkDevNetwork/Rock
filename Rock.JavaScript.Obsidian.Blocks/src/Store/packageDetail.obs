@@ -1,0 +1,86 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :entityKey="entityKey"
+                 entityTypeName="Package"
+                 :isAuditHidden="true"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
+                 :isFullScreenVisible="false">
+        <template #view>
+            <ViewPanel :modelValue="packageViewBag" :options="options" @selectInstall="onSelectInstall" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import ViewPanel from "./PackageDetail/viewPanel.partial.obs";
+    import { PackageBag } from "@Obsidian/ViewModels/Blocks/Store/PackageDetail/packageBag";
+    import { PackageDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Store/PackageDetail/packageDetailOptionsBag";
+    import { NavigationUrlKey } from "./PackageDetail/types.partial";
+
+
+    const config = useConfigurationValues<DetailBlockBox<PackageBag, PackageDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const packageViewBag = ref(config.entity);
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return packageViewBag.value?.idKey ?? "";
+    });
+
+    const options = computed((): PackageDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return "Store Item Detail";
+    });
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified package could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        panelMode.value = DetailPanelMode.Add;
+    }
+
+    function onSelectInstall(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.InstallPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.InstallPage];
+        }
+    }
+</script>

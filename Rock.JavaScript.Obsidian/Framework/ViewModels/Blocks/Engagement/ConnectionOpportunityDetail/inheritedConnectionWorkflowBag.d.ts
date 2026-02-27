@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { ConnectionWorkflowTriggerType } from "@Obsidian/Enums/Connection/connectionWorkflowTriggerType";
 import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -33,7 +34,7 @@ export type InheritedConnectionWorkflowBag = {
     guid: Guid;
 
     /** Gets or sets the trigger type. */
-    triggerType: number;
+    triggerType: ConnectionWorkflowTriggerType;
 
     /** Gets or sets the workflow type as a ListItemBag. */
     workflowType?: ListItemBag | null;
