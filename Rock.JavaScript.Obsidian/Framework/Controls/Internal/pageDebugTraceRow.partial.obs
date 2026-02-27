@@ -7,6 +7,7 @@
                 <i v-else-if="!isExpanded" class="ti ti-chevron-right fa-fw" @click="isExpanded = true"></i>
                 <i v-else class="ti ti-chevron-down fa-fw" @click="isExpanded = false"></i>
 
+                <i v-if="isErrorSpan" class="ti ti-exclamation-circle text-danger"></i>
                 <span class="trace-name" @click="emit('select', trace)">{{ getTraceName(trace) }}</span>
             </div>
         </td>
@@ -45,6 +46,7 @@
         traceId?: string | null;
         spanId?: string | null;
         parentSpanId?: string | null;
+        status?: string | null;
         name?: string | null;
         startTime: number;
         duration: number;
@@ -102,6 +104,10 @@
         const pixels = props.indentLevel * 24;
         return `padding-left: ${pixels}px`;
 
+    });
+
+    const isErrorSpan = computed((): boolean => {
+        return props.trace.status === "Error";
     });
 
     const waterfallStyle = computed((): string => {

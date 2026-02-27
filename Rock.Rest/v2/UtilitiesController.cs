@@ -78,6 +78,7 @@ namespace Rock.Rest.v2
                     TraceId = a.TraceId.ToString(),
                     SpanId = a.SpanId.ToString(),
                     ParentSpanId = a.ParentSpanId != default ? a.ParentSpanId.ToString() : null,
+                    Status = a.Status.ToString(),
                     Name = a.DisplayName,
                     StartTime = a.StartTimeUtc.ToJavascriptMilliseconds(),
                     Duration = a.Duration.TotalMilliseconds,

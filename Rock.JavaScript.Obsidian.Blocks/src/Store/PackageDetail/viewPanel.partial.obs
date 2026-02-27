@@ -2,19 +2,11 @@
 <template>
     <fieldset>
         <div class="packagedetail">
-            <div class="panel-headerimage">
-                <img class="packagedetail-image" :src="modelValue?.packageIconImageUrl ?? ''" alt="Package image" />
+
+            <div class="packagedetail-banner">
+                <img class="packagedetail-banner-image" :src="modelValue?.packageIconImageUrl ?? ''" alt="Package image" />
             </div>
 
-            <div class="row">
-                <div class="col-md-3"></div>
-                <div class="col-md-9">
-                    <h1>
-                        {{ modelValue?.name }}
-                        <small>by {{ modelValue?.vendorName }}</small>
-                    </h1>
-                </div>
-            </div>
             <div class="row">
                 <div class="col-md-3">
                     <div v-if="modelValue?.storeKey || modelValue?.isFree">
@@ -56,6 +48,10 @@
                     </dl>
                 </div>
                 <div class="col-md-9">
+                    <h1 class="mt-spacing-sm">
+                        {{ modelValue?.name }}
+                        <small>by {{ modelValue?.vendorName }}</small>
+                    </h1>
                     <h4>Package Description</h4>
                     <div class="margin-b-lg clearfix" v-html="modelValue?.description"></div>
                     <p class="clearfix margin-t-md">
@@ -181,97 +177,3 @@
     }
 
 </script>
-<style scoped>
-.packagedetail h1 > small,
-.packagedetail h2 > small {
-    color: var(--color-interface-medium);
-}
-
-.panel-headerimage {
-    margin-bottom: var(--spacing-medium);
-}
-
-.packagedetail-image {
-    display: block;
-    max-width: 100%;
-    height: auto;
-}
-
-.packagedetail dl dt {
-    font-weight: var(--font-weight-semibold);
-    margin-top: var(--spacing-small);
-}
-
-.packagedetail dl dd {
-    margin-left: 0;
-    margin-bottom: var(--spacing-xsmall);
-}
-
-/* Fullscreen overlay */
-.image-zoom-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.65);
-    z-index: 9999;
-    display: grid;
-    place-items: center;
-    cursor: zoom-out;
-}
-
-/* Fullscreen image */
-.image-zoom-overlay img {
-    max-width: 90vw;
-    max-height: 90vh;
-    object-fit: contain;
-}
-
-/* Transition for overlay */
-.img-zoom-enter-active,
-.img-zoom-leave-active {
-    transition: opacity 300ms ease;
-}
-
-.img-zoom-enter-from,
-.img-zoom-leave-to {
-    opacity: 0;
-}
-
-/* Transition for the image inside the overlay */
-.img-zoom-enter-active img,
-.img-zoom-leave-active img {
-    transition: transform 300ms ease;
-}
-
-.img-zoom-enter-from img,
-.img-zoom-leave-to img {
-    transform: scale(0.9);
-}
-
-/* Rotate chevron when open */
-.ti-chevron-down {
-    display: inline-block;
-    transition: transform 200ms ease;
-}
-
-.chev-rotated {
-    transform: rotate(180deg);
-}
-
-/* Slide + fade container */
-.additional-versions-enter-active,
-.additional-versions-leave-active {
-    transition: opacity 220ms ease, transform 220ms ease;
-}
-
-.additional-versions-enter-from,
-.additional-versions-leave-to {
-    opacity: 0;
-    transform: translateY(-6px);
-}
-
-.additional-versions-enter-to,
-.additional-versions-leave-from {
-    opacity: 1;
-    transform: translateY(0);
-}
-</style>

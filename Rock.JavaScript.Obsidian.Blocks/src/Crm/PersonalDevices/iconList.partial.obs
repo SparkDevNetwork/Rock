@@ -4,7 +4,7 @@
         <!-- Mobile Device: Show icons only if ALL values are not null -->
         <template v-if="isMobileDevice && allValuesPresent">
             <span :title="notificationsTooltip" ref="notificationsElement">
-                <i class="ti ti-bell text-info-strong" :class="{ 'is-dim': notificationsEnabled === false }"></i>
+                <i class="ti ti-bell text-info-strong" :class="{ 'o-20': notificationsEnabled === false }"></i>
             </span>
 
             <span :title="locationPermissionsTooltip" ref="locationPermissionElement">
@@ -13,42 +13,29 @@
 
             <span :title="preciseLocationTooltip" ref="preciseLocationElement">
                 <i class="ti ti-current-location text-info-strong"
-                   :class="{ 'is-dim': isPreciseLocationEnabled === false }"></i>
+                   :class="{ 'o-20': isPreciseLocationEnabled === false }"></i>
             </span>
 
             <span :title="beaconMonitoringTooltip" ref="beaconElement">
                 <i class="ti ti-bluetooth-connected text-info-strong"
-                   :class="{ 'is-dim': isBeaconMonitoringEnabled === false }"></i>
+                   :class="{ 'o-20': isBeaconMonitoringEnabled === false }"></i>
             </span>
 
             <!-- MAC Address for Mobile Devices: icon is only active if NO other mobile features are enabled -->
             <span :title="macAddressTooltip" ref="macElement">
-                <i class="ti ti-access-point text-info-strong" :class="{ 'is-dim': !macAddressEnabled }"></i>
+                <i class="ti ti-access-point text-info-strong" :class="{ 'o-20': !macAddressEnabled }"></i>
             </span>
         </template>
 
         <!-- Desktop/TV: Only show MAC Address if present -->
         <template v-else>
             <span :title="macAddressTooltip" ref="macElement">
-                <i class="ti ti-access-point text-info-strong" :class="{ 'is-dim': !props.macAddress }"></i>
+                <i class="ti ti-access-point text-info-strong" :class="{ 'o-20': !props.macAddress }"></i>
             </span>
         </template>
     </div>
 </template>
 
-<style scoped>
-.icon-list {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-medium);
-    flex-wrap: wrap;
-}
-
-.is-dim {
-    opacity: 0.25;
-}
-</style>
 
 <script setup lang="ts">
     import { LocationPermissionStatus } from "@Obsidian/Enums/Mobile/locationPermissionStatus";
@@ -131,7 +118,7 @@
         // This means locationPermissionStatus is NotGranted or Denied ( falsy )
         // We dim this icon to look the same as other disabled icons
         if (areAllFeaturesDisabled.value) {
-            return "text-info-strong is-dim";
+            return "text-info-strong o-20";
         }
 
         // NotGranted or Denied

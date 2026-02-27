@@ -18,11 +18,13 @@
 namespace Rock.ViewModels.Blocks.Cms.PersonalizationSegmentResults
 {
     /// <summary>
-    /// The additional configuration options for the Person List block.
+    /// The additional configuration options for the Personalization Segment Results block.
     /// </summary>
     public class PersonalizationSegmentResultsOptionsBag
     {
+        /// <summary>
+        /// The name of the segment being viewed.
+        /// </summary>
         public string SegmentName { get; set; }
     }
 }
-

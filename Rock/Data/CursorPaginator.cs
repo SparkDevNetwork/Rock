@@ -211,7 +211,8 @@ namespace Rock.Data
 
             for ( var attempts = 0; attempts < MaxCursorFillAttempts; attempts++ )
             {
-                var batch = source.Skip( offset ).Take( desiredCount - items.Count ).ToList();
+                var takeCount = desiredCount - items.Count;
+                var batch = source.Skip( offset ).Take( takeCount ).ToList();
 
                 // If we got no more items, then we are confirmed to be done.
                 if ( batch.Count == 0 )
@@ -224,7 +225,7 @@ namespace Rock.Data
 
                 items.AddRange( securedBatch );
 
-                if ( items.Count >= desiredCount )
+                if ( items.Count >= desiredCount || batch.Count < takeCount )
                 {
                     break;
                 }

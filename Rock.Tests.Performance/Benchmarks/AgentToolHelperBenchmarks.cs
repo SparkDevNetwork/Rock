@@ -31,7 +31,7 @@ namespace Rock.Tests.Performance.Benchmarks
 
         private readonly Consumer _consumer = new Consumer();
 
-        private AgentToolHelper _agentToolHelper;
+        //private AgentToolHelper _agentToolHelper;
 
         #endregion
 
@@ -39,7 +39,7 @@ namespace Rock.Tests.Performance.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
-            var rockContext = new RockContext( "bogus" );
+            //var rockContext = new RockContext( "bogus" );
 
             //_agentToolHelper = new AgentToolHelper( rockContext, new AgentRequestContext( null, rockContext ), NullLogger.Instance);
         }

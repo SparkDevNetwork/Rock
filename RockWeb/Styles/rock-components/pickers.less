@@ -553,3 +553,215 @@
   }
 
 }
+
+
+// ===================== COLOR PICKER =====================
+
+.color-preview-wrapper {
+    padding: 7px var(--spacing-small);
+    cursor: pointer;
+}
+
+.color-preview-wrapper.is-selected {
+    border: 1px solid var(--color-primary);
+    outline: none;
+}
+
+.color-preview {
+    width: 20px;
+    height: 20px;
+    aspect-ratio: 1/1;
+    border-radius: 6px;
+    border: 1px solid var(--color-interface-soft);
+    display: block;
+    background: var(--color);
+}
+
+.color-picker-popover {
+    --alpha-square-size: 7px;
+    --alpha-slider-squares-across: 3;
+    --vertical-slider-width: ~"calc(var(--alpha-square-size) * var(--alpha-slider-squares-across))";
+    --area-section-gap: var(--spacing-xsmall);
+    /* --area-section-width: calc(var(--sv-area-size) + var(--area-section-gap) + var(--vertical-slider-width) + var(--area-section-gap) + var(--vertical-slider-width)); */
+    --area-section-width: ~"calc((var(--swatch-horizontal-count) * var(--swatch-size)) + ((var(--swatch-horizontal-count) - 1) * var(--swatch-horizontal-gap)))";
+    --sv-area-size: ~"calc(var(--area-section-width) - (var(--area-section-gap) * 2) - (var(--vertical-slider-width) * 2))";
+    --preview-bar-squares-across: 2;
+    --preview-bar-height: ~"calc(var(--alpha-square-size) * var(--preview-bar-squares-across))";
+    --background-color: var(--color-interface-softest);
+
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    /* Use the same z-index as other dropdowns in Rock */
+    z-index: 1050;
+    background: var(--background-color);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.color-picker-popover-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--area-section-gap);
+    padding: var(--spacing-medium);
+}
+
+.color-picker-popover-footer {
+    padding: var(--spacing-small);
+    border-top: 1px solid var(--color-interface-soft);
+    background: var(--color-interface-softer);
+}
+
+.color-picker-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.color-picker-commit-actions {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-xsmall);
+}
+
+.color-picker-row {
+    display: flex;
+    flex-direction: row;
+    gap: var(--area-section-gap);
+}
+
+.sv-area {
+    position: relative;
+    width: var(--sv-area-size);
+    height: var(--sv-area-size);
+    cursor: crosshair;
+    user-select: none;
+    touch-action: none;
+}
+
+.hue-slider {
+    position: relative;
+    width: var(--vertical-slider-width);
+    height: var(--sv-area-size);
+    background: linear-gradient(to top,
+            red,
+            yellow,
+            lime,
+            cyan,
+            blue,
+            magenta,
+            red);
+    cursor: ns-resize;
+    user-select: none;
+    touch-action: none;
+}
+
+.alpha-slider {
+    position: relative;
+    width: var(--vertical-slider-width);
+    height: var(--sv-area-size);
+    cursor: ns-resize;
+    user-select: none;
+    touch-action: none;
+}
+
+.alpha-indicator {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: white;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+}
+
+.sv-indicator {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 2px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+    transform: translate(-50%, -50%);
+}
+
+.hue-indicator {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: white;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+}
+
+.color-preview-bar {
+    height: var(--preview-bar-height);
+    max-width: var(--area-section-width);
+}
+
+.swatch-list-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+}
+
+.swatch-list-label {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-xsmall);
+}
+
+.swatch-list {
+    display: flex;
+    flex-direction: row;
+    gap: var(--area-section-gap);
+    max-width: var(--area-section-width);
+    flex-wrap: wrap;
+    overflow: visible;
+}
+
+.color-picker-popover-simple .swatch-list {
+    gap: var(--spacing-tiny);
+}
+
+.swatch-list-group {
+    display: flex;
+    flex-direction: column;
+    /* Use the same gap that is used between swatch items so swatch lists appear continuous */
+    gap: var(--area-section-gap);
+}
+
+.swatch {
+    width: 28px;
+    height: 28px;
+    aspect-ratio: 1/1;
+    border-radius: var(--rounded-small);
+    cursor: pointer;
+
+    --scale: 1;
+
+    will-change: transform;
+    transform: scale(var(--scale));
+    transform-origin: center;
+
+    transition: transform 200ms ease-in-out;
+}
+
+.color-picker-popover-simple .swatch {
+    width: 20px;
+    height: 20px;
+}
+
+.swatch.is-selected {
+    border: 1px solid var(--color-interface-softest);
+    box-shadow: 0 0 4px 0 var(--color-primary);
+}
+
+.swatch.has-border:not(.is-selected) {
+    border: 1px solid var(--color-interface-soft);
+}
+
+.swatch:hover {
+    --scale: 1.2;
+    z-index: 1;
+}
