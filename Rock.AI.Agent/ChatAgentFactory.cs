@@ -418,7 +418,6 @@ namespace Rock.AI.Agent
                    AutoFunctionInvocationContext context,
                    Func<AutoFunctionInvocationContext, Task> next )
             {
-
                 // Invoke the function first — this actually sets context.Result
                 try
                 {
@@ -441,6 +440,7 @@ namespace Rock.AI.Agent
                 }
                 catch ( Exception ex )
                 {
+                    // Manually log exception, because SK will swallow it otherwise.
                     ExceptionLogService.LogException( ex );
                     throw;
                 }
