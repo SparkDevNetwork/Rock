@@ -199,13 +199,14 @@
 </template>
 
 <style scoped>
+/*Do not migrate this to global, the v-bind will not work.*/
 .color-picker-popover-simple {
     --swatch-horizontal-count: v-bind(SIMPLE_VIEW_SWATCHES_PER_ROW);
     --swatch-size: 20px;
     --swatch-horizontal-gap: var(--spacing-tiny);
-
 }
 
+/*Do not migrate this to global, the v-bind will not work.*/
 .color-picker-popover-advanced {
     --swatch-horizontal-count: v-bind(ADVANCED_VIEW_SWATCHES_PER_ROW);
     --swatch-size: 28px;

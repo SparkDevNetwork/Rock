@@ -1373,7 +1373,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             string action = ddlStepAction.SelectedValue;
-            var userCanEdit = stepType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            var userCanEdit = stepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || stepType.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
             if ( !userCanEdit )
             {
                 pnlStepDetail.Visible = false;
@@ -2777,7 +2777,7 @@ namespace RockWeb.Blocks.Crm
                 if ( this.UpdateStepAction != StepChangeActionSpecifier.None )
                 {
                     var stepType = new StepTypeService( rockContext ).Get( UpdateStepTypeId.Value );
-                    if ( stepType != null && stepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                    if ( stepType != null && ( stepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || stepType.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson ) ) )
                     {
                         foreach ( var person in people )
                         {

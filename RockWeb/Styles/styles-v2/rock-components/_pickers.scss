@@ -598,11 +598,6 @@ textarea,
     cursor: pointer;
 }
 
-.color-preview-wrapper.is-selected {
-    border: 1px solid var(--color-primary);
-    outline: none;
-}
-
 .color-preview {
     width: 20px;
     height: 20px;
@@ -790,7 +785,7 @@ textarea,
 
 .swatch.is-selected {
     border: 1px solid var(--color-interface-softest);
-    box-shadow: 0 0 4px 0 var(--color-primary);
+    box-shadow: 0 0 3px 2px var(--color-primary);
 }
 
 .swatch.has-border:not(.is-selected) {
