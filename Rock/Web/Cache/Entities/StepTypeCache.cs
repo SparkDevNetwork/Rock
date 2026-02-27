@@ -164,11 +164,18 @@ namespace Rock.Web.Cache
         #region Related Caches
 
         /// <summary>
-        /// Gets the step types.
+        /// Gets the step program that this step type belongs to.
         /// </summary>
         public StepProgramCache StepProgram => StepProgramCache.Get( StepProgramId );
 
         #endregion Related Caches
+
+        #region Security
+
+        /// <inheritdoc cref="Rock.Model.StepType.ParentAuthority"/>
+        public override Security.ISecured ParentAuthority => StepProgram ?? base.ParentAuthority;
+
+        #endregion Security
 
         #region Public Methods
 
