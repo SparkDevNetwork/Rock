@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -10,6 +11,8 @@ using Rock.Enums.AI.Agent;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Net;
+using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.AI.Agent.Tests;
 
@@ -354,47 +357,56 @@ public class LavaToolExecutorTests
     [TestMethod]
     public void ExecuteLava_ValidTool_ReturnsExpectedResult()
     {
-        var rockRequestContextMock = new Mock<RockRequestContext>();
+        var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+        var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-        rockRequestContextMock
-            .Setup( m => m.GetCommonMergeFields( It.IsAny<Model.Person>(), It.IsAny<Lava.CommonMergeFieldsOptions>() ) )
-            .Returns( [] );
-
-        var requestContext = new AgentRequestContext( rockRequestContextMock.Object, null );
-
-        var tool = new AgentTool
+        using ( TestHelper.CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) ) )
         {
-            Prompt = "Hello, {{ Name }}!",
-            Parameters =
-            [
-                new ParameterSchema
+            var rockRequestContextMock = new Mock<RockRequestContext>();
+            var agentConfiguration = new AgentConfiguration( 0, null, "Test", AgentType.Chat, AudienceType.Internal, "", new ChatAgentSettings(), [] );
+
+            rockRequestContextMock
+                .Setup( m => m.GetCommonMergeFields( It.IsAny<Model.Person>(), It.IsAny<Lava.CommonMergeFieldsOptions>() ) )
+                .Returns( [] );
+
+            var requestContext = new AgentRequestContext( rockRequestContextMock.Object, agentConfiguration, null );
+
+            var tool = new AgentTool
+            {
+                Prompt = "Hello, {{ Name }}!",
+                Parameters =
+                [
+                    new ParameterSchema
                 {
                     Name = "Name",
                     DataType = ParameterSchemaDataType.String,
                     IsRequired = true,
                     Instructions = "The name of the person to greet."
                 }
-            ]
-        };
+                ]
+            };
 
-        var args = new KernelArguments
-        {
-            ["Name"] = "Alisha"
-        };
+            var args = new KernelArguments
+            {
+                ["Name"] = "Alisha"
+            };
 
-        try
-        {
-            LavaService.SetCurrentEngine( new FluidEngine() );
+            try
+            {
 
-            var executor = new LavaToolExecutor( requestContext, rockRequestContextMock.Object );
-            var result = executor.ExecuteLava( tool, args );
+                LavaService.SetCurrentEngine( new FluidEngine() );
 
-            Assert.AreEqual( "Hello, Alisha!", result.Content );
-        }
-        finally
-        {
-            LavaService.SetCurrentEngine( ( Type ) null );
+                var executor = new LavaToolExecutor( requestContext, rockRequestContextMock.Object );
+                var result = ( AgentToolResult ) executor.ExecuteLava( tool, args );
+
+                Assert.AreEqual( "Hello, Alisha!", result.Content );
+            }
+            finally
+            {
+                LavaService.SetCurrentEngine( ( Type ) null );
+            }
         }
     }
+
     #endregion
 }
