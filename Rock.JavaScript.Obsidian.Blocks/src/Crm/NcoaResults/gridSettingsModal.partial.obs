@@ -1,0 +1,136 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <NotificationBox v-if="errorMessage"
+                         alertType="warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <div class="row">
+            <div class="col-md-3">
+                <DropDownList v-model="gridSettingsForm.filterProcessed"
+                              :items="filterProcessedItems"
+                              :showBlankItem="false"
+                              label="Processed" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { clone } from "@Obsidian/Utility/objectUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        currentPerson: {
+            type: Object as PropType<ListItemBag>,
+            required: false,
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const errorMessage = ref();
+    const gridSettingsForm = ref(clone(props.modelValue));
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const filterProcessedItems = <ListItemBag[]>[
+        {
+            text: " ",
+            value: "4"
+        },
+        {
+            text: "Not Processed",
+            value: "0"
+        },
+        {
+            text: "Complete",
+            value: "1"
+        },
+        {
+            text: "Manual Update Required",
+            value: "2"
+        },
+        {
+            text: "Manual Update Required Or Not Processed",
+            value: "3"
+        }
+    ];
+
+    function onSave(): void {
+
+        if (!deepEqual(gridSettingsForm.value, props.modelValue, true)) {
+            emit("update:modelValue", clone(gridSettingsForm.value));
+        }
+
+        isVisible.value = false;
+    }
+
+    // watch(() => props.modelValue, () => {
+    //     createdBy.value = props.modelValue.createdBy?.value ?? "Selected Person";
+    //     filterPerson.value = props.modelValue.filterPerson;
+    //     createdDateRange.value = props.modelValue.createdDateRange ?? defaultCreatedDateRange;
+    // });
+
+    // watch(filterPerson, () => {
+    //     if (!filterPerson.value) {
+    //         createdBy.value = "Not Specified";
+    //     }
+    // });
+
+    // watch(createdBy, () => {
+    //     if (createdBy.value === "Not Specified") {
+    //         filterPerson.value = undefined;
+    //     }
+    //     else if (createdBy.value === "Selected Person" && !filterPerson.value) {
+    //         filterPerson.value = props.currentPerson;
+    //     }
+    // });
+
+    // watch(createdDateRange, () => {
+    //     if (!isNullOrWhiteSpace(errorMessage.value)) {
+    //         const dates = calculateSlidingDateRange(createdDateRange.value);
+
+    //         if (dates.start && dates.end) {
+    //             errorMessage.value = "";
+    //         }
+    //     }
+    // });
+
+    watch(isVisible, () => {
+        errorMessage.value = "";
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

@@ -44,11 +44,11 @@ namespace Rock.Blocks.Crm
     /// Displays a list of people.
     /// </summary>
 
-    [DisplayName( "NcoaResults" )]
+    [DisplayName( "NCOA Results" )]
     [Category( "CRM" )]
     [Description( "Displays a list of ncoa results." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -118,15 +118,32 @@ namespace Rock.Blocks.Crm
             }
         }
 
-        protected ListItemBag FilterProcessed => PersonPreferences
-            .GetValue( PreferenceKey.FilterProcessed )
-            .FromJsonOrNull<ListItemBag>();
+        protected Processed? FilterProcessed
+        {
+            get
+            {
+                var processedValue = PersonPreferences
+                    .GetValue( PreferenceKey.FilterProcessed );
+
+                if ( processedValue == null )
+                {
+                    return null;
+                }
+
+                if ( int.TryParse( processedValue, out var intValue ) )
+                {
+                    return ( Processed ) intValue;
+                }
+
+                return null;
+            }
+        }
 
         protected ListItemBag FilterMoveDate => PersonPreferences
             .GetValue( PreferenceKey.FilterMoveDate )
             .FromJsonOrNull<ListItemBag>();
 
-        private ListItemBag FilterNcoaProcessedDateRange => PersonPreferences
+        protected ListItemBag FilterNcoaProcessedDate => PersonPreferences
             .GetValue( PreferenceKey.FilterNcoaProcessedDate )
             .FromJsonOrNull<ListItemBag>();
 
@@ -206,7 +223,7 @@ namespace Rock.Blocks.Crm
         /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
         private static List<AttributeCache> BuildGridAttributes()
         {
-            var entityTypeId = EntityTypeCache.Get<NcoaRowBag>( false )?.Id;
+            var entityTypeId = EntityTypeCache.Get<NcoaDataBag>( false )?.Id;
 
             if ( entityTypeId.HasValue )
             {
@@ -217,12 +234,113 @@ namespace Rock.Blocks.Crm
         }
 
 
+        /// <summary>
+        /// Formats the address.
+        /// </summary>
+        /// <param name="street1">The street1.</param>
+        /// <param name="street2">The street2.</param>
+        /// <param name="city">The city.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="postalCode">The postal code.</param>
+        /// <returns>The formated address</returns>
+        private string FormattedAddress( string street1, string street2, string city, string state, string postalCode )
+        {
+            if ( string.IsNullOrWhiteSpace( street1 ) &&
+            string.IsNullOrWhiteSpace( street2 ) &&
+            string.IsNullOrWhiteSpace( city ) )
+            {
+                return string.Empty;
+            }
+
+            string result = string.Format( "{0} {1} {2}, {3} {4}",
+              street1, street2, city, state, postalCode ).ReplaceWhileExists( "  ", " " );
+
+            // Remove blank lines
+            while ( result.Contains( Environment.NewLine + Environment.NewLine ) )
+            {
+                result = result.Replace( Environment.NewLine + Environment.NewLine, Environment.NewLine );
+            }
+            while ( result.Contains( "\x0A\x0A" ) )
+            {
+                result = result.Replace( "\x0A\x0A", "\x0A" );
+            }
+
+            if ( string.IsNullOrWhiteSpace( result.Replace( ",", string.Empty ) ) )
+            {
+                return string.Empty;
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region Block Actions
 
-        //[BlockAction]
-        //public BlockActionResult GetNcoaResults()
+        [BlockAction]
+        public BlockActionResult GetNcoaData()
+        {
+            int resultCount = GetAttributeValue( AttributeKey.ResultCount ).AsIntegerOrNull() ?? 20;
+
+            var query = new NcoaHistoryService( RockContext ).Queryable();
+
+            var processed = FilterProcessed;
+
+            if ( processed.HasValue )
+            {
+                if ( processed.Value != Processed.All && processed.Value != Processed.ManualUpdateRequiredOrNotProcessed )
+                {
+                    query = query.Where( i => i.Processed == processed );
+                }
+                else if ( processed.Value == Processed.ManualUpdateRequiredOrNotProcessed )
+                {
+                    query = query.Where( i => i.Processed == Processed.ManualUpdateRequired || i.Processed == Processed.NotProcessed );
+                }
+            }
+
+            var ncoaHistoryData = query
+            .Select( i => new
+            {
+                i.Id,
+                i.NcoaType,
+                i.Processed,
+                i.MoveDate,
+                i.MoveDistance,
+
+                i.OriginalStreet1,
+                i.OriginalStreet2,
+                i.OriginalCity,
+                i.OriginalState,
+                i.OriginalPostalCode,
+
+                i.UpdatedStreet1,
+                i.UpdatedStreet2,
+                i.UpdatedCity,
+                i.UpdatedState,
+                i.UpdatedPostalCode
+            } )
+            .ToList();
+
+            var bag = new NcoaResultsBag
+            {
+                NcoaList = ncoaHistoryData.Select( i => new NcoaDataBag
+                {
+                    IdKey = i.Id.AsIdKey(),
+                    Type = i.NcoaType.ToString(),
+                    OriginalAddress = FormattedAddress(
+                            i.OriginalStreet1, i.OriginalStreet2, i.OriginalCity, i.OriginalState, i.OriginalPostalCode )
+                        .ConvertCrLfToHtmlBr(),
+                    NewAddress = FormattedAddress(
+                            i.UpdatedStreet1, i.UpdatedStreet2, i.UpdatedCity, i.UpdatedState, i.UpdatedPostalCode )
+                        .ConvertCrLfToHtmlBr(),
+                    MoveDate = i.MoveDate,
+                    MoveDistance = i.MoveDistance,
+                    Status = i.Processed == Processed.Complete ? "Processed" : "Not Processed"
+                } ).ToList()
+            };
+
+            return ActionOk( bag );
+        }
         #endregion
     }
 }

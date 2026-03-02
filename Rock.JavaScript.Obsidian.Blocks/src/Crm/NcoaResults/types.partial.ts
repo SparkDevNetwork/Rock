@@ -15,6 +15,26 @@
 // </copyright>
 //
 
-export const enum NavigationUrlKey {
-    DetailPage = "DetailPage"
+export const enum PreferenceKey {
+    FilterProcessed = "filter-processed",
+    FilterMoveDate = "filter-move-date",
+    FilterNcoaProcessedDate = "filter-ncoa-processed-date",
+    FilterMoveType = "filter-move-type",
+    FilterAddressStatus = "filter-address-status",
+    FilterInvalidReason = "filter-invalid-reason",
+    FilterMoveDistance = "filter-move-distance",
+    FilterLastName = "filter-last-name",
+    FilterCampus = "filter-campus"
 }
+
+export type GridSettingsOptions = {
+    filterProcessed: string;
+    filterMoveDate: string;
+    filterNcoaProcessedDate: string;
+    filterMoveType: string;
+    filterAddressStatus: string;
+    filterInvalidReason: string;
+    filterMoveDistance: string;
+    filterLastName: string;
+    filterCampus: string;
+};

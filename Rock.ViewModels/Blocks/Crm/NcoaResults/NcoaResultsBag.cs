@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 
 namespace Rock.ViewModels.Blocks.Crm.NcoaResults
 {
-    internal class NcoaResultsBag : BlockBox
+    /// <summary>
+    /// 
+    /// </summary>
+    public class NcoaResultsBag
     {
         /// <summary>
         /// 
         /// </summary>
-        public List<NcoaRowBag> Rows { get; set; }
+        public List<NcoaDataBag> NcoaList { get; set; }
     }
 }
