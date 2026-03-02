@@ -45,8 +45,8 @@
                 </h1>
 
                 <div class="panel-labels d-print-none">
-                    <asp:Literal ID="lLiveUpdateEnabled" runat="server" Visible="false"><i class='ti ti-square-check'></i></asp:Literal>
-                    <asp:Literal ID="lLiveUpdateDisabled" runat="server" Visible="true"><i class='ti ti-square'></i></asp:Literal>
+                    <asp:Literal ID="lLiveUpdateEnabled" runat="server" Visible="false"><i class='ti ti-checkbox'></i></asp:Literal>
+                    <asp:Literal ID="lLiveUpdateDisabled" runat="server" Visible="true"><i class='ti ti-crop-1-1'></i></asp:Literal>
                     <span class="js-live-update-label">
                         <asp:Literal ID="lLiveUpdateLabel" runat="server" Text="Live Update" />
                     </span>

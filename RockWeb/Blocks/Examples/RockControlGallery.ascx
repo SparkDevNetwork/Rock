@@ -300,7 +300,7 @@
 
                     <a id="RockCheckBox2"></a>
                     <div runat="server" class="r-example">
-                        <Rock:RockCheckBox ID="cbExample2" runat="server" Label="Rock:RockCheckBox" SelectedIconCssClass="ti ti-square-check ti-lg" UnSelectedIconCssClass="ti ti-square ti-lg" />
+                        <Rock:RockCheckBox ID="cbExample2" runat="server" Label="Rock:RockCheckBox" SelectedIconCssClass="ti ti-checkbox ti-lg" UnSelectedIconCssClass="ti ti-crop-1-1 ti-lg" />
                     </div>
 
                     <a id="RockCheckBoxList"></a>

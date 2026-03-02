@@ -235,8 +235,8 @@ function doPostBack() {{
                 Text = "Show Inactive",
                 CssClass = "picker-show-inactive",
                 ContainerCssClass = "js-picker-show-inactive",
-                SelectedIconCssClass = "ti ti-square-check",
-                UnSelectedIconCssClass = "ti ti-square",
+                SelectedIconCssClass = "ti ti-checkbox",
+                UnSelectedIconCssClass = "ti ti-crop-1-1",
                 CausesValidation = false,
                 AutoPostBack = true,
             };

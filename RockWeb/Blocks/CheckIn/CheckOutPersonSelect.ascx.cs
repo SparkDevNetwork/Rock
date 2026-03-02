@@ -192,7 +192,7 @@ namespace RockWeb.Blocks.CheckIn
 
         protected string GetCheckboxClass( bool selected )
         {
-            return selected ? "ti ti-checkbox ti-3x" : "ti ti-square ti-3x";
+            return selected ? "ti ti-checkbox ti-3x" : "ti ti-crop-1-1 ti-3x";
         }
 
         protected string GetPersonImageTag( object dataitem )

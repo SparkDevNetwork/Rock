@@ -3,7 +3,7 @@
     <div class="search-filter-row">
         <div class="search-filter-icon">
             <i v-if="props.isEnabled" class="ti ti-checkbox" style="color: var(--color-primary);"></i>
-            <i v-else class="ti ti-square" style="color: var(--color-interface-soft);"></i>
+            <i v-else class="ti ti-crop-1-1" style="color: var(--color-interface-soft);"></i>
         </div>
 
         <div class="search-filter-content">

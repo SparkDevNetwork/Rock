@@ -855,7 +855,7 @@ if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
         /// <returns></returns>
         protected string GetCheckboxClass( bool selected )
         {
-            return selected ? "ti ti-square-check" : "ti ti-square";
+            return selected ? "ti ti-checkbox" : "ti ti-crop-1-1";
         }
 
         /// <summary>

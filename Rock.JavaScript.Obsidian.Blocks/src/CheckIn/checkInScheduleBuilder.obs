@@ -64,7 +64,7 @@
                         <div class="grid-column-title text-center" v-html="getScheduleHtml(schedule)"></div>
                         <a href='#'
                            style="display: inline; color: inherit"
-                           :class="['ti', 'js-sched-select-all', isColumnEnabled(schedule.value ?? '') ? 'ti-square-check' : 'ti-square']"
+                           :class="['ti', 'js-sched-select-all', isColumnEnabled(schedule.value ?? '') ? 'ti-checkbox' : 'ti-crop-1-1']"
                            @click="onScheduleColumnClick(schedule.value ?? '')">
                         </a>
                     </div>

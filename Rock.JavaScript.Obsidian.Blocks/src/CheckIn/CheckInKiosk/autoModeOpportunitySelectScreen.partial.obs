@@ -13,7 +13,7 @@
                             @click="onOpportunityClick(opportunity)">
                     <span class="selection">
                         <i v-if="isOpportunitySelected(opportunity)" class="ti ti-checkbox"></i>
-                        <i v-else class="ti ti-square"></i>
+                        <i v-else class="ti ti-crop-1-1"></i>
                     </span>
 
                     <span class="title">

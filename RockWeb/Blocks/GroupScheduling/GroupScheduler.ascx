@@ -152,7 +152,7 @@
                                 <div class="d-flex">
                                     <Rock:GroupPicker ID="gpPickedGroups" runat="server" Label="" AllowMultiSelect="true" OnValueChanged="gpPickedGroups_ValueChanged" CssClass="occurrences-groups-picker" LimitToSchedulingEnabledGroups="true" />
                                     <div>
-                                    <asp:LinkButton ID="btnShowChildGroups" runat="server" CssClass="btn btn-xs btn-tool" Text="<i class='ti ti-square'></i> Show Child Groups" AutoPostBack="true" OnClick="btnShowChildGroups_Click" />
+                                    <asp:LinkButton ID="btnShowChildGroups" runat="server" CssClass="btn btn-xs btn-tool" Text="<i class='ti ti-crop-1-1'></i> Show Child Groups" AutoPostBack="true" OnClick="btnShowChildGroups_Click" />
                                     </div>
                                 </div>
 
@@ -391,7 +391,7 @@
                                                             <span class="board-column-title flex-fill text-wrap"><asp:Literal ID="lMultiGroupModeColumnGroupNameHtml" runat="server" /></span>
                                                             <asp:LinkButton ID="btnMultiGroupModeColumnSelectedGroup" runat="server"
                                                             CssClass="text-color p-0"
-                                                            Text="ti ti-square-check"
+                                                            Text="ti ti-checkbox"
                                                             AutoPostBack="true"
                                                             OnClick="btnMultiGroupModeColumnSelectedGroup_Click"/>
                                                         </div>

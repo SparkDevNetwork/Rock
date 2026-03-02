@@ -8,7 +8,7 @@
 
         <template #customPickerActions>
             <label class="rock-checkbox-icon">
-                <i :class="['ti', includeInactiveGroups ? 'ti-square-check' : 'ti-square']"></i> Show Inactive
+                <i :class="['ti', includeInactiveGroups ? 'ti-checkbox' : 'ti-crop-1-1']"></i> Show Inactive
                 <span style="display:none"><input type="checkbox" v-model="includeInactiveGroups"></span>
             </label>
         </template>

@@ -12,7 +12,7 @@
                             @click="onAttendeeClick(attendee, $event)">
                     <span v-if="isFamilyMode" class="selection">
                         <i v-if="isAttendeeSelected(attendee)" class="ti ti-checkbox"></i>
-                        <i v-else class="ti ti-square"></i>
+                        <i v-else class="ti ti-crop-1-1"></i>
                     </span>
 
                     <span v-if="!props.session.configuration.template?.isPhotoHidden"

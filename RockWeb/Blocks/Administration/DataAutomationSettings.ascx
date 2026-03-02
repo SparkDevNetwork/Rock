@@ -128,7 +128,7 @@
                                             <div class="row margin-b-sm">
                                                 <asp:HiddenField ID="hfInteractionTypeId" runat="server" Value='<%# Eval("Guid") %>' />
                                                 <div class="col-md-5 col-sm-6 col-xs-8 padding-t-sm">
-                                                    <Rock:RockCheckBox ID="cbInterationType" runat="server" SelectedIconCssClass="ti ti-square-check" UnSelectedIconCssClass="ti ti-square" Text='<%# Eval("Name") %>' Checked='<%# (bool)Eval("IsInteractionTypeEnabled") %>' />
+                                                    <Rock:RockCheckBox ID="cbInterationType" runat="server" SelectedIconCssClass="ti ti-checkbox" UnSelectedIconCssClass="ti ti-crop-1-1" Text='<%# Eval("Name") %>' Checked='<%# (bool)Eval("IsInteractionTypeEnabled") %>' />
                                                 </div>
                                                 <div class="col-md-7 col-sm-6 col-xs-4">
                                                     <Rock:NumberBox ID="nbInteractionDays" runat="server" AppendText="days" CssClass="input-width-md" Text='<%#Eval("LastInteractionDays") %>' />
@@ -272,7 +272,7 @@
                                                 <div class="row margin-b-sm">
                                                     <asp:HiddenField ID="hfInteractionTypeId" runat="server" Value='<%# Eval("Guid") %>' />
                                                     <div class="col-md-5 col-sm-6 col-xs-8 padding-t-sm">
-                                                        <Rock:RockCheckBox ID="cbInterationType" runat="server" SelectedIconCssClass="ti ti-square-check" UnSelectedIconCssClass="ti ti-square" Text='<%# Eval("Name") %>' Checked='<%# (bool)Eval("IsInteractionTypeEnabled") %>' />
+                                                        <Rock:RockCheckBox ID="cbInterationType" runat="server" SelectedIconCssClass="ti ti-checkbox" UnSelectedIconCssClass="ti ti-crop-1-1" Text='<%# Eval("Name") %>' Checked='<%# (bool)Eval("IsInteractionTypeEnabled") %>' />
                                                     </div>
                                                     <div class="col-md-7 col-sm-6 col-xs-4">
                                                         <Rock:NumberBox ID="nbNoInteractionDays" runat="server" AppendText="days" CssClass="input-width-md" Text='<%#Eval("LastInteractionDays") %>' />

@@ -5589,7 +5589,7 @@ namespace Rock.Rest.v2
                         Label = groupRequirement.GroupRequirementType.CheckboxLabel.IsNotNullOrWhiteSpace()
                             ? groupRequirement.GroupRequirementType.CheckboxLabel
                             : groupRequirement.GroupRequirementType.Name,
-                        Icon = "ti ti-square ti-fw"
+                        Icon = "ti ti-crop-1-1 ti-fw"
                     };
                 }
 

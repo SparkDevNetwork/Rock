@@ -401,7 +401,7 @@ export function getComponentIconHtml(componentTypeName: EditorComponentTypeName)
         case "code":
             return createIconElement("ti ti-code");
         case "rsvp":
-            return createIconElement("ti ti-square-check");
+            return createIconElement("ti ti-checkbox");
         case "section":
             return createIconElement("rk rk-one-column");
         case "one-column-section":

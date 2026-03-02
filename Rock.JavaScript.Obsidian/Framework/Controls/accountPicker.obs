@@ -97,7 +97,7 @@
             </button>
 
             <label class="rock-checkbox-icon text-normal mb-0" v-if="showInactiveCheckbox">
-                <i :class="['ti', includeInactive ? 'ti-square-check' : 'ti-square']"></i> Show Inactive
+                <i :class="['ti', includeInactive ? 'ti-checkbox' : 'ti-crop-1-1']"></i> Show Inactive
                 <span style="display:none"><input type="checkbox" v-model="includeInactive"></span>
             </label>
         </template>

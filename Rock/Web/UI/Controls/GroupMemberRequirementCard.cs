@@ -213,7 +213,7 @@ namespace Rock.Web.UI.Controls
                     {
                         CausesValidation = false,
                         ID = "lbManualRequirement" + this.ClientID,
-                        Text = "<i class='ti ti-square ti-fw'></i> " + manualLabel,
+                        Text = "<i class='ti ti-crop-1-1 ti-fw'></i> " + manualLabel,
                     };
                     _lbManualRequirement.Click += lbManualRequirement_Click;
                     Controls.Add( _lbManualRequirement );

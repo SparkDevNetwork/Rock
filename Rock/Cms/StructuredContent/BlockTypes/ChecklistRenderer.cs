@@ -42,7 +42,7 @@ namespace Rock.Cms.StructuredContent.BlockTypes
                     }
                     else
                     {
-                        writer.Write( "<i class=\"ti ti-square-check\"></i> " );
+                        writer.Write( "<i class=\"ti ti-crop-1-1\"></i> " );
                     }
 
                     writer.Write( item.Text );

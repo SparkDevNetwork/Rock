@@ -446,7 +446,7 @@ namespace Rock.Web.UI.Controls
                         headerSummary.Attributes.Add( "data-person-id", mergeField.PersonId.ToString() );
 
                         var i = new HtmlGenericControl( "i" );
-                        i.Attributes.Add( "class", "header-checkbox-icon js-header-checkbox-icon ti ti-2x " + ( mergeField.IsPrimaryPerson ? "ti-square-check" : "ti-square" ) );
+                        i.Attributes.Add( "class", "header-checkbox-icon js-header-checkbox-icon ti ti-2x " + ( mergeField.IsPrimaryPerson ? "ti-checkbox" : "ti-crop-1-1" ) );
                         headerSummary.Controls.Add( i );
 
                         headerSummary.Controls.Add( new LiteralControl( mergeField.HeaderContent ) );

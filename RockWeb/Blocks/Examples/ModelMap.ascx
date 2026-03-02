@@ -134,7 +134,7 @@
 
                         <div class="clearfix">
                             <small class="pull-right">Show:
-                                <span class="js-model-inherited"><i class="js-model-check ti ti-fw ti-square"></i> Methods</span>
+                                <span class="js-model-inherited"><i class="js-model-check ti ti-fw ti-crop-1-1"></i> Methods</span>
                             </small>
                         </div>
 
@@ -155,7 +155,7 @@
             Sys.Application.add_load(function () {
                 // Hide and unhide inherited properties and methods
                 $('.js-model-inherited').on('click', function () {
-                    $(this).find('i.js-model-check').toggleClass('ti-square-check ti-square');
+                    $(this).find('i.js-model-check').toggleClass('ti-checkbox ti-crop-1-1');
                     $(this).closest('.panel-body').find('h4.js-model').toggleClass('visible hidden');
                     $(this).closest('.panel-body').find('li.js-model').toggleClass('visible hidden');
                 });

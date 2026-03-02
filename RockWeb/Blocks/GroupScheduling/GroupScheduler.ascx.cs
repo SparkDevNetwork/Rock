@@ -621,7 +621,7 @@ btnCopyToClipboard.ClientID );
             }
             else
             {
-                btnShowChildGroups.Text = "<i class='ti ti-square'></i> Show Child Groups";
+                btnShowChildGroups.Text = "<i class='ti ti-crop-1-1'></i> Show Child Groups";
             }
         }
 
@@ -1677,7 +1677,7 @@ btnCopyToClipboard.ClientID );
                 }
                 else
                 {
-                    btnMultiGroupModeColumnSelectedGroup.Text = "<i class='ti ti-square'></i>";
+                    btnMultiGroupModeColumnSelectedGroup.Text = "<i class='ti ti-crop-1-1'></i>";
                 }
 
                 btnMultiGroupModeColumnSelectedGroup.Attributes["data-group-id"] = occurrenceColumnItem.Group.Id.ToString();

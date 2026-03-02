@@ -134,8 +134,8 @@ namespace Rock.Web.UI.Controls
 
             _cbShowInactiveGroups = new RockCheckBox();
             _cbShowInactiveGroups.ContainerCssClass = "pull-right";
-            _cbShowInactiveGroups.SelectedIconCssClass = "ti ti-square-check";
-            _cbShowInactiveGroups.UnSelectedIconCssClass = "ti ti-square";
+            _cbShowInactiveGroups.SelectedIconCssClass = "ti ti-checkbox";
+            _cbShowInactiveGroups.UnSelectedIconCssClass = "ti ti-crop-1-1";
             _cbShowInactiveGroups.ID = this.ID + "_cbShowInactiveGroups";
             _cbShowInactiveGroups.Text = "Show Inactive";
             _cbShowInactiveGroups.AutoPostBack = true;
