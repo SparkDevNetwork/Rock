@@ -29,5 +29,12 @@ namespace Rock.SystemKey
         /// objects.
         /// </summary>
         public const string EntityUsage = "core.entityUsage";
+
+        /// <summary>
+        /// The metadata key for storing the JSON array of media element identifiers
+        /// used by a content channel item. This should be stored and retrieved as
+        /// a list of <see cref="int"/> values representing media element identifiers.
+        /// </summary>
+        public const string MediaElements = "core.mediaElements";
     }
 }
