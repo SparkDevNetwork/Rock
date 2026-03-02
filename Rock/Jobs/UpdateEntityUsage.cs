@@ -83,7 +83,8 @@ namespace Rock.Jobs
             {
                 using ( var rockContext = CreateRockContext() )
                 {
-                    UpdateMediaUsage( rockContext, ref processedCount );
+                    var (validReferencingEntities, mediaElements) = UpdateMediaUsage( rockContext, ref processedCount );
+                    UpdateContentChannelItemMediaUsage( rockContext, validReferencingEntities, mediaElements, ref processedCount );
                 }
             }
             else
@@ -101,7 +102,8 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="rockContext">The database context to use for retrieving and updating media element and attribute data.</param>
         /// <param name="processedCount">The number of media elements that were processed.</param>
-        internal void UpdateMediaUsage( RockContext rockContext, ref int processedCount )
+        /// <returns>A tuple containing the valid referencing entities and all media elements, which can be used for further processing such as updating content channel item media usage.</returns>
+        internal (IList<ReferenceEntity<Guid>> validReferencingEntities, IList<MediaElement> mediaElements) UpdateMediaUsage( RockContext rockContext, ref int processedCount )
         {
             var mediaElementFieldTypeGuid = Rock.SystemGuid.FieldType.MEDIA_ELEMENT.AsGuid();
 
@@ -155,6 +157,78 @@ namespace Rock.Jobs
                 else
                 {
                     mediaElement.DeleteMetadataValue( MetadataKey.EntityUsage, rockContext );
+                }
+
+                processedCount++;
+            }
+
+            return (validReferencingEntities, mediaElements);
+        }
+
+        /// <summary>
+        /// Updates the metadata for all content channel items to reflect the
+        /// media elements they reference through Media Element attributes.
+        /// </summary>
+        /// <param name="rockContext">The database context to use for retrieving and updating data.</param>
+        /// <param name="referencingEntities">The entity references discovered from media element attributes.</param>
+        /// <param name="mediaElements">All media elements, used to look up identifiers by their unique identifier.</param>
+        /// <param name="processedCount">The number of content channel items that were processed.</param>
+        internal void UpdateContentChannelItemMediaUsage( RockContext rockContext, IList<ReferenceEntity<Guid>> referencingEntities, IList<MediaElement> mediaElements, ref int processedCount )
+        {
+            var contentChannelItemEntityTypeId = EntityTypeCache.Get<ContentChannelItem>( false, rockContext )?.Id;
+
+            if ( !contentChannelItemEntityTypeId.HasValue )
+            {
+                return;
+            }
+
+            // Build a lookup from MediaElement Guid to its integer identifier.
+            var mediaElementIdByGuid = mediaElements.ToDictionary( me => me.Guid, me => me.Id );
+
+            // Build a map from each content channel item's identifier to the list of
+            // media element identifiers it references.
+            var contentChannelItemMediaIds = new Dictionary<int, List<int>>();
+
+            foreach ( var reference in referencingEntities )
+            {
+                if ( reference.EntityTypeId != contentChannelItemEntityTypeId.Value )
+                {
+                    continue;
+                }
+
+                if ( !mediaElementIdByGuid.TryGetValue( reference.TargetKey, out var mediaElementId ) )
+                {
+                    continue;
+                }
+
+                if ( !contentChannelItemMediaIds.TryGetValue( reference.EntityId, out var mediaIds ) )
+                {
+                    mediaIds = new List<int>();
+                    contentChannelItemMediaIds.Add( reference.EntityId, mediaIds );
+                }
+
+                if ( !mediaIds.Contains( mediaElementId ) )
+                {
+                    mediaIds.Add( mediaElementId );
+                }
+            }
+
+            // Load all content channel items so we can start processing them.
+            // We need to load everything because we need to clear out any
+            // existing metadata values that are no longer valid.
+            var contentChannelItems = new ContentChannelItemService( rockContext )
+                .Queryable()
+                .ToList();
+
+            foreach ( var contentChannelItem in contentChannelItems )
+            {
+                if ( contentChannelItemMediaIds.TryGetValue( contentChannelItem.Id, out var mediaIds ) && mediaIds.Any() )
+                {
+                    contentChannelItem.SaveMetadataValue( MetadataKey.MediaElements, mediaIds, rockContext );
+                }
+                else
+                {
+                    contentChannelItem.DeleteMetadataValue( MetadataKey.MediaElements, rockContext );
                 }
 
                 processedCount++;
