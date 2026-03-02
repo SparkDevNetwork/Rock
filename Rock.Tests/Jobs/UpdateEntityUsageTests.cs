@@ -292,8 +292,7 @@ namespace Rock.Tests.Jobs
 
                 var job = new UpdateEntityUsage();
 
-                var (validReferencingEntities, mediaElements) = job.UpdateMediaUsage( rockContextMock.Object, ref processedCount );
-                job.UpdateContentChannelItemMediaUsage( rockContextMock.Object, validReferencingEntities, mediaElements, ref processedCount );
+                job.UpdateContentChannelItemMediaUsage( rockContextMock.Object, ref processedCount );
 
                 metadataHelperMock.Verify( m => m.SaveEntityValue( It.IsAny<int>(), contentChannelItem.Id, MetadataKey.MediaElements, It.IsAny<string>(), It.IsAny<RockContext>() ), Times.Once );
             }
@@ -340,8 +339,7 @@ namespace Rock.Tests.Jobs
 
                 var job = new UpdateEntityUsage();
 
-                var (validReferencingEntities, mediaElements) = job.UpdateMediaUsage( rockContextMock.Object, ref processedCount );
-                job.UpdateContentChannelItemMediaUsage( rockContextMock.Object, validReferencingEntities, mediaElements, ref processedCount );
+                job.UpdateContentChannelItemMediaUsage( rockContextMock.Object, ref processedCount );
 
                 metadataHelperMock.Verify( m => m.DeleteEntityValue( It.IsAny<int>(), contentChannelItem.Id, MetadataKey.MediaElements, It.IsAny<RockContext>() ), Times.Once );
             }

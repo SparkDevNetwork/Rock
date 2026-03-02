@@ -83,8 +83,8 @@ namespace Rock.Jobs
             {
                 using ( var rockContext = CreateRockContext() )
                 {
-                    var (validReferencingEntities, mediaElements) = UpdateMediaUsage( rockContext, ref processedCount );
-                    UpdateContentChannelItemMediaUsage( rockContext, validReferencingEntities, mediaElements, ref processedCount );
+                    UpdateMediaUsage( rockContext, ref processedCount );
+                    UpdateContentChannelItemMediaUsage( rockContext, ref processedCount );
                 }
             }
             else
@@ -102,8 +102,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="rockContext">The database context to use for retrieving and updating media element and attribute data.</param>
         /// <param name="processedCount">The number of media elements that were processed.</param>
-        /// <returns>A tuple containing the valid referencing entities and all media elements, which can be used for further processing such as updating content channel item media usage.</returns>
-        internal (IList<ReferenceEntity<Guid>> validReferencingEntities, IList<MediaElement> mediaElements) UpdateMediaUsage( RockContext rockContext, ref int processedCount )
+        internal void UpdateMediaUsage( RockContext rockContext, ref int processedCount )
         {
             var mediaElementFieldTypeGuid = Rock.SystemGuid.FieldType.MEDIA_ELEMENT.AsGuid();
 
@@ -161,8 +160,6 @@ namespace Rock.Jobs
 
                 processedCount++;
             }
-
-            return (validReferencingEntities, mediaElements);
         }
 
         /// <summary>
@@ -170,10 +167,8 @@ namespace Rock.Jobs
         /// media elements they reference through Media Element attributes.
         /// </summary>
         /// <param name="rockContext">The database context to use for retrieving and updating data.</param>
-        /// <param name="referencingEntities">The entity references discovered from media element attributes.</param>
-        /// <param name="mediaElements">All media elements, used to look up identifiers by their unique identifier.</param>
         /// <param name="processedCount">The number of content channel items that were processed.</param>
-        internal void UpdateContentChannelItemMediaUsage( RockContext rockContext, IList<ReferenceEntity<Guid>> referencingEntities, IList<MediaElement> mediaElements, ref int processedCount )
+        internal void UpdateContentChannelItemMediaUsage( RockContext rockContext, ref int processedCount )
         {
             var contentChannelItemEntityTypeId = EntityTypeCache.Get<ContentChannelItem>( false, rockContext )?.Id;
 
@@ -182,8 +177,32 @@ namespace Rock.Jobs
                 return;
             }
 
+            var mediaElementFieldTypeGuid = Rock.SystemGuid.FieldType.MEDIA_ELEMENT.AsGuid();
+
+            // Find all Media Element attributes scoped to ContentChannelItem entities.
+            var attributeIdQry = new AttributeService( rockContext )
+                .Queryable()
+                .Where( a => a.FieldType.Guid == mediaElementFieldTypeGuid
+                    && a.EntityTypeId == contentChannelItemEntityTypeId.Value )
+                .Select( a => a.Id );
+
+            // Find all attribute values for ContentChannelItem that reference a Media Element.
+            var referencingEntities = new AttributeValueService( rockContext )
+                .Queryable()
+                .Where( av => attributeIdQry.Contains( av.AttributeId )
+                    && !string.IsNullOrEmpty( av.Value )
+                    && av.EntityId.HasValue )
+                .Select( av => new
+                {
+                    MediaElementGuid = av.Value,
+                    av.EntityId
+                } )
+                .ToList();
+
             // Build a lookup from MediaElement Guid to its integer identifier.
-            var mediaElementIdByGuid = mediaElements.ToDictionary( me => me.Guid, me => me.Id );
+            var mediaElementIdByGuid = new MediaElementService( rockContext )
+                .Queryable()
+                .ToDictionary( me => me.Guid, me => me.Id );
 
             // Build a map from each content channel item's identifier to the list of
             // media element identifiers it references.
@@ -191,20 +210,22 @@ namespace Rock.Jobs
 
             foreach ( var reference in referencingEntities )
             {
-                if ( reference.EntityTypeId != contentChannelItemEntityTypeId.Value )
+                var mediaElementGuid = reference.MediaElementGuid.AsGuid();
+
+                if ( mediaElementGuid == Guid.Empty )
                 {
                     continue;
                 }
 
-                if ( !mediaElementIdByGuid.TryGetValue( reference.TargetKey, out var mediaElementId ) )
+                if ( !mediaElementIdByGuid.TryGetValue( mediaElementGuid, out var mediaElementId ) )
                 {
                     continue;
                 }
 
-                if ( !contentChannelItemMediaIds.TryGetValue( reference.EntityId, out var mediaIds ) )
+                if ( !contentChannelItemMediaIds.TryGetValue( reference.EntityId.Value, out var mediaIds ) )
                 {
                     mediaIds = new List<int>();
-                    contentChannelItemMediaIds.Add( reference.EntityId, mediaIds );
+                    contentChannelItemMediaIds.Add( reference.EntityId.Value, mediaIds );
                 }
 
                 if ( !mediaIds.Contains( mediaElementId ) )
