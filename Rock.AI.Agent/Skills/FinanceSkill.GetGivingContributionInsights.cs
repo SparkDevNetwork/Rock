@@ -18,23 +18,21 @@ namespace Rock.AI.Agent.Skills
         #region Tool(s)
 
         /// <summary>
-        /// Produces an analytic summary of financial transactions matching the supplied optional filters.
-        /// Includes descriptive statistics (count, total, mean, median, standard deviation) and breakdowns by
-        /// fund (account) and payment method (currency type). When a *ValueIdKey argument equals "lookup" an
-        /// instructional error is returned containing selectable values instead of analytics.
+        /// Produces an analytic summary of giving financial transactions
+        /// matching the supplied filters.
         /// </summary>
-        /// <param name="personIdKey">Optional Person IdKey to restrict to transactions authorized by that person.</param>
-        /// <param name="campusIdKey">Optional Campus (Batch Campus) IdKey.</param>
-        /// <param name="accountIdKeys">Optional Account/Fund IdKey. When supplied only amounts contributed to this fund are counted in statistics.</param>
-        /// <param name="paymentMethodTypeValueIdKey">Optional currency / tender defined value IdKey or the literal "lookup".</param>
-        /// <param name="startDate">Inclusive start date filter.</param>
-        /// <param name="endDate">Inclusive end date filter.</param>
+        /// <param name="personIdKey">Encoded person identifier.</param>
+        /// <param name="campusIdKey">Encoded campus identifier.</param>
+        /// <param name="accountIdKeys">Encoded account identifiers.</param>
+        /// <param name="paymentMethodTypeValueIdKey">Encoded payment method identifier,</param>
+        /// <param name="startDate">The start date to limit results to.</param>
+        /// <param name="endDate">The end date to limit results to.</param>
         /// <returns>Analytics wrapped in <see cref="FinancialTransactionInsightsResult"/>.</returns>
         [AgentToolGuid( "8AE2C3D2-6965-47E2-AC82-0D422A1EF2FC" )]
         [AgentUsage( "Any argument ending with 'ValueIdKey' must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the chosen IdKey." )]
         [AgentUsage( "Only provide a personIdKey if the request is about a specific person. Do not assume that the current person should be used." )]
         [AgentToolReturnDescription( "Summary of matching transactions: count, total, average, median, and std-dev of per-transaction amounts. Includes fund and payment-type breakdowns with amount, share of total, and contributing-transaction counts." )]
-        public IAgentToolResult GetFinancialTransactionInsights(
+        public IAgentToolResult GetGivingContributionInsights(
             string personIdKey = null,
             string campusIdKey = null,
             List<string> accountIdKeys = null,
@@ -43,9 +41,13 @@ namespace Rock.AI.Agent.Skills
             DateTime? endDate = null )
         {
             var helper = new AgentToolHelper( AgentRequestContext, _logger );
-            var qry = new FinancialTransactionService( AgentRequestContext.RockContext ).Queryable();
+            var contributionTransactionValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION.AsGuid(), AgentRequestContext.RockContext ).Id;
+            var qry = new FinancialTransactionService( AgentRequestContext.RockContext )
+                .Queryable()
+                .Where( ft => ft.TransactionTypeValueId == contributionTransactionValueId );
 
-            qry = helper.WhereOptionalIdKey( qry, ft => ft.AuthorizedPersonAlias.PersonId, personIdKey );
+            qry = WherePersonOrGivingGroup( qry, helper, personIdKey );
+
             qry = helper.WhereOptionalIdKey( qry, ft => ft.Batch.CampusId, campusIdKey );
             qry = helper.WhereOptionalIdKey( qry, ft => ft.FinancialPaymentDetail.CurrencyTypeValueId, paymentMethodTypeValueIdKey );
             qry = helper.WhereOptionalPropertyBetween( qry, ft => ft.TransactionDateTime, startDate, endDate );
@@ -129,12 +131,12 @@ namespace Rock.AI.Agent.Skills
                 .ToList();
 
             var denom = totalAmount == 0m ? 1m : totalAmount;
-            var funds = fundRows.Select( fr => new FundBreakdown
+            var funds = fundRows.Select( fr => new CurrencyBreakdown
             {
                 IdKey = IdHasher.Instance.GetHash( fr.AccountId!.Value ),
                 Name = fr.AccountName ?? "Unknown",
                 TotalAmount = fr.TotalAmount,
-                PercentOfTotal = fr.TotalAmount / denom,
+                PercentOfTotal = fr.TotalAmount / denom * 100,
                 UniqueTransactionCount = fr.UniqueTransactionCount
             } ).ToList();
 
@@ -150,15 +152,15 @@ namespace Rock.AI.Agent.Skills
                 .OrderByDescending( r => r.TotalAmount )
                 .ToList();
 
-            var currencyTypes = currencyTypeRows.Select( r => new CurrencyTypeBreakdown
+            var currencyTypes = currencyTypeRows.Select( r => new CurrencyBreakdown
             {
-                Type = r.Type,
+                Name = r.Type,
                 UniqueTransactionCount = r.UniqueTransactionCount,
                 TotalAmount = r.TotalAmount,
-                PercentOfTotal = totalAmount == 0m ? 0m : ( r.TotalAmount / totalAmount )
+                PercentOfTotal = totalAmount == 0m ? 0m : ( r.TotalAmount / totalAmount * 100 )
             } ).ToList();
 
-            var result = new FinancialTransactionInsightsResult
+            var insightsResult = new FinancialTransactionInsightsResult
             {
                 Currency = "USD",
                 Totals = new FinancialTotalsBreakdown
@@ -173,44 +175,15 @@ namespace Rock.AI.Agent.Skills
                 CurrencyTypes = currencyTypes
             };
 
-            return Success( result );
-        }
+            var result = Success( insightsResult )
+                .WithInstructions( "Percents are scaled between 0 and 100." );
 
-        #endregion
-
-        #region Helper Methods
-
-        /// <summary>
-        /// Returns the list of <see cref="DefinedValue"/> items for the specified defined type when the supplied
-        /// <paramref name="lookupKey"/> equals the literal "lookup". Otherwise returns <c>null</c> so the caller
-        /// knows to continue normal processing.
-        /// </summary>
-        /// <param name="rockContext">The Rock data context.</param>
-        /// <param name="definedTypeGuid">The defined type Guid (as string) to resolve.</param>
-        /// <param name="lookupKey">The user supplied value which may request a lookup.</param>
-        /// <returns>A collection of <see cref="KeyNameResult"/> for selection or <c>null</c>.</returns>
-        private List<KeyNameResult> TryGetDefinedValueLookup( RockContext rockContext, string definedTypeGuid, string lookupKey )
-        {
-            if ( lookupKey.IsNullOrWhiteSpace() )
+            if ( !helper.HasErrors && personIdKey.IsNotNullOrWhiteSpace() )
             {
-                return null;
+                result = result.WithInstructions( "Note: These insights may include transactions made by other people in the same giving group as the specified person. This is typically the same family, but not always." );
             }
 
-            if ( !lookupKey.Equals( "lookup", StringComparison.OrdinalIgnoreCase ) )
-            {
-                return null;
-            }
-
-            var paymentMethodDvs = DefinedTypeCache.Get( definedTypeGuid.AsGuid(), rockContext )
-                ?.DefinedValues
-                .Select( dv => new KeyNameResult
-                {
-                    IdKey = dv.IdKey,
-                    Name = dv.Value
-                } )
-                .ToList();
-
-            return paymentMethodDvs;
+            return result;
         }
 
         #endregion

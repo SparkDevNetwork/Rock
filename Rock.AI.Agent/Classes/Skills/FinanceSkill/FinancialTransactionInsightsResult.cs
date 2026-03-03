@@ -20,11 +20,21 @@ namespace Rock.AI.Agent.Classes.Skills.FinanceSkill
         /// <summary>
         /// Breakdown of giving by fund (account) ordered by total descending.
         /// </summary>
-        public List<FundBreakdown> Funds { get; set; }
+        public List<CurrencyBreakdown> Funds { get; set; }
 
         /// <summary>
         /// Breakdown of totals by payment method (currency type / tender).
         /// </summary>
-        public List<CurrencyTypeBreakdown> CurrencyTypes { get; set; }
+        public List<CurrencyBreakdown> CurrencyTypes { get; set; }
+
+        /// <summary>
+        /// Breakdown of totals by credit card type (if applicable).
+        /// </summary>
+        public List<CurrencyBreakdown> CreditCardTypes { get; set; }
+
+        /// <summary>
+        /// The breakdown of registration instances.
+        /// </summary>
+        public List<CurrencyBreakdown> RegistrationInstances { get; set; }
     }
 }
