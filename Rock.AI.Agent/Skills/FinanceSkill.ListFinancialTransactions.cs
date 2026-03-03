@@ -111,7 +111,7 @@ namespace Rock.AI.Agent.Skills
                 // And only list those matching account details
                 Accounts = a.FinancialTransaction.TransactionDetails
                     .Where( td => !hasAccountFilter || accountIds.Contains( td.AccountId ) )
-                    .Select( td => new FinancialAccountTransactionSummaryResult
+                    .Select( td => new FinancialAccountTransactionResult
                     {
                         Amount = td.Amount,
                         Name = td.Account.Name
@@ -143,7 +143,7 @@ namespace Rock.AI.Agent.Skills
                             .Sum( d => ( decimal? ) d.Amount ) ?? 0m,
                         Accounts = a.FinancialTransactionRefund.FinancialTransaction.TransactionDetails
                             .Where( td => !hasAccountFilter || accountIds.Contains( td.AccountId ) )
-                            .Select( td => new FinancialAccountTransactionSummaryResult
+                            .Select( td => new FinancialAccountTransactionResult
                             {
                                 Amount = td.Amount,
                                 Name = td.Account.Name

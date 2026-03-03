@@ -18,18 +18,13 @@
 namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
-    /// A defined value result.
+    /// Represents an account and amount detail for a financial transaction.
     /// </summary>
-    internal class DefinedValueResult : EntityResultBase
+    internal class FinancialAccountTransactionResult : FinancialAccountResult
     {
         /// <summary>
-        /// The value.
+        /// The amount of the transaction for this account.
         /// </summary>
-        public string Value { get; set; }
-
-        /// <summary>
-        /// The description.
-        /// </summary>
-        public string Description { get; set; }
+        public decimal Amount { get; set; }
     }
 }

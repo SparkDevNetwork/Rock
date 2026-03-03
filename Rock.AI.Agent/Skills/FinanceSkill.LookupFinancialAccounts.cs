@@ -43,6 +43,7 @@ namespace Rock.AI.Agent.Skills
                     } : null
                 };
 
+                result.Children = new List<FinancialAccountResult>();
                 var childAccts = acct.GetDescendentFinancialAccounts()
                     .Where( childAcct => childAcct.IsActive );
 
