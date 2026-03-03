@@ -78,30 +78,79 @@ namespace Rock.AI.Agent.Skills
                 qry = qry.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) ) );
             }
 
-            qry = qry.OrderByDescending( t => t.TransactionDateTime )
-                .ThenByDescending( t => t.Id );
+            // Do a left outer join to find if there was a refund.
+            var joinedQry = qry
+                .GroupJoin(
+                    new FinancialTransactionRefundService( AgentRequestContext.RockContext ).Queryable(),
+                    ft => ft.Id,
+                    ftr => ftr.OriginalTransactionId,
+                    ( ft, ftr ) => new { FinancialTransaction = ft, FinancialTransactionRefund = ftr } )
+                .SelectMany(
+                    x => x.FinancialTransactionRefund.DefaultIfEmpty(),
+                    ( l, r ) => new
+                    {
+                        l.FinancialTransaction,
+                        FinancialTransactionRefund = r
+                    } );
+
+            joinedQry = joinedQry.OrderByDescending( a => a.FinancialTransaction.TransactionDateTime )
+                .ThenByDescending( a => a.FinancialTransaction.Id );
 
             // Project AFTER ordering, BEFORE paging
-            var projectedQry = qry.Select( ft => new FinancialTransactionResult
+            var projectedQry = joinedQry.AsExpandable().Select( a => new FinancialTransactionResult
             {
-                Id = ft.Id,
-                AuthorizedPerson = PersonResult.NameOnly( ft.AuthorizedPersonAlias ),
-                TransactionDateTime = ft.TransactionDateTime,
+                Id = a.FinancialTransaction.Id,
+                AuthorizedPerson = PersonResult.NameOnly( a.FinancialTransaction.AuthorizedPersonAlias ),
+                TransactionDateTime = a.FinancialTransaction.TransactionDateTime,
 
                 // Only sum details that match the resolved account set (if any)
-                TotalAmount = ft.TransactionDetails
+                TotalAmount = a.FinancialTransaction.TransactionDetails
                     .Where( d => !hasAccountFilter || accountIds.Contains( d.AccountId ) )
                     .Sum( d => ( decimal? ) d.Amount ) ?? 0m,
 
                 // And only list those matching account details
-                Accounts = ft.TransactionDetails
+                Accounts = a.FinancialTransaction.TransactionDetails
                     .Where( td => !hasAccountFilter || accountIds.Contains( td.AccountId ) )
                     .Select( td => new FinancialAccountTransactionSummaryResult
                     {
                         Amount = td.Amount,
                         Name = td.Account.Name
                     } )
-                    .ToList()
+                    .ToList(),
+
+                CurrencyType = a.FinancialTransaction.FinancialPaymentDetail.CurrencyTypeValue != null
+                    ? new KeyNameResult
+                    {
+                        Id = a.FinancialTransaction.FinancialPaymentDetail.CurrencyTypeValue.Id,
+                        Name = a.FinancialTransaction.FinancialPaymentDetail.CurrencyTypeValue.Value
+                    }
+                    : null,
+
+                CreditCardType = a.FinancialTransaction.FinancialPaymentDetail.CreditCardTypeValue != null
+                    ? new KeyNameResult
+                    {
+                        Id = a.FinancialTransaction.FinancialPaymentDetail.CreditCardTypeValue.Id,
+                        Name = a.FinancialTransaction.FinancialPaymentDetail.CreditCardTypeValue.Value
+                    }
+                    : null,
+
+                RefundLink = a.FinancialTransactionRefund != null
+                    ? new FinancialTransactionRefundLinkResult
+                    {
+                        RefundTransactionId = a.FinancialTransactionRefund.Id,
+                        TotalAmount = a.FinancialTransactionRefund.FinancialTransaction.TransactionDetails
+                            .Where( d => !hasAccountFilter || accountIds.Contains( d.AccountId ) )
+                            .Sum( d => ( decimal? ) d.Amount ) ?? 0m,
+                        Accounts = a.FinancialTransactionRefund.FinancialTransaction.TransactionDetails
+                            .Where( td => !hasAccountFilter || accountIds.Contains( td.AccountId ) )
+                            .Select( td => new FinancialAccountTransactionSummaryResult
+                            {
+                                Amount = td.Amount,
+                                Name = td.Account.Name
+                            } )
+                            .ToList(),
+                    }
+                    : null
             } );
 
             if ( helper.HasErrors )
@@ -129,8 +178,15 @@ namespace Rock.AI.Agent.Skills
                 startDate?.ToString( "o" ),
                 endDate?.ToString( "o" ) ).XxHash();
 
-            return helper.GetPaginatedResult( page, page.WithItems( historyItems ) )
+            var result = helper.GetPaginatedResult( page, page.WithItems( historyItems ) )
                 .WithHistoryKey( historyKey );
+
+            if ( page.Items.Any( a => a.RefundLink != null ) )
+            {
+                result = result.WithInstructions( "Note: Some transactions in this list have associated refunds. Refunds may be in full or partial." );
+            }
+
+            return result;
         }
 
         #endregion

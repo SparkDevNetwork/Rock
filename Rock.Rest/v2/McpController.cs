@@ -33,8 +33,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
-
 
 #if WEBFORMS
 using IActionResult = System.Web.Http.IHttpActionResult;
