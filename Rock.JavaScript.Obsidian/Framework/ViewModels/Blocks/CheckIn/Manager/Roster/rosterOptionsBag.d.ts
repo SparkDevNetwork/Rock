@@ -38,12 +38,6 @@ export type RosterOptionsBag = {
      */
     isDeleteButtonEnabled: boolean;
 
-    /**
-     * Determines if the group column should be displayed when a single
-     * schedule is selected.
-     */
-    isGroupColumnEnabled: boolean;
-
     /** Determines if the "mark all present" button should be displayed. */
     isMarkAllPresentEnabled: boolean;
 

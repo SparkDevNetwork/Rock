@@ -99,7 +99,7 @@ namespace Rock.Blocks.AI
             }
 
             var provider = AgentProviderContainer.GetActiveComponent();
-            if( provider == null )
+            if ( provider == null )
             {
                 return new Dictionary<string, object>
                 {

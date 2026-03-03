@@ -209,6 +209,61 @@
                         </div>
                     </Rock:PanelWidget>
 
+                    <%-- Registrant Eligibility --%>
+                    <Rock:PanelWidget ID="pwRegistrantEligibility" runat="server" Title="Registrant Eligibility">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:NumberRangeEditor ID="nreEligibilityAgeRange" runat="server" Label="Age Range" Help="Enter the age range allowed to register. You may use decimal values for more precise limits, such as 5.5." NumberType="Double" />
+                                <Rock:RockDropDownList ID="ddlEligibilityAgeClassification" runat="server" Label="Age Classification" Help="Limit registration to individuals who match the selected age classification." />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:NotificationBox ID="nbEligibilityAgeWarning" runat="server" Visible="false" NotificationBoxType="Warning">
+                                    <div><strong>Warning</strong></div>
+                                    To ensure this filter works correctly, include a birthdate field in your form.
+                                </Rock:NotificationBox>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">Grade Range<Rock:HelpBlock ID="hbEligibilityGradeRange" runat="server" Text="Define the eligible grade range. The starting and ending grades are included in the range." /></label>
+                                    <div class="control-wrapper">
+                                        <div class="form-control-group">
+                                            <Rock:RockDropDownList ID="ddlEligibilityGradeOffsetMax" runat="server" CssClass="input-width-md" />
+                                            <span class="to"> to </span>
+                                            <Rock:RockDropDownList ID="ddlEligibilityGradeOffsetMin" runat="server" CssClass="input-width-md" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:NotificationBox ID="nbEligibilityGradeRange" runat="server" Visible="false" NotificationBoxType="Warning">
+                                    <div><strong>Warning</strong></div>
+                                    To ensure this filter works correctly, include a grade field in your form.
+                                </Rock:NotificationBox>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockDropDownList ID="ddlEligibilityGender" runat="server" Label="Gender" Help="Select a single gender for eligibility. Only individuals who match this selection may register." />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:NotificationBox ID="nbEligibilityGender" runat="server" Visible="false" NotificationBoxType="Warning">
+                                    <div><strong>Warning</strong></div>
+                                    To ensure this filter works correctly, include a gender field in your form.
+                                </Rock:NotificationBox>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:DataViewItemPicker ID="dvpEligibilityDataView" runat="server" Label="Data View" Help="Limit registration to individuals contained within the selected data view. This is an advanced configuration option and should be used with caution to avoid unintentionally preventing eligible individuals from registering." />
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
+
                     <%-- Registration Attributes --%>
                     <Rock:PanelWidget ID="wpRegistrationAttributes" runat="server" Title="Registration Attributes">
                         <div class="grid">
@@ -705,6 +760,24 @@
                     });
                 }
 
+                function triggerPostback(eventTarget, eventArgs) {
+                    window.location = "javascript:__doPostBack('" + eventTarget + "', " + JSON.stringify(eventArgs) + ")";
+                }
+
+                $("#<%=nreEligibilityAgeRange.ClientID %> .js-number-range-lower, "
+                    + "#<%=nreEligibilityAgeRange.ClientID %> .js-number-range-upper, "
+                    + "#<%=ddlEligibilityAgeClassification.ClientID %>, "
+                    + "#<%=ddlEligibilityGradeOffsetMax.ClientID %>, "
+                    + "#<%=ddlEligibilityGradeOffsetMin.ClientID %>, "
+                    + "#<%=ddlEligibilityGender.ClientID %>").on("change", function (event) {
+                        if (event.target.classList.contains("js-number-range-lower") || event.target.classList.contains("js-number-range-upper")) {
+                            // For the number range, we need to emit the parent client id rather than the individual lower and upper field ids.
+                            triggerPostback("<%=nreEligibilityAgeRange.ClientID %>", "changed");
+                        }
+                        else {
+                            triggerPostback(event.target.id, "changed");
+                        }
+                });
             });
         </script>
     </ContentTemplate>

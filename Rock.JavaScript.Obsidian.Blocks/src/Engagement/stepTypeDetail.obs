@@ -45,11 +45,6 @@
                        :availableStepPrograms="config.options?.stepPrograms ?? []" />
 </template>
 
-<style scoped>
-.campus-slicer {
-    margin-bottom: var(--spacing-large);
-}
-</style>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";

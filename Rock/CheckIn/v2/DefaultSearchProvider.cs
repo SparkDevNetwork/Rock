@@ -360,13 +360,23 @@ namespace Rock.CheckIn.v2
         {
             var personIdQry = new PersonService( Session.RockContext )
                 .GetByFullName( searchTerm, false )
-                .AsNoTracking()
                 .Select( p => p.Id );
 
-            return GetFamilyGroupMemberQuery()
+            var groupMemberQry = GetFamilyGroupMemberQuery()
                 .Where( gm => personIdQry.Contains( gm.PersonId ) )
                 .Select( gm => gm.Group )
                 .Distinct();
+
+            // Force SQL server to not cache the query plan if we are searching
+            // by name and the search value is less than 7 characters. Otherwise
+            // it will probably use a bad query plan and then cache it for other
+            // queries that have longer search values.
+            if ( searchTerm.Length < 7 )
+            {
+                groupMemberQry = groupMemberQry.WithRecompile();
+            }
+
+            return groupMemberQry;
         }
 
         /// <summary>

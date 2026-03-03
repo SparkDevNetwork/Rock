@@ -2819,6 +2819,8 @@ namespace Rock.Blocks.Event
             RegistrationRegistrant registrant = null;
             Person person = null;
             var personService = new PersonService( rockContext );
+            var registrantEligibilityEvaluator = new RegistrationTemplateService( rockContext )
+                .GetRegistrantEligibility( context.RegistrationSettings.RegistrationTemplateId );
 
             var firstName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.FirstName, registrantInfo.FieldValues ).ToStringSafe();
             var lastName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.LastName, registrantInfo.FieldValues ).ToStringSafe();
@@ -2934,6 +2936,8 @@ namespace Rock.Blocks.Event
                     var familyMembers = registrar.GetFamilyMembers( true, rockContext )
                         .Where( m => ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) && m.Person.LastName == lastName )
                         .Select( m => m.Person )
+                        .ToList()
+                        .Where( p => registrantEligibilityEvaluator.Evaluate( p ) )
                         .ToList();
 
                     if ( familyMembers.Count() == 1 )
@@ -2976,6 +2980,8 @@ namespace Rock.Blocks.Event
                 var familyMembers = currentPerson.GetFamilyMembers( true, rockContext )
                     .Where( m => ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) && m.Person.LastName == lastName )
                     .Select( m => m.Person )
+                    .ToList()
+                    .Where( p => registrantEligibilityEvaluator.Evaluate( p ) )
                     .ToList();
 
                 if ( familyMembers.Count() == 1 )
@@ -3439,6 +3445,8 @@ namespace Rock.Blocks.Event
             var personService = new PersonService( rockContext );
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
             var registrantService = new RegistrationRegistrantService( rockContext );
+            var registrationTemplateService = new RegistrationTemplateService( rockContext );
+            var registrantEligibility = registrationTemplateService.GetRegistrantEligibility( context.RegistrationSettings.RegistrationTemplateId );
 
             var registrantChanges = new History.HistoryChangeList();
             var personChanges = new History.HistoryChangeList();
@@ -3481,6 +3489,12 @@ namespace Rock.Blocks.Event
 
             if ( registrant == null )
             {
+                // Before creating a new registrant, check if the person is eligible.
+                if ( !registrantEligibility.Evaluate( person, out var friendlyError ) )
+                {
+                    throw new InvalidOperationException( friendlyError );
+                }
+
                 registrant = new RegistrationRegistrant
                 {
                     Guid = registrantInfo.Guid,
@@ -3983,6 +3997,9 @@ namespace Rock.Blocks.Event
                 .Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
 
             // Get family members
+            var registrantEligibilityEvaluator = new RegistrationTemplateService( rockContext )
+                .GetRegistrantEligibility( context.RegistrationSettings.RegistrationTemplateId );
+
             var currentPerson = GetCurrentPerson();
             var familyMembers = context.RegistrationSettings.AreCurrentFamilyMembersShown ?
                 currentPerson.GetFamilyMembers( true, rockContext )
@@ -3993,6 +4010,7 @@ namespace Rock.Blocks.Event
                     } )
                     .DistinctBy( gm => gm.Person.Guid )
                     .ToList()
+                    .Where( gm => registrantEligibilityEvaluator.Evaluate( gm.Person ) )
                     .Select( gm => new RegistrationEntryFamilyMemberBag
                     {
                         Guid = gm.Person.Guid,
@@ -4253,9 +4271,9 @@ namespace Rock.Blocks.Event
                         Guid = Guid.NewGuid(),
                         FamilyGuid = currentPerson.PrimaryFamily.Guid,
                         IsOnWaitList = isOnWaitList,
-                        PersonGuid = currentPerson.Guid,
+                        PersonGuid = null,//currentPerson.Guid,
                         FeeItemQuantities = new Dictionary<Guid, int>(),
-                        FieldValues = GetCurrentValueFieldValues( context, rockContext, currentPerson, null, formModels, false )
+                        FieldValues = new Dictionary<Guid, object>(),//GetCurrentValueFieldValues( context, rockContext, currentPerson, null, formModels, false )
                     } );
                 }
                 else
@@ -4405,6 +4423,54 @@ namespace Rock.Blocks.Event
 
             var isPaymentPlanAllowed = context.RegistrationSettings.IsPaymentPlanAllowed;
 
+            RegistrantEligibilityBag registrantEligibilityBag = null;
+            var registrantEligibilitySettings = context.RegistrationSettings.RegistrantEligibilitySettings;
+            if ( registrantEligibilitySettings != null )
+            {
+                // Age classification and data view eligibility must be checked at submission time
+                // since simple validation values cannot be passed to the UI. In the future, we
+                // may add a "pre-check" block action to perform complex eligibility checks on-demand.
+
+                registrantEligibilityBag = new RegistrantEligibilityBag
+                {
+                    MinimumAge = registrantEligibilitySettings.MinimumAge,
+                    MaximumAge = registrantEligibilitySettings.MaximumAge,
+                    Gender = registrantEligibilitySettings.Gender,
+                    Grades = null // calculated below
+                };
+
+                // Build the list of eligible grades based on the configured grade classifications.
+                // This is necessary because the UI needs to know which grades are valid for new registrants.
+                if ( registrantEligibilitySettings.MinimumGradeOffset.HasValue || registrantEligibilitySettings.MaximumGradeOffset.HasValue )
+                {
+                    var gradesDefinedType = DefinedTypeCache.Get( SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+
+                    registrantEligibilityBag.Grades = new List<Guid>();
+
+                    foreach ( var grade in gradesDefinedType.DefinedValues.Where( dv => dv.IsActive ).OrderBy( dv => dv.Order ) )
+                    {
+                        var gradeOffset = grade.Value.AsIntegerOrNull();
+
+                        if ( gradeOffset.HasValue )
+                        {
+                            var isAboveMinimumGrade = !registrantEligibilitySettings.MinimumGradeOffset.HasValue || gradeOffset.Value >= registrantEligibilitySettings.MinimumGradeOffset.Value;
+                            var isBelowMaximumGrade = !registrantEligibilitySettings.MaximumGradeOffset.HasValue || gradeOffset.Value <= registrantEligibilitySettings.MaximumGradeOffset.Value;
+
+                            if ( isAboveMinimumGrade && isBelowMaximumGrade )
+                            {
+                                // Add Guid since the GradePicker values are Guids.
+                                registrantEligibilityBag.Grades.Add( grade.Guid );
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Null means that any grade is valid.
+                    registrantEligibilityBag.Grades = null;
+                }
+            }
+
             var currencyInfo = new RockCurrencyCodeInfo();
             var viewModel = new RegistrationEntryInitializationBox
             {
@@ -4528,6 +4594,8 @@ namespace Rock.Blocks.Event
                     Symbol = currencyInfo.Symbol,
                     SymbolLocation = currencyInfo.SymbolLocation,
                 },
+
+                RegistrantEligibility = registrantEligibilityBag
             };
 
             if ( context.RegistrationSettings.SignatureDocumentTemplateId.HasValue && context.RegistrationSettings.IsInlineSignatureRequired )

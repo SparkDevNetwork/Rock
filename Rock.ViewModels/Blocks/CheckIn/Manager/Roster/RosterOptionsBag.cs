@@ -28,12 +28,6 @@ namespace Rock.ViewModels.Blocks.CheckIn.Manager.Roster
         public string ErrorMessage { get; set; }
 
         /// <summary>
-        /// Determines if the group column should be displayed when a single
-        /// schedule is selected.
-        /// </summary>
-        public bool IsGroupColumnEnabled { get; set; }
-
-        /// <summary>
         /// Determines if the checkout all button should be displayed.
         /// </summary>
         public bool IsCheckoutAllEnabled { get; set; }

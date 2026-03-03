@@ -3307,19 +3307,22 @@ mission. We are so grateful for your commitment.</p>
             var selectedAccountAmounts = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount != 0 ).ToArray();
 
             var totalFeeCoverageAmount = GetSelectedFeeCoverageAmount();
-            var totalSelectedAmounts = selectedAccountAmounts.Sum( a => a.Amount.Value );
 
-            foreach ( var selectedAccountAmount in selectedAccountAmounts )
+            // Use largest-remainder distribution so the per-account rounded fees always sum to exactly
+            // the target total, eliminating penny drift when multiple allocations are present.
+            var accountAmountValues = selectedAccountAmounts.Select( a => a.Amount.Value ).ToArray();
+            var feeCoveragePerAccount = DistributeFeeCoverage( accountAmountValues, totalFeeCoverageAmount );
+
+            for ( int i = 0; i < selectedAccountAmounts.Length; i++ )
             {
+                var selectedAccountAmount = selectedAccountAmounts[i];
                 var transactionDetail = new T();
 
                 transactionDetail.AccountId = selectedAccountAmount.AccountId;
-                if ( totalFeeCoverageAmount > 0 )
+                if ( feeCoveragePerAccount[i] > 0m )
                 {
-                    decimal portionOfTotalAmount = decimal.Divide( selectedAccountAmount.Amount.Value, totalSelectedAmounts );
-                    decimal feeCoverageAmountForAccount = decimal.Round( portionOfTotalAmount * totalFeeCoverageAmount, 2 );
-                    transactionDetail.Amount = selectedAccountAmount.Amount.Value + feeCoverageAmountForAccount;
-                    transactionDetail.FeeCoverageAmount = feeCoverageAmountForAccount;
+                    transactionDetail.Amount = selectedAccountAmount.Amount.Value + feeCoveragePerAccount[i];
+                    transactionDetail.FeeCoverageAmount = feeCoveragePerAccount[i];
                 }
                 else
                 {
@@ -3400,6 +3403,80 @@ mission. We are so grateful for your commitment.</p>
             }
 
             return totalFeeCoverageAmount;
+        }
+
+        /// <summary>
+        /// Distributes a total fee coverage amount across accounts proportionally by gift amount,
+        /// using the largest-remainder method (penny reconciliation) to ensure the per-account
+        /// rounded values sum to exactly the target total. This prevents penny drift that occurs
+        /// when each row is rounded independently.
+        /// </summary>
+        /// <param name="accountAmounts">Gift amount per account (positive values).</param>
+        /// <param name="totalFeeCoverage">Total fee coverage to distribute.</param>
+        /// <returns>Per-account fee coverage amounts whose sum equals the currency-rounded total fee coverage.</returns>
+        private static decimal[] DistributeFeeCoverage( decimal[] accountAmounts, decimal totalFeeCoverage )
+        {
+            totalFeeCoverage = decimal.Round( totalFeeCoverage, 2, MidpointRounding.AwayFromZero );
+
+            if ( accountAmounts.Length == 0 || totalFeeCoverage <= 0m )
+            {
+                return new decimal[accountAmounts.Length];
+            }
+
+            var totalGift = accountAmounts.Sum();
+            var count = accountAmounts.Length;
+            var fees = new decimal[count];
+            var remainders = new decimal[count];
+
+            // Floor each row's proportional fee to whole cents and track the fractional remainder
+            // so we can later identify which rows should receive the extra penny(ies).
+            for ( int i = 0; i < count; i++ )
+            {
+                decimal exact = totalGift == 0m
+                    ? 0m
+                    : ( accountAmounts[i] / totalGift ) * totalFeeCoverage;
+
+                fees[i] = decimal.Floor( exact * 100m ) / 100m;
+                remainders[i] = exact - fees[i];
+            }
+
+            // Distribute any remaining cents to the rows with the largest fractional remainders,
+            // breaking ties by giving amount (largest first) for a deterministic result.
+            int centsToDistribute = ( int ) Math.Round( ( totalFeeCoverage - fees.Sum() ) * 100m, MidpointRounding.AwayFromZero );
+
+            if ( centsToDistribute > 0 )
+            {
+                var indices = Enumerable.Range( 0, count )
+                    .OrderByDescending( i => remainders[i] )
+                    .ThenByDescending( i => accountAmounts[i] )
+                    .ToArray();
+
+                for ( int j = 0; j < centsToDistribute && j < count; j++ )
+                {
+                    fees[indices[j]] += 0.01m;
+                }
+            }
+            else if ( centsToDistribute < 0 )
+            {
+                // Remove cents from rows with the smallest remainders that still have at least a penny,
+                // to handle the rare over-allocation case.
+                int centsToRemove = -centsToDistribute;
+                var indices = Enumerable.Range( 0, count )
+                    .OrderBy( i => remainders[i] )
+                    .ThenByDescending( i => fees[i] )
+                    .ToArray();
+
+                for ( int j = 0; j < indices.Length && centsToRemove > 0; j++ )
+                {
+                    if ( fees[indices[j]] >= 0.01m )
+                    {
+                        fees[indices[j]] -= 0.01m;
+                        centsToRemove--;
+                    }
+                }
+            }
+
+            return fees;
         }
 
         /// <summary>

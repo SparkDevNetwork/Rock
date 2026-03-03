@@ -93,6 +93,29 @@ namespace Rock.Model
                                 PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestConnected, History.HistoryChangeType.Record, connectionOpportunity.Name );
                             }
 
+                            // For new requests placed at the front of the list (Order = 0), avoid the
+                            // PostSave bulk-update that shifts every sibling record — which causes severe
+                            // row-level lock contention under concurrent load. Instead, compute a new
+                            // Order value for this record that places it before all existing records
+                            // without touching any of them. When the existing minimum Order is already
+                            // 0 or negative, decrement by 1 so this record sorts first; otherwise the
+                            // default Order of 0 is already before all siblings and no change is needed.
+                            if ( connectionRequest.Order == 0 )
+                            {
+                                var minExistingOrder = new ConnectionRequestService( rockContext )
+                                    .Queryable()
+                                    .Where( r =>
+                                        r.ConnectionStatusId == connectionRequest.ConnectionStatusId &&
+                                        r.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId )
+                                    .Select( r => ( int? ) r.Order )
+                                    .Min();
+
+                                if ( minExistingOrder.HasValue && minExistingOrder.Value <= 0 )
+                                {
+                                    connectionRequest.Order = minExistingOrder.Value - 1;
+                                }
+                            }
+
                             break;
                         }
 
@@ -174,19 +197,24 @@ namespace Rock.Model
                 {
                     case EntityContextState.Added:
                         {
-                            var connectionRequestService = new ConnectionRequestService( rockContext );
-                            var requestsOfStatus = connectionRequestService.Queryable()
-                            .Where( r =>
-                                r.ConnectionStatusId == connectionRequest.ConnectionStatusId &&
-                                r.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId &&
-                                r.Id != connectionRequest.Id );
-
+                            // When Order > 0 the record was explicitly inserted at a specific position
+                            // (a user-initiated reorder, not a high-frequency concurrent operation),
+                            // so shift sibling records at or above that position to make room.
+                            // When Order <= 0 the correct Order was already calculated in PreSave by
+                            // decrementing the existing minimum, so no sibling rows need to be updated.
                             if ( connectionRequest.Order > 0 )
                             {
-                                requestsOfStatus = requestsOfStatus.Where( r => r.Order >= connectionRequest.Order );
+                                var connectionRequestService = new ConnectionRequestService( rockContext );
+                                var requestsOfStatus = connectionRequestService.Queryable()
+                                    .Where( r =>
+                                        r.ConnectionStatusId == connectionRequest.ConnectionStatusId &&
+                                        r.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId &&
+                                        r.Id != connectionRequest.Id &&
+                                        r.Order >= connectionRequest.Order );
+
+                                rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order + 1, ModifiedDateTime = r.ModifiedDateTime } );
                             }
 
-                            rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order + 1, ModifiedDateTime = r.ModifiedDateTime } );
                             break;
                         }
                     case EntityContextState.Deleted:

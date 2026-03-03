@@ -42,7 +42,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a particular category." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
     [EntityTypeField( "Entity Type",
@@ -74,7 +74,8 @@ namespace Rock.Blocks.Core
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "2889352c-52ba-45f6-8ee1-9afa61211582" )]
-    [Rock.SystemGuid.BlockTypeGuid( "515dc5c2-4fbd-4eea-9d8e-a807409defde" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "515dc5c2-4fbd-4eea-9d8e-a807409defde" )]
+    [Rock.SystemGuid.BlockTypeGuid( "7BC54887-21C2-4688-BD1D-C1C8B9C86F7C" )]
     public class CategoryDetail : RockEntityDetailBlockType<Category, CategoryBag>, IHasCustomActions
     {
         #region Keys
@@ -565,7 +566,7 @@ namespace Rock.Blocks.Core
             {
                 return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
                 {
-                    [PageParameterKey.CategoryId] = entity.Id.ToString()
+                    [PageParameterKey.CategoryId] = entity.IdKey
                 } ) );
             }
 

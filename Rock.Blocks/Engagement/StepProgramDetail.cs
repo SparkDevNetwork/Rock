@@ -72,7 +72,7 @@ namespace Rock.Blocks.Engagement
     [BooleanField
         ( "Enable List View Display Options",
           Key = AttributeKey.EnableListViewDisplayOptions,
-          Description = "Allows selecting a display mode of Grid or Cards.",
+          Description = "Allows selecting the display mode when showing steps on a person's profile page.",
           DefaultValue = "false",
           Order = 3 )]
 

@@ -9,7 +9,11 @@
                     </div>
                     <div v-if="isFamilyMembersDropDownVisible" class="row">
                         <div class="col-md-6">
-                            <DropDownList :modelValue="currentRegistrant.personGuid ?? ''" @update:modelValue="onSetPersonGuid" :items="familyMemberOptions" :label="props.currentRegistrant.isNewFamily ? 'Guest to Register' : 'Family Member to Register'" :showBlankItem="false" />
+                            <DropDownList v-model="selectedPersonGuidOrNewOrEmptyString"
+                                          :items="familyMemberOptions"
+                                          :label="props.currentRegistrant.isNewFamily ? 'Guest to Register' : 'Family Member to Register'"
+                                          rules="required"
+                                          showBlankItem />
                         </div>
                     </div>
                 </template>
@@ -366,7 +370,7 @@
             return [
                 {
                     text: "Guest",
-                    value: null
+                    value: <NEW>"NEW"
                 }
             ];
         }
@@ -384,7 +388,7 @@
 
         let newFamilyMemberOption = {
             text: "New Family Member",
-            value: null
+            value: <NEW>"NEW"
         };
 
         return [...familyMembers, newFamilyMemberOption];
@@ -805,20 +809,23 @@
         }
     }
 
-    function onSetPersonGuid(guid: Guid | Guid[]): void {
-        if (Array.isArray(guid)) {
-            // This should not happen, but if multiple values are selected, then default to the first selection.
-            guid = guid[0];
-        }
+    watch(() => props.currentRegistrant.guid, (newValue) => {
+        selectedPersonGuidOrNewOrEmptyString.value = toGuidOrNull(newValue) ?? "";
+    });
 
-        if (!areEqual(guid, props.currentRegistrant.personGuid)) {
-            props.currentRegistrant.personGuid = guid;
+    type NEW = "NEW";
+    const selectedPersonGuidOrNewOrEmptyString = ref<Guid | NEW | "">(props.currentRegistrant.personGuid ?? "");
+
+    watch(selectedPersonGuidOrNewOrEmptyString, (newValue) => {
+        const guidOrNull = toGuidOrNull(newValue) ?? null;
+        if (!areEqual(guidOrNull, props.currentRegistrant.personGuid)) {
+            props.currentRegistrant.personGuid = guidOrNull;
 
             if (familyMember.value) {
                 props.currentRegistrant.familyGuid = familyMember.value.familyGuid;
             }
         }
-    }
+    });
 
     // #endregion
 

@@ -24,6 +24,8 @@ using System.Reflection;
 using System.Web;
 using System.Web.UI.WebControls;
 
+using EF6.TagWith;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Data.LinqKit;
@@ -769,6 +771,20 @@ namespace Rock
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Marks a queryable to use the <c>OPTION (RECOMPILE)</c> flag when
+        /// generating the SQL text. This will force SQL Server to recompile
+        /// the query plan when it is executed. This also causes SQL Server to
+        /// not cache the query plan.
+        /// </summary>
+        /// <typeparam name="T">The type of the source query.</typeparam>
+        /// <param name="source">The source query.</param>
+        /// <returns>The query marked for recompiling the query plan.</returns>
+        internal static IQueryable<T> WithRecompile<T>( this IQueryable<T> source )
+        {
+            return source.TagWith( "ROCKTAG:RECOMPILE" );
         }
 
         #endregion IQueryable extensions

@@ -24,7 +24,9 @@ using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.CheckIn;
 using Rock.Lava;
 using Rock.Security;
 
@@ -38,7 +40,7 @@ namespace Rock.Model
     [DataContract]
     [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.REGISTRATION_TEMPLATE )]
-    public partial class RegistrationTemplate : Model<RegistrationTemplate>, IHasActiveFlag, ICategorized, ICampusFilterable
+    public partial class RegistrationTemplate : Model<RegistrationTemplate>, IHasActiveFlag, ICategorized, ICampusFilterable, IHasAdditionalSettings
     {
         #region Entity Properties
 
@@ -633,7 +635,118 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.RECORD_SOURCE_TYPE )]
         public int? RegistrantRecordSourceValueId { get; set; }
 
+        /// <inheritdoc/>
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
+
         #endregion Entity Properties
+        
+        #region IHasAdditionalSettings Models
+
+        /// <summary>
+        /// Defines the eligibility filters used to determine whether an individual
+        /// may register for an event or opportunity.
+        /// </summary>
+        /// <remarks>
+        /// All configured filters use an <c>AND</c> relationship. An individual must meet
+        /// every non-null requirement to be considered eligible.
+        /// 
+        /// These settings also determine which family members appear in the
+        /// <c>Family Member to Register</c> list when that option is enabled.
+        /// 
+        /// If the Registration Entry form does not collect the required information
+        /// (such as birthdate, grade, or gender), eligibility cannot be evaluated
+        /// and the individual will not be allowed to register.
+        /// </remarks>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "19.0" )]
+        public class RegistrantEligibilitySettings
+        {
+            /// <summary>
+            /// Gets or sets the minimum age required for eligibility.
+            /// </summary>
+            /// <value>
+            /// The minimum age in years. If <c>null</c>, no minimum age restriction is applied.
+            /// </value>
+            public decimal? MinimumAge { get; set; }
+
+            /// <summary>
+            /// Gets or sets the maximum age allowed for eligibility.
+            /// </summary>
+            /// <value>
+            /// The maximum age in years. If <c>null</c>, no maximum age restriction is applied.
+            /// </value>
+            public decimal? MaximumAge { get; set; }
+
+            /// <summary>
+            /// Gets or sets the age classification required for eligibility.
+            /// </summary>
+            /// <value>
+            /// The required <see cref="AgeClassification"/> value. If <c>null</c>, 
+            /// age classification is not evaluated.
+            /// </value>
+            public AgeClassification? AgeClassification { get; set; }
+
+            /// <summary>
+            /// Gets or sets the maximum <see cref="Person.GradeOffset"/> allowed for eligibility.
+            /// </summary>
+            /// <remarks>
+            /// <see cref="Person.GradeOffset"/> represents the number of years until graduation:
+            /// <list type="bullet">
+            /// <item><description><c>0</c> = Senior</description></item>
+            /// <item><description><c>1</c> = Junior</description></item>
+            /// <item><description><c>2</c> = Sophomore</description></item>
+            /// <item><description>Increasing positive values represent younger grades</description></item>
+            /// <item><description>Negative values indicate the individual has already graduated</description></item>
+            /// </list>
+            /// 
+            /// If <c>null</c>, no maximum GradeOffset restriction is applied.
+            /// </remarks>
+            public int? MaximumGradeOffset { get; set; }
+
+            /// <summary>
+            /// Gets or sets the minimum <see cref="Person.GradeOffset"/> required for eligibility.
+            /// </summary>
+            /// <remarks>
+            /// <see cref="Person.GradeOffset"/> represents the number of years until graduation:
+            /// <list type="bullet">
+            /// <item><description><c>0</c> = Senior</description></item>
+            /// <item><description><c>1</c> = Junior</description></item>
+            /// <item><description><c>2</c> = Sophomore</description></item>
+            /// <item><description>Increasing positive values represent younger grades</description></item>
+            /// <item><description>Negative values indicate the individual has already graduated</description></item>
+            /// </list>
+            /// 
+            /// If <c>null</c>, no minimum GradeOffset restriction is applied.
+            /// </remarks>
+            public int? MinimumGradeOffset { get; set; }
+
+            /// <summary>
+            /// Gets or sets the required gender for eligibility.
+            /// </summary>
+            /// <value>
+            /// The required <see cref="Gender"/> value. If <c>null</c>, gender is not evaluated.
+            /// </value>
+            public Gender? Gender { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Data View used to further restrict eligibility.
+            /// </summary>
+            /// <value>
+            /// The Guid of the Data View that an individual must match to be eligible.
+            /// If <c>null</c>, no Data View filtering is applied.
+            /// </value>
+            public Guid? EligibilityDataViewGuid { get; set; }
+        }
+
+        #endregion IHasAdditionalSettings Models
 
         #region Navigation Properties
 

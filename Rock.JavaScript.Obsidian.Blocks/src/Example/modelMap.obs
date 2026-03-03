@@ -1,0 +1,692 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Block title="Model">
+        <template #headerActions>
+            <div class="d-flex align-items-center gap-spacing-md">
+                <div class="d-none d-md-block">
+                    <DropDownList v-model="selectedCategoryGuid" :items="categoryOptions" :showBlankItem="false"
+                                  inputClasses="input-width-lg" enhanceForLongLists />
+                </div>
+
+                <div class="d-none d-md-block">
+                    <DropDownList v-model="selectedEntityGuid" :items="modelOptions" :showBlankItem="false"
+                                  inputClasses="input-width-lg" enhanceForLongLists />
+                </div>
+
+                <div class="d-flex">
+                    <QuickFilter v-model="searchText" quickFilterClass="grid-actions"
+                                 quickFilterButtonClass="btn-grid-action" />
+
+                    <div class="grid-actions">
+                        <button type="button" class="btn btn-grid-action" title="Settings" @click="onOpenFilters">
+                            <i class="ti ti-adjustments-horizontal ti-fw"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <div class="d-md-none d-flex flex-column gap-spacing-md mb-spacing-md">
+            <DropDownList v-model="selectedCategoryGuid" :items="categoryOptions" :showBlankItem="false"
+                          enhanceForLongLists />
+
+            <DropDownList v-model="selectedEntityGuid" :items="modelOptions" :showBlankItem="false"
+                          enhanceForLongLists />
+        </div>
+
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <div v-if="theModel" class="model-details-container d-flex flex-column flex-1 overflow-hidden">
+            <div class="d-flex flex-column flex-md-row justify-content-center justify-content-md-between align-items-md-center">
+                <div class="title-container text-center text-md-left mr-0 mr-md-spacing-xl">
+                    <div class="title-row d-flex flex-wrap justify-content-center justify-content-md-start mb-2 mb-md-0 align-items-center gap-2">
+                        <span :class="['font-monospace font-weight-semibold text-md text-break', { 'o-50': theModel?.isObsolete }]" v-html="modelTitle"></span>
+
+                        <span v-if="theModel.isObsolete"
+                              class="o-50 text-danger font-monospace font-weight-semibold text-md text-break">
+                            <i class="ti ti-ban ti-fw text-danger"></i>
+                            {{ theModel.obsoleteMessage }}
+                        </span>
+
+                        <button type="button" class="copy-link-btn btn btn-link btn-sm p-0"
+                                v-tooltip="linkCopied ? 'Copied' : 'Copy Link to Model'" @click="onCopyLink">
+                            <i :class="linkCopied ? 'ti ti-check text-success' : 'ti ti-link text-muted'"></i>
+                        </button>
+                    </div>
+
+                    <span v-if="modelDescription" v-html="modelDescription" class="text-muted text-sm"></span>
+                </div>
+
+                <div class="flex-shrink-0 text-nowrap mt-3 mt-md-0 d-flex justify-content-between justify-content-md-start align-items-center gap-3">
+                    <button type="button" class="btn btn-xs btn-default d-md-none" @click="onOpenLegend">
+                        <i class="ti ti-info-circle ti-fw"></i> Legend
+                    </button>
+                    <InlineSwitch label="Show Methods" v-model="showMethods" />
+                </div>
+            </div>
+
+            <div v-if="theModel.example" class="well mt-4 mb-0">
+                <h6 class="mt-0 mb-1 text-interface-strong">Example</h6>
+                <div v-html="theModel.example" class="text-muted text-sm"></div>
+            </div>
+
+            <div class="content-scroll-area mt-spacing-lg flex-1 overflow-auto">
+                <div v-if="theModel.properties?.length" class="property-grid d-flex flex-column border-left border-right">
+                    <div class="property-grid-header d-flex align-items-center bg-interface-softer border-top border-bottom text-sm font-weight-semibold">
+                        <div class="property-column">Property</div>
+                        <div class="description-column flex-fill">Description</div>
+                    </div>
+                    <div v-for="theProperty in filteredProperties" :key="theProperty.id" class="property-grid-row d-flex align-items-center border-bottom">
+                        <div class="property-column text-sm font-weight-semibold d-flex align-items-center gap-2">
+                            <i :class="theProperty.notMapped || theProperty.isVirtual
+                                ? 'ti ti-database ti-fw o-20'
+                                : 'ti ti-database ti-fw'"></i>
+
+                            <span class="font-monospace font-weight-semibold text-md cursor-default"
+                                  :class="{ 'o-50': theProperty.isObsolete }"
+                                  :title="theProperty.isInherited ? 'inherited' : ''">{{ theProperty.name
+                                }}</span>
+
+                            <i v-if="theProperty.required"
+                               :class="['property-icon-required ti ti-circle-filled ti-fw text-danger d-inline-block', { 'o-50': theProperty.isObsolete }]"></i>
+
+                            <i v-if="theProperty.isLavaInclude"
+                               :class="['ti ti-bolt ti-fw text-warning', { 'o-50': theProperty.isObsolete }]"></i>
+
+                            <i v-if="theProperty.isAttributeQualifier"
+                               :class="['ti ti-filter ti-fw text-info', { 'o-50': theProperty.isObsolete }]"></i>
+                        </div>
+                        <div class="description-column flex-fill" :class="{ 'o-50': theProperty.isObsolete }">
+                            <template v-if="theProperty.isObsolete">
+                                <i class="ti ti-ban ti-fw text-danger"></i>
+                                <span class="text-danger mr-2">{{ theProperty.obsoleteMessage }}</span>
+                            </template>
+
+                            <span v-if="theProperty.comments" v-html="theProperty.comments"></span>
+                            <span v-if="theProperty.enumOrDefinedTypeDescription" v-html="' ' + theProperty.enumOrDefinedTypeDescription"></span>
+
+                            <KeyValueToggle v-if="theProperty.keyValues && Object.keys(theProperty.keyValues).length > 0"
+                                            :keyValues="theProperty.keyValues" />
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="showMethods && theModel.methods?.length" class="well mt-4 mb-0">
+                    <h6 class="mt-0 mb-2 text-interface-strong">
+                        Methods
+                        <span v-if="allMethodsInherited" class="ms-2 text-muted text-xs font-italic font-weight-normal">(All Inherited)</span>
+                    </h6>
+
+                    <ul class="pl-spacing-lg m-0 text-muted mb-0">
+                        <li v-for="theMethod in theModel.methods" :key="theMethod.id" class="text-sm line-height-normal font-monospace">
+                            <span>{{ theMethod.signature }}</span>
+
+                            <span v-if="theMethod.isInherited" class="text-xs font-italic ml-1">(inherited)</span>
+
+                            <template v-if="theMethod.isObsolete">
+                                <i class="ti ti-ban ti-fw text-sm text-danger ml-1"></i>
+                                <span class="text-xs ml-1">{{ theMethod.obsoleteMessage }}</span>
+                            </template>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="d-none d-md-block flex-shrink-0">
+                <ContentSection light class="model-details-footer mt-spacing-lg">
+                    <div class="row">
+                        <div class="col-sm-6 col-lg-4 text-sm">
+                            <div class="mb-2 d-flex align-items-baseline gap-2">
+                                <i class="ti ti-database ti-fw o-20"></i>
+                                <span class="text-muted">
+                                    Not mapped to the database. These fields are computed and are only available in the object.
+                                </span>
+                            </div>
+
+                            <div class="mb-2 d-flex align-items-baseline gap-2">
+                                <i class="ti ti-database ti-fw"></i>
+                                <span class="text-muted">
+                                    Property on the database
+                                </span>
+                            </div>
+
+                            <div class="mb-2 d-flex align-items-baseline gap-2">
+                                <i
+                                   class="property-icon-required ti ti-circle-filled ti-fw text-danger d-inline-block"></i>
+                                <span class="text-muted">
+                                    Required field
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-lg-4 text-sm">
+                            <div class="mb-2 d-flex align-items-baseline gap-2">
+                                <i class="ti ti-bolt ti-fw text-warning"></i>
+                                <span class="text-muted">
+                                    These fields are available where Lava is supported.
+                                </span>
+                            </div>
+
+                            <div class="mb-2 d-flex align-items-baseline gap-2">
+                                <i class="ti ti-filter ti-fw text-info"></i>
+                                <span class="text-muted">
+                                    These fields can be used as qualifiers on attributes.
+                                </span>
+                            </div>
+
+                            <div class="mb-0 d-flex align-items-baseline gap-2">
+                                <i class="ti ti-ban ti-fw text-danger"></i>
+                                <span class="text-muted">
+                                    These methods or fields are obsolete and should not be used.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </ContentSection>
+            </div>
+        </div>
+
+        <Modal v-model="isLegendModalOpen" title="Legend" :showSaveButton="false" cancelText="Close">
+            <div class="row">
+                <div class="col-sm-6 col-lg-4 text-sm">
+                    <div class="mb-2 d-flex align-items-baseline gap-2">
+                        <i class="ti ti-database ti-fw o-20"></i>
+                        <span class="text-muted">
+                            Not mapped to the database. These fields are computed and are only available in the object.
+                        </span>
+                    </div>
+
+                    <div class="mb-2 d-flex align-items-baseline gap-2">
+                        <i class="ti ti-database ti-fw"></i>
+                        <span class="text-muted">
+                            Property on the database
+                        </span>
+                    </div>
+
+                    <div class="mb-2 d-flex align-items-baseline gap-2">
+                        <i class="property-icon-required ti ti-circle-filled ti-fw text-danger d-inline-block"></i>
+                        <span class="text-muted">
+                            Required field
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-lg-4 text-sm">
+                    <div class="mb-2 d-flex align-items-baseline gap-2">
+                        <i class="ti ti-bolt ti-fw text-warning"></i>
+                        <span class="text-muted">
+                            These fields are available where Lava is supported.
+                        </span>
+                    </div>
+
+                    <div class="mb-2 d-flex align-items-baseline gap-2">
+                        <i class="ti ti-filter ti-fw text-info"></i>
+                        <span class="text-muted">
+                            These fields can be used as qualifiers on attributes.
+                        </span>
+                    </div>
+
+                    <div class="mb-0 d-flex align-items-baseline gap-2">
+                        <i class="ti ti-ban ti-fw text-danger"></i>
+                        <span class="text-muted">
+                            These methods or fields are obsolete and should not be used.
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </Modal>
+
+        <Modal v-model="isFilterModalOpen" title="Model Map Filters" saveText="Save" :onSave="onSaveFilters">
+            <RadioButtonList v-model="editingFilter.required" label="Required" :items="filterOptions" />
+
+            <RadioButtonList v-model="editingFilter.databaseProperty" label="Database Property" :items="filterOptions" />
+
+            <RadioButtonList v-model="editingFilter.lavaSupported" label="Lava Supported" :items="filterOptions" />
+
+            <RadioButtonList v-model="editingFilter.attributeQualifier" label="Attribute Qualifier"
+                             :items="filterOptions" />
+        </Modal>
+    </Block>
+</template>
+
+<style scoped>
+:deep(.panel-body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    min-height: 0;
+    min-width: 0;
+    padding: var(--spacing-large);
+}
+
+.model-details-container,
+.content-scroll-area {
+    min-width: 0;
+}
+
+.model-details-footer :deep(.ti-fw),
+.modal-body :deep(.ti-fw) {
+    width: 1.25rem;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+.property-grid-header > div,
+.property-grid-row > div {
+    padding: var(--spacing-medium);
+}
+
+.property-grid-header,
+.property-grid-row {
+    gap: 32px;
+}
+
+.property-grid-header {
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.property-column {
+    flex: 0 0 30rem;
+}
+
+.description-column {
+    min-width: 30rem;
+}
+
+.property-grid {
+    min-width: fit-content;
+}
+
+.property-icon-required {
+    font-size: 8px;
+}
+
+.copy-link-btn {
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+@media (min-width: 768px) {
+    .copy-link-btn {
+        opacity: 0;
+    }
+
+    .title-row:hover .copy-link-btn,
+    .copy-link-btn:focus {
+        opacity: 1;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, computed, watch, onMounted } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import Block from "@Obsidian/Templates/block";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import QuickFilter from "@Obsidian/Controls/Internal/quickFilter.obs";
+    import KeyValueToggle from "./ModelMap/keyValueToggle.partial.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ModelMapInitializationBox } from "@Obsidian/ViewModels/Blocks/Example/ModelMap/modelMapInitializationBox";
+    import { ModelMapModelBag } from "@Obsidian/ViewModels/Blocks/Example/ModelMap/modelMapModelBag";
+    import { ModelMapPropertyBag } from "@Obsidian/ViewModels/Blocks/Example/ModelMap/modelMapPropertyBag";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+
+    const config = useConfigurationValues<ModelMapInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    type Filters = {
+        required: FilterOption;
+        databaseProperty: FilterOption;
+        lavaSupported: FilterOption;
+        attributeQualifier: FilterOption;
+    };
+
+    enum FilterOption {
+        Any = "Any",
+        Yes = "Yes",
+        No = "No"
+    }
+
+    const enum PersonPreferenceKey {
+        FilterRequired = "filter-required",
+        FilterDatabaseProperty = "filter-database-property",
+        FilterLavaSupported = "filter-lava-supported",
+        FilterAttributeQualifier = "filter-attribute-qualifier"
+    }
+
+    // #region Values
+
+    const selectedCategoryGuid = ref<string>("");
+    const selectedEntityGuid = ref<string>("");
+    const searchText = ref<string>("");
+    const errorMessage = ref<string>("");
+
+    const theModel = ref<ModelMapModelBag | null>(null);
+
+    const showMethods = ref<boolean>(false);
+    const modelRequestId = ref<number>(0);
+    const isFilterModalOpen = ref<boolean>(false);
+    const isLegendModalOpen = ref<boolean>(false);
+    const linkCopied = ref<boolean>(false);
+
+    /** The currently active filters driving the UI. */
+    const activeFilter = ref<Filters>({
+        required: toFilterOption(preferences.getValue(PersonPreferenceKey.FilterRequired)),
+        databaseProperty: toFilterOption(preferences.getValue(PersonPreferenceKey.FilterDatabaseProperty)),
+        lavaSupported: toFilterOption(preferences.getValue(PersonPreferenceKey.FilterLavaSupported)),
+        attributeQualifier: toFilterOption(preferences.getValue(PersonPreferenceKey.FilterAttributeQualifier))
+    });
+
+    /** The filters currently being edited in the modal. */
+    const editingFilter = ref<Filters>({ ...activeFilter.value });
+
+    const filterOptions: ListItemBag[] = [
+        { text: "Any", value: FilterOption.Any },
+        { text: "Yes", value: FilterOption.Yes },
+        { text: "No", value: FilterOption.No }
+    ];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Returns the list of categories for the first dropdown.
+     */
+    const categoryOptions = computed((): ListItemBag[] => {
+        return config.categories?.map(c => ({
+            value: c.guid,
+            text: c.name
+        })) ?? [];
+    });
+
+    /**
+     * Returns the list of models for the currently selected category.
+     */
+    const modelOptions = computed((): ListItemBag[] => {
+        if (!selectedCategoryGuid.value) {
+            return [];
+        }
+
+        const currentCategory = config.categories?.find(c => c.guid === selectedCategoryGuid.value) ?? null;
+
+        return currentCategory?.models ?? [];
+    });
+
+    /**
+     * Returns the formatted title of the model, including the table name if available.
+     */
+    const modelTitle = computed((): string => {
+        if (!theModel.value) {
+            return "";
+        }
+
+        let name = theModel.value.name ?? "";
+
+        if (theModel.value.tableName) {
+            name += `<small>[${theModel.value.tableName}]</small>`;
+        }
+
+        return name;
+    });
+
+    /**
+     * Returns the summary description of the selected model.
+     */
+    const modelDescription = computed((): string => {
+        if (!theModel.value) {
+            return "";
+        }
+
+        return theModel.value.summary ?? "";
+    });
+
+    /**
+     * Indicates whether all methods on the selected model are inherited.
+     */
+    const allMethodsInherited = computed((): boolean => {
+        const methods = theModel.value?.methods;
+        return !!methods?.length && methods.every(m => m.isInherited);
+    });
+
+    const filteredProperties = computed(() => {
+        return theModel.value?.properties?.filter(propertyMatchesFilters) ?? [];
+    });
+
+    // #endregion Computed Values
+
+    /**
+     * Converts a raw preference string value to a valid FilterOption,
+     * falling back to FilterOption.Any if the value is not recognized.
+     *
+     * @param value The raw preference value to convert.
+     */
+    function toFilterOption(value: string | null | undefined): FilterOption {
+        if (value === FilterOption.Yes || value === FilterOption.No) {
+            return value as FilterOption;
+        }
+        return FilterOption.Any;
+    }
+
+    /**
+     * Determines whether a given property matches the active filters.
+     *
+     * @param p The property to evaluate.
+     */
+    function propertyMatchesFilters(p: ModelMapPropertyBag): boolean {
+        const theFilter = activeFilter.value;
+        const search = searchText.value.trim();
+
+        // Text search
+        if (search) {
+            const searchLower = search.toLowerCase();
+            const searchWithoutSpaces = searchLower.replace(/\s+/g, "");
+
+            const matchesName = (p.name ?? "").toLowerCase().replace(/\s+/g, "").includes(searchWithoutSpaces);
+            const matchesDescription = ((p.comments ?? "") + " " + (p.enumOrDefinedTypeDescription ?? "")).toLowerCase().includes(searchLower);
+            const matchesObsolete = (p.obsoleteMessage ?? "").toLowerCase().includes(searchLower);
+
+            if (!matchesName && !matchesDescription && !matchesObsolete) {
+                return false;
+            }
+        }
+
+        // Required filter
+        if (theFilter.required === FilterOption.Yes && !p.required) return false;
+        if (theFilter.required === FilterOption.No && p.required) return false;
+
+        // Database Property filter
+        const isDatabaseProperty = !p.notMapped && !p.isVirtual;
+        if (theFilter.databaseProperty === FilterOption.Yes && !isDatabaseProperty) return false;
+        if (theFilter.databaseProperty === FilterOption.No && isDatabaseProperty) return false;
+
+        // Lava Supported filter
+        if (theFilter.lavaSupported === FilterOption.Yes && !p.isLavaInclude) return false;
+        if (theFilter.lavaSupported === FilterOption.No && p.isLavaInclude) return false;
+
+        // Attribute Qualifier filter
+        if (theFilter.attributeQualifier === FilterOption.Yes && !p.isAttributeQualifier) return false;
+        if (theFilter.attributeQualifier === FilterOption.No && p.isAttributeQualifier) return false;
+
+        return true;
+    }
+
+    /**
+     * Copies a direct link to the currently selected model to the user's clipboard.
+     */
+    async function onCopyLink(event: MouseEvent): Promise<void> {
+        (event.currentTarget as HTMLElement)?.blur();
+
+        if (!selectedEntityGuid.value) {
+            return;
+        }
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("EntityType", selectedEntityGuid.value);
+
+        try {
+            await navigator.clipboard.writeText(url.toString());
+            linkCopied.value = true;
+
+            setTimeout(() => {
+                linkCopied.value = false;
+            }, 1000);
+        }
+        catch (e) {
+            console.error("Could not copy link", e);
+        }
+    }
+
+    /**
+     * Opens the legend modal. Only for small screens since the legend is always visible on larger screens.
+     */
+    function onOpenLegend(): void {
+        isLegendModalOpen.value = true;
+    }
+
+    /**
+     * Opens the filter modal.
+     */
+    function onOpenFilters(): void {
+        editingFilter.value = { ...activeFilter.value };
+        isFilterModalOpen.value = true;
+    }
+
+    /**
+     * Saves the pending filters and closes the filter modal.
+     */
+    function onSaveFilters(): void {
+        activeFilter.value = { ...editingFilter.value };
+
+        isFilterModalOpen.value = false;
+
+        preferences.setValue(PersonPreferenceKey.FilterRequired, activeFilter.value.required);
+        preferences.setValue(PersonPreferenceKey.FilterDatabaseProperty, activeFilter.value.databaseProperty);
+        preferences.setValue(PersonPreferenceKey.FilterLavaSupported, activeFilter.value.lavaSupported);
+        preferences.setValue(PersonPreferenceKey.FilterAttributeQualifier, activeFilter.value.attributeQualifier);
+        preferences.save();
+    }
+
+    /**
+     * Normalizes a GUID string to lowercase for predictable comparisons.
+     *
+     * @param guid The GUID to normalize.
+     */
+    function normalizeGuid(guid: string | null | undefined): string {
+        return (guid ?? "").toLowerCase();
+    }
+
+    /**
+     * Loads the details of the selected model from the server.
+     */
+    async function loadModelDetails(): Promise<void> {
+        const requestId = ++modelRequestId.value;
+
+        errorMessage.value = "";
+        theModel.value = null;
+
+        if (!selectedEntityGuid.value) {
+            return;
+        }
+
+        try {
+            const result = await invokeBlockAction<ModelMapModelBag>("GetModelDetails", {
+                entityTypeGuid: selectedEntityGuid.value
+            });
+
+            // Ignore stale responses if a newer selection has already started loading.
+            if (requestId !== modelRequestId.value) {
+                return;
+            }
+
+            if (result.isSuccess && result.data) {
+                theModel.value = result.data;
+            }
+            else {
+                errorMessage.value = result.errorMessage || "Failed to load model details.";
+            }
+        }
+        catch {
+            if (requestId !== modelRequestId.value) {
+                return;
+            }
+
+            errorMessage.value = "Failed to load model details.";
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(selectedCategoryGuid, () => {
+        if (modelOptions.value.length > 0) {
+            // Only auto-select the first model if the current entity isn't already in this category.
+            const currentModel = normalizeGuid(selectedEntityGuid.value);
+
+            const matchingModel = modelOptions.value.find(
+                m => normalizeGuid(m.value) === currentModel
+            );
+
+            if (matchingModel?.value) {
+                if (selectedEntityGuid.value !== matchingModel.value) {
+                    selectedEntityGuid.value = matchingModel.value;
+                }
+
+                return;
+            }
+
+            selectedEntityGuid.value = modelOptions.value[0].value ?? "";
+        }
+        else {
+            selectedEntityGuid.value = "";
+        }
+    });
+
+    watch(selectedEntityGuid, () => {
+        void loadModelDetails();
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        // If a specific entity type was provided via page parameter, navigate directly to it.
+        if (config.initialEntityTypeGuid) {
+            const targetGuid = normalizeGuid(config.initialEntityTypeGuid);
+            const category = config.categories?.find(c =>
+                c.models?.some(m => normalizeGuid(m.value) === targetGuid)
+            );
+
+            if (category) {
+                const matchedModel = category.models?.find(m => normalizeGuid(m.value) === targetGuid) ?? null;
+
+                // Set entity guid first so the category watcher sees it already
+                // in place and skips the default auto-select.
+                selectedEntityGuid.value = matchedModel?.value ?? "";
+                selectedCategoryGuid.value = category.guid ?? "";
+                return;
+            }
+        }
+
+        // Default: select the first category.
+        if (categoryOptions.value.length > 0) {
+            selectedCategoryGuid.value = categoryOptions.value[0].value ?? "";
+        }
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

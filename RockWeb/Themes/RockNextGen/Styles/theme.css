@@ -12852,6 +12852,12 @@ div.aspNetDisabled {
   padding-left: 0;
 }
 
+.radio + .radio,
+.checkbox + .checkbox,
+.checkbox + .well-conditional + .checkbox {
+  margin-top: calc(var(--spacing-tiny) * -1);
+}
+
 .modal-body > .checkbox label input {
   z-index: 0;
   opacity: 1;

@@ -28,7 +28,7 @@
                         <ViewPanel :modelValue="categoryViewBag" :options="options" />
                     </div>
                     <div v-else-if="item === 'Child Categories'">
-                        <span class="ml-4">Below are the child categories for the {{ panelName }}. From here you can add, delete or reorder the categories as needed.</span>
+                        <p class="ml-4">Below are the child categories for the {{ panelName }}. From here you can add, delete or reorder the categories as needed.</p>
                         <Grid light
                               v-if="!isLoadingChildCategories"
                               :data="gridData"

@@ -1126,34 +1126,43 @@ BEGIN:VCALENDAR
 PRODID:-//github.com/SparkDevNetwork/Rock//NONSGML Rock//EN
 VERSION:2.0
 BEGIN:VEVENT
-DTEND:20260301T130000
+DTEND:{YEAR}0301T130000
 DTSTAMP:20251231T101650
-DTSTART:20260301T120000
+DTSTART:{YEAR}0301T120000
 SEQUENCE:0
 UID:a9cbe528-f619-4c5d-aa72-128fb6c5ddcb
 END:VEVENT
 END:VCALENDAR
-", "2026-3-1 12:00", "2026-3-1 13:00" )]
+", "{YEAR}-3-1 12:00", "{YEAR}-3-1 13:00" )]
         [DataRow( @"
 BEGIN:VCALENDAR
 PRODID:-//github.com/SparkDevNetwork/Rock//NONSGML Rock//EN
 VERSION:2.0
 BEGIN:VEVENT
-DTEND:20260401T130000
+DTEND:{YEAR}0401T130000
 DTSTAMP:20251231T101650
-DTSTART:20260401T120000
+DTSTART:{YEAR}0401T120000
 SEQUENCE:0
 UID:b0a0f562-b14c-46a6-9891-e52e275a5e5a
 END:VEVENT
 END:VCALENDAR
-", "2026-4-1 12:00", "2026-4-1 13:00" )] // this date is during DST in certain time zones
-        public void DatesFromICal_WithEndDateTimeParameter_ReturnsEndDateTimeOfEvent_WithCorrectOffset_PerIssue6626( string iCalString, string expectedStartDateTimeString, string expectedEndDateTimeString )
+", "{YEAR}-4-1 12:00", "{YEAR}-4-1 13:00" )] // this date is during DST in certain time zones
+        public void DatesFromICal_WithEndDateTimeParameter_ReturnsEndDateTimeOfEvent_WithCorrectOffset_PerIssue6626(
+    string iCalString,
+    string expectedStartDateTimeString,
+    string expectedEndDateTimeString )
         {
+            var year = ResolveFutureYearFromExpectedStart( expectedStartDateTimeString );
+            var yearText = year.ToString( "0000" );
+
+            iCalString = iCalString.Replace( "{YEAR}", yearText );
+            expectedStartDateTimeString = expectedStartDateTimeString.Replace( "{YEAR}", yearText );
+            expectedEndDateTimeString = expectedEndDateTimeString.Replace( "{YEAR}", yearText );
+
             LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
-                // Get the iCalendar and expected datetime for the test time zone.
                 var expectedStartDateTime = LocalExpected( timeZone, expectedStartDateTimeString );
-                var expectedEndDateTime =   LocalExpected( timeZone, expectedEndDateTimeString );
+                var expectedEndDateTime = LocalExpected( timeZone, expectedEndDateTimeString );
 
                 var schedule = new Rock.Model.Schedule();
                 schedule.iCalendarContent = iCalString;
@@ -1185,8 +1194,31 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
                         Assert.Fail( $"Lava Output\n'{output}' does not contain string 'End: \"{rockEndDateTimeString}\"'.\n[SystemDateTime = {DateTime.Now:O}, RockDateTime = {_now:O}, Time Zone = {timeZone.DisplayName}]" );
                     }
                 } );
-
             } );
+        }
+
+        private static int ResolveFutureYearFromExpectedStart( string expectedStartDateTimeString )
+        {
+            // expected format: "{YEAR}-M-d HH:mm"
+            var parts = expectedStartDateTimeString.Split( ' ' );
+            var dateParts = parts[0].Split( '-' );
+
+            var month = int.Parse( dateParts[1], System.Globalization.CultureInfo.InvariantCulture );
+            var day = int.Parse( dateParts[2], System.Globalization.CultureInfo.InvariantCulture );
+
+            var timeParts = parts[1].Split( ':' );
+            var hour = int.Parse( timeParts[0], System.Globalization.CultureInfo.InvariantCulture );
+            var minute = int.Parse( timeParts[1], System.Globalization.CultureInfo.InvariantCulture );
+
+            var year = DateTime.Today.Year;
+            var candidate = new DateTime( year, month, day, hour, minute, 0 );
+
+            if ( candidate < DateTime.Now )
+            {
+                year++;
+            }
+
+            return year;
         }
 
         // Treat iCal DTSTART/DTEND as "floating" local time in the given TimeZoneInfo.

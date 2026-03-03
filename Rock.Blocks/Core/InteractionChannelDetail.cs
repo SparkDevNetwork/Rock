@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -28,6 +27,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.InteractionChannelDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [Category( "Reporting" )]
     [Description( "Displays the details of a particular interaction channel." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -84,8 +84,9 @@ namespace Rock.Blocks.Core
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "9438e0fe-f7ab-48d5-8ab8-d54336d30fbd" )]
-    [Rock.SystemGuid.BlockTypeGuid( "2efa1f9d-7062-466a-a8f3-9dcdbff054e9" )]
-    public class InteractionChannelDetail : RockEntityDetailBlockType<InteractionChannel, InteractionChannelBag>
+    // was [Rock.SystemGuid.BlockTypeGuid( "2efa1f9d-7062-466a-a8f3-9dcdbff054e9" )]
+    [Rock.SystemGuid.BlockTypeGuid( "F722A03E-C344-40B1-B87D-EB90E2BCBC47" )]
+    public class InteractionChannelDetail : RockEntityDetailBlockType<InteractionChannel, InteractionChannelBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -389,7 +390,31 @@ namespace Rock.Blocks.Core
             return true;
         }
 
-        #endregion
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var result = new BreadCrumbResult();
+
+            if ( pageReference == null )
+            {
+                return result;
+            }
+
+            var key = pageReference.GetPageParameter( PageParameterKey.InteractionChannelId );
+            string name = null;
+
+            if ( !string.IsNullOrWhiteSpace( key ) )
+            {
+                name = new InteractionChannelService( RockContext )
+                    .GetSelect( key, ic => ic.Name );
+            }
+
+            result.BreadCrumbs = new List<IBreadCrumb> { new BreadCrumbLink( name ?? "Interaction Channel", pageReference ) };
+
+            return result;
+        }
+
+        #endregion Methods
 
         #region Block Actions
 
@@ -505,6 +530,6 @@ namespace Rock.Blocks.Core
             return ActionOk( this.GetParentPageUrl() );
         }
 
-        #endregion
+        #endregion Block Actions
     }
 }

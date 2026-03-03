@@ -40,8 +40,7 @@
                      width="115px"
                      visiblePriority="sm" />
 
-        <HighlightDetailColumn v-if="rosterContext.config.isGroupColumnEnabled"
-                               name="group"
+        <HighlightDetailColumn name="group"
                                title="Group"
                                field="group.text"
                                detailField="area.text"

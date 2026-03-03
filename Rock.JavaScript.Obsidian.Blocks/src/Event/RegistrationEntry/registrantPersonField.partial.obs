@@ -18,6 +18,11 @@
     import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
     import { Guid } from "@Obsidian/Types";
     import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { asCommaAnd } from "@Obsidian/Utility/stringUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { GenderDescription } from "@Obsidian/Enums/Crm/gender";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const props = defineProps({
         field: {
@@ -31,7 +36,7 @@
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
     });
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
@@ -123,12 +128,90 @@
                 componentProps.label = "Email";
                 break;
 
-            case RegistrationPersonFieldType.Gender:
-                break;
+            case RegistrationPersonFieldType.Gender: {
+                const eligibleGender = registrationEntryState.viewModel.registrantEligibility?.gender;
 
-            case RegistrationPersonFieldType.Birthdate:
-                componentProps.label = "Birth Date";
+                if (!isNullish(eligibleGender)) {
+                    componentProps.rules = [
+                        componentProps.rules,
+                        // Force required if there is a Registrant Eligibility gender requirement.
+                        "required",
+                        (value: unknown) => {
+                            if (value === "" || typeof value !== "string") {
+                                return true;
+                            }
+
+                            if (value === `${eligibleGender}`) {
+                                return true;
+                            }
+
+                            return `must be ${GenderDescription[eligibleGender]}`;
+                        }
+                    ];
+                }
+
                 break;
+            }
+
+            case RegistrationPersonFieldType.Birthdate: {
+                componentProps.label = "Birth Date";
+
+                const minimumAge = registrationEntryState.viewModel.registrantEligibility?.minimumAge;
+                const maximumAge = registrationEntryState.viewModel.registrantEligibility?.maximumAge;
+                const latestBirthdate = !isNullish(minimumAge) ? getBirthDateFromFractionalAge(minimumAge)?.date : null;
+                const earliestBirthdate = !isNullish(maximumAge) ? getBirthDateFromFractionalAge(maximumAge)?.date : null;
+
+                if (!isNullish(latestBirthdate) || !isNullish(earliestBirthdate)) {
+                    const errorMessage = (() => {
+                        const formatDate = (date: RockDateTime): string => date.toLocaleString({ month: "short", day: "numeric", year: "numeric" });
+                        const formatAge = (age: number): string => age.toLocaleString(undefined, { maximumFractionDigits: 1 });
+
+                        if (latestBirthdate && earliestBirthdate) {
+                            return `must be between ${formatDate(earliestBirthdate)} and ${formatDate(latestBirthdate)} (between ${formatAge(minimumAge!)} and ${formatAge(maximumAge!)} years old)`;
+                        }
+                        else if (latestBirthdate) {
+                            return `must be on or before ${formatDate(latestBirthdate)} (${formatAge(minimumAge!)} years old or older)`;
+                        }
+                        else if (earliestBirthdate) {
+                            return `must be on or after ${formatDate(earliestBirthdate)} (${formatAge(maximumAge!)} years old or younger)`;
+                        }
+                        else {
+                            // Should not ever hit this but required for type safety.
+                            return "invalid birthdate range";
+                        }
+                    })();
+
+                    componentProps.rules = [
+                        componentProps.rules,
+                        // Force required if there is a Registrant Eligibility age requirement.
+                        "required",
+                        (value: unknown) => {
+                            if (value === "" || typeof value !== "string") {
+                                return true;
+                            }
+
+                            const birthDate = RockDateTime.parseISO(value)?.date;
+                            if (!birthDate) {
+                                // Do not validate if an incorrect date format is provided.
+                                // Let the control's built in validation handle invalid date formats.
+                                return true;
+                            }
+
+                            if (latestBirthdate && birthDate.isLaterThan(latestBirthdate)) {
+                                return errorMessage;
+                            }
+
+                            if (earliestBirthdate && birthDate.isEarlierThan(earliestBirthdate)) {
+                                return errorMessage;
+                            }
+
+                            return true;
+                        }
+                    ];
+                }
+
+                break;
+            }
 
             case RegistrationPersonFieldType.AnniversaryDate:
                 componentProps.label = "Anniversary Date";
@@ -148,10 +231,36 @@
                 componentProps.items = [...registrationEntryState.viewModel.connectionStatuses ?? []];
                 break;
 
-            case RegistrationPersonFieldType.Grade:
+            case RegistrationPersonFieldType.Grade: {
                 componentProps.label = "Grade";
-                componentProps.items = [...registrationEntryState.viewModel.grades ?? []];
+                const gradeItems = [...registrationEntryState.viewModel.grades ?? []];
+                componentProps.items = [...gradeItems];
+
+                // Add eligibility validation rule if there are eligible grades defined.
+                // This will prevent registrants from selecting a grade that would make them ineligible to register.
+                if (registrationEntryState.viewModel.registrantEligibility?.grades) {
+                    const eligibleGrades = registrationEntryState.viewModel.registrantEligibility.grades;
+                    componentProps.rules = [
+                        componentProps.rules,
+                        // Force required if there is a Registrant Eligibility grade requirement.
+                        "required",
+                        (value: unknown) => {
+                            if (value === "" || typeof value !== "string") {
+                                return true;
+                            }
+
+                            const gradeValue = toGuidOrNull(value);
+                            if (eligibleGrades.some(g => areEqual(g, gradeValue))) {
+                                return true;
+                            }
+
+                            return `must be one of the following: ${asCommaAnd(eligibleGrades.map(g => gradeItems.find(grade => areEqual(grade.value, g))?.text).filter(g => !!g) as string[], "or")}`;
+                        }
+                    ];
+                }
+
                 break;
+            }
 
             case RegistrationPersonFieldType.HomePhone:
                 componentProps.label = "Home Phone";
@@ -212,6 +321,53 @@
 
             props.fieldValues[props.field.guid] = defaultValue;
         }
+    }
+
+    function getBirthDateFromFractionalAge(age: number): RockDateTime | null {
+        const now = RockDateTime.now();
+
+        if (age <= 0) {
+            return now;
+        }
+
+        const years = Math.floor(age);
+        const fraction = age - years;
+
+        // Step 1: subtract whole years using calendar math
+        let year = now.year - years;
+        let month = now.month;
+        let day = now.day;
+
+        // Handle Feb 29 if necessary
+        let wholeYearDate = RockDateTime.fromParts(year, month, day);
+
+        if (!wholeYearDate && month === 2 && day === 29) {
+            wholeYearDate = RockDateTime.fromParts(year, 2, 28)!;
+        }
+
+        if (!wholeYearDate) {
+            throw new Error("Invalid date calculation");
+        }
+
+        // Step 2: determine actual calendar year span
+        let nextYearDate = RockDateTime.fromParts(year + 1, month, day);
+
+        if (!nextYearDate && month === 2 && day === 29) {
+            nextYearDate = RockDateTime.fromParts(year + 1, 2, 28)!;
+        }
+
+        if (!nextYearDate) {
+            throw new Error("Invalid next year calculation");
+        }
+
+        const spanMs =
+            nextYearDate.toMilliseconds() - wholeYearDate.toMilliseconds();
+
+        // Step 3: subtract fractional portion of that real calendar year
+        const birthMs =
+            wholeYearDate.toMilliseconds() - (fraction * spanMs);
+
+        return RockDateTime.fromMilliseconds(birthMs);
     }
 
     setDefaultValueIfNeeded();

@@ -644,6 +644,7 @@ namespace RockWeb.Blocks.Event
 
             dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
             dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() ).Id;
+            dvpEligibilityDataView.EntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON.AsGuid() );
 
             var registrationAttributeSecurityField = gRegistrationAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
             registrationAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
@@ -726,32 +727,132 @@ The logged-in person's information will be used to complete the registrar inform
 
                 ShowDialog();
 
-                var postbackArgs = Request.Params["__EVENTARGUMENT"];
-                if ( postbackArgs.IsNotNullOrWhiteSpace() )
+                var eventTarget = Request["__EVENTTARGET"];
+                var eventArgs = Request["__EVENTARGUMENT"];
+                var log = string.Join( "\n", Request.Params.AllKeys.Select( k => k?.ToLower() ).Where( k => k?.Contains( "event" ) == true ).Select( k => k + ":" + Request[k] ) );
+                if ( eventTarget == upDetail.ClientID )
                 {
-                    var nameValue = postbackArgs.Split( new char[] { ':' } );
-                    if ( nameValue.Length == 2 )
+                    if ( eventArgs.IsNotNullOrWhiteSpace() )
                     {
-                        var values = nameValue[1].Split( new char[] { ';' } );
-                        if ( values.Length == 2 )
+                        var nameValue = eventArgs.Split( new char[] { ':' } );
+                        if ( nameValue.Length == 2 )
                         {
-                            var guid = values[0].AsGuid();
-                            var newIndex = values[1].AsInteger();
-
-                            switch ( nameValue[0] )
+                            var values = nameValue[1].Split( new char[] { ';' } );
+                            if ( values.Length == 2 )
                             {
-                                case "re-order-form":
-                                    {
-                                        SortForms( guid, newIndex + 1 );
-                                        break;
-                                    }
+                                var guid = values[0].AsGuid();
+                                var newIndex = values[1].AsInteger();
+
+                                switch ( nameValue[0] )
+                                {
+                                    case "re-order-form":
+                                        {
+                                            SortForms( guid, newIndex + 1 );
+                                            break;
+                                        }
+                                }
                             }
                         }
+                    }
+                }
+                else if ( eventTarget == nreEligibilityAgeRange.ClientID || eventTarget == ddlEligibilityAgeClassification.ClientID )
+                {
+                    if ( eventArgs == "changed" )
+                    {
+                        CheckRegistrantAgeEligibility();
+                    }
+                }
+                else if ( eventTarget == ddlEligibilityGradeOffsetMax.ClientID || eventTarget == ddlEligibilityGradeOffsetMin.ClientID )
+                {
+                    if ( eventArgs == "changed" )
+                    {
+                        CheckRegistrantGradeEligibility();
+                    }
+                }
+                else if ( eventTarget == ddlEligibilityGender.ClientID )
+                {
+                    if ( eventArgs == "changed" )
+                    {
+                        CheckRegistrantGenderEligibility();
                     }
                 }
             }
 
             base.OnLoad( e );
+        }
+
+        private void CheckRegistrantAgeEligibility()
+        {   
+            var hasBirthdateRelatedRegistrantEligibility = nreEligibilityAgeRange.LowerValue.HasValue || nreEligibilityAgeRange.UpperValue.HasValue || ddlEligibilityAgeClassification.SelectedValueAsEnumOrNull<AgeClassification>().HasValue;
+            if ( hasBirthdateRelatedRegistrantEligibility )
+            {
+                // Populate the FormState by parsing controls so we can check if there is a birthdate field.
+                var isBirthdateFieldRequiredAndMissing = !FormFieldsState.Any( formAndFields => formAndFields.Value.Any( field => field.PersonFieldType == RegistrationPersonFieldType.Birthdate ) );
+
+                if ( isBirthdateFieldRequiredAndMissing )
+                {
+                    nbEligibilityAgeWarning.Visible = true;
+                }
+                else
+                {
+                    nbEligibilityAgeWarning.Visible = false;
+                }
+            }
+            else
+            {
+                nbEligibilityAgeWarning.Visible = false;
+            }
+        }
+
+        private void CheckRegistrantGradeEligibility()
+        {
+            var hasGradeRelatedRegistrantEligibility = ddlEligibilityGradeOffsetMax.SelectedValue.IsNotNullOrWhiteSpace()
+                || ddlEligibilityGradeOffsetMin.SelectedValue.IsNotNullOrWhiteSpace();
+            if ( hasGradeRelatedRegistrantEligibility )
+            {
+                // Populate the FormState by parsing controls so we can check if there is a birthdate field.
+                var isGradeFieldRequiredAndMissing = !FormFieldsState
+                    .Any( formAndFields => formAndFields.Value
+                        .Any( field => field.PersonFieldType == RegistrationPersonFieldType.Grade ) );
+
+                if ( isGradeFieldRequiredAndMissing )
+                {
+                    nbEligibilityGradeRange.Visible = true;
+                }
+                else
+                {
+                    nbEligibilityGradeRange.Visible = false;
+                }
+            }
+            else
+            {
+                nbEligibilityGradeRange.Visible = false;
+            }
+        }
+
+        private void CheckRegistrantGenderEligibility()
+        {
+            var hasRegistrantEligibility = ddlEligibilityGender.SelectedValueAsEnumOrNull<Gender>();
+            if ( hasRegistrantEligibility.HasValue )
+            {
+                // Populate the FormState by parsing controls so we can check if there is a birthdate field.
+                var isFieldMissing = !FormFieldsState
+                    .Any( formAndFields => formAndFields.Value
+                        .Any( field => field.PersonFieldType == RegistrationPersonFieldType.Gender ) );
+
+                if ( isFieldMissing )
+                {
+                    nbEligibilityGender.Visible = true;
+                }
+                else
+                {
+                    nbEligibilityGender.Visible = false;
+                }
+            }
+            else
+            {
+                nbEligibilityGender.Visible = false;
+            }
         }
 
         /// <summary>
@@ -1160,6 +1261,19 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.SuccessTitle = tbSuccessTitle.Text;
             registrationTemplate.SuccessText = ceSuccessText.Text;
             registrationTemplate.RegistrationInstructions = heInstructions.Text;
+
+            // Eligibility
+            var registrantEligibilitySettings = registrationTemplate.GetRegistrantEligibilitySettingsOrNull()
+                ?? new RegistrationTemplate.RegistrantEligibilitySettings();
+            registrantEligibilitySettings.AgeClassification = ddlEligibilityAgeClassification.SelectedValueAsEnumOrNull<AgeClassification>();
+            var eligibilityDataViewId = dvpEligibilityDataView.SelectedValueAsId();
+            registrantEligibilitySettings.EligibilityDataViewGuid = eligibilityDataViewId.HasValue ? DataViewCache.Get( eligibilityDataViewId.Value )?.Guid : null;
+            registrantEligibilitySettings.Gender = ddlEligibilityGender.SelectedValueAsEnumOrNull<Gender>();
+            registrantEligibilitySettings.MinimumAge = nreEligibilityAgeRange.LowerValue;
+            registrantEligibilitySettings.MaximumAge = nreEligibilityAgeRange.UpperValue;
+            registrantEligibilitySettings.MaximumGradeOffset = ddlEligibilityGradeOffsetMax.SelectedValueAsInt(noneAsNull: false);
+            registrantEligibilitySettings.MinimumGradeOffset = ddlEligibilityGradeOffsetMin.SelectedValueAsInt(noneAsNull: false);
+            registrationTemplate.SetRegistrantEligibilitySettings( registrantEligibilitySettings );
 
             if ( !Page.IsValid || !registrationTemplate.IsValid )
             {
@@ -1736,6 +1850,10 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             BuildControls( true );
+
+            CheckRegistrantAgeEligibility();
+            CheckRegistrantGradeEligibility();
+            CheckRegistrantGenderEligibility();
         }
 
         /// <summary>
@@ -1829,6 +1947,10 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             BuildControls( true, e.FormGuid );
+
+            CheckRegistrantAgeEligibility();
+            CheckRegistrantGradeEligibility();
+            CheckRegistrantGenderEligibility();
         }
 
         /// <summary>
@@ -1909,6 +2031,10 @@ The logged-in person's information will be used to complete the registrar inform
 
             HideDialog();
             BuildControls( true );
+
+            CheckRegistrantAgeEligibility();
+            CheckRegistrantGradeEligibility();
+            CheckRegistrantGenderEligibility();
         }
 
         /// <summary>
@@ -2898,6 +3024,36 @@ The logged-in person's information will be used to complete the registrar inform
             tbRegistrationAttributeTitleStart.Text = registrationTemplate.RegistrationAttributeTitleStart;
             tbRegistrationAttributeTitleEnd.Text = registrationTemplate.RegistrationAttributeTitleEnd;
 
+            var registrantEligibilitySettings = registrationTemplate.GetRegistrantEligibilitySettingsOrNull()
+                ?? new RegistrationTemplate.RegistrantEligibilitySettings();
+            if ( registrantEligibilitySettings.MaximumGradeOffset.HasValue )
+            {
+                ddlEligibilityGradeOffsetMax.SetValue( registrantEligibilitySettings.MaximumGradeOffset.Value );
+            }
+            else
+            {
+                ddlEligibilityGradeOffsetMax.ClearSelection();
+            }
+
+            if ( registrantEligibilitySettings.MinimumGradeOffset.HasValue )
+            {
+                ddlEligibilityGradeOffsetMin.SetValue( registrantEligibilitySettings.MinimumGradeOffset.Value );
+            }
+            else
+            {
+                ddlEligibilityGradeOffsetMin.ClearSelection();
+            }
+
+            var eligibilityDataViewGuid = registrantEligibilitySettings.EligibilityDataViewGuid;
+            dvpEligibilityDataView.SetValue( eligibilityDataViewGuid.HasValue ? DataViewCache.GetId( eligibilityDataViewGuid.Value ) : null );
+
+            ddlEligibilityAgeClassification.SetValue( registrantEligibilitySettings.AgeClassification?.ConvertToInt().ToString() ?? string.Empty );
+
+            ddlEligibilityGender.SetValue( registrantEligibilitySettings.Gender?.ConvertToInt().ToString() ?? string.Empty );
+
+            nreEligibilityAgeRange.LowerValue = registrantEligibilitySettings.MinimumAge;
+            nreEligibilityAgeRange.UpperValue = registrantEligibilitySettings.MaximumAge;
+
             tbSuccessTitle.Text = registrationTemplate.SuccessTitle;
             ceSuccessText.Text = registrationTemplate.SuccessText;
             heInstructions.Text = registrationTemplate.RegistrationInstructions;
@@ -3121,6 +3277,49 @@ The logged-in person's information will be used to complete the registrar inform
             foreach ( var documentType in SignatureDocumentTemplateState )
             {
                 ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+            }
+
+            ddlEligibilityAgeClassification.BindToEnum(insertBlankOption: true, ignoreTypes: new[] { AgeClassification.Unknown } );
+            ddlEligibilityGender.BindToEnum( insertBlankOption: true, ignoreTypes: new[] { Gender.Unknown } );
+            
+            var selectedGradeOffsetMax = ddlEligibilityGradeOffsetMax.SelectedValue.AsIntegerOrNull();
+            var selectedGradeOffsetMin = ddlEligibilityGradeOffsetMin.SelectedValue.AsIntegerOrNull();
+            ddlEligibilityGradeOffsetMax.Items.Clear();
+            ddlEligibilityGradeOffsetMin.Items.Clear();
+            var gradesDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            if ( gradesDefinedType != null )
+            {
+                ddlEligibilityGradeOffsetMax.Items.Add( new ListItem() );
+                ddlEligibilityGradeOffsetMin.Items.Add( new ListItem() );
+                
+                foreach ( var gradeDefinedValue in gradesDefinedType.DefinedValues.OrderBy( dv => dv.Order ) )
+                {
+                    var gradeAbbreviation = gradeDefinedValue.GetAttributeValue( "Abbreviation" );
+                    var gradeOffset = gradeDefinedValue.Value.AsIntegerOrNull();
+
+                    if ( gradeAbbreviation.IsNotNullOrWhiteSpace() )
+                    {
+                        if ( gradeDefinedValue.IsActive
+                             || selectedGradeOffsetMax == gradeOffset )
+                        {
+                            ddlEligibilityGradeOffsetMax.Items.Add( new ListItem
+                            {
+                                Text = gradeAbbreviation,
+                                Value = gradeOffset.ToString()
+                            } );
+                        }
+
+                        if ( gradeDefinedValue.IsActive
+                             || selectedGradeOffsetMin == gradeOffset )
+                        {
+                            ddlEligibilityGradeOffsetMin.Items.Add( new ListItem
+                            {
+                                Text = gradeAbbreviation,
+                                Value = gradeOffset.ToString()
+                            } );
+                        }
+                    }
+                }
             }
         }
 

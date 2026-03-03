@@ -16,12 +16,14 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Reporting.InteractionComponentDetail;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Reporting
@@ -33,7 +35,7 @@ namespace Rock.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Presents the details of a interaction channel using Lava" )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -49,8 +51,9 @@ namespace Rock.Blocks.Reporting
     #endregion Block Attribute
 
     [Rock.SystemGuid.EntityTypeGuid( "29e5a6bf-fe7f-406e-afc1-64eab506ddb0" )]
-    [Rock.SystemGuid.BlockTypeGuid( "bc2034d1-416b-4fb4-9fff-e202fa666203" )]
-    public class InteractionComponentDetail : RockBlockType
+    // was [Rock.SystemGuid.BlockTypeGuid( "bc2034d1-416b-4fb4-9fff-e202fa666203" )]
+    [Rock.SystemGuid.BlockTypeGuid( "926261B2-CF4C-4B1F-A384-CD83696CFBC2" )]
+    public class InteractionComponentDetail : RockBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -118,8 +121,11 @@ namespace Rock.Blocks.Reporting
         /// </summary>
         private InteractionComponentDetailInitializationBox GetInitializationBox()
         {
-            var interactionId = PageParameter( PageParameterKey.ComponentId ).AsInteger();
-            var interactionComponent = new InteractionComponentService( RockContext ).Get( interactionId );
+            var interactionComponent = new InteractionComponentService( RockContext ).Get(
+                PageParameter( PageParameterKey.ComponentId ),
+                !PageCache.Layout.Site.DisablePredictableIds
+            );
+
             var box = new InteractionComponentDetailInitializationBox();
 
             if ( interactionComponent != null )
@@ -177,6 +183,30 @@ namespace Rock.Blocks.Reporting
             return componentEntity;
         }
 
-        #endregion
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var result = new BreadCrumbResult();
+
+            if ( pageReference == null )
+            {
+                return result;
+            }
+
+            var key = pageReference.GetPageParameter( PageParameterKey.ComponentId );
+            string name = null;
+
+            if ( !string.IsNullOrWhiteSpace( key ) )
+            {
+                name = new InteractionComponentService( RockContext )
+                    .GetSelect( key, ic => ic.Name );
+            }
+
+            result.BreadCrumbs = new List<IBreadCrumb> { new BreadCrumbLink( name ?? "Interaction Component", pageReference ) };
+
+            return result;
+        }
+
+        #endregion Methods
     }
 }

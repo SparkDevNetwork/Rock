@@ -76,7 +76,7 @@ namespace Rock.Model
                                 2 // Fail
                             );
 
-            var course = Queryable()
+            var courses = Queryable()
                 .AsNoTracking()
                 .Include( c => c.ImageBinaryFile )
                 .Include( c => c.LearningProgram )
@@ -87,19 +87,31 @@ namespace Rock.Model
                 .Include( c => c.LearningClasses.Select( lc => lc.LearningGradingSystem.LearningGradingSystemScales ) )
                 .Where( c => c.IsActive && c.Id == courseId )
                 .Where( c => !publicOnly || c.IsPublic )
+                .ToList()
+                .Where( c => !( c.LearningProgram?.EnforcePublicSecurity ?? false )
+                    || c.IsAuthorized( Rock.Security.Authorization.VIEW, person )
+                    || orderedPersonCompletions.Any( lp => lp.LearningClass.LearningCourseId == c.Id ) );
+
+            if ( !courses.Any() )
+            {
+                // The course is missing or the person is not authorized to view a class that is Enforcing security
+                return default;
+            }
+
+            var course = courses
                 .Select( c => new PublicLearningCourseBag
                 {
                     AllowHistoricalAccess = c.AllowHistoricalAccess,
-                    Category = c.Category.Name,
-                    CategoryColor = c.Category.HighlightColor,
+                    Category = c.Category?.Name,
+                    CategoryColor = c.Category?.HighlightColor,
                     CourseCode = c.CourseCode,
-                    CourseRequirements = c.LearningCourseRequirements
-                        .Where( lcr => lcr.RequirementType != RequirementType.Equivalent)
+                    CourseRequirements = ( c.LearningCourseRequirements ?? Enumerable.Empty<LearningCourseRequirement>() )
+                        .Where( lcr => lcr.RequirementType != RequirementType.Equivalent )
                         .ToList(),
                     Credits = c.Credits,
                     Description = c.Description,
                     Id = c.Id,
-                    ImageFileGuid = c.ImageBinaryFile.Guid,
+                    ImageFileGuid = c.ImageBinaryFile?.Guid,
                     IsEnrolled = hasPersonId
                         && orderedPersonCompletions.Any( lp => lp.LearningClass.LearningCourseId == c.Id ),
 
@@ -108,21 +120,20 @@ namespace Rock.Model
                         null :
                         ( LearningCompletionStatus? ) orderedPersonCompletions
                         .FirstOrDefault( p => p.LearningClass.LearningCourseId == c.Id )
-                        .LearningCompletionStatus,
-                    IsCompletionOnly = !c.LearningClasses.Any( lc =>
-                        lc.LearningGradingSystem.LearningGradingSystemScales
-                            .Select( s => s.Id )
-                            .Count() > 1
+                        ?.LearningCompletionStatus,
+
+                    IsCompletionOnly = !( c.LearningClasses ?? Enumerable.Empty<LearningClass>() ).Any( lc =>
+                        ( lc.LearningGradingSystem?.LearningGradingSystemScales?.Count ?? 0 ) > 1
                     ),
                     ProgramInfo = new LearningProgramService.PublicLearningProgramBag
                     {
                         Id = c.LearningProgramId,
-                        PublicName = c.LearningProgram.PublicName,
-                        Summary = c.LearningProgram.Summary,
-                        Category = c.LearningProgram.Category.Name,
-                        CategoryColor = c.LearningProgram.Category.HighlightColor,
-                        ConfigurationMode = c.LearningProgram.ConfigurationMode,
-                        ImageFileGuid = c.LearningProgram.ImageBinaryFile.Guid
+                        PublicName = c.LearningProgram?.PublicName,
+                        Summary = c.LearningProgram?.Summary,
+                        Category = c.LearningProgram?.Category?.Name,
+                        CategoryColor = c.LearningProgram?.Category?.HighlightColor,
+                        ConfigurationMode = c.LearningProgram?.ConfigurationMode ?? ConfigurationMode.OnDemandLearning,
+                        ImageFileGuid = c.LearningProgram?.ImageBinaryFile?.Guid
                     },
                     PublicName = c.PublicName,
                     Order = c.Order,

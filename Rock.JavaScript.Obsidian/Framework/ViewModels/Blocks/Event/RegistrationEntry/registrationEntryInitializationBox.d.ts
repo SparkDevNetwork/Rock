@@ -24,6 +24,7 @@
 import { RegistrantsSameFamily } from "@Obsidian/Enums/Event/registrantsSameFamily";
 import { RegistrarOption } from "@Obsidian/Enums/Event/registrarOption";
 import { Guid } from "@Obsidian/Types";
+import { RegistrantEligibilityBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantEligibilityBag";
 import { RegistrationEntryFamilyMemberBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFamilyMemberBag";
 import { RegistrationEntryFeeBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeBag";
 import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
@@ -168,6 +169,9 @@ export type RegistrationEntryInitializationBox = {
 
     /** Gets or sets the redirect gateway URL. */
     redirectGatewayUrl?: string | null;
+
+    /** Gets or sets the eligibility information for the registrant. */
+    registrantEligibility?: RegistrantEligibilityBag | null;
 
     /** Gets or sets the registrant forms. */
     registrantForms?: RegistrationEntryFormBag[] | null;

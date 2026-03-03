@@ -78,13 +78,6 @@ namespace Rock.Blocks.CheckIn.Manager
         Order = 4 )]
 
     [BooleanField(
-        "Enable Group Column",
-        Key = AttributeKey.EnableGroupColumn,
-        Description = "When enabled, a column showing the group(s) the person checked into will be shown.",
-        DefaultBooleanValue = false,
-        Order = 5 )]
-
-    [BooleanField(
         "Enable Checkout All",
         Key = AttributeKey.EnableCheckoutAll,
         Description = "When enabled, a button will be shown to allow checking out all individuals.",
@@ -161,7 +154,6 @@ namespace Rock.Blocks.CheckIn.Manager
             /// </summary>
             public const string CheckInConfigurationGuid = "CheckInAreaGuid";
 
-            public const string EnableGroupColumn = "EnableGroupColumn";
             public const string EnableCheckoutAll = "EnableCheckoutAll";
             public const string EnableStayingButton = "EnableStayingButton";
             public const string EnableNotPresentButton = "EnableNotPresentButton";
@@ -203,7 +195,6 @@ namespace Rock.Blocks.CheckIn.Manager
             var bag = new RosterOptionsBag
             {
                 IsCheckoutAllEnabled = GetAttributeValue( AttributeKey.EnableCheckoutAll ).AsBoolean(),
-                IsGroupColumnEnabled = GetAttributeValue( AttributeKey.EnableGroupColumn ).AsBoolean(),
                 IsNotPresentButtonEnabled = GetAttributeValue( AttributeKey.EnableNotPresentButton ).AsBoolean(),
                 IsPresentButtonEnabled = GetAttributeValue( AttributeKey.EnableMarkPresentButton ).AsBoolean(),
                 IsMarkAllPresentEnabled = GetAttributeValue( AttributeKey.EnableMarkAllAsPresentButton ).AsBoolean(),
