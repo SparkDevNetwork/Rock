@@ -45,10 +45,10 @@ namespace Rock.AI.Agent.Skills
             var helper = new AgentToolHelper( AgentRequestContext, _logger );
             var qry = new FinancialTransactionService( AgentRequestContext.RockContext ).Queryable();
 
-            helper.WhereOptionalIdKey( qry, ft => ft.AuthorizedPersonAlias.PersonId, personIdKey );
-            helper.WhereOptionalIdKey( qry, ft => ft.Batch.CampusId, campusIdKey );
-            helper.WhereOptionalIdKey( qry, ft => ft.FinancialPaymentDetail.CurrencyTypeValueId, paymentMethodTypeValueIdKey );
-            helper.WhereOptionalPropertyBetween( qry, ft => ft.TransactionDateTime, startDate, endDate );
+            qry = helper.WhereOptionalIdKey( qry, ft => ft.AuthorizedPersonAlias.PersonId, personIdKey );
+            qry = helper.WhereOptionalIdKey( qry, ft => ft.Batch.CampusId, campusIdKey );
+            qry = helper.WhereOptionalIdKey( qry, ft => ft.FinancialPaymentDetail.CurrencyTypeValueId, paymentMethodTypeValueIdKey );
+            qry = helper.WhereOptionalPropertyBetween( qry, ft => ft.TransactionDateTime, startDate, endDate );
 
             if ( !TryGetMatchingAccountIds( accountIdKeys, campusIdKey, out var accountIds ) )
             {
