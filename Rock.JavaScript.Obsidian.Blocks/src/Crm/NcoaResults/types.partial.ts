@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
 export const enum PreferenceKey {
     FilterProcessed = "filter-processed",
     FilterMoveDate = "filter-move-date",
@@ -29,12 +32,12 @@ export const enum PreferenceKey {
 
 export type GridSettingsOptions = {
     filterProcessed: string;
-    filterMoveDate: string;
-    filterNcoaProcessedDate: string;
+    filterMoveDate: SlidingDateRange | null;
+    filterNcoaProcessedDate: SlidingDateRange | null;
     filterMoveType: string;
     filterAddressStatus: string;
     filterInvalidReason: string;
-    filterMoveDistance: string;
+    filterMoveDistance: number | null;
     filterLastName: string;
-    filterCampus: string;
+    filterCampus?: ListItemBag | null;
 };

@@ -51,6 +51,7 @@
     import GridSettingsModal from "./NcoaResults/gridSettingsModal.partial.obs";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { NcoaDataBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaDataBag";
+    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
 
 
     const config = useConfigurationValues<ListBlockBox<NcoaResultsOptionsBag>>();
@@ -69,14 +70,14 @@
 
     const gridSettings = ref<GridSettingsOptions>({
         filterProcessed: safeParseJson(preferences.getValue(PreferenceKey.FilterProcessed)) ?? "4",
-        filterMoveDate: preferences.getValue(PreferenceKey.FilterMoveDate),
-        filterNcoaProcessedDate: preferences.getValue(PreferenceKey.FilterNcoaProcessedDate),
+        filterMoveDate: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterMoveDate)) ?? null,
+        filterNcoaProcessedDate: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterNcoaProcessedDate)) ?? null,
         filterMoveType: preferences.getValue(PreferenceKey.FilterMoveType),
         filterAddressStatus: preferences.getValue(PreferenceKey.FilterAddressStatus),
         filterInvalidReason: preferences.getValue(PreferenceKey.FilterInvalidReason),
-        filterMoveDistance: preferences.getValue(PreferenceKey.FilterMoveDistance),
+        filterMoveDistance: Number.parseInt(preferences.getValue(PreferenceKey.FilterMoveDistance)) || null,
         filterLastName: preferences.getValue(PreferenceKey.FilterLastName),
-        filterCampus: preferences.getValue(PreferenceKey.FilterCampus)
+        filterCampus: safeParseJson(preferences.getValue(PreferenceKey.FilterCampus))
     });
 
     // #endregion
@@ -116,14 +117,14 @@
     watch(
         gridSettings, async (value) => {
             preferences.setValue(PreferenceKey.FilterProcessed, value.filterProcessed);
-            preferences.setValue(PreferenceKey.FilterMoveDate, value.filterMoveDate);
-            preferences.setValue(PreferenceKey.FilterNcoaProcessedDate, value.filterNcoaProcessedDate);
+            preferences.setValue(PreferenceKey.FilterMoveDate, value.filterMoveDate ? slidingDateRangeToString(value.filterMoveDate) : "");
+            preferences.setValue(PreferenceKey.FilterNcoaProcessedDate, value.filterNcoaProcessedDate ? slidingDateRangeToString(value.filterNcoaProcessedDate) : "");
             preferences.setValue(PreferenceKey.FilterMoveType, value.filterMoveType);
             preferences.setValue(PreferenceKey.FilterAddressStatus, value.filterAddressStatus);
             preferences.setValue(PreferenceKey.FilterInvalidReason, value.filterInvalidReason);
-            preferences.setValue(PreferenceKey.FilterMoveDistance, value.filterMoveDistance);
+            preferences.setValue(PreferenceKey.FilterMoveDistance, value.filterMoveDistance?.toString() || "");
             preferences.setValue(PreferenceKey.FilterLastName, value.filterLastName);
-            preferences.setValue(PreferenceKey.FilterCampus, value.filterCampus);
+            preferences.setValue(PreferenceKey.FilterCampus, JSON.stringify(value.filterCampus));
 
             await preferences.save();
 

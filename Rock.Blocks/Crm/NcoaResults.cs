@@ -24,6 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
@@ -118,58 +119,40 @@ namespace Rock.Blocks.Crm
             }
         }
 
-        protected Processed? FilterProcessed
-        {
-            get
-            {
-                var processedValue = PersonPreferences
-                    .GetValue( PreferenceKey.FilterProcessed );
+        private Processed? FilterProcessed => PersonPreferences
+            .GetValue( PreferenceKey.FilterProcessed )
+            .ConvertToEnumOrNull<Processed>();
 
-                if ( processedValue == null )
-                {
-                    return null;
-                }
-
-                if ( int.TryParse( processedValue, out var intValue ) )
-                {
-                    return ( Processed ) intValue;
-                }
-
-                return null;
-            }
-        }
-
-        protected ListItemBag FilterMoveDate => PersonPreferences
-            .GetValue( PreferenceKey.FilterMoveDate )
-            .FromJsonOrNull<ListItemBag>();
-
-        protected ListItemBag FilterNcoaProcessedDate => PersonPreferences
-            .GetValue( PreferenceKey.FilterNcoaProcessedDate )
-            .FromJsonOrNull<ListItemBag>();
-
-        protected ListItemBag FilterMoveType => PersonPreferences
+        private MoveType? FilterMoveType => PersonPreferences
             .GetValue( PreferenceKey.FilterMoveType )
-            .FromJsonOrNull<ListItemBag>();
+            .ConvertToEnumOrNull<MoveType>();
 
-        protected ListItemBag FilterAddressStatus => PersonPreferences
+        private AddressStatus? FilterAddressStatus => PersonPreferences
             .GetValue( PreferenceKey.FilterAddressStatus )
-            .FromJsonOrNull<ListItemBag>();
+            .ConvertToEnumOrNull<AddressStatus>();
 
-        protected ListItemBag FilterInvalidReason => PersonPreferences
+        private AddressInvalidReason? FilterInvalidReason => PersonPreferences
             .GetValue( PreferenceKey.FilterInvalidReason )
-            .FromJsonOrNull<ListItemBag>();
+            .ConvertToEnumOrNull<AddressInvalidReason>();
 
-        protected ListItemBag FilterMoveDistance => PersonPreferences
+        private SlidingDateRangeBag FilterMoveDate => PersonPreferences
+            .GetValue( PreferenceKey.FilterMoveDate )
+            .ToSlidingDateRangeBagOrNull();
+
+        private SlidingDateRangeBag FilterNcoaProcessedDate => PersonPreferences
+            .GetValue( PreferenceKey.FilterNcoaProcessedDate )
+            .ToSlidingDateRangeBagOrNull();
+
+        protected Decimal? FilterMoveDistance => PersonPreferences
             .GetValue( PreferenceKey.FilterMoveDistance )
-            .FromJsonOrNull<ListItemBag>();
+            .AsDecimalOrNull();
 
-        protected ListItemBag FilterLastName => PersonPreferences
-            .GetValue( PreferenceKey.FilterLastName )
-            .FromJsonOrNull<ListItemBag>();
+        protected string FilterLastName => PersonPreferences
+            .GetValue( PreferenceKey.FilterLastName );
 
-        protected ListItemBag FilterCampus => PersonPreferences
+        protected Guid? FilterCampus => PersonPreferences
             .GetValue( PreferenceKey.FilterCampus )
-            .FromJsonOrNull<ListItemBag>();
+            .FromJsonOrNull<ListItemBag>()?.Value.AsGuidOrNull();
 
 
 
@@ -273,6 +256,30 @@ namespace Rock.Blocks.Crm
             return result;
         }
 
+        public Dictionary<int, string> GetPersonNamesForFamilies( List<int> familyIds )
+        {
+            var groupMemberService = new GroupMemberService( RockContext );
+            var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+
+            var families = groupMemberService.Queryable()
+                .Where( gm =>
+                    familyIds.Contains( gm.GroupId ) &&
+                    gm.Group.GroupType.Guid == familyGroupTypeGuid )
+                .Select( gm => new
+                {
+                    gm.GroupId,
+                    FullName = gm.Person.NickName + " " + gm.Person.LastName
+                } )
+                .ToList()
+                .GroupBy( x => x.GroupId )
+                .ToDictionary(
+                    g => g.Key,
+                    g => string.Join( ", ", g.Select( x => x.FullName ) )
+                );
+
+            return families;
+        }
+
         #endregion
 
         #region Block Actions
@@ -282,60 +289,180 @@ namespace Rock.Blocks.Crm
         {
             int resultCount = GetAttributeValue( AttributeKey.ResultCount ).AsIntegerOrNull() ?? 20;
 
-            var query = new NcoaHistoryService( RockContext ).Queryable();
+            var ncoaQuery = new NcoaHistoryService( RockContext ).Queryable();
 
             var processed = FilterProcessed;
+            var moveType = FilterMoveType;
+            var moveDate = FilterMoveDate;
+            var ncoaProcessedDate = FilterNcoaProcessedDate;
+            var addressStatus = FilterAddressStatus;
+            var addressInvalidReason = FilterInvalidReason;
+            var moveDistance = FilterMoveDistance;
+            var lastName = FilterLastName;
+            int? campusId = null;
 
+            if ( FilterCampus.HasValue )
+            {
+                campusId = CampusCache.GetId( FilterCampus.Value );
+            }
+
+            // Processed Status Filtering
             if ( processed.HasValue )
             {
                 if ( processed.Value != Processed.All && processed.Value != Processed.ManualUpdateRequiredOrNotProcessed )
                 {
-                    query = query.Where( i => i.Processed == processed );
+                    ncoaQuery = ncoaQuery.Where( i => i.Processed == processed );
                 }
                 else if ( processed.Value == Processed.ManualUpdateRequiredOrNotProcessed )
                 {
-                    query = query.Where( i => i.Processed == Processed.ManualUpdateRequired || i.Processed == Processed.NotProcessed );
+                    ncoaQuery = ncoaQuery.Where( i => i.Processed == Processed.ManualUpdateRequired || i.Processed == Processed.NotProcessed );
                 }
             }
 
-            var ncoaHistoryData = query
-            .Select( i => new
+            // Move Type Filtering
+            if ( moveType.HasValue )
             {
-                i.Id,
-                i.NcoaType,
-                i.Processed,
-                i.MoveDate,
-                i.MoveDistance,
+                ncoaQuery = ncoaQuery.Where( i => i.MoveType == moveType );
+            }
 
-                i.OriginalStreet1,
-                i.OriginalStreet2,
-                i.OriginalCity,
-                i.OriginalState,
-                i.OriginalPostalCode,
+            // Move Date Filtering
+            if ( moveDate != null )
+            {
+                // Default to the last 180 days if a null/invalid range was selected.
+                var defaultSlidingDateRange = new SlidingDateRangeBag
+                {
+                    RangeType = SlidingDateRangeType.Last,
+                    TimeUnit = TimeUnitType.Day,
+                    TimeValue = 180
+                };
 
-                i.UpdatedStreet1,
-                i.UpdatedStreet2,
-                i.UpdatedCity,
-                i.UpdatedState,
-                i.UpdatedPostalCode
-            } )
-            .ToList();
+                var dateRange = moveDate.Validate( defaultSlidingDateRange ).ActualDateRange;
+
+                if ( dateRange.Start.HasValue )
+                {
+                    ncoaQuery = ncoaQuery.Where( i => i.MoveDate >= dateRange.Start );
+                }
+
+                if ( dateRange.End.HasValue )
+                {
+                    ncoaQuery = ncoaQuery.Where( i => i.MoveDate <= dateRange.End );
+                }
+            }
+
+            // NCOA Processed Date Filtering
+            if ( ncoaProcessedDate != null )
+            {
+                // Default to the last 180 days if a null/invalid range was selected.
+                var defaultSlidingDateRange = new SlidingDateRangeBag
+                {
+                    RangeType = SlidingDateRangeType.Last,
+                    TimeUnit = TimeUnitType.Day,
+                    TimeValue = 180
+                };
+
+                var dateRange = ncoaProcessedDate.Validate( defaultSlidingDateRange ).ActualDateRange;
+
+                if ( dateRange.Start.HasValue )
+                {
+                    ncoaQuery = ncoaQuery.Where( i => i.NcoaRunDateTime >= dateRange.Start );
+                }
+
+                if ( dateRange.End.HasValue )
+                {
+                    ncoaQuery = ncoaQuery.Where( i => i.NcoaRunDateTime <= dateRange.End );
+                }
+            }
+
+            // Address Status Filtering
+            if ( addressStatus.HasValue )
+            {
+                ncoaQuery = ncoaQuery.Where( i => i.AddressStatus == addressStatus );
+            }
+
+            // Address Invalid Reason Filtering
+            if ( addressInvalidReason.HasValue )
+            {
+                ncoaQuery = ncoaQuery.Where( i => i.AddressInvalidReason == addressInvalidReason );
+            }
+
+            // Move Distance Filtering
+            if ( moveDistance != null )
+            {
+                ncoaQuery = ncoaQuery.Where( i => i.MoveDistance <= moveDistance );
+            }
+
+            // Last Name Filtering
+            if ( lastName.IsNotNullOrWhiteSpace() )
+            {
+                var personAliasQuery = new PersonAliasService( RockContext ).Queryable().Where( p => p.Person.LastName.Contains( lastName ) ).Select( p => p.Id);
+
+                ncoaQuery = ncoaQuery.Where( i => personAliasQuery.Contains( i.PersonAliasId ) );
+            }
+
+            //Campus Filtering
+            if ( campusId.HasValue )
+            {
+                var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                var personAliasQuery = new PersonAliasService( RockContext ).Queryable().AsNoTracking();
+                var campusQuery = new GroupMemberService( RockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( m =>
+                        m.Group.GroupTypeId == familyGroupType.Id &&
+                        m.Group.CampusId.HasValue &&
+                        m.Group.CampusId.Value == campusId )
+                    .Select( m => m.PersonId )
+                    .Join( personAliasQuery, m => m, p => p.PersonId, ( m, p ) => p.Id );
+
+                ncoaQuery = ncoaQuery.Where( i => campusQuery.Contains( i.PersonAliasId ) );
+            }
+
+            var ncoaHistoryData = ncoaQuery.ToList();
+
+            // Records that are not individual move types and will represent family moves.
+            var familyIds = ncoaHistoryData
+                .Where( h => h.MoveType != MoveType.Individual )
+                .GroupBy( h => new { h.FamilyId, h.MoveType, h.MoveDate } )
+                .Select( g => g.Max( x => x.FamilyId ) ).ToList();
+
+            var familyNamesKey = GetPersonNamesForFamilies( familyIds );
+
+            var ncoaPersonAliasIds = ncoaHistoryData.Select( d => d.PersonAliasId ).ToList();
+
+            var personData = new PersonAliasService( RockContext ).Queryable().AsNoTracking()
+                .Where( p => ncoaPersonAliasIds.Contains( p.Id ) )
+                .Select( p => new
+                {
+                    p.Id,
+                    p.Person.FirstName,
+                    p.Person.LastName,
+                } ).ToList();
 
             var bag = new NcoaResultsBag
             {
-                NcoaList = ncoaHistoryData.Select( i => new NcoaDataBag
+                NcoaList = ncoaHistoryData.Select( i =>
                 {
-                    IdKey = i.Id.AsIdKey(),
-                    Type = i.NcoaType.ToString(),
-                    OriginalAddress = FormattedAddress(
-                            i.OriginalStreet1, i.OriginalStreet2, i.OriginalCity, i.OriginalState, i.OriginalPostalCode )
-                        .ConvertCrLfToHtmlBr(),
-                    NewAddress = FormattedAddress(
-                            i.UpdatedStreet1, i.UpdatedStreet2, i.UpdatedCity, i.UpdatedState, i.UpdatedPostalCode )
-                        .ConvertCrLfToHtmlBr(),
-                    MoveDate = i.MoveDate,
-                    MoveDistance = i.MoveDistance,
-                    Status = i.Processed == Processed.Complete ? "Processed" : "Not Processed"
+                    var individual = personData.Where( p => p.Id == i.PersonAliasId ).FirstOrDefault();
+
+                    return new NcoaDataBag
+                    {
+                        IdKey = i.Id.AsIdKey(),
+                        Type = i.NcoaType.ToString(),
+
+                        Individual = individual.FirstName + ' ' + individual.LastName,
+                        FamilyMembers = familyNamesKey.ContainsKey(i.FamilyId) ? familyNamesKey[i.FamilyId] : string.Empty,
+
+                        OriginalAddress = FormattedAddress(
+                                i.OriginalStreet1, i.OriginalStreet2, i.OriginalCity, i.OriginalState, i.OriginalPostalCode )
+                            .ConvertCrLfToHtmlBr(),
+
+                        NewAddress = FormattedAddress(
+                                i.UpdatedStreet1, i.UpdatedStreet2, i.UpdatedCity, i.UpdatedState, i.UpdatedPostalCode )
+                            .ConvertCrLfToHtmlBr(),
+
+                        MoveDate = i.MoveDate,
+                        MoveDistance = i.MoveDistance,
+                        Status = i.Processed == Processed.Complete ? "Processed" : "Not Processed"
+                    };
                 } ).ToList()
             };
 

@@ -26,6 +26,8 @@ export type NcoaDataBag = {
 
     idKey?: string | null;
 
+    individual?: string | null;
+
     moveDate?: string | null;
 
     moveDistance?: number | null;
