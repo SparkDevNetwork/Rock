@@ -40,7 +40,7 @@ namespace Rock.Model
         /// eligibility Data View. If <c>null</c>, no Data View filtering will be applied.
         /// </param>
         /// <remarks>
-        /// This constructor is intended to be called by <see cref="RegistrationTemplateService.GetRegistrantEligibility"/>
+        /// This constructor is intended to be called by RegistrationTemplateService.GetRegistrantEligibility
         /// after resolving any configured eligibility settings and associated Data View query.
         /// DO NOT CALL IT DIRECTLY.
         /// </remarks>

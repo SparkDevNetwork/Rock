@@ -40,6 +40,19 @@ namespace Rock.Model
             return Queryable().Any( r => r.Id == registrationTemplateId && r.Placements.Any() );
         }
 
+        /// <summary>
+        /// Creates a registrant eligibility evaluator based on the eligibility settings of the specified registration template.
+        /// </summary>
+        /// <remarks>
+        /// If the registration template specifies an eligibility data view, the evaluator will
+        /// use it to efficiently determine eligible registrants. Otherwise, all registrants are considered eligible.
+        /// This method does not modify the registration template or its settings.
+        /// </remarks>
+        /// <param name="registrationTemplateId">The identifier of the registration template whose eligibility settings are used to determine registrant eligibility. Cannot be null.</param>
+        /// <returns>
+        /// A RegistrantEligibilityEvaluator instance configured according to the eligibility settings of the registration template.
+        /// If no eligibility settings are defined, the evaluator will treat all registrants as eligible.
+        /// </returns>
         public RegistrantEligibilityEvaluator GetRegistrantEligibility( int registrationTemplateId )
         {
             return GetRegistrantEligibility( Get( registrationTemplateId ) );

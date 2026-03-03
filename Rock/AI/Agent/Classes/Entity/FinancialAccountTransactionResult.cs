@@ -15,6 +15,10 @@
 // </copyright>
 //
 
+using System.Text.Json.Serialization;
+
+using Rock.AI.Agent.Classes.Common;
+
 namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
@@ -26,5 +30,26 @@ namespace Rock.AI.Agent.Classes.Entity
         /// The amount of the transaction for this account.
         /// </summary>
         public decimal Amount { get; set; }
+
+        /// <summary>
+        /// The entity type identifier. This is not sent to the language model,
+        /// but can be used internally to populate the <see cref="RelatedEntity"/>
+        /// property.
+        /// </summary>
+        [JsonIgnore]
+        public int? EntityTypeId { get; set; }
+
+        /// <summary>
+        /// The entity identifier. This is not sent to the language model,
+        /// but can be used internally to populate the <see cref="RelatedEntity"/>
+        /// property.
+        /// </summary>
+        [JsonIgnore]
+        public int? EntityId { get; set; }
+
+        /// <summary>
+        /// Information about the related entity for this transaction.
+        /// </summary>
+        public KeyNameResult RelatedEntity { get; set; }
     }
 }
