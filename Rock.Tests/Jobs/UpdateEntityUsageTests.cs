@@ -19,8 +19,10 @@ namespace Rock.Tests.Jobs
     [TestClass]
     public class UpdateEntityUsageTests
     {
+        #region UpdateMediaUsage
+
         [TestMethod]
-        public void UpdateEntityUsage_WithNoAttributes_DeletesMetadata()
+        public void UpdateMediaUsage_WithNoAttributes_DeletesMetadata()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
@@ -55,7 +57,7 @@ namespace Rock.Tests.Jobs
         }
 
         [TestMethod]
-        public void UpdateEntityUsage_WithNoAttributeValues_DeletesMetadata()
+        public void UpdateMediaUsage_WithNoAttributeValues_DeletesMetadata()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
@@ -100,7 +102,7 @@ namespace Rock.Tests.Jobs
         }
 
         [TestMethod]
-        public void UpdateEntityUsage_WithMissingEntityType_DeletesMetadata()
+        public void UpdateMediaUsage_WithMissingEntityType_DeletesMetadata()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
@@ -108,7 +110,6 @@ namespace Rock.Tests.Jobs
             var processedCount = 0;
 
             metadataHelperMock.Setup( m => m.DeleteEntityValue( It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<RockContext>() ) );
-            metadataHelperMock.Setup( m => m.SaveEntityValue( It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<RockContext>() ) );
 
             void configureServices( ServiceCollection serviceCollection )
             {
@@ -173,7 +174,7 @@ namespace Rock.Tests.Jobs
         }
 
         [TestMethod]
-        public void UpdateEntityUsage_WithReferences_SetsMetadata()
+        public void UpdateMediaUsage_WithReferences_SetsMetadata()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
@@ -235,8 +236,12 @@ namespace Rock.Tests.Jobs
             }
         }
 
+        #endregion
+
+        #region UpdateContentChannelItemMediaUsage
+
         [TestMethod]
-        public void UpdateEntityUsage_WithReferences_SetsContentChannelItemMediaMetadata()
+        public void UpdateContentChannelItemMediaUsage_WithReferences_SetsContentChannelItemMediaMetadata()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
@@ -299,7 +304,7 @@ namespace Rock.Tests.Jobs
         }
 
         [TestMethod]
-        public void UpdateEntityUsage_WithNoMediaReferences_DeletesContentChannelItemMediaMetadata()
+        public void UpdateContentChannelItemMediaUsage_WithNoMediaReferences_DeletesContentChannelItemMediaMetadata()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
@@ -344,5 +349,7 @@ namespace Rock.Tests.Jobs
                 metadataHelperMock.Verify( m => m.DeleteEntityValue( It.IsAny<int>(), contentChannelItem.Id, MetadataKey.MediaElements, It.IsAny<RockContext>() ), Times.Once );
             }
         }
+
+        #endregion
     }
 }
