@@ -266,38 +266,23 @@ namespace Rock.AI.Agent.Skills
                 qry = qry.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) ) );
             }
 
-            // Do a left outer join to find if there was a refund.
-            var joinedQry = qry
-                .GroupJoin(
-                    new FinancialTransactionRefundService( AgentRequestContext.RockContext ).Queryable(),
-                    ft => ft.Id,
-                    ftr => ftr.OriginalTransactionId,
-                    ( ft, ftr ) => new { FinancialTransaction = ft, FinancialTransactionRefund = ftr } )
-                .SelectMany(
-                    x => x.FinancialTransactionRefund.DefaultIfEmpty(),
-                    ( l, r ) => new
-                    {
-                        l.FinancialTransaction,
-                        FinancialTransactionRefund = r
-                    } );
-
-            joinedQry = joinedQry.OrderByDescending( a => a.FinancialTransaction.TransactionDateTime )
-                .ThenByDescending( a => a.FinancialTransaction.Id );
+            qry = qry.OrderByDescending( a => a.TransactionDateTime )
+                .ThenByDescending( a => a.Id );
 
             // Project AFTER ordering, BEFORE paging
-            var projectedQry = joinedQry.AsExpandable().Select( a => new FinancialTransactionResult
+            var projectedQry = qry.AsExpandable().Select( a => new FinancialTransactionResult
             {
-                Id = a.FinancialTransaction.Id,
-                AuthorizedPerson = PersonResult.NameOnly( a.FinancialTransaction.AuthorizedPersonAlias ),
-                TransactionDateTime = a.FinancialTransaction.TransactionDateTime,
+                Id = a.Id,
+                AuthorizedPerson = PersonResult.NameOnly( a.AuthorizedPersonAlias ),
+                TransactionDateTime = a.TransactionDateTime,
 
                 // Only sum details that match the resolved account set (if any)
-                TotalAmount = a.FinancialTransaction.TransactionDetails
+                TotalAmount = a.TransactionDetails
                     .Where( d => !hasAccountFilter || accountIds.Contains( d.AccountId ) )
                     .Sum( d => ( decimal? ) d.Amount ) ?? 0m,
 
                 // And only list those matching account details
-                Accounts = a.FinancialTransaction.TransactionDetails
+                Accounts = a.TransactionDetails
                     .Where( td => !hasAccountFilter || accountIds.Contains( td.AccountId ) )
                     .Select( td => new FinancialAccountTransactionResult
                     {
@@ -308,41 +293,21 @@ namespace Rock.AI.Agent.Skills
                     } )
                     .ToList(),
 
-                CurrencyType = a.FinancialTransaction.FinancialPaymentDetail.CurrencyTypeValue != null
+                CurrencyType = a.FinancialPaymentDetail.CurrencyTypeValue != null
                     ? new KeyNameResult
                     {
-                        Id = a.FinancialTransaction.FinancialPaymentDetail.CurrencyTypeValue.Id,
-                        Name = a.FinancialTransaction.FinancialPaymentDetail.CurrencyTypeValue.Value
+                        Id = a.FinancialPaymentDetail.CurrencyTypeValue.Id,
+                        Name = a.FinancialPaymentDetail.CurrencyTypeValue.Value
                     }
                     : null,
 
-                CreditCardType = a.FinancialTransaction.FinancialPaymentDetail.CreditCardTypeValue != null
+                CreditCardType = a.FinancialPaymentDetail.CreditCardTypeValue != null
                     ? new KeyNameResult
                     {
-                        Id = a.FinancialTransaction.FinancialPaymentDetail.CreditCardTypeValue.Id,
-                        Name = a.FinancialTransaction.FinancialPaymentDetail.CreditCardTypeValue.Value
+                        Id = a.FinancialPaymentDetail.CreditCardTypeValue.Id,
+                        Name = a.FinancialPaymentDetail.CreditCardTypeValue.Value
                     }
                     : null,
-
-                RefundLink = a.FinancialTransactionRefund != null
-                    ? new FinancialTransactionRefundLinkResult
-                    {
-                        RefundTransactionId = a.FinancialTransactionRefund.Id,
-                        TotalAmount = a.FinancialTransactionRefund.FinancialTransaction.TransactionDetails
-                            .Where( d => !hasAccountFilter || accountIds.Contains( d.AccountId ) )
-                            .Sum( d => ( decimal? ) d.Amount ) ?? 0m,
-                        Accounts = a.FinancialTransactionRefund.FinancialTransaction.TransactionDetails
-                            .Where( td => !hasAccountFilter || accountIds.Contains( td.AccountId ) )
-                            .Select( td => new FinancialAccountTransactionResult
-                            {
-                                Amount = td.Amount,
-                                Name = td.Account.Name,
-                                EntityTypeId = td.EntityTypeId,
-                                EntityId = td.EntityId,
-                            } )
-                            .ToList(),
-                    }
-                    : null
             } );
 
             if ( helper.HasErrors )
@@ -365,9 +330,9 @@ namespace Rock.AI.Agent.Skills
 
             var result = helper.GetPaginatedResult( page, page.WithItems( historyItems ) );
 
-            if ( page.Items.Any( a => a.RefundLink != null ) )
+            if ( page.Items.Any( a => a.TotalAmount.Value < 0 ) )
             {
-                result = result.WithInstructions( "Note: Some transactions in this list have associated refunds. Refunds may be in full or partial." );
+                result = result.WithInstructions( "Note: Some transactions in this list have negative amounts, these are refunds to previous transactions." );
             }
 
             return result;
