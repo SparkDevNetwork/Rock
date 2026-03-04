@@ -10,15 +10,15 @@ using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills
 {
-    internal partial class PersonSkill
+    internal partial class AttendanceSkill
     {
         #region Tool(s)
 
-        [Description( "Lists attendance records for a specific person." )]
-        [AgentPurpose( "Retrieves the attendance records for a single person." )]
+        [Description( "Lists attendance records." )]
+        [AgentPurpose( "Retrieves the attendance records that match the filters." )]
         [AgentToolGuid( "9b4ddaba-06eb-40d4-9ceb-19c83c30dcd3" )]
         public IAgentToolResult ListAttendanceForPerson(
-            string personIdKey,
+            string personIdKey = null,
 
             string groupTypeIdKey = null,
             string groupIdKey = null,
@@ -42,6 +42,20 @@ namespace Rock.AI.Agent.Skills
             qry = helper.WhereOptionalIdKey( qry, a => a.Occurrence.ScheduleId, scheduleIdKey );
             qry = helper.WhereOptionalIdKey( qry, a => a.CampusId, campusIdKey );
             qry = helper.WhereOptionalPropertyBetween( qry, a => a.StartDateTime, startDate, endDate );
+
+            var hasFilter = personIdKey.IsNotNullOrWhiteSpace()
+                || groupTypeIdKey.IsNotNullOrWhiteSpace()
+                || groupIdKey.IsNotNullOrWhiteSpace()
+                || locationIdKey.IsNotNullOrWhiteSpace()
+                || scheduleIdKey.IsNotNullOrWhiteSpace()
+                || campusIdKey.IsNotNullOrWhiteSpace()
+                || startDate.HasValue
+                || endDate.HasValue;
+
+            if ( !hasFilter )
+            {
+                helper.AddError( "At least one filter must be provided." );
+            }
 
             if ( helper.HasErrors )
             {
