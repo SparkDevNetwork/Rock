@@ -43,19 +43,16 @@ namespace Rock.AI.Agent.Skills
             qry = helper.WhereOptionalIdKey( qry, a => a.CampusId, campusIdKey );
             qry = helper.WhereOptionalPropertyBetween( qry, a => a.StartDateTime, startDate, endDate );
 
-            var hasFilter = personIdKey.IsNotNullOrWhiteSpace()
-                || groupTypeIdKey.IsNotNullOrWhiteSpace()
-                || groupIdKey.IsNotNullOrWhiteSpace()
-                || locationIdKey.IsNotNullOrWhiteSpace()
-                || scheduleIdKey.IsNotNullOrWhiteSpace()
-                || campusIdKey.IsNotNullOrWhiteSpace()
-                || startDate.HasValue
-                || endDate.HasValue;
-
-            if ( !hasFilter )
-            {
-                helper.AddError( "At least one filter must be provided." );
-            }
+            helper.RequireAtLeastOneFilter( [
+                personIdKey,
+                groupTypeIdKey,
+                groupIdKey,
+                locationIdKey,
+                scheduleIdKey,
+                campusIdKey,
+                startDate,
+                endDate
+            ] );
 
             if ( helper.HasErrors )
             {

@@ -20,6 +20,7 @@ using System.ComponentModel;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.AI.Agent.Annotations;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills
@@ -29,6 +30,7 @@ namespace Rock.AI.Agent.Skills
     /// </summary>
 
     [Description( "This skill provides access to attendance related data." )]
+    [AgentUsage( "The term 'room' is synonymous with 'location' for attendance data." )]
     [AgentSkillGuid( "79beff06-9ae4-402e-a29a-9f2d0c53a592" )]
     [EntityTypeGuid( "7b6a564f-49bf-4005-9173-97d97e3da02c" )]
     internal sealed partial class AttendanceSkill : AgentSkillComponent

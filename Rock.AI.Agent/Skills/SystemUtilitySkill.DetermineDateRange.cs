@@ -38,57 +38,57 @@ namespace Rock.AI.Agent.Skills
             return Success( dateRange );
         }
 
-        [AgentToolPreamble( "Calculating Date Range" )]
-        [AgentPurpose( "This tool should be used when the request includes enough data to fill in the arguments because it will match date conversion logic for the system. Otherwise the DetermineDateRange tool should be used.")]
-        [AgentUsage( "Previous and Upcoming are anchored on natural calendar boundaries (whole hours, days, weeks, etc) while Last and Next are anchored to the current date and time." )]
-        [AgentUsage( "These time units have specific meaning in this system and are used in UI, so if the query specifies one of these terms it should be used without inferring intent." )]
-        [AgentUsage( "Whole weeks are typically defined as Monday - Sunday, though the organization can override that." )]
-        [AgentToolGuid( "376bdaa2-a947-4e9f-baad-30f09f7c8f64" )]
-        public IAgentToolResult CalculateSlidingDateRange(
-            DateRangeType dateRangeType,
-            int numberOfUnits,
-            TimeUnitType timeUnit )
-        {
-            SlidingDateRangeType slidingDateRangeType;
+        //[AgentToolPreamble( "Calculating Date Range" )]
+        //[AgentPurpose( "This tool should be used when the request includes enough data to fill in the arguments because it will match date conversion logic for the system. Otherwise the DetermineDateRange tool should be used.")]
+        //[AgentUsage( "Previous and Upcoming are anchored on natural calendar boundaries (whole hours, days, weeks, etc) while Last and Next are anchored to the current date and time." )]
+        //[AgentUsage( "These time units have specific meaning in this system and are used in UI, so if the query specifies one of these terms it should be used without inferring intent." )]
+        //[AgentUsage( "Whole weeks are typically defined as Monday - Sunday, though the organization can override that." )]
+        //[AgentToolGuid( "376bdaa2-a947-4e9f-baad-30f09f7c8f64" )]
+        //public IAgentToolResult CalculateSlidingDateRange(
+        //    DateRangeType dateRangeType,
+        //    int numberOfUnits,
+        //    TimeUnitType timeUnit )
+        //{
+        //    SlidingDateRangeType slidingDateRangeType;
 
-            if ( dateRangeType == DateRangeType.Last )
-            {
-                slidingDateRangeType = SlidingDateRangeType.Last;
-            }
-            else if ( dateRangeType == DateRangeType.Previous )
-            {
-                slidingDateRangeType = SlidingDateRangeType.Previous;
-            }
-            else if ( dateRangeType == DateRangeType.Current )
-            {
-                slidingDateRangeType = SlidingDateRangeType.Current;
-            }
-            else if ( dateRangeType == DateRangeType.Next )
-            {
-                slidingDateRangeType = SlidingDateRangeType.Next;
-            }
-            else if ( dateRangeType == DateRangeType.Upcoming )
-            {
-                slidingDateRangeType = SlidingDateRangeType.Upcoming;
-            }
-            else
-            {
-                return Error( "Invalid DateRangeType." );
-            }
+        //    if ( dateRangeType == DateRangeType.Last )
+        //    {
+        //        slidingDateRangeType = SlidingDateRangeType.Last;
+        //    }
+        //    else if ( dateRangeType == DateRangeType.Previous )
+        //    {
+        //        slidingDateRangeType = SlidingDateRangeType.Previous;
+        //    }
+        //    else if ( dateRangeType == DateRangeType.Current )
+        //    {
+        //        slidingDateRangeType = SlidingDateRangeType.Current;
+        //    }
+        //    else if ( dateRangeType == DateRangeType.Next )
+        //    {
+        //        slidingDateRangeType = SlidingDateRangeType.Next;
+        //    }
+        //    else if ( dateRangeType == DateRangeType.Upcoming )
+        //    {
+        //        slidingDateRangeType = SlidingDateRangeType.Upcoming;
+        //    }
+        //    else
+        //    {
+        //        return Error( "Invalid DateRangeType." );
+        //    }
 
-            var range = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( slidingDateRangeType, numberOfUnits, timeUnit, null, null );
+        //    var range = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( slidingDateRangeType, numberOfUnits, timeUnit, null, null );
 
-            if ( !range.Start.HasValue && !range.End.HasValue )
-            {
-                return Error( $"A date range could not be determined from the provided arguments. Considering trying ${nameof( DetermineDateRange )} instead." );
-            }
+        //    if ( !range.Start.HasValue && !range.End.HasValue )
+        //    {
+        //        return Error( $"A date range could not be determined from the provided arguments. Considering trying ${nameof( DetermineDateRange )} instead." );
+        //    }
 
-            return Success( new DateRangeResult
-            {
-                StartDate = range.Start,
-                EndDate = range.End,
-            } );
-        }
+        //    return Success( new DateRangeResult
+        //    {
+        //        StartDate = range.Start,
+        //        EndDate = range.End,
+        //    } );
+        //}
 
         #endregion
 

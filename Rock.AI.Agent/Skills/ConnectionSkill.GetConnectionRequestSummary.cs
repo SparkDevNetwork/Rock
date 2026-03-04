@@ -56,20 +56,11 @@ namespace Rock.AI.Agent.Skills
                 .Queryable()
                 .Where( cr => !cr.ConnectedDateTime.HasValue );
 
-            if ( startDate.HasValue )
-            {
-                query = query.Where( cr => cr.CreatedDateTime >= startDate.Value );
-            }
-
-            if ( endDate.HasValue )
-            {
-                query = query.Where( cr => cr.CreatedDateTime < endDate.Value );
-            }
-
             query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionTypeId, connectionTypeIdKey );
             query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionOpportunityId, connectionOpportunityIdKey );
             query = helper.WhereOptionalIdKey( query, cr => cr.CampusId, campusIdKey );
             query = helper.WhereOptionalIdKey( query, cr => cr.ConnectorPersonAlias.PersonId, connectorPersonIdKey );
+            query = helper.WhereOptionalPropertyBetween( query, cr => cr.CreatedDateTime, startDate, endDate );
 
             helper.SetPrimaryDimension( primaryDimension, dimensions );
 
