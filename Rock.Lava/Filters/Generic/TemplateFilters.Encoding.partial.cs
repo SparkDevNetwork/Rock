@@ -16,6 +16,8 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Rock.Lava.Filters
 {
@@ -26,13 +28,64 @@ namespace Rock.Lava.Filters
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
+        [Obsolete( "Use ToBase64 instead." )]
+        [RockObsolete( "19.0" )]
         public static string Base64( object input )
         {
-            var bytes = System.Text.Encoding.UTF8.GetBytes( input.ToStringSafe() );
+            return ToBase64( input );
+        }
 
-            var result = System.Convert.ToBase64String( bytes );
+        /// <summary>
+        /// Converts a string or byte array into a Base64 encoded string.
+        /// </summary>
+        /// <param name="input">The string or byte array to be converted.</param>
+        /// <example><![CDATA[
+        /// {{ 'hello' | ToBase64 }}
+        /// ]]></example>
+        /// <returns>a Base64 encoded string</returns>
+        public static string ToBase64( object input )
+        {
+            // If already byte array
+            if ( input is byte[] byteArray )
+            {
+                return Convert.ToBase64String( byteArray );
+            }
+            else if ( input is ICollection<byte> byteCollection )
+            {
+                return Convert.ToBase64String( byteCollection.ToArray() );
+            }
+            // Enumerable handling (covers List<object>, etc.)
+            else if ( input is System.Collections.IEnumerable enumerable && !( input is string ) )
+            {
+                var objects = enumerable.Cast<object>().ToList();
 
-            return result;
+                // If it's INTs in the byte range, treat as raw bytes.
+                if ( objects.All( o => o is int ) )
+                {
+                    var ints = objects.Cast<int>().ToArray();
+
+                    // Validate byte range to avoid silent truncation.
+                    if ( ints.Any( i => i < byte.MinValue || i > byte.MaxValue ) )
+                    {
+                        // Fall back to text if these aren't byte-like values.
+                        return Convert.ToBase64String( System.Text.Encoding.UTF8.GetBytes( input.ToStringSafe() ) );
+                    }
+
+                    var bytes = ints.Select( i => ( byte ) i ).ToArray();
+                    return Convert.ToBase64String( bytes );
+                }
+
+                // If it's bytes boxed as objects (less common but possible)
+                if ( objects.All( o => o is byte ) )
+                {
+                    return Convert.ToBase64String( objects.Cast<byte>().ToArray() );
+                }
+
+                // Otherwise, treat as text.
+                return Convert.ToBase64String( System.Text.Encoding.UTF8.GetBytes( input.ToStringSafe() ) );
+            }
+
+            return Convert.ToBase64String( System.Text.Encoding.UTF8.GetBytes( input.ToStringSafe() ) );
         }
 
         /// <summary>

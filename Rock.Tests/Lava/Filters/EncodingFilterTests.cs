@@ -92,9 +92,64 @@ Have you read &#39;The Lion, The Witch &amp; the Wardrobe by C.S. Lewis&#39;?
         /// Ensure that a plain text string encoded using the Base64 scheme is encoded correctly.
         /// </summary>
         [TestMethod]
-        public void Base64_EncodePlainText_IsEncoded()
+        public void ToBase64_EncodePlainText_IsEncoded()
         {
-            TestHelper.AssertTemplateOutput( "Um9ja0lzQXdlc29tZSE=", "{{ 'RockIsAwesome!' | Base64 }}" );
+            TestHelper.AssertTemplateOutput( "Um9ja0lzQXdlc29tZSE=", "{{ 'RockIsAwesome!' | ToBase64 }}" );
+        }
+
+        /// <summary>
+        /// Ensure that an empty string encoded using the Base64 scheme results in an empty Base64 payload.
+        /// </summary>
+        [TestMethod]
+        public void ToBase64_EncodeEmptyString_IsEncoded()
+        {
+            TestHelper.AssertTemplateOutput( "", "{{ '' | ToBase64 }}" );
+        }
+
+        /// <summary>
+        /// Ensure that Unicode text is encoded correctly (UTF-8).
+        /// </summary>
+        [TestMethod]
+        public void ToBase64_EncodeUnicodeText_IsEncoded()
+        {
+            // "Rock 🚀" in UTF-8 Base64.
+            TestHelper.AssertTemplateOutput( "Um9jayDwn5qA", "{{ 'Rock 🚀' | ToBase64 }}" );
+        }
+
+        /// <summary>
+        /// Ensure that a string containing non-printable / binary-like bytes is encoded correctly.
+        /// </summary>
+        [TestMethod]
+        public void ToBase64_EncodeBinaryLikeString_IsEncoded()
+        {
+            // Bytes: 00 01 02 03 FF FE FD 41 42 43
+            TestHelper.AssertTemplateOutput( "AAECA8O/w77DvUFCQw==", "{{ '\\x00\\x01\\x02\\x03\\xFF\\xFE\\xFD\\x41\\x42\\x43' | ToBase64 }}" );
+        }
+
+        /// <summary>
+        /// Ensure that ToBase64 and FromBase64 can round-trip a UTF-8 string value.
+        /// </summary>
+        [TestMethod]
+        public void ToBase64_RoundTripUTF8String_IsPreserved()
+        {
+            // This validates that the output of ToBase64 can be decoded back to the same string.
+            // Note: We compare Base64-to-Base64 to avoid issues asserting raw null bytes in template output.
+            TestHelper.AssertTemplateOutput(
+                "Rock 🚀",
+                "{{ 'Rock 🚀' | ToBase64 | FromBase64:true }}" );
+        }
+
+        /// <summary>
+        /// Ensure that ToBase64 and FromBase64 can round-trip without using a string intermediary.
+        /// </summary>
+        [TestMethod]
+        public void ToBase64_RoundTripUTF8StringToBinaryToString_IsPreserved()
+        {
+            // This validates that the output of ToBase64 can be decoded back to the same string.
+            // Note: We compare Base64-to-Base64 to avoid issues asserting raw null bytes in template output.
+            TestHelper.AssertTemplateOutput(
+                "Um9jayDwn5qA",
+                "{{ 'Rock 🚀' | ToBase64 | FromBase64 | ToBase64 }}" );
         }
 
         /// <summary>

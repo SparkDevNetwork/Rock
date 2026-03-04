@@ -5525,16 +5525,17 @@ namespace Rock.Lava
         /// <example><![CDATA[
         /// {{ 'hello' | ToBase64 }}
         /// ]]></example>
+        [Obsolete( "Use ToBase64 instead." )]
+        [RockObsolete( "19.0" )]
         public static string Base64( object input )
         {
-            if ( input is ICollection<byte> )
-            {
-                return Convert.ToBase64String( ( input as ICollection<byte> ).ToArray() );
-            }
-            else
-            {
-                return Convert.ToBase64String( System.Text.Encoding.UTF8.GetBytes( input.ToString() ) );
-            }
+            return ToBase64( input );
+        }
+
+        /// <inheritdoc cref="Rock.Lava.Filters.TemplateFilters.ToBase64(object)"/>
+        public static string ToBase64( object input )
+        {
+            return Rock.Lava.Filters.TemplateFilters.ToBase64( input );
         }
 
         /// <summary>
