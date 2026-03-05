@@ -25,4 +25,6 @@ import { NcoaDataBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaDat
 
 export type NcoaResultsBag = {
     ncoaList?: NcoaDataBag[] | null;
+
+    totalResults?: number | null;
 };

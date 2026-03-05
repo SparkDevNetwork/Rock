@@ -119,10 +119,6 @@
 
     const filterProcessedItems = <ListItemBag[]>[
         {
-            text: " ",
-            value: "4"
-        },
-        {
             text: "Not Processed",
             value: "0"
         },

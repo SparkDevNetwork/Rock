@@ -285,9 +285,12 @@ namespace Rock.Blocks.Crm
         #region Block Actions
 
         [BlockAction]
-        public BlockActionResult GetNcoaData()
+        public BlockActionResult GetNcoaData(int pageNumber)
         {
             int resultCount = GetAttributeValue( AttributeKey.ResultCount ).AsIntegerOrNull() ?? 20;
+
+            pageNumber = pageNumber > 0 ? pageNumber : 1;
+            resultCount = resultCount > 0 ? resultCount : 20;
 
             var ncoaQuery = new NcoaHistoryService( RockContext ).Queryable();
 
@@ -311,7 +314,7 @@ namespace Rock.Blocks.Crm
             {
                 if ( processed.Value != Processed.All && processed.Value != Processed.ManualUpdateRequiredOrNotProcessed )
                 {
-                    ncoaQuery = ncoaQuery.Where( i => i.Processed == processed );
+                    ncoaQuery = ncoaQuery.Where( i => i.Processed == processed.Value );
                 }
                 else if ( processed.Value == Processed.ManualUpdateRequiredOrNotProcessed )
                 {
@@ -322,7 +325,7 @@ namespace Rock.Blocks.Crm
             // Move Type Filtering
             if ( moveType.HasValue )
             {
-                ncoaQuery = ncoaQuery.Where( i => i.MoveType == moveType );
+                ncoaQuery = ncoaQuery.Where( i => i.MoveType == moveType.Value );
             }
 
             // Move Date Filtering
@@ -376,13 +379,13 @@ namespace Rock.Blocks.Crm
             // Address Status Filtering
             if ( addressStatus.HasValue )
             {
-                ncoaQuery = ncoaQuery.Where( i => i.AddressStatus == addressStatus );
+                ncoaQuery = ncoaQuery.Where( i => i.AddressStatus == addressStatus.Value );
             }
 
             // Address Invalid Reason Filtering
             if ( addressInvalidReason.HasValue )
             {
-                ncoaQuery = ncoaQuery.Where( i => i.AddressInvalidReason == addressInvalidReason );
+                ncoaQuery = ncoaQuery.Where( i => i.AddressInvalidReason == addressInvalidReason.Value );
             }
 
             // Move Distance Filtering
@@ -416,6 +419,10 @@ namespace Rock.Blocks.Crm
                 ncoaQuery = ncoaQuery.Where( i => campusQuery.Contains( i.PersonAliasId ) );
             }
 
+            var totalResults = ncoaQuery.Count();
+
+            ncoaQuery = ncoaQuery.OrderBy( i => i.Id ).Skip( ( pageNumber - 1 ) * resultCount ).Take( resultCount );
+
             var ncoaHistoryData = ncoaQuery.ToList();
 
             // Records that are not individual move types and will represent family moves.
@@ -432,24 +439,27 @@ namespace Rock.Blocks.Crm
                 .Where( p => ncoaPersonAliasIds.Contains( p.Id ) )
                 .Select( p => new
                 {
-                    p.Id,
-                    p.Person.FirstName,
+                    personAliasId = p.Id,
+                    personId = p.Person.Id,
+                    p.Person.NickName,
                     p.Person.LastName,
                 } ).ToList();
 
             var bag = new NcoaResultsBag
             {
+                TotalResults = totalResults,
                 NcoaList = ncoaHistoryData.Select( i =>
                 {
-                    var individual = personData.Where( p => p.Id == i.PersonAliasId ).FirstOrDefault();
+                    var individual = personData.Where( p => p.personAliasId == i.PersonAliasId ).FirstOrDefault();
+
 
                     return new NcoaDataBag
                     {
                         IdKey = i.Id.AsIdKey(),
                         Type = i.NcoaType.ToString(),
-
-                        Individual = individual.FirstName + ' ' + individual.LastName,
-                        FamilyMembers = familyNamesKey.ContainsKey(i.FamilyId) ? familyNamesKey[i.FamilyId] : string.Empty,
+                        IndividualIdKey = individual.personId.AsIdKey(),
+                        IndividualName = individual.NickName + ' ' + individual.LastName,
+                        FamilyMembers = familyNamesKey.ContainsKey( i.FamilyId ) ? familyNamesKey[i.FamilyId] : string.Empty,
 
                         OriginalAddress = FormattedAddress(
                                 i.OriginalStreet1, i.OriginalStreet2, i.OriginalCity, i.OriginalState, i.OriginalPostalCode )
@@ -459,14 +469,76 @@ namespace Rock.Blocks.Crm
                                 i.UpdatedStreet1, i.UpdatedStreet2, i.UpdatedCity, i.UpdatedState, i.UpdatedPostalCode )
                             .ConvertCrLfToHtmlBr(),
 
-                        MoveDate = i.MoveDate,
+                        MoveDate = i.MoveDate.ToShortDateString(),
                         MoveDistance = i.MoveDistance,
-                        Status = i.Processed == Processed.Complete ? "Processed" : "Not Processed"
+                        ProcessStatus = i.Processed == Processed.Complete ? "Processed" : "Not Processed",
+                        AddressStatus = i.AddressStatus.ToString()
                     };
                 } ).ToList()
             };
 
             return ActionOk( bag );
+        }
+
+        [BlockAction]
+        public BlockActionResult UpdateNcoaHistoryItem(string ncoaHistoryIdKey, bool isMarkProcessed)
+        {
+            var ncoaHistoryItem = new NcoaHistoryService( RockContext ).Get( ncoaHistoryIdKey );
+
+            if ( ncoaHistoryItem == null )
+            {
+                return ActionBadRequest( "Could not find NCOA History Item" );
+            }
+
+            if ( isMarkProcessed )
+            {
+                ncoaHistoryItem.Processed = Processed.Complete;
+            }
+            else
+            {
+
+                var groupService = new GroupService( RockContext );
+                var groupLocationService = new GroupLocationService( RockContext );
+
+                var changes = new History.HistoryChangeList();
+
+                var ncoa = new NCOA.Ncoa();
+
+                var previousValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
+                int? previousValueId = previousValue == null ? ( int? ) null : previousValue.Id;
+                var previousGroupLocation = ncoa.MarkAsPreviousLocation( ncoaHistoryItem, groupLocationService, previousValueId, changes );
+
+                if ( previousGroupLocation == null )
+                {
+                    return ActionBadRequest( "This family is no longer associated with that location." );
+                }
+                ncoaHistoryItem.Processed = Processed.Complete;
+
+                if ( changes.Any() )
+                {
+                    var family = groupService.Get( ncoaHistoryItem.FamilyId );
+                    if ( family != null )
+                    {
+                        foreach ( var fm in family.Members )
+                        {
+                            HistoryService.SaveChanges(
+                                RockContext,
+                                typeof( Person ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                fm.PersonId,
+                                changes,
+                                family.Name,
+                                typeof( Model.Group ),
+                                family.Id,
+                                false );
+                        }
+                    }
+                }
+            }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
         #endregion
     }

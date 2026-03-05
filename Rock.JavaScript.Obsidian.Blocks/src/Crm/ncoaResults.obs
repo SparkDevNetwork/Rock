@@ -3,40 +3,116 @@
     <Panel title="NCOA Results"
            type="block">
         <template #headerActions>
-            <div class="grid-actions">
-                <button @click.prevent.stop="onGridSettingsClick" class="btn btn-grid-action"><i class="ti ti-adjustments-horizontal"></i></button>
-            </div>
+
+            <button @click.prevent.stop="onGridSettingsClick" class="btn btn-panel-action" :class="{ 'active': hasSettingsFilters }"><i class="ti ti-adjustments-horizontal"></i></button>
+
         </template>
 
-        <div v-for="(row, idx) in ncoaResults" :key="row.idKey ?? idx">
-            <div class="card" style="display: flex; flex-direction: row; justify-content: space-between;">
+        <p class="justify-self-end">Results: {{ totalCount }}</p>
+        <div v-for="(row, idx) in ncoaResults" :key="row.idKey ?? idx" class="justify-content-start m-4">
+            <h3 class="pl-0">{{ row.individualName?.split(' ')?.[1] }} Family</h3>
 
-                <div style="display: flex; flex-direction: column;">
-                    <label>Original Address</label>
-                    {{ row.originalAddress }}
+            <div class="displaycard align-items-start overflow-auto">
+                <div class="col-md-2">
+                    <div v-if="row.type?.toLowerCase() === 'move'">
+                        <h4 class="mt-0">
+                            <span class="label label-success">
+                                {{ row.familyMembers?.trim() ? "Family" : "Individual" }}
+                            </span>
+                        </h4>
+                        <dl class="mb-spacing-none">
+                            <dt>Move Date</dt>
+                            <dd>{{ row.moveDate }}</dd>
+                        </dl>
+                    </div>
+
+                    <h4 class="mt-spacing-none" v-else-if="row.type?.toLowerCase() === 'month48move'">
+                        <span class="label label-info">
+                            48 Month Move
+                        </span>
+                    </h4>
+
+                    <h4 class="mt-spacing-none" v-else-if="row.addressStatus?.toLowerCase() === 'invalid'">
+                        <span class="label label-warning">
+                            Invalid Address
+                        </span>
+                    </h4>
                 </div>
 
-                <div style="display: flex; flex-direction: column;" v-if="row.type === 'Move'">
-                    <label>New Address</label>
-                    {{ row.newAddress }}
+                <div class="col-md-2">
+                    <dl>
+                        <dt>{{ row.familyMembers?.trim() ? "Family Members" : "Individual" }}</dt>
+
+                        <dd v-for="(member, i) in (row.familyMembers?.trim()
+                            ? row.familyMembers.split(',').map(m => m.trim())
+                            : [row.individualName])"
+                            :key="i"
+                            class="text-nowrap">
+
+                            {{ member }}
+
+                            <a v-if="i === 0" :href="'/Person/' + row.individualIdKey" target="_blank">
+                                <i class="ti ti-users"></i>
+                            </a>
+
+                        </dd>
+                    </dl>
                 </div>
 
-                <div style="display: flex; flex-direction: column;" v-if="row.moveDistance">
-                    <label>Move Distance</label>
-                    {{ row.moveDistance }}
+                <div class="col-md-2">
+                    <dl>
+                        <dt>Original Address</dt>
+                        <dd>{{ row.originalAddress }}</dd>
+                    </dl>
+
                 </div>
 
-                <div style="display: flex; flex-direction: column;" v-if="row.status">
-                    {{ row.status }}
+                <div class="col-md-2">
+                    <dl v-if="row.type?.toLowerCase() === 'move'">
+                        <dt>New Address</dt>
+                        <dd>{{ row.newAddress }}</dd>
+                    </dl>
                 </div>
+
+                <div class="col-md-2">
+                    <dl v-if="row.moveDistance">
+                        <dt>Move Distance</dt>
+                        <dd>{{ row.moveDistance }}</dd>
+                    </dl>
+                </div>
+
+                <div class="col-md-2" v-if="row.processStatus">
+                    <div>
+                        <label class="label label-default w-fit" :class="{ 'label-success': row.processStatus.toLowerCase() == 'processed' }">{{ row.processStatus }}</label>
+                    </div>
+                    <RockButton v-if="(row.addressStatus?.toLocaleLowerCase() === 'invalid' || row.type?.toLocaleLowerCase() === 'month48move') && row.processStatus.toLocaleLowerCase() == 'not processed'"
+                                @click="markNcoaHistoryItem(row.idKey ?? '', false)">
+                        Mark Address As Previous
+                    </RockButton>
+                    <RockButton v-if="row.type?.toLocaleLowerCase() === 'move' && row.processStatus.toLocaleLowerCase() == 'not processed'"
+                                @click="markNcoaHistoryItem(row.idKey ?? '', true)">
+                        Mark Processed
+                    </RockButton>
+                    <div class="alert alert-warning font-size-sm mt-2" v-if="warnings[row.idKey ?? '']">
+                        <p>{{ warnings[row.idKey ?? ''] }}</p>
+                    </div>
+                </div>
+
             </div>
+            <hr>
         </div>
+        <div class="clearfix">
+            <button class="btn btn-primary pull-left" v-if="canPrev" @click.prevent="prevPage">
+                <i class="ti ti-chevron-left"></i> Prev
+            </button>
 
-
+            <button class="btn btn-primary pull-right" v-if="canNext" @click.prevent="nextPage">
+                Next <i class="ti ti-chevron-right"></i>
+            </button>
+        </div>
     </Panel>
 
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible" />
+    <GridSettingsModal v-model="gridSettings" v-model:visible="isGridSettingsVisible" />
 </template>
 
 <script setup lang="ts">
@@ -44,15 +120,14 @@
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { NcoaResultsOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaResultsOptionsBag";
     import { NcoaResultsBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaResultsBag";
-    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PreferenceKey, GridSettingsOptions } from "./NcoaResults/types.partial";
-    import { reactive, ref, watch } from "vue";
+    import { computed, ref, watch } from "vue";
     import Panel from "@Obsidian/Controls/panel.obs";
     import GridSettingsModal from "./NcoaResults/gridSettingsModal.partial.obs";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { NcoaDataBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaDataBag";
     import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
-
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     const config = useConfigurationValues<ListBlockBox<NcoaResultsOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -69,7 +144,7 @@
     const isGridSettingsVisible = ref(false);
 
     const gridSettings = ref<GridSettingsOptions>({
-        filterProcessed: safeParseJson(preferences.getValue(PreferenceKey.FilterProcessed)) ?? "4",
+        filterProcessed: safeParseJson(preferences.getValue(PreferenceKey.FilterProcessed)) ?? "",
         filterMoveDate: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterMoveDate)) ?? null,
         filterNcoaProcessedDate: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterNcoaProcessedDate)) ?? null,
         filterMoveType: preferences.getValue(PreferenceKey.FilterMoveType),
@@ -80,6 +155,10 @@
         filterCampus: safeParseJson(preferences.getValue(PreferenceKey.FilterCampus))
     });
 
+    const currentPage = ref(1);
+    const pageSize = ref(config.options?.resultCount ?? 20);
+    const totalCount = ref(0);
+
     // #endregion
 
     // #region Functions
@@ -88,11 +167,13 @@
      * Called when the grid is requesting the row data be loaded.
      */
     async function loadNcoaResults(): Promise<void> {
-        const result = await invokeBlockAction<NcoaResultsBag>("GetNcoaData");
+        const result = await invokeBlockAction<NcoaResultsBag>("GetNcoaData", {
+            pageNumber: currentPage.value,
+        });
 
         if (result.isSuccess && result.data) {
             ncoaResults.value = result.data.ncoaList ?? null;
-            console.log(ncoaResults.value);
+            totalCount.value = result.data.totalResults ?? 0;
         }
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
@@ -132,4 +213,79 @@
         },
         { deep: true }
     );
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.filterProcessed.length
+            || !!gridSettings.value.filterMoveDate
+            || !!gridSettings.value.filterNcoaProcessedDate
+            || !!gridSettings.value.filterMoveType.length
+            || !!gridSettings.value.filterAddressStatus.length
+            || !!gridSettings.value.filterInvalidReason.length
+            || !!gridSettings.value.filterMoveDistance
+            || !!gridSettings.value.filterLastName.length
+            || !!gridSettings.value.filterCampus;
+    });
+
+    const warnings = ref<Record<string, string>>({});
+
+    const markNcoaHistoryItem = async (ncoaHistoryIdKey: string, isMarkProcessed: boolean): Promise<void> => {
+        const result = await invokeBlockAction("UpdateNcoaHistoryItem", {
+            ncoaHistoryIdKey: ncoaHistoryIdKey,
+            isMarkProcessed: isMarkProcessed
+        });
+
+        if (result.isSuccess) {
+            loadNcoaResults();
+        }
+        else if (result.errorMessage) {
+            warnings.value[ncoaHistoryIdKey] = result.errorMessage;
+        }
+    };
+
+    const totalPages = computed(() => {
+        const pages = Math.ceil((totalCount.value || 0) / (pageSize.value || 1));
+        return pages > 0 ? pages : 1;
+    });
+
+    const canPrev = computed(() => currentPage.value > 1);
+    const canNext = computed(() => currentPage.value < totalPages.value);
+
+    function prevPage(): void {
+        if (!canPrev.value) {
+            return;
+        }
+        currentPage.value--;
+        loadNcoaResults();
+    }
+
+    function nextPage(): void {
+        if (!canNext.value) {
+            return;
+        }
+        currentPage.value++;
+        loadNcoaResults();
+    }
+
+    watch(
+        gridSettings,
+        async (value) => {
+            // ... your existing preference saves ...
+            await preferences.save();
+
+            currentPage.value = 1;
+            loadNcoaResults();
+        },
+        { deep: true }
+    );
 </script>
+
+<style scoped>
+.displaycard {
+    background-color: var(--base-interface-softer);
+}
+
+dd {
+    min-width: 200px;
+}
+</style>

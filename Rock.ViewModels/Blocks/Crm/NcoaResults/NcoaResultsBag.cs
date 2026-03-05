@@ -15,5 +15,10 @@ namespace Rock.ViewModels.Blocks.Crm.NcoaResults
         /// 
         /// </summary>
         public List<NcoaDataBag> NcoaList { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int? TotalResults { get; set; }
     }
 }

@@ -22,11 +22,15 @@
 //
 
 export type NcoaDataBag = {
+    addressStatus?: string | null;
+
     familyMembers?: string | null;
 
     idKey?: string | null;
 
-    individual?: string | null;
+    individualIdKey?: string | null;
+
+    individualName?: string | null;
 
     moveDate?: string | null;
 
@@ -36,7 +40,7 @@ export type NcoaDataBag = {
 
     originalAddress?: string | null;
 
-    status?: string | null;
+    processStatus?: string | null;
 
     type?: string | null;
 };

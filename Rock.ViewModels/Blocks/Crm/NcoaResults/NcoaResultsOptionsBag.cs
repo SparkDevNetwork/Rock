@@ -26,5 +26,6 @@ namespace Rock.ViewModels.Blocks.Crm.NcoaResults
         /// Number of results displayed on the page
         /// </summary>
         public int ResultCount { get; set; }
+
     }
 }

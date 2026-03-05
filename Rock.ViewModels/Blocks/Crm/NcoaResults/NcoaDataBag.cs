@@ -24,7 +24,12 @@ namespace Rock.ViewModels.Blocks.Crm.NcoaResults
         /// <summary>
         /// 
         /// </summary>
-        public string Individual { get; set; }
+        public string IndividualName { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string IndividualIdKey { get; set; }
 
         /// <summary>
         /// 
@@ -44,7 +49,7 @@ namespace Rock.ViewModels.Blocks.Crm.NcoaResults
         /// <summary>
         /// 
         /// </summary>
-        public DateTime? MoveDate { get; set; }
+        public string MoveDate { get; set; }
 
         /// <summary>
         /// 
@@ -54,7 +59,12 @@ namespace Rock.ViewModels.Blocks.Crm.NcoaResults
         /// <summary>
         /// 
         /// </summary>
-        public string Status { get; set; }
+        public string ProcessStatus { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string AddressStatus { get; set; }
 
     }
 }
