@@ -126,6 +126,7 @@ namespace Rock.Blocks.CheckIn.Manager
         Description = "The data views to use for alert icons on individuals. The data view must be a persisted data view for it to be used.",
         EntityTypeName = "Rock.Model.Person",
         DisplayPersistedOnly = true,
+        IsRequired = false,
         Key = AttributeKey.DataViewAlertIcons,
         Order = 12 )]
 

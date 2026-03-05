@@ -19,8 +19,10 @@ namespace Rock.Tests.Jobs
     [TestClass]
     public class UpdateEntityUsageTests
     {
+        #region UpdateMediaUsage
+
         [TestMethod]
-        public void UpdateEntityUsage_WithNoAttributes_DeletesMetadata()
+        public void UpdateMediaUsage_WithNoAttributes_DeletesMetadata()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
@@ -55,7 +57,7 @@ namespace Rock.Tests.Jobs
         }
 
         [TestMethod]
-        public void UpdateEntityUsage_WithNoAttributeValues_DeletesMetadata()
+        public void UpdateMediaUsage_WithNoAttributeValues_DeletesMetadata()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
@@ -100,7 +102,7 @@ namespace Rock.Tests.Jobs
         }
 
         [TestMethod]
-        public void UpdateEntityUsage_WithMissingEntityType_DeletesMetadata()
+        public void UpdateMediaUsage_WithMissingEntityType_DeletesMetadata()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
@@ -172,7 +174,7 @@ namespace Rock.Tests.Jobs
         }
 
         [TestMethod]
-        public void UpdateEntityUsage_WithReferences_SetsMetadata()
+        public void UpdateMediaUsage_WithReferences_SetsMetadata()
         {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
@@ -233,5 +235,121 @@ namespace Rock.Tests.Jobs
                 metadataHelperMock.Verify( m => m.SaveEntityValue( It.IsAny<int>(), mediaElement.Id, MetadataKey.EntityUsage, It.IsAny<string>(), It.IsAny<RockContext>() ), Times.Once );
             }
         }
+
+        #endregion
+
+        #region UpdateContentChannelItemMediaUsage
+
+        [TestMethod]
+        public void UpdateContentChannelItemMediaUsage_WithReferences_SetsContentChannelItemMediaMetadata()
+        {
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            var metadataHelperMock = new Mock<MetadataHelper>( MockBehavior.Strict );
+            var processedCount = 0;
+
+            metadataHelperMock.Setup( m => m.SaveEntityValue( It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<RockContext>() ) );
+
+            void configureServices( ServiceCollection serviceCollection )
+            {
+                serviceCollection.AddSingleton( metadataHelperMock.Object );
+                serviceCollection.AddSingleton( rockContextFactory );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( configureServices ) )
+            {
+                var entityType = EntityTypeCache.Get<ContentChannelItem>( true, rockContextMock.Object );
+                var mediaFieldType = new FieldType { Guid = SystemGuid.FieldType.MEDIA_ELEMENT.AsGuid() };
+
+                var mediaElement = new MediaElement
+                {
+                    Id = 5,
+                    Guid = new Guid( "33869839-9b81-4510-9058-fd1dfdbab1b6" ),
+                };
+
+                var contentChannelItem = new ContentChannelItem
+                {
+                    Id = 4,
+                    Guid = new Guid( "2d5b4f2e-8f3c-4f2e-9f3c-8f3c4f2e9f3c" ),
+                    Title = "Test Content Channel Item",
+                };
+
+                var attribute = new Rock.Model.Attribute
+                {
+                    Id = 2,
+                    FieldType = mediaFieldType,
+                    EntityTypeId = entityType.Id,
+                };
+
+                var attributeValue = new AttributeValue
+                {
+                    Id = 3,
+                    Attribute = attribute,
+                    AttributeId = attribute.Id,
+                    Value = mediaElement.Guid.ToString(),
+                    EntityId = contentChannelItem.Id,
+                };
+
+                rockContextMock.Object.Set<Rock.Model.Attribute>().Add( attribute );
+                rockContextMock.Object.Set<AttributeValue>().Add( attributeValue );
+                rockContextMock.Object.Set<ContentChannelItem>().Add( contentChannelItem );
+                rockContextMock.Object.Set<MediaElement>().Add( mediaElement );
+
+                var job = new UpdateEntityUsage();
+
+                job.UpdateContentChannelItemMediaUsage( rockContextMock.Object, ref processedCount );
+
+                metadataHelperMock.Verify( m => m.SaveEntityValue( It.IsAny<int>(), contentChannelItem.Id, MetadataKey.MediaElements, It.IsAny<string>(), It.IsAny<RockContext>() ), Times.Once );
+            }
+        }
+
+        [TestMethod]
+        public void UpdateContentChannelItemMediaUsage_WithNoMediaReferences_DeletesContentChannelItemMediaMetadata()
+        {
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+            var metadataHelperMock = new Mock<MetadataHelper>( MockBehavior.Strict );
+            var processedCount = 0;
+
+            metadataHelperMock.Setup( m => m.DeleteEntityValue( It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<RockContext>() ) );
+
+            void configureServices( ServiceCollection serviceCollection )
+            {
+                serviceCollection.AddSingleton( metadataHelperMock.Object );
+                serviceCollection.AddSingleton( rockContextFactory );
+            }
+
+            using ( TestHelper.CreateScopedRockApp( configureServices ) )
+            {
+                var entityType = EntityTypeCache.Get<ContentChannelItem>( true, rockContextMock.Object );
+                var mediaFieldType = new FieldType { Guid = SystemGuid.FieldType.MEDIA_ELEMENT.AsGuid() };
+
+                var mediaElement = new MediaElement
+                {
+                    Id = 5,
+                    Guid = new Guid( "33869839-9b81-4510-9058-fd1dfdbab1b6" ),
+                };
+
+                var contentChannelItem = new ContentChannelItem
+                {
+                    Id = 4,
+                    Guid = new Guid( "2d5b4f2e-8f3c-4f2e-9f3c-8f3c4f2e9f3c" ),
+                    Title = "Test Content Channel Item",
+                };
+
+                // Intentionally not adding any attribute values so the content
+                // channel item has no media element references.
+                rockContextMock.Object.Set<ContentChannelItem>().Add( contentChannelItem );
+                rockContextMock.Object.Set<MediaElement>().Add( mediaElement );
+
+                var job = new UpdateEntityUsage();
+
+                job.UpdateContentChannelItemMediaUsage( rockContextMock.Object, ref processedCount );
+
+                metadataHelperMock.Verify( m => m.DeleteEntityValue( It.IsAny<int>(), contentChannelItem.Id, MetadataKey.MediaElements, It.IsAny<RockContext>() ), Times.Once );
+            }
+        }
+
+        #endregion
     }
 }

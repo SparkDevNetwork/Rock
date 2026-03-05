@@ -676,5 +676,158 @@ namespace Rock.Model
             var monthlyAccountGivingHistoryList = json.FromJsonOrNull<List<MonthlyAccountGivingHistory>>();
             return monthlyAccountGivingHistoryList ?? new List<MonthlyAccountGivingHistory>();
         }
+
+        /// <summary>
+        /// Populates transaction details from account allocations, optionally applying fee coverage
+        /// (penny-safe distribution) and optionally stamping entity type/id.
+        /// </summary>
+        public static void PopulateTransactionDetails<T>( ICollection<T> transactionDetails, IReadOnlyList<AccountAllocation> allocations, bool enableCoverTheFees, decimal? totalFeeCoverageAmount, int? entityTypeId = null, int? entityId = null )
+            where T : Rock.Financial.ITransactionDetail, new()
+        {
+            if ( transactionDetails == null )
+            {
+                throw new ArgumentNullException( nameof( transactionDetails ) );
+            }
+
+            if ( allocations == null || allocations.Count == 0 )
+            {
+                return;
+            }
+
+            var amounts = allocations.Select( a => a.Amount ).ToArray();
+
+            // Use largest-remainder distribution so the per-account rounded fees always sum to exactly
+            // the target total, eliminating penny drift when multiple allocations are present.
+            var feeCoveragePerAccount = ( enableCoverTheFees && totalFeeCoverageAmount.HasValue && totalFeeCoverageAmount.Value > 0m )
+                ? DistributeFeeCoverage( amounts, totalFeeCoverageAmount.Value )
+                : new decimal[allocations.Count];
+
+            for ( int i = 0; i < allocations.Count; i++ )
+            {
+                var allocation = allocations[i];
+                var feeCoverage = feeCoveragePerAccount[i];
+
+                var detail = new T
+                {
+                    AccountId = allocation.AccountId,
+                    Amount = allocation.Amount + feeCoverage
+                };
+
+                if ( feeCoverage > 0m )
+                {
+                    detail.FeeCoverageAmount = feeCoverage;
+                }
+
+                if ( entityTypeId.HasValue && entityId.HasValue )
+                {
+                    detail.EntityTypeId = entityTypeId.Value;
+                    detail.EntityId = entityId.Value;
+                }
+
+                transactionDetails.Add( detail );
+            }
+        }
+
+        /// <summary>
+        /// Distributes a total fee coverage amount across accounts proportionally by gift amount,
+        /// using the largest-remainder method (penny reconciliation) to ensure the per-account
+        /// rounded values sum to exactly the target total. This prevents penny drift that occurs
+        /// when each row is rounded independently.
+        /// </summary>
+        /// <param name="accountAmounts">Gift amount per account (positive values).</param>
+        /// <param name="totalFeeCoverage">Total fee coverage to distribute.</param>
+        /// <returns>Per-account fee coverage amounts whose sum equals the currency-rounded total fee coverage.</returns>
+        private static decimal[] DistributeFeeCoverage( decimal[] accountAmounts, decimal totalFeeCoverage )
+        {
+            totalFeeCoverage = decimal.Round( totalFeeCoverage, 2, MidpointRounding.AwayFromZero );
+
+            if ( accountAmounts.Length == 0 || totalFeeCoverage <= 0m )
+            {
+                return new decimal[accountAmounts.Length];
+            }
+
+            var totalGift = accountAmounts.Sum();
+            var count = accountAmounts.Length;
+            var fees = new decimal[count];
+            var remainders = new decimal[count];
+
+            // Floor each row's proportional fee to whole cents and track the fractional remainder
+            // so we can later identify which rows should receive the extra penny(ies).
+            for ( int i = 0; i < count; i++ )
+            {
+                decimal exact = totalGift == 0m
+                    ? 0m
+                    : ( accountAmounts[i] / totalGift ) * totalFeeCoverage;
+
+                fees[i] = decimal.Floor( exact * 100m ) / 100m;
+                remainders[i] = exact - fees[i];
+            }
+
+            // Distribute any remaining cents to the rows with the largest fractional remainders,
+            // breaking ties by giving amount (largest first) for a deterministic result.
+            int centsToDistribute = ( int ) Math.Round( ( totalFeeCoverage - fees.Sum() ) * 100m, MidpointRounding.AwayFromZero );
+
+            if ( centsToDistribute > 0 )
+            {
+                var indices = Enumerable.Range( 0, count )
+                    .OrderByDescending( i => remainders[i] )
+                    .ThenByDescending( i => accountAmounts[i] )
+                    .ToArray();
+
+                for ( int j = 0; j < centsToDistribute && j < count; j++ )
+                {
+                    fees[indices[j]] += 0.01m;
+                }
+            }
+            else if ( centsToDistribute < 0 )
+            {
+                // Remove cents from rows with the smallest remainders that still have at least a penny,
+                // to handle the rare over-allocation case.
+                int centsToRemove = -centsToDistribute;
+                var indices = Enumerable.Range( 0, count )
+                    .OrderBy( i => remainders[i] )
+                    .ThenByDescending( i => fees[i] )
+                    .ToArray();
+
+                for ( int j = 0; j < indices.Length && centsToRemove > 0; j++ )
+                {
+                    if ( fees[indices[j]] >= 0.01m )
+                    {
+                        fees[indices[j]] -= 0.01m;
+                        centsToRemove--;
+                    }
+                }
+            }
+
+            return fees;
+        }
+
+        /// <summary>
+        /// Simple allocation DTO for building transaction Account-Amount details independent of UI controls.
+        /// </summary>
+        public sealed class AccountAllocation
+        {
+            /// <summary>
+            /// Gets the unique identifier for the account.
+            /// </summary>
+            public int AccountId { get; }
+
+            /// <summary>
+            /// Gets the monetary amount associated with the transaction.
+            /// </summary>
+            public decimal Amount { get; }
+
+            /// <summary>
+            /// Initializes a new instance of the AccountAllocation class with the specified account identifier and
+            /// allocation amount. 
+            /// </summary>
+            /// <param name="accountId">The unique identifier of the account to which the allocation applies.</param>
+            /// <param name="amount">The amount to allocate to the specified account.</param>
+            public AccountAllocation( int accountId, decimal amount )
+            {
+                AccountId = accountId;
+                Amount = amount;
+            }
+        }
     }
 }

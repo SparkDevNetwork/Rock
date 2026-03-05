@@ -15,10 +15,15 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Net.Sockets;
+using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
+using Rock.CheckIn.v2.Labels;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
@@ -86,130 +91,89 @@ namespace Rock.Lava.Blocks
                 return;
             }
 
-            var endpoint = ResolvePrinterEndpoint( parms["deviceid"], parms["ipaddress"] );
-            if ( endpoint == null )
+            var deviceIdValue = parms["deviceid"];
+            var ipAddressValue = parms["ipaddress"];
+
+            using ( var cts = new CancellationTokenSource( DefaultTimeoutMs ) )
             {
-                result.Write( "PrintZpl: You must provide a valid deviceid or ipaddress (deviceid is preferred if both are provided)." );
+                try
+                {
+                    /*
+                         3/4/2026 - NA
+
+                         Lava rendering runs synchronously, but the label printing pipeline is asynchronous.
+                         Attempting to directly block on PrintAsync() using GetAwaiter().GetResult() caused the
+                         thread to hang in certain execution contexts:
+
+                            var errors = PrintAsync( zpl, deviceIdValue, ipAddressValue, cts.Token ).GetAwaiter().GetResult();
+                            WriteErrorsIfAny( result, errors );
+
+                         To safely bridge the synchronous Lava rendering flow with the async printing process,
+                         the async call is wrapped in Task.Run() and explicitly waited on. This avoids common
+                         deadlock patterns associated with blocking async code (such as .Result or
+                         GetAwaiter().GetResult()) while still allowing the synchronous pipeline to complete
+                         before continuing.
+                    */
+                    var task = Task.Run( async () => await PrintAsync( zpl, deviceIdValue, ipAddressValue, cts.Token ) );
+                    task.Wait();
+                    var printErrors = task.Result; // safe after Wait()
+                    WriteErrorsIfAny( result, printErrors );
+                }
+                catch ( Exception ex )
+                {
+                    result.Write( $"PrintZpl: {ex.Message}" );
+                }
+            }
+        }
+
+        private static async Task<List<string>> PrintAsync( string zpl, string deviceIdValue, string ipAddressValue, CancellationToken cancellationToken )
+        {
+            var printProvider = new LabelPrintProvider();
+
+            if ( !deviceIdValue.IsNullOrWhiteSpace() )
+            {
+                var device = DeviceCache.Get( deviceIdValue, true );
+                if ( device == null )
+                {
+                    return new List<string> { "Invalid deviceid." };
+                }
+
+                var renderedLabels = BuildLabels( zpl, device );
+                return await printProvider.PrintLabelsAsync( renderedLabels, cancellationToken );
+            }
+            else if ( !ipAddressValue.IsNullOrWhiteSpace() )
+            {
+                var renderedLabels = BuildLabels( zpl, null );
+                var labelContents = renderedLabels.Select( l => l.Data ).ToList();
+                return await LabelPrintProvider.PrintToIpEndpointAsync( ipAddressValue, labelContents, cancellationToken );
+            }
+
+            return new List<string> { "You must provide a valid deviceid or ipaddress (deviceid is preferred if both are provided)." };
+        }
+
+        private static void WriteErrorsIfAny( TextWriter result, List<string> errors )
+        {
+            if ( errors == null || !errors.Any() )
+            {
                 return;
             }
 
-            try
-            {
-                SendRawTcp( endpoint.Value.Host, endpoint.Value.Port, zpl, DefaultTimeoutMs );
-                // Success: output nothing.
-            }
-            catch ( Exception ex )
-            {
-                result.Write( $"PrintZpl: {ex.Message}" );
-            }
+            result.Write( $"PrintZpl: {errors.JoinStringsWithCommaAnd()}" );
         }
 
-        internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context )
+        internal static List<RenderedLabel> BuildLabels( string zpl, DeviceCache device )
         {
-            var attributes = LavaElementAttributes.NewFromMarkup( markup, context );
-            attributes.AddOrIgnore( "deviceid", "" );
-            attributes.AddOrIgnore( "ipaddress", "" );
-            return attributes;
-        }
-
-        private static (string Host, int Port)? ResolvePrinterEndpoint( string deviceIdValue, string ipAddressValue )
-        {
-            if ( !string.IsNullOrWhiteSpace( deviceIdValue ) )
+            // LabelPrintProvider expects bytes; ZPL is ASCII-compatible, but UTF-8 is safe and consistent.
+            var payload = Encoding.UTF8.GetBytes( EnsureEndsWithNewline( zpl ) );
+            return new List<RenderedLabel>
             {
-                var fromDevice = ResolveEndpointFromDevice( deviceIdValue );
-                if ( fromDevice != null )
+                new RenderedLabel
                 {
-                    return fromDevice;
+                    PrintFrom = PrintFrom.Server,
+                    Data = payload,
+                    PrintTo = device
                 }
-            }
-
-            if ( !string.IsNullOrWhiteSpace( ipAddressValue ) )
-            {
-                if ( TryParseHostPort( ipAddressValue, out var host, out var port ) )
-                {
-                    return (host, port);
-                }
-            }
-
-            return null;
-        }
-
-        private static (string Host, int Port)? ResolveEndpointFromDevice( string deviceIdValue )
-        {
-            var device = DeviceCache.Get( deviceIdValue, true );
-            if ( device == null )
-            {
-                return null;
-            }
-
-            var ip = ( device.IPAddress ?? string.Empty ).Trim();
-            if ( string.IsNullOrWhiteSpace( ip ) )
-            {
-                return null;
-            }
-
-            if ( !TryParseHostPort( ip, out var host, out var port ) )
-            {
-                return null;
-            }
-
-            return (host, port);
-        }
-
-        private static bool TryParseHostPort( string input, out string host, out int port )
-        {
-            host = null;
-            port = 9100;
-
-            input = ( input ?? string.Empty ).Trim();
-            if ( string.IsNullOrWhiteSpace( input ) )
-            {
-                return false;
-            }
-
-            var lastColon = input.LastIndexOf( ':' );
-            if ( lastColon > 0 && lastColon < input.Length - 1 )
-            {
-                var maybeHost = input.Substring( 0, lastColon ).Trim();
-                var maybePort = input.Substring( lastColon + 1 ).Trim();
-
-                var parsedPort = maybePort.AsIntegerOrNull();
-                if ( parsedPort.HasValue && parsedPort.Value >= 1 && parsedPort.Value <= 65535 )
-                {
-                    host = maybeHost;
-                    port = parsedPort.Value;
-                    return !string.IsNullOrWhiteSpace( host );
-                }
-            }
-
-            host = input;
-            return !string.IsNullOrWhiteSpace( host );
-        }
-
-        private static void SendRawTcp( string host, int port, string payload, int timeoutMs )
-        {
-            var bytes = Encoding.UTF8.GetBytes( EnsureEndsWithNewline( payload ) );
-
-            using ( var client = new TcpClient() )
-            {
-                var ar = client.BeginConnect( host, port, null, null );
-                if ( !ar.AsyncWaitHandle.WaitOne( timeoutMs ) )
-                {
-                    try
-                    { client.Close(); }
-                    catch { }
-                    throw new TimeoutException( "Connection timed out." );
-                }
-
-                client.EndConnect( ar );
-
-                using ( var stream = client.GetStream() )
-                {
-                    stream.WriteTimeout = timeoutMs;
-                    stream.Write( bytes, 0, bytes.Length );
-                    stream.Flush();
-                }
-            }
+            };
         }
 
         private static string EnsureEndsWithNewline( string s )
@@ -225,6 +189,13 @@ namespace Rock.Lava.Blocks
             }
 
             return s + "\n";
+        }
+        internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context )
+        {
+            var attributes = LavaElementAttributes.NewFromMarkup( markup, context );
+            attributes.AddOrIgnore( "deviceid", "" );
+            attributes.AddOrIgnore( "ipaddress", "" );
+            return attributes;
         }
 
         /// <summary>
