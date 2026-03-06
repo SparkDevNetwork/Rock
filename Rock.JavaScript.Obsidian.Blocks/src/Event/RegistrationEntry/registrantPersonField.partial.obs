@@ -156,12 +156,13 @@
             case RegistrationPersonFieldType.Birthdate: {
                 componentProps.label = "Birth Date";
 
-                const minimumAge = registrationEntryState.viewModel.registrantEligibility?.minimumAge;
-                const maximumAge = registrationEntryState.viewModel.registrantEligibility?.maximumAge;
-                const latestBirthdate = !isNullish(minimumAge) ? getBirthDateFromFractionalAge(minimumAge)?.date : null;
-                const earliestBirthdate = !isNullish(maximumAge) ? getBirthDateFromFractionalAge(maximumAge)?.date : null;
+                const { minimumAgeBirthDate, maximumAgeBirthDate, minimumAge, maximumAge } = registrationEntryState.viewModel.registrantEligibility ?? {};
 
-                if (!isNullish(latestBirthdate) || !isNullish(earliestBirthdate)) {
+                const latestBirthdate = !isNullish(minimumAgeBirthDate) ? RockDateTime.parseISO(minimumAgeBirthDate)?.date : null;
+                const earliestBirthdate = !isNullish(maximumAgeBirthDate) ? RockDateTime.parseISO(maximumAgeBirthDate)?.date : null;
+
+                if ((!isNullish(minimumAge) && !isNullish(latestBirthdate))
+                    || (!isNullish(maximumAge) && !isNullish(earliestBirthdate))) {
                     const errorMessage = (() => {
                         const formatDate = (date: RockDateTime): string => date.toLocaleString({ month: "short", day: "numeric", year: "numeric" });
                         const formatAge = (age: number): string => age.toLocaleString(undefined, { maximumFractionDigits: 1 });
@@ -321,53 +322,6 @@
 
             props.fieldValues[props.field.guid] = defaultValue;
         }
-    }
-
-    function getBirthDateFromFractionalAge(age: number): RockDateTime | null {
-        const now = RockDateTime.now();
-
-        if (age <= 0) {
-            return now;
-        }
-
-        const years = Math.floor(age);
-        const fraction = age - years;
-
-        // Step 1: subtract whole years using calendar math
-        let year = now.year - years;
-        let month = now.month;
-        let day = now.day;
-
-        // Handle Feb 29 if necessary
-        let wholeYearDate = RockDateTime.fromParts(year, month, day);
-
-        if (!wholeYearDate && month === 2 && day === 29) {
-            wholeYearDate = RockDateTime.fromParts(year, 2, 28)!;
-        }
-
-        if (!wholeYearDate) {
-            throw new Error("Invalid date calculation");
-        }
-
-        // Step 2: determine actual calendar year span
-        let nextYearDate = RockDateTime.fromParts(year + 1, month, day);
-
-        if (!nextYearDate && month === 2 && day === 29) {
-            nextYearDate = RockDateTime.fromParts(year + 1, 2, 28)!;
-        }
-
-        if (!nextYearDate) {
-            throw new Error("Invalid next year calculation");
-        }
-
-        const spanMs =
-            nextYearDate.toMilliseconds() - wholeYearDate.toMilliseconds();
-
-        // Step 3: subtract fractional portion of that real calendar year
-        const birthMs =
-            wholeYearDate.toMilliseconds() - (fraction * spanMs);
-
-        return RockDateTime.fromMilliseconds(birthMs);
     }
 
     setDefaultValueIfNeeded();

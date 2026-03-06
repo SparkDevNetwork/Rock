@@ -47,6 +47,9 @@ export type RegistrationEntryInitializationBox = {
     /** Gets or sets a value indicating whether current family members are shown. */
     areCurrentFamilyMembersShown: boolean;
 
+    /** Gets or sets a value indicating whether duplicate registrants are prevented. */
+    areDuplicateRegistrantsPrevented: boolean;
+
     /** Gets or sets the campuses available for the user to select. */
     campuses?: ListItemBag[] | null;
 

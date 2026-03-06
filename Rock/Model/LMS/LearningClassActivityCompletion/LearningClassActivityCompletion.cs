@@ -151,10 +151,10 @@ namespace Rock.Model
         public bool IsFacilitatorCompleted { get; set; }
 
         /// <summary>
-        /// Indicates whether or not the related <see cref="Rock.Model.LearningClassActivity"/> was completed by this student before the DueDate.
+        /// Indicates whether or not the related <see cref="Rock.Model.LearningClassActivity"/> was completed by this student on or before the DueDate.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if the related <see cref="Rock.Model.LearningClassActivity"/> was completed before the DueDate; otherwise, <c>false</c>.
+        ///   <c>true</c> if the related <see cref="Rock.Model.LearningClassActivity"/> was completed on or before the DueDate; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
         public bool WasCompletedOnTime { get; set; }

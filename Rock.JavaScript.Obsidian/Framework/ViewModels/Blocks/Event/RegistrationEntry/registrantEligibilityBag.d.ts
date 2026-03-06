@@ -35,6 +35,12 @@ export type RegistrantEligibilityBag = {
     /** Gets or sets the maximum age allowed for eligibility. */
     maximumAge?: number | null;
 
+    /** Gets or sets the maximum age allowed for eligibility. */
+    maximumAgeBirthDate?: string | null;
+
     /** Gets or sets the minimum age required for eligibility. */
     minimumAge?: number | null;
+
+    /** Gets or sets the minimum age required for eligibility. */
+    minimumAgeBirthDate?: string | null;
 };

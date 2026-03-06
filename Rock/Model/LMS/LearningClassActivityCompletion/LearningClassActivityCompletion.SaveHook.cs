@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Enums.Lms;
 using Rock.Lava;
 using Rock.Web.Cache;
 
@@ -51,11 +52,45 @@ namespace Rock.Model
             {
                 base.PreSave();
 
-                // Ensure the WasCompletedOnTime property stays current
-                // when changes are made to the DueDate of the Completion.
-                if ( Entity.IsStudentCompleted || Entity.IsFacilitatorCompleted )
+                var assignTo = Entity.LearningClassActivity?.AssignTo;
+                if ( assignTo == null )
                 {
-                    Entity.WasCompletedOnTime = Entity.DueDate >= RockDateTime.Now;
+                    var rockContext = ( RockContext ) this.RockContext;
+                    assignTo = new LearningClassActivityService( rockContext )
+                        .Queryable()
+                        .Where( a => a.Id == Entity.LearningClassActivityId )
+                        .Select( a => a.AssignTo )
+                        .FirstOrDefault();
+                }
+
+                if ( assignTo == AssignTo.Facilitator )
+                {
+                    // Facilitator activities should always be considered completed on time.
+                    Entity.WasCompletedOnTime = true;
+                }
+                else if ( assignTo == AssignTo.Student )
+                {
+                    // Ensure the WasCompletedOnTime property stays current
+                    // when changes are made to the DueDate of the Completion.
+                    if ( !Entity.DueDate.HasValue )
+                    {
+                        // If the activity doesn't have a due date but was completed,
+                        // it's always considered completed on time.
+                        Entity.WasCompletedOnTime = Entity.CompletedDateTime.HasValue;
+                    }
+                    else if ( Entity.CompletedDateTime.HasValue )
+                    {
+                        // If the activity's due date and completed date are both set,
+                        // it must have been completed on or before the due date to
+                        // be considered completed on time.
+                        Entity.WasCompletedOnTime = Entity.CompletedDateTime.Value.Date <= Entity.DueDate.Value.Date;
+                    }
+                    else
+                    {
+                        // If the activity hasn't been completed yet,
+                        // it cannot be considered completed on time.
+                        Entity.WasCompletedOnTime = false;
+                    }
                 }
 
                 SetWasRegraded();

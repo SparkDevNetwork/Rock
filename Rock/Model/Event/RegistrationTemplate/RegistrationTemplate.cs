@@ -635,6 +635,14 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.RECORD_SOURCE_TYPE )]
         public int? RegistrantRecordSourceValueId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether duplicate registrants are prevented.
+        /// When <see langword="true"/>, a Person may only be associated once with a given Registration Instance.
+        /// When <see langword="false"/>, duplicate registrants are allowed.
+        /// </summary>
+        [DataMember]
+        public bool AreDuplicateRegistrantsPrevented { get; set; }
+
         /// <inheritdoc/>
         [DataMember]
         public string AdditionalSettingsJson { get; set; }
@@ -667,7 +675,7 @@ namespace Rock.Model
         ///     </para>
         /// </remarks>
         [RockInternal( "19.0" )]
-        public class RegistrantEligibilitySettings
+        public partial class RegistrantEligibilitySettings
         {
             /// <summary>
             /// Gets or sets the minimum age required for eligibility.

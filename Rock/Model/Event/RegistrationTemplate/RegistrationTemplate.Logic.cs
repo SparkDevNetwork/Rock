@@ -14,12 +14,14 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -96,12 +98,12 @@ namespace Rock.Model
             var hasEligibilitySettings =
                 registrantEligibilitySettings != null
                 && (
-                    registrantEligibilitySettings.AgeClassification.HasValue
-                    || registrantEligibilitySettings.Gender.HasValue
-                    || registrantEligibilitySettings.MaximumAge.HasValue
+                    registrantEligibilitySettings.MaximumAge.HasValue
                     || registrantEligibilitySettings.MinimumAge.HasValue
+                    || registrantEligibilitySettings.AgeClassification.HasValue
                     || registrantEligibilitySettings.MaximumGradeOffset.HasValue
-                    || registrantEligibilitySettings.MinimumAge.HasValue
+                    || registrantEligibilitySettings.MinimumGradeOffset.HasValue
+                    || registrantEligibilitySettings.Gender.HasValue
                     || registrantEligibilitySettings.EligibilityDataViewGuid.HasValue
                 );
 
@@ -126,6 +128,168 @@ namespace Rock.Model
                 }
 
                 this.SetAdditionalSettings( registrantEligibilitySettings );
+            }
+        }
+
+        public partial class RegistrantEligibilitySettings
+        {
+            /// <summary>
+            /// Gets the effective minimum age based on the current age classification and minimum age settings.
+            /// </summary>
+            public decimal? GetEffectiveMinimumAge()
+            {
+                if ( AgeClassification == Model.AgeClassification.Adult && ( !MinimumAge.HasValue || MinimumAge < 18m ) )
+                {
+                    return 18m;
+                }
+
+                return MinimumAge;
+            }
+             
+            /// <summary>
+            /// Gets the effective maximum age based on the current age classification and maximum age settings.
+            /// </summary>
+            public decimal? GetEffectiveMaximumAge()
+            {
+                if ( AgeClassification == Model.AgeClassification.Child && ( !MaximumAge.HasValue || MaximumAge >= 18m ) )
+                {
+                    return 17m;
+                }
+
+                return MaximumAge;
+            }
+           
+            /// <summary>
+            /// Gets the earliest effective birth date that satisfies the minimum age or age classification requirements, if specified.
+            /// </summary>
+            public DateTime? GetEffectiveMinimumAgeBirthDate()
+            {
+                var effectiveMinimumAge = GetEffectiveMinimumAge();
+                if ( !effectiveMinimumAge.HasValue )
+                {
+                    return null;
+                }
+
+                return GetBirthDateFromFractionalAge( effectiveMinimumAge.Value );
+            }
+
+            /// <summary>
+            /// Gets the latest effective birth date that satisfies the maximum age or age classification requirements, if specified.
+            /// </summary>
+            public DateTime? GetEffectiveMaximumAgeBirthDate()
+            {
+                var effectiveMaximumAge = GetEffectiveMaximumAge();
+                if ( !effectiveMaximumAge.HasValue )
+                {
+                    return null;
+                }
+
+                if ( effectiveMaximumAge.Value.IsInteger() )
+                {
+                    return GetBirthDateFromFractionalAge( effectiveMaximumAge.Value + 1 ).AddDays( 1 );
+                }
+
+                return GetBirthDateFromFractionalAge( effectiveMaximumAge.Value );
+            }
+
+            /// <summary>
+            /// Gets the latest birth date that satisfies the maximum age requirement, if specified.
+            /// </summary>
+            public DateTime? GetMaximumAgeBirthDate()
+            {
+                if ( !MaximumAge.HasValue )
+                {
+                    return null;
+                }
+
+                if ( MaximumAge.Value.IsInteger() )
+                {
+                    return GetBirthDateFromFractionalAge( MaximumAge.Value + 1 ).AddDays( 1 );
+                }
+
+                return GetBirthDateFromFractionalAge( MaximumAge.Value );
+            }
+
+            /// <summary>
+            /// Gets the earliest birth date that satisfies the minimum age requirement, if specified.
+            /// </summary>
+            public DateTime? GetMinimumAgeBirthDate()
+            {
+                if ( !MinimumAge.HasValue )
+                {
+                    return null;
+                }
+
+                return GetBirthDateFromFractionalAge( MinimumAge.Value );
+            }
+
+            /// <summary>
+            /// Retrieves the list of eligible school grades based on the configured minimum and maximum grade offsets.
+            /// </summary>
+            /// <remarks>
+            /// The returned list includes only active grades within the specified grade offset range.
+            /// This method is typically used to determine which grades should be available for selection in registration scenarios.
+            /// </remarks>
+            /// <returns>
+            /// A list of <see cref="DefinedValueCache"/> objects representing the valid grades for new registrants,
+            /// or <see langword="null"/> if no grade criteria is configured.
+            /// </returns>
+            public List<DefinedValueCache> GetGradeDefinedValues()
+            {
+                // Build the list of eligible grades based on the configured grade classifications.
+                // This is necessary because the UI needs to know which grades are valid for new registrants.
+                if ( !MinimumGradeOffset.HasValue && !MaximumGradeOffset.HasValue )
+                {
+                    return null;
+                }
+
+                var gradesDefinedType = DefinedTypeCache.Get( SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+
+                var grades = new List<DefinedValueCache>();
+
+                foreach ( var grade in gradesDefinedType.DefinedValues.Where( dv => dv.IsActive ).OrderBy( dv => dv.Order ) )
+                {
+                    var gradeOffset = grade.Value.AsIntegerOrNull();
+
+                    if ( gradeOffset.HasValue )
+                    {
+                        var isAboveMinimumGrade = !MinimumGradeOffset.HasValue || gradeOffset.Value >= MinimumGradeOffset.Value;
+                        var isBelowMaximumGrade = !MaximumGradeOffset.HasValue || gradeOffset.Value <= MaximumGradeOffset.Value;
+
+                        if ( isAboveMinimumGrade && isBelowMaximumGrade )
+                        {
+                            grades.Add( grade );
+                        }
+                    }
+                }
+
+                return grades;
+            }
+
+            private static DateTime GetBirthDateFromFractionalAge( decimal age )
+            {
+                var today = RockDateTime.Today;
+
+                if ( age <= 0 )
+                {
+                    return today;
+                }
+
+                var years = ( int )Math.Floor( age );
+                var fraction = age - years;
+
+                // Subtract whole years
+                var baseDate = today.AddYears( -years );
+
+                // Determine actual calendar year span
+                var nextYearDate = baseDate.AddYears( 1 );
+
+                var spanDays = ( nextYearDate - baseDate ).Days;
+
+                // Subtract fractional portion
+                var fractionalDays = ( int )Math.Floor( spanDays * fraction );
+
+                return baseDate.AddDays( -fractionalDays ).Date;
             }
         }
     }

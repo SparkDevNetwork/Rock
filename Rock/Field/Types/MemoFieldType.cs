@@ -43,6 +43,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateConfigurationValues.TryGetValue( "allowhtml", out var allowHtml ) && allowHtml.AsBoolean() )
+            {
+                return GetTextValue( privateValue, privateConfigurationValues );
+            }
+
+            return GetTextValue( privateValue, privateConfigurationValues )?.EncodeHtml();
+        }
+
+        #endregion
+
         #region Edit Control
 
         #endregion

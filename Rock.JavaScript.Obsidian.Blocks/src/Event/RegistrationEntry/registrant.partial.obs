@@ -12,7 +12,7 @@
                             <DropDownList v-model="selectedPersonGuidOrNewOrEmptyString"
                                           :items="familyMemberOptions"
                                           :label="props.currentRegistrant.isNewFamily ? 'Guest to Register' : 'Family Member to Register'"
-                                          rules="required"
+                                          :rules="['required', preventDuplicateRegistrantRule]"
                                           showBlankItem />
                         </div>
                     </div>
@@ -511,6 +511,31 @@
         }
 
         return fieldType.doesValueMatchFilter(value, convertComparisonValue(rule.comparisonValue), comparedToFormField.attribute.configurationValues ?? {});
+    }
+
+    function preventDuplicateRegistrantRule(value: unknown): boolean | string {
+        if (!registrationEntryState.viewModel.areDuplicateRegistrantsPrevented) {
+            // If duplicate registrants are not being prevented then this rule should not do anything. Let other validators handle this.
+            return true;
+        }
+
+        if (typeof value !== "string") {
+            // Let other validators handle this.
+            return true;
+        }
+
+        const valueAsGuid = toGuidOrNull(value);
+
+        if (!valueAsGuid) {
+            // Let other validators handle this.
+            return true;
+        }
+
+        if (registrationEntryState.viewModel.familyMembers?.filter(fm => fm.isRegistrantInAnotherRegistration).some(fm => areEqual(fm.guid, valueAsGuid))) {
+            return "has already been registered";
+        }
+
+        return true;
     }
 
     function onPrevious(): void {

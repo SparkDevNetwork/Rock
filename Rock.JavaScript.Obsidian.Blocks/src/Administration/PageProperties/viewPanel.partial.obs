@@ -103,7 +103,7 @@
         const medianTimeDetailPageUrl = props.navigationUrls?.[NavigationUrlKey.MedianTimeDetailPage];
 
         if (medianTimeDetailPageUrl && props.modelValue?.idKey) {
-            medianPageLoadHtml = `${medianPageLoadHtml} <a href='${medianTimeDetailPageUrl.replace("((Key))", props.modelValue.idKey)}'>Details</a>`;
+            medianPageLoadHtml = `${medianPageLoadHtml} <a href='${medianTimeDetailPageUrl.replace("((Key))", props.modelValue.idKey)}' class='small'>Details</a>`;
         }
         else {
             medianPageLoadHtml = `${medianPageLoadHtml} <a href='#'>Details</a>`;

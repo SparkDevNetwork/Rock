@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using dotless.Core.Parser.Functions;
 using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
@@ -755,103 +756,89 @@ The logged-in person's information will be used to complete the registrar inform
                         }
                     }
                 }
-                else if ( eventTarget == nreEligibilityAgeRange.ClientID || eventTarget == ddlEligibilityAgeClassification.ClientID )
-                {
-                    if ( eventArgs == "changed" )
-                    {
-                        CheckRegistrantAgeEligibility();
-                    }
-                }
-                else if ( eventTarget == ddlEligibilityGradeOffsetMax.ClientID || eventTarget == ddlEligibilityGradeOffsetMin.ClientID )
-                {
-                    if ( eventArgs == "changed" )
-                    {
-                        CheckRegistrantGradeEligibility();
-                    }
-                }
-                else if ( eventTarget == ddlEligibilityGender.ClientID )
-                {
-                    if ( eventArgs == "changed" )
-                    {
-                        CheckRegistrantGenderEligibility();
-                    }
-                }
+
+                CheckRegistrantAgeEligibility();
+                CheckRegistrantGradeEligibility();
+                CheckRegistrantGenderEligibility();
             }
 
             base.OnLoad( e );
         }
 
         private void CheckRegistrantAgeEligibility()
-        {   
-            var hasBirthdateRelatedRegistrantEligibility = nreEligibilityAgeRange.LowerValue.HasValue || nreEligibilityAgeRange.UpperValue.HasValue || ddlEligibilityAgeClassification.SelectedValueAsEnumOrNull<AgeClassification>().HasValue;
-            if ( hasBirthdateRelatedRegistrantEligibility )
-            {
-                // Populate the FormState by parsing controls so we can check if there is a birthdate field.
-                var isBirthdateFieldRequiredAndMissing = !FormFieldsState.Any( formAndFields => formAndFields.Value.Any( field => field.PersonFieldType == RegistrationPersonFieldType.Birthdate ) );
+        {
+            var hasBirthDateField = FormFieldsState?
+                .Any( formAndFields => formAndFields.Value
+                    .Any( field => field.PersonFieldType == RegistrationPersonFieldType.Birthdate ) ) == true;
 
-                if ( isBirthdateFieldRequiredAndMissing )
-                {
-                    nbEligibilityAgeWarning.Visible = true;
-                }
-                else
-                {
-                    nbEligibilityAgeWarning.Visible = false;
-                }
+            // Keep the hidden field up-to-date so we can skip a round-trip
+            // when the eligibility is changed and we need to determine whether or not to show the warning.
+            hfHasBirthDateField.Value = hasBirthDateField.ToString();
+
+            var hasBirthdateRelatedRegistrantEligibility =
+                nreEligibilityAgeRange.LowerValue.HasValue
+                || nreEligibilityAgeRange.UpperValue.HasValue
+                || ddlEligibilityAgeClassification.SelectedValueAsEnumOrNull<AgeClassification>().HasValue;
+
+            // If this logic changes (i.e., adding/removing these specific CSS classes)
+            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+            if ( hasBirthdateRelatedRegistrantEligibility && !hasBirthDateField )
+            {
+                nbEligibilityAgeWarning.CssClass = "d-block";
             }
             else
             {
-                nbEligibilityAgeWarning.Visible = false;
+                nbEligibilityAgeWarning.CssClass = "d-none";
             }
         }
 
         private void CheckRegistrantGradeEligibility()
         {
-            var hasGradeRelatedRegistrantEligibility = ddlEligibilityGradeOffsetMax.SelectedValue.IsNotNullOrWhiteSpace()
-                || ddlEligibilityGradeOffsetMin.SelectedValue.IsNotNullOrWhiteSpace();
-            if ( hasGradeRelatedRegistrantEligibility )
-            {
-                // Populate the FormState by parsing controls so we can check if there is a birthdate field.
-                var isGradeFieldRequiredAndMissing = !FormFieldsState
-                    .Any( formAndFields => formAndFields.Value
-                        .Any( field => field.PersonFieldType == RegistrationPersonFieldType.Grade ) );
+            var hasGradeField = FormFieldsState?
+                .Any( formAndFields => formAndFields.Value
+                    .Any( field => field.PersonFieldType == RegistrationPersonFieldType.Grade ) ) == true;
 
-                if ( isGradeFieldRequiredAndMissing )
-                {
-                    nbEligibilityGradeRange.Visible = true;
-                }
-                else
-                {
-                    nbEligibilityGradeRange.Visible = false;
-                }
+            // Keep the hidden field up-to-date so we can skip a round-trip
+            // when the eligibility is changed and we need to determine whether or not to show the warning.
+            hfHasGradeField.Value = hasGradeField.ToString();
+
+            var hasGradeRelatedRegistrantEligibility =
+                ddlEligibilityGradeOffsetMax.SelectedValue.IsNotNullOrWhiteSpace()
+                || ddlEligibilityGradeOffsetMin.SelectedValue.IsNotNullOrWhiteSpace();
+            
+            // If this logic changes (i.e., adding/removing these specific CSS classes)
+            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+            if ( hasGradeRelatedRegistrantEligibility && !hasGradeField )
+            {
+                nbEligibilityGradeWarning.CssClass = "d-block";
             }
             else
             {
-                nbEligibilityGradeRange.Visible = false;
+                nbEligibilityGradeWarning.CssClass = "d-none";
             }
         }
 
         private void CheckRegistrantGenderEligibility()
         {
-            var hasRegistrantEligibility = ddlEligibilityGender.SelectedValueAsEnumOrNull<Gender>();
-            if ( hasRegistrantEligibility.HasValue )
-            {
-                // Populate the FormState by parsing controls so we can check if there is a birthdate field.
-                var isFieldMissing = !FormFieldsState
-                    .Any( formAndFields => formAndFields.Value
-                        .Any( field => field.PersonFieldType == RegistrationPersonFieldType.Gender ) );
+            var hasGenderField = FormFieldsState?
+                .Any( formAndFields => formAndFields.Value
+                    .Any( field => field.PersonFieldType == RegistrationPersonFieldType.Gender ) ) == true;
 
-                if ( isFieldMissing )
-                {
-                    nbEligibilityGender.Visible = true;
-                }
-                else
-                {
-                    nbEligibilityGender.Visible = false;
-                }
+            // Keep the hidden field up-to-date so we can skip a round-trip
+            // when the eligibility is changed and we need to determine whether or not to show the warning.
+            hfHasGenderField.Value = hasGenderField.ToString();
+
+            var hasRegistrantEligibility = ddlEligibilityGender.SelectedValueAsEnumOrNull<Gender>();
+            
+            // If this logic changes (i.e., adding/removing these specific CSS classes)
+            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+            if ( hasRegistrantEligibility.HasValue && !hasGenderField )
+            {
+                nbEligibilityGenderWarning.CssClass = "d-block";
             }
             else
             {
-                nbEligibilityGender.Visible = false;
+                nbEligibilityGenderWarning.CssClass = "d-none";
             }
         }
 
@@ -1197,6 +1184,7 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.SignatureDocumentAction = documentTemplate?.IsLegacy == false || cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
             registrationTemplate.WaitListEnabled = cbWaitListEnabled.Checked;
             registrationTemplate.ShowSmsOptIn = cbShowSmsOptIn.Checked;
+            registrationTemplate.AreDuplicateRegistrantsPrevented = cbPreventDuplicateRegistrants.Checked;
             registrationTemplate.RegistrarOption = ddlRegistrarOption.SelectedValueAsEnum<RegistrarOption>();
 
             registrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
@@ -2966,6 +2954,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             cbWaitListEnabled.Checked = registrationTemplate.WaitListEnabled;
             cbShowSmsOptIn.Checked = registrationTemplate.ShowSmsOptIn;
+            cbPreventDuplicateRegistrants.Checked = registrationTemplate.AreDuplicateRegistrantsPrevented;
             cbAddPersonNote.Checked = registrationTemplate.AddPersonNote;
             cbLoginRequired.Checked = registrationTemplate.LoginRequired;
             cbAllowExternalUpdates.Checked = registrationTemplate.AllowExternalRegistrationUpdates;
@@ -3060,6 +3049,10 @@ The logged-in person's information will be used to complete the registrar inform
             var defaultForm = FormState.FirstOrDefault();
             BuildControls( true, defaultForm.Guid );
             BindRegistrationAttributesGrid();
+
+            CheckRegistrantAgeEligibility();
+            CheckRegistrantGenderEligibility();
+            CheckRegistrantGradeEligibility();
         }
 
         /// <summary>

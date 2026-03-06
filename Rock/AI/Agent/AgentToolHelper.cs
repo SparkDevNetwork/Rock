@@ -690,7 +690,7 @@ namespace Rock.AI.Agent
                     {
                         var hints = fieldType.GetFieldHints( a.ConfigurationValues );
 
-                        attr.ValueFormat = hints.ValueFormat.ToStringOrDefault( null );
+                        attr.ValueFormat = hints?.ValueFormat.ToStringOrDefault( null );
                     }
 
                     return attr;

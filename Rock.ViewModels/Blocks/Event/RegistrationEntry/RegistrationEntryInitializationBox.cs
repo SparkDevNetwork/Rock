@@ -529,5 +529,10 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// Gets or sets the eligibility information for the registrant.
         /// </summary>
         public RegistrantEligibilityBag RegistrantEligibility { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether duplicate registrants are prevented.
+        /// </summary>
+        public bool AreDuplicateRegistrantsPrevented { get; set; }
     }
 }

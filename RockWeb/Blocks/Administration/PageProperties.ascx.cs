@@ -314,7 +314,7 @@ namespace RockWeb.Blocks.Administration
 
             var pageReference = new PageReference( page.Id );
             var pageUrl = pageReference.BuildUrl();
-            var pageLink = string.Format( "<a href='{0}'>{0}</a>", pageUrl );
+            var pageLink = string.Format( "<a href='{0}{1}'>{0}{1}</a>", page.Site.DefaultDomainUri, pageUrl.TrimStart( '/' ) );
 
             lblMainDetailsCol2.Text = new DescriptionList()
                 .Add( "Layout", page.Layout )
