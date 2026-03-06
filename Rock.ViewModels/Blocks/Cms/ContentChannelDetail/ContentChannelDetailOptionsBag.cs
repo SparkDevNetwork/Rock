@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -105,5 +105,12 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelDetail
         ///   <c>true</c> if [disable content field]; otherwise, <c>false</c>.
         /// </value>
         public bool DisableContentField { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content library inherited item attributes
+        /// from the Content Channel Type. These are provided on initial
+        /// load so dropdown selections persist before the async fetch completes.
+        /// </summary>
+        public List<ListItemBag> ContentLibraryInheritedItemAttributes { get; set; }
     }
 }

@@ -67,7 +67,8 @@
             guid: a.guid,
             name: a.name,
             description: a.description,
-            isRequired: a.isRequired
+            isRequired: a.isRequired,
+            isSystem: a.isSystem
         }));
 
         return { rows };

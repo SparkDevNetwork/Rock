@@ -16,7 +16,7 @@
             <BooleanColumn name="isRequired" field="isRequired" title="Required" />
             <EditColumn @click="onEdit" />
             <SecurityColumn itemTitle="name" />
-            <DeleteColumn v-if="!theAttribute?.isSystem" @click="onDelete" disableConfirmation />
+            <DeleteColumn @click="onDelete" disableConfirmation />
         </Grid>
     </ContentStack>
 

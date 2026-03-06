@@ -130,7 +130,8 @@ namespace Rock.Blocks.Cms
                 AvailableLicenses = GetLicenses(),
                 ContentChannelList = GetContentChannelList( rockContext ),
                 CurrentPageUrl = this.GetCurrentPageUrl().UrlEncode(),
-                DisableContentField = entity.ContentChannelType?.DisableContentField ?? false
+                DisableContentField = entity.ContentChannelType?.DisableContentField ?? false,
+                ContentLibraryInheritedItemAttributes = GetContentLibraryInheritedItemAttributes( entity.ContentChannelTypeId, rockContext )
             };
 
             return options;
@@ -703,6 +704,81 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
+        /// Gets the inherited item attributes from the Content Channel Type
+        /// for use within the Content Library section.
+        /// </summary>
+        /// <param name="contentChannelTypeId">The content channel type identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>A list of attributes qualified by the Content Channel Type.</returns>
+        private List<ListItemBag> GetContentLibraryInheritedItemAttributes( int contentChannelTypeId, RockContext rockContext )
+        {
+            if ( contentChannelTypeId == 0 )
+            {
+                return new List<ListItemBag>();
+            }
+
+            var attributeService = new AttributeService( rockContext );
+            return attributeService
+                .GetByEntityTypeId( new ContentChannelItem().TypeId, true )
+                .AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( contentChannelTypeId.ToString() ) )
+                .Select( a => new ListItemBag() { Text = a.Name, Value = a.Guid.ToString() } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Validates that the content library configuration attribute guids
+        /// (summary, author, image) reference attributes that actually belong
+        /// to this content channel or its content channel type. Any guid that
+        /// does not match a valid attribute is cleared to prevent stale
+        /// references from being persisted.
+        /// </summary>
+        /// <param name="entity">The content channel being saved.</param>
+        /// <param name="bag">The bag containing the values from the client.</param>
+        private void ValidateContentLibraryAttributeGuids( ContentChannel entity, ContentChannelBag bag )
+        {
+            var validAttributeGuids = new HashSet<Guid>();
+
+            // Collect guids from channel-specific item attributes.
+            if ( bag.ItemAttributes != null )
+            {
+                foreach ( var attr in bag.ItemAttributes.Where( a => a.Guid.HasValue && a.Guid.Value != Guid.Empty ) )
+                {
+                    validAttributeGuids.Add( attr.Guid.Value );
+                }
+            }
+
+            // Collect guids from content channel type inherited attributes.
+            var inheritedAttributes = GetContentLibraryInheritedItemAttributes( entity.ContentChannelTypeId, RockContext );
+            foreach ( var attr in inheritedAttributes )
+            {
+                var guid = attr.Value.AsGuidOrNull();
+                if ( guid.HasValue )
+                {
+                    validAttributeGuids.Add( guid.Value );
+                }
+            }
+
+            var config = entity.ContentLibraryConfiguration;
+            if ( config.SummaryAttributeGuid.HasValue && !validAttributeGuids.Contains( config.SummaryAttributeGuid.Value ) )
+            {
+                config.SummaryAttributeGuid = null;
+            }
+
+            if ( config.AuthorAttributeGuid.HasValue && !validAttributeGuids.Contains( config.AuthorAttributeGuid.Value ) )
+            {
+                config.AuthorAttributeGuid = null;
+            }
+
+            if ( config.ImageAttributeGuid.HasValue && !validAttributeGuids.Contains( config.ImageAttributeGuid.Value ) )
+            {
+                config.ImageAttributeGuid = null;
+            }
+        }
+
+        /// <summary>
         /// Saves the attributes.
         /// </summary>
         /// <param name="channelId">The channel identifier.</param>
@@ -799,6 +875,13 @@ namespace Rock.Blocks.Cms
             }
 
             var isNew = entity.Id == 0;
+
+            // Validate that content library attribute guids reference
+            // attributes that belong to this channel or its channel type.
+            if ( entity.ContentLibraryConfiguration?.IsEnabled == true )
+            {
+                ValidateContentLibraryAttributeGuids( entity, box.Bag );
+            }
 
             RockContext.WrapTransaction( () =>
             {
@@ -903,17 +986,7 @@ namespace Rock.Blocks.Cms
                 return ActionOk( new List<ListItemBag>() );
             }
 
-            var attributeService = new AttributeService( RockContext );
-            var attributes = attributeService
-                .GetByEntityTypeId( new ContentChannelItem().TypeId, true )
-                .AsQueryable()
-                .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( contentChannelTypeId.Value.ToString() ) )
-                .Select( a => new ListItemBag() { Text = a.Name, Value = a.Guid.ToString() } )
-                .ToList();
-
-            return ActionOk( attributes );
+            return ActionOk( GetContentLibraryInheritedItemAttributes( contentChannelTypeId.Value, RockContext ) );
         }
 
         /// <summary>

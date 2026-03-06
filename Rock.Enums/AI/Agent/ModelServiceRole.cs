@@ -35,15 +35,5 @@ namespace Rock.Enums.AI.Agent
         /// Fast, low-cost, general-purpose model for chat and standard tasks.
         /// </summary>
         Default,
-
-        /// <summary>
-        /// Optimized for code generation, structured output, and logic-heavy tasks.
-        /// </summary>
-        Code,
-
-        /// <summary>
-        /// High-quality, reasoning-focused model used for writing, summarization, and complex queries.
-        /// </summary>
-        Research
     }
 }

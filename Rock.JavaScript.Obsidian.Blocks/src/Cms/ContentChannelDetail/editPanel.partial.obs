@@ -259,7 +259,7 @@
     const reservedKeyNames = ref<string[]>([]);
     const invokeBlockAction = useInvokeBlockAction();
 
-    const contentLibraryInheritedItemAttributes = ref<ListItemBag[]>([]);
+    const contentLibraryInheritedItemAttributes = ref<ListItemBag[]>(props.options.contentLibraryInheritedItemAttributes ?? []);
     const settingsOptions = ref(props.options.settingsOptions ?? []);
     const contentChannelTypes = ref(props.options.contentChannelTypes ?? []);
     const contentControlTypes = ref(props.options.contentControlTypes ?? []);
@@ -635,6 +635,25 @@
             guid: requestedTypeGuid
         };
 
+        // Clear content library attribute selections that came from the
+        // previous content channel type's inherited attributes, but preserve
+        // any that reference channel-specific item attributes.
+        const itemAttributeGuids = itemAttributes.value
+            .filter(a => !!a.guid)
+            .map(a => a.guid);
+
+        if (summaryAttributeGuid.value && !itemAttributeGuids.includes(summaryAttributeGuid.value)) {
+            summaryAttributeGuid.value = "";
+        }
+
+        if (authorAttributeGuid.value && !itemAttributeGuids.includes(authorAttributeGuid.value)) {
+            authorAttributeGuid.value = "";
+        }
+
+        if (imageAttributeGuid.value && !itemAttributeGuids.includes(imageAttributeGuid.value)) {
+            imageAttributeGuid.value = "";
+        }
+
         const result = await invokeBlockAction<ListItemBag[]>("GetContentLibraryInheritedItemAttributes", request);
 
         if (requestedTypeGuid !== contentChannelTypeValue.value) {
@@ -645,7 +664,7 @@
             ? result.data
             : [];
 
-    }, { immediate: true });
+    });
 
     watch(editorType, () => {
         const isStructuredContentChecked = editorType.value === "1";
