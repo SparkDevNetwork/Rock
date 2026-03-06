@@ -47,5 +47,10 @@ namespace Rock.AI.Agent.Mcp.Protocol
         /// JSON Schema object defining the expected parameters for the tool.
         /// </summary>
         public JsonElement InputSchema { get; set; }
+
+        /// <summary>
+        /// Annotations that provide additional context about the tool.
+        /// </summary>
+        public ToolAnnotations Annotations { get; set; }
     }
 }

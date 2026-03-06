@@ -173,6 +173,11 @@ namespace Rock.AI.Agent.Mcp
                         InputSchema = function.JsonSchema
                     };
 
+                    tool.Annotations = new ToolAnnotations
+                    {
+                        Title = tool.Title,
+                    };
+
                     tools.Add( tool );
                 }
             }
