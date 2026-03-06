@@ -18,7 +18,6 @@
 using System.ComponentModel;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Common;
 using Rock.Model;
 using Rock.SystemGuid;
 
