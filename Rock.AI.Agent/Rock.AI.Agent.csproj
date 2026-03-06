@@ -9,6 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Providers\AzureOpenAIProvider.cs" />
+    <Compile Remove="Providers\OpenAIProvider.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Skills\*.*.cs">
       <DependentUpon>$([System.IO.Path]::GetFileNameWithoutExtension('%(Identity)').Split('.')[0]).cs</DependentUpon>
     </Compile>

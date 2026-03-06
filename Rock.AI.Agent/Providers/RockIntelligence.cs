@@ -30,84 +30,35 @@ using Rock.SystemGuid;
 namespace Rock.AI.Agent.Providers
 {
     /// <summary>
-    /// Provider to use Open AI for use in Rock chat agents.
+    /// Provider to use Rock Intelligence for use in Rock chat agents.
     /// </summary>
-    [Description( "Provider to use Open AI for use in Rock chat agents." )]
+    [Description( "Provider to use Rock Intelligence for use in Rock chat agents." )]
     [Export( typeof( AgentProviderComponent ) )]
-    [ExportMetadata( "ComponentName", "Open AI" )]
-    [EntityTypeGuid( "5ee92068-92f1-4166-bc58-765c5cfc41ce" )]
+    [ExportMetadata( "ComponentName", "Rock Intelligence" )]
+    [EntityTypeGuid( "485db97f-37d1-480b-b536-f0e609f599be" )]
 
-    [TextField( "OpenAI API Key",
-        Description = "The API key for the OpenAI service.",
+    [TextField( "API Key",
+        Description = "The API key for authenticating access to the service.",
         IsRequired = true,
         Order = 10,
         Key = AttributeKey.ApiKey )]
 
-    [TextField( "OpenAI Endpoint",
-        Description = "The endpoint for the OpenAI service.",
-        IsRequired = true,
-        Order = 11,
-        Key = AttributeKey.Endpoint )]
-
-    [DecimalField( "Default Temperature",
-        Description = "The default temperature to use for chat completions and functions. This is a value between 0 and 1 where higher values will result in more creative responses.",
-        IsRequired = false,
-        DefaultDecimalValue = 1,
-        Order = 12,
-        Key = AttributeKey.DefaultTemperature )]
-
-    [DecimalField( "Default Top P",
-        Description = "The default top_p to use for chat completions and functions. This is an alternative to temperature where 0.1 means only the tokens comprising the top 10% probability mass are considered.",
-        IsRequired = false,
-        DefaultDecimalValue = 1,
-        Order = 13,
-        Key = AttributeKey.DefaultTopP )]
-
-    [TextField( "Default Model",
-        Description = "The default model to use for chat completions and functions.",
-        IsRequired = true,
-        DefaultValue = "gpt-5-mini",
-        Order = 14,
-        Key = AttributeKey.DefaultModel )]
-
-    [TextField( "Code Model",
-        Description = "The model to use for code related tasks.",
-        IsRequired = true,
-        DefaultValue = "gpt-4o-mini",
-        Order = 15,
-        Key = AttributeKey.CodeModel )]
-
-    [TextField( "Research Model",
-        Description = "The model to use for research related tasks.",
-        IsRequired = true,
-        DefaultValue = "gpt-4o-mini",
-        Order = 16,
-        Key = AttributeKey.ResearchModel )]
-    internal class OpenAIProvider : AgentProviderComponent
+    internal class RockIntelligenceProvider : AgentProviderComponent
     {
         #region Keys
 
         private static class AttributeKey
         {
             public const string ApiKey = "ApiKey";
-            public const string Endpoint = "Endpoint";
-            public const string DefaultTemperature = "DefaultTemperature";
-            public const string DefaultTopP = "DefaultTopP";
-            public const string DefaultModel = "DefaultModel";
-            public const string CodeModel = "CodeModel";
-            public const string ResearchModel = "ResearchModel";
-
-            // This is only used for unit testing.
-            public const string Seed = "Seed";
         }
 
         #endregion
 
-        public OpenAIProvider()
+        public RockIntelligenceProvider()
         {
         }
 
-        internal OpenAIProvider( bool updateAttributes )
+        internal RockIntelligenceProvider( bool updateAttributes )
             : base( updateAttributes )
         {
         }
@@ -119,12 +70,10 @@ namespace Rock.AI.Agent.Providers
         /// <returns>The name of the model to use when processing the request.</returns>
         private string GetModelName( ModelServiceRole role )
         {
-            switch ( role )
+            return role switch
             {
-                case ModelServiceRole.Default:
-                default:
-                    return GetAttributeValue( AttributeKey.DefaultModel );
-            }
+                _ => "@preset/rock-default",
+            };
         }
 
         /// <inheritdoc/>
@@ -133,7 +82,7 @@ namespace Rock.AI.Agent.Providers
             serviceCollection.AddOpenAIChatCompletion(
                 serviceId: GetServiceKeyForRole( role ),
                 modelId: GetModelName( role ),
-                endpoint: new Uri( GetAttributeValue( AttributeKey.Endpoint ) ),
+                endpoint: new Uri( "https://openrouter.ai/api/v1/" ),
                 apiKey: GetAttributeValue( AttributeKey.ApiKey ) );
         }
 
@@ -147,7 +96,7 @@ namespace Rock.AI.Agent.Providers
                 return null;
             }
 
-            if ( !( resultMetadata["Usage"] is OpenAI.Chat.ChatTokenUsage usage ) )
+            if ( resultMetadata["Usage"] is not OpenAI.Chat.ChatTokenUsage usage  )
             {
                 return null;
             }
@@ -170,7 +119,7 @@ namespace Rock.AI.Agent.Providers
                 return null;
             }
 
-            if ( !( resultMetadata["Usage"] is OpenAI.Chat.ChatTokenUsage usage ) )
+            if ( resultMetadata["Usage"] is not OpenAI.Chat.ChatTokenUsage usage  )
             {
                 return null;
             }
@@ -190,9 +139,7 @@ namespace Rock.AI.Agent.Providers
             {
                 ServiceId = GetServiceKeyForRole( function.Role ),
                 ModelId = GetModelName( function.Role ),
-                Temperature = function.Temperature ?? GetAttributeValue( AttributeKey.DefaultTemperature ).AsDoubleOrNull(),
-                TopP = GetAttributeValue( AttributeKey.DefaultTopP ).AsDoubleOrNull(),
-                Seed = GetSeed(),
+                Temperature = function.Temperature,
                 MaxTokens = function.MaxTokens,
             };
         }
@@ -200,24 +147,11 @@ namespace Rock.AI.Agent.Providers
         /// <inheritdoc/>
         public override PromptExecutionSettings GetChatCompletionPromptExecutionSettings()
         {
-            // BC TODO: figure out what to do with temperature and top_p
-            // gpt-5 don't support temperature or top_p, so we should probably not set them.
-
             return new OpenAIPromptExecutionSettings()
             {
                 FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-                Temperature = GetAttributeValue( AttributeKey.DefaultTemperature ).AsDoubleOrNull(),
-                TopP = GetAttributeValue( AttributeKey.DefaultTopP ).AsDoubleOrNull(),
-                Seed = GetSeed(),
                 ReasoningEffort = "low"
             };
-        }
-
-        private long? GetSeed()
-        {
-            return long.TryParse( GetAttributeValue( AttributeKey.Seed ), out var seed )
-                ? ( long? ) seed
-                : null;
         }
     }
 }

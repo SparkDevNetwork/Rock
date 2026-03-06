@@ -120,16 +120,10 @@ namespace Rock.AI.Agent.Providers
         {
             switch ( role )
             {
-                case ModelServiceRole.Code:
-                    return GetAttributeValue( AttributeKey.CodeModel );
-
-                case ModelServiceRole.Research:
-                    return GetAttributeValue( AttributeKey.ResearchModel );
-
                 case ModelServiceRole.Default:
                 default:
                     return GetAttributeValue( AttributeKey.DefaultModel );
-            };
+            }
         }
 
         /// <inheritdoc/>

@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <appSettings>
-    <add key="AzureOpenAIApiKey" value="" />
-    <add key="AzureOpenAIEndpoint" value="" />
-    <add key="SkipAzureOpenAI" value="False" />
+    <add key="RockIntelligenceApiKey" value="" />
+    <add key="SkipIntegration" value="False" />
 </appSettings>
 

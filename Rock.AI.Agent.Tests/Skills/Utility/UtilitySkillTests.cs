@@ -18,22 +18,21 @@ namespace Rock.AI.Agent.Tests.Skills.Utility;
 public class UtilitySkillTests : MockDatabaseTestsBase
 {
     /// <summary>
-    /// Checks if the required configuration settings for Azure OpenAI are present.
+    /// Checks if the required configuration settings for integration tests are present.
     /// </summary>
     /// <returns><c>true</c> if the configuration is valid; <c>false</c> otherwise.</returns>
     public static bool HasRequiredConfiguration()
     {
-        return !string.IsNullOrWhiteSpace( ConfigurationManager.AppSettings["AzureOpenAIApiKey"] )
-            && !string.IsNullOrWhiteSpace( ConfigurationManager.AppSettings["AzureOpenAIEndpoint"] );
+        return ConfigurationManager.AppSettings["RockIntelligenceApiKey"].IsNotNullOrWhiteSpace();
     }
 
     /// <summary>
-    /// Checks if the Azure Open AI tests are disabled.
+    /// Checks if the integration tests are disabled.
     /// </summary>
     /// <returns><c>true</c> if the tests are disabled; otherwise <c>false</c>.</returns>
     public static bool TestsAreDisabled()
     {
-        return !ConfigurationManager.AppSettings["SkipAzureOpenAI"].ToStringSafe().AsBoolean();
+        return !ConfigurationManager.AppSettings["SkipIntegration"].ToStringSafe().AsBoolean();
     }
 
 

@@ -93,32 +93,12 @@ internal class AgentBuilder
     /// <returns>A configured IChatAgent instance.</returns>
     internal ( IChatAgent Agent, List<string> output, List<string> logs ) Build()
     {
-        var apiKey = ConfigurationManager.AppSettings["AzureOpenAIApiKey"];
-        var endpoint = ConfigurationManager.AppSettings["AzureOpenAIEndpoint"];
+        var apiKey = ConfigurationManager.AppSettings["RockIntelligenceApiKey"];
 
         // Create a mock provider configured with the test API key and endpoint.
-        var providerMock = new Mock<AzureOpenAIProvider>( false ) { CallBase = true };
-
-        var seed = _seed;
-        if ( !seed.HasValue )
-        {
-            seed = GetRandomLong();
-            Console.WriteLine( $"Configured a seed value of {seed}." );
-        }
-        else if ( seed == 0 )
-        {
-            seed = null;
-            Console.WriteLine( "Configured with no seed value." );
-        }
+        var providerMock = new Mock<RockIntelligenceProvider>( false ) { CallBase = true };
 
         providerMock.Setup( m => m.GetAttributeValue( "ApiKey" ) ).Returns( apiKey );
-        providerMock.Setup( m => m.GetAttributeValue( "Endpoint" ) ).Returns( endpoint );
-        providerMock.Setup( m => m.GetAttributeValue( "CodeModel" ) ).Returns( "gpt-5-mini" );
-        providerMock.Setup( m => m.GetAttributeValue( "ResearchModel" ) ).Returns( "gpt-5-mini" );
-        providerMock.Setup( m => m.GetAttributeValue( "DefaultModel" ) ).Returns( "gpt-5-mini" );
-        providerMock.Setup( m => m.GetAttributeValue( "DefaultTemperature" ) ).Returns( "1" );
-        providerMock.Setup( m => m.GetAttributeValue( "DefaultTopP" ) ).Returns( "1" );
-        providerMock.Setup( m => m.GetAttributeValue( "Seed" ) ).Returns( seed?.ToString() );
 
         // Create mocks for accessing the database.
         var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
