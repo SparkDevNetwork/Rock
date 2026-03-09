@@ -4,6 +4,7 @@ using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
+using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.PersonSkill;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -11,15 +12,16 @@ using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills
 {
-    internal partial class PersonSkill
+    internal partial class StreakSkill
     {
         #region Tool(s)
 
-        [Description( "Lists achievement records for a specific person." )]
-        [AgentPurpose( "Retrieves the achievements for a single person." )]
+        [Description( "Lists achievement records." )]
+        [AgentPurpose( "Retrieves the achievements." )]
         [AgentToolGuid( "d1038401-a36a-4e08-af38-6825edbb1ded" )]
-        public IAgentToolResult ListAchievementsForPerson(
-            string personIdKey,
+        public IAgentToolResult ListAchievements(
+            string personIdKey = null,
+            string achievementTypeIdKey = null,
 
             [Description( "Only include closed attempts if true, only include open attempts if false, or all attempts if null." )]
             bool? closedState = null,
@@ -46,10 +48,11 @@ namespace Rock.AI.Agent.Skills
                 .Join( personAliasQry, aa => aa.AchieverEntityId, pa => pa.Id, ( aa, pa ) => new
                 {
                     AchievementAttempt = aa,
-                    pa.PersonId,
+                    pa.Person,
                 } );
 
-            qry = helper.WhereRequiredIdKey( qry, aa => aa.PersonId, personIdKey );
+            qry = helper.WhereOptionalIdKey( qry, aa => aa.Person.Id, personIdKey );
+            qry = helper.WhereOptionalIdKey( qry, aa => aa.AchievementAttempt.AchievementTypeId, achievementTypeIdKey );
             qry = helper.WhereOptionalPropertyBetween( qry, aa => aa.AchievementAttempt.AchievementAttemptEndDateTime, startDate, endDate );
 
             if ( closedState == true )
@@ -61,12 +64,18 @@ namespace Rock.AI.Agent.Skills
                 qry = qry.Where( aa => !aa.AchievementAttempt.IsClosed );
             }
 
+            if ( achievementTypeIdKey.IsNullOrWhiteSpace() && personIdKey.IsNullOrWhiteSpace() )
+            {
+                helper.AddError( "At least one of personIdKey or achievementTypeIdKey must be provided." );
+            }
+
             if ( helper.HasErrors )
             {
                 return helper.ErrorResult;
             }
 
             var orderedQry = qry
+                .AsExpandable()
                 .Select( aa => new AchievementAttemptResult
                 {
                     Id = aa.AchievementAttempt.Id,
@@ -75,6 +84,7 @@ namespace Rock.AI.Agent.Skills
                         Id = aa.AchievementAttempt.AchievementType.Id,
                         Name = aa.AchievementAttempt.AchievementType.Name,
                     },
+                    Person = PersonResult.NameOnly( aa.Person ),
                     Progress = ( double ) aa.AchievementAttempt.Progress * 100,
                     IsClosed = aa.AchievementAttempt.IsClosed,
                     IsSuccessful = aa.AchievementAttempt.IsSuccessful,

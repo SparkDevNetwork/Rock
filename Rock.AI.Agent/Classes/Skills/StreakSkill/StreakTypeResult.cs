@@ -17,26 +17,25 @@
 using Rock.AI.Agent.Classes.Entity;
 using Rock.Model;
 
-namespace Rock.AI.Agent.Classes.Skills.PersonSkill
+namespace Rock.AI.Agent.Classes.Skills.StreakSkill;
+
+/// <summary>
+/// Represents a single streak type.
+/// </summary>
+internal class StreakTypeResult : EntityResultBase
 {
     /// <summary>
-    /// Represents a single streak type.
+    /// The name of the streak type.
     /// </summary>
-    internal class StreakTypeResult : EntityResultBase
-    {
-        /// <summary>
-        /// The name of the streak type.
-        /// </summary>
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        /// <summary>
-        /// Description of what the streak type is about.
-        /// </summary>
-        public string Description { get; set; }
+    /// <summary>
+    /// Description of what the streak type is about.
+    /// </summary>
+    public string Description { get; set; }
 
-        /// <summary>
-        /// How often the streak occurrences are.
-        /// </summary>
-        public StreakOccurrenceFrequency OccurrenceFrequency { get; set; }
-    }
+    /// <summary>
+    /// How often the streak occurrences are.
+    /// </summary>
+    public StreakOccurrenceFrequency OccurrenceFrequency { get; set; }
 }

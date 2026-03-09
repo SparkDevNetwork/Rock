@@ -32,6 +32,11 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
         public KeyNameResult AchievementType { get; set; }
 
         /// <summary>
+        /// The person that is working on or has achieved the achievement.
+        /// </summary>
+        public PersonResult Person { get; set; }
+
+        /// <summary>
         /// The date and time the attempt was started.
         /// </summary>
         public DateTime? AttemptStartDateTime { get; set; }
