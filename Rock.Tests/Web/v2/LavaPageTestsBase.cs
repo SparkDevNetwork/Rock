@@ -168,7 +168,7 @@ namespace Rock.Tests.Web.v2
 
             public MockRockContextFactory( Action<Mock<RockContext>> configureMock )
             {
-                var rockContextMock = MockDatabaseHelper.GetRockContextMock();
+                var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
                 var globalDefaultEntityTypeMock = MockDatabaseHelper.CreateEntityMock<EntityType>( EntityTypeIds.GlobalDefault, new Guid( "3c6f0a1b-4d5e-6f7a-8b9c-0d1e2f3a4b5c" ) );
                 var siteEntityTypeMock = MockDatabaseHelper.CreateEntityMock<EntityType>( EntityTypeIds.Site, new Guid( "1d5b9f0c-2d3e-4f4f-8f4e-5f5e5f5e5f5e" ) );
