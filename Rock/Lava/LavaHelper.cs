@@ -25,7 +25,6 @@ using System.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-using Rock.Communication.Chat;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -204,7 +203,6 @@ namespace Rock.Lava
                 mergeFields.Add( "Geolocation", rockPage.RequestContext?.ClientInformation?.Geolocation );
             }
 
-            mergeFields.Add( "IsChatEnabled", ChatHelper.IsChatEnabled );
             mergeFields.Add( "ExperienceMode", Rock.Web.SystemSettings.GetValue( SystemKey.SystemSetting.TRAILBLAZER_MODE ).AsBoolean() ? "Trailblazer" : "Essentials" );
 
             return mergeFields;

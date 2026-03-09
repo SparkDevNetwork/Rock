@@ -212,11 +212,11 @@
                                      data-container="body"
                                      :data-original-title="getActivityTooltip(item)">
                                     <div class="activity-item-completion-container">
-                                        <i v-if="isCompleted(item)" class="ti ti-circle-check ti-2x text-success"></i>
-                                        <i v-if="!isCompleted(item)" class="ti ti-circle ti-2x is-incomplete"></i>
+                                        <i v-if="isCompleted(item)" class="ti ti-circle-check text-success"></i>
+                                        <i v-if="!isCompleted(item)" class="ti ti-circle is-incomplete"></i>
                                     </div>
                                     <div class="activity-item-detail-container">
-                                        <h5 class="activity-name">{{ item?.classActivityBag?.name }}</h5>
+                                        <h6 class="activity-name">{{ item?.classActivityBag?.name }}</h6>
                                         <div class="activity-item-time" v-if="getActivityTimeText(item)">
                                             <div class="text-muted" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">{{ getActivityTimeText(item) }}</div>
                                         </div>

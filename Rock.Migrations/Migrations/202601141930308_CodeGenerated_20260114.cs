@@ -629,6 +629,9 @@ When mapping is used:<br/>
             //   Path: -
             //   EntityType: Add Contact
             RockMigrationHelper.DeleteBlockType( "DE2F490D-2598-40E8-8170-4753DDC0A0B0" );
+
+
+            RockMigrationHelper.DeleteEntityType( "A3D9F1C4-E3C1-4D3A-8C2E-7F4B5B6D9F1C" );
         }
     }
 }

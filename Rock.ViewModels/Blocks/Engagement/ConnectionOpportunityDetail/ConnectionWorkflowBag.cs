@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,12 +38,12 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionOpportunityDetail
         /// <summary>
         /// Gets or sets the trigger type.
         /// </summary>
-        public int TriggerType { get; set; }
+        public ConnectionWorkflowTriggerType TriggerType { get; set; }
 
         /// <summary>
-        /// Gets or sets the qualifier value formatted as "|Primary|Secondary|".
+        /// Gets or sets the qualifier value.
         /// </summary>
-        public string QualifierValue { get; set; }
+        public ConnectionWorkflowQualifierValueBag QualifierValue { get; set; }
 
         /// <summary>
         /// Gets or sets the connection status ID used to filter workflow manual triggers.

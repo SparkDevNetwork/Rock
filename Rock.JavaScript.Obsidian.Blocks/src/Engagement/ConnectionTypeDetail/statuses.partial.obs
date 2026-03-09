@@ -1,0 +1,895 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentStack title="Status List"
+                  description="Define the statuses used to track the progress of connection requests, including default status, due timing, and completion behavior."
+                  headerLocation="top">
+        <NotificationBox v-if="statusErrorMessage" :alertType="AlertType.Danger">
+            {{ statusErrorMessage }}
+        </NotificationBox>
+
+        <Grid :data="gridData" keyField="guid" itemTerm="Status" liveUpdates light @addItem="onAddStatus">
+            <ReorderColumn @orderChanged="onStatusOrderChanged" />
+            <TextColumn name="name" field="name" title="Status" />
+            <TextColumn name="description" field="description" title="Description" />
+            <NumberColumn v-if="isDurationPerStatus" name="dueInDays" field="dueInDays" title="Due In (Days)" />
+            <BooleanColumn name="isDefault" field="isDefault" title="Default" />
+            <EditColumn @click="onEditStatus" />
+            <DeleteColumn @click="onDeleteStatus" />
+        </Grid>
+    </ContentStack>
+
+    <Modal v-model="isModalVisible" :title="`${isEditing ? 'Update' : 'Create'} Status`" saveText="Save"
+           cancelText="Cancel" :onSave="onSaveStatus">
+        <ContentSectionContainer :sidebar="false">
+            <ContentSection light>
+                <div class="basic-fields">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <TextBox v-model="statusName" label="Name" rules="required" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <CheckBox v-model="theStatus.isActive" label="Active" />
+                        </div>
+                    </div>
+
+                    <TextBox v-model="statusDescription" label="Description" textMode="multiline" />
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <ColorPicker v-model="statusHighlightColor" label="Highlight Color"
+                                         help="Choose the color used to visually highlight this status throughout the application." />
+                        </div>
+                    </div>
+                </div>
+            </ContentSection>
+
+            <ContentSection title="Configure Status" icon="ti ti-settings">
+                <ContentStack title="Options"
+                              description="Define default behavior and requirements for requests in this status.">
+                    <div class="form-group">
+                        <InlineCheckBox v-model="theStatus.isDefault" label="Set as Default Status"
+                                        help="New connection requests will be assigned this status by default." />
+                    </div>
+
+                    <div class="form-group">
+                        <InlineCheckBox v-model="theStatus.isNoteRequiredOnCompletion"
+                                        label="Note Required on Completion"
+                                        help="Require a note to be entered when a request is marked as complete while in this status." />
+                    </div>
+
+                    <div class="form-group">
+                        <InlineCheckBox v-model="theStatus.autoInactivateState"
+                                        label="Automatically Set State to Inactive"
+                                        help="Selecting this status will automatically set the request state to Inactive." />
+                    </div>
+                </ContentStack>
+
+                <ContentStack v-if="showDateSettingsStack" title="Date Settings"
+                              description="Set due date and timing rules that apply when a request enters this status.">
+                    <div v-if="isDurationPerStatus">
+                        <NumberBox v-model="theStatus.requestStatusDueDateOffsetInDays"
+                                   label="Status Due Duration (In Days)" inputClasses="input-width-md" :decimalCount="0"
+                                   :rules="dueDurationRules"
+                                   help="Defines how many days a request can remain in this status before it is considered due." />
+                    </div>
+
+                    <div v-if="isDurationPerStatus">
+                        <NumberBox v-model="theStatus.requestStatusDueSoonOffsetInDays"
+                                   label="Due Soon Window (In Days)" inputClasses="input-width-md" :decimalCount="0"
+                                   :rules="dueSoonWindowRules"
+                                   help="Defines the number of days before the due date during which a request is considered due soon." />
+                    </div>
+
+                    <div v-if="props.isFutureFollowupEnabled">
+                        <NumberBox v-model="theStatus.autoFutureFollowUpPauseInDays"
+                                   label="Future Follow-Up Duration (In Days)" inputClasses="input-width-md" :decimalCount="0"
+                                   :rules="futureFollowUpDurationRules"
+                                   help="Defines how long a request remains in the Future Follow-Up state before it becomes active." />
+                    </div>
+                </ContentStack>
+            </ContentSection>
+
+            <ContentSection title="Automations" icon="ti ti-settings-automation">
+                <ContentStack title="Status Automations"
+                              description="These automations run on requests in this status and can automatically update the status when criteria are met. Rules are evaluated after each save and during the scheduled “Connection Request Automation” job."
+                              headerLocation="top">
+                    <NotificationBox v-if="automationErrorMessage" :alertType="automationErrorAlertType">
+                        <div v-html="automationErrorMessage"></div>
+                    </NotificationBox>
+                    <template v-if="!showAutomationForm">
+                        <Grid :data="automationsGridData" keyField="guid" itemTerm="Automation" liveUpdates light
+                              @addItem="onAddAutomation">
+                            <ReorderColumn @orderChanged="onAutomationOrderChanged" />
+                            <TextColumn name="name" field="name" title="Name" />
+                            <TextColumn name="dataView" field="dataView" title="Data View" />
+                            <TextColumn name="groupReqFilter" field="groupReqFilter" title="Group Req. Filter" />
+                            <TextColumn name="moveTo" field="moveTo" title="Move To" />
+                            <EditColumn @click="onEditAutomation" />
+                            <DeleteColumn @click="onDeleteAutomation" />
+                        </Grid>
+                    </template>
+                    <template v-else-if="theAutomation">
+                        <div class="automation-form">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <TextBox v-model="automationNameValue" label="Name" rules="required" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <DataViewPicker label="Data View" v-model="theAutomation.dataView"
+                                                    :entityTypeGuid="EntityType.ConnectionRequest"
+                                                    help="Select the Data View used to identify which connection requests this automation applies to. The Data View must be based on connection requests." />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <RadioButtonList label="Group Requirements Filter"
+                                                     v-model="groupRequirementFilterValue"
+                                                     :items="enumToListItemBag(GroupRequirementsFilterDescription)"
+                                                     help="Specify whether group requirements from the selected Placement Group must be met for this automation to apply." />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <DropDownList label="Move To" v-model="destinationStatusGuidValue"
+                                                  :showBlankItem="true" :items="destinationStatusOptions" rules="required" />
+                                </div>
+                            </div>
+
+                            <div class="actions">
+                                <RockButton btnType="default" @click="onSaveAutomation">
+                                    <i class="ti ti-device-floppy"></i>
+                                    Save Automation
+                                </RockButton>
+                                <RockButton btnType="link" @click="onCancelAutomationForm">Cancel</RockButton>
+                            </div>
+                        </div>
+                    </template>
+                </ContentStack>
+            </ContentSection>
+        </ContentSectionContainer>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { BooleanColumn, DeleteColumn, EditColumn, NumberColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { DueDateCalculationMode } from "@Obsidian/Enums/Connection/dueDateCalculationMode";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { CanDeleteRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/canDeleteRequestBag";
+    import { CanDeleteResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/canDeleteResponseBag";
+    import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionStatusBag";
+    import { ConnectionStatusAutomationBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionStatusAutomationBag";
+    import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionWorkflowBag";
+    import { ConnectionWorkflowTriggerType } from "@Obsidian/Enums/Connection/connectionWorkflowTriggerType";
+    import { GroupRequirementsFilter, GroupRequirementsFilterDescription } from "@Obsidian/Enums/Connection/groupRequirementsFilter";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { EntityKey } from "./types.partial";
+    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    const props = defineProps({
+        /**
+         * The statuses configured for this connection type.
+         */
+        statuses: {
+            type: Array as PropType<ConnectionStatusBag[]>,
+            required: true
+        },
+
+        /**
+         * The workflows configured for this connection type, used to check for references when deleting statuses.
+         */
+        workflows: {
+            type: Array as PropType<ConnectionWorkflowBag[]>,
+            required: true
+        },
+
+        /**
+         * Determines if status-based due date offsets are shown.
+         */
+        dueDateCalculationMode: {
+            type: Number as PropType<DueDateCalculationMode>,
+            required: true
+        },
+
+        /**
+         * Indicates whether Future Follow-Up is enabled in the ConnectionType settings,
+         * which controls whether the Future Follow-Up Duration field is shown for each status.
+         */
+        isFutureFollowupEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:statuses", value: ConnectionStatusBag[]): void
+    }>();
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const theStatus = ref<ConnectionStatusBag>(createNewStatus());
+    const isModalVisible = ref(false);
+    const isEditing = ref(false);
+    const statusErrorMessage = ref<string | null>(null);
+
+    const theAutomation = ref<ConnectionStatusAutomationBag | null>(null);
+    const showAutomationForm = ref(false);
+    const automationErrorMessage = ref<string | null>(null);
+
+    const matchAllRequestsAutomationWarningMessage = "<strong>Warning</strong> Your current configuration will match all requests. Please provide either a dataview and/or a group requirements filter.";
+
+    const automationErrorAlertType = computed((): AlertType => {
+        return automationErrorMessage.value === matchAllRequestsAutomationWarningMessage
+            ? AlertType.Warning
+            : AlertType.Danger;
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const statuses = computed({
+        get(): ConnectionStatusBag[] {
+            return props.statuses ?? [];
+        },
+        set(value: ConnectionStatusBag[]) {
+            emit("update:statuses", value);
+        }
+    });
+
+    /**
+     * Grid rows for the status list.
+     */
+    const gridData = computed(() => {
+        const rows = (statuses.value ?? []).map(s => ({
+            guid: s.guid,
+            name: s.name ?? "",
+            description: s.description ?? "",
+            dueInDays: s.requestStatusDueDateOffsetInDays,
+            isDefault: s.isDefault
+        }));
+
+        return { rows };
+    });
+
+    /**
+     * Grid rows for the status automations list.
+     */
+    const automationsGridData = computed(() => {
+        const automations = theStatus.value.automations ?? [];
+        const theStatuses = statuses.value ?? [];
+
+        const rows = automations.map(a => {
+            const destStatusText = a.destinationStatusGuid
+                ? theStatuses.find(s => s.guid === a.destinationStatusGuid)
+                : null;
+            const dataViewText = a.dataView != null ? a.dataView.text : null;
+            const groupReqFilterText = a.groupRequirementsFilter != null ? GroupRequirementsFilterDescription[a.groupRequirementsFilter] : null;
+
+            return {
+                guid: a.guid,
+                name: a.automationName ?? "",
+                dataView: dataViewText ?? "",
+                groupReqFilter: groupReqFilterText ?? "",
+                moveTo: destStatusText?.name ?? ""
+            };
+        });
+
+        return { rows };
+    });
+
+    /**
+     * Destination status options, excluding the current status.
+     */
+    const destinationStatusOptions = computed((): ListItemBag[] => {
+        const currentStatusGuid = theStatus.value.guid;
+        return (statuses.value ?? [])
+            .filter(s => s.guid !== currentStatusGuid)
+            .map(s => ({
+                value: s.guid,
+                text: s.name ?? ""
+            }));
+    });
+
+    const statusName = computed({
+        get(): string {
+            return theStatus.value.name ?? "";
+        },
+        set(value: string) {
+            theStatus.value.name = value;
+        }
+    });
+
+    const statusDescription = computed({
+        get(): string {
+            return theStatus.value.description ?? "";
+        },
+        set(value: string) {
+            theStatus.value.description = value;
+        }
+    });
+
+    const statusHighlightColor = computed({
+        get(): string {
+            return theStatus.value.highlightColor ?? "";
+        },
+        set(value: string) {
+            theStatus.value.highlightColor = value;
+        }
+    });
+
+    const automationNameValue = computed({
+        get(): string {
+            return theAutomation.value?.automationName ?? "";
+        },
+        set(value: string) {
+            if (theAutomation.value) {
+                theAutomation.value.automationName = value;
+            }
+        }
+    });
+
+    const groupRequirementFilterValue = computed({
+        get(): string {
+            const val = theAutomation.value?.groupRequirementsFilter;
+            return val != null ? val.toString() : "";
+        },
+        set(value: string) {
+            if (theAutomation.value) {
+                theAutomation.value.groupRequirementsFilter = parseInt(value) as GroupRequirementsFilter;
+            }
+        }
+    });
+
+    const destinationStatusGuidValue = computed({
+        get(): string {
+            return theAutomation.value?.destinationStatusGuid ?? "";
+        },
+        set(value: string) {
+            if (theAutomation.value) {
+                theAutomation.value.destinationStatusGuid = value ? value : null;
+            }
+        }
+    });
+
+    /**
+     * Determines whether per-status durations are enabled.
+     */
+    const isDurationPerStatus = computed((): boolean => {
+        return props.dueDateCalculationMode === DueDateCalculationMode.DurationPerStatus;
+    });
+
+    /**
+     * Controls display of the date settings section, depending on whether any date-related
+     * settings are applicable (either status-based durations or future follow-up).
+     */
+    const showDateSettingsStack = computed((): boolean => {
+        return isDurationPerStatus.value || props.isFutureFollowupEnabled;
+    });
+
+    /**
+     * Rules for the status due duration field.
+     */
+    const dueDurationRules = computed((): (ValidationRuleFunction | string)[] => {
+        return ["required", validateDueDuration];
+    });
+
+    /**
+     * Rules for the due soon window field.
+     */
+    const dueSoonWindowRules = computed((): (ValidationRuleFunction | string)[] => {
+        void theStatus.value.requestStatusDueDateOffsetInDays;
+        return ["required", validateDueSoonWindow];
+    });
+
+    /**
+     * Rules for the future follow-up duration field.
+     */
+    const futureFollowUpDurationRules = computed((): (ValidationRuleFunction | string)[] => {
+        return ["required", validateFutureFollowUpDuration];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Validates the Due Duration field.
+     * The value is required and must be greater than 0.
+     */
+    const validateDueDuration: ValidationRuleFunction = (value): ValidationResult => {
+        if (typeof value !== "number" && typeof value !== "string") {
+            return "Invalid value provided.";
+        }
+
+        const dueDuration = toNumber(value);
+
+        // Required & positive
+        if (dueDuration <= 0) {
+            return "A number greater than 0 must be provided.";
+        }
+
+        return true;
+    };
+
+    /**
+     * Validates the Due Soon Window field.
+     * The value is required, must be greater than 0, and cannot exceed the
+     * Due Duration value.
+     */
+    const validateDueSoonWindow: ValidationRuleFunction = (value): ValidationResult => {
+        if (typeof value !== "number" && typeof value !== "string") {
+            return "Invalid value provided.";
+        }
+
+        const dueSoonWindow = toNumber(value);
+        const dueDuration = toNumber(theStatus.value.requestStatusDueDateOffsetInDays);
+
+        // Required & positive
+        if (dueSoonWindow <= 0) {
+            return "A number greater than 0 must be provided.";
+        }
+
+        // Must not exceed Due Duration
+        if (dueDuration > 0 && dueSoonWindow > dueDuration) {
+            return "This value must be less than the Status Due Duration.";
+        }
+
+        return true;
+    };
+
+    /**
+     * Validates the Future Follow-Up Duration field.
+     * The value is required and must be greater than 0.
+     */
+    const validateFutureFollowUpDuration: ValidationRuleFunction = (value): ValidationResult => {
+        if (typeof value !== "number" && typeof value !== "string") {
+            return "Invalid value provided.";
+        }
+
+        const futureFollowUpDuration = toNumber(value);
+
+        // Required & positive
+        if (futureFollowUpDuration <= 0) {
+            return "A number greater than 0 must be provided.";
+        }
+
+        return true;
+    };
+
+    /**
+     * Creates a new status instance for editing in the modal.
+     */
+    function createNewStatus(): ConnectionStatusBag {
+        const maxOrder = (props.statuses ?? []).reduce((max, s) => Math.max(max, s.order), 0);
+
+        return {
+            guid: newGuid(),
+            name: "",
+            order: maxOrder + 1, // order will be corrected on the server
+            description: "",
+            highlightColor: "#F8F8FC",
+            isActive: true,
+            isDefault: false,
+            isNoteRequiredOnCompletion: false,
+            autoInactivateState: false,
+            requestStatusDueDateOffsetInDays: 0,
+            requestStatusDueSoonOffsetInDays: 0,
+            autoFutureFollowUpPauseInDays: 0,
+            automations: []
+        };
+    }
+
+    /**
+     * Creates a new automation instance for editing in the inline form.
+     */
+    function createNewAutomation(): ConnectionStatusAutomationBag {
+        const automations = theStatus.value.automations ?? [];
+        const maxOrder = automations.reduce((max, a) => Math.max(max, a.order), 0);
+
+        return {
+            guid: newGuid(),
+            order: maxOrder + 1, // order will be corrected on the server
+            automationName: "",
+            destinationStatusGuid: null, // this is a required field, but we don't want a default value pre-selected in the UI; we make sure to validate it on save
+            dataView: null,
+            groupRequirementsFilter: GroupRequirementsFilter.Ignore
+        };
+    }
+
+    /**
+     * Returns true if the workflow references the provided status guid.
+     *
+     * @param workflow The workflow to check for status references.
+     * @param statusGuid The normalized (lowercase, trimmed) status GUID to search for.
+     * @returns True if the workflow references the status; otherwise false.
+     */
+    function workflowReferencesStatus(workflow: ConnectionWorkflowBag, statusGuid: string): boolean {
+        const primary = workflow.qualifierValue?.primaryQualifier?.trim().toLowerCase() ?? "";
+        const secondary = workflow.qualifierValue?.secondaryQualifier?.trim().toLowerCase() ?? "";
+        const manualStatus = workflow.manualTriggerFilterConnectionStatusGuid?.trim().toLowerCase() ?? "";
+
+        switch (workflow.triggerType) {
+            case ConnectionWorkflowTriggerType.StatusChanged:
+                return primary === statusGuid || secondary === statusGuid;
+
+            case ConnectionWorkflowTriggerType.StatusBecomesDue:
+            case ConnectionWorkflowTriggerType.StatusBecomesDueSoon:
+            case ConnectionWorkflowTriggerType.StatusBecomesOverdue:
+                return primary === statusGuid;
+
+            case ConnectionWorkflowTriggerType.Manual:
+                return manualStatus === statusGuid;
+
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Builds the list of workflow names that reference a status.
+     *
+     * @param statusGuid The GUID of the status to find referencing workflows for.
+     * @returns An array of workflow names that reference the specified status.
+     */
+    function getReferencingWorkflowNames(statusGuid: string): string[] {
+        const normalizedStatusGuid = statusGuid?.trim().toLowerCase() ?? "";
+        if (!normalizedStatusGuid) {
+            return [];
+        }
+
+        return (props.workflows ?? [])
+            .filter(workflow => workflow != null && workflowReferencesStatus(workflow, normalizedStatusGuid))
+            .map(workflow => workflow.workflowType?.text?.trim() || "Workflow");
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add Status button is clicked.
+     */
+    function onAddStatus(): void {
+        isEditing.value = false;
+        statusErrorMessage.value = null;
+        automationErrorMessage.value = null;
+
+        theStatus.value = createNewStatus();
+
+        showAutomationForm.value = false;
+        theAutomation.value = null;
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Called when the Edit button for a status row is clicked.
+     *
+     * @param guid The unique identifier of the status to edit.
+     */
+    function onEditStatus(guid: string): void {
+        const selected = (statuses.value ?? []).find(s => s.guid === guid);
+
+        if (!selected) {
+            return;
+        }
+
+        isEditing.value = true;
+        statusErrorMessage.value = null;
+        automationErrorMessage.value = null;
+
+        theStatus.value = {
+            ...selected,
+            automations: (selected.automations ?? []).map(a => ({
+                ...a,
+                dataView: a.dataView ? { ...a.dataView } : null
+            }))
+        };
+
+        showAutomationForm.value = false;
+        theAutomation.value = null;
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Called when the Delete button for a status row is clicked.
+     *
+     * @param guid The unique identifier of the status to delete.
+     */
+    async function onDeleteStatus(guid: string): Promise<void> {
+        const statusAutomations = (statuses.value ?? []).flatMap(s => s.automations ?? []);
+        const statusIsDestination = statusAutomations.some(a => a.destinationStatusGuid === guid);
+
+        if (statusIsDestination) {
+            statusErrorMessage.value = "This status is used as a destination in an automation and cannot be deleted.";
+            return;
+        }
+
+        const referencingWorkflowNames = getReferencingWorkflowNames(guid);
+        if (referencingWorkflowNames.length > 0) {
+            statusErrorMessage.value = `This status is referenced by ${referencingWorkflowNames.length} workflow(s): ${referencingWorkflowNames.join(", ")}. Update or remove those workflow references before deleting this status.`;
+            return;
+        }
+
+        const result = await invokeBlockAction<CanDeleteResponseBag>("CanDeleteEntity", {
+            request: {
+                entityKey: EntityKey.Status,
+                entityGuid: guid
+            } as CanDeleteRequestBag
+        });
+
+        if (!result.isSuccess || !result.data) {
+            statusErrorMessage.value = result.errorMessage || "Unable to delete this status.";
+            return;
+        }
+
+        if (!result.data.canDelete) {
+            statusErrorMessage.value = result.data.errorMessage || "This status cannot be deleted.";
+            return;
+        }
+
+        statuses.value = (statuses.value ?? []).filter(s => s.guid !== guid);
+        statusErrorMessage.value = null;
+    }
+
+    /**
+     * Called when the status modal Save button is clicked.
+     */
+    function onSaveStatus(): void {
+        const currentStatuses = statuses.value ?? [];
+        const idx = currentStatuses.findIndex(s => s.guid === theStatus.value.guid);
+
+        const statusName = (theStatus.value.name ?? "").trim().toLowerCase();
+        if (statusName) {
+            const isDuplicate = currentStatuses.some(s =>
+                s.guid !== theStatus.value.guid
+                && (s.name ?? "").trim().toLowerCase() === statusName);
+
+            if (isDuplicate) {
+                statusErrorMessage.value = `A connection status already exists with the name '${statusName}'. Please use a different connection status name.`;
+                return;
+            }
+        }
+
+        let updatedStatuses: ConnectionStatusBag[];
+
+        if (idx >= 0) {
+            updatedStatuses = [...currentStatuses];
+            updatedStatuses.splice(idx, 1, { ...theStatus.value });
+        }
+        else {
+            updatedStatuses = [...currentStatuses, { ...theStatus.value }];
+        }
+
+        // If this status is now marked as the default, ensure only the current status has this property set.
+        if (theStatus.value.isDefault) {
+            updatedStatuses = updatedStatuses.map(s => ({
+                ...s,
+                isDefault: s.guid === theStatus.value.guid
+            }));
+        }
+
+        statuses.value = updatedStatuses;
+        statusErrorMessage.value = null;
+        isModalVisible.value = false;
+    }
+
+    /**
+     * Called when a status row is reordered in the grid.
+     *
+     * @param item The row being moved.
+     * @param beforeItem The row the moved item was placed before, or null if moved to end.
+     */
+    async function onStatusOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const itemGuid = item["guid"] as string;
+        const beforeItemGuid = beforeItem?.["guid"] as string | null;
+
+        const currentItems = [...(statuses.value ?? [])];
+        const idx = currentItems.findIndex(i => i.guid === itemGuid);
+
+        if (idx < 0) {
+            return false;
+        }
+
+        const itemToMove = currentItems.splice(idx, 1)[0];
+
+        if (beforeItemGuid) {
+            const beforeIndex = currentItems.findIndex(i => i.guid === beforeItemGuid);
+            if (beforeIndex < 0) {
+                currentItems.push(itemToMove);
+            }
+            else {
+                currentItems.splice(beforeIndex, 0, itemToMove);
+            }
+        }
+        else {
+            currentItems.push(itemToMove);
+        }
+
+        statuses.value = currentItems;
+        return true;
+    }
+
+    /**
+     * Called when the Add Automation button is clicked.
+     */
+    function onAddAutomation(): void {
+        automationErrorMessage.value = null;
+
+        theAutomation.value = createNewAutomation();
+
+        showAutomationForm.value = true;
+    }
+
+    /**
+     * Called when the Edit button for an automation row is clicked.
+     *
+     * @param guid The unique identifier of the automation to edit.
+     */
+    function onEditAutomation(guid: string): void {
+        const selected = (theStatus.value.automations ?? []).find(a => a.guid === guid);
+
+        if (!selected) {
+            return;
+        }
+
+        theAutomation.value = {
+            ...selected,
+            dataView: selected.dataView ? { ...selected.dataView } : null,
+            groupRequirementsFilter: selected.groupRequirementsFilter ?? GroupRequirementsFilter.Ignore
+        };
+
+        automationErrorMessage.value = null;
+        showAutomationForm.value = true;
+    }
+
+    /**
+     * Called when the Delete button for an automation row is clicked.
+     *
+     * @param guid The unique identifier of the automation to delete.
+     */
+    async function onDeleteAutomation(guid: string): Promise<void> {
+        const result = await invokeBlockAction<CanDeleteResponseBag>("CanDeleteEntity", {
+            request: {
+                entityKey: EntityKey.ConnectionStatusAutomation,
+                entityGuid: guid
+            } as CanDeleteRequestBag
+        });
+
+        if (!result.isSuccess || !result.data) {
+            automationErrorMessage.value = result.errorMessage || "Unable to delete this automation.";
+            return;
+        }
+
+        if (!result.data.canDelete) {
+            automationErrorMessage.value = result.data.errorMessage || "This automation cannot be deleted.";
+            return;
+        }
+
+        const automations = (theStatus.value.automations ?? []).filter(a => a.guid !== guid);
+        theStatus.value = {
+            ...theStatus.value,
+            automations: automations
+        };
+
+        automationErrorMessage.value = null;
+    }
+
+    /**
+     * Called when Cancel is clicked in the automation form. Returns to the grid without saving.
+     */
+    function onCancelAutomationForm(): void {
+        theAutomation.value = null;
+        automationErrorMessage.value = null;
+        showAutomationForm.value = false;
+    }
+
+    /**
+     * Called when Save Automation is clicked. Applies the current automation (add or update) and returns to the grid.
+     */
+    function onSaveAutomation(): void {
+        if (!theAutomation.value) {
+            return;
+        }
+
+        if (!theAutomation.value.automationName?.trim()) {
+            automationErrorMessage.value = "Name is required.";
+            return;
+        }
+
+        if (!theAutomation.value.destinationStatusGuid) {
+            automationErrorMessage.value = "Move To is required.";
+            return;
+        }
+
+        const hasDataView = !!theAutomation.value.dataView?.value;
+        const hasGroupRequirementsFilter = (theAutomation.value.groupRequirementsFilter ?? GroupRequirementsFilter.Ignore) !== GroupRequirementsFilter.Ignore;
+
+        if (!hasDataView && !hasGroupRequirementsFilter) {
+            automationErrorMessage.value = matchAllRequestsAutomationWarningMessage;
+            return;
+        }
+
+        const currentAutomations = [...(theStatus.value.automations ?? [])];
+        const idx = currentAutomations.findIndex(a => a.guid === theAutomation.value!.guid);
+
+        if (idx >= 0) {
+            currentAutomations.splice(idx, 1, { ...theAutomation.value });
+        }
+        else {
+            currentAutomations.push({ ...theAutomation.value });
+        }
+
+        theStatus.value = {
+            ...theStatus.value,
+            automations: currentAutomations
+        };
+
+        theAutomation.value = null;
+        automationErrorMessage.value = null;
+        showAutomationForm.value = false;
+    }
+
+    /**
+     * Called when an automation row is reordered in the grid.
+     */
+    async function onAutomationOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const itemGuid = item["guid"] as string;
+        const beforeItemGuid = beforeItem?.["guid"] as string | null;
+
+        const currentItems = [...(theStatus.value.automations ?? [])];
+        const idx = currentItems.findIndex(a => a.guid === itemGuid);
+
+        if (idx < 0) {
+            return false;
+        }
+
+        const itemToMove = currentItems.splice(idx, 1)[0];
+
+        if (beforeItemGuid) {
+            const beforeIndex = currentItems.findIndex(a => a.guid === beforeItemGuid);
+            if (beforeIndex < 0) {
+                currentItems.push(itemToMove);
+            }
+            else {
+                currentItems.splice(beforeIndex, 0, itemToMove);
+            }
+        }
+        else {
+            currentItems.push(itemToMove);
+        }
+
+        theStatus.value.automations = currentItems;
+
+        return true;
+    }
+
+    // #endregion Event Handlers
+</script>

@@ -161,7 +161,7 @@ namespace Rock.Blocks.Reporting
         {
             var service = new MergeTemplateService( rockContext );
 
-            var queryable = service.Queryable().Include( a => a.PersonAlias.Person );
+            IQueryable<MergeTemplate> queryable = service.Queryable().Include( a => a.PersonAlias.Person );
 
             var mergeTemplateOwnership = GetTemplateOwnership();
 

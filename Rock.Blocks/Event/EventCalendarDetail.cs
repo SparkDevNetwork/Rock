@@ -29,6 +29,7 @@ using Rock.UniversalSearch;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.EventCalendarDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Event
@@ -41,15 +42,16 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of the given Event Calendar." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "b033f86d-c166-4642-b999-0677f2ca2daf" )]
-    [Rock.SystemGuid.BlockTypeGuid( "2dc334ac-c2c2-4031-9e1c-6a5b6fbcae9c" )]
-    public class EventCalendarDetail : RockEntityDetailBlockType<EventCalendar, EventCalendarBag>
+    // was [Rock.SystemGuid.BlockTypeGuid( "2dc334ac-c2c2-4031-9e1c-6a5b6fbcae9c" )]
+    [Rock.SystemGuid.BlockTypeGuid( "0320DFB9-7A5A-4DAC-8234-3D504E496D71" )]
+    public class EventCalendarDetail : RockEntityDetailBlockType<EventCalendar, EventCalendarBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -288,6 +290,29 @@ namespace Rock.Blocks.Event
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+            };
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var key = pageReference.GetPageParameter( PageParameterKey.EventCalendarId );
+            var pageParameters = new Dictionary<string, string>();
+
+            string name = new EventCalendarService( RockContext )
+                .GetSelect( key, c => c.Name );
+
+            if ( name != null )
+            {
+                pageParameters.Add( PageParameterKey.EventCalendarId, key );
+            }
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+            var breadCrumb = new BreadCrumbLink( name ?? "New Event Calendar", breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
             };
         }
 

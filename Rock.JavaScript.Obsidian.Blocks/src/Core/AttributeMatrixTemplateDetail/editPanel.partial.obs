@@ -36,7 +36,6 @@
                 <ReorderColumn @orderChanged="onOrderChanged" />
                 <TextColumn field="name" name="attribute" title="Attribute" />
                 <TextColumn field="type" name="type" title="Type" />
-                <SecurityColumn />
                 <EditColumn @click="onEditAttribute" />
                 <DeleteColumn @click="onDeleteAttribute" />
             </Grid>
@@ -87,7 +86,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import Grid, { EditColumn, TextColumn, DeleteColumn, SecurityColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import Grid, { EditColumn, TextColumn, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AttributeMatrixTemplateBag } from "@Obsidian/ViewModels/Blocks/Core/AttributeMatrixTemplateDetail/attributeMatrixTemplateBag";

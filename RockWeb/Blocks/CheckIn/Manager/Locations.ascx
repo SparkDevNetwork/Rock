@@ -16,7 +16,7 @@
 
         <asp:Panel ID="pnlContent" runat="server" CssClass="checkin-manager">
 
-            <div class="panel-heading hidden">
+            <div class="panel-header hidden">
                 <h1 class="panel-title"> <i class="ti ti-sitemap"></i>&nbsp;<asp:Literal ID="lGroupTypeName" runat="server" /></h1>
             </div>
 
@@ -38,7 +38,7 @@
 
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
-                <asp:Panel ID="pnlNavHeading" runat="server" CssClass="panel-heading cursor-pointer clearfix" >
+                <asp:Panel ID="pnlNavHeading" runat="server" CssClass="panel-header cursor-pointer clearfix" >
                     <asp:PlaceHolder runat="server">
                         <div class="pull-left">
                             <i class="ti ti-chevron-left"></i>
@@ -64,7 +64,7 @@
                         <ItemTemplate>
                             <li id="liNavItem" runat="server" class="list-group-item cursor-pointer">
                                 <div class="content"><%# Eval("Name") %></div>
-                                <div class="pull-right d-flex align-items-center">
+                                <div class="pull-right d-flex gap-3 align-items-center">
                                     <asp:Label ID="lblCurrentCount" runat="server" CssClass="badge"/>
                                     <Rock:Toggle ID="tglRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tglRoom_CheckedChanged"  />
                                     <i class='ti ti-fw ti-chevron-right'></i>

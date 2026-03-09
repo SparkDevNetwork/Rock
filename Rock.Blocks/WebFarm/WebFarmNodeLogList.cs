@@ -101,7 +101,7 @@ namespace Rock.Blocks.WebFarm
         /// <inheritdoc/>
         protected override IQueryable<WebFarmNodeLog> GetListQueryable( RockContext rockContext )
         {
-            var query = base.GetListQueryable( rockContext )
+            IQueryable<WebFarmNodeLog> query = base.GetListQueryable( rockContext )
                 .Include( a => a.WriterWebFarmNode )
                 .Include( a => a.WebFarmNode );
 

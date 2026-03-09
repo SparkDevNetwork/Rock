@@ -20,7 +20,7 @@
                 <TextBox v-model="searchValue" size="small">
                     <template #inputGroupAppend>
                         <span class="input-group-btn">
-                            <button class="btn btn-default" @click.prevent="search"><i class="ti ti-search"></i></button>
+                            <button class="btn btn-default" type="button" @click.prevent="search"><i class="ti ti-search"></i></button>
                         </span>
                     </template>
                 </TextBox>
@@ -34,7 +34,7 @@
                         <span class="text-color d-block">{{ item.text }}</span>
                         <span class="text-muted text-sm" v-html="item.category || 'Top Level'"></span>
                     </div>
-                    <button title="Remove From Preview" class="btn btn-link text-color btn-xs btn-square ml-auto flex-shrink-0 text-center" @click.prevent="removePreviewItem(toGuidOrNull(item.value) ?? emptyGuid)">
+                    <button title="Remove From Preview" type="button" class="btn btn-link text-color btn-xs btn-square ml-auto flex-shrink-0 text-center" @click.prevent="removePreviewItem(toGuidOrNull(item.value) ?? emptyGuid)">
                         <i class="ti ti-x"></i>
                     </button>
                 </div>

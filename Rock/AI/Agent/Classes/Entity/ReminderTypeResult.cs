@@ -58,7 +58,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <value>
         ///   <c>true</c> if the reminder type is active; otherwise, <c>false</c>.
         /// </value>
-        public bool IsActive { get; set; }
+        public bool? IsActive { get; set; }
 
         /// <summary>
         /// Gets or sets the order of the reminder type.
@@ -66,7 +66,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <value>
         /// The order of the reminder type.
         /// </value>
-        public int Order { get; set; }
+        public int? Order { get; set; }
 
         /// <summary>
         /// Gets or sets the notification type for the reminder type.
@@ -74,6 +74,6 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <value>
         /// The notification type for the reminder type.
         /// </value>
-        public ReminderNotificationType NotificationType { get; set; }
+        public ReminderNotificationType? NotificationType { get; set; }
     }
 }

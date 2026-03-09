@@ -2,6 +2,7 @@
 <template>
     <button class="btn btn-default btn-sm"
             title="Edit"
+            type="button"
             :disabled="isDisabled"
             @click.prevent="onClick">
         <i class="ti ti-pencil"></i>

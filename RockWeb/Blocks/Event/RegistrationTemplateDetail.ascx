@@ -101,6 +101,7 @@
                                             <asp:ListItem Value="3" Text="Use Logged In Person" />
                                         </Rock:RockDropDownList>
                                         <Rock:RockCheckBox ID="cbShowSmsOptIn" runat="server" Label="Show SMS Opt-In" Help="When enabled a checkbox will be shown next to each mobile phone number for registrants allowing the registrar to enable SMS messaging for this number." />
+                                        <Rock:RockCheckBox ID="cbPreventDuplicateRegistrants" runat="server" Label="Prevent Duplicate Registrants" Help="When enabled, this prevents the same database record (same Person ID) from being added to the event multiple times. This setting does not resolve or detect separate records that may represent the same individual." />
                                     </div>
                                 </div>
                             </div>
@@ -207,6 +208,65 @@
                         <div class="pull-right">
                             <asp:LinkButton ID="lbAddForm" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddForm_Click" CausesValidation="false"><i class="ti ti-plus"></i> Add Form</asp:LinkButton>
                         </div>
+                    </Rock:PanelWidget>
+
+                    <%-- Registrant Eligibility --%>
+                    <Rock:PanelWidget ID="pwRegistrantEligibility" runat="server" Title="Registrant Eligibility">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:NumberRangeEditor ID="nreEligibilityAgeRange" runat="server" Label="Age Range" Help="Enter the age range allowed to register. You may use decimal values for more precise limits, such as 5.5." NumberType="Double" />
+                                <Rock:RockDropDownList ID="ddlEligibilityAgeClassification" runat="server" Label="Age Classification" Help="Limit registration to individuals who match the selected age classification." />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:NotificationBox ID="nbEligibilityAgeWarning" runat="server" CssClass="d-none" Visible="true" NotificationBoxType="Warning">
+                                    <div><strong>Warning</strong></div>
+                                    To ensure this filter works correctly, include a birthdate field in your form.
+                                </Rock:NotificationBox>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">Grade Range<Rock:HelpBlock ID="hbEligibilityGradeRange" runat="server" Text="Define the eligible grade range. The starting and ending grades are included in the range." /></label>
+                                    <div class="control-wrapper">
+                                        <div class="form-control-group">
+                                            <Rock:RockDropDownList ID="ddlEligibilityGradeOffsetMax" runat="server" CssClass="input-width-md" />
+                                            <span class="to"> to </span>
+                                            <Rock:RockDropDownList ID="ddlEligibilityGradeOffsetMin" runat="server" CssClass="input-width-md" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:NotificationBox ID="nbEligibilityGradeWarning" runat="server" CssClass="d-none" Visible="true" NotificationBoxType="Warning">
+                                    <div><strong>Warning</strong></div>
+                                    To ensure this filter works correctly, include a grade field in your form.
+                                </Rock:NotificationBox>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockDropDownList ID="ddlEligibilityGender" runat="server" Label="Gender" Help="Select a single gender for eligibility. Only individuals who match this selection may register." />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:NotificationBox ID="nbEligibilityGenderWarning" runat="server" CssClass="d-none" Visible="true" NotificationBoxType="Warning">
+                                    <div><strong>Warning</strong></div>
+                                    To ensure this filter works correctly, include a gender field in your form.
+                                </Rock:NotificationBox>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:DataViewItemPicker ID="dvpEligibilityDataView" runat="server" Label="Data View" Help="Limit registration to individuals contained within the selected data view. This is an advanced configuration option and should be used with caution to avoid unintentionally preventing eligible individuals from registering." />
+                            </div>
+                        </div>
+
+                        <asp:HiddenField ID="hfHasGradeField" runat="server" />
+                        <asp:HiddenField ID="hfHasGenderField" runat="server" />
+                        <asp:HiddenField ID="hfHasBirthDateField" runat="server" />
                     </Rock:PanelWidget>
 
                     <%-- Registration Attributes --%>
@@ -699,12 +759,86 @@
                         update: function (event, ui) {
                             {
                                 var postbackArg = 're-order-form:' + ui.item.attr('data-key') + ';' + ui.item.index();
-                                window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
+                                window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" + postbackArg + "')";
                             }
                         }
                     });
                 }
 
+                // Eligibility
+                var $eligibilityAgeRangeLower = $("#<%=nreEligibilityAgeRange.ClientID %> .js-number-range-lower");
+                var $eligibilityAgeRangeUpper = $("#<%=nreEligibilityAgeRange.ClientID %> .js-number-range-upper");
+                var $eligibilityAgeClassification = $("#<%=ddlEligibilityAgeClassification.ClientID %>");
+                var $eligibilityHasBirthDate = $("#<%=hfHasBirthDateField.ClientID %>");
+                var $eligibilityAgeWarning = $("#<%=nbEligibilityAgeWarning.ClientID %>");
+
+                $($eligibilityAgeClassification)
+                    .add($eligibilityAgeRangeUpper)
+                    .add($eligibilityAgeRangeLower)
+                    .on("change", function (event) {
+                        var values = [$eligibilityAgeRangeLower.val(), $eligibilityAgeRangeUpper.val(), $eligibilityAgeClassification.val()];
+                        var hasAgeValue = values.some(v => !!v);
+                        var hasBirthDateField = $eligibilityHasBirthDate.val() === "<%=true.ToString() %>";
+                        console.debug("yo ho yo ho");
+                        <%
+                            // If this logic changes (i.e., adding/removing these specific CSS classes)
+                            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+                        %>
+                        if (hasAgeValue && !hasBirthDateField) {
+                            $eligibilityAgeWarning.removeClass("d-none").addClass("d-block");
+                        }
+                        else {
+                            $eligibilityAgeWarning.removeClass("d-block").addClass("d-none");
+                        }
+                    });
+
+                var $eligibilityGradeOffsetMax = $("#<%=ddlEligibilityGradeOffsetMax.ClientID %>");
+                var $eligibilityGradeOffsetMin = $("#<%=ddlEligibilityGradeOffsetMin.ClientID %>");
+                var $eligibilityHasGradeField = $("#<%=hfHasGradeField.ClientID %>");
+                var $eligibilityGradeWarning = $("#<%=nbEligibilityGradeWarning.ClientID %>");
+
+                $($eligibilityGradeOffsetMax)
+                    .add($eligibilityGradeOffsetMin)
+                    .on("change", function (event) {
+                        var values = [$eligibilityGradeOffsetMax.val(), $eligibilityGradeOffsetMin.val()];
+                        var hasEligibilityValue = values.some(v => !!v);
+                        var hasRequiredField = $eligibilityHasGradeField.val() === "<%=true.ToString() %>";
+                        console.debug("a pirate's life");
+
+                        <%
+                            // If this logic changes (i.e., adding/removing these specific CSS classes)
+                            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+                        %>
+                        if (hasEligibilityValue && !hasRequiredField) {
+                            $eligibilityGradeWarning.removeClass("d-none").addClass("d-block");
+                        }
+                        else {
+                            $eligibilityGradeWarning.removeClass("d-block").addClass("d-none");
+                        }
+                    });
+
+                var $eligibilityGender = $("#<%=ddlEligibilityGender.ClientID %>");
+                var $eligibilityHasGenderField = $("#<%=hfHasGenderField.ClientID %>");
+                var $eligibilityGenderWarning = $("#<%=nbEligibilityGenderWarning.ClientID %>");
+
+                $eligibilityGender
+                    .on("change", function (event) {
+                        var values = [$eligibilityGender.val()];
+                        var hasEligibilityValue = values.some(v => !!v);
+                        var hasRequiredField = $eligibilityHasGenderField.val() === "<%=true.ToString() %>";
+                        console.debug("for me");
+
+                        <%
+                            // If this logic changes (i.e., adding/removing these specific CSS classes)
+                            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+                        %>
+                        if (hasEligibilityValue && !hasRequiredField) {
+                            $eligibilityGenderWarning.removeClass("d-none").addClass("d-block");
+                        }
+                        else {
+                            $eligibilityGenderWarning.removeClass("d-block").addClass("d-none");
+                        }
+                    });
             });
         </script>
     </ContentTemplate>

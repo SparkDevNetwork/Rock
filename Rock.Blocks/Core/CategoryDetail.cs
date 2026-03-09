@@ -42,7 +42,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a particular category." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
     [EntityTypeField( "Entity Type",
@@ -74,7 +74,8 @@ namespace Rock.Blocks.Core
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "2889352c-52ba-45f6-8ee1-9afa61211582" )]
-    [Rock.SystemGuid.BlockTypeGuid( "515dc5c2-4fbd-4eea-9d8e-a807409defde" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "515dc5c2-4fbd-4eea-9d8e-a807409defde" )]
+    [Rock.SystemGuid.BlockTypeGuid( "7BC54887-21C2-4688-BD1D-C1C8B9C86F7C" )]
     public class CategoryDetail : RockEntityDetailBlockType<Category, CategoryBag>, IHasCustomActions
     {
         #region Keys
@@ -565,7 +566,7 @@ namespace Rock.Blocks.Core
             {
                 return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
                 {
-                    [PageParameterKey.CategoryId] = entity.Id.ToString()
+                    [PageParameterKey.CategoryId] = entity.IdKey
                 } ) );
             }
 
@@ -702,7 +703,11 @@ namespace Rock.Blocks.Core
 
                 foreach ( var item in items )
                 {
+#if NET472_OR_GREATER
                     rockContext.Entry( item ).State = System.Data.Entity.EntityState.Modified;
+#else
+                    rockContext.Entry( item ).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+#endif
                 }
 
                 rockContext.SaveChanges();
@@ -743,7 +748,8 @@ namespace Rock.Blocks.Core
             var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuid();
             var entityTypeId = EntityTypeCache.GetId( entityTypeGuid ).ToStringSafe();
 
-            return ActionOk( ChildCategoriesGridBuilder( entityTypeId ).Build( OrderedChildCategories( idKey, RockContext ) ) );
+            var categoryService = new CategoryService( RockContext );
+            return ActionOk( ChildCategoriesGridBuilder( entityTypeId, categoryService ).Build( OrderedChildCategories( idKey, RockContext ) ) );
         }
 
         /// <summary>
@@ -777,7 +783,7 @@ namespace Rock.Blocks.Core
         /// Gets the <see cref="GridBuilder"/> for the child categories list.
         /// </summary>
         /// <returns>a <see cref="GridBuilder{Category}"/> for the child categories grid.</returns>
-        private GridBuilder<Category> ChildCategoriesGridBuilder( string qualifierValue )
+        private GridBuilder<Category> ChildCategoriesGridBuilder( string qualifierValue, CategoryService categoryService = null )
         {
             var entityTypeId = EntityTypeCache.Get<Category>()?.Id;
 
@@ -790,6 +796,7 @@ namespace Rock.Blocks.Core
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddField( "isSystem", a => a.IsSystem )
+                .AddField( "isDeletable", a => categoryService != null && categoryService.CanDelete( a, out _ ) )
                 .AddAttributeFields( gridAttributes );
         }
 

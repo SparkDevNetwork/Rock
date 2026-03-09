@@ -56,6 +56,11 @@ namespace Rock.Model
             /// The error key used when the registrant has not met the course requirements.
             /// </summary>
             public const string UNMET_COURSE_REQUIREMENTS = "unmet_course_requirements";
+
+            /// <summary>
+            /// The error key used when the registrant is not authorized to enroll.
+            /// </summary>
+            public const string ENROLLMENT_UNAUTHORIZED = "enrollment_unauthorized";
         }
 
         /// <summary>
@@ -91,6 +96,13 @@ namespace Rock.Model
             if ( alreadyEnrolled )
             {
                 errorKey = ErrorKey.ALREADY_ENROLLED;
+                return false;
+            }
+            // If not already enrolled, then check security if EnforcePublicSecurity is enabled on the Program.
+            else if ( learningClass.LearningCourse.LearningProgram.EnforcePublicSecurity && !learningClass.IsAuthorized( Rock.Security.Authorization.VIEW, registrant ) )
+            {
+                // If not already enrolled, then check security if EnforcePublicSecurity is enabled on the Program.
+                errorKey = ErrorKey.ENROLLMENT_UNAUTHORIZED;
                 return false;
             }
 

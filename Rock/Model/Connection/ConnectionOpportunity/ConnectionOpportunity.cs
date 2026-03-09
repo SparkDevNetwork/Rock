@@ -167,7 +167,7 @@ namespace Rock.Model
         /// Number of days added to the calculated due date for a request.
         /// </summary>
         [DataMember]
-        public int? RequestDueDateOffestInDays { get; set; }
+        public int? RequestDueDateOffsetInDays { get; set; }
 
         /// <summary>
         /// Number of days before the due date when a request is considered "due soon."

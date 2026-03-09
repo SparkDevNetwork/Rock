@@ -48,8 +48,6 @@
                          v-model="cronExpression"
                          rules="required"
                          :disabled="!isEditable || isSystem"
-                         @change="getCronDescription"
-                         @keyup.enter="getCronDescription"
                          help="Add a valid cron expression. Need help? Try <a href='http://www.cronmaker.com' target='_blank'>CronMaker</a>.<br>Examples:<br>Daily at 2:15am: <em>0 15 2 1/1 * ? *</em><br>Every Monday and Friday at 4:30pm: <em>0 30 16 ? * MON,FRI *</em>" />
                 <div v-if="cronDescription" class="form-group static-control">
                     <label class="control-label">Cron Description</label>
@@ -123,7 +121,7 @@
     const historyCount = propertyRef(props.modelValue.historyCount, "HistoryCount");
     const notificationEmails = propertyRef(props.modelValue.notificationEmails ?? "", "NotificationEmails");
     const lastStatusMessage = ref(props.modelValue.lastStatusMessage);
-    const cronDescription = ref(props.modelValue.cronDescription ?? "");
+    const cronDescription = ref("");
     const jobTypeOptions = props.options.jobTypeOptions ?? [];
     const notificationStatusOptions = props.options.notificationStatusOptions ?? [];
     const jobTypeClass = propertyRef(props.modelValue.class ?? "", "Class");
@@ -146,17 +144,21 @@
 
     // #region Functions
 
-    async function getCronDescription(): Promise<void> {
-        if (cronExpression.value) {
+    function updateCronDescription(): void {
+        cronDescription.value = getCronDescription(cronExpression.value);
+    }
+
+    function getCronDescription(value: string): string {
+        if (value) {
             try {
-                cronDescription.value = Cron.toString(cronExpression.value);
+                return Cron.toString(value);
             }
             catch {
-                cronDescription.value = "Invalid Cron Expression";
+                return "Invalid Cron Expression";
             }
         }
         else {
-            cronDescription.value = "";
+            return "";
         }
     }
 
@@ -183,6 +185,10 @@
         }
     });
 
+    watch(cronExpression, () => {
+        updateCronDescription();
+    });
+
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
         updateRefValue(attributes, props.modelValue.attributes ?? {});
@@ -190,7 +196,6 @@
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(isActive, props.modelValue.isActive ?? false);
         updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(cronDescription, props.modelValue.cronDescription ?? "");
         updateRefValue(cronExpression, props.modelValue.cronExpression ?? "");
         updateRefValue(historyCount, props.modelValue.historyCount);
         updateRefValue(notificationEmails, props.modelValue.notificationEmails ?? "");
@@ -220,4 +225,6 @@
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.
     watchPropertyChanges(propRefs, emit);
+
+    updateCronDescription();
 </script>

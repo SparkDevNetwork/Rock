@@ -107,7 +107,6 @@
         const actionContext: BlockActionContextBag = {};
         if (!options.value.disableCaptchaSupport && captchaElement.value) {
             actionContext.captcha = await captchaElement.value.getToken();
-            captchaElement.value.refreshToken();
         }
 
         const result = await invokeBlockAction<string>("Save", {

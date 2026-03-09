@@ -61,6 +61,7 @@ async function doStreamingApiCallRaw(method: HttpMethod, url: string, params: Ht
         data,
         signal: getSignal(cancellationToken),
         headers: {
+            ...options?.headers,
             Accept: "text/event-stream"
         },
         responseType: "stream",

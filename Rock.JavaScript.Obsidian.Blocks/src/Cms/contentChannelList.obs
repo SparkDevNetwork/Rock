@@ -3,6 +3,7 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
+          title="Content Channels"
           itemTerm="Content Channel"
           :entityTypeGuid="EntityType.ContentChannel"
           stickyHeader

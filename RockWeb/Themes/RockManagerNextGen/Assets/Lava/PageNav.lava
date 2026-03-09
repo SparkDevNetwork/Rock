@@ -1,0 +1,33 @@
+{% if CurrentPerson %}
+{%- if Page.DisplayChildPages and Page.Pages != empty -%}
+    <ul class="nav nav-stacked navbar-side">
+		{%- for childPage in Page.Pages -%}
+                   <li class="nav-item{% if childPage.Current or childPage.IsParentOfCurrent %} current{% endif %}{% if forloop.first %} my-4{% endif %}{% if forloop.last %} mt-auto{% endif %}">
+                {% comment %}Link to the First Child of the Room Manager{% endcomment %}
+                {%- if childPage.Title == "Room Manager" and childPage.Pages != empty -%}
+                    {%- assign menuUrl = childPage.Pages[0].Url -%}
+                {% else %}
+                    {%- assign menuUrl = childPage.Url -%}
+                {%- endif -%}
+
+                <a class="nav-link" href="{{ menuUrl }}">
+                    <i class="ti-fw {{ childPage.IconCssClass }}"></i> {{ childPage.Title }}
+                </a>
+
+                {%- if childPage.Pages != empty -%}
+                    <ul class="nav nav-stacked ml-3">
+                        {%- for subPage in childPage.Pages -%}
+                            <li class="nav-item{% if subPage.Current %} current{% endif %}">
+                                <a class="nav-link" href="{{ subPage.Url }}">
+                                    <i class="ti-fw {{ subPage.IconCssClass }}"></i> {{ subPage.Title }}
+                                </a>
+                            </li>
+                        {%- endfor -%}
+                    </ul>
+                {%- endif -%}
+
+            </li>
+        {%- endfor -%}
+    </ul>
+{%- endif -%}
+{% endif %}

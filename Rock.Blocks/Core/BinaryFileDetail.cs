@@ -530,6 +530,7 @@ namespace Rock.Blocks.Core
                 entity.SaveAttributeValues( RockContext );
             } );
 
+#if NET472_OR_GREATER
             Rock.CheckIn.KioskLabel.Remove( entity.Guid );
 
             if ( !prevBinaryFileTypeId.Equals( entity.BinaryFileTypeId ) )
@@ -542,6 +543,7 @@ namespace Rock.Blocks.Core
                     Rock.CheckIn.KioskDevice.Clear();
                 }
             }
+#endif
 
             return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl( new Dictionary<string, string>
             {

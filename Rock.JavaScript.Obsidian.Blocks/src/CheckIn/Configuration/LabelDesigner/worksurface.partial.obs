@@ -14,7 +14,7 @@
             </div>
             <div ref="menuFieldSelectElement"
                  class="menu-group">
-                <button class="header">Select Field</button>
+                <button class="header" type="button">Select Field</button>
             </div>
         </div>
     </div>

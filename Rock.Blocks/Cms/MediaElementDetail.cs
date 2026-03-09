@@ -19,8 +19,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Common;
+#if REVIEW_WEBFORMS
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure.Interception;
+#endif
 using System.Data.SqlClient;
 using System.Data;
 using System.Linq;
@@ -34,8 +36,6 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.MediaElementDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using Rock.Utility.ExtensionMethods;
-using Rock.Web.UI;
 using Rock.Web;
 
 namespace Rock.Blocks.Cms
@@ -746,6 +746,7 @@ namespace Rock.Blocks.Cms
             List<Interaction> interactions = null;
 
             // Load the next 25 results.
+#if REVIEW_WEBFORMS
             DateTimeParameterInterceptor.UseWith( rockContext, () =>
             {
                 interactions = filteredQuery
@@ -754,6 +755,13 @@ namespace Rock.Blocks.Cms
                     .Take( 25 )
                     .ToList();
             });
+#else
+                interactions = filteredQuery
+                    .OrderByDescending( i => i.InteractionDateTime )
+                    .ThenByDescending( i => i.Id )
+                    .Take( 25 )
+                    .ToList();
+#endif
 
             // If we got any results then figure out the next page context.
             if ( interactions.Count > 0 )
@@ -1089,6 +1097,7 @@ namespace Rock.Blocks.Cms
             public int LastId { get; set; }
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// DateTimeParameterInterceptor fixes the incorrect behavior of
         /// Entity Framework library when for datetime columns it's generating
@@ -1144,7 +1153,8 @@ namespace Rock.Blocks.Cms
                     .ForEach( p => p.SqlDbType = SqlDbType.DateTime );
             }
         }
-        #endregion
+#endif
 
+        #endregion
     }
 }

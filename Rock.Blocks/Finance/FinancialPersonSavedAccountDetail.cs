@@ -166,11 +166,11 @@ namespace Rock.Blocks.Finance
 
             Guid? currencyTypeValueGuid = null;
 
-            if( entity.FinancialPaymentDetail?.CurrencyTypeValue == null && entity.FinancialPaymentDetail?.CurrencyTypeValueId > 0 )
+            if ( entity.FinancialPaymentDetail?.CurrencyTypeValue == null && entity.FinancialPaymentDetail?.CurrencyTypeValueId > 0 )
             {
                 currencyTypeValueGuid = DefinedValueCache.Get( entity.FinancialPaymentDetail.CurrencyTypeValueId.Value )?.Guid;
             }
-            else if( entity.FinancialPaymentDetail?.CurrencyTypeValue != null )
+            else if ( entity.FinancialPaymentDetail?.CurrencyTypeValue != null )
             {
                 currencyTypeValueGuid = entity.FinancialPaymentDetail.CurrencyTypeValue.Guid;
             }
@@ -304,6 +304,18 @@ namespace Rock.Blocks.Finance
                 // If editing an existing entity then load it and make sure it
                 // was found and can still be edited.
                 entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+                if ( entity.PersonAlias?.PersonId != RequestContext.CurrentPerson?.Id )
+                {
+                    error = ActionBadRequest( $"The {FinancialPersonSavedAccount.FriendlyTypeName} was not found." );
+                    return false;
+                }
+
+                if ( RequestContext.CurrentPerson == null )
+                {
+                    error = ActionBadRequest( "You must be logged in to edit saved accounts." );
+                    return false;
+                }
             }
             else
             {
@@ -315,12 +327,6 @@ namespace Rock.Blocks.Finance
             if ( entity == null )
             {
                 error = ActionBadRequest( $"{FinancialPersonSavedAccount.FriendlyTypeName} not found." );
-                return false;
-            }
-
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                error = ActionBadRequest( $"Not authorized to edit ${FinancialPersonSavedAccount.FriendlyTypeName}." );
                 return false;
             }
 

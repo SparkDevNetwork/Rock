@@ -40,6 +40,9 @@ namespace Rock.Model
 
             switch ( cadence )
             {
+                case OutreachCadence.Daily:
+                    return daysSinceLastContact < 1;
+
                 case OutreachCadence.Weekly:
                     return daysSinceLastContact < 7;
 
@@ -92,6 +95,10 @@ namespace Rock.Model
 
                 switch ( cadence )
                 {
+                    case OutreachCadence.Daily:
+                        count += 52 * enabledDaysOfWeek;
+                        break;
+
                     case OutreachCadence.Weekly:
                         count += 52;
                         break;

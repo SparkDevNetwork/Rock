@@ -39,9 +39,6 @@ export type ServiceJobBag = {
     /** Gets or sets the fully qualified class name with Namespace of the Job class. This property is required. */
     class?: string | null;
 
-    /** Gets or sets the cron description. */
-    cronDescription?: string | null;
-
     /** Gets or sets the Cron Expression that is used to schedule the Job. This property is required. */
     cronExpression?: string | null;
 

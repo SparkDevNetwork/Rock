@@ -16,12 +16,14 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Reporting.InteractionComponentDetail;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Reporting
@@ -33,7 +35,7 @@ namespace Rock.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Presents the details of a interaction channel using Lava" )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -49,8 +51,9 @@ namespace Rock.Blocks.Reporting
     #endregion Block Attribute
 
     [Rock.SystemGuid.EntityTypeGuid( "29e5a6bf-fe7f-406e-afc1-64eab506ddb0" )]
-    [Rock.SystemGuid.BlockTypeGuid( "bc2034d1-416b-4fb4-9fff-e202fa666203" )]
-    public class InteractionComponentDetail : RockBlockType
+    // was [Rock.SystemGuid.BlockTypeGuid( "bc2034d1-416b-4fb4-9fff-e202fa666203" )]
+    [Rock.SystemGuid.BlockTypeGuid( "926261B2-CF4C-4B1F-A384-CD83696CFBC2" )]
+    public class InteractionComponentDetail : RockBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -67,6 +70,7 @@ namespace Rock.Blocks.Reporting
         private static class PageParameterKey
         {
             public const string ComponentId = "ComponentId";
+            public const string InteractionChannelId = "ChannelId";
         }
 
         private static class MergeFieldKeys
@@ -118,14 +122,17 @@ namespace Rock.Blocks.Reporting
         /// </summary>
         private InteractionComponentDetailInitializationBox GetInitializationBox()
         {
-            var interactionId = PageParameter( PageParameterKey.ComponentId ).AsInteger();
-            var interactionComponent = new InteractionComponentService( RockContext ).Get( interactionId );
+            var interactionComponent = new InteractionComponentService( RockContext ).Get(
+                PageParameter( PageParameterKey.ComponentId ),
+                !PageCache.Layout.Site.DisablePredictableIds
+            );
+
             var box = new InteractionComponentDetailInitializationBox();
 
             if ( interactionComponent != null )
             {
                 IEntity interactionEntity = null;
-                if ( interactionComponent.EntityId.HasValue )
+                if ( interactionComponent.EntityId.HasValue && interactionComponent.InteractionChannel.ComponentEntityTypeId.HasValue )
                 {
                     interactionEntity = GetComponentEntity( RockContext, interactionComponent );
                 }
@@ -177,6 +184,36 @@ namespace Rock.Blocks.Reporting
             return componentEntity;
         }
 
-        #endregion
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var key = pageReference.GetPageParameter( PageParameterKey.ComponentId );
+            var pageParameters = new Dictionary<string, string>();
+            var additionalParameters = new Dictionary<string, string>();
+
+            var data = new InteractionComponentService( RockContext )
+                .GetSelect( key, ic => new
+                {
+                    ic.Name,
+                    ic.InteractionChannelId
+                } );
+
+            if ( data != null )
+            {
+                pageParameters.Add( PageParameterKey.ComponentId, key );
+                additionalParameters.Add( PageParameterKey.InteractionChannelId, data.InteractionChannelId.ToString() );
+            }
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+            var breadCrumb = new BreadCrumbLink( data?.Name ?? "Interaction Component", breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb> { breadCrumb },
+                AdditionalParameters = additionalParameters
+            };
+        }
+
+        #endregion Methods
     }
 }

@@ -1,0 +1,35 @@
+// imported in _components.less
+
+// Tables Extensions
+
+/*
+    Used to manage styles related to tables that are used in the Rock system. These styles are meant to be used as extensions to the base table styles defined in _tables.less and should be used when a specific table needs additional styling that is not covered by the base styles.
+
+    1. Waterfall Chart
+*/
+
+// 1. Waterfall Chart - Gantt style chart used in page debug trace details
+// -------------------------
+
+td.waterfall-cell {
+    width: 40%;
+    vertical-align: middle !important;
+    padding: 0 !important;
+    overflow: hidden;
+
+    .waterfall-cell-chart {
+      position: relative;
+      height: 18px;
+      margin: 0 var(--spacing-tiny);
+    }
+
+    .waterfall-cell-chart-bar {
+      position: absolute;
+      display: block;
+      min-width: 1px;
+      height: 100%;
+      background: var(--color-categorical-1);
+      border-radius: var(--rounded-xsmall);
+    }
+
+}

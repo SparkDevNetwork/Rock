@@ -53,6 +53,10 @@
         ...standardRockFormFieldProps,
     });
 
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
     const standardFieldProps = useStandardRockFormFieldProps(props);
     const store = useStore();
 
@@ -71,6 +75,9 @@
 
         if (props.modelValue === undefined) {
             store.setTrailblazerMode(internalValue.value);
+        }
+        else {
+            emit("update:modelValue", internalValue.value);
         }
 
         isDropDownOpen.value = false;

@@ -40,45 +40,6 @@
     </DisplayCard>
 </template>
 
-<style scoped>
-.right-middle-container {
-    display: flex;
-    justify-content: start;
-    flex-direction: column;
-}
-
-.dateInfo {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-tiny);
-    color: var(--color-interface-medium);
-}
-
-.btn-interactions {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xsmall);
-}
-
-:deep(.displaycard-aside + .displaycard-actions) {
-    margin-left: calc(var(--spacing-tiny) - var(--spacing-large));
-}
-
-@media (max-width: 767px) {
-    :deep(.displaycard-aside + .displaycard-actions) {
-        margin-left: 0;
-    }
-
-    .right-middle-container {
-        flex-direction: column;
-        gap: var(--spacing-tiny);
-    }
-
-    :deep(.displaycard-content:has(.icon-list:empty)) {
-        display: none;
-    }
-}
-</style>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, PropType, ref } from "vue";

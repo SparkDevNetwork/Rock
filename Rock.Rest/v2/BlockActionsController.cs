@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -37,11 +38,7 @@ using Rock.Utility.CaptchaApi;
 using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
 using Rock.Security;
-using Rock.ViewModels.Rest.Controls;
 using Rock.Configuration;
-
-
-
 
 #if WEBFORMS
 using BadRequestErrorMessageResult = System.Web.Http.Results.BadRequestErrorMessageResult;
@@ -499,11 +496,15 @@ namespace Rock.Rest.v2
             catch ( TargetInvocationException ex )
             {
                 ExceptionLogService.LogApiException( ex.InnerException, controller.Request, GetPerson( controller, null )?.PrimaryAlias );
+                Activity.Current?.AddException( ex );
+                Activity.Current?.SetStatus( ActivityStatusCode.Error, ex.Message );
                 result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
             catch ( Exception ex )
             {
                 ExceptionLogService.LogApiException( ex, controller.Request, GetPerson( controller, null )?.PrimaryAlias );
+                Activity.Current?.AddException( ex );
+                Activity.Current?.SetStatus( ActivityStatusCode.Error, ex.Message );
                 result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
 

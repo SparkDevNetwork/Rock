@@ -128,6 +128,9 @@
       }
 
       .btn-panel-action {
+        display:          flex;
+        align-items:      center;
+        justify-content:  center;
         height:           56px;
         width:            56px;
         margin:           0;
@@ -149,6 +152,20 @@
           background-color: var(--color-interface-soft);
           color:            var(--color-interface-stronger);
         }
+
+        &.not-clickable {
+          cursor:           default;
+
+          &:hover {
+            background-color: transparent;
+            color:            var(--color-interface-medium);
+          }
+        }
+      }
+
+      // If a dropdown contains a .btn-panel-action, remove the right margin from the dropdown to ensure the spacing is consistent with other action buttons.
+      .dropdown:has(.btn-panel-action) {
+        margin-right: 0;
       }
 
       .btn-panel-action:last-child,

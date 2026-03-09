@@ -415,7 +415,8 @@ namespace Rock
         {
             if ( type != null )
             {
-                return type.Namespace == "System.Data.Entity.DynamicProxies";
+                return type.Namespace == "System.Data.Entity.DynamicProxies"
+                    || type.Namespace == "Castle.Proxies";
             }
             else
             {

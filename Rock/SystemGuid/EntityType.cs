@@ -558,9 +558,9 @@ namespace Rock.SystemGuid
         public const string MOBILE_OUTREACH_OUTREACH_ONBOARDING_BLOCK_TYPE = "C1A3F4E2-7F4B-4D3A-8C2E-5B6D9F1C4E3C";
 
         /// <summary>
-        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Engagement.BeaconDashboard"/>.
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Engagement.OutreachDashboard"/>.
         /// </summary>
-        public const string MOBILE_OUTREACH_BEACON_DASHBOARD_BLOCK_TYPE = "A3D9F1C4-E3C1-4D3A-8C2E-7F4B5B6D9F1C";
+        public const string MOBILE_OUTREACH_OUTREACH_DASHBOARD_BLOCK_TYPE = "A3D9F1C4-E3C1-4D3A-8C2E-7F4B5B6D9F1C";
 
         /// <summary>
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Engagement.TouchpointDetail"/>
@@ -573,7 +573,7 @@ namespace Rock.SystemGuid
         public const string MOBILE_OUTREACH_OUTREACH_RECENT_ACTIVITY_BLOCK_TYPE = "73CA6269-28BA-4914-92F8-7493E732DCED";
 
         /// <summary>
-        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Engagement.MyContacts"/>.
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Engagement.MyContact"/>.
         /// </summary>
         public const string MOBILE_OUTREACH_MY_CONTACTS_BLOCK_TYPE = "D1CFF2E3-0E3A-4F2D-8F1D-4C3E3F2B6F2A";
 
@@ -2000,8 +2000,10 @@ namespace Rock.SystemGuid
         public const string STREAK_TYPE_EXCLUSION = "1F00C782-F8A2-4CFA-B7DF-E5B3B6D36069";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.SystemEmail"/> 
+        /// The EntityType Guid for <c>Rock.Model.SystemEmail</c> which is made obsolete by the <see cref="Rock.Model.SystemCommunication"/>
         /// </summary>
+        [Obsolete( "This entity was replaced in Rock v10 by Rock.Model.SystemCommunication", true )]
+        [RockObsolete( "1.10" )]
         public const string SYSTEM_EMAIL = "B21FD119-893E-46C0-B42D-E4CDD5C8C49D";
 
         /// <summary>

@@ -4,24 +4,53 @@
 
 
 // =============================================================
-// Table of Content           
-//  + Base Style  
+// Table of Content
+//  + Base Style
 //  + Touch
 // =============================================================
 
 
 // ======================== BASE STYLE ========================
 
-.loginstatus {
-  & > li {
-    min-width: 160px;
-    text-align: right;
+.rock-top-header {
 
-    & li {
-      text-align: left;
+  .loginstatus {
+    & > li {
+      min-width: 160px;
+      text-align: right;
+
+      & li {
+        text-align: left;
+      }
     }
+
+    // Minimal version that only shows the profile photo and hides the name and dropdown caret.
+    &.loginstatus-minimal {
+      margin-left: var(--spacing-small);
+      margin-right: var(--spacing-medium);
+
+      a.dropdown-toggle.navbar-link {
+        padding: 0;
+
+        .loginstatus-wrapper {
+          margin-left: 0;
+          padding: 0;
+
+          .profile-photo {
+            margin-right: 0;
+          }
+
+        }
+
+      }
+
+    }
+
   }
+
 }
+
+
 
 // splash screen
 .splash-form-btn {
@@ -30,7 +59,7 @@
   justify-content: center;
 }
 
-// Override the default ul/ol background-color 
+// Override the default ul/ol background-color
 .nav {
   .open > a {
     &,

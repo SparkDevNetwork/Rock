@@ -21,9 +21,9 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
-using System.Web.Hosting;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -148,7 +148,7 @@ namespace Rock.Blocks.Cms
         protected override IQueryable<BlockTypeListBag> GetListQueryable( RockContext rockContext )
         {
             var blockTypeService = new BlockTypeService( rockContext );
-            var query = blockTypeService.Queryable().AsNoTracking().Include( bt => bt.EntityType );
+            var query = blockTypeService.Queryable();
 
 
             // Filters
@@ -317,7 +317,7 @@ namespace Rock.Blocks.Cms
             try
             {
                 // Get the application root path.
-                string applicationRootPath = HostingEnvironment.MapPath( "~" );
+                string applicationRootPath = RockApp.Current.MapPath( "~" );
 
                 // Call the RegisterBlockTypes method.
                 BlockTypeService.RegisterBlockTypes( applicationRootPath, true );

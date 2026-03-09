@@ -187,10 +187,20 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
     [WorkflowTypeField( "Workflow",
         Description = "An optional workflow to start when prayer request is created. The PrayerRequest will be set as the workflow 'Entity' attribute when processing is started.",
+        Key = AttributeKeys.Workflow,
         AllowMultiple = false,
         IsRequired = false,
         Category = AttributeCategories.OnSaveBehavior,
         Order = 2 )]
+
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKeys.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 3 )]
 
     #endregion
 
@@ -327,6 +337,16 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             /// The workflow
             /// </summary>
             public const string Workflow = "Workflow";
+
+            /// <summary>
+            /// The campus types
+            /// </summary>
+            public const string CampusTypes = "CampusTypes";
+
+            /// <summary>
+            /// The campus statuses
+            /// </summary>
+            public const string CampusStatuses = "CampusStatuses";
         }
 
         /// <summary>
@@ -663,10 +683,23 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
                 parameters.Add( "email", "Text" );
 
-                if ( ShowCampus && CampusCache.All().Where( a => a.IsActive ?? false ).Count() > 1 )
+                var campuses = GetAvailableCampus();
+                var campusPicker = new StringBuilder();
+                if ( ShowCampus && campuses.Count() > 1 )
                 {
-                    field = $"<Rock:CampusPicker x:Name=\"campus\" Label=\"Campus\" IsRequired=\"{RequireCampus}\" SelectedValue=\"{request?.Campus?.Guid.ToStringSafe()}\" />";
-                    sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
+                    campusPicker.Append( $@"<Rock:Picker x:Name=""campus"" Label=""Campus"" IsRequired=""{RequireCampus}"" SelectedValue=""{request?.Campus?.Guid.ToStringSafe()}"">
+                            <Rock:Picker.Items>" );
+
+                    foreach ( var campus in campuses )
+                    {
+                        campusPicker.AppendLine( $"<Rock:PickerItem Text=\"{campus.Name}\" Value=\"{campus.Guid}\" />" );
+                    }
+
+                    campusPicker.Append( $@"
+                            </Rock:Picker.Items>
+                        </Rock:Picker>" );
+
+                    sb.AppendLine( MobileHelper.GetSingleFieldXaml( campusPicker.ToString() ) );
                     parameters.Add( "campus", "SelectedValue" );
                 }
             }
@@ -806,7 +839,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                     }
                     else
                     {
-                        prayerRequest.CampusId = CampusCache.All().FirstOrDefault( a => a.IsActive ?? false )?.Id;
+                        prayerRequest.CampusId = GetAvailableCampus().FirstOrDefault( a => a.IsActive ?? false )?.Id;
                     }
                 }
 
@@ -978,6 +1011,25 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                     }
                 }
             }
+        }
+
+        private List<CampusCache> GetAvailableCampus()
+        {
+            var campusTypeGuid = GetAttributeValue( AttributeKeys.CampusTypes )
+                .SplitDelimitedValues( true )
+                .AsGuidList();
+
+            if ( campusTypeGuid.Count == 0 )
+            {
+                return CampusCache.All().Where( a => a.IsActive ?? false ).ToList();
+            }
+
+            var campuses = CampusCache.All().Where( a => a.IsActive ?? false ).ToList()
+                .Where( c => c.CampusTypeValueId.HasValue )
+                .Where( c => campusTypeGuid.Contains( c.CampusTypeValue.Guid ) )
+                .ToList();
+
+            return campuses;
         }
 
         #endregion

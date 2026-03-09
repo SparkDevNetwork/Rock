@@ -29,8 +29,9 @@ using Microsoft.Extensions.Logging;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
+using Rock.Core;
 using Rock.Data;
-using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility.Enums;
@@ -209,6 +210,12 @@ namespace RockWeb.Blocks.Crm
                     var entitySet = entitySetService.Get( setId.Value );
                     if ( entitySet != null )
                     {
+                        if ( entitySet.AdditionalSettingsJson != null )
+                        {
+                            var entitySetAdditionalSettings = entitySet.GetAdditionalSettings<EntitySetAdditionalSettings>();
+                            cbShouldNotifyAfterMerge.Checked = entitySetAdditionalSettings.ShouldNotifyAfterMerge;
+                        }
+
                         tbEntitySetNote.Text = entitySet.Note;
                         var definedValuePurpose = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid() );
                         if ( definedValuePurpose != null )
@@ -460,7 +467,17 @@ namespace RockWeb.Blocks.Crm
                 personMergeFieldRowEventArgs.ContentDisplayType = MergePersonField.ContentDisplayType.SelectionLabel;
             }
 
-            personMergeFieldRowEventArgs.ContentHTML = valuesRowPersonPersonProperty.PersonPropertyValue.FormattedValue;
+            if ( valuesRowPersonPersonProperty.PersonPropertyValue.LastModifiedDateTime != null )
+            {
+                var pPropValue = valuesRowPersonPersonProperty.PersonPropertyValue;
+                personMergeFieldRowEventArgs.ContentHTML = pPropValue.FormattedValue
+                    + $"<br><small class=\"text-muted\">Last Modified {pPropValue.LastModifiedDateTime.Value.ToShortDateString()} at " +
+                    $"{pPropValue.LastModifiedDateTime.Value.ToShortTimeString()} by {pPropValue.ModifiedByNickName} {pPropValue.ModifiedByLastName}</small>";
+            }
+            else
+            {
+                personMergeFieldRowEventArgs.ContentHTML = valuesRowPersonPersonProperty.PersonPropertyValue.FormattedValue;
+            }
             personMergeFieldRowEventArgs.Selected = valuesRowPersonPersonProperty.PersonPropertyValue.Selected;
         }
 
@@ -590,7 +607,11 @@ namespace RockWeb.Blocks.Crm
                             primaryPerson.SuffixValueId = GetNewIntValue( "Suffix" );
                         }
 
-                        primaryPerson.LastName = GetNewStringValue( "LastName" );
+                        // Record the original last name to the PreviousNames (if it's changed).
+                        var newLastName = GetNewStringValue( "LastName" );
+                        RecordPreviousLastName( primaryPerson.LastName, newLastName, primaryPerson.Id, primaryPerson.PrimaryAliasId, rockContext );
+
+                        primaryPerson.LastName = newLastName;
                         primaryPerson.RecordTypeValueId = GetNewIntValue( "RecordType" );
                         primaryPerson.RecordStatusValueId = GetNewIntValue( "RecordStatus" );
                         primaryPerson.RecordStatusReasonValueId = GetNewIntValue( "RecordStatusReason" );
@@ -914,7 +935,7 @@ namespace RockWeb.Blocks.Crm
                         logger.Write( $"Marking EntitySet as expired..." );
 
                         var entitySetService = new EntitySetService( rockContext );
-                        var entitySet = entitySetService.Get( MergeData.EntitySetId );
+                        var entitySet = entitySetService.GetInclude( MergeData.EntitySetId, es => es.CreatedByPersonAlias.Person );
                         if ( entitySet != null )
                         {
                             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( -1 );
@@ -946,6 +967,8 @@ namespace RockWeb.Blocks.Crm
                         }
 
                         logger.Write( $"Merge completed." );
+
+                        SendOptionalNotificationToRequester( entitySet, primaryPerson, MergeData.People.Count );
                     }
                 } );
             }
@@ -962,6 +985,78 @@ namespace RockWeb.Blocks.Crm
             }
 
             NavigateToLinkedPage( AttributeKey.PersonDetailPage, isBusiness ? "BusinessId" : "PersonId", primaryPersonId.Value );
+        }
+
+        /// <summary>
+        /// Record the old lastname if it's different than the new lastname and if it's not already in the person's list of
+        /// previous names.
+        /// </summary>
+        /// <param name="originalLastName"></param>
+        /// <param name="newLastName"></param>
+        /// <param name="primaryPersonId"></param>
+        /// <param name="primaryPersonAliasId"></param>
+        /// <param name="rockContext"></param>
+        private void RecordPreviousLastName( string originalLastName, string newLastName, int primaryPersonId, int? primaryPersonAliasId, RockContext rockContext )
+        {
+            if ( string.Equals( originalLastName, newLastName, StringComparison.OrdinalIgnoreCase ) || ! primaryPersonAliasId.HasValue)
+            {
+                return;
+            }
+
+            var personPreviousNameService = new PersonPreviousNameService( rockContext );
+            var isThatLastNameAlreadyRecorded = personPreviousNameService.Queryable().AsNoTracking().Any(
+                a => a.PersonAlias.PersonId == primaryPersonId
+                && a.LastName.ToLower() == originalLastName.ToLower()
+            );
+
+            if ( isThatLastNameAlreadyRecorded )
+            {
+                return;
+            }
+
+            // Otherwise add it
+            personPreviousNameService.Add( new PersonPreviousName { LastName = originalLastName, PersonAliasId = primaryPersonAliasId.Value, Guid = Guid.NewGuid() } );
+        }
+
+        /// <summary>
+        /// Sends a notification email to the requester when a person merge operation is completed, if notification is
+        /// enabled for the specified entity set.
+        /// </summary>
+        /// <remarks>Any errors encountered during email sending are logged as warnings.</remarks>
+        /// <param name="entitySet">The entity set representing the merge request. If null, no notification is sent.</param>
+        /// <param name="primaryPerson">The person record into which other records were merged. Used in the notification message.</param>
+        /// <param name="mergedPersonCount">The number of person records that were merged into the primary person record. Included in the notification message.</param>
+        private void SendOptionalNotificationToRequester( EntitySet entitySet, Person primaryPerson, int mergedPersonCount )
+        {
+            if ( entitySet == null )
+            {
+                return;
+            }
+
+            var entitySetAdditionalSettings = entitySet.GetAdditionalSettings<EntitySetAdditionalSettings>();
+            if ( !entitySetAdditionalSettings.ShouldNotifyAfterMerge || entitySet.CreatedByPersonId == null )
+            {
+                return;
+            }
+
+            var emailMessage = new RockEmailMessage
+            {
+                Subject = "Request to Merge Person Records Is Complete",
+                Message = $"Your request to merge {mergedPersonCount} records into the '{primaryPerson.FullName}' record has been completed."
+            };
+
+            var requester = entitySet.CreatedByPersonAlias.Person;
+            var recipients = new List<RockEmailMessageRecipient>();
+            recipients.Add( new RockEmailMessageRecipient( requester, null ) );
+
+            emailMessage.SetRecipients( recipients );
+
+            var errorMessages = new List<string>();
+            emailMessage.Send( out errorMessages );
+            if ( errorMessages.Count > 0 )
+            {
+                Logger.LogWarning( $"Unable to send merge completion notification email to requester ${requester.FullName}.  Errors: {string.Join( "; ", errorMessages )}" );
+            }
         }
 
         /// <summary>
@@ -1219,10 +1314,16 @@ namespace RockWeb.Blocks.Crm
                 var rockContext = new RockContext();
                 var entitySet = new EntitySetService( rockContext ).Get( setId.Value );
                 entitySet.Note = tbEntitySetNote.Text;
+
+                var entitySetAdditionalSettings = entitySet.GetAdditionalSettings<EntitySetAdditionalSettings>();
+                entitySetAdditionalSettings.ShouldNotifyAfterMerge = cbShouldNotifyAfterMerge.Checked;
+                entitySet.SetAdditionalSettings( entitySetAdditionalSettings );
+
                 rockContext.SaveChanges();
 
                 nbNoteSavedSuccess.Visible = true;
                 tbEntitySetNote.Visible = false;
+                cbShouldNotifyAfterMerge.Visible = false;
                 btnSaveRequestNote.Visible = false;
             }
         }
@@ -2137,6 +2238,19 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
+            // Add last updated information
+            foreach ( var person in people )
+            {
+                // Fetch any change history (per property/value) for the person
+                var historyDataTable = new PersonService( new RockContext() ).GetLatestPersonHistoryChangesDataTable( person.Id );
+                if ( historyDataTable == null )
+                {
+                    continue;
+                }
+
+                UpdatePersonPropertyHistoryMetaData( person, historyDataTable );
+            }
+
             var primaryPerson = people.OrderBy( p => p.CreatedDateTime ).FirstOrDefault();
             if ( primaryPerson != null )
             {
@@ -2315,6 +2429,135 @@ namespace RockWeb.Blocks.Crm
         #endregion
 
         #region Private Methods
+
+
+        /// <summary>
+        /// Here we will add some meta data to the MergeData.Properties list to provide details
+        /// about when a property was last modified and who modified it for the given person.
+        /// </summary>
+        /// <param name="person"></param>
+        /// <param name="historyDataTable"></param>
+        private void UpdatePersonPropertyHistoryMetaData( Person person, DataTable historyDataTable )
+        {
+            // Now set the extra ModifiedBy/DateTime in the personPropertyValue for the matching properties.
+            foreach ( DataRow row in historyDataTable.Rows )
+            {
+                var valueName = row["ValueName"].ToStringSafe().Replace( " ", "" );
+                var attributeId = row["AttributeId"].ToString().AsIntegerOrNull();
+
+                var personPropertyValue = Properties
+                    .Where( personProperty =>
+                        string.Equals( personProperty.Key, valueName, StringComparison.Ordinal )
+                        || ( attributeId != null && personProperty.AttributeId == attributeId )
+                        )
+                    .SelectMany( pvalue => pvalue.Values )
+                    .Where( pv => pv.PersonId == person.Id )
+                    .FirstOrDefault();
+
+                if ( personPropertyValue != null )
+                {
+                    personPropertyValue.ModifiedByPersonAliasId = row["CreatedByPersonAliasId"].ToStringSafe().AsIntegerOrNull();
+                    personPropertyValue.ModifiedByNickName = row["NickName"].ToStringSafe();
+                    personPropertyValue.ModifiedByLastName = row["LastName"].ToStringSafe();
+                    personPropertyValue.LastModifiedDateTime = row["CreatedDateTime"].ToStringSafe().AsDateTime();
+                }
+            }
+
+            // Now, handle Phone type properties since they have unique keys that start with "phone_"
+            var phonePersonPropertyValues = Properties
+                .Where( personProperty => personProperty.Key.StartsWith( "phone_", StringComparison.Ordinal ) )
+                .Select( p => new
+                {
+                    Property = p,
+                    Value = p.Values.FirstOrDefault( v => v.PersonId == person.Id )
+                } );
+
+            foreach ( var property in phonePersonPropertyValues )
+            {
+                var phoneTypeValueId = property.Property.Key.Replace( "phone_", string.Empty ).AsIntegerOrNull();
+                var personPropertyValue = property.Value;
+
+                if ( !phoneTypeValueId.HasValue )
+                {
+                    continue;
+                }
+
+                var phoneDefinedValueName = DefinedValueCache.GetName( phoneTypeValueId.Value );
+                if ( phoneDefinedValueName == null )
+                {
+                    continue;
+                }
+
+                // Construct the Value-Names for phone using the History naming convention
+                var phoneTypeValueName = string.Format( Rock.Model.PhoneNumber.PHONE_HISTORY_PROPERTY_NAME, phoneDefinedValueName );
+
+                // Update the matching property by each of these:
+                UpdateMatchingPhoneOrAddressDataRowAndSetFromProperty( phoneTypeValueName, historyDataTable, personPropertyValue );
+            }
+
+            // Lastly, handle Address type properties since they have unique keys that start with "address_"
+            var addressPersonPropertyValues = Properties
+                .Where( personProperty => personProperty.Key.StartsWith( "address_", StringComparison.Ordinal ) )
+                .Select( p => new
+                {
+                    Property = p,
+                    Value = p.Values.FirstOrDefault( v => v.PersonId == person.Id )
+                } );
+
+            foreach ( var property in addressPersonPropertyValues )
+            {
+                var locationTypeValueId = property.Property.Key.Replace( "address_", string.Empty ).AsIntegerOrNull();
+                var personPropertyValue = property.Value;
+
+                if ( !locationTypeValueId.HasValue )
+                {
+                    continue;
+                }
+
+                var locationType = DefinedValueCache.GetName( locationTypeValueId.Value );
+                if ( locationType == null )
+                {
+                    continue;
+                }
+
+                // Construct the Value-Names for phone using the History naming convention
+                // Update the matching property by each of these:
+                UpdateMatchingPhoneOrAddressDataRowAndSetFromProperty( $"{locationType} Location", historyDataTable, personPropertyValue );
+            }
+        }
+
+        /// <summary>
+        /// Updates the specified PersonPropertyValue object with information from the most recently updated row in
+        /// the DataTable whose 'ValueName' starts with the given name (this is the convention for phone history
+        /// records). For example, a mobile number can have three entries: "Mobile Phone", "Mobile Phone Messaging Enabled",
+        /// and "Mobile Phone Unlisted", but we only want the one that was most recently updated.
+        /// </summary>
+        /// <remarks>If no matching row is found in the table, the method performs no action.</remarks>
+        /// <param name="name">The prefix to match against the 'ValueName' column in the data table. Only rows where 'ValueName' starts
+        /// with this value are considered.</param>
+        /// <param name="dataTable">The DataTable containing rows to search for a matching phone data entry. Must not be null.</param>
+        /// <param name="personPropertyValue">The PersonPropertyValue object to update with data from the matching row. If null, no update is performed.</param>
+        private void UpdateMatchingPhoneOrAddressDataRowAndSetFromProperty( string name, DataTable dataTable, PersonPropertyValue personPropertyValue )
+        {
+            var row = dataTable
+                .AsEnumerable()
+                .Where( r => r["ValueName"].ToStringSafe().StartsWith( name, StringComparison.Ordinal ) )
+                .OrderByDescending( r => r["CreatedDateTime"].ToStringSafe().AsDateTime() ?? DateTime.MinValue )
+                .FirstOrDefault();
+
+            if ( row == null )
+            {
+                return;
+            }
+
+            if ( personPropertyValue != null )
+            {
+                personPropertyValue.ModifiedByPersonAliasId = row["CreatedByPersonAliasId"].ToStringSafe().AsIntegerOrNull();
+                personPropertyValue.ModifiedByNickName = row["NickName"].ToStringSafe();
+                personPropertyValue.ModifiedByLastName = row["LastName"].ToStringSafe();
+                personPropertyValue.LastModifiedDateTime = row["CreatedDateTime"].ToStringSafe().AsDateTime();
+            }
+        }
 
         private void AddPerson( Person person, bool isBusiness )
         {
@@ -2649,6 +2892,26 @@ namespace RockWeb.Blocks.Crm
         public string Value { get; set; }
 
         public string FormattedValue { get; set; }
+
+        /// <summary>
+        /// The date and time when the property was last changed.
+        /// </summary>
+        public DateTime? LastModifiedDateTime { get; set; }
+
+        /// <summary>
+        /// The person aliasId of the person who made the last change.
+        /// </summary>
+        public int? ModifiedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// The NickName of the person who made the last change.
+        /// </summary>
+        public string ModifiedByNickName { get; set; }
+
+        /// <summary>
+        /// The LastName of the person who made the last change.
+        /// </summary>
+        public string ModifiedByLastName { get; set; }
     }
 
     #endregion

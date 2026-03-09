@@ -19,11 +19,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Web;
 
+#if NET472_OR_GREATER
 using dotless.Core;
 using dotless.Core.configuration;
 using dotless.Core.Loggers;
+#endif
+
+using Rock.Configuration;
 
 namespace Rock.Web.UI
 {
@@ -32,8 +35,8 @@ namespace Rock.Web.UI
     /// </summary>
     public class RockTheme
     {
-        static private string _themeDirectory = System.Web.Hosting.HostingEnvironment.MapPath( "~/Themes" );
-        static private string _rockWebStylesDirectory = System.Web.Hosting.HostingEnvironment.MapPath( "~/Styles" );
+        static private string _themeDirectory = RockApp.Current.MapPath( "~/Themes" );
+        static private string _rockWebStylesDirectory = RockApp.Current.MapPath( "~/Styles" );
 
         /// <summary>
         /// Gets or sets the name.
@@ -99,7 +102,9 @@ namespace Rock.Web.UI
                 this.RelativePath = "/Themes/" + this.Name;
 
                 this.IsSystem = File.Exists( themeDirectory.FullName + @"\.system" );
+#if NET472_OR_GREATER
                 this.AllowsCompile = !File.Exists( themeDirectory.FullName + @"\Styles\.nocompile" );
+#endif
             }
         }
 
@@ -116,6 +121,7 @@ namespace Rock.Web.UI
         /// </summary>
         public bool Compile( bool onlyCompileIfNeeded, out string messages )
         {
+#if NET472_OR_GREATER
             messages = string.Empty;
             bool compiledSuccessfully = true;
             var rockWebStyleFiles = Directory.GetFiles( _rockWebStylesDirectory, "*.*", SearchOption.AllDirectories );
@@ -240,6 +246,10 @@ namespace Rock.Web.UI
             }
 
             return compiledSuccessfully;
+#else
+            messages = "Theme compilation is not supported.";
+            return false;
+#endif
         }
 
         /// <summary>
@@ -259,8 +269,7 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public static bool CompileAll( out string messages )
         {
-            CancellationToken cancellationToken;
-            return CompileAll( out messages, cancellationToken );
+            return CompileAll( out messages, CancellationToken.None );
         }
 
         /// <summary>
@@ -477,6 +486,7 @@ namespace Rock.Web.UI
             }
         }
 
+#if NET472_OR_GREATER
         private class DotlessLogger : Logger
         {
             public List<string> LogLines = new List<string>();
@@ -488,5 +498,6 @@ namespace Rock.Web.UI
                 LogLines.Add( message );
             }
         }
+#endif
     }
 }

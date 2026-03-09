@@ -258,7 +258,7 @@ export default defineComponent({
         };
 
         const invokeBlockAction = createInvokeBlockAction(post, store.state.pageGuid, toGuidOrNull(props.config.blockGuid) ?? emptyGuid, store.state.pageParameters, store.state.sessionGuid, store.state.interactionGuid);
-        const invokeStreamingBlockAction = createInvokeStreamingBlockAction(doStreamingApiCall, store.state.pageGuid, toGuidOrNull(props.config.blockGuid) ?? emptyGuid, store.state.pageParameters, store.state.sessionGuid, store.state.interactionGuid);
+        const invokeStreamingBlockAction = createInvokeStreamingBlockAction(streamingHttpCall, store.state.pageGuid, toGuidOrNull(props.config.blockGuid) ?? emptyGuid, store.state.pageParameters, store.state.sessionGuid, store.state.interactionGuid);
 
         /**
          * Reload the block by requesting the new initialization data and then

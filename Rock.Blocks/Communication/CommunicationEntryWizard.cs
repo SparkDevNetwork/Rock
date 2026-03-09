@@ -2031,7 +2031,7 @@ namespace Rock.Blocks.Communication
         {
             // Get the person aliases from existing communication recipients.
             var personAliasIds = new PersonAliasService( rockContext )
-                .GetPrimaryAliasQuery()
+                .Queryable()
                 .AsNoTracking()
                 .Where( personAlias => personAliasGuids.Contains( personAlias.Guid ) )
                 .Select( pa => pa.Id )
@@ -2207,9 +2207,10 @@ namespace Rock.Blocks.Communication
         /// </summary>
         /// <param name="currentPerson">The currently logged-in person for authorization checks.</param>
         /// <returns>A list of <see cref="ListItemBag"/> objects representing available SMS sender numbers.</returns>
-        private List<ListItemBag> GetSmsFromNumberBags( Person currentPerson )
+        private List<SmsFromNumberListItemBag> GetSmsFromNumberBags( Person currentPerson )
         {
             var selectedNumberGuids = this.AllowedSmsNumbersAttributeValue;
+            var personAliasIds = currentPerson.Aliases.Select( pa => pa.Id ).ToList();
 
             return SystemPhoneNumberCache.All( false )
                 .Where( spn => spn.IsAuthorized( Authorization.VIEW, currentPerson ) )
@@ -2217,7 +2218,12 @@ namespace Rock.Blocks.Communication
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
                 .ThenBy( spn => spn.Id )
-                .ToListItemBagList();
+                .Select( spn => new SmsFromNumberListItemBag( spn.ToListItemBag() )
+                {
+                    IsNumberAssignedToCurrentPerson = spn.AssignedToPersonAliasId.HasValue
+                        && personAliasIds.Contains( spn.AssignedToPersonAliasId.Value )
+                } )
+                .ToList();
         }
 
         /// <summary>
@@ -2918,9 +2924,12 @@ namespace Rock.Blocks.Communication
                 }
                 else
                 {
+                    // Intentionally not using AsNoTracking. The preview Lava can access related
+                    // entities through navigation properties. Since we cannot predict what Lava
+                    // will reference, the entity must remain tracked to allow lazy loading.
                     var firstRecipient = new CommunicationRecipientService( rockContext )
                         .Queryable()
-                        .AsNoTracking()
+                        //.AsNoTracking()
                         .Where( cr => cr.CommunicationId == communication.Id )
                         .FirstOrDefault();
 

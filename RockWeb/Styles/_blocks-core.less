@@ -5,7 +5,8 @@
   2. Schedule Builder - block for building schedules
   3. Workflow - styles for workflow blocks
   4. Electronic Signatures
-
+  5. Notifications - styles for notification message list block
+  6. Webfarm Settings - styles for webfarm settings block
 */
 
 // Fullscreen Toggle
@@ -1041,4 +1042,87 @@
 
 body.hide-block-role-secondary .block-instance.block-role-secondary:not(.block-role-action-aware) {
     display: none;
+}
+
+
+// 5. Notifications
+// -------------------------
+
+.notification-messages {
+
+  .notification-item {
+      margin-bottom: var(--spacing-medium);
+  }
+
+  .notification-item:last-child {
+      margin-bottom: 0;
+  }
+
+  .filter-button.active {
+      background-color: var(--color-interface-soft);
+      padding: var(--spacing-tiny) var(--spacing-xsmall);
+      border-radius: var(--rounded-xsmall);
+  }
+
+}
+
+// 6. Webfarm Settings
+// -------------------------
+
+.web-farm-settings {
+
+  .bg-disabled {
+    color: var(--color-interface-soft);
+    background: var(--color-interface-softer);
+  }
+
+  .bg-disabled .indicator {
+      background: var(--color-interface-soft);
+  }
+
+  .card-node {
+      margin-bottom: 24px;
+      border-top: 0;
+  }
+
+  .card-node .indicator {
+      height: 4px;
+  }
+
+  .card-node .card-header {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 8px;
+      background: transparent;
+      align-items: center;
+  }
+
+  .server-meta {
+      display: flex;
+      flex: 1 1 auto;
+      flex-wrap: nowrap;
+      align-items: center;
+      overflow: hidden;
+      font-size: 20px;
+      line-height: 36px;
+  }
+
+  .node-name {
+      margin-left: 4px;
+      font-weight: 700;
+  }
+
+  .node-type-icon {
+      flex-shrink: 0;
+      margin-left: 8px;
+  }
+
+  .card-node .card-body {
+      padding: 0;
+  }
+
+  .card .indicator {
+    height: 4px;
+  }
+
 }

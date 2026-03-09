@@ -308,6 +308,10 @@
     box-shadow: none;
 }
 
+.action-bar .input-group-btn,
+.action-bar .btn {
+    box-shadow: none !important;
+}
 
 .messages-container {
     display: flex;

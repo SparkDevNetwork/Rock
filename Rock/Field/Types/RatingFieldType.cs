@@ -279,6 +279,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var maxRating = GetMaxRating( privateConfigurationValues );
+
+            return new FieldTypeHints
+            {
+                ValueFormat = $"An integer value between 0 and {maxRating}.",
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

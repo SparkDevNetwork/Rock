@@ -2,6 +2,7 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           itemTerm="Campaign"
+          title="Connection Campaigns"
           keyField="guid"
           stickyHeader
           liveUpdates

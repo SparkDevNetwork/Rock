@@ -15,8 +15,10 @@
 // </copyright>
 
 using System.ComponentModel;
+using System.Data.Entity;
 
 using Rock.Attribute;
+using System.Linq;
 using Rock.Common.Mobile.Blocks.Engagement.OutreachOnboarding.cs;
 using Rock.Common.Mobile.ViewModel;
 using Rock.Enums.Core;
@@ -38,17 +40,24 @@ namespace Rock.Blocks.Types.Mobile.Engagement
 
     [LinkedPage(
         "Add Contact Page",
-        Description = "Page to link to when user taps on the plus button.",
+        Description = "The page to open for adding a contact.",
         IsRequired = true,
         Key = AttributeKey.AddContact,
         Order = 0 )]
 
-    [MobileNavigationActionField( "After Finish Action",
+    [MobileNavigationActionField( "Completion Action",
         Description = "The navigation action to perform when the delete button is pressed.",
         IsRequired = false,
         DefaultValue = MobileNavigationActionFieldAttribute.PopSinglePageValue,
         Key = AttributeKey.AfterFinishAction,
         Order = 1 )]
+
+    [TextField( "Toolbox Name",
+        Description = "The public name of this experience.",
+        IsRequired = false,
+        DefaultValue = "Beacon",
+        Key = AttributeKey.ToolboxName,
+        Order = 2 )]
 
     #endregion
 
@@ -62,11 +71,29 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         {
             public const string AddContact = "AddContact";
             public const string AfterFinishAction = "AfterFinishAction";
+            public const string ToolboxName = "ToolboxName";
         }
 
         #endregion
 
         #region Block Actions
+
+        /// <summary>
+        /// Gets a value indicating whether the current person has at least one contact.
+        /// </summary>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult GetHasAtOneContact()
+        {
+            var currPerson = GetCurrentPerson();
+
+            ContactService contactService = new ContactService( RockContext );
+            var contactCount = contactService.Queryable()
+                .Where( c => c.OwnerPersonAliasId == currPerson.PrimaryAliasId )
+                .Count();
+
+            return ActionOk( contactCount > 0 );
+        }
 
         /// <summary>
         /// Finishes the onboarding.
@@ -88,10 +115,10 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             }
 
             person.OutreachTouchpointSchedule = ( DaysOfWeekFlags ) option.DayOfWeekFlags;
-            person.OutreachTouchpointNotificationsEnabled = option.DailyNotificationsEnabled || option.SpecialEventNotificationsEnabled;
             person.OutreachEnableDailyNotification = option.DailyNotificationsEnabled;
             person.OutreachNotificationTimeOfDay = option.DailyNotificationsEnabled ? option.NotificationTime?.ToNative() : null; // Clear out time if daily notifications are not enabled
             person.OutreachEnableSpecialEventsNotification = option.SpecialEventNotificationsEnabled;
+            person.OutreachTouchpointGenerationEnabled = true;
 
             RockContext.SaveChanges();
 
@@ -108,6 +135,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             return new Rock.Common.Mobile.Blocks.Engagement.OutreachOnboarding.Configuration
             {
                 AddContactPageGuid = GetAttributeValue( AttributeKey.AddContact ).AsGuidOrNull(),
+                ToolboxName = GetAttributeValue( AttributeKey.ToolboxName ),
                 AfterFinishAction = GetAttributeValue( AttributeKey.AfterFinishAction ).FromJsonOrNull<MobileNavigationActionViewModel>() ?? new MobileNavigationActionViewModel()
             };
         }

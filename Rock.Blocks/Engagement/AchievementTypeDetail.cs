@@ -15,6 +15,13 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+using System.Text;
+
 using Rock.Achievement;
 using Rock.Attribute;
 using Rock.Chart;
@@ -26,12 +33,6 @@ using Rock.ViewModels.Blocks.Engagement.AchievementTypeDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Linq;
-using System.Text;
 
 namespace Rock.Blocks.Engagement
 {
@@ -894,6 +895,14 @@ namespace Rock.Blocks.Engagement
                 entity.AllowPerson( Rock.Security.Authorization.ADMINISTRATE, GetCurrentPerson(), RockContext );
             }
 
+            var configuration = GetAchievementConfiguration( box.Bag.AchievementEntityType.Value.AsGuidOrNull() );
+
+            if ( configuration != null )
+            {
+                entity.SourceEntityTypeId = configuration.SourceEntityTypeCache.Id;
+                entity.AchieverEntityTypeId = configuration.AchieverEntityTypeCache.Id;
+            }
+                
             // Now that the component attributes are saved, generate the config JSON from the component
             var updatedCacheItem = AchievementTypeCache.Get( entity.Id );
             var component = updatedCacheItem.AchievementComponent;

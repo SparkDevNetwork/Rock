@@ -39,7 +39,10 @@ export const OutreachCadence = {
     Quarterly: 4,
 
     /** Paused prayer cadence. */
-    Paused: 5
+    Paused: 5,
+
+    /** Daily prayer cadence. */
+    Daily: 6
 } as const;
 
 /** The connection cadence of the contact. */
@@ -54,7 +57,9 @@ export const OutreachCadenceDescription: Record<number, string> = {
 
     4: "Quarterly",
 
-    5: "Paused"
+    5: "Paused",
+
+    6: "Daily"
 };
 
 /** The connection cadence of the contact. */

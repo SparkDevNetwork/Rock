@@ -171,8 +171,10 @@ namespace Rock.Blocks.Reporting
         /// <returns>A string of the Interaction HTML Content</returns>
         private string GetInteractionContent()
         {
-            var interactionId = PageParameter( PageParameterKey.InteractionId ).AsInteger();
-            var interaction = new InteractionService( RockContext ).Get( interactionId );
+            var interaction = new InteractionService( RockContext ).Get(
+                PageParameter( PageParameterKey.InteractionId ),
+                !PageCache.Layout.Site.DisablePredictableIds
+            );
 
             if ( interaction != null )
             {

@@ -3,22 +3,43 @@
                       :importCode="importCode"
                       :exampleCode="exampleCode"
                       enableReflection>
-        <ColorPicker label="Color" v-model="value" />
+        <ColorPicker v-if="!isHex"
+                     v-model="value"
+                     label="Color" />
+
+        <ColorPicker v-else
+                     v-model.hex="value"
+                     label="Color" />
+
+        <div class="form-group">
+            <RockLabel>Preview</RockLabel>
+            <div style="position: relative;width: 250px; height: 250px; border: 1px solid var(--color-interface-soft)">
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center;">
+                    To God Be The Glory
+                </div>
+                <div :style="{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: value }"></div>
+            </div>
+        </div>
 
         <template #settings>
-            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+            <Switch v-model="isHex"
+                    label="Hex Format"
+                    help="When enabled, values will be converted to hex format" />
         </template>
     </GalleryAndResult>
 </template>
 
 <script setup lang="ts">
     import { ref } from "vue";
+    import { getSfcControlImportPath } from "./common/utils.partial";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
-    import { getSfcControlImportPath } from "./common/utils.partial";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
 
     const value = ref("#ee7725");
+    const isHex = ref<boolean>(false);
+
     const importCode = getSfcControlImportPath("colorPicker");
     const exampleCode = `<ColorPicker label="Color" v-model="value" />`;
 </script>

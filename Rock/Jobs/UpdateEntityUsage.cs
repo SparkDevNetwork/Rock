@@ -84,6 +84,7 @@ namespace Rock.Jobs
                 using ( var rockContext = CreateRockContext() )
                 {
                     UpdateMediaUsage( rockContext, ref processedCount );
+                    UpdateContentChannelItemMediaUsage( rockContext, ref processedCount );
                 }
             }
             else
@@ -155,6 +156,100 @@ namespace Rock.Jobs
                 else
                 {
                     mediaElement.DeleteMetadataValue( MetadataKey.EntityUsage, rockContext );
+                }
+
+                processedCount++;
+            }
+        }
+
+        /// <summary>
+        /// Updates the metadata for all content channel items to reflect the
+        /// media elements they reference through Media Element attributes.
+        /// </summary>
+        /// <param name="rockContext">The database context to use for retrieving and updating data.</param>
+        /// <param name="processedCount">The number of content channel items that were processed.</param>
+        internal void UpdateContentChannelItemMediaUsage( RockContext rockContext, ref int processedCount )
+        {
+            var contentChannelItemEntityTypeId = EntityTypeCache.Get<ContentChannelItem>( false, rockContext )?.Id;
+
+            if ( !contentChannelItemEntityTypeId.HasValue )
+            {
+                return;
+            }
+
+            var mediaElementFieldTypeGuid = Rock.SystemGuid.FieldType.MEDIA_ELEMENT.AsGuid();
+
+            // Find all Media Element attributes scoped to ContentChannelItem entities.
+            var attributeIdQry = new AttributeService( rockContext )
+                .Queryable()
+                .Where( a => a.FieldType.Guid == mediaElementFieldTypeGuid
+                    && a.EntityTypeId == contentChannelItemEntityTypeId.Value )
+                .Select( a => a.Id );
+
+            // Find all attribute values for ContentChannelItem that reference a Media Element.
+            var referencingEntities = new AttributeValueService( rockContext )
+                .Queryable()
+                .Where( av => attributeIdQry.Contains( av.AttributeId )
+                    && !string.IsNullOrEmpty( av.Value )
+                    && av.EntityId.HasValue )
+                .Select( av => new
+                {
+                    MediaElementGuid = av.Value,
+                    av.EntityId
+                } )
+                .ToList();
+
+            // Build a lookup from MediaElement Guid to its integer identifier.
+            var mediaElementIdByGuid = new MediaElementService( rockContext )
+                .Queryable()
+                .ToDictionary( me => me.Guid, me => me.Id );
+
+            // Build a map from each content channel item's identifier to the list of
+            // media element identifiers it references.
+            var contentChannelItemMediaIds = new Dictionary<int, List<int>>();
+
+            foreach ( var reference in referencingEntities )
+            {
+                var mediaElementGuid = reference.MediaElementGuid.AsGuid();
+
+                if ( mediaElementGuid == Guid.Empty )
+                {
+                    continue;
+                }
+
+                if ( !mediaElementIdByGuid.TryGetValue( mediaElementGuid, out var mediaElementId ) )
+                {
+                    continue;
+                }
+
+                if ( !contentChannelItemMediaIds.TryGetValue( reference.EntityId.Value, out var mediaIds ) )
+                {
+                    mediaIds = new List<int>();
+                    contentChannelItemMediaIds.Add( reference.EntityId.Value, mediaIds );
+                }
+
+                if ( !mediaIds.Contains( mediaElementId ) )
+                {
+                    mediaIds.Add( mediaElementId );
+                }
+            }
+
+            // Load all content channel items so we can start processing them.
+            // We need to load everything because we need to clear out any
+            // existing metadata values that are no longer valid.
+            var contentChannelItems = new ContentChannelItemService( rockContext )
+                .Queryable()
+                .ToList();
+
+            foreach ( var contentChannelItem in contentChannelItems )
+            {
+                if ( contentChannelItemMediaIds.TryGetValue( contentChannelItem.Id, out var mediaIds ) && mediaIds.Any() )
+                {
+                    contentChannelItem.SaveMetadataValue( MetadataKey.MediaElements, mediaIds, rockContext );
+                }
+                else
+                {
+                    contentChannelItem.DeleteMetadataValue( MetadataKey.MediaElements, rockContext );
                 }
 
                 processedCount++;

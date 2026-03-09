@@ -1,0 +1,51 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="mt-1">
+        <RockButton :btnSize="BtnSize.ExtraSmall" :btnType="BtnType.Default" @click="handleExpand">
+            {{ isExpanded ? 'Hide Values' : 'Show Values' }}
+            <i :class="['ti ti-chevron-down ti-fw text-xs show-values-chevron', { 'fa-rotate-180': isExpanded }]"></i>
+        </RockButton>
+    </div>
+
+    <TransitionVerticalCollapse>
+        <div v-if="isExpanded">
+            <div class="pt-2">
+                <table class="table table-bordered table-sm w-auto text-xs m-0">
+                    <tbody>
+                        <tr v-for="(val, key) in props.keyValues" :key="key">
+                            <td class="bg-body text-color-strong font-monospace text-nowrap align-top">{{ key }}</td>
+                            <td class="text-muted align-top">{{ val }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<style scoped>
+.show-values-chevron {
+    transition: transform 0.2s ease;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, PropType } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+
+    const props = defineProps({
+        keyValues: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        }
+    });
+
+    const isExpanded = ref(false);
+
+    function handleExpand(): void {
+        isExpanded.value = !isExpanded.value;
+    }
+</script>

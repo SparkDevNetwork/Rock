@@ -800,7 +800,7 @@ namespace RockWeb.Blocks.Mobile
                     p.Id,
                     p.InternalName,
                     LayoutName = p.Layout.Name,
-                    DisplayInNavWhen = p.DisplayInNavWhen.GetDescription() ?? p.DisplayInNavWhen.ToStringSafe()
+                    DisplayInNavWhen = p.DisplayInNavWhen.GetDisplayName()
                 } )
                 .ToList();
 

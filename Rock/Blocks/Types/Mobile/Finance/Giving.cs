@@ -14,27 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Model;
-using System.Linq;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using Rock.Financial;
-using Rock.Web.Cache;
-using Rock.Data;
-using System;
-using Rock.Web.UI.Controls;
+using System.Linq;
 using System.Threading.Tasks;
-using Rock.Tasks;
+
+using MassTransit; //why?
+
+using Rock.Attribute;
 using Rock.Bus.Message;
-using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount;
-using MassTransit;
+using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
 using Rock.Common.Mobile.Blocks.Finance.Giving;
 using Rock.Common.Mobile.ViewModel;
-using Rock.Web.UI;
+using Rock.Data;
+using Rock.Financial;
+using Rock.Model;
+using Rock.Tasks;
 using Rock.ViewModels.Finance;
+using Rock.Web.Cache;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Types.Mobile.Finance
 {
@@ -1233,33 +1235,37 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <param name="options">The options.</param>
         private void PopulateTransactionDetails<T>( ICollection<T> transactionDetails, TransactionRequestInfoBag options ) where T : ITransactionDetail, new()
         {
-            var selectedAccountAmounts = options.AccountAmountSelections.Where( kvp => kvp.Amount > 0m );
-            var totalSelectedAmounts = selectedAccountAmounts.Select( kvp => kvp.Amount ).Sum();
-            var isAch = options.CurrencyTypeValue.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid();
-            var enableCoverTheFees = options.EnableCoverTheFees;
+            // Materialize into a stable order so fee distribution is deterministic.
+            var selected = options.AccountAmountSelections
+                .Where( kvp => kvp.Amount > 0m )
+                .OrderBy( kvp => kvp.AccountId )
+                .ToList();
+
+            if ( selected.Count == 0 )
+            {
+                return;
+            }
 
             var feeCoverageGatewayComponent = MyWellGatewayComponent as IFeeCoverageGatewayComponent;
-
-            foreach ( var selectedAccountAmount in selectedAccountAmounts )
-            {
-                var transactionDetail = new T();
-                var amount = selectedAccountAmount.Amount;
-
-                if ( feeCoverageGatewayComponent != null && enableCoverTheFees && options.FeeCoverageAmount.HasValue )
+            var canCoverFees = feeCoverageGatewayComponent != null && options.EnableCoverTheFees && options.FeeCoverageAmount.HasValue;
+            var allocations = selected
+                .Select( s =>
                 {
-                    decimal portionOfTotalAmount = decimal.Divide( selectedAccountAmount.Amount, totalSelectedAmounts );
-                    decimal feeCoverageAmountForAccount = decimal.Round( portionOfTotalAmount * options.FeeCoverageAmount.Value, 2 );
+                    // Get the account from the "AccountId" (which is likely a Guid, or less-likely, an IdKey).
+                    var account = FinancialAccountCache.Get( s.AccountId, !PageCache.Layout.Site.DisablePredictableIds );
 
-                    amount += feeCoverageAmountForAccount;
-                    transactionDetail.FeeCoverageAmount = feeCoverageAmountForAccount;
-                }
+                    return new FinancialTransactionService.AccountAllocation( account.Id, s.Amount );
+                } )
+                .ToList();
 
-                // Get the account from the account id
-                var account = new FinancialAccountService( RockContext ).Get( selectedAccountAmount.AccountId, !PageCache.Layout.Site.DisablePredictableIds );
-                transactionDetail.AccountId = account.Id;
-                transactionDetail.Amount = amount;
-                transactionDetails.Add( transactionDetail );
-            }
+            // The FinancialTransactionService.PopulateTransactionDetails method will handle the distribution of fee
+            // coverage amounts across the accounts, so we can just pass in the total fee coverage amount and
+            // let it handle the rest. It will update this in the transactionDetails collection.
+            FinancialTransactionService.PopulateTransactionDetails<T>(
+                transactionDetails,
+                allocations,
+                enableCoverTheFees: canCoverFees,
+                totalFeeCoverageAmount: options.FeeCoverageAmount );
         }
 
         /// <summary>

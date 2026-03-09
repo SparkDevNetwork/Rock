@@ -138,6 +138,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this RegistrationTemplate target, RegistrationTemplate source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.AddPersonNote = source.AddPersonNote;
             target.AllowExternalRegistrationUpdates = source.AllowExternalRegistrationUpdates;
             target.AllowMultipleRegistrants = source.AllowMultipleRegistrants;

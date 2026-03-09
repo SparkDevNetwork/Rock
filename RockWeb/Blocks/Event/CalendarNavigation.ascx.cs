@@ -17,10 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Web.UI;
 
-using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -42,6 +40,8 @@ namespace RockWeb.Blocks.Event
 
         #region Properties
 
+        private bool IsAllowingPredictableIds => !PageCache.Layout.Site.DisablePredictableIds;
+
         private int? EventCalendarId { get; set; }
         private int? EventItemId { get; set; }
         private int? EventItemOccurrenceId { get; set; }
@@ -50,6 +50,18 @@ namespace RockWeb.Blocks.Event
         private int? PageNumber { get; set; }
 
         #endregion
+
+        #region Keys
+
+        private static class PageParameterKey
+        {
+            public const string EventCalendarId = "EventCalendarId";
+            public const string EventItemId = "EventItemId";
+            public const string EventItemOccurrenceId = "EventItemOccurrenceId";
+            public const string ContentItemId = "ContentItemId";
+        }
+
+        #endregion Keys
 
         #region Control Methods
 
@@ -77,15 +89,20 @@ namespace RockWeb.Blocks.Event
         {
             if ( !Page.IsPostBack )
             {
-                // Get any querystring variables
-                ContentItemId = PageParameter( "ContentItemId" ).AsIntegerOrNull();
-                EventItemOccurrenceId = PageParameter( "EventItemOccurrenceId" ).AsIntegerOrNull();
-                EventItemId = PageParameter( "EventItemId" ).AsIntegerOrNull();
-                EventCalendarId = PageParameter( "EventCalendarId" ).AsIntegerOrNull();
-
-                // Load objects necessary to display names
                 using ( var rockContext = new RockContext() )
                 {
+                    var contentChannelItemService = new ContentChannelItemService( rockContext );
+                    var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
+                    var eventItemService = new EventItemService( rockContext );
+                    var eventCalendarService = new EventCalendarService( rockContext );
+
+                    // Get any querystring variables
+                    ContentItemId = contentChannelItemService.Get( PageParameter( PageParameterKey.ContentItemId ), IsAllowingPredictableIds )?.Id;
+                    EventItemOccurrenceId = eventItemOccurrenceService.Get( PageParameter( PageParameterKey.EventItemOccurrenceId ), IsAllowingPredictableIds )?.Id;
+                    EventItemId = eventItemService.Get( PageParameter( PageParameterKey.EventItemId ), IsAllowingPredictableIds )?.Id;
+                    EventCalendarId = eventCalendarService.Get( PageParameter( PageParameterKey.EventCalendarId ), IsAllowingPredictableIds )?.Id;
+
+                    // Load objects necessary to display names
                     ContentChannelItem contentItem = null;
                     EventItemOccurrence eventItemOccurrence = null;
                     EventItem eventItem = null;
@@ -94,13 +111,13 @@ namespace RockWeb.Blocks.Event
                     if ( ContentItemId.HasValue && ContentItemId.Value > 0 )
                     {
                         PageNumber = 5;
-                        var contentChannel = new ContentChannelItemService( rockContext ).Get( ContentItemId.Value );
+                        contentItem = contentChannelItemService.Get( ContentItemId.Value );
                     }
 
                     if ( EventItemOccurrenceId.HasValue && EventItemOccurrenceId.Value > 0 )
                     {
                         PageNumber = PageNumber ?? 4;
-                        eventItemOccurrence = new EventItemOccurrenceService( rockContext ).Get( EventItemOccurrenceId.Value );
+                        eventItemOccurrence = eventItemOccurrenceService.Get( EventItemOccurrenceId.Value );
                         if ( eventItemOccurrence != null )
                         {
                             eventItem = eventItemOccurrence.EventItem;
@@ -116,7 +133,7 @@ namespace RockWeb.Blocks.Event
                         PageNumber = PageNumber ?? 3;
                         if ( eventItem == null )
                         {
-                            eventItem = new EventItemService( rockContext ).Get( EventItemId.Value );
+                            eventItem = eventItemService.Get( EventItemId.Value );
                         }
 
                         if ( !EventCalendarId.HasValue )
@@ -136,7 +153,7 @@ namespace RockWeb.Blocks.Event
                     if ( EventCalendarId.HasValue && EventCalendarId.Value > 0 )
                     {
                         PageNumber = PageNumber ?? 2;
-                        eventCalendar = new EventCalendarService( rockContext ).Get( EventCalendarId.Value );
+                        eventCalendar = eventCalendarService.Get( EventCalendarId.Value );
                     }
 
                     PageNumber = PageNumber ?? 1;
@@ -249,44 +266,68 @@ namespace RockWeb.Blocks.Event
                 var pageCache = PageCache.Get( RockPage.PageId );
                 if ( pageCache != null )
                 {
-                    if ( 
-                        ( targetPage == 2 && !EventCalendarId.HasValue ) ||
-                        ( targetPage == 3 && !EventItemId.HasValue ) ||
-                        ( targetPage == 4 && !EventItemOccurrenceId.HasValue )
-                    )
+                    using ( var rockContext = new RockContext() )
                     {
-                        // We don't have the parameter necessary to navigate, so just return
-                        return;
-                    }
+                        var eventCalendarService = new EventCalendarService( rockContext );
+                        var eventItemService = new EventItemService( rockContext );
+                        var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
 
-                    // Build the querystring parameters
-                    var qryParams = new Dictionary<string, string>();
-                    if ( targetPage >= 2 && EventCalendarId.HasValue )
-                    {
-                        qryParams.Add( "EventCalendarId", EventCalendarId.Value.ToString() );
-                    }
-                    if ( targetPage >= 3 && EventItemId.HasValue )
-                    {
-                        qryParams.Add( "EventItemId", EventItemId.Value.ToString() );
-                    }
-                    if ( targetPage >= 4 && EventItemOccurrenceId.HasValue )
-                    {
-                        qryParams.Add( "EventItemOccurrenceId", EventItemOccurrenceId.Value.ToString() );
-                    }
+                        if (
+                            ( targetPage == 2 && !EventCalendarId.HasValue ) ||
+                            ( targetPage == 3 && !EventItemId.HasValue ) ||
+                            ( targetPage == 4 && !EventItemOccurrenceId.HasValue )
+                        )
+                        {
+                            // We don't have the parameter necessary to navigate, so just return
+                            return;
+                        }
 
-                    // Find the target page
-                    var parentPage = pageCache.ParentPage;
-                    int currentPage = PageNumber.Value - 1;
-                    while ( parentPage != null && currentPage > targetPage )
-                    {
-                        parentPage = parentPage.ParentPage;
-                        currentPage--;
-                    }
+                        // Build the querystring parameters
+                        var qryParams = new Dictionary<string, string>();
+                        if ( targetPage >= 2 && EventCalendarId.HasValue )
+                        {
+                            var eventCalendarIdKey = eventCalendarService.GetNoTracking( EventCalendarId.Value )?.IdKey;
 
-                    // Navigate to the parent page
-                    if ( parentPage != null )
-                    {
-                        NavigateToPage( parentPage.Guid, qryParams );
+                            if ( !string.IsNullOrEmpty( eventCalendarIdKey ) )
+                            {
+                                qryParams[PageParameterKey.EventCalendarId] = eventCalendarIdKey;
+                            }
+                        }
+
+                        if ( targetPage >= 3 && EventItemId.HasValue )
+                        {
+                            var eventItemIdKey = eventItemService.GetNoTracking( EventItemId.Value )?.IdKey;
+
+                            if ( !string.IsNullOrEmpty( eventItemIdKey ) )
+                            {
+                                qryParams[PageParameterKey.EventItemId] = eventItemIdKey;
+                            }
+                        }
+
+                        if ( targetPage >= 4 && EventItemOccurrenceId.HasValue )
+                        {
+                            var eventItemOccurrenceIdKey = eventItemOccurrenceService.GetNoTracking( EventItemOccurrenceId.Value )?.IdKey;
+
+                            if ( !string.IsNullOrEmpty( eventItemOccurrenceIdKey ) )
+                            {
+                                qryParams[PageParameterKey.EventItemOccurrenceId] = eventItemOccurrenceIdKey;
+                            }
+                        }
+
+                        // Find the target page
+                        var parentPage = pageCache.ParentPage;
+                        int currentPage = PageNumber.Value - 1;
+                        while ( parentPage != null && currentPage > targetPage )
+                        {
+                            parentPage = parentPage.ParentPage;
+                            currentPage--;
+                        }
+
+                        // Navigate to the parent page
+                        if ( parentPage != null )
+                        {
+                            NavigateToPage( parentPage.Guid, qryParams );
+                        }
                     }
                 }
             }

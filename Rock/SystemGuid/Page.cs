@@ -1896,12 +1896,6 @@ namespace Rock.SystemGuid
         public const string SYSTEM_EMAIL_CATEGORIES_COMMUNICATIONS = "B55323CD-F494-43E7-97BF-4E13DAB58E0B";
 
         /// <summary>
-        /// Gets the System Email Categories page guid
-        /// ParentPage: System Emails
-        /// </summary>
-        public const string SYSTEM_EMAIL_CATEGORIES_SYSTEM_EMAILS = "66FAF7A6-7523-475C-A88D-51C75178A785";
-
-        /// <summary>
         /// Gets the System Communications page guid
         /// ParentPage: Communications
         /// </summary>

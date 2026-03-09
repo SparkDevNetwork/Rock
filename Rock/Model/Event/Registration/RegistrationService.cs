@@ -595,6 +595,8 @@ namespace Rock.Model
                 SignatureDocumentTerm = template.RequiredSignatureDocumentTemplate?.DocumentTerm;
                 SignatureDocumentTemplateName = template.RequiredSignatureDocumentTemplate?.Name;
             }
+
+            RegistrantEligibilitySettings = template.GetRegistrantEligibilitySettingsOrNull();
         }
 
         /// <summary>
@@ -999,5 +1001,10 @@ namespace Rock.Model
         /// The name of the signature document template.
         /// </value>
         public string SignatureDocumentTemplateName { get; private set; }
+
+        /// <summary>
+        /// Gets the eligibility settings that determine which registrants are allowed to register using this template.
+        /// </summary>
+        public RegistrationTemplate.RegistrantEligibilitySettings RegistrantEligibilitySettings { get; private set; }
     }
 }

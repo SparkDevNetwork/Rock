@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="grid-obsidian styled-scroll" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light }">
+    <div class="grid-obsidian styled-scroll" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light, 'grid-comfy': comfy }">
         <div class="grid-header">
             <FilterHeaderRow v-if="!light && !hideFilterHeaderRow"
                              v-model:quickFilterValue="quickFilterValue"
@@ -33,7 +33,8 @@
                                  v-model:columnSort="columnSortDirection"
                                  :grid="gridState"
                                  :light="light"
-                                 :manualSort="manualSort" />
+                                 :manualSort="manualSort"
+                                 @width="headerRowWidthCalculation = $event" />
                 <div v-if="$slots.gridHeaderAppend"
                      class="grid-header-append">
                     <slot name="gridHeaderAppend" />
@@ -61,7 +62,7 @@
                       :markInactiveRows="markInactiveRows"
                       :rowClass="rowClass"
                       :emptyDataText="emptyDataText"
-                      @width="calculateOverflow"
+                      @width="dataRowWidthCalculation = $event"
                       @click="onRowClick" />
 
             <div class="grid-body" v-else-if="!keyField || light || isNestedInScrollable">
@@ -75,7 +76,7 @@
                           :markInactiveRows="markInactiveRows"
                           :rowClass="rowClass"
                           :emptyDataText="emptyDataText"
-                          @width="calculateOverflow"
+                          @width="dataRowWidthCalculation = $event"
                           @click="onRowClick" />
             </div>
 
@@ -90,7 +91,7 @@
                              :rowClass="rowClass"
                              :keyField="keyField"
                              :emptyDataText="emptyDataText"
-                             @width="calculateOverflow"
+                             @width="dataRowWidthCalculation = $event"
                              @click="onRowClick" />
         </div>
 
@@ -141,7 +142,7 @@
     import { GridCommunicationBag } from "@Obsidian/ViewModels/Core/Grid/gridCommunicationBag";
     import { Guid } from "@Obsidian/Types";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
-    import { useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useBlockGuid, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { downloadFile } from "@Obsidian/Utility/file";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -149,6 +150,7 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { type Column, type Workbook, type Worksheet } from "@Obsidian/Libs/exceljs";
     import { IPersonPreferenceCollection } from "@Obsidian/Types/Core/personPreferences";
+    import { useStore } from "@Obsidian/PageState";
 
     /**
      * The preference keys used by the grid.
@@ -255,6 +257,15 @@
          * that are embedded inside other blocks or controls.
          */
         light: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * A comfy grid changes the display style of the rows so they look more
+         * like pills instead of traditional rows.
+         */
+        comfy: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -606,10 +617,11 @@
 
     const slots = useSlots();
     const invokeBlockAction = useInvokeBlockAction();
+    const blockGuid = useBlockGuid();
+    const store = useStore();
 
     // #region Values
 
-    const overflow = ref(false);
     const currentPage = ref(1);
     const pageSize = ref(50);
     const pageSizes = props.isNestedInScrollable ? [50] : [50, 500, 5000];
@@ -631,6 +643,9 @@
     const gridPreferences = getPrefixedPreferences();
     let preferencesAreDirty = false;
     let preferencesAreSaving = false;
+
+    const dataRowWidthCalculation = ref<{ offsetWidth: number; scrollWidth: number }>();
+    const headerRowWidthCalculation = ref<{ offsetWidth: number; scrollWidth: number }>();
 
     // #endregion
 
@@ -950,6 +965,21 @@
      */
     const isPagerRowVisible = computed((): boolean => {
         return !props.light && !isPagingDisabled.value;
+    });
+
+    /**
+     * Called when a new width has been emit from the DataRow or VirtualDataRow.
+     */
+    const overflow = computed((): boolean => {
+        if (visibleRows.value.length === 0 || !dataRowWidthCalculation.value) {
+            if (!headerRowWidthCalculation.value) {
+                return false;
+            }
+
+            return headerRowWidthCalculation.value.offsetWidth < headerRowWidthCalculation.value.scrollWidth;
+        }
+
+        return dataRowWidthCalculation.value.offsetWidth < dataRowWidthCalculation.value.scrollWidth;
     });
 
     // #endregion
@@ -1869,18 +1899,6 @@
         }
     }
 
-    /**
-     * Called when a new width has been emit from the DataRow or VirtualDataRow.
-     */
-    function calculateOverflow(width: { offsetWidth: number, scrollWidth: number }): void {
-        if (width.offsetWidth < width.scrollWidth) {
-            overflow.value = true;
-            return;
-        }
-
-        overflow.value = false;
-    }
-
     // #endregion
 
     const gridState = createGridState();
@@ -1894,6 +1912,21 @@
         setPageSizeFromPreferences();
     }
 
+    // If we are inside a block, and we have a valid interaction guid, then check
+    // if we are navigating back to the page and if so restore the quick filter
+    // value from session storage. This allows the search to be restored when
+    // using the browser back button.
+    if (blockGuid && store.state.interactionGuid) {
+        // Check if it exists because iOS 10 didn't support this.
+        if (window.performance.getEntriesByType) {
+            var nav = window.performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
+
+            if (nav?.type === "back_forward") {
+                quickFilterValue.value = sessionStorage.getItem(`${blockGuid}-${store.state.interactionGuid}-grid-quick-filte-value`) ?? "";
+            }
+        }
+    }
+
     gridState.setFilters(quickFilterValue.value, columnFilterValues.value);
     gridState.setSort(columnSortDirection.value);
     visibleColumnDefinitions.value = gridState.visibleColumns;
@@ -1901,6 +1934,7 @@
     watch(quickFilterValue, () => {
         currentPage.value = 1;
         gridState.setFilters(quickFilterValue.value, columnFilterValues.value);
+        sessionStorage.setItem(`${blockGuid}-${store.state.interactionGuid}-grid-quick-filte-value`, quickFilterValue.value);
     });
 
     watch(columnFilterValues, () => {

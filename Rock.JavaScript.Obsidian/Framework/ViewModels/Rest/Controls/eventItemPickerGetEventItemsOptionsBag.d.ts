@@ -21,11 +21,22 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /**
  * The options that can be passed to the GetEventItems API action of
  * the EventItemPicker control.
  */
 export type EventItemPickerGetEventItemsOptionsBag = {
+    /** The end of the date range to limit event items to. */
+    dateRangeEnd?: string | null;
+
+    /** The start of the date range to limit event items to. */
+    dateRangeStart?: string | null;
+
     /** Whether or not to include inactive event items */
     includeInactive: boolean;
+
+    /** The root calendar to limit the event items to. */
+    rootCalendar: Guid;
 };

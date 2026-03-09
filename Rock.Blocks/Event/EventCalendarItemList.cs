@@ -39,7 +39,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Lists all the event items in the given calendar." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the event calendar item details.",
@@ -47,7 +47,8 @@ namespace Rock.Blocks.Event
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "ca712211-3076-48bd-9321-2b7cee1d5961" )]
-    [Rock.SystemGuid.BlockTypeGuid( "20c68613-f253-4d2f-a465-62afbb01dcd6" )]
+    [Rock.SystemGuid.BlockTypeGuid( "EC8DFDC5-C177-4208-8ABA-1F85010FBBFF" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "20c68613-f253-4d2f-a465-62afbb01dcd6" )]
     [CustomizedGrid]
     [Rock.Web.UI.ContextAware( typeof( EventCalendar ) )]
     public class EventCalendarItemList : RockEntityListBlockType<EventCalendarItem>

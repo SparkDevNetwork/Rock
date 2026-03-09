@@ -184,7 +184,7 @@
         isVisible: true,
         label: "County",
         rules: RequirementLevel.Unspecified,
-        autocomplete: "address-level2"
+        autocomplete: "address-level3"
     });
     const state = reactive<FieldConfig>({
         isVisible: true,
@@ -291,7 +291,7 @@
             city.isVisible = data.cityRequirement !== RequirementLevel.Unavailable;
             city.rules = data.cityRequirement;
             city.label = data.cityLabel ?? city.label;
-            city.autocomplete = county.isVisible ? "address-level3" : "address-level2";
+            city.autocomplete = "address-level2";
 
             state.isVisible = data.stateRequirement !== RequirementLevel.Unavailable;
             state.rules = data.stateRequirement;

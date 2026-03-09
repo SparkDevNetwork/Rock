@@ -175,7 +175,7 @@ namespace Rock.Blocks.Prayer
         /// <inheritdoc/>
         protected override IQueryable<PrayerRequest> GetListQueryable( RockContext rockContext )
         {
-            var qry = base.GetListQueryable( rockContext )
+            IQueryable<PrayerRequest> qry = base.GetListQueryable( rockContext )
                 .Include( a => a.Campus )
                 .Include( a => a.Category );
 

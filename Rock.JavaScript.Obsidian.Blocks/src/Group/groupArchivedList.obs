@@ -62,6 +62,7 @@
             <template #format="{ row }">
                 <button class="btn btn-default btn-sm"
                         title="Unarchive"
+                        type="button"
                         @click.prevent="onUndoArchiveClick(row.idKey)">
                     <i class="ti ti-arrow-back-up"></i>
                 </button>

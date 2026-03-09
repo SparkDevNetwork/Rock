@@ -21,7 +21,9 @@
 // </copyright>
 //
 
+import { ConnectionWorkflowTriggerType } from "@Obsidian/Enums/Connection/connectionWorkflowTriggerType";
 import { Guid } from "@Obsidian/Types";
+import { ConnectionWorkflowQualifierValueBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityDetail/connectionWorkflowQualifierValueBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Minimal bag describing a workflow configuration for a Connection Opportunity. */
@@ -41,11 +43,11 @@ export type ConnectionWorkflowBag = {
     /** Gets or sets the connection status ID used to filter workflow manual triggers. */
     manualTriggerFilterConnectionStatusId?: number | null;
 
-    /** Gets or sets the qualifier value formatted as "|Primary|Secondary|". */
-    qualifierValue?: string | null;
+    /** Gets or sets the qualifier value. */
+    qualifierValue?: ConnectionWorkflowQualifierValueBag | null;
 
     /** Gets or sets the trigger type. */
-    triggerType: number;
+    triggerType: ConnectionWorkflowTriggerType;
 
     /** Gets or sets the workflow type as a ListItemBag. */
     workflowType?: ListItemBag | null;

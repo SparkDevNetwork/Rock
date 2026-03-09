@@ -212,7 +212,7 @@ namespace Rock.Blocks.Lms
         protected override IQueryable<LearningClass> GetListQueryable( RockContext rockContext )
         {
             // Eagerly load the LearningProgram in case it needs to be checked for VIEW authorization.
-            var baseQuery = new LearningClassService( rockContext )
+            IQueryable<LearningClass> baseQuery = new LearningClassService( rockContext )
                 .Queryable()
                 .Include( c => c.LearningCourse )
                 .Include( c => c.LearningCourse.LearningProgram )

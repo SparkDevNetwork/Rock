@@ -309,6 +309,17 @@
             valueBuilder.addTextValue("Description of Request", entity.requestText);
         }
 
+        if (entity.requestDocuments && entity.requestDocuments.length > 0) {
+            const documentLinks = entity.requestDocuments
+                .filter(doc => !doc.isMarkedForDeletion)
+                .map(doc => `<a href="/GetFile.ashx?guid=${doc.guid}" target="_blank">${doc.fileName || "Unnamed Document"}</a>`)
+                .join("<br>");
+
+            if (documentLinks) {
+                valueBuilder.addHtmlValue("Related Documents", documentLinks);
+            }
+        }
+
         return valueBuilder.build();
     });
 

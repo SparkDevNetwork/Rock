@@ -114,9 +114,15 @@ BEGIN
 			ON gmr.GroupMemberId = ag.Id
 			AND gmr.GroupRequirementId = @GroupRequirementId
 		WHERE 
-			gmr.RequirementMetDateTime IS NOT NULL
-			AND gmr.RequirementWarningDateTime IS NULL
-			AND DATEDIFF(DAY, gmr.RequirementMetDateTime, SYSDATETIME()) < @ExpireInDays;
+			(
+				gmr.WasOverridden = 1
+				OR gmr.WasManuallyCompleted = 1
+				OR (
+					gmr.RequirementMetDateTime IS NOT NULL
+					AND gmr.RequirementWarningDateTime IS NULL
+					AND DATEDIFF(DAY, gmr.RequirementMetDateTime, SYSDATETIME()) < @ExpireInDays
+				)
+			);
 	END
 	ELSE
 	BEGIN
@@ -126,7 +132,13 @@ BEGIN
 		INNER JOIN GroupMemberRequirement gmr
 			ON gmr.GroupMemberId = ag.Id
 		   AND gmr.GroupRequirementId = @GroupRequirementId
-		WHERE gmr.RequirementMetDateTime IS NOT NULL;
+		WHERE
+	        gmr.WasOverridden = 1
+			OR gmr.WasManuallyCompleted = 1
+			OR (
+				gmr.RequirementMetDateTime IS NOT NULL
+				AND gmr.RequirementWarningDateTime IS NULL
+			)
 	END
 
 	--------------------------------------------------------------------------
@@ -152,7 +164,7 @@ BEGIN
         GroupMemberRequirementId INT,
         GroupMemberId INT,
         GroupRequirementId INT,
-        MeetsGroupRequirement INT,
+        GroupMemberRequirementState INT,
         WarningWorkflowId INT,
         DoesNotMeetWorkflowId INT
     );
@@ -213,7 +225,7 @@ BEGIN
     --
     -- Logic:
     --  - Meets + Warning -> MeetsWithWarning
-   --  - Meets only -> Meets
+    --  - Meets only -> Meets
     --  - Not Met but requirement is NOT yet due -> MeetsWithWarning
     --  - Otherwise -> NotMet
     --------------------------------------------------------------------------
@@ -225,7 +237,7 @@ BEGIN
 				WHEN mp.Id IS NOT NULL THEN 0
 				WHEN pd.DueDate > SYSDATETIME() THEN 2
 				ELSE 1
-			END AS MeetsGroupRequirement,
+			END AS GroupMemberRequirementState,
 			SYSDATETIME() AS LastRequirementCheckDateTime
 		FROM GroupMember gm
 		INNER JOIN [PossibleDueDate] pd
@@ -256,26 +268,55 @@ BEGIN
 
     WHEN MATCHED THEN
         UPDATE SET
-            [target].[RequirementMetDateTime] =
-                CASE WHEN [source].[MeetsGroupRequirement] = 0 THEN SYSDATETIME() ELSE NULL END,
-            [target].[RequirementWarningDateTime] =
-                CASE WHEN [source].[MeetsGroupRequirement] = 2 THEN SYSDATETIME() ELSE NULL END,
-            [target].[RequirementFailDateTime] =
-                CASE WHEN [source].[MeetsGroupRequirement] = 1 THEN SYSDATETIME() ELSE NULL END,
+        -- MET DATE (Meets OR Meets With Warning)
+        [target].[RequirementMetDateTime] =
+            CASE
+                WHEN [source].[GroupMemberRequirementState] IN (0, 2)
+                     AND [target].[RequirementMetDateTime] IS NULL
+                THEN SYSDATETIME()
+                WHEN [source].[GroupMemberRequirementState] = 1
+                THEN NULL
+                ELSE [target].[RequirementMetDateTime]
+            END,
+
+        -- WARNING DATE
+        [target].[RequirementWarningDateTime] =
+            CASE
+                WHEN [source].[GroupMemberRequirementState] = 2
+                     AND [target].[RequirementWarningDateTime] IS NULL
+                THEN SYSDATETIME()
+                WHEN [source].[GroupMemberRequirementState] <> 2
+                THEN NULL
+                ELSE [target].[RequirementWarningDateTime]
+            END,
+
+        -- FAIL DATE
+        [target].[RequirementFailDateTime] =
+            CASE
+                WHEN [source].[GroupMemberRequirementState] = 1
+                     AND [target].[RequirementFailDateTime] IS NULL
+                THEN SYSDATETIME()
+                WHEN [source].[GroupMemberRequirementState] <> 1
+                THEN NULL
+                ELSE [target].[RequirementFailDateTime]
+            END,
+
+			[target].[GroupMemberRequirementState] = [source].[GroupMemberRequirementState],
             [target].[LastRequirementCheckDateTime] = [source].[LastRequirementCheckDateTime],
 			[target].[WarningWorkflowId] = 
-				CASE WHEN [source].[MeetsGroupRequirement] = 0 THEN NULL ELSE [target].[WarningWorkflowId] END,		-- If the group member meets the requirement then clear their "warning" workflow Id.
+				CASE WHEN [source].[GroupMemberRequirementState] = 0 THEN NULL ELSE [target].[WarningWorkflowId] END,		-- If the group member meets the requirement then clear their "warning" workflow Id.
 			[target].[DoesNotMeetWorkflowId] = 
-				CASE WHEN [source].[MeetsGroupRequirement] = 0 THEN NULL ELSE [target].[DoesNotMeetWorkflowId] END	-- If the group member meets the requirement then clear their "does not meet" workflow Id.
+				CASE WHEN [source].[GroupMemberRequirementState] = 0 THEN NULL ELSE [target].[DoesNotMeetWorkflowId] END	-- If the group member meets the requirement then clear their "does not meet" workflow Id.
 
     WHEN NOT MATCHED BY TARGET THEN
         INSERT
         (
             GroupMemberId,
             GroupRequirementId,
-            RequirementMetDateTime,
+          RequirementMetDateTime,
             RequirementWarningDateTime,
             RequirementFailDateTime,
+			GroupMemberRequirementState,
             LastRequirementCheckDateTime,
             Guid,
             CreatedDateTime,
@@ -285,9 +326,10 @@ BEGIN
         (
             [source].[GroupMemberId],
             @GroupRequirementId,
-            CASE WHEN [source].[MeetsGroupRequirement] = 0 THEN SYSDATETIME() END,
-            CASE WHEN [source].[MeetsGroupRequirement] = 2 THEN SYSDATETIME() END,
-            CASE WHEN [source].[MeetsGroupRequirement] = 1 THEN SYSDATETIME() END,
+            CASE WHEN [source].[GroupMemberRequirementState] = 0 THEN SYSDATETIME() END,
+            CASE WHEN [source].[GroupMemberRequirementState] = 2 THEN SYSDATETIME() END,
+            CASE WHEN [source].[GroupMemberRequirementState] = 1 THEN SYSDATETIME() END,
+			[source].[GroupMemberRequirementState],
             [source].[LastRequirementCheckDateTime],
             NEWID(),
             [source].[LastRequirementCheckDateTime],
@@ -299,7 +341,7 @@ BEGIN
         inserted.Id AS GroupMemberRequirementId,
         inserted.GroupMemberId,
         inserted.GroupRequirementId,
-        source.MeetsGroupRequirement,
+        source.GroupMemberRequirementState,
         inserted.WarningWorkflowId,
         inserted.DoesNotMeetWorkflowId
     INTO @Results;
@@ -324,70 +366,20 @@ BEGIN
 	LEFT JOIN #ApplicableGroupMemberIds src
 		ON gmreq.GroupMemberId = src.Id
 	WHERE src.Id IS NULL
-	  AND gm.GroupId = @GroupId
-	  AND gmreq.RequirementMetDateTime IS NULL
-	  AND gmreq.GroupRequirementId = @GroupRequirementId;
+	    AND gm.GroupId = @GroupId
+		AND gmreq.GroupRequirementId = @GroupRequirementId
+		AND gmreq.WasOverridden = 0
+		AND gmreq.WasManuallyCompleted = 0
+		AND (
+			gmreq.RequirementMetDateTime IS NULL
+			OR gmreq.RequirementWarningDateTime IS NOT NULL
+		);
 
-    --------------------------------------------------------------------------
-    -- Determine which records should trigger workflows.
-    --------------------------------------------------------------------------
-	;WITH WorkflowRows AS (
 		SELECT
-			r.GroupMemberRequirementId,
-			r.GroupMemberId,
-			gm.PersonId,
-			p.NickName,
-			p.LastName,
-			p.SuffixValueId,
-			p.RecordTypeValueId,
-			CASE 
-				WHEN r.MeetsGroupRequirement = 1 THEN 'NotMet'
-				WHEN r.MeetsGroupRequirement = 2 THEN 'Warning'
-			END AS WorkflowType
-		FROM @Results r
-		INNER JOIN GroupMember gm ON r.GroupMemberId = gm.Id
-		INNER JOIN Person p ON gm.PersonId = p.Id
-		INNER JOIN GroupRequirement gr ON r.GroupRequirementId = gr.Id
-		INNER JOIN GroupRequirementType grt ON gr.GroupRequirementTypeId = grt.Id
-		WHERE
-			(
-				r.MeetsGroupRequirement = 1
-				AND grt.ShouldAutoInitiateDoesNotMeetWorkflow = 1
-				AND grt.DoesNotMeetWorkflowTypeId IS NOT NULL
-				AND r.DoesNotMeetWorkflowId IS NULL
-			)
-			OR
-			(
-				r.MeetsGroupRequirement = 2
-				AND grt.ShouldAutoInitiateWarningWorkflow = 1
-				AND grt.WarningWorkflowTypeId IS NOT NULL
-				AND r.WarningWorkflowId IS NULL
-			)
-	)
-	SELECT
-		wr.GroupMemberRequirementId,
-		wr.GroupMemberId,
-		wr.PersonId,
-		wr.NickName,
-		wr.LastName,
-		wr.SuffixValueId,
-		wr.RecordTypeValueId,
-		wr.WorkflowType,
-		InsertedCount = COUNT(CASE WHEN r.ActionTaken = 'INSERT' THEN 1 END),
-		UpdatedCount  = COUNT(CASE WHEN r.ActionTaken = 'UPDATE' THEN 1 END),
-		DeletedCount  = COUNT(CASE WHEN r.ActionTaken = 'DELETE' THEN 1 END)
-	FROM @Results r
-	FULL OUTER JOIN WorkflowRows wr
-		ON 1 = 1
-	GROUP BY
-		wr.GroupMemberRequirementId,
-		wr.GroupMemberId,
-		wr.PersonId,
-		wr.NickName,
-		wr.LastName,
-		wr.SuffixValueId,
-		wr.RecordTypeValueId,
-		wr.WorkflowType;
+			COUNT(CASE WHEN ActionTaken = 'INSERT' THEN 1 END) AS InsertedCount,
+			COUNT(CASE WHEN ActionTaken = 'UPDATE' THEN 1 END) AS UpdatedCount,
+			COUNT(CASE WHEN ActionTaken = 'DELETE' THEN 1 END) AS DeletedCount
+		FROM @Results;
 
 	DROP TABLE IF EXISTS #ApplicableGroupMemberIds;
 END

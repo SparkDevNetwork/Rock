@@ -3305,35 +3305,21 @@ mission. We are so grateful for your commitment.</p>
         {
             var transactionEntity = this.GetTransactionEntity();
             var selectedAccountAmounts = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount != 0 ).ToArray();
-
+            var allocations = selectedAccountAmounts
+                .Select( a => new FinancialTransactionService.AccountAllocation( a.AccountId, a.Amount.Value ) )
+                .ToList();
             var totalFeeCoverageAmount = GetSelectedFeeCoverageAmount();
-            var totalSelectedAmounts = selectedAccountAmounts.Sum( a => a.Amount.Value );
 
-            foreach ( var selectedAccountAmount in selectedAccountAmounts )
-            {
-                var transactionDetail = new T();
-
-                transactionDetail.AccountId = selectedAccountAmount.AccountId;
-                if ( totalFeeCoverageAmount > 0 )
-                {
-                    decimal portionOfTotalAmount = decimal.Divide( selectedAccountAmount.Amount.Value, totalSelectedAmounts );
-                    decimal feeCoverageAmountForAccount = decimal.Round( portionOfTotalAmount * totalFeeCoverageAmount, 2 );
-                    transactionDetail.Amount = selectedAccountAmount.Amount.Value + feeCoverageAmountForAccount;
-                    transactionDetail.FeeCoverageAmount = feeCoverageAmountForAccount;
-                }
-                else
-                {
-                    transactionDetail.Amount = selectedAccountAmount.Amount.Value;
-                }
-
-                if ( transactionEntity != null )
-                {
-                    transactionDetail.EntityTypeId = transactionEntity.TypeId;
-                    transactionDetail.EntityId = transactionEntity.Id;
-                }
-
-                transactionDetails.Add( transactionDetail );
-            }
+            // The FinancialTransactionService.PopulateTransactionDetails method will handle the distribution of fee
+            // coverage amounts across the accounts, so we can just pass in the total fee coverage amount and
+            // let it handle the rest. It will update this in the transactionDetails collection.
+            FinancialTransactionService.PopulateTransactionDetails<T>(
+                transactionDetails,
+                allocations,
+                enableCoverTheFees: totalFeeCoverageAmount > 0m,
+                totalFeeCoverageAmount: totalFeeCoverageAmount,
+                entityTypeId: transactionEntity?.TypeId,
+                entityId: transactionEntity?.Id );
         }
 
         /// <summary>

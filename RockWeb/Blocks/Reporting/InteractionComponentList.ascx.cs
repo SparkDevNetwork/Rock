@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Reporting
 			{% for component in InteractionComponents %}
 			
 				 {% if ComponentDetailPage != null and ComponentDetailPage != '' %}
-                    <a href = '{{ ComponentDetailPage }}?ComponentId={{ component.Id }}'>
+                    <a href = '{{ ComponentDetailPage }}?ComponentId={{ component.IdKey }}'>
                 {% endif %}
                 
 				 <div class='panel panel-widget'>
@@ -94,7 +94,41 @@ namespace RockWeb.Blocks.Reporting
         private int pageNumber = 0;
         private int? _channelId = null;
 
-        #endregion
+        #endregion Fields
+
+        #region Keys
+
+        private static class AttributeKey
+        {
+            public const string DefaultTemplate = "DefaultTemplate";
+            public const string PageSize = "PageSize";
+
+        }
+
+        private static class PageParameterKey
+        {
+            public const string ChannelId = "ChannelId";
+            public const string Page = "Page";
+            public const string PersonId = "PersonId";
+            public const string PersonAliasId = "PersonAliasId";
+        }
+
+        private static class MergeFieldKey
+        {
+            public const string ComponentDetailPage = "ComponentDetailPage";
+            public const string InteractionDetailPage = "InteractionDetailPage";
+            public const string InteractionChannel = "InteractionChannel";
+            public const string InteractionComponents = "InteractionComponents";
+            public const string InteractionCounts = "InteractionCounts";
+        }
+
+        private static class PageNavigationKey
+        {
+            public const string NextPageNavigateUrl = "NextPageNavigateUrl";
+            public const string PreviousPageNavigateUrl = "PreviousPageNavigateUrl";
+        }
+
+        #endregion Keys
 
         #region Base Control Methods
 
@@ -106,7 +140,15 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            _channelId = PageParameter( "ChannelId" ).AsIntegerOrNull();
+            using ( var rockContext = new RockContext() )
+            {
+                _channelId = new InteractionChannelService( rockContext ).GetSelect(
+                    PageParameter( PageParameterKey.ChannelId ),
+                    ic => (int?) ic.Id,
+                    !PageCache.Layout.Site.DisablePredictableIds
+                );
+            }
+
             if ( !_channelId.HasValue )
             {
                 upnlContent.Visible = false;
@@ -131,9 +173,9 @@ namespace RockWeb.Blocks.Reporting
             {
                 if ( _channelId.HasValue )
                 {
-                    if ( !string.IsNullOrEmpty( PageParameter( "Page" ) ) )
+                    if ( !string.IsNullOrEmpty( PageParameter( PageParameterKey.Page ) ) )
                     {
-                        pageNumber = PageParameter( "Page" ).AsInteger();
+                        pageNumber = PageParameter( PageParameterKey.Page ).AsInteger();
                     }
 
                     ShowList();
@@ -166,7 +208,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public void ShowList()
         {
-            int pageSize = GetAttributeValue( "PageSize" ).AsInteger();
+            int pageSize = GetAttributeValue( AttributeKey.PageSize ).AsInteger();
 
             int skipCount = pageNumber * pageSize;
 
@@ -199,54 +241,54 @@ namespace RockWeb.Blocks.Reporting
                         .Where( i => componentIdList.Contains( i.InteractionComponentId ) )
                         .GroupBy( i => i.InteractionComponentId )
                         .Select( g => new InteractionCount
-                                    {
-                                        ComponentId = g.Key,
-                                        Count = g.Count() 
-                                    } )
+                        {
+                            ComponentId = g.Key,
+                            Count = g.Count()
+                        } )
                         .ToList();
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                    mergeFields.Add( "ComponentDetailPage", LinkedPageRoute( "ComponentDetailPage" ) );
-                    mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
-                    mergeFields.Add( "InteractionChannel", interactionChannel );
-                    mergeFields.Add( "InteractionComponents", interactionComponents );
-                    mergeFields.Add( "InteractionCounts", componentInteractionCount );
+                    mergeFields.Add( MergeFieldKey.ComponentDetailPage, LinkedPageRoute( MergeFieldKey.ComponentDetailPage ) );
+                    mergeFields.Add( MergeFieldKey.InteractionDetailPage, LinkedPageRoute( MergeFieldKey.InteractionDetailPage ) );
+                    mergeFields.Add( MergeFieldKey.InteractionChannel, interactionChannel );
+                    mergeFields.Add( MergeFieldKey.InteractionComponents, interactionComponents );
+                    mergeFields.Add( MergeFieldKey.InteractionCounts, componentInteractionCount );
 
                     // set next button
                     if ( interactionComponentQry.Count() > pageSize )
                     {
                         Dictionary<string, string> queryStringNext = new Dictionary<string, string>();
-                        queryStringNext.Add( "ChannelId", _channelId.ToString() );
-                        queryStringNext.Add( "Page", ( pageNumber + 1 ).ToString() );
+                        queryStringNext.Add( PageParameterKey.ChannelId, _channelId.ToString() );
+                        queryStringNext.Add( PageParameterKey.Page, ( pageNumber + 1 ).ToString() );
 
                         if ( personId.HasValue )
                         {
-                            queryStringNext.Add( "PersonId", personId.Value.ToString() );
+                            queryStringNext.Add( PageParameterKey.PersonId, personId.Value.ToString() );
                         }
 
                         var pageReferenceNext = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringNext );
-                        mergeFields.Add( "NextPageNavigateUrl", pageReferenceNext.BuildUrl() );
+                        mergeFields.Add( PageNavigationKey.NextPageNavigateUrl, pageReferenceNext.BuildUrl() );
                     }
 
                     // set prev button
                     if ( pageNumber != 0 )
                     {
                         Dictionary<string, string> queryStringPrev = new Dictionary<string, string>();
-                        queryStringPrev.Add( "ChannelId", _channelId.ToString() );
-                        queryStringPrev.Add( "Page", ( pageNumber - 1 ).ToString() );
+                        queryStringPrev.Add( PageParameterKey.ChannelId, _channelId.ToString() );
+                        queryStringPrev.Add( PageParameterKey.Page, ( pageNumber - 1 ).ToString() );
 
                         if ( personId.HasValue )
                         {
-                            queryStringPrev.Add( "PersonId", personId.Value.ToString() );
+                            queryStringPrev.Add( PageParameterKey.PersonId, personId.Value.ToString() );
                         }
 
                         var pageReferencePrev = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringPrev );
-                        mergeFields.Add( "PreviousPageNavigateUrl", pageReferencePrev.BuildUrl() );
+                        mergeFields.Add( PageNavigationKey.PreviousPageNavigateUrl, pageReferencePrev.BuildUrl() );
                     }
 
                     lContent.Text = interactionChannel.ComponentListTemplate.IsNotNullOrWhiteSpace() ?
                         interactionChannel.ComponentListTemplate.ResolveMergeFields( mergeFields ) :
-                        GetAttributeValue( "DefaultTemplate" ).ResolveMergeFields( mergeFields );
+                        GetAttributeValue( AttributeKey.DefaultTemplate ).ResolveMergeFields( mergeFields );
                 }
             }
         }
@@ -256,24 +298,39 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public int? GetPersonId()
         {
-            int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
-            int? personAliasId = PageParameter( "PersonAliasId" ).AsIntegerOrNull();
-
-            if ( personAliasId.HasValue )
+            using ( var rockContext = new RockContext() )
             {
-                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
-            }
+                var personId = new PersonService( rockContext ).GetSelect(
+                    PageParameter( PageParameterKey.PersonId ),
+                    p => (int?) p.Id,
+                    !PageCache.Layout.Site.DisablePredictableIds
+                );
 
-            if ( !personId.HasValue )
-            {
-                var person = ContextEntity<Person>();
-                if ( person != null )
+                if ( !personId.HasValue )
                 {
-                    personId = person.Id;
-                }
-            }
+                    var personAliasId = new PersonAliasService( rockContext ).GetSelect(
+                        PageParameter( PageParameterKey.PersonAliasId ),
+                        pa => (int?) pa.Id,
+                        !PageCache.Layout.Site.DisablePredictableIds
+                    );
 
-            return personId;
+                    if ( personAliasId.HasValue )
+                    {
+                        personId = new PersonAliasService( rockContext ).GetPersonId( personAliasId.Value );
+                    }
+                }
+
+                if ( !personId.HasValue )
+                {
+                    var person = ContextEntity<Person>();
+                    if ( person != null )
+                    {
+                        personId = person.Id;
+                    }
+                }
+
+                return personId;
+            }
         }
 
         #endregion

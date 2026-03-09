@@ -309,7 +309,6 @@
 
         if (captchaElement.value) {
             actionContext.captcha = await captchaElement.value.getToken();
-            captchaElement.value.refreshToken();
         }
 
         dispatchPaymentEvent({ type: "submitting" });

@@ -13,7 +13,6 @@ using Rock.Enums.AI.Agent;
 using Rock.Enums.Cms;
 using Rock.Model;
 using Rock.Security;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 
@@ -96,6 +95,15 @@ namespace Rock.Blocks.AI
                 return new Dictionary<string, object>
                 {
                     ["error"] = "You are not authorized to access this agent."
+                };
+            }
+
+            var provider = AgentProviderContainer.GetActiveComponent();
+            if ( provider == null )
+            {
+                return new Dictionary<string, object>
+                {
+                    ["error"] = "The AI Agent Provider is not configured. Please contact your system administrator."
                 };
             }
 
@@ -248,21 +256,6 @@ namespace Rock.Blocks.AI
             await agent.AddMessageAsync( AuthorRole.User, request.Message );
             var internalLogs = new List<ChatDebugLog>();
 
-            if ( PageParameter( "test" ) == "true" )
-            {
-                var responseStream = agent.GetStreamingChatMessageResponsesAsync();
-
-                await foreach ( var response in responseStream )
-                {
-                    internalLogs.Add( new ChatDebugLog( "Internal", Microsoft.Extensions.Logging.LogLevel.Trace, $"Recieved content chunk '{response.Content}'." ) );
-                }
-
-                var logs = internalLogs.Select( l => $"[@{( long )( l.Timestamp - startTimestamp ).TotalMilliseconds}ms] {l.Message}" ).ToList();
-                logs.Insert( 0, $"Test completed in {sw.Elapsed.TotalMilliseconds}ms." );
-
-                return ActionContent( System.Net.HttpStatusCode.BadRequest, logs );
-            }
-
             async IAsyncEnumerable<SendMessageResponseBag> ResponseFactory()
             {
                 var responseStream = agent.GetStreamingChatMessageResponsesAsync();
@@ -329,7 +322,7 @@ namespace Rock.Blocks.AI
 
                     yield return responseBag;
                 }
-            };
+            }
 
             return new ServerSentEventsBlockActionResult<SendMessageResponseBag>( ResponseFactory() );
         }

@@ -200,8 +200,8 @@
     /**
      * Event handler for the "Add Another Request" button being clicked.
      */
-    function onAddAnotherRequestClicked(): void {
-        resetToAddAnotherRequest();
+    async function onAddAnotherRequestClicked(): Promise<void> {
+        await resetToAddAnotherRequest();
     }
 
     /**
@@ -247,7 +247,7 @@
     /**
      * Resets the block to handle another prayer request entry.
      */
-    function resetToAddAnotherRequest(): void {
+    async function resetToAddAnotherRequest(): Promise<void> {
         // Only reset values that the individual may want to change for the next request.
         request.value = "";
         internalIsUrgent.value = false;
@@ -261,19 +261,16 @@
             isCaptchaComplete.value = false;
         }
 
-        nextTick(() => {
-            if (shouldValidateCaptcha) {
-                if (captchaElement.value) {
-                    captchaElement.value.refreshToken();
-                }
-                waitForCaptcha();
-            }
+        await nextTick();
 
-            // Automatically set focus to the Request textarea after the template is rendered.
-            if (requestInput.value) {
-                requestInput.value.focus();
-            }
-        });
+        // Automatically set focus to the Request textarea after the template is rendered.
+        if (requestInput.value) {
+            requestInput.value.focus();
+        }
+
+        if (shouldValidateCaptcha) {
+            await waitForCaptcha();
+        }
     }
 
     /**
@@ -301,7 +298,6 @@
             const actionContext: BlockActionContextBag = {};
             if (!config.disableCaptchaSupport && captchaElement.value) {
                 actionContext.captcha = await captchaElement.value.getToken();
-                captchaElement.value.refreshToken();
             }
 
             const result = await invokeBlockAction<PrayerRequestEntrySaveResponseBag>("Save", { bag }, actionContext);

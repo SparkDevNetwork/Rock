@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//S
+//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,12 +21,14 @@ using System.Data.Entity;
 using System.Linq;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
+using Rock.Enums.Core;
 using Rock.Enums.Engagement;
 using Rock.Mobile;
 using Rock.Model;
@@ -109,6 +111,17 @@ namespace Rock.Jobs
             "on today’s lineup. One message can make a difference.",
             "waiting for a touchpoint today.",
             "on your list today. Keep the connection going."
+        };
+
+        /// <summary>
+        /// The number of days inactive that a reminder notification will be
+        /// sent to an individual. We only notify for up to a year, but we
+        /// include additional backoff values in case there is a desire to
+        /// increase the frequency by a configuration value.
+        /// </summary>
+        private static readonly int[] InactiveNotificationBackoffInterval = new[]
+        {
+            1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384,
         };
 
         #endregion
@@ -287,6 +300,16 @@ namespace Rock.Jobs
                     ProcessPulseTouchpoints( rockContext, runContext );
                 }
             }
+
+            if ( runContext.InactivePeople.Any() )
+            {
+                UpdateLastStatusMessage( $"Processing inactive people..." );
+
+                using ( var rockContext = CreateRockContext() )
+                {
+                    ProcessInactivePeople( runContext, rockContext );
+                }
+            }
         }
 
         /// <summary>
@@ -394,6 +417,7 @@ namespace Rock.Jobs
             var contactsQry = new ContactService( rockContext ).Queryable();
 
             // Include people:
+            // - Who have enabled touchpoint generation
             // - Whose notification day(s) includes today
             // - Whose notification time of day matches the current run
             // - Who have at least one contact
@@ -401,7 +425,8 @@ namespace Rock.Jobs
             return new PersonService( rockContext )
                 .Queryable()
                 .AsNoTracking()
-                .Where( p => ( p.OutreachTouchpointSchedule & dayOfWeekFlag ) != 0
+                .Where( p => p.OutreachTouchpointGenerationEnabled
+                    && ( p.OutreachTouchpointSchedule & dayOfWeekFlag ) != 0
                     && p.OutreachNotificationTimeOfDay == timeOfDay
                     && contactsQry.Any( c => c.OwnerPersonAlias.PersonId == p.Id )
                     && !touchpointsQry.Any( t => t.Contact.OwnerPersonAlias.PersonId == p.Id ) )
@@ -419,9 +444,36 @@ namespace Rock.Jobs
         private int ProcessPersonForGeneralTouchpoints( Person person, List<Contact> contacts, GeneralProcessingContext processingContext )
         {
             var numberOfTouchpointDays = person.OutreachTouchpointSchedule.AsDayOfWeekList().Count;
-            var count = ContactTouchpointService.GetDailyTouchpointCount( contacts, processingContext.Type, numberOfTouchpointDays );
+            var maxCount = ContactTouchpointService.GetDailyTouchpointCount( contacts, processingContext.Type, numberOfTouchpointDays );
 
-            var newTouchpoints = GetNextGeneralTouchpoints( person.Id, contacts, processingContext, count );
+            // This helps smooth out cases where we end up with 0-touchpoint days
+            // by alternating between rounding up and rounding down on fractional
+            // counts.
+            var count = ( ( ( int ) ( processingContext.Run.ProcessingDateTime - DateTime.MinValue ).TotalDays ) & 0x01 ) == 0x01
+                ? ( int ) Math.Ceiling( maxCount )
+                : ( int ) Math.Floor( maxCount );
+
+            if ( processingContext.ActiveTouchpointCounts.TryGetValue( person.Id, out var existingCount ) )
+            {
+                // Special case. If they are full, then that means they haven't
+                // done anything with their existing touchpoints. In that case,
+                // drop them in a bucket to receive a reminder to catch up.
+                if ( existingCount >= count )
+                {
+                    processingContext.Run.InactivePeople.Add( person );
+
+                    return 0;
+                }
+
+                count -= existingCount;
+            }
+
+            if ( count <= 0 )
+            {
+                return 0;
+            }
+
+            var newTouchpoints = GetNextGeneralTouchpoints( contacts, processingContext, count );
 
             if ( newTouchpoints.Count > 0 )
             {
@@ -447,30 +499,12 @@ namespace Rock.Jobs
         /// Gets the new set of general touchpoints (prayer and connection) that
         /// need to be created for the set of contacts.
         /// </summary>
-        /// <param name="personId">The identifier of the person being processed.</param>
         /// <param name="contacts">The set of contacts that are being processed for a person.</param>
         /// <param name="processingContext">The context for the current processing run.</param>
-        /// <param name="maxCount">The maximum number of touchpoints the person should have.</param>
+        /// <param name="count">The number of touchpoints that should be created.</param>
         /// <returns>A set of touchpoints that need to be saved to the database.</returns>
-        private ICollection<ContactTouchpoint> GetNextGeneralTouchpoints( int personId, List<Contact> contacts, GeneralProcessingContext processingContext, double maxCount )
+        private ICollection<ContactTouchpoint> GetNextGeneralTouchpoints( List<Contact> contacts, GeneralProcessingContext processingContext, int count )
         {
-            // This helps smooth out cases where we end up with 0-touchpoint days
-            // by alternating between rounding up and rounding down on fractional
-            // counts.
-            var count = ( ( ( int ) ( processingContext.Run.ProcessingDateTime - DateTime.MinValue ).TotalDays ) & 0x01 ) == 0x01
-                ? ( int ) Math.Ceiling( maxCount )
-                : ( int ) Math.Floor( maxCount );
-
-            if ( processingContext.ActiveTouchpointCounts.TryGetValue( personId, out var existingCount ) )
-            {
-                count -= existingCount;
-            }
-
-            if ( maxCount <= 0 )
-            {
-                return Array.Empty<ContactTouchpoint>();
-            }
-
             var contactsNeedingTouchpoints = contacts
                 .Where( c => c.PrayerCadence != OutreachCadence.Paused )
                 .Select( c =>
@@ -479,7 +513,9 @@ namespace Rock.Jobs
 
                     if ( processingContext.LatestTouchpoints.TryGetValue( c.Id, out var touchpointDate ) )
                     {
-                        lastTouchpointDate = touchpointDate;
+                        // Trim off the time portion. Otherwise we might end up
+                        // ignoring some contacts based on small clock drifts.
+                        lastTouchpointDate = touchpointDate.Date;
                     }
 
                     return new
@@ -565,13 +601,13 @@ namespace Rock.Jobs
             var contactsQry = new ContactService( rockContext ).Queryable();
 
             // Include people:
-            // - Who have special event notifications enabled
+            // - Who have enabled touchpoint generation
             // - Who have at least one contact
             // - Who do not have touchpoints created today
             return new PersonService( rockContext )
                 .Queryable()
                 .AsNoTracking()
-                .Where( p => p.OutreachEnableSpecialEventsNotification
+                .Where( p => p.OutreachTouchpointGenerationEnabled
                     && contactsQry.Any( c => c.OwnerPersonAlias.PersonId == p.Id )
                     && !touchpointsQry.Any( t => t.Contact.OwnerPersonAlias.PersonId == p.Id ) )
                 .ToList();
@@ -846,13 +882,15 @@ namespace Rock.Jobs
             var contactsQry = new ContactService( rockContext ).Queryable();
 
             // Include contacts:
+            // - Who have enabled touchpoint generation
             // - Whose notification day(s) includes today
             // - Who do not have an active pulse touchpoint already
             // - Who have not had a pulse touchpoint created recently
             var contacts = new ContactService( rockContext )
                 .Queryable()
                 .AsNoTracking()
-                .Where( c => ( c.OwnerPersonAlias.Person.OutreachTouchpointSchedule & dayOfWeekFlag ) != 0
+                .Where( c => c.OwnerPersonAlias.Person.OutreachTouchpointGenerationEnabled
+                    && ( c.OwnerPersonAlias.Person.OutreachTouchpointSchedule & dayOfWeekFlag ) != 0
                     && !activeTouchpointsQry.Any( t => t.Contact.OwnerPersonAlias.PersonId == c.OwnerPersonAlias.PersonId ) )
                 .Select( c => new
                 {
@@ -912,6 +950,98 @@ namespace Rock.Jobs
 
         #endregion
 
+        #region Inactive Person Processing
+
+        /// <summary>
+        /// Processes inactive people. These are individuals that have not
+        /// completed their existing touchpoints and are now blocked from
+        /// receiving new touchpoints.
+        /// </summary>
+        /// <param name="runContext">The context describing the current run.</param>
+        /// <param name="rockContext">The context to use when reading from the database.</param>
+        private void ProcessInactivePeople( RunContext runContext, RockContext rockContext )
+        {
+            var today = RockDateTime.Today;
+            var personEntityType = EntityTypeCache.Get<Person>( true, rockContext );
+            var distinctPeople = runContext.InactivePeople
+                .Where( p => p.OutreachEnableDailyNotification
+                    && p.OutreachTouchpointGenerationEnabled
+                    && !runContext.Notifications.ContainsKey( p.Id ) )
+                .DistinctBy( p => p.Id )
+                .ToList();
+
+            foreach ( var batch in distinctPeople.Chunk( _batchSize ) )
+            {
+                var personIds = batch.Select( p => p.Id ).ToList();
+                var lastActivityDates = new ContactTouchpointService( rockContext )
+                    .Queryable()
+                    .Where( ct => personIds.Contains( ct.Contact.OwnerPersonAlias.PersonId )
+                        && ( ct.Type == TouchpointType.Prayer || ct.Type == TouchpointType.Connection ) )
+                    .Select( ct => new
+                    {
+                        ct.Contact.OwnerPersonAlias.PersonId,
+                        LastDateTime = ct.CompletedDateTime ?? ct.ScheduledDateTime,
+                    } )
+                    .GroupBy( a => a.PersonId )
+                    .ToDictionary( grp => grp.Key, grp => grp.Max( ct => ct.LastDateTime ) );
+
+                foreach ( var person in batch )
+                {
+                    // This shouldn't happen, but just in case skip the person.
+                    if ( !lastActivityDates.TryGetValue( person.Id, out var lastActivityDate ) )
+                    {
+                        continue;
+                    }
+
+                    lastActivityDate = lastActivityDate.Date;
+
+                    // If it has been more than a year, just give up.
+                    if ( lastActivityDate < today.AddYears( -1 ) )
+                    {
+                        continue;
+                    }
+
+                    var daysInactive = CalculateDaysInactive( lastActivityDate, today, person.OutreachTouchpointSchedule );
+
+                    if ( InactiveNotificationBackoffInterval.Contains( daysInactive ) )
+                    {
+                        runContext.Notifications.AddInactiveNotification( person.Id );
+                    }
+                }
+            }
+
+            runContext.Success( $"{distinctPeople.Count:N0} Inactive People Processed" );
+        }
+
+        /// <summary>
+        /// Calculate the number of days a person has been inactive based on the
+        /// last activity date and their scheduled days. Meaning, if it has been
+        /// a full two weeks they have been inactive, but they are only scheduled
+        /// for Monday, Wednesday and Friday, then this would return 6.
+        /// </summary>
+        /// <param name="lastActivityDate">The date they were last active.</param>
+        /// <param name="today">Today's date.</param>
+        /// <param name="scheduledDays">The days of the week they are scheduled to process touchpoints.</param>
+        /// <returns>The number of inactive days.</returns>
+        private static int CalculateDaysInactive( DateTime lastActivityDate, DateTime today, DaysOfWeekFlags scheduledDays )
+        {
+            int numberOfDays = 0;
+
+            for ( var date = lastActivityDate; date < today; date = date.AddDays( 1 ) )
+            {
+                var dayOfWeekFlag = date.DayOfWeek.AsFlags();
+
+                if ( scheduledDays.HasFlag( dayOfWeekFlag ) )
+                {
+                    numberOfDays++;
+                }
+            }
+
+            return numberOfDays;
+        }
+
+        #endregion
+
         #region Notification Processing
 
         /// <summary>
@@ -952,7 +1082,22 @@ namespace Rock.Jobs
                         .GroupBy( pd => pd.PersonAlias.PersonId )
                         .ToDictionary( g => g.Key, g => g.Select( pd => pd.DeviceRegistrationId ).ToList() );
 
-                    sentCount += SendNotificationsBatch( runContext, rockContext, batch, personalDeviceRegistrationIds, notificationPage );
+                    var personNotificationStates = new PersonService( rockContext )
+                        .Queryable()
+                        .Where( p => personIds.Contains( p.Id ) )
+                        .Select( p => new
+                        {
+                            p.Id,
+                            p.OutreachEnableDailyNotification,
+                            p.OutreachEnableSpecialEventsNotification,
+                        } )
+                        .ToDictionary( k => k.Id, v => new PersonNotificationState
+                        {
+                            EnableDailyNotifications = v.OutreachEnableDailyNotification,
+                            EnableSpecialEventNotifications = v.OutreachEnableSpecialEventsNotification,
+                        } );
+
+                    sentCount += SendNotificationsBatch( runContext, rockContext, batch, personalDeviceRegistrationIds, personNotificationStates, notificationPage );
                 }
             }
 
@@ -1006,9 +1151,10 @@ namespace Rock.Jobs
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <param name="batch">The batch of person identifier keys and notification data.</param>
         /// <param name="personalDeviceRegistrationIds">The dictionary of person identifiers and personal device registration identifiers.</param>
+        /// <param name="personNotificationStates">The dictionary of person identifiers and their notification state.</param>
         /// <param name="notificationPage">The notification page.</param>
         /// <returns>The number of notifications that were sent for this batch.</returns>
-        private int SendNotificationsBatch( RunContext runContext, RockContext rockContext, IEnumerable<KeyValuePair<int, TouchpointNotifications>> batch, Dictionary<int, List<string>> personalDeviceRegistrationIds, PageCache notificationPage )
+        private int SendNotificationsBatch( RunContext runContext, RockContext rockContext, IEnumerable<KeyValuePair<int, TouchpointNotifications>> batch, Dictionary<int, List<string>> personalDeviceRegistrationIds, Dictionary<int, PersonNotificationState> personNotificationStates, PageCache notificationPage )
         {
             var sentCount = 0;
 
@@ -1022,9 +1168,14 @@ namespace Rock.Jobs
                     continue;
                 }
 
+                if ( !personNotificationStates.TryGetValue( personId, out var notificationState ) )
+                {
+                    continue;
+                }
+
                 try
                 {
-                    sentCount += SendPersonNotifications( registrationIds, notifications, notificationPage );
+                    sentCount += SendPersonNotifications( registrationIds, notificationState, notifications, notificationPage );
                 }
                 catch ( Exception ex )
                 {
@@ -1042,86 +1193,146 @@ namespace Rock.Jobs
         /// device registration identifiers.
         /// </summary>
         /// <param name="deviceRegistrationIds">The device identifiers that will receive the notifications.</param>
+        /// <param name="notificationState">Determines which notifications this person wants to receive.</param>
         /// <param name="notifications">The object containing the information about which notifications to send.</param>
         /// <param name="notificationPage">The notification page.</param>
         /// <returns>The number of notifications that were sent.</returns>
-        private int SendPersonNotifications( List<string> deviceRegistrationIds, TouchpointNotifications notifications, PageCache notificationPage )
+        private int SendPersonNotifications( List<string> deviceRegistrationIds, PersonNotificationState notificationState, TouchpointNotifications notifications, PageCache notificationPage )
         {
             var mergeFields = new Dictionary<string, object>();
             var recipient = RockPushMessageRecipient.CreateAnonymous( string.Join( ",", deviceRegistrationIds ), mergeFields );
             var sentCount = 0;
 
-            foreach ( var touchpoint in notifications.AnnualTouchpoints )
+            if ( notificationState.EnableSpecialEventNotifications )
             {
-                var pushMessage = GetAnnualNotificationMessage( touchpoint );
-
-                if ( pushMessage == null )
+                foreach ( var touchpoint in notifications.AnnualTouchpoints )
                 {
-                    continue;
-                }
+                    SendAnnualNotification( recipient, touchpoint, notificationPage );
 
-                if ( notificationPage != null )
-                {
-                    pushMessage.OpenAction = Utility.PushOpenAction.LinkToMobilePage;
-                    pushMessage.Data = new PushData
-                    {
-                        MobilePageId = notificationPage.Id,
-                        MobilePageQueryString = new Dictionary<string, string>
-                        {
-                            { "TouchpointIdKeys", touchpoint.IdKey }
-                        }
-                    };
+                    sentCount += 1;
                 }
+            }
 
-                pushMessage.AddRecipient( recipient );
-                pushMessage.Send();
+            if ( notificationState.EnableDailyNotifications && notifications.Contacts.Count > 0 )
+            {
+                SendDailyNotification( recipient, notifications.Contacts, notificationPage );
 
                 sentCount += 1;
             }
 
-            if ( notifications.Contacts.Count > 0 )
+            if ( notifications.SendInactiveNotification )
             {
-                string prefix;
-
-                if ( notifications.Contacts.Count == 1 )
-                {
-                    prefix = $"{notifications.Contacts[0].FirstName} is";
-                }
-                else if ( notifications.Contacts.Count == 2 )
-                {
-                    prefix = $"{notifications.Contacts[0].FirstName} and {notifications.Contacts[1].FirstName} are";
-                }
-                else
-                {
-                    prefix = $"{notifications.Contacts[0].FirstName}, {notifications.Contacts[1].FirstName}, and {notifications.Contacts.Count - 2} others are";
-                }
-
-
-                var messageIndex = _random.Next( 0, DailyNotificationMessages.Length );
-
-                var pushMessage = new RockPushMessage
-                {
-                    Title = "Keep the connection going!",
-                    Message = $"{prefix} {DailyNotificationMessages[messageIndex]}",
-                    Data = new PushData()
-                };
-
-                if ( notificationPage != null )
-                {
-                    pushMessage.OpenAction = Utility.PushOpenAction.LinkToMobilePage;
-                    pushMessage.Data = new PushData
-                    {
-                        MobilePageId = notificationPage.Id,
-                    };
-                }
-
-                pushMessage.AddRecipient( recipient );
-                pushMessage.Send();
+                SendInactiveNotification( recipient, notificationPage );
 
                 sentCount += 1;
             }
 
             return sentCount;
+        }
+
+        /// <summary>
+        /// Sends the push notification for a contact's annual touchpoint, such as a birthday.
+        /// </summary>
+        /// <param name="recipient">The person who will receive the push notification.</param>
+        /// <param name="touchpoint">The touchpoint that describes what to send.</param>
+        /// <param name="notificationPage">The page to open when the notification is tapped.</param>
+        private void SendAnnualNotification( RockPushMessageRecipient recipient, ContactTouchpoint touchpoint, PageCache notificationPage )
+        {
+            var pushMessage = GetAnnualNotificationMessage( touchpoint );
+
+            if ( pushMessage == null )
+            {
+                return;
+            }
+
+            if ( notificationPage != null )
+            {
+                pushMessage.OpenAction = Utility.PushOpenAction.LinkToMobilePage;
+                pushMessage.Data = new PushData
+                {
+                    MobilePageId = notificationPage.Id,
+                    MobilePageQueryString = new Dictionary<string, string>
+                    {
+                        { "TouchpointIdKeys", touchpoint.IdKey }
+                    }
+                };
+            }
+
+            pushMessage.AddRecipient( recipient );
+            pushMessage.Send();
+        }
+
+        /// <summary>
+        /// Sends the push notification for the daily touchpoints that were
+        /// created for the set of contacts.
+        /// </summary>
+        /// <param name="recipient">The person who will receive the push notification.</param>
+        /// <param name="contacts">The contacts that had touchpoints created for them.</param>
+        /// <param name="notificationPage">The page to open when the notification is tapped.</param>
+        private void SendDailyNotification( RockPushMessageRecipient recipient, List<Contact> contacts, PageCache notificationPage )
+        {
+            string prefix;
+
+            if ( contacts.Count == 1 )
+            {
+                prefix = $"{contacts[0].FirstName} is";
+            }
+            else if ( contacts.Count == 2 )
+            {
+                prefix = $"{contacts[0].FirstName} and {contacts[1].FirstName} are";
+            }
+            else
+            {
+                prefix = $"{contacts[0].FirstName}, {contacts[1].FirstName}, and {contacts.Count - 2} others are";
+            }
+
+            var messageIndex = _random.Next( 0, DailyNotificationMessages.Length );
+
+            var pushMessage = new RockPushMessage
+            {
+                Title = "Keep the connection going!",
+                Message = $"{prefix} {DailyNotificationMessages[messageIndex]}",
+                Data = new PushData()
+            };
+
+            if ( notificationPage != null )
+            {
+                pushMessage.OpenAction = Utility.PushOpenAction.LinkToMobilePage;
+                pushMessage.Data = new PushData
+                {
+                    MobilePageId = notificationPage.Id,
+                };
+            }
+
+            pushMessage.AddRecipient( recipient );
+            pushMessage.Send();
+        }
+
+        /// <summary>
+        /// Sends the push notification for the people who have become inactive.
+        /// </summary>
+        /// <param name="recipient">The person who will receive the push notification.</param>
+        /// <param name="notificationPage">The page to open when the notification is tapped.</param>
+        private void SendInactiveNotification( RockPushMessageRecipient recipient, PageCache notificationPage )
+        {
+            var pushMessage = new RockPushMessage
+            {
+                Title = "Don't fall behind!",
+                Message = $"You have people that are waiting to connect with you.",
+                Data = new PushData()
+            };
+
+            if ( notificationPage != null )
+            {
+                pushMessage.OpenAction = Utility.PushOpenAction.LinkToMobilePage;
+                pushMessage.Data = new PushData
+                {
+                    MobilePageId = notificationPage.Id,
+                };
+            }
+
+            pushMessage.AddRecipient( recipient );
+            pushMessage.Send();
         }
 
         /// <summary>
@@ -1209,6 +1420,14 @@ namespace Rock.Jobs
             /// The messages to display in the job history.
             /// </summary>
             public List<string> Messages { get; } = new List<string>();
+
+            /// <summary>
+            /// The list of people that have not completed a touchpoint
+            /// recently. This is determined by trying to create touchpoints
+            /// for them but having no remaining capacity to do so because
+            /// of existing touchpoints.
+            /// </summary>
+            public List<Person> InactivePeople { get; } = new List<Person>();
 
             /// <summary>
             /// Errors that occurred and will be reported after the job finishes.
@@ -1366,14 +1585,24 @@ namespace Rock.Jobs
         {
             /// <summary>
             /// The contacts that will be mentioned in the group notification.
-            /// This includes prayer, connection and reminder touchpoints.
+            /// This includes prayer, connection and reminder touchpoints. Sending
+            /// these notifications is controlled by
+            /// <see cref="Person.OutreachEnableDailyNotification"/>.
             /// </summary>
             public List<Contact> Contacts { get; } = new List<Contact>();
 
             /// <summary>
             /// The annual touchpoints that will each get their own notification.
+            /// Sending these notifications is controlled by
+            /// <see cref="Person.OutreachEnableSpecialEventsNotification"/>.
             /// </summary>
             public List<ContactTouchpoint> AnnualTouchpoints { get; } = new List<ContactTouchpoint>();
+
+            /// <summary>
+            /// Determines if the "you have been inactive" notification should
+            /// be sent for the person.
+            /// </summary>
+            public bool SendInactiveNotification { get; set; }
         }
 
         /// <summary>
@@ -1427,6 +1656,17 @@ namespace Rock.Jobs
 
                 notifications.AnnualTouchpoints.Add( touchpoint );
             }
+
+            /// <summary>
+            /// Adds a notification about the person being inactive.
+            /// </summary>
+            /// <param name="personId">The identifier of the person that will receive the notification.</param>
+            public void AddInactiveNotification( int personId )
+            {
+                var notifications = GetOrAddPerson( personId );
+
+                notifications.SendInactiveNotification = true;
+            }
         }
 
         /// <summary>
@@ -1450,6 +1690,22 @@ namespace Rock.Jobs
             /// The date and time the last evening processing completed.
             /// </summary>
             public DateTime? LastEveningRun { get; set; }
+        }
+
+        /// <summary>
+        /// Notification states for a person.
+        /// </summary>
+        private class PersonNotificationState
+        {
+            /// <summary>
+            /// Determines if daily notifications are enabled for the person.
+            /// </summary>
+            public bool EnableDailyNotifications { get; set; }
+
+            /// <summary>
+            /// Determines if special event notifications are enabled for the person.
+            /// </summary>
+            public bool EnableSpecialEventNotifications { get; set; }
         }
 
         #endregion

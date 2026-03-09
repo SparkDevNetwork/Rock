@@ -576,57 +576,11 @@ namespace Rock.Communication.Medium
         /// </summary>
         /// <param name="phoneNumber">The phone number.</param>
         /// <returns></returns>
-        [Obsolete( "Use FindRockSmsSystemPhoneNumber instead." )]
-        [RockObsolete( "1.15" )]
-        public static DefinedValueCache FindRockSMSPhoneDefinedValue( string phoneNumber )
-        {
-            var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
-            if ( definedType != null )
-            {
-                if ( definedType.DefinedValues?.Any() == true )
-                {
-                    return definedType
-                        .DefinedValues
-                        .Where( v => v.Value.RemoveSpaces().Replace( "+", "" ) == phoneNumber.RemoveSpaces().Replace( "+", "" ) )
-                        .OrderBy( v => v.Order )
-                        .FirstOrDefault();
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Finds from phone defined value and ignores the plus sign.
-        /// </summary>
-        /// <param name="phoneNumber">The phone number.</param>
-        /// <returns></returns>
         public static SystemPhoneNumberCache FindRockSmsSystemPhoneNumber( string phoneNumber )
         {
             return SystemPhoneNumberCache.All()
                 .Where( spn => spn.Number.RemoveSpaces().Replace( "+", "" ) == phoneNumber.RemoveSpaces().Replace( "+", "" ) )
                 .FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Finds from phone defined value.
-        /// </summary>
-        /// <param name="phoneNumber">The phone number.</param>
-        /// <returns></returns>
-        [Obsolete( "Use FindRockSmsSystemPhoneNumber instead." )]
-        [RockObsolete( "1.15" )]
-        public static DefinedValueCache FindFromPhoneDefinedValue( string phoneNumber )
-        {
-            var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
-            if ( definedType != null )
-            {
-                if ( definedType.DefinedValues != null && definedType.DefinedValues.Any() )
-                {
-                    return definedType.DefinedValues.Where( v => v.Value.RemoveSpaces() == phoneNumber.RemoveSpaces() ).OrderBy( v => v.Order ).FirstOrDefault();
-                }
-            }
-
-            return null;
         }
     }
 }

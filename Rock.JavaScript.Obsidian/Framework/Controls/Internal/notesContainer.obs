@@ -8,6 +8,7 @@
 
             <button v-if="showAddNote && descending"
                     class="add-note btn btn-xs btn-action btn-square"
+                    type="button"
                     @click.prevent="onAddNoteClick">
                 <i class="ti ti-plus"></i>
             </button>
@@ -68,6 +69,7 @@
 
             <button v-if="showAddNote && !descending"
                     class="add-note btn btn-xs btn-action btn-square"
+                    type="button"
                     @click.prevent="onAddNoteClick">
                 <i class="ti ti-plus"></i>
             </button>

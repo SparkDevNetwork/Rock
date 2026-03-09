@@ -588,6 +588,7 @@ namespace RockWeb.Blocks.Administration
                     {
                         b.Id,
                         b.Name,
+                        b.IsSystem,
                         EntityTypeId = b.BlockType.EntityTypeId ?? 0,
                         BlockTypeName = b.BlockType.Name,
                         BlockTypePath = b.BlockType.Path,
@@ -599,6 +600,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     b.Id,
                     b.Name,
+                    b.IsSystem,
                     BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
                     b.BlockTypePath,
                     b.BlockTypeCategory
@@ -612,6 +614,7 @@ namespace RockWeb.Blocks.Administration
                     {
                         b.Id,
                         b.Name,
+                        b.IsSystem,
                         EntityTypeId = b.BlockType.EntityTypeId ?? 0,
                         BlockTypeName = b.BlockType.Name,
                         BlockTypePath = b.BlockType.Path,
@@ -623,6 +626,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     b.Id,
                     b.Name,
+                    b.IsSystem,
                     BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
                     b.BlockTypePath,
                     b.BlockTypeCategory
@@ -636,6 +640,7 @@ namespace RockWeb.Blocks.Administration
                     {
                         b.Id,
                         b.Name,
+                        b.IsSystem,
                         EntityTypeId = b.BlockType.EntityTypeId ?? 0,
                         BlockTypeName = b.BlockType.Name,
                         BlockTypePath = b.BlockType.Path,
@@ -647,6 +652,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     b.Id,
                     b.Name,
+                    b.IsSystem,
                     BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
                     b.BlockTypePath,
                     b.BlockTypeCategory

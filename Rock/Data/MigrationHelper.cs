@@ -7771,7 +7771,6 @@ END
         {
             Migration.Sql( string.Format( @"
 
-                DECLARE @SystemEmailId int = (SELECT [Id] FROM [SystemEmail] WHERE [Guid] = '{3}')
                 DECLARE @SystemCommunicationId int = (SELECT [Id] FROM [SystemCommunication] WHERE [Guid] = '{3}')
 
                 IF EXISTS ( SELECT [Id] FROM [WorkflowActionForm] WHERE [Guid] =  '{6}' )
@@ -7780,7 +7779,6 @@ END
                         [Header] = '{0}',
                         [Footer] = '{1}',
                         [Actions] = '{2}',
-                        [NotificationSystemEmailId] = @SystemEmailId,
                         [NotificationSystemCommunicationId] = @SystemCommunicationId,
                         [IncludeActionsInNotification] = {4},
                         [ActionAttributeGuid] = {5}
@@ -7789,8 +7787,8 @@ END
                 ELSE
                 BEGIN
                     INSERT INTO [WorkflowActionForm] (
-                        [Header], [Footer], [Actions], [NotificationSystemEmailId], [NotificationSystemCommunicationId], [IncludeActionsInNotification], [ActionAttributeGuid], [Guid] )
-                    VALUES( '{0}', '{1}', '{2}', @SystemEmailId, @SystemCommunicationId, {4}, {5}, '{6}' )
+                        [Header], [Footer], [Actions], [NotificationSystemCommunicationId], [IncludeActionsInNotification], [ActionAttributeGuid], [Guid] )
+                    VALUES( '{0}', '{1}', '{2}', @SystemCommunicationId, {4}, {5}, '{6}' )
                 END
 ",
                     header.Replace( "'", "''" ),
@@ -8972,13 +8970,13 @@ END
         /// <param name="blockAttributeKeysToIgnore">An optional dictionary of attribute keys to be ignored for the blocktypes being Chopped or Swapped.</param>
         internal void ReplaceWebformsWithObsidianBlockMigration( string name, Dictionary<string, string> blockTypeReplacements, string migrationStrategy, string jobGuid, Dictionary<string, string> blockAttributeKeysToIgnore = null )
         {
-            if ( name.Length > 31 )
+            if ( name.Length > 38 )
             {
-                throw new ArgumentException( $"Service job name '{name}' exceeds the max limit of 31 characters.", "name" );
+                throw new ArgumentException( $"Service job name '{name}' exceeds the max limit of 38 characters.", "name" );
             }
 
             // note: the cronExpression was chosen at random. It is provided as it is mandatory in the Service Job. Feel free to change it if needed.
-            AddPostUpdateServiceJob( name: $"Rock Update Helper - Replace WebForms Blocks with Obsidian Blocks - {name}",
+            AddPostUpdateServiceJob( name: $"Rock Update Helper - Replace WebForms Blocks with Obsidian - {name}",
                 description: "This job will replace the  WebForms blocks with their Obsidian blocks on all sites, pages, and layouts.",
                 jobType: "Rock.Jobs.PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks", cronExpression: "0 0 21 1/1 * ? *", guid: jobGuid );
 

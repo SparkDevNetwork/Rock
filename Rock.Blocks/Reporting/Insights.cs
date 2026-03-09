@@ -574,6 +574,7 @@ namespace Rock.Blocks.Reporting
 
             var alivePersonsCount = alivePersons.Count();
             var statusCounts = alivePersons
+                .Where( p => p.RecordStatusValueId.HasValue )
                 .GroupBy( p => p.RecordStatusValueId )
                 .ToDictionary( g => g.Key, g => g.Count() );
 

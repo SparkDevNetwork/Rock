@@ -34,6 +34,7 @@
                                                     class="btn"
                                                     style="background-color: transparent"
                                                     title="Revert to default"
+                                                    type="button"
                                                     @click.prevent="internalLavaFieldValues[key] = lavaFields[key]">
                                                 <i class="ti ti-arrow-back-up"></i>
                                             </button>

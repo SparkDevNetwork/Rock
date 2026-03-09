@@ -17,14 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Web.Security;
 using System.Linq;
+using System.Text;
+using System.Web.Security;
+
 using Rock;
 using Rock.Attribute;
-using Rock.Security;
-using System.Text;
-using System.Text.RegularExpressions;
 using Rock.Model;
+using Rock.Security;
 using Rock.Tasks;
 using Rock.Web.UI;
 
@@ -37,10 +37,21 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Displays the currently logged in user's name along with options to log in, log out, or manage account." )]
 
+    #region Block Attributes
+
     [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)", false )]
     [LinkedPage( "My Profile Page", "Page for user to view their person profile (if blank option will not be displayed)", false )]
     [LinkedPage( "My Settings Page", "Page for user to view their settings (if blank option will not be displayed)", false )]
     [KeyValueListField( "Logged In Page List", "List of pages to show in the dropdown when the user is logged in. The link field takes Lava with the CurrentPerson merge fields. Place the text 'divider' in the title field to add a divider.", false, "", "Title", "Link" )]
+
+    [CustomDropdownListField( "Mode",
+        Description = "The functionality mode to use when rendering the block. Minimal will display just profile photo.",
+        DefaultValue = "0",
+        ListSource = "0^Full,1^Minimal",
+        Key = AttributeKey.Mode,
+        Order = 4 )]
+
+    #endregion
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.System )]
     [Rock.SystemGuid.BlockTypeGuid( "04712F3D-9667-4901-A49D-4507573EF7AD" )]
@@ -48,6 +59,12 @@ namespace RockWeb.Blocks.Security
     {
         private const string LOG_OUT = "Log Out";
         private const string LOG_IN = "Log In";
+
+        private static class AttributeKey
+        {
+            public const string Mode = "Mode";
+        }
+
         #region Base Control Methods
 
         /// <summary>
@@ -143,7 +160,6 @@ namespace RockWeb.Blocks.Security
 
                     lDropdownItems.Text = sbPageMarkup.ToString();
                 }
-
             }
             else
             {
@@ -155,6 +171,21 @@ namespace RockWeb.Blocks.Security
 
                 liDropdown.Visible = false;
                 liLogin.Visible = true;
+            }
+
+            // If we are in minimal mode, then hide extra details beyond
+            // the profile photo.
+            if ( GetAttributeValue( AttributeKey.Mode ) == "1" )
+            {
+                ulContainer.AddCssClass( "loginstatus-minimal" );
+                phHello.Visible = false;
+                bCaret.Visible = false;
+            }
+
+            // Hide the divider if there are no dropdown items above it.
+            if ( !phMyAccount.Visible && !phMyProfile.Visible && !phMySettings.Visible && lDropdownItems.Text.IsNullOrWhiteSpace() )
+            {
+                liDivider.Visible = false;
             }
 
             hfActionType.Value = lbLoginLogout.Text;

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.SqlTypes;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -98,10 +99,10 @@ namespace Rock.Workflow.Action
         Order = 7 )]
 
     [IntegerField(
-        "Expire In Days",
+        "Link Expiration",
         Description = "Sets the number of days before the short link expires. Once expired, the link and its tracking data will be permanently deleted. Leave blank for no expiration.",
         IsRequired = false,
-        Key = AttributeKey.ExpireInDays,
+        Key = AttributeKey.LinkExpiration,
         Order = 8 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "AA995907-DAC1-4B7A-ACEF-AEC6CD057E72")]
@@ -114,7 +115,7 @@ namespace Rock.Workflow.Action
         /// </summary>
         private class AttributeKey
         {
-            public const string ExpireInDays = "ExpireInDays";
+            public const string LinkExpiration = "LinkExpiration";
             public const string Site = "Site";
             public const string Token = "Token";
             public const string RandomTokenLength = "RandomTokenLength";
@@ -182,10 +183,22 @@ namespace Rock.Workflow.Action
 
             var isPinned = GetAttributeValue( action, AttributeKey.IsPinned, true ).AsBoolean();
 
-            var expireInDays = GetAttributeValue( action, AttributeKey.ExpireInDays, true ).AsIntegerOrNull();
-            var expireDate = expireInDays.HasValue && expireInDays.Value >= 0
-                ? RockDateTime.Today.AddDays( expireInDays.Value )
-                : ( DateTime? )null;
+            var expireInDays = GetAttributeValue( action, AttributeKey.LinkExpiration, true ).AsIntegerOrNull();
+            /*
+                1/29/2026 - JMH
+
+                Negative values are allowed for the "Link Expiration" setting and indicate that the short link
+                has already expired. This situation occurs when an individual edits an expired short link
+                but does not modify the expiration value, which remains negative. An individual may also set
+                a negative expiration value intentionally to have the short link expire immediately.
+
+                These expired links are still eligible for automatic cleanup by the Rock Cleanup job.
+
+                Reason: Preserve the ability to edit expired short links without forcing a reset of the expiration logic.
+            */
+            var expireDate = expireInDays.HasValue
+                ? AddDaysSqlSafe( RockDateTime.Today, expireInDays.Value )
+                : ( DateTime? ) null;
 
             // Save the short link
             var link = service.GetByToken( token, site.Id );
@@ -229,6 +242,51 @@ namespace Rock.Workflow.Action
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Adds the specified number of days to the given <see cref="DateTime"/>,
+        /// clamping the result to the valid SQL Server <c>datetime</c> range.
+        /// </summary>
+        /// <remarks>
+        /// SQL Server <c>datetime</c> values must be between
+        /// <see cref="SqlDateTime.MinValue"/> (1753-01-01) and
+        /// <see cref="SqlDateTime.MaxValue"/> (9999-12-31 23:59:59.997).
+        ///
+        /// If adding the specified number of days would result in a value greater than
+        /// <see cref="SqlDateTime.MaxValue"/>, this method returns that maximum value.
+        /// If the result would be less than <see cref="SqlDateTime.MinValue"/>,
+        /// it returns that minimum value.
+        ///
+        /// This method prevents exceptions when generating DateTime values that will
+        /// be persisted to SQL Server.
+        /// </remarks>
+        /// <param name="dateTime">The date and time value to which days are added.</param>
+        /// <param name="days">The number of days to add. Can be negative.</param>
+        /// <returns>
+        /// A SQL Server safe <see cref="DateTime"/> value representing the result
+        /// of adding <paramref name="days"/> to <paramref name="dateTime"/>.
+        /// </returns>
+        private static DateTime AddDaysSqlSafe( DateTime dateTime, int days )
+        {
+            var sqlMin = ( DateTime )SqlDateTime.MinValue;
+            var sqlMax = ( DateTime )SqlDateTime.MaxValue;
+
+            var maxDays = ( sqlMax - dateTime ).TotalDays;
+            var minDays = ( sqlMin - dateTime ).TotalDays;
+
+            if ( minDays <= days && days <= maxDays )
+            {
+                return dateTime.AddDays( days );
+            }
+            else if ( days > 0 )
+            {
+                return sqlMax;
+            }
+            else
+            {
+                return sqlMin;
+            }
         }
     }
 }

@@ -173,6 +173,8 @@ BEGIN
             SELECT p.[Id] AS [PersonId]
                 , p.[PrimaryAliasId]
                 , met.[MediumEntityTypeId]
+                -- A person might be in the group more than once; select the earliest group member per person.
+                , rn = ROW_NUMBER() OVER (PARTITION BY p.[Id] ORDER BY gm.[Id])
             FROM [GroupMember] gm
             INNER JOIN [Person] p
                 ON p.[Id] = gm.[PersonId]
@@ -183,6 +185,7 @@ BEGIN
                         ELSE gm.[CommunicationPreference]
                     END
             WHERE gm.[GroupId] = @ListGroupId
+                AND gm.[IsArchived] = 0
                 AND gm.[GroupMemberStatus] = @GroupMemberStatusActive
                 AND (
                     @FutureSendDateTime IS NULL
@@ -194,10 +197,11 @@ BEGIN
                         AND gm.[CreatedDateTime] IS NULL
                     )
                 )
+                AND p.[IsDeceased] = 0
                 AND p.[PrimaryAliasId] IS NOT NULL
                 AND (
                     -- Either the communication isn't tied to any personalization segments.
-       @PersonalizationSegmentCount = 0
+                    @PersonalizationSegmentCount = 0
                     -- OR.. filter down to only those list members who are in the specified
                     -- personalization segments.
                     OR (
@@ -219,7 +223,8 @@ BEGIN
                         ) = @PersonalizationSegmentCount
                     )
                 )
-        ) lm;
+        ) lm
+        WHERE lm.[rn] = 1;
 
         CREATE CLUSTERED INDEX CX_ListMembers
             ON #ListMembers([PersonId]);

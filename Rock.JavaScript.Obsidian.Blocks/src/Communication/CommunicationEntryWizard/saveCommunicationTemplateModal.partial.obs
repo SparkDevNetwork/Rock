@@ -67,6 +67,7 @@
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { EmailEditorApi } from "@Obsidian/Controls/emailEditor";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
@@ -74,10 +75,10 @@
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { toKebabCase, truncate } from "@Obsidian/Utility/stringUtils";
     import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { truncate } from "@Obsidian/Utility/stringUtils";
-    import { EmailEditorApi } from "@Obsidian/Controls/emailEditor";
 
     type Mode = "save" | "saveAs";
     type StandardListItemBag = {
@@ -92,7 +93,7 @@
 
         api: {
             type: Object as PropType<EmailEditorApi | null | undefined>,
-            required: false,
+            required: true
         },
 
         communicationTemplate: {
@@ -169,8 +170,28 @@
 
     // #region Functions
 
+    function toSafeFilename(input: string): string {
+        // Strip accents and avoid visually identical but byte different characters.
+        // This will convert something like "Café" to "Cafe". If we used toKebabCase directly,
+        // the "é" would be removed entirely which could lead to unexpected results.
+        const sanitizedInput = input
+            .normalize("NFKD")
+            .replace(/[\u0300-\u036f]/g, "");
+
+        // Convert to kebab-case.
+        // This handles breaking up PascalCase and camelCase words to kebab-case words,
+        // as well as replacing spaces with hyphens and removing non-safe filename characters.
+        return toKebabCase(sanitizedInput)
+
+            // Truncate filename to 255 characters.
+            .substring(0, 255)
+
+            // Ensure we don't return an empty filename.
+            || newGuid();
+    }
+
     function getFileName(name: string): string {
-        return `communication_template_preview_${name.replace(" ", "_")}.png`;
+        return `communication-template-preview-${toSafeFilename(name)}.png`;
     }
 
     function useTemporaryRenderElement(callback: (tempElement: HTMLElement) => Promise<void>): void {

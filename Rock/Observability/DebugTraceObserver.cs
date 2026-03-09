@@ -76,6 +76,7 @@ namespace Rock.Observability
                     _sharedTraceProvider = Sdk.CreateTracerProviderBuilder()
                         .AddProcessor( new DebugTraceProcessor() )
                         .AddSource( ObservabilityHelper.ServiceName )
+                        .AddSource( "Microsoft.SemanticKernel*" )
                         .Build();
                 }
 

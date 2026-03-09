@@ -161,31 +161,53 @@ namespace Rock.CheckIn.v2.Labels
             }
             else
             {
-                try
+                var directMessages = await PrintToIpEndpointAsync( printerDevice.IPAddress, labelContents, cancellationToken );
+                if ( directMessages.Any() )
                 {
-                    using ( var socket = await OpenSocketAsync( printerDevice.IPAddress, cancellationToken ) )
-                    {
-                        using ( var ns = new NetworkStream( socket ) )
-                        {
-                            foreach ( var labelContent in labelContents )
-                            {
-                                await ns.WriteAsync( labelContent, 0, labelContent.Length, cancellationToken );
-                            }
-                        }
-                    }
-                }
-                catch ( TaskCanceledException )
-                {
-                    return new List<string> { "Timed out waiting for labels to print." };
-                }
-                catch ( Exception ex )
-                {
-                    ExceptionLogService.LogException( ex );
-                    return new List<string> { $"Unable to print label: {ex.Message}" };
+                    messages.AddRange( directMessages );
                 }
             }
 
             return messages;
+        }
+
+        /// <summary>
+        /// Prints raw label payloads to a network printer endpoint (e.g. "192.168.1.145:9100").
+        /// Returns an empty list on success, otherwise returns a list containing one error message.
+        /// </summary>
+        /// <param name="ipAddress">The printer IP address with optional port.</param>
+        /// <param name="labelContents">The raw payloads to send in order.</param>
+        /// <param name="cancellationToken">A token to indicate if the operation should be aborted.</param>
+        /// <returns>A list of error messages resulting from the print attempt.</returns>
+        internal static async Task<List<string>> PrintToIpEndpointAsync(
+            string ipAddress,
+            IReadOnlyCollection<byte[]> labelContents,
+            CancellationToken cancellationToken )
+        {
+            try
+            {
+                using ( var socket = await OpenSocketAsync( ipAddress, cancellationToken ) )
+                {
+                    using ( var ns = new NetworkStream( socket ) )
+                    {
+                        foreach ( var labelContent in labelContents )
+                        {
+                            await ns.WriteAsync( labelContent, 0, labelContent.Length, cancellationToken );
+                        }
+                    }
+                }
+
+                return new List<string>();
+            }
+            catch ( TaskCanceledException )
+            {
+                return new List<string> { "Timed out waiting for labels to print." };
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                return new List<string> { $"Unable to print label: {ex.Message}" };
+            }
         }
 
         /// <summary>

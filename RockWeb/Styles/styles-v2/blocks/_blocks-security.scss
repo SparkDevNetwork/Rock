@@ -4,7 +4,7 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + User Registration
 //  + Security Popup
 // =============================================================
@@ -16,6 +16,31 @@
 }
 // ====================== END USER REGISTRATION ======================
 
+// ====================== ACCOUNT ENTRY ======================
+
+// Phone Number Details
+
+.account-entry {
+
+  .phonegroup.form-group {
+    margin-bottom: 0;
+  }
+
+  .phonegroup-types {
+    display: flex;
+    gap: var(--spacing-large);
+    align-items: center;
+    height: 35px; /* Align with input height */
+
+    .checkbox,
+    .checkbox + .checkbox {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+  }
+
+}
 
 // ======================== SECURITY POPUP ========================
 .security-inherited {

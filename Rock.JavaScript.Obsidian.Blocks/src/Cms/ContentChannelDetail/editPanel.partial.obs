@@ -17,7 +17,7 @@
         <div class="row">
             <div class="col-md-6">
                 <DropDownList v-model="contentChannelTypeValue" label="Type" :items="contentChannelTypes"
-                              rules="required" />
+                              rules="required" :showBlankItem="false" />
 
                 <CategoryPicker v-model="categories" label="Categories" :entityTypeGuid="EntityType.ContentChannel"
                                 multiple />
@@ -109,16 +109,16 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <DropDownList v-model="summaryAttributeGuid" :items="contentLibraryAttributes"
+                        <DropDownList v-model="summaryAttributeGuid" :items="contentLibraryAttributeOptions"
                                       label="Summary Attribute" />
                         <div>
-                            <DropDownList v-model="imageAttributeGuid" :items="contentLibraryAttributes"
+                            <DropDownList v-model="imageAttributeGuid" :items="contentLibraryAttributeOptions"
                                           label="Image Attribute" />
                             <span class="-mt-form-group help-block small">Recommend image size 1140x570.</span>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <DropDownList v-model="authorAttributeGuid" :items="contentLibraryAttributes"
+                        <DropDownList v-model="authorAttributeGuid" :items="contentLibraryAttributeOptions"
                                       label="Author Attribute" />
                     </div>
                 </div>
@@ -259,7 +259,7 @@
     const reservedKeyNames = ref<string[]>([]);
     const invokeBlockAction = useInvokeBlockAction();
 
-    const contentLibraryAttributes = ref(props.options.contentLibraryAttributes ?? []);
+    const contentLibraryInheritedItemAttributes = ref<ListItemBag[]>(props.options.contentLibraryInheritedItemAttributes ?? []);
     const settingsOptions = ref(props.options.settingsOptions ?? []);
     const contentChannelTypes = ref(props.options.contentChannelTypes ?? []);
     const contentControlTypes = ref(props.options.contentControlTypes ?? []);
@@ -320,6 +320,20 @@
 
     const isRootImageDirectoryVisible = computed((): boolean => {
         return contentControlType.value === "1";
+    });
+
+    const contentLibraryAttributeOptions = computed((): ListItemBag[] => {
+        const itemAttributeOptions = itemAttributes.value
+            .filter(a => !!a.guid && !!a.name)
+            .map(a => ({
+                text: a.name ?? "",
+                value: a.guid ?? ""
+            } as ListItemBag));
+
+        const inheritedTypeItemAttributeOptions = contentLibraryInheritedItemAttributes.value
+            .filter(option => !itemAttributeOptions.some(item => item.value === option.value));
+
+        return [...itemAttributeOptions, ...inheritedTypeItemAttributeOptions];
     });
 
     // #endregion
@@ -586,13 +600,18 @@
     });
 
     watch(contentChannelTypeValue, async () => {
+        const requestedTypeGuid = contentChannelTypeValue.value;
         const data = {
-            guid: contentChannelTypeValue.value
+            guid: requestedTypeGuid
         };
 
         const result = await invokeBlockAction<{ disableStatus: boolean | null, disableContentField: boolean | null }>("GetContentChannelStatus", data);
 
         const requireApprovalSettingValue = "ItemsRequireApproval";
+
+        if (requestedTypeGuid !== contentChannelTypeValue.value) {
+            return;
+        }
 
         if (result.isSuccess && result.data) {
 
@@ -608,6 +627,43 @@
                 });
             }
         }
+    });
+
+    watch(contentChannelTypeValue, async () => {
+        const requestedTypeGuid = contentChannelTypeValue.value;
+        const request = {
+            guid: requestedTypeGuid
+        };
+
+        // Clear content library attribute selections that came from the
+        // previous content channel type's inherited attributes, but preserve
+        // any that reference channel-specific item attributes.
+        const itemAttributeGuids = itemAttributes.value
+            .filter(a => !!a.guid)
+            .map(a => a.guid);
+
+        if (summaryAttributeGuid.value && !itemAttributeGuids.includes(summaryAttributeGuid.value)) {
+            summaryAttributeGuid.value = "";
+        }
+
+        if (authorAttributeGuid.value && !itemAttributeGuids.includes(authorAttributeGuid.value)) {
+            authorAttributeGuid.value = "";
+        }
+
+        if (imageAttributeGuid.value && !itemAttributeGuids.includes(imageAttributeGuid.value)) {
+            imageAttributeGuid.value = "";
+        }
+
+        const result = await invokeBlockAction<ListItemBag[]>("GetContentLibraryInheritedItemAttributes", request);
+
+        if (requestedTypeGuid !== contentChannelTypeValue.value) {
+            return;
+        }
+
+        contentLibraryInheritedItemAttributes.value = result.isSuccess && result.data
+            ? result.data
+            : [];
+
     });
 
     watch(editorType, () => {

@@ -18,7 +18,7 @@
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
-                    visiblePriority="lg" />
+                    visiblePriority="xs" />
 
         <TextColumn name="description"
                     title="Description"
@@ -72,7 +72,7 @@
         return [
             {
                 title: "Connection Campaigns",
-                iconCssClass: "",
+                iconCssClass: "ti ti-chart-line",
                 handler: onConnectionCampaignsClick
             },
         ];

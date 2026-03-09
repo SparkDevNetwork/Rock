@@ -42,6 +42,14 @@ namespace Rock.Web.Cache
         [DataMember]
         public string PublicName { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.FinancialAccount.PublicDescription" />
+        [DataMember]
+        public string PublicDescription { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.FinancialAccount.IsTaxDeductible" />
+        [DataMember]
+        public bool IsTaxDeductible { get; private set; }
+
         /// <inheritdoc cref="Rock.Model.FinancialAccount.ParentAccountId" />
         [DataMember]
         public int? ParentAccountId { get; private set; }
@@ -372,6 +380,8 @@ namespace Rock.Web.Cache
             this.IsActive = financialAccount.IsActive;
             this.Order = financialAccount.Order;
             this.UsesCampusChildAccounts = financialAccount.UsesCampusChildAccounts;
+            this.PublicDescription = financialAccount.PublicDescription;
+            this.IsTaxDeductible = financialAccount.IsTaxDeductible;
         }
 
         /// <summary>

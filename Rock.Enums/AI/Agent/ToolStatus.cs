@@ -14,17 +14,23 @@
     public enum ToolStatus
     {
         /// <summary>
-        /// The lookup executed successfully and returned one or more items.
+        /// The tool executed successfully and optionally one or more content
+        /// items. This should also be used in cases where no content is expected,
+        /// such as a delete operation.
         /// </summary>
         Success = 0,
 
         /// <summary>
-        /// The lookup executed successfully but returned no items.
+        /// The tool executed successfully but returned no items. This should
+        /// be used when data is expected but none is available. For example,
+        /// a tool that lists items should return <see cref="NoData"/> instead
+        /// of <see cref="Success"/> if no items were found as an otherwise
+        /// empty response might confuse the agent.
         /// </summary>
         NoData = 1,
 
         /// <summary>
-        /// The lookup failed. See the error message on the result for details.
+        /// The tool failed. See the error message on the result for details.
         /// </summary>
         Error = 2
     }

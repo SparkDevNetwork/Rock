@@ -1,0 +1,511 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+    <div class="row">
+        <div class="col-md-5">
+            <TextBox v-model="urlSlug"
+                     label="URL Slug"
+                     help="This key, when present in the URL, tells the event registration to use the configured group and campus information." />
+        </div>
+    </div>
+    <div v-if="groupError || campusError" class="row">
+        <div class="col-md-6">
+            <NotificationBox v-if="groupError" alertType="warning" v-html="groupError"></NotificationBox>
+        </div>
+        <div class="col-md-6">
+            <NotificationBox v-if="campusError" alertType="warning" v-html="campusError"></NotificationBox>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <GroupPicker v-model="group"
+                         label="Group"
+                         help="The optional group that the registrants will be added to when the registration is complete."
+                         :multiple="false"
+                         @update:modelValue="onSelectGroup" />
+        </div>
+        <div class="col-md-5 col-md-offset-1">
+            <CampusPicker v-model="campus"
+                          label="Campus"
+                          help="The campus that the registration linkage will be tied to."
+                          :multiple="false"
+                          :showBlankItem="true" />
+        </div>
+    </div>
+    <div class="flex-row ml-3">
+        <div class="row">
+            <dl>
+                <dt>Calendar Item</dt>
+                <dd v-if="occurrenceName !== ''">
+                    {{ occurrenceName }}
+                </dd>
+            </dl>
+        </div>
+        <div class="row mb-3">
+            <RockButton btnSize="xs"
+                        :btnType="addRemoveButtonType"
+                        @click="onCalendarItemButtonClick">
+                <i :class="`ti ${addRemoveButtonSymbol}`"></i> {{ addRemoveButtonText }}
+            </RockButton>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <TextBox v-model="publicName"
+                     label="Public Name"
+                     help="The text to show when creating links to this specific configuration on the event pages."
+                     rules="required" />
+        </div>
+    </div>
+    <Modal v-model="isModalOpen"
+           title="New Calendar Item"
+           cancelText=""
+           @closeModal="onModalCloseWithoutSave">
+        <NotificationBox v-if="modalError" alertType="warning" v-html="modalError"></NotificationBox>
+        <div v-if="modalPhase === Phase.Calendar">
+            <EventCalendarPicker v-model="modalSelectedCalendar"
+                                 label="Select Calendar"
+                                 lazyMode="eager"
+                                 :multiple="false"
+                                 :showBlankItem="false"
+                                 @update:modelValue="activateModalPrimaryButton" />
+        </div>
+        <div v-else-if="modalPhase === Phase.DateRange">
+            <DateRangePicker v-model="modalSelectedDate"
+                             label="Date Range"
+                             :disallowPastDateSelection="false"
+                             @update:modelValue="activateModalPrimaryButton" />
+        </div>
+        <div v-else-if="modalPhase === Phase.EventOccurrence">
+            <div class="row">
+                <div class="col-md-6">
+                    <EventItemPicker v-model="modalSelectedCalendarItem"
+                                     label="Calendar Item"
+                                     :dateRangeStart="modalSelectedDate.lowerValue ?? undefined"
+                                     :dateRangeEnd="modalSelectedDate.upperValue ?? undefined"
+                                     :multiple="false"
+                                     :rootCalendar="modalSelectedCalendar?.value ?? undefined"
+                                     @update:modelValue="onModalSelectCalendarItem" />
+                </div>
+                <div class="col-md-6">
+                    <div v-if="isModalEventItemSelected">
+                        <EventItemOccurrencePicker v-model="modalSelectedCalendarItemOccurrence"
+                                                   label="Occurrence"
+                                                   :multiple="false"
+                                                   :eventItem="modalSelectedCalendarItem?.value ?? undefined"
+                                                   :dateRangeStart="modalSelectedDate.lowerValue ?? undefined"
+                                                   :dateRangeEnd="modalSelectedDate.upperValue ?? undefined"
+                                                   @update:modelValue="onModalSelectCalendarItemOccurrence"
+                                                   @update:items="onOccurrencesUpdated" />
+                    </div>
+                    <div v-else>
+                        <EventItemOccurrencePicker label="Occurrence"
+                                                   :disabled="true" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <template #customButtons>
+            <RockButton btnType="link"
+                        :disabled="isModalSecondaryButtonDisabled"
+                        @click="onModalCloseWithoutSave">
+                {{ modalSecondaryButtonText }}
+            </RockButton>
+            <RockButton v-if="isModalPrimaryButtonVisible"
+                        btnType="primary"
+                        :disabled="isModalPrimaryButtonDisabled"
+                        @click="onProgressModal">
+                {{ modalPrimaryButtonText }}
+            </RockButton>
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import EventCalendarPicker from "@Obsidian/Controls/eventCalendarPicker.obs";
+    import EventItemOccurrencePicker from "@Obsidian/Controls/eventItemOccurrencePicker.obs";
+    import EventItemPicker from "@Obsidian/Controls/eventItemPicker.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { Guid } from "@Obsidian/Types";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { RegistrationInstanceLinkageDetailBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceLinkageDetail/registrationInstanceLinkageDetailBag";
+    import { RegistrationInstanceLinkageDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceLinkageDetail/registrationInstanceLinkageDetailOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    enum Phase {
+        Calendar = "Calendar",
+        DateRange = "Date Range",
+        EventOccurrence = "Event Occurrence"
+    }
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<RegistrationInstanceLinkageDetailBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<RegistrationInstanceLinkageDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: RegistrationInstanceLinkageDetailBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const registrationInstanceGroupTypeGuid = props.modelValue.context?.registrationInstanceGroupTypeGuid;
+
+    // #region Values
+
+    const blockError = ref<string>("");
+    const groupError = ref<string>("");
+    const campusError = ref<string>("");
+    const modalError = ref<string>("");
+
+    const urlSlug = propertyRef(props.modelValue.urlSlug ?? "", "UrlSlug");
+    const group = propertyRef(props.modelValue.group ?? {}, "Group");
+    const campus = propertyRef(props.modelValue.campus ?? {}, "Campus");
+    const calendarItem = propertyRef(props.modelValue.calendarItem ?? {}, "CalendarItem");
+    const publicName = propertyRef(props.modelValue.publicName ?? "", "PublicName");
+
+    // Fire and forget. Intentionally not awaited to avoid blocking setup.
+    checkGroupCompatibility(group.value.value ? group.value : null);
+
+    const addRemoveButtonType = ref<BtnType>(BtnType.Primary);
+    const addRemoveButtonText = ref<string>("Add Event Item");
+    const addRemoveButtonSymbol = ref<string>("ti-plus");
+
+    const occurrenceName = ref<string>("");
+
+    const modalPhase = ref<Phase>(Phase.Calendar);
+    const modalPrimaryButtonText = ref<string>("Next");
+    const modalSecondaryButtonText = ref<string>("Cancel");
+    const modalSelectedCalendar = ref<ListItemBag | null>(null);
+    const modalSelectedDate = ref<DateRangeParts>(getModalDefaultDateRangeParts());
+    const modalSelectedCalendarItem = ref<ListItemBag | null>(null);
+    const modalSelectedCalendarItemOccurrence = ref<ListItemBag | null>(null);
+    const isModalOpen = ref<boolean>(false);
+    const isModalPrimaryButtonDisabled = ref<boolean>(true);
+    const isModalPrimaryButtonVisible = ref<boolean>(true);
+    const isModalSecondaryButtonDisabled = ref<boolean>(false);
+    const isModalEventItemSelected = ref<boolean>(false);
+
+    if (calendarItem.value && calendarItem.value.selectedOccurrence?.value) {
+        occurrenceName.value = calendarItem.value.selectedOccurrence.text || "";
+        addRemoveButtonText.value = "Remove";
+        addRemoveButtonSymbol.value = "ti-x";
+        addRemoveButtonType.value = BtnType.Danger;
+    }
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [urlSlug, group, campus, calendarItem, publicName];
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Gets the default date range parts for the modal using the current date and time.
+     */
+    function getModalDefaultDateRangeParts(): DateRangeParts {
+        const now = RockDateTime.now();
+
+        return {
+            lowerValue: now.addYears(-1).addDays(1).date.toISOString(),
+            upperValue: now.addYears(1).addDays(-1).date.toISOString()
+        };
+    }
+
+    /**
+     * Formats the display name for a calendar item occurrence.
+     *
+     * @param calendarItem The calendar item.
+     * @param occurrence An occurrence of the calendar item.
+     * @returns The formatted name.
+     */
+    function formatCalendarItemOccurrenceName(calendarItem: ListItemBag | null, occurrence: ListItemBag | null): string {
+        if (!calendarItem?.text || !occurrence) {
+            return "";
+        }
+
+        const campus = occurrence.text?.split(" - ")[0] ?? "";
+
+        if (campus) {
+            return `${calendarItem.text} (${campus})`;
+        }
+
+        return calendarItem.text;
+    }
+
+    /**
+     * Checks if the selected group is different than the registration instance's group type
+     * and displays a warning about it if so.
+     *
+     * @param selectedGroup The selected group.
+     */
+    async function checkGroupCompatibility(selectedGroup: ListItemBag | null): Promise<void> {
+        if (!selectedGroup?.value) {
+            groupError.value = "";
+            return;
+        }
+        
+        const groupTypeGuidOrError = await fetchGroupType(selectedGroup.value);
+        const selectedGroupTypeGuid = toGuidOrNull(groupTypeGuidOrError);
+
+        if (!selectedGroupTypeGuid) {
+            groupError.value = groupTypeGuidOrError;
+            return;
+        }
+
+        if (!areEqual(registrationInstanceGroupTypeGuid, selectedGroupTypeGuid)) {
+            groupError.value = "Warning: The group type of the selected group is different than the group type of the registration template. " +
+                "This could prevent registrants from getting added to the group.";
+        }
+        else {
+            groupError.value = "";
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Handles when a group is selected.
+     *
+     * @param value The selected group.
+     */
+    async function onSelectGroup(value: ListItemBag | ListItemBag[] | null): Promise<void> {
+        // If value is an array, take the first item (since multiple is false)
+        if (Array.isArray(value)) {
+            updateRefValue(group, value.length > 0 ? value[0] : {});
+        }
+        else {
+            updateRefValue(group, value ?? {});
+        }
+
+        await checkGroupCompatibility(group.value.value ? group.value : null);
+    }
+
+    /**
+     * Handles when the calendar item add/remove button is clicked.
+     */
+    function onCalendarItemButtonClick(): void {
+        if (occurrenceName.value !== "") {
+            // Remove the existing calendar item selection.
+            modalSelectedCalendar.value = null;
+            modalSelectedDate.value = getModalDefaultDateRangeParts();
+            modalSelectedCalendarItem.value = null;
+            modalSelectedCalendarItemOccurrence.value = null;
+            calendarItem.value = {};
+            occurrenceName.value = "";
+            addRemoveButtonText.value = "Add Event Item";
+            addRemoveButtonSymbol.value = "ti-plus";
+            addRemoveButtonType.value = BtnType.Primary;
+        }
+        else {
+            // Open the modal to add a new calendar item.
+            isModalOpen.value = true;
+        }
+    }
+
+    /**
+     * Activates the modal primary button.
+     */
+    function activateModalPrimaryButton(): void {
+        isModalPrimaryButtonDisabled.value = false;
+    }
+
+    /**
+     * Handles when a calendar item is selected in the modal.
+     *
+     * @param value The selected calendar item.
+     */
+    function onModalSelectCalendarItem(value: ListItemBag | ListItemBag[] | null): void {
+        // If value is an array, take the first item (since multiple is false)
+        if (Array.isArray(value)) {
+            modalSelectedCalendarItem.value = value.length > 0 ? value[0] : null;
+        }
+        else {
+            modalSelectedCalendarItem.value = value;
+        }
+
+        isModalEventItemSelected.value = !!modalSelectedCalendarItem.value;
+    }
+
+    /**
+     * Handles when a calendar item occurrence is selected in the modal.
+     *
+     * @param value The selected calendar item occurrence.
+     */
+    function onModalSelectCalendarItemOccurrence(value: ListItemBag | ListItemBag[] | null): void {
+        // If value is an array, take the first item (since multiple is false)
+        if (Array.isArray(value)) {
+            modalSelectedCalendarItemOccurrence.value = value.length > 0 ? value[0] : null;
+        }
+        else {
+            modalSelectedCalendarItemOccurrence.value = value;
+        }
+    }
+
+    /**
+     * Handles when the modal primary button is clicked to progress through phases.
+     */
+    function onProgressModal(): void {
+        if (modalPhase.value === Phase.Calendar) {
+            isModalPrimaryButtonDisabled.value = true;
+            modalPhase.value = Phase.DateRange;
+            modalPrimaryButtonText.value = "Next";
+        }
+        else if (modalPhase.value === Phase.DateRange) {
+            isModalPrimaryButtonDisabled.value = true;
+            modalPhase.value = Phase.EventOccurrence;
+            modalPrimaryButtonText.value = "OK";
+        }
+        else if (modalPhase.value === Phase.EventOccurrence) {
+            isModalPrimaryButtonDisabled.value = true;
+            isModalOpen.value = false;
+
+            // Reset modal state for next time.
+            onModalClose();
+        }
+    }
+
+    /**
+     * Handles when the modal is closed.
+     */
+    function onModalClose(): void {
+        isModalOpen.value = false;
+        // Reset modal state for next time.
+        modalPhase.value = Phase.Calendar;
+        modalPrimaryButtonText.value = "Next";
+        modalSecondaryButtonText.value = "Cancel";
+        isModalPrimaryButtonDisabled.value = true;
+        isModalPrimaryButtonVisible.value = true;
+        calendarItem.value = {
+            selectedCalendar: modalSelectedCalendar.value,
+            dateRangeStart: modalSelectedDate.value.lowerValue,
+            dateRangeEnd: modalSelectedDate.value.upperValue,
+            selectedCalendarItem: modalSelectedCalendarItem.value,
+            selectedOccurrence: modalSelectedCalendarItemOccurrence.value
+        };
+
+        modalError.value = "";
+
+        if (modalSelectedCalendarItemOccurrence.value) {
+            occurrenceName.value = formatCalendarItemOccurrenceName(
+                modalSelectedCalendarItem.value,
+                modalSelectedCalendarItemOccurrence.value
+            );
+            addRemoveButtonText.value = "Remove";
+            addRemoveButtonSymbol.value = "ti-x";
+            addRemoveButtonType.value = BtnType.Danger;
+        }
+    }
+
+    /**
+     * Handles when the modal is closed without saving.
+     */
+    function onModalCloseWithoutSave(): void {
+        modalSelectedCalendar.value = null;
+        modalSelectedDate.value = getModalDefaultDateRangeParts();
+        modalSelectedCalendarItem.value = null;
+        modalSelectedCalendarItemOccurrence.value = null;
+        onModalClose();
+    }
+
+    /**
+     * Handles when the occurrences are updated in the modal.
+     *
+     * @param items The updated occurrences.
+     */
+    function onOccurrencesUpdated(items: ListItemBag[] | null): void {
+        if (modalSelectedCalendarItem.value) {
+            if (items && items.length <= 0) {
+                modalError.value = "There are no occurrences available for the selected calendar item and date range.";
+                isModalPrimaryButtonVisible.value = false;
+                modalSecondaryButtonText.value = "OK";
+            }
+            else {
+                modalError.value = "";
+                isModalPrimaryButtonVisible.value = true;
+                modalSecondaryButtonText.value = "Cancel";
+            }
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Block Actions
+
+    async function fetchGroupType(guid: Guid): Promise<string> {
+        const result = await invokeBlockAction<Guid | string | null>("FetchGroupType", {
+            groupGuid: guid
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else if (result.errorMessage) {
+            return result.errorMessage;
+        }
+        else {
+            return "Unknown error while trying to fetch group type.";
+        }
+    }
+
+    // #endregion Block Actions
+
+    // #region Watchers
+
+    watch(() => !!modalSelectedCalendarItem.value && !!modalSelectedCalendarItemOccurrence.value, () => {
+        activateModalPrimaryButton();
+    })
+        ;
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(urlSlug, props.modelValue.urlSlug ?? emptyGuid);
+        updateRefValue(group, props.modelValue.group ?? {});
+        updateRefValue(campus, props.modelValue.campus ?? {});
+        updateRefValue(calendarItem, props.modelValue.calendarItem ?? {});
+        updateRefValue(publicName, props.modelValue.publicName ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: RegistrationInstanceLinkageDetailBag = {
+            ...props.modelValue,
+            urlSlug: urlSlug.value,
+            group: group.value,
+            campus: campus.value,
+            calendarItem: calendarItem.value,
+            publicName: publicName.value
+        };
+
+        emit("update:modelValue", newValue);
+    }, { deep: true });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+
+    // #endregion Watchers
+</script>

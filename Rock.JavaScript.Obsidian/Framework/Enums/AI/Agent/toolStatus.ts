@@ -23,13 +23,23 @@
 
 /** Indicates the overall outcome of a tool call. */
 export const ToolStatus = {
-    /** The lookup executed successfully and returned one or more items. */
+    /**
+     * The tool executed successfully and optionally one or more content
+     * items. This should also be used in cases where no content is expected,
+     * such as a delete operation.
+     */
     Success: 0,
 
-    /** The lookup executed successfully but returned no items. */
+    /**
+     * The tool executed successfully but returned no items. This should
+     * be used when data is expected but none is available. For example,
+     * a tool that lists items should return Rock.Enums.AI.Agent.ToolStatus.NoData instead
+     * of Rock.Enums.AI.Agent.ToolStatus.Success if no items were found as an otherwise
+     * empty response might confuse the agent.
+     */
     NoData: 1,
 
-    /** The lookup failed. See the error message on the result for details. */
+    /** The tool failed. See the error message on the result for details. */
     Error: 2
 } as const;
 

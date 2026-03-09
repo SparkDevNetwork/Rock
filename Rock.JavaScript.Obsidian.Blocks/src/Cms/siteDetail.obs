@@ -24,7 +24,7 @@
     <RockForm v-model:submit="submitForm" @submit="onSave">
         <Panel type="block" :title="panelName" :headerSecondaryActions="blockLabels">
             <template v-if="siteViewBag?.idKey" #headerActions>
-                <button class="btn btn-xs btn-info" @click.prevent="onVisitSite" style="margin-right: 15px;"><i class="ti ti-world"></i> Visit Site</button>
+                <button class="btn btn-xs btn-info" type="button" @click.prevent="onVisitSite" style="margin-right: 15px;"><i class="ti ti-world"></i> Visit Site</button>
             </template>
             <template #default>
                 <ViewPanel v-if="panelMode == DetailPanelMode.View"

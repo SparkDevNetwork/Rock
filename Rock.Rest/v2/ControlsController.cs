@@ -803,7 +803,11 @@ namespace Rock.Rest.v2
                 foreach ( var folder in options.ExpandedFolders )
                 {
                     var parsedAsset = ParseAssetKey( folder );
-                    expandedFolders.Add( $"{parsedAsset.ProviderId},{parsedAsset.FullPath}" );
+                    // Only try to add the folder if it parsed OK
+                    if ( parsedAsset != null )
+                    {
+                        expandedFolders.Add( $"{parsedAsset.ProviderId},{parsedAsset.FullPath}" );
+                    }
                 }
             }
 
@@ -874,7 +878,7 @@ namespace Rock.Rest.v2
 
             var parsedAsset = ParseAssetKey( options.AssetFolderId );
 
-            if ( parsedAsset.ProviderId == null || parsedAsset.FullPath == null )
+            if ( parsedAsset == null || parsedAsset.ProviderId == null || parsedAsset.FullPath == null )
             {
                 return Ok( new List<AssetManagerTreeItemBag>() );
             }
@@ -917,7 +921,7 @@ namespace Rock.Rest.v2
 
             var asset = ParseAssetKey( options.AssetFolderId );
 
-            if ( asset.ProviderId == null || asset.FullPath == null )
+            if ( asset == null || asset.ProviderId == null || asset.FullPath == null )
             {
                 return BadRequest();
             }
@@ -976,7 +980,7 @@ namespace Rock.Rest.v2
 
             var asset = ParseAssetKey( options.AssetFolderId );
 
-            if ( asset.ProviderId == null || asset.FullPath == null )
+            if ( asset == null || asset.ProviderId == null || asset.FullPath == null )
             {
                 return BadRequest();
             }
@@ -1574,7 +1578,7 @@ namespace Rock.Rest.v2
             var rootAssetKey = $"0,{encryptedRootFolder},,True";
             var parsedAsset = ParseAssetKey( rootAssetKey );
 
-            if ( parsedAsset.Root.IsNullOrWhiteSpace() )
+            if ( parsedAsset == null || parsedAsset.Root.IsNullOrWhiteSpace() )
             {
                 return (null, null);
             }
@@ -1716,7 +1720,7 @@ namespace Rock.Rest.v2
                         UnencryptedRoot = asset.Root
                     };
 
-                    if ( hasChildren && expandedFolders.Contains( $"0,{subDirAsset.FullDirectoryPath}" ) )
+                    if ( hasChildren && subDirAsset != null && expandedFolders.Contains( $"0,{subDirAsset.FullDirectoryPath}" ) )
                     {
                         updatedExpandedFolders.Add( subDirKey );
 
@@ -3040,6 +3044,64 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Color Picker
+
+        /// <summary>
+        /// Retrieves the list of available color swatches for the color picker, filtered by authorization and activity status.
+        /// </summary>
+        /// <remarks>
+        /// Only swatches that are active and for which the current user has view authorization
+        /// are included in the result. The response includes display location information for each swatch, which may be
+        /// "Custom" if not specified.
+        /// </remarks>
+        /// <param name="options">An object containing options for retrieving color picker swatches, including security grant information. Cannot be null.</param>
+        /// <returns>An HTTP response containing a collection of color picker swatch items if found; otherwise, a NotFound
+        /// response.</returns>
+        [HttpPost]
+        [Route( "ColorPickerGetColorPickerSwatches" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ColorPickerSwatchBag> ) )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "22F2083E-CB15-4D19-893C-4218C6E06323" )]
+        public IActionResult ColorPickerGetColorPickerSwatches( ColorPickerGetColorPickerSwatchesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COLOR_PICKER_SWATCHES.AsGuid() );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( definedType == null || !definedType.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return NotFound();
+                }
+
+                var definedValues = definedType.DefinedValues
+                    .Where( v => ( v.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) || grant?.IsAccessGranted( v, Security.Authorization.VIEW ) == true )
+                        && ( v.IsActive ) )
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Value )
+                    .ToList();
+
+                definedValues.LoadAttributes();
+
+                var displayLocationAttributeKey = AttributeCache.Get( SystemGuid.Attribute.DEFINED_TYPE_COLOR_PICKER_SWATCHES_DISPLAY_LOCATION )?.Key;
+
+                var result = definedValues
+                    .Select( dv => new ColorPickerSwatchBag
+                    {
+                        Value = dv.Value,
+                        Description = dv.Description,
+                        DisplayLocation = displayLocationAttributeKey.IsNotNullOrWhiteSpace() ? dv.GetAttributeValue( displayLocationAttributeKey ) : "Custom"
+                    } )
+                    .ToList();
+
+                return Ok( result );
+            }
+        }
+
+        #endregion Color Picker
+
         #region Communication Recipient Activity
 
         /// <summary>
@@ -4099,61 +4161,6 @@ namespace Rock.Rest.v2
 
                 return Ok( new ListItemBag { Text = definedValue.Value, Value = definedValue.Guid.ToString() } );
             }
-        }
-
-        #endregion
-
-        #region Defined Type Picker
-
-        /// <summary>
-        /// Gets the defined types that can be displayed in the defined type picker.
-        /// </summary>
-        /// <param name="options">The options that describe which items to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent defined types.</returns>
-        [HttpPost]
-        [Route( "DefinedTypePickerGetDefinedTypes" )]
-        [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
-        [Rock.SystemGuid.RestActionGuid( "50319D0D-7399-43C7-8239-495E11CA958A" )]
-        public IActionResult DefinedTypePickerGetDefinedTypes( [FromBody] DefinedTypePickerGetDefinedTypesOptionsBag options )
-        {
-            var definedTypes = DefinedTypeCache.All()
-                .Where( dt => dt.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
-                .ToList();
-
-            if ( options.DefinedTypes != null && options.DefinedTypes.Count > 0 )
-            {
-                definedTypes = definedTypes.Where( dt => options.DefinedTypes.Contains( dt.Guid ) ).ToList();
-            }
-
-            if ( options.ExcludeDefinedTypes != null && options.ExcludeDefinedTypes.Any() )
-            {
-                definedTypes = definedTypes.Where( dt => !options.ExcludeDefinedTypes.Contains( dt.Guid ) ).ToList();
-            }
-
-            if ( options.IsSortedByName )
-            {
-                definedTypes = definedTypes.OrderBy( dt => dt.Name ).ToList();
-            }
-            else
-            {
-                // Matches the ordering of the DefinedTypeList block
-                definedTypes = definedTypes
-                    .OrderBy( dt => dt.Category?.Name ?? string.Empty )
-                    .ThenBy( dt => dt.Name )
-                    .ToList();
-            }
-
-            var results = definedTypes
-                .Select( dt => new ListItemBag
-                {
-                    Value = dt.Guid.ToString(),
-                    Text = dt.Name
-                } )
-                .ToList();
-
-            return Ok( results );
         }
 
         #endregion
@@ -5328,22 +5335,95 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
+                var lowerValue = options.DateRangeStart.AsDateTime();
+                var upperValue = options.DateRangeEnd.AsDateTime();
+
+                // Swap the values if they are backwards
+                if ( lowerValue > upperValue )
+                {
+                    var temp = lowerValue;
+                    lowerValue = upperValue;
+                    upperValue = temp;
+                }
+
                 var eventItems = new EventCalendarItemService( rockContext ).Queryable()
                     .Include( eci => eci.EventCalendar )
-                    .Where( i => options.IncludeInactive ? true : i.EventItem.IsActive )
+                    .Where( eci => options.RootCalendar == Guid.Empty || eci.EventCalendar.Guid == options.RootCalendar )
+                    .Where( eci => options.IncludeInactive || eci.EventItem.IsActive )
                     .ToList()
                     .Where( eci => eci.EventCalendar.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
-                    .Select( i => new ListItemBag
+                    .Where( eci => (!lowerValue.HasValue && !upperValue.HasValue) || eci.EventItem.GetStartTimes( lowerValue.Value, upperValue.Value ).Any() )
+                    .Select( eci => new ListItemBag
                     {
-                        Category = i.EventCalendar.Name,
-                        Value = i.EventItem.Guid.ToString(),
-                        Text = i.EventItem.Name
+                        Category = eci.EventCalendar.Name,
+                        Value = eci.EventItem.Guid.ToString(),
+                        Text = eci.EventItem.Name
                     } )
                     .OrderBy( i => i.Category )
                     .ThenBy( i => i.Text )
                     .ToList();
 
                 return Ok( eventItems );
+            }
+        }
+
+        #endregion
+
+        #region Event Item Occurrence Picker
+
+        /// <summary>
+        /// Gets the event items that can be displayed in the event item picker.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the event items.</returns>
+        [HttpPost]
+        [Route( "EventItemOccurrencePickerGetEventItemOccurrences" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [Rock.SystemGuid.RestActionGuid( "1E837165-A003-4CC7-B870-15D7640826EE" )]
+        public IActionResult EventItemOccurrencePickerGetEventItemOccurrences( [FromBody] EventItemOccurrencePickerGetEventItemOccurrencesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var lowerValue = options.DateRangeStart.AsDateTime() ?? RockDateTime.Today.AddYears( -1 ).AddDays( 1 );
+                var upperValue = options.DateRangeEnd.AsDateTime() ?? RockDateTime.Today.AddYears( 1 ).AddDays( -1 );
+
+                // Swap the values if they are backwards
+                if ( lowerValue > upperValue )
+                {
+                    var temp = lowerValue;
+                    lowerValue = upperValue;
+                    upperValue = temp;
+                }
+
+                var eventItemOccurences = new EventItemOccurrenceService( rockContext )
+                    .Queryable()
+                    .Where( eio => eio.EventItem.Guid == options.EventItem )
+                    .Where( eio => options.IncludeInactive || eio.EventItem.IsActive )
+                    .ToList()
+                    .Where( eio => eio.EventItem.GetStartTimes( lowerValue, upperValue ).Any() )
+                    .Select( eio => new
+                    {
+                        eio.Guid,
+                        eio.NextStartDateTime,
+                        CampusName = eio.Campus != null ? eio.Campus.Name : "All Campuses",
+                        Order = eio.CampusId.HasValue ? 1 : 0
+                    } )
+                    .OrderBy( eio => eio.Order )
+                    .ThenBy( eio => eio.CampusName )
+                    .ThenBy( eio => eio.NextStartDateTime ?? DateTime.MinValue )
+                    .Select( eio => new ListItemBag
+                    {
+                        Text = eio.NextStartDateTime.HasValue ?
+                                string.Format( "{0} - {1}", eio.CampusName, eio.NextStartDateTime.Value.ToShortDateTimeString() ) :
+                                eio.CampusName,
+                        Value = eio.Guid.ToString()
+                    }
+                    )
+                    .ToList();
+
+                return Ok( eventItemOccurences );
             }
         }
 
@@ -5425,11 +5505,19 @@ namespace Rock.Rest.v2
             // Get the public configuration options from the internal options (values).
             var publicEditConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Edit, options.DefaultValue );
 
+            string valueFormat = null;
+
+            if ( fieldType is Field.FieldType hintFieldType )
+            {
+                valueFormat = hintFieldType.GetFieldHints( configurationValues )?.ValueFormat;
+            }
+
             return Ok( new FieldTypeEditorUpdateAttributeConfigurationResultBag
             {
                 ConfigurationProperties = configurationProperties,
                 AdminConfigurationValues = publicAdminConfigurationValues,
                 EditConfigurationValues = publicEditConfigurationValues,
+                ValueFormat = valueFormat,
                 DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues )
             } );
         }

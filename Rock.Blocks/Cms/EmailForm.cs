@@ -367,6 +367,7 @@ namespace Rock.Blocks.Cms
             }
 
             bool isBot = false;
+#if REVIEW_WEBFORMS
             var filterString = GlobalAttributesCache.Value( "EmailExceptionsFilter" );
             var serverVarList = System.Web.HttpContext.Current.Request.ServerVariables;
 
@@ -384,6 +385,7 @@ namespace Rock.Blocks.Cms
                     }
                 }
             }
+#endif
 
             if ( isBot )
             {

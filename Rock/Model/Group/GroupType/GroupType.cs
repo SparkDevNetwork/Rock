@@ -902,17 +902,6 @@ namespace Rock.Model
         public int? ScheduleConfirmationSystemCommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the system email to use when a person is scheduled or when the schedule has been updated
-        /// </summary>
-        /// <value>
-        /// The scheduled system email identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? ScheduleConfirmationSystemEmailId { get; set; }
-
-        /// <summary>
         /// Gets or sets the system communication to use when sending a schedule reminder.
         /// </summary>
         /// <value>
@@ -920,17 +909,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ScheduleReminderSystemCommunicationId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the system email to use when sending a schedule reminder
-        /// </summary>
-        /// <value>
-        /// The schedule reminder system email identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead.", true )]
-        [RockObsolete( "1.10" )]
-        public int? ScheduleReminderSystemEmailId { get; set; }
 
         /// <summary>
         /// Gets or sets the system communication to use for sending an RSVP reminder.
@@ -1161,28 +1139,6 @@ namespace Rock.Model
         public virtual DefinedValue GroupTypePurposeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the system email to use when a person is scheduled or when the schedule has been updated
-        /// </summary>
-        /// <value>
-        /// The scheduled system email.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use ScheduleConfirmationSystemCommunication instead.", true )]
-        [RockObsolete( "1.10" )]
-        public virtual SystemEmail ScheduleConfirmationSystemEmail { get; set; }
-
-        /// <summary>
-        /// Gets or sets the system email to use when sending a Schedule Reminder
-        /// </summary>
-        /// <value>
-        /// The schedule reminder system email.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use ScheduleReminderSystemCommunication instead.", true )]
-        [RockObsolete( "1.10" )]
-        public virtual SystemEmail ScheduleReminderSystemEmail { get; set; }
-
-        /// <summary>
         /// Gets or sets the system communication to use when a person is scheduled or when the schedule has been updated
         /// </summary>
         /// <value>
@@ -1199,6 +1155,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual SystemCommunication ScheduleReminderSystemCommunication { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use for sending an RSVP reminder.
+        /// </summary>
+        /// <value>
+        /// The RSVP reminder system communication.
+        /// </value>
+        [DataMember]
+        public virtual SystemCommunication RSVPReminderSystemCommunication { get; set; }
 
         /// <summary>
         /// Gets or sets the WorkflowType to execute when a person indicates they won't be able to attend at their scheduled time
@@ -1333,6 +1298,7 @@ namespace Rock.Model
             this.HasOptional( p => p.InheritedGroupType ).WithMany().HasForeignKey( p => p.InheritedGroupTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleConfirmationSystemCommunication ).WithMany().HasForeignKey( p => p.ScheduleConfirmationSystemCommunicationId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleReminderSystemCommunication ).WithMany().HasForeignKey( p => p.ScheduleReminderSystemCommunicationId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RSVPReminderSystemCommunication ).WithMany().HasForeignKey( p => p.RSVPReminderSystemCommunicationId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleCancellationWorkflowType ).WithMany().HasForeignKey( p => p.ScheduleCancellationWorkflowTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.AttendanceReminderSystemCommunication ).WithMany().HasForeignKey( p => p.AttendanceReminderSystemCommunicationId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.GroupMemberRecordSourceValue ).WithMany().HasForeignKey( p => p.GroupMemberRecordSourceValueId ).WillCascadeOnDelete( false );

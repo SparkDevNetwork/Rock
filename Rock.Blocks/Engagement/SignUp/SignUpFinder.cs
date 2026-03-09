@@ -33,7 +33,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+#if NET472_OR_GREATER
 using System.Data.Entity.Spatial;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -1220,7 +1222,12 @@ namespace Rock.Blocks.Engagement.SignUp
             // determine proximity, otherwise we’ll assume they provided a "city, state" which we'll use to get a
             // lat/long for. If they are logged in and have not provided a value we'll use their address that is
             // configured as their mapped location.
+#if NET472_OR_GREATER
             DbGeography geoPointOrigin = null;
+#else
+            NetTopologySuite.Geometries.Point geoPointOrigin = null;
+#endif
+
             if ( !string.IsNullOrWhiteSpace( locationSort ) )
             {
                 try
@@ -1255,7 +1262,11 @@ namespace Rock.Blocks.Engagement.SignUp
 
                     if ( mapCoordinate != null )
                     {
+#if REVIEW_WEBFORMS
                         geoPointOrigin = DbGeography.FromText( $"POINT({mapCoordinate.Longitude} {mapCoordinate.Latitude})" );
+#else
+                        geoPointOrigin = new NetTopologySuite.Geometries.Point( mapCoordinate.Longitude.Value, mapCoordinate.Latitude.Value );
+#endif
                     }
                 }
                 catch
@@ -1288,7 +1299,11 @@ namespace Rock.Blocks.Engagement.SignUp
 
             foreach ( var opportunity in opportunities.Where( o => !o.DistanceInMiles.HasValue && o.GeoPoint != null ) )
             {
+#if NET472_OR_GREATER
                 double meters = opportunity.GeoPoint.Distance( geoPointOrigin ) ?? 0.0D;
+#else
+                double meters = opportunity.GeoPoint.Distance( geoPointOrigin );
+#endif
                 double miles = meters * Location.MilesPerMeter;
 
                 opportunity.DistanceInMiles = miles;
@@ -1889,7 +1904,11 @@ namespace Rock.Blocks.Engagement.SignUp
 
             public int ParticipantCount { get; set; }
 
+#if NET472_OR_GREATER
             public DbGeography GeoPoint { get; set; }
+#else
+            public NetTopologySuite.Geometries.Point GeoPoint { get; set; }
+#endif
 
             public double? DistanceInMiles { get; set; }
 

@@ -4,9 +4,9 @@
 
 
 // =============================================================
-// Table of Content           
-//  + Base Style        
-//  + Screen reader      
+// Table of Content
+//  + Base Style
+//  + Screen reader
 // =============================================================
 
 
@@ -79,7 +79,7 @@ hr {
 .img-fluid,
 .img-responsive {
   display:          block;
-  max-width:        100%; 
+  max-width:        100%;
   height:           auto;
 }
 
@@ -99,13 +99,13 @@ hr {
 
   // Keep them at most 100% wide
   display:          inline-block;
-  max-width:        100%; 
+  max-width:        100%;
   height:           auto;
 }
 
 // Perfect circle
 .img-circle {
-  border-radius: 50%; 
+  border-radius: 50%;
 }
 // =================== END BASE STYLE ===================
 
@@ -138,15 +138,5 @@ hr {
 // iOS "clickable elements" fix for role="button"
 [role="button"] {
   cursor: pointer;
-}
-
-// add to remove margin 
-ul,ol {
-  margin-top:     0;
-  margin-bottom:  12px
-}
-
-ul ul,ol ul,ul ol,ol ol {
-  margin-bottom: 0
 }
 

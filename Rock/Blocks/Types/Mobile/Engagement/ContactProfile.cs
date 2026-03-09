@@ -274,9 +274,10 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         /// </summary>
         /// <param name="idKey"></param>
         /// <param name="touchpointTypeFilter"></param>
+        /// <param name="take"></param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult GetContactTouchpointHistory( string idKey, int? touchpointTypeFilter )
+        public BlockActionResult GetContactTouchpointHistory( string idKey, int? take, int? touchpointTypeFilter )
         {
             if ( idKey.IsNullOrWhiteSpace() )
             {
@@ -299,6 +300,11 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             {
                 qry = qry
                     .Where( tp => tp.Type == ( TouchpointType ) touchpointTypeFilter.Value );
+            }
+
+            if ( take.HasValue )
+            {
+                qry = qry.Take( take.Value );
             }
 
             var touchpointHistoryBag = qry
@@ -358,9 +364,9 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         {
             ContactService contactService = new ContactService( RockContext );
             var contact = contactService.Get( contactId );
-            if (contact == null)
+            if ( contact == null )
             {
-                return ActionBadRequest("Contact not found.");
+                return ActionBadRequest( "Contact not found." );
             }
 
             contact.PrayerCadence = OutreachCadence.Paused;

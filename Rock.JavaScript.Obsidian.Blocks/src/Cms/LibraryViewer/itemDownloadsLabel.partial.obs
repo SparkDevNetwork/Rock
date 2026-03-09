@@ -5,12 +5,6 @@
         ><i class="ti ti-arrow-down"></i> {{ abbreviateNumber(downloads) }}</span>
 </template>
 
-<style scoped>
-    .library-viewer-item-downloads-label {
-        font-size: 12px;
-        flex-shrink: 0;
-    }
-</style>
 
 <script setup lang="ts">
     import { PropType } from "vue";

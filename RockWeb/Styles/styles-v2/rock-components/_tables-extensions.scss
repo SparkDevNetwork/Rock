@@ -30,9 +30,21 @@
     &:not(:has(tfoot)) tr:last-child > td:first-child {
       border-bottom-left-radius: var(--rounded-medium);
     }
+
     &:not(:has(tfoot)) tr:last-child > td:last-child {
       border-bottom-right-radius: var(--rounded-medium);
     }
+
+    // If there is a table footer without any elements, round the bottom corners of the last row, first and last cell to match the rounded grid panel.
+    &:not(:has(tfoot > *)) tr:last-child,
+    &:not(:has(tfoot > *)) tr:last-child > td:first-child {
+      border-bottom-left-radius: var(--rounded-medium);
+    }
+
+    &:not(:has(tfoot > *)) tr:last-child > td:last-child {
+      border-bottom-right-radius: var(--rounded-medium);
+    }
+
   }
 
 }
@@ -50,6 +62,34 @@ td.grid-actions {
 }
 
 // ===================== END GRID TABLE ===================
+
+// ===================== GANTT / WATERFALL CHART  ===================
+
+td.waterfall-cell {
+    width: 40%;
+    vertical-align: middle !important;
+    padding: 0 !important;
+    overflow: hidden;
+
+    .waterfall-cell-chart {
+      position: relative;
+      height: 18px;
+      margin: 0 var(--spacing-tiny);
+    }
+
+    .waterfall-cell-chart-bar {
+      position: absolute;
+      display: block;
+      min-width: 1px;
+      height: 100%;
+      background: var(--color-categorical-1);
+      border-radius: var(--rounded-xsmall);
+    }
+
+}
+
+
+// ===================== END GANTT / WATERFALL CHART  ===================
 
 // ======================= MISC =======================
 

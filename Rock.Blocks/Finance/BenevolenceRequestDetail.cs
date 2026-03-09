@@ -354,6 +354,18 @@ namespace Rock.Blocks.Finance
         {
             errorMessage = null;
 
+            var benevolenceType = benevolenceRequest.BenevolenceType ?? new BenevolenceTypeService( RockContext ).Get( benevolenceRequest.BenevolenceTypeId );
+            if ( benevolenceType != null )
+            {
+                var maximumDocuments = benevolenceType.AdditionalSettingsJson.FromJsonOrNull<BenevolenceType.AdditionalSettings>()?.MaximumNumberOfDocuments ?? 6;
+
+                if ( benevolenceRequest.Documents.Count > maximumDocuments )
+                {
+                    errorMessage = $"The number of attached documents exceeds the maximum allowed limit of {maximumDocuments} for this request type.";
+                    return false;
+                }
+            }
+
             return true;
         }
 
@@ -651,6 +663,7 @@ namespace Rock.Blocks.Finance
                                 if ( benevolenceDocumentToRemove != null )
                                 {
                                     BenevolenceRequestDocumentService.Delete( benevolenceDocumentToRemove );
+                                    entity.Documents.Remove( benevolenceDocumentToRemove );
                                     binaryFile.IsTemporary = true;
                                 }
                             }

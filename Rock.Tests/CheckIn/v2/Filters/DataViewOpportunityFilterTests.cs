@@ -22,7 +22,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
     /// </summary>
     /// <seealso cref="DataViewOpportunityFilter"/>
     [TestClass]
-    public class DataViewOpportunityFilterTests : CheckInMockDatabase
+    public class DataViewOpportunityFilterTests : MockDatabaseTestsBase
     {
         #region IsGroupValid Tests
 
@@ -31,10 +31,9 @@ namespace Rock.Tests.CheckIn.v2.Filters
         {
             var dataViewGuid = new Guid( "f2bc089d-7754-4b9d-ba94-328b5279e0b4" );
             var dataViewMock = CreatePersistedDataViewMock( 1, dataViewGuid, "Test" );
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
-            rockContextMock.SetupDbSet( dataViewMock.Object );
-            rockContextMock.SetupDbSet<DataViewPersistedValue>();
+            rockContextMock.Object.Set<DataView>().Add( dataViewMock.Object );
 
             var filter = CreateDataViewFilter( 3, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( new[] { dataViewGuid } );
@@ -47,7 +46,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
         [TestMethod]
         public void DataViewFilter_WithoutDataView_IncludesGroup()
         {
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
             var filter = CreateDataViewFilter( 3, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( Array.Empty<Guid>() );
@@ -66,10 +65,10 @@ namespace Rock.Tests.CheckIn.v2.Filters
 
             var dataViewMock = CreatePersistedDataViewMock( dataViewId, dataViewGuid, "Test" );
             var persistedValueMock = GetPersistedDataViewValueMock( dataViewId, personId );
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
-            rockContextMock.SetupDbSet( dataViewMock.Object );
-            rockContextMock.SetupDbSet( persistedValueMock.Object );
+            rockContextMock.Object.Set<DataView>().Add( dataViewMock.Object );
+            rockContextMock.Object.Set<DataViewPersistedValue>().Add( persistedValueMock.Object );
 
             var filter = CreateDataViewFilter( personId, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( new[] { dataViewGuid } );
@@ -91,10 +90,11 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var includesPersonDataViewMock = CreatePersistedDataViewMock( includesPersonDataViewId, includesPersonDataViewGuid, "Test" );
             var excludesPersonDataViewMock = CreatePersistedDataViewMock( excludesPersonDataViewId, excludesPersonDataViewGuid, "Test" );
             var persistedValueMock = GetPersistedDataViewValueMock( includesPersonDataViewId, personId );
-            var rockContextMock = GetRockContextMock();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
-            rockContextMock.SetupDbSet( includesPersonDataViewMock.Object, excludesPersonDataViewMock.Object );
-            rockContextMock.SetupDbSet( persistedValueMock.Object );
+            rockContextMock.Object.Set<DataView>().Add( includesPersonDataViewMock.Object );
+            rockContextMock.Object.Set<DataView>().Add( excludesPersonDataViewMock.Object );
+            rockContextMock.Object.Set<DataViewPersistedValue>().Add( persistedValueMock.Object );
 
             var filter = CreateDataViewFilter( personId, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( new[] { includesPersonDataViewGuid, excludesPersonDataViewGuid } );
@@ -109,9 +109,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
         {
             var personId = 3;
             var deletedDataViewGuid = new Guid( "b1f5fe41-d546-47e6-b4d0-09f9b2a3f676" );
-            var rockContextMock = GetRockContextMock();
-
-            rockContextMock.SetupDbSet<DataView>();
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
 
             var filter = CreateDataViewFilter( personId, rockContextMock.Object );
             var groupOpportunity = CreateGroupOpportunity( new[] { deletedDataViewGuid } );

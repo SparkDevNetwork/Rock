@@ -569,7 +569,7 @@ namespace Rock.Blocks.Lms
                     Content = nextAvailableActivity.ClassActivityBag.Description,
                     LabelText = "Available Soon",
                     LabelType = "default",
-                    NotificationDateTime = nextAvailableActivity.AvailableDate ?? DateTime.MaxValue,
+                    NotificationDateTime = nextAvailableActivity.AvailableDate,
                     Title = nextAvailableActivity.ClassActivityBag.Name
                 } );
             }
@@ -582,12 +582,18 @@ namespace Rock.Blocks.Lms
                     Content = $"A facilitator commented on {a.ClassActivityBag.ActivityComponent.Name}: {a.ClassActivityBag.Name}.",
                     LabelText = "Comment",
                     LabelType = "default",
-                    NotificationDateTime = a.CompletedDate ?? DateTime.MaxValue,
+                    // We can no longer rely on the completed date time being the timestamp the facilitator added a
+                    // comment, since we no longer set this timestamp value for student-assigned activites when a
+                    // facilitator edits/grades the activity. This timestamp was previously only display in a tooltip
+                    // (when hovering over the comment), so it's better to not display the tooltip than to display
+                    // inaccurate information.
+                    // https://github.com/SparkDevNetwork/Rock/issues/6710
+                    //NotificationDateTime = a.CompletedDate,
                     Title = "Facilitator Comment"
                 } )
                 .ToList();
 
-            box.Notifications.AddRange( activityNotifications.OrderBy( a => a.NotificationDateTime ).ToList() );
+            box.Notifications.AddRange( activityNotifications.OrderBy( a => a.NotificationDateTime ?? DateTimeOffset.MaxValue ).ToList() );
         }
 
         #endregion
@@ -654,30 +660,38 @@ namespace Rock.Blocks.Lms
                 }
             }
 
-            // It's important that the WasCompletedOnTime is set before the
-            // IsStudentCompleted bool. Activity.IsLate property uses this bit.
-            if ( !completion.CompletedDateTime.HasValue )
+            /*
+                3/4/2026 - JPH
+
+                This public-facing block is only intended to be used by students (and not facilitators). With this in
+                mind, most of the "completed"-related property values should only be set if this activity is actually
+                assigned to the student, and if these values haven't already been set.
+
+                One exception is the [IsStudentCompleted] property. This value should always be set as `true` here, as
+                the student has marked their portion of the activity as complete, regardless of whether it's actually
+                assigned to them vs. the facilitator.
+
+                Reason: Ensure activity completions are properly marked as completed and on time / late.
+                https://github.com/SparkDevNetwork/Rock/issues/6710
+            */
+            if ( completion.LearningClassActivity.AssignTo == AssignTo.Student )
             {
-                var now = RockDateTime.Now;
-                completion.CompletedDateTime = now;
-                completion.WasCompletedOnTime = !completion.IsLate;
+                // It's important that the WasCompletedOnTime is set before the
+                // IsStudentCompleted bool. Activity.IsLate property uses this bit.
+                if ( !completion.CompletedDateTime.HasValue )
+                {
+                    completion.CompletedDateTime = RockDateTime.Now;
+                    completion.WasCompletedOnTime = !completion.IsLate;
+                }
+
+                if ( !completion.CompletedByPersonAliasId.HasValue )
+                {
+                    completion.CompletedByPersonAliasId = GetCurrentPerson()?.PrimaryAliasId;
+                }
             }
 
-            if ( !completion.CompletedByPersonAliasId.HasValue )
-            {
-                completion.CompletedByPersonAliasId = GetCurrentPerson()?.PrimaryAliasId;
-
-                if ( completion.LearningClassActivity.AssignTo == AssignTo.Student )
-                {
-                    completion.IsStudentCompleted = true;
-                    activityCompletionBag.IsStudentCompleted = true;
-                }
-                else
-                {
-                    completion.IsFacilitatorCompleted = true;
-                    activityCompletionBag.IsFacilitatorCompleted = true;
-                }
-            }
+            completion.IsStudentCompleted = true;
+            activityCompletionBag.IsStudentCompleted = true;
 
             var activityComponent = LearningActivityContainer.Instance.Components.Values
                 .FirstOrDefault( c => c.Value.EntityType.Id == completion.LearningClassActivity.LearningActivity.ActivityComponentId )

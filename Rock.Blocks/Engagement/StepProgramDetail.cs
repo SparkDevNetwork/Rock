@@ -72,7 +72,7 @@ namespace Rock.Blocks.Engagement
     [BooleanField
         ( "Enable List View Display Options",
           Key = AttributeKey.EnableListViewDisplayOptions,
-          Description = "Allows selecting a display mode of Grid or Cards.",
+          Description = "Allows selecting the display mode when showing steps on a person's profile page.",
           DefaultValue = "false",
           Order = 3 )]
 
@@ -2044,6 +2044,7 @@ namespace Rock.Blocks.Engagement
             var parameters = new Dictionary<string, object>();
 
             // Generate a date range from the SlidingDateRangePicker's value
+#if REVIEW_WEBFORMS
             var testRange = new SlidingDateRangePicker
             {
                 SlidingDateRangeMode = ( SlidingDateRangePicker.SlidingDateRangeType ) ( int ) date.RangeType,
@@ -2054,6 +2055,10 @@ namespace Rock.Blocks.Engagement
             };
 
             var dateRange = testRange.SelectedDateRange;
+#else
+            var dateRangeRaw = $"{( int ) date.RangeType}|{date.TimeValue ?? 1}|{( int ) ( date.TimeUnit ?? 0 )}|{date.LowerDate?.DateTime}|{date.UpperDate?.DateTime}";
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( dateRangeRaw );
+#endif
 
             parameters.Add( "StartingStepTypeIds", startingStepTypeIds.ConvertToIdListParameter( "StartingStepTypeIds" ) );
 

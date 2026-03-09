@@ -52,6 +52,6 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Gets or sets a value indicating whether this number is enabled for SMS messaging.
         /// </summary>
         /// <value><c>true</c> if the number can send and receive SMS; otherwise, <c>false</c>.</value>
-        public bool IsSmsEnabled { get; set; }
+        public bool? IsSmsEnabled { get; set; }
     }
 }

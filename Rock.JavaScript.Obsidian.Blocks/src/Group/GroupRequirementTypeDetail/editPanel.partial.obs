@@ -1,7 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentSectionContainer sidebar>
-        <ContentSection :disableCollapse="true">
+    <ContentSectionContainer :sidebar="false">
+
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <ContentSection light>
             <ContentStack>
                 <div class="row">
                     <div class="col-md-6">
@@ -9,17 +14,10 @@
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <TextBox v-model="description" label="Description" textMode="multiline" />
-                    </div>
-                </div>
+                <TextBox v-model="description" label="Description" textMode="multiline" />
 
                 <div class="row">
-                    <div class="col-md-1">
-                        <IconPicker v-model="iconCssClass" label="Icon" />
-                    </div>
-                    <div class="col-md-5">
+                    <div class="col-md-6">
                         <CategoryPicker v-model="category" label="Category"
                                         :entityTypeGuid="EntityType.GroupRequirementType" />
                     </div>
@@ -27,109 +25,99 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <TextBox v-model="summary" label="Summary" textMode="multiline" :rows="4"
-                                 help="A short description of the requirement to display with the name." />
+                        <TextBox v-model="summary" label="Summary" textMode="multiline"
+                                 help=" A short description of the requirement to display with the name." />
                     </div>
                 </div>
-            </ContentStack>
-        </ContentSection>
 
-        <ContentSection title="Requirement Criteria" icon="ti ti-list-check">
-            <ContentStack>
                 <div class="row">
-                    <div class="col-md-6">
-                        <NotificationBox alertType="info">
-                            The configuration below determines the how we'll know if an individual meets the requirement
-                            or not.
-                        </NotificationBox>
-                    </div>
-                </div>
-                <ButtonGroup v-model="requirementCheckType" :selectedBtnType="BtnType.Tool" :btnSize="BtnSize.Default"
-                             :btnType="BtnType.Default" :items="requirementCheckTypes" />
-                <div class="row margin-t-md">
-                    <div class="col-md-12">
-                        <div v-if="requirementCheckType === 'Dataview'">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <DataViewPicker v-model="dataView" label="Meets Criteria Data View"
-                                                    help="Although the field is optional, if it is not set then this 'Requirement Type' will not prevent a person from being added to the group." />
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <DataViewPicker v-model="warningDataView" label="Warning Criteria Data View"
-                                                    help="Optional data view that will return a list of people that should be marked as in a warning status." />
-                                </div>
-                            </div>
-                        </div>
-                        <div v-if="requirementCheckType === 'Sql'">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <RockLabel>SQL Syntax</RockLabel>
-                                    <a class="help" href="javascriot:void(0);"><i class="ti ti-zoom-question"
-                                           :onClick="onSqlInfoClick"></i></a>
-                                    <TransitionVerticalCollapse>
-                                        <div v-if="showSqlHelpHtml">
-                                            <Loading :isLoading="isLoadingSqlHelpHtml"></Loading>
-                                            <div v-if="!isLoadingSqlHelpHtml" class="alert alert-info js-sourcesql-help" v-html="sqlHelpHtml"></div>
-                                        </div>
-                                    </TransitionVerticalCollapse>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <CodeEditor v-model="sqlExpression" label="Meets SQL Expression"
-                                                help="A SQL expression that returns a list of Person Ids that meet the criteria."
-                                                editorMode="sql" />
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <CodeEditor v-model="warningSqlExpression" label="Warning SQL Expression"
-                                                help="Optional SQL expression that returns a list of Person Ids that should be marked as in a warning status."
-                                                editorMode="sql" />
-                                </div>
-                            </div>
-                        </div>
-                        <div v-if="requirementCheckType === 'Manual'">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <TextBox v-model="checkboxLabel" label="Checkbox Label"
-                                             help="The label that is used for the checkbox when the requirement is manually set." />
-                                </div>
-                            </div>
-                        </div>
+                    <div class="col-md-1">
+                        <IconPicker v-model="iconCssClass" label="Icon" />
                     </div>
                 </div>
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Descriptive Labels" icon="ti ti-tag">
-            <ContentStack headerLocation="top" title="Descriptive Labels"
+        <ContentSection title="Requirement Criteria" icon="ti ti-list-check" disableCollapse>
+            <ContentStack headerLocation="top"
+                          description="The configuration below determines how we'll know if an individual meets the requirement or not.">
+                <div class="form-group">
+                    <ButtonGroup v-model="requirementCheckType" :selectedBtnType="BtnType.Tool"
+                                 :btnSize="BtnSize.Default" :btnType="BtnType.Default" :items="requirementCheckTypes" />
+                </div>
+
+                <div v-if="requirementCheckType === 'Sql'">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <RockLabel>SQL Syntax</RockLabel>
+
+                            <a class="help" href="#" @click.prevent="onSqlInfoClick">
+                                <i class="ti ti-zoom-question"></i>
+                            </a>
+
+                            <TransitionVerticalCollapse>
+                                <div v-if="showSqlHelpHtml">
+                                    <Loading :isLoading="isLoadingSqlHelpHtml" />
+                                    <div v-if="!isLoadingSqlHelpHtml" class="alert alert-info js-sourcesql-help"
+                                         v-html="sqlHelpHtml">
+                                    </div>
+                                </div>
+                            </TransitionVerticalCollapse>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <CodeEditor v-model="sqlExpression" label="Meets SQL Expression"
+                                        help="A SQL expression that returns a list of Person Ids that meet the criteria."
+                                        editorMode="sql" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <CodeEditor v-model="warningSqlExpression" label="Warning SQL Expression"
+                                        help="Optional SQL expression that returns a list of Person Ids that should be marked as in a warning status."
+                                        editorMode="sql" />
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="requirementCheckType === 'Dataview'">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DataViewPicker v-model="dataView" label="Meets Criteria Data View"
+                                            help="Although the field is optional, if it is not set then this 'Requirement Type' will not prevent a person from being added to the group." />
+                        </div>
+
+                        <div class="col-md-6">
+                            <DataViewPicker v-model="warningDataView" label="Warning Criteria Data View"
+                                            help="Optional data view that will return a list of people that should be marked as in a warning status." />
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="requirementCheckType === 'Manual'">
+                    <TextBox v-model="checkboxLabel" label="Checkbox Label"
+                             help="The label that is used for the checkbox when the requirement is manually set." />
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Descriptive Labels" icon="ti ti-tag" disableCollapse>
+            <ContentStack headerLocation="top"
                           description="The options below help to better describe the state of a requirement for an individual.">
-                <div class="row">
-                    <div class="col-md-6">
-                        <TextBox v-model="positiveLabel" label="Meets Requirement Label"
-                                 help="The text that is displayed when the requirement is met." />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <TextBox v-model="negativeLabel" label="Does Not Meet Requirement Label"
-                                 help="The text that is displayed when the requirement is not met." />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <TextBox v-model="warningLabel" label="Warning Label"
-                                 help="The text that is displayed when the requirement in a warning state." />
-                    </div>
-                </div>
+                <TextBox v-model="positiveLabel" label="Meets Requirement Label"
+                         help="The text that is displayed when the requirement is met." />
+
+                <TextBox v-model="negativeLabel" label="Does Not Meet Requirement Label"
+                         help="The text that is displayed when the requirement is not met." />
+
+                <TextBox v-model="warningLabel" label="Warning Label"
+                         help="The text that is displayed when the requirement in a warning state." />
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Workflows" icon="ti ti-route-alt-right">
-            <ContentStack headerLocation="top" title="Configure Workflows"
+        <ContentSection title="Workflows" icon="ti ti-settings-automation" disableCollapse>
+            <ContentStack headerLocation="top"
                           description="Workflows can be set up to help an individual complete a requirement. These workflows can be configured to be started manually, or when the requirement is triggered.">
                 <div class="row">
                     <div class="col-md-4">
@@ -162,7 +150,7 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Additional Settings" icon="ti ti-adjustments-plus">
+        <ContentSection title="Additional Settings" icon="ti ti-file-settings" disableCollapse>
             <ContentStack>
                 <div class="row">
                     <div class="col-md-6">
@@ -170,14 +158,16 @@
                                   help="Determines if a requirement should expire after a configured period of time." />
                     </div>
                 </div>
-                <div class="row">
+                <div class="row" v-if="canExpire">
                     <div class="col-md-3">
-                        <NumberBox v-if="canExpire" v-model="expireInDays" label="Expire Duration" :minimumValue="0"
-                                   help="The number of days after the requirement is met before it expires (If CanExpire is true). Leave blank if it never expires.">
-                            <template #inputGroupAppend>
-                                <span class="input-group-addon">days</span>
-                            </template>
-                        </NumberBox>
+                        <ConditionalWell>
+                            <NumberBox v-model="expireInDays" label="Expire Duration" :minimumValue="0"
+                                       help="The number of days after the requirement is met before it expires (If CanExpire is true). Leave blank if it never expires.">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">days</span>
+                                </template>
+                            </NumberBox>
+                        </ConditionalWell>
                     </div>
                 </div>
                 <div class="row">
@@ -187,15 +177,17 @@
                                          :items="dueDateOptions" />
                     </div>
                 </div>
-                <div class="row">
+                <div class="row" v-if="dueDateType === 'DaysAfterJoining' || dueDateType === 'GroupAttribute'">
                     <div class="col-md-3">
-                        <NumberBox v-if="dueDateType === 'DaysAfterJoining' || dueDateType === 'GroupAttribute'"
-                                   size="small" v-model="dueDateOffsetInDays" :minimumValue="0" label="Due Date Offset"
-                                   help="The number of days before/after the configured date setting to determine the due date period.">
-                            <template #inputGroupAppend>
-                                <span class="input-group-addon">days</span>
-                            </template>
-                        </NumberBox>
+                        <ConditionalWell>
+                            <NumberBox size="small" v-model="dueDateOffsetInDays" :minimumValue="0"
+                                       label="Due Date Offset"
+                                       help="The number of days before/after the configured date setting to determine the due date period.">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">days</span>
+                                </template>
+                            </NumberBox>
+                        </ConditionalWell>
                     </div>
                 </div>
             </ContentStack>
@@ -238,6 +230,8 @@
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
 
     const props = defineProps({
         modelValue: {
@@ -292,6 +286,7 @@
     const sqlHelpHtml = ref<string>("");
     const showSqlHelpHtml = ref(false);
     const isLoadingSqlHelpHtml = ref(false);
+    const errorMessage = ref<string>("");
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -324,6 +319,9 @@
 
             if (result.isSuccess && result.data) {
                 sqlHelpHtml.value = result.data;
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "An error occurred while loading the SQL help information.";
             }
 
             isLoadingSqlHelpHtml.value = false;

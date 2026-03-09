@@ -32,6 +32,7 @@
 
                 <DefinedValuePicker v-model="campusStatusValue"
                                     label="Status"
+                                    help="Select the current operational status of this campus."
                                     :definedTypeGuid="DefinedType.CampusStatus"
                                     :displayStyle="PickerDisplayStyle.List"
                                     :columnCount="1"
@@ -39,6 +40,7 @@
 
                 <DefinedValuePicker v-model="campusTypeValue"
                                     label="Type"
+                                    help="Select the category that best describes this campus."
                                     :definedTypeGuid="DefinedType.CampusType"
                                     :displayStyle="PickerDisplayStyle.List"
                                     :columnCount="1"
@@ -47,11 +49,13 @@
                 <div class="row">
                     <div class="col-md-4">
                         <DatePicker v-model="openedDate"
-                                    label="Opened Date" />
+                                    label="Opened Date"
+                                    help="Enter the date this campus officially opened." />
                     </div>
                     <div class="col-md-4">
                         <DatePicker v-model="closedDate"
-                                    label="Closed Date" />
+                                    label="Closed Date"
+                                    help="Enter the date this campus closed, if applicable. Leave blank if it is still active." />
                     </div>
                 </div>
 
@@ -60,13 +64,15 @@
                          help="A short identifier for this campus, useful for naming conventions and reporting (e.g., “MAIN” for “Main Campus”)." />
 
                 <PersonPicker v-model="leaderPersonAlias"
-                              label="Campus Leader" />
+                              label="Campus Leader"
+                              help="Select the person currently responsible for leading this campus." />
 
                 <DropDownList v-if="isTimeZoneVisible"
                               v-model="timeZoneId"
                               label="Time Zone"
                               help="Select the time zone for this campus. Leave blank to use Rock's default time zone."
-                              :items="timeZoneOptions" />
+                              :items="timeZoneOptions"
+                              trailblazerField/>
 
             </ContentStack>
 
@@ -106,7 +112,8 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Topics"
+        <ContentSection v-if="store.state.trailblazerMode"
+                        title="Topics"
                         icon="ti ti-message-2-exclamation">
             <ContentStack>
                 <Grid :data="topicGridData"
@@ -124,7 +131,8 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Attributes"
+        <ContentSection v-if="hasAttributes"
+                        title="Attributes"
                         icon="ti ti-binary-tree-2">
             <ContentStack title="Campus Attributes"
                           description="Configure custom attributes for this campus.">
@@ -213,6 +221,7 @@
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { useStore } from "@Obsidian/PageState";
 
     const props = defineProps({
         modelValue: {
@@ -237,6 +246,7 @@
     const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
     const coreAttributes = ref(props.modelValue.bag?.coreAttributes ?? {});
     const coreAttributeValues = ref(props.modelValue.bag?.coreAttributeValues ?? {});
+    const store = useStore();
 
     const campusStatusValue = propertyRef(props.modelValue.bag?.campusStatusValue ?? null, "CampusStatusValueId");
     const campusTypeValue = propertyRef(props.modelValue.bag?.campusTypeValue ?? null, "CampusTypeValueId");
@@ -316,6 +326,10 @@
         return {
             rows: campusTopics.value?.map(c => ({ type: c.type?.text, email: c.email, public: c.isPublic, guid: c.guid })) ?? []
         };
+    });
+
+    const hasAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
     });
 
 

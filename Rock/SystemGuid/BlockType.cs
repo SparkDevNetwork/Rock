@@ -420,7 +420,7 @@ namespace Rock.SystemGuid
         public const string MOBILE_FINANCE_TRANSACTION_LIST = "D29C24EA-A52B-4470-A8D9-D7082FFF19DE";
 
         /// <summary>
-        /// The mobile my contact &gt; <see cref="Rock.Blocks.Types.Mobile.Engagement.MyContacts">My Contact</see> block type.
+        /// The mobile my contact &gt; <see cref="Rock.Blocks.Types.Mobile.Engagement.MyContact">My Contact</see> block type.
         /// </summary>
         public const string MOBILE_OUTREACH_MY_CONTACTS = "5C8E3D6E-1F2D-4A2D-8E3C-2F3B1C6D7E8F";
 
@@ -440,9 +440,9 @@ namespace Rock.SystemGuid
         public const string MOBILE_OUTREACH_OUTREACH_ONBOARDING = "5F1E3C4B-6D7E-4A8F-9C2B-3D4E5F6A7B8C";
 
         /// <summary>
-        /// The mobile Outreach Beacon Dashboard &gt; <see cref="Rock.Blocks.Types.Mobile.Engagement.BeaconDashboard">Beacon Dashboard</see> block type.
+        /// The mobile Outreach Beacon Dashboard &gt; <see cref="Rock.Blocks.Types.Mobile.Engagement.OutreachDashboard">Beacon Dashboard</see> block type.
         /// </summary>
-        public const string MOBILE_OUTREACH_BEACON_DASHBOARD = "A1B2C3D4-E5F6-4789-ABCD-1234567890AB";
+        public const string MOBILE_OUTREACH_OUTREACH_BEACON_DASHBOARD = "A1B2C3D4-E5F6-4789-ABCD-1234567890AB";
 
         /// <summary>
         /// The mobile outreach touchpoint detail &gt; <see cref="Rock.Blocks.Types.Mobile.Engagement.TouchpointDetail"></see>

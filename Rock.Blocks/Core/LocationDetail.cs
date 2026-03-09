@@ -17,7 +17,9 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Spatial;
+#endif
 using System.Linq;
 
 using Rock.Attribute;
@@ -147,6 +149,14 @@ namespace Rock.Blocks.Core
         private bool ValidateLocation( Location location, out string errorMessage )
         {
             errorMessage = null;
+
+            // If the location IsValid is false, and the UI controls didn't report any errors, it is probably because
+            // the custom rules of location didn't pass. Make sure a message is displayed in the validation summary.
+            if ( !location.IsValid )
+            {
+                errorMessage = location.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                return false;
+            }
 
             return true;
         }
@@ -306,7 +316,7 @@ namespace Rock.Blocks.Core
                 {
                     if ( location.GeoPoint != null )
                     {
-                        string markerPoints = string.Format( "{0},{1}", location.GeoPoint.Latitude, location.GeoPoint.Longitude );
+                        string markerPoints = string.Format( "{0},{1}", location.Latitude, location.Longitude );
                         string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
                         mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
                         mapLink += "&sensor=false&size=350x200&zoom=13&format=png&key=" + googleAPIKey;
@@ -391,7 +401,18 @@ namespace Rock.Blocks.Core
                 () => entity.Name = box.Bag.Name );
 
             box.IfValidProperty( nameof( box.Bag.ParentLocation ),
-                () => entity.ParentLocationId = box.Bag.ParentLocation.GetEntityId<Location>( RockContext ) );
+                () =>
+                {
+                    var parentLocationId = box.Bag.ParentLocation.GetEntityId<Location>( RockContext );
+
+                    if ( entity.ParentLocationId != parentLocationId )
+                    {
+                        entity.ParentLocationId = parentLocationId;
+
+                        // Clear this navigation property so validation is performed on the new parent location instead of the old one.
+                        entity.ParentLocation = null;
+                    }
+                } );
 
             box.IfValidProperty( nameof( box.Bag.PrinterDevice ),
                 () => entity.PrinterDeviceId = box.Bag.PrinterDevice.GetEntityId<Device>( RockContext ) );
@@ -413,11 +434,15 @@ namespace Rock.Blocks.Core
                     entity.State = box.Bag.AddressFields.State;
                 } );
 
+#if REVIEW_WEBFORMS
             box.IfValidProperty( nameof( box.Bag.GeoPoint_WellKnownText ),
                 () => entity.GeoPoint = box.Bag.GeoPoint_WellKnownText.IsNullOrWhiteSpace() ? null : DbGeography.FromText( box.Bag.GeoPoint_WellKnownText ) );
 
             box.IfValidProperty( nameof( box.Bag.GeoFence_WellKnownText ),
                 () => entity.GeoFence = box.Bag.GeoFence_WellKnownText.IsNullOrWhiteSpace() ? null : DbGeography.PolygonFromText( box.Bag.GeoFence_WellKnownText, DbGeography.DefaultCoordinateSystemId ) );
+#else
+            throw new System.NotImplementedException();
+#endif
 
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
@@ -641,7 +666,9 @@ namespace Rock.Blocks.Core
                 entity.SaveAttributeValues( RockContext );
             } );
 
+#if NET472_OR_GREATER
             Rock.CheckIn.KioskDevice.Clear();
+#endif
 
             if ( isNew )
             {
@@ -700,7 +727,9 @@ namespace Rock.Blocks.Core
             entityService.Delete( entity );
             RockContext.SaveChanges();
 
+#if NET472_OR_GREATER
             Rock.CheckIn.KioskDevice.Clear();
+#endif
 
             var qryParams = new Dictionary<string, string>();
             if ( parentLocationId != null )

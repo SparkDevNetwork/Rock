@@ -35,8 +35,8 @@
                     </div>
 
                     <div class="actions">
-                        <button class="btn btn-primary btn-xs" @click.prevent="onFilterApplyClick">Apply</button>
-                        <button class="btn btn-link btn-xs" @click.prevent="onFilterClearClick">Clear</button>
+                        <button class="btn btn-primary btn-xs" type="button" @click.prevent="onFilterApplyClick">Apply</button>
+                        <button class="btn btn-link btn-xs" type="button" @click.prevent="onFilterClearClick">Clear</button>
                     </div>
                 </div>
             </div>

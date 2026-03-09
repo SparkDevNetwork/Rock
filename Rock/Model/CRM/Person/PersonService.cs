@@ -3740,14 +3740,15 @@ namespace Rock.Model
                         }
 
                         RemoveAnonymousGiverUserLogins( userLoginService, rockContext );
+
+                        // Run merge proc to merge all associated data
+                        var parms = new Dictionary<string, object>();
+                        parms.Add( "OldId", personId );
+                        parms.Add( "NewId", anonymousPersonId.Value );
+                        DbService.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
                     }
                 } );
 
-                // Run merge proc to merge all associated data
-                var parms = new Dictionary<string, object>();
-                parms.Add( "OldId", personId );
-                parms.Add( "NewId", anonymousPersonId.Value );
-                DbService.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
             }
             catch ( Exception ex )
             {
@@ -5298,6 +5299,38 @@ AND GroupTypeId = ${familyGroupType.Id}
         public static int GetCurrentGraduationYear()
         {
             return GetCurrentGraduationDate().Year;
+        }
+
+        #endregion
+
+        #region Person's History Related
+
+        /// <summary>
+        /// Gets the latest property-change history for the specified person.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns>
+        /// A <see cref="System.Data.DataTable"/> containing the stored procedure result set from
+        /// <c>[dbo].[spCrm_PersonMerge_ChangeHistory]</c> (one row per property/value name, latest change only).
+        /// <para>
+        /// Columns:
+        /// <list type="bullet">
+        ///   <item><description><c>CreatedDateTime</c> (datetime): When the change was recorded.</description></item>
+        ///   <item><description><c>CreatedByPersonAliasId</c> (int): PersonAliasId of the user who made the change.</description></item>
+        ///   <item><description><c>NickName</c> (nvarchar): Nickname of the user who made the change.</description></item>
+        ///   <item><description><c>LastName</c> (nvarchar): Last name of the user who made the change.</description></item>
+        ///   <item><description><c>ValueName</c> (nvarchar): The name of the property that changed (History.ValueName).</description></item>
+        ///   <item><description><c>AttributeId</c> (int, nullable): History.RelatedEntityId when the change is for a Person Attribute; NULL for non-attribute properties and Primary Family address-related changes.</description></item>
+        ///   <item><description><c>NewValue</c> (nvarchar, nullable): The new value recorded by History.</description></item>
+        ///   <item><description><c>OldValue</c> (nvarchar, nullable): The prior value recorded by History.</description></item>
+        /// </list>
+        /// </para>
+        /// </returns>
+        public DataTable GetLatestPersonHistoryChangesDataTable( int personId )
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.Add( "PersonId", personId );
+            return new DbService( this.Context ).GetDataTableFromSqlCommand( "[dbo].[spCrm_PersonMerge_ChangeHistory]", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         #endregion

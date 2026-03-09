@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 
@@ -15,7 +16,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
     /// </summary>
     /// <seealso cref="LocationOverflowOpportunityFilter"/>
     [TestClass]
-    public class LocationOverflowOpportunityFilterTests : CheckInMockDatabase
+    public class LocationOverflowOpportunityFilterTests : MockDatabaseTestsBase
     {
         #region IsGroupValid Tests
 

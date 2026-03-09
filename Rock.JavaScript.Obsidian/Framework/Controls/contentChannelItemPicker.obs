@@ -22,8 +22,8 @@
                                  showBlankItem
                                  enhanceForLongLists />
                 <div class="text-right">
-                    <button type=button class="btn btn-xs btn-default" @click="selectItem">Select</button>
-                    <button type=button class="btn btn-xs btn-link" @click="cancelEdit">Cancel</button>
+                    <button type="button" class="btn btn-xs btn-default" @click="selectItem">Select</button>
+                    <button type="button" class="btn btn-xs btn-link" @click="cancelEdit">Cancel</button>
                 </div>
             </div>
         </TransitionVerticalCollapse>

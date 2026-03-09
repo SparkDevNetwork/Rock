@@ -20,6 +20,7 @@
 //  + Edit Person
 //  + People Merge
 //  + Giving Configuration
+//  + Personal Devices
 // =============================================================
 
 
@@ -974,3 +975,62 @@ tr.inactive {
   }
 }
 // ==================== END GIVING CONFIGURATION ====================
+
+// ======================== PERSONAL DEVICES ========================
+
+.personal-devices {
+
+  .displaycard {
+
+    .right-middle-container {
+      display: flex;
+      justify-content: start;
+      flex-direction: column;
+    }
+
+    .dateInfo {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-tiny);
+      color: var(--color-interface-medium);
+    }
+
+    .btn-interactions {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-xsmall);
+    }
+
+    .displaycard-aside + .displaycard-actions {
+      margin-left: calc(var(--spacing-tiny) - var(--spacing-large));
+    }
+
+    @media (max-width: 767px) {
+      .displaycard-aside + .displaycard-actions {
+          margin-left: 0;
+      }
+
+      .right-middle-container {
+          flex-direction: column;
+          gap: var(--spacing-tiny);
+      }
+
+      .displaycard-content:has(.icon-list:empty) {
+          display: none;
+      }
+    }
+
+    .icon-list {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-medium);
+      flex-wrap: wrap;
+
+    }
+
+  }
+
+}
+
+// ====================== END PERSONAL DEVICES ======================

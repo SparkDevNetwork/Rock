@@ -131,11 +131,13 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.CompletedByPersonAliasId = source.CompletedByPersonAliasId;
+            target.ConnectionRequestId = source.ConnectionRequestId;
             target.ConnectionStatusId = source.ConnectionStatusId;
             target.EndDateTime = source.EndDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.Note = source.Note;
+            target.PreviousConnectionStatusId = source.PreviousConnectionStatusId;
             target.StartDateTime = source.StartDateTime;
             target.WasCompletedOnTime = source.WasCompletedOnTime;
             target.CreatedDateTime = source.CreatedDateTime;

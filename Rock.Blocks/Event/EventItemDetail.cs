@@ -31,6 +31,7 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.EventItemDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Event
@@ -50,8 +51,9 @@ namespace Rock.Blocks.Event
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "e09743b1-cc81-4d00-b3e1-5825a178a473" )]
-    [Rock.SystemGuid.BlockTypeGuid( "63d0dfb8-1f9e-464a-a603-2252034bc6af" )]
-    public class EventItemDetail : RockDetailBlockType
+    [Rock.SystemGuid.BlockTypeGuid( "39E3476D-1BA1-438D-887F-03DD23639221" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "63d0dfb8-1f9e-464a-a603-2252034bc6af" )]
+    public class EventItemDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -372,17 +374,51 @@ namespace Rock.Blocks.Event
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            var calendarId = PageParameter( PageParameterKey.EventCalendarId ).AsIntegerOrNull();
+            var calendarId = PageParameter( PageParameterKey.EventCalendarId );
             var qryParams = new Dictionary<string, string>();
 
-            if ( calendarId.HasValue )
+            if ( !string.IsNullOrWhiteSpace( calendarId ) )
             {
-                qryParams.Add( "EventCalendarId", calendarId.Value.ToString() );
+                qryParams.Add( "EventCalendarId", calendarId );
             }
 
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( qryParams )
+            };
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var key = pageReference.GetPageParameter( PageParameterKey.EventItemId );
+            var pageParameters = new Dictionary<string, string>();
+
+            string name = null;
+
+            using ( var rockContext = new RockContext() )
+            {
+                name = new EventItemService( rockContext )
+                   .GetSelect( key, e => e.Name );
+            }
+
+            if ( name != null )
+            {
+                pageParameters.Add( PageParameterKey.EventItemId, key );
+            }
+
+            var eventCalendarIdKey = pageReference.GetPageParameter( PageParameterKey.EventCalendarId );
+            if ( !string.IsNullOrWhiteSpace( eventCalendarIdKey ) )
+            {
+                pageParameters.Add( PageParameterKey.EventCalendarId, eventCalendarIdKey );
+            }
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+            var breadCrumb = new BreadCrumbLink( name ?? "New Calendar Item", breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
             };
         }
 
@@ -565,11 +601,18 @@ namespace Rock.Blocks.Event
                 rockContext.SaveChanges();
             }
 
-            // Update the Attributes that were assigned in the UI
+            // The attributes are coming from the frontend already sorted in the correct order.
+            int attributeOrder = 0;
             foreach ( var attributeState in eventAttributes )
             {
-                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+                var attr = Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+                if ( attr != null )
+                {
+                    attr.Order = attributeOrder++;
+                }
             }
+
+            rockContext.SaveChanges();
         }
 
         /// <summary>

@@ -58,12 +58,28 @@ namespace Rock.ViewModels.Blocks.Group.GroupRegistration
         public string HomePhone { get; set; }
 
         /// <summary>
+        /// Gets or sets the home phone country code.
+        /// </summary>
+        /// <value>
+        /// The home phone country code.
+        /// </value>
+        public string HomePhoneCountryCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the mobile phone.
         /// </summary>
         /// <value>
         /// The mobile phone.
         /// </value>
         public string MobilePhone { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mobile phone country code.
+        /// </summary>
+        /// <value>
+        /// The mobile phone country code.
+        /// </value>
+        public string MobilePhoneCountryCode { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable SMS].
@@ -104,6 +120,14 @@ namespace Rock.ViewModels.Blocks.Group.GroupRegistration
         /// The spouse mobile phone.
         /// </value>
         public string SpouseMobilePhone { get; set; }
+
+        /// <summary>
+        /// Gets or sets the spouse mobile phone country code.
+        /// </summary>
+        /// <value>
+        /// The spouse mobile phone country code.
+        /// </value>
+        public string SpouseMobilePhoneCountryCode { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable spouse SMS].

@@ -156,3 +156,11 @@ using System.Runtime.CompilerServices;
 
 // The following type forwardings were setup in Rock 17.1
 [assembly: TypeForwardedTo( typeof(Rock.Media.MediaElementQuality ) )]
+
+// The following type forwardings were setup in Rock 19.0.4
+[assembly: TypeForwardedTo( typeof( Rock.Model.GroupLocationPickerMode ) )]
+[assembly: TypeForwardedTo( typeof( Rock.Model.GroupMemberWorkflowTriggerType ) )]
+[assembly: TypeForwardedTo( typeof( Rock.Model.ScheduleType ) )]
+
+// The following type forwardings were setup in Rock 19.0.5
+[assembly: TypeForwardedTo( typeof( Rock.Model.ConnectionState ) )]

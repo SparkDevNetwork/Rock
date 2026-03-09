@@ -71,8 +71,7 @@ namespace Rock.Web.HttpModules
         {
             context.BeginRequest += Application_BeginRequest;
             context.EndRequest += Application_EndRequest;
-
-            // TODO: Handle error like this: https://github.com/open-telemetry/opentelemetry-dotnet-contrib/blob/main/src/OpenTelemetry.Instrumentation.AspNet.TelemetryHttpModule/TelemetryHttpModule.cs#L127
+            context.Error += Application_Error;
         }
 
         /// <summary>
@@ -109,6 +108,20 @@ namespace Rock.Web.HttpModules
             EndLogRequest( context );
 
             EndAddObservabilityToRequest( context );
+        }
+
+        /// <summary>
+        /// Processes any error that happened during execution. This is only
+        /// called for unhandled exceptions.
+        /// </summary>
+        /// <param name="sender">The application that sent the event.</param>
+        /// <param name="e">The event arguments.</param>
+        private void Application_Error( object sender, EventArgs e )
+        {
+            var application = ( HttpApplication ) sender;
+            var context = application.Context;
+
+            AddErrorToObservability( context );
         }
 
         #region Observability
@@ -253,6 +266,18 @@ namespace Rock.Web.HttpModules
                     activity.AddTag( "client.country_code", geolocation.CountryCode );
                 }
 
+                if ( activity.Status == ActivityStatusCode.Unset )
+                {
+                    if ( context.Response.StatusCode >= 500 )
+                    {
+                        activity.SetStatus( ActivityStatusCode.Error );
+                    }
+                    else
+                    {
+                        activity.SetStatus( ActivityStatusCode.Ok );
+                    }
+                }
+
                 activity.Dispose();
             }
 
@@ -312,6 +337,30 @@ namespace Rock.Web.HttpModules
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Adds any unhandled exceptions that occurred during the request to
+        /// the observability activity.
+        /// </summary>
+        /// <param name="context">The context that describes the request.</param>
+        private void AddErrorToObservability( HttpContext context )
+        {
+            if ( context.Items[ObservabilityContextKey] is Activity activity )
+            {
+                var exception = context.Server.GetLastError();
+
+                if ( exception != null )
+                {
+                    if ( exception is HttpUnhandledException && exception.InnerException != null )
+                    {
+                        exception = exception.InnerException;
+                    }
+
+                    activity.SetStatus( ActivityStatusCode.Error, exception.Message );
+                    activity.AddException( exception );
+                }
+            }
         }
 
         /// <summary>

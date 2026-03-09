@@ -684,7 +684,7 @@ namespace Rock.Blocks.Administration
             if ( oldSecurityGrantTokenDuration != newSecurityGrantTokenDuration )
             {
                 Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.DEFAULT_SECURITY_GRANT_TOKEN_DURATION, newSecurityGrantTokenDuration.ToString() );
-                response.SecondaryMessageAlertType = nameof( NotificationBoxType.Success ).ToLower();
+                response.SecondaryMessageAlertType = "success";
                 response.SecondaryMessage = "Security grant token duration has been successfully updated.";
             }
 

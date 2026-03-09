@@ -379,27 +379,50 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Bag.FacilitatorComment ),
-                () => entity.FacilitatorComment = box.Bag.FacilitatorComment );
+            /*
+                3/4/2026 - JPH
+
+                This block is only intended to be used by facilitators (and not students). With this in mind, most of
+                the "completed"-related property values should only be set if this activity is actually assigned to the
+                facilitator, and if these values haven't already been set.
+
+                One exception is the [IsFacilitatorCompleted] property. This value should always be set as `true` here
+                (if dictated by the client), as the facilitator has marked their portion of the activity as complete,
+                regardless of whether it's actually assigned to them vs. the student.
+
+                Reason: Ensure activity completions are properly marked as completed and on time / late.
+                https://github.com/SparkDevNetwork/Rock/issues/6710
+            */
+            var currentPersonPrimaryAliasId = GetCurrentPerson()?.PrimaryAliasId;
+            if ( entity.LearningClassActivity.AssignTo == AssignTo.Facilitator )
+            {
+                if ( !entity.CompletedDateTime.HasValue )
+                {
+                    entity.CompletedDateTime = RockDateTime.Now;
+                }
+
+                if ( !entity.CompletedByPersonAliasId.HasValue )
+                {
+                    entity.CompletedByPersonAliasId = currentPersonPrimaryAliasId;
+                }
+            }
 
             box.IfValidProperty( nameof( box.Bag.IsFacilitatorCompleted ),
                 () => entity.IsFacilitatorCompleted = box.Bag.IsFacilitatorCompleted );
+
+            box.IfValidProperty( nameof( box.Bag.FacilitatorComment ),
+                () => entity.FacilitatorComment = box.Bag.FacilitatorComment );
 
             box.IfValidProperty( nameof( box.Bag.DueDate ),
                 () => entity.DueDate = box.Bag.DueDate?.DateTime );
 
             if ( !entity.GradedByPersonAliasId.HasValue || box.Bag.PointsEarned != entity.PointsEarned )
             {
-                entity.GradedByPersonAliasId = GetCurrentPerson()?.PrimaryAliasId;
+                entity.GradedByPersonAliasId = currentPersonPrimaryAliasId;
 
                 // The class activity has been graded so there's no need to check with
                 // the activity component whether it requires grading.
                 entity.RequiresGrading = false;
-            }
-
-            if ( !entity.CompletedDateTime.HasValue )
-            {
-                entity.CompletedDateTime = RockDateTime.Now;
             }
 
             box.IfValidProperty( nameof( box.Bag.PointsEarned ),

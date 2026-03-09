@@ -26,12 +26,10 @@ using Microsoft.Extensions.Logging;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Blocks.Group.GroupAttendanceDetail;
-using Rock.Logging;
 using Rock.Model;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
 using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.GroupAttendanceDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -2322,7 +2320,7 @@ namespace Rock.Blocks.Group
                 AttendanceOccurrence attendanceOccurrence = null;
                 occurrenceData.AttendanceOccurrence = null;
 
-                var baseQuery = _attendanceOccurrenceService
+                IQueryable<AttendanceOccurrence> baseQuery = _attendanceOccurrenceService
                     .AsNoFilter()
                     .Include( a => a.Schedule )
                     .Include( a => a.Location )
@@ -2457,33 +2455,12 @@ namespace Rock.Blocks.Group
             /// <returns>The group associated with the GroupId page parameter if the current person is authorized; otherwise, <c>null</c>.</returns>
             internal Model.Group GetGroupIfAuthorized( bool withTracking = false )
             {
-                var query = _groupService
-                        .AsNoFilter()
+                var groupKey = this._block.GroupIdPageParameter;
+
+                IQueryable<Model.Group> query = _groupService
+                        .GetQueryableByKey( groupKey, !this._block.PageCache.Layout.Site.DisablePredictableIds )
                         .Include( g => g.GroupType )
                         .Include( g => g.Schedule );
-
-                var groupKey = this._block.GroupIdPageParameter;
-                var groupId =  groupKey.AsIntegerOrNull();
-                var allowPredictableIds = !this._block.PageCache.Layout.Site.DisablePredictableIds;
-                groupId = !groupId.HasValue ? IdHasher.Instance.GetId( groupKey ) : groupId.Value;
-                var groupGuid = groupKey.AsGuidOrNull();
-
-                if ( groupId.HasValue && allowPredictableIds )
-                {
-                    query = query.Where( g => g.Id == groupId.Value );
-                }
-                else if ( groupGuid.HasValue )
-                {
-                    query = query.Where( g => g.Guid == groupGuid.Value );
-                }
-
-
-                if ( groupId == null )
-                {
-                    // The GroupId page parameter is not an integer ID
-                    // nor a guid ID so return null.
-                    return null;
-                }
 
                 if ( !withTracking )
                 {

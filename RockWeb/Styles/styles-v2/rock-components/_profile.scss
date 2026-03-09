@@ -1,7 +1,7 @@
 .main-content:has(.profile-content, .person-profile) {
   max-width: 100%;
-  padding: 0 !important;
-  margin: 0 !important;
+  padding: 0;
+  margin: 0;
 }
 
 // When there is profile content, reduce the margin on the footer

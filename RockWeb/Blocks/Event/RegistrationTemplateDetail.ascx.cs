@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using dotless.Core.Parser.Functions;
 using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
@@ -644,6 +645,7 @@ namespace RockWeb.Blocks.Event
 
             dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
             dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() ).Id;
+            dvpEligibilityDataView.EntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON.AsGuid() );
 
             var registrationAttributeSecurityField = gRegistrationAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
             registrationAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
@@ -726,32 +728,118 @@ The logged-in person's information will be used to complete the registrar inform
 
                 ShowDialog();
 
-                var postbackArgs = Request.Params["__EVENTARGUMENT"];
-                if ( postbackArgs.IsNotNullOrWhiteSpace() )
+                var eventTarget = Request["__EVENTTARGET"];
+                var eventArgs = Request["__EVENTARGUMENT"];
+                var log = string.Join( "\n", Request.Params.AllKeys.Select( k => k?.ToLower() ).Where( k => k?.Contains( "event" ) == true ).Select( k => k + ":" + Request[k] ) );
+                if ( eventTarget == upDetail.ClientID )
                 {
-                    var nameValue = postbackArgs.Split( new char[] { ':' } );
-                    if ( nameValue.Length == 2 )
+                    if ( eventArgs.IsNotNullOrWhiteSpace() )
                     {
-                        var values = nameValue[1].Split( new char[] { ';' } );
-                        if ( values.Length == 2 )
+                        var nameValue = eventArgs.Split( new char[] { ':' } );
+                        if ( nameValue.Length == 2 )
                         {
-                            var guid = values[0].AsGuid();
-                            var newIndex = values[1].AsInteger();
-
-                            switch ( nameValue[0] )
+                            var values = nameValue[1].Split( new char[] { ';' } );
+                            if ( values.Length == 2 )
                             {
-                                case "re-order-form":
-                                    {
-                                        SortForms( guid, newIndex + 1 );
-                                        break;
-                                    }
+                                var guid = values[0].AsGuid();
+                                var newIndex = values[1].AsInteger();
+
+                                switch ( nameValue[0] )
+                                {
+                                    case "re-order-form":
+                                        {
+                                            SortForms( guid, newIndex + 1 );
+                                            break;
+                                        }
+                                }
                             }
                         }
                     }
                 }
+
+                CheckRegistrantAgeEligibility();
+                CheckRegistrantGradeEligibility();
+                CheckRegistrantGenderEligibility();
             }
 
             base.OnLoad( e );
+        }
+
+        private void CheckRegistrantAgeEligibility()
+        {
+            var hasBirthDateField = FormFieldsState?
+                .Any( formAndFields => formAndFields.Value
+                    .Any( field => field.PersonFieldType == RegistrationPersonFieldType.Birthdate ) ) == true;
+
+            // Keep the hidden field up-to-date so we can skip a round-trip
+            // when the eligibility is changed and we need to determine whether or not to show the warning.
+            hfHasBirthDateField.Value = hasBirthDateField.ToString();
+
+            var hasBirthdateRelatedRegistrantEligibility =
+                nreEligibilityAgeRange.LowerValue.HasValue
+                || nreEligibilityAgeRange.UpperValue.HasValue
+                || ddlEligibilityAgeClassification.SelectedValueAsEnumOrNull<AgeClassification>().HasValue;
+
+            // If this logic changes (i.e., adding/removing these specific CSS classes)
+            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+            if ( hasBirthdateRelatedRegistrantEligibility && !hasBirthDateField )
+            {
+                nbEligibilityAgeWarning.CssClass = "d-block";
+            }
+            else
+            {
+                nbEligibilityAgeWarning.CssClass = "d-none";
+            }
+        }
+
+        private void CheckRegistrantGradeEligibility()
+        {
+            var hasGradeField = FormFieldsState?
+                .Any( formAndFields => formAndFields.Value
+                    .Any( field => field.PersonFieldType == RegistrationPersonFieldType.Grade ) ) == true;
+
+            // Keep the hidden field up-to-date so we can skip a round-trip
+            // when the eligibility is changed and we need to determine whether or not to show the warning.
+            hfHasGradeField.Value = hasGradeField.ToString();
+
+            var hasGradeRelatedRegistrantEligibility =
+                ddlEligibilityGradeOffsetMax.SelectedValue.IsNotNullOrWhiteSpace()
+                || ddlEligibilityGradeOffsetMin.SelectedValue.IsNotNullOrWhiteSpace();
+            
+            // If this logic changes (i.e., adding/removing these specific CSS classes)
+            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+            if ( hasGradeRelatedRegistrantEligibility && !hasGradeField )
+            {
+                nbEligibilityGradeWarning.CssClass = "d-block";
+            }
+            else
+            {
+                nbEligibilityGradeWarning.CssClass = "d-none";
+            }
+        }
+
+        private void CheckRegistrantGenderEligibility()
+        {
+            var hasGenderField = FormFieldsState?
+                .Any( formAndFields => formAndFields.Value
+                    .Any( field => field.PersonFieldType == RegistrationPersonFieldType.Gender ) ) == true;
+
+            // Keep the hidden field up-to-date so we can skip a round-trip
+            // when the eligibility is changed and we need to determine whether or not to show the warning.
+            hfHasGenderField.Value = hasGenderField.ToString();
+
+            var hasRegistrantEligibility = ddlEligibilityGender.SelectedValueAsEnumOrNull<Gender>();
+            
+            // If this logic changes (i.e., adding/removing these specific CSS classes)
+            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+            if ( hasRegistrantEligibility.HasValue && !hasGenderField )
+            {
+                nbEligibilityGenderWarning.CssClass = "d-block";
+            }
+            else
+            {
+                nbEligibilityGenderWarning.CssClass = "d-none";
+            }
         }
 
         /// <summary>
@@ -1096,6 +1184,7 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.SignatureDocumentAction = documentTemplate?.IsLegacy == false || cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
             registrationTemplate.WaitListEnabled = cbWaitListEnabled.Checked;
             registrationTemplate.ShowSmsOptIn = cbShowSmsOptIn.Checked;
+            registrationTemplate.AreDuplicateRegistrantsPrevented = cbPreventDuplicateRegistrants.Checked;
             registrationTemplate.RegistrarOption = ddlRegistrarOption.SelectedValueAsEnum<RegistrarOption>();
 
             registrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
@@ -1160,6 +1249,19 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.SuccessTitle = tbSuccessTitle.Text;
             registrationTemplate.SuccessText = ceSuccessText.Text;
             registrationTemplate.RegistrationInstructions = heInstructions.Text;
+
+            // Eligibility
+            var registrantEligibilitySettings = registrationTemplate.GetRegistrantEligibilitySettingsOrNull()
+                ?? new RegistrationTemplate.RegistrantEligibilitySettings();
+            registrantEligibilitySettings.AgeClassification = ddlEligibilityAgeClassification.SelectedValueAsEnumOrNull<AgeClassification>();
+            var eligibilityDataViewId = dvpEligibilityDataView.SelectedValueAsId();
+            registrantEligibilitySettings.EligibilityDataViewGuid = eligibilityDataViewId.HasValue ? DataViewCache.Get( eligibilityDataViewId.Value )?.Guid : null;
+            registrantEligibilitySettings.Gender = ddlEligibilityGender.SelectedValueAsEnumOrNull<Gender>();
+            registrantEligibilitySettings.MinimumAge = nreEligibilityAgeRange.LowerValue;
+            registrantEligibilitySettings.MaximumAge = nreEligibilityAgeRange.UpperValue;
+            registrantEligibilitySettings.MaximumGradeOffset = ddlEligibilityGradeOffsetMax.SelectedValueAsInt(noneAsNull: false);
+            registrantEligibilitySettings.MinimumGradeOffset = ddlEligibilityGradeOffsetMin.SelectedValueAsInt(noneAsNull: false);
+            registrationTemplate.SetRegistrantEligibilitySettings( registrantEligibilitySettings );
 
             if ( !Page.IsValid || !registrationTemplate.IsValid )
             {
@@ -1736,6 +1838,10 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             BuildControls( true );
+
+            CheckRegistrantAgeEligibility();
+            CheckRegistrantGradeEligibility();
+            CheckRegistrantGenderEligibility();
         }
 
         /// <summary>
@@ -1829,6 +1935,10 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             BuildControls( true, e.FormGuid );
+
+            CheckRegistrantAgeEligibility();
+            CheckRegistrantGradeEligibility();
+            CheckRegistrantGenderEligibility();
         }
 
         /// <summary>
@@ -1854,6 +1964,20 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlFieldSource_SelectedIndexChanged( object sender, EventArgs e )
         {
+            // If the field source changes, that means we are adding a new field.
+            // Group Member Attribute fields can never show on wait list. So if
+            // they are switching to a group member field, turn it off. Otherwise,
+            // turn it on since they are switching to a field source that can
+            // be on the wait list and we want the default for new fields to be on.
+            if ( ddlFieldSource.SelectedValueAsEnum<RegistrationFieldSource>() == RegistrationFieldSource.GroupMemberAttribute )
+            {
+                cbShowOnWaitList.Checked = false;
+            }
+            else
+            {
+                cbShowOnWaitList.Checked = true;
+            }
+
             SetFieldDisplay();
         }
 
@@ -1895,6 +2019,10 @@ The logged-in person's information will be used to complete the registrar inform
 
             HideDialog();
             BuildControls( true );
+
+            CheckRegistrantAgeEligibility();
+            CheckRegistrantGradeEligibility();
+            CheckRegistrantGenderEligibility();
         }
 
         /// <summary>
@@ -1960,7 +2088,15 @@ The logged-in person's information will be used to complete the registrar inform
                     }
             }
 
-            attributeFormField.ShowOnWaitlist = cbShowOnWaitList.Checked;
+            if ( attributeFormField.FieldSource != RegistrationFieldSource.GroupMemberAttribute )
+            {
+                attributeFormField.ShowOnWaitlist = cbShowOnWaitList.Checked;
+            }
+            else
+            {
+                attributeFormField.ShowOnWaitlist = false;
+            }
+
             attributeFormField.IsLockedIfValuesExist = cbLockExistingValue.Checked;
 
             if ( attributeId.HasValue )
@@ -2818,6 +2954,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             cbWaitListEnabled.Checked = registrationTemplate.WaitListEnabled;
             cbShowSmsOptIn.Checked = registrationTemplate.ShowSmsOptIn;
+            cbPreventDuplicateRegistrants.Checked = registrationTemplate.AreDuplicateRegistrantsPrevented;
             cbAddPersonNote.Checked = registrationTemplate.AddPersonNote;
             cbLoginRequired.Checked = registrationTemplate.LoginRequired;
             cbAllowExternalUpdates.Checked = registrationTemplate.AllowExternalRegistrationUpdates;
@@ -2876,12 +3013,46 @@ The logged-in person's information will be used to complete the registrar inform
             tbRegistrationAttributeTitleStart.Text = registrationTemplate.RegistrationAttributeTitleStart;
             tbRegistrationAttributeTitleEnd.Text = registrationTemplate.RegistrationAttributeTitleEnd;
 
+            var registrantEligibilitySettings = registrationTemplate.GetRegistrantEligibilitySettingsOrNull()
+                ?? new RegistrationTemplate.RegistrantEligibilitySettings();
+            if ( registrantEligibilitySettings.MaximumGradeOffset.HasValue )
+            {
+                ddlEligibilityGradeOffsetMax.SetValue( registrantEligibilitySettings.MaximumGradeOffset.Value );
+            }
+            else
+            {
+                ddlEligibilityGradeOffsetMax.ClearSelection();
+            }
+
+            if ( registrantEligibilitySettings.MinimumGradeOffset.HasValue )
+            {
+                ddlEligibilityGradeOffsetMin.SetValue( registrantEligibilitySettings.MinimumGradeOffset.Value );
+            }
+            else
+            {
+                ddlEligibilityGradeOffsetMin.ClearSelection();
+            }
+
+            var eligibilityDataViewGuid = registrantEligibilitySettings.EligibilityDataViewGuid;
+            dvpEligibilityDataView.SetValue( eligibilityDataViewGuid.HasValue ? DataViewCache.GetId( eligibilityDataViewGuid.Value ) : null );
+
+            ddlEligibilityAgeClassification.SetValue( registrantEligibilitySettings.AgeClassification?.ConvertToInt().ToString() ?? string.Empty );
+
+            ddlEligibilityGender.SetValue( registrantEligibilitySettings.Gender?.ConvertToInt().ToString() ?? string.Empty );
+
+            nreEligibilityAgeRange.LowerValue = registrantEligibilitySettings.MinimumAge;
+            nreEligibilityAgeRange.UpperValue = registrantEligibilitySettings.MaximumAge;
+
             tbSuccessTitle.Text = registrationTemplate.SuccessTitle;
             ceSuccessText.Text = registrationTemplate.SuccessText;
             heInstructions.Text = registrationTemplate.RegistrationInstructions;
             var defaultForm = FormState.FirstOrDefault();
             BuildControls( true, defaultForm.Guid );
             BindRegistrationAttributesGrid();
+
+            CheckRegistrantAgeEligibility();
+            CheckRegistrantGenderEligibility();
+            CheckRegistrantGradeEligibility();
         }
 
         /// <summary>
@@ -3099,6 +3270,49 @@ The logged-in person's information will be used to complete the registrar inform
             foreach ( var documentType in SignatureDocumentTemplateState )
             {
                 ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+            }
+
+            ddlEligibilityAgeClassification.BindToEnum(insertBlankOption: true, ignoreTypes: new[] { AgeClassification.Unknown } );
+            ddlEligibilityGender.BindToEnum( insertBlankOption: true, ignoreTypes: new[] { Gender.Unknown } );
+            
+            var selectedGradeOffsetMax = ddlEligibilityGradeOffsetMax.SelectedValue.AsIntegerOrNull();
+            var selectedGradeOffsetMin = ddlEligibilityGradeOffsetMin.SelectedValue.AsIntegerOrNull();
+            ddlEligibilityGradeOffsetMax.Items.Clear();
+            ddlEligibilityGradeOffsetMin.Items.Clear();
+            var gradesDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            if ( gradesDefinedType != null )
+            {
+                ddlEligibilityGradeOffsetMax.Items.Add( new ListItem() );
+                ddlEligibilityGradeOffsetMin.Items.Add( new ListItem() );
+                
+                foreach ( var gradeDefinedValue in gradesDefinedType.DefinedValues.OrderBy( dv => dv.Order ) )
+                {
+                    var gradeAbbreviation = gradeDefinedValue.GetAttributeValue( "Abbreviation" );
+                    var gradeOffset = gradeDefinedValue.Value.AsIntegerOrNull();
+
+                    if ( gradeAbbreviation.IsNotNullOrWhiteSpace() )
+                    {
+                        if ( gradeDefinedValue.IsActive
+                             || selectedGradeOffsetMax == gradeOffset )
+                        {
+                            ddlEligibilityGradeOffsetMax.Items.Add( new ListItem
+                            {
+                                Text = gradeAbbreviation,
+                                Value = gradeOffset.ToString()
+                            } );
+                        }
+
+                        if ( gradeDefinedValue.IsActive
+                             || selectedGradeOffsetMin == gradeOffset )
+                        {
+                            ddlEligibilityGradeOffsetMin.Items.Add( new ListItem
+                            {
+                                Text = gradeAbbreviation,
+                                Value = gradeOffset.ToString()
+                            } );
+                        }
+                    }
+                }
             }
         }
 

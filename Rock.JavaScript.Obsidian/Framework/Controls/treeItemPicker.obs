@@ -218,7 +218,13 @@
     });
 
     /** The CSS class to use for the picker icon. */
-    const pickerIconClass = computed((): string => `${props.iconCssClass} ti-fw`);
+    const pickerIconClass = computed((): string => {
+        if (props.iconCssClass) {
+            return `${props.iconCssClass} ti-fw`;
+        }
+
+        return "";
+    });
 
     /** Updates the model value from our internal value. */
     const updateModelValue = (): void => {

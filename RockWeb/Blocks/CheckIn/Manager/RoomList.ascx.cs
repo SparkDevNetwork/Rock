@@ -258,11 +258,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var selectedScheduleIds = lbSchedules.SelectedValues.AsIntegerList();
             if ( selectedScheduleIds.Any() )
             {
-                btnShowFilter.AddCssClass( "criteria-exists bg-warning" );
+                btnShowFilter.AddCssClass( "criteria-exists bg-interface-soft" );
             }
             else
             {
-                btnShowFilter.RemoveCssClass( "criteria-exists bg-warning" );
+                btnShowFilter.RemoveCssClass( "criteria-exists bg-interface-soft" );
             }
 
             CheckinManagerHelper.SaveRoomListFilterToCookie( selectedScheduleIds.ToArray() );

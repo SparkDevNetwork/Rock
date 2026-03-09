@@ -203,7 +203,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, onBeforeMount, PropType, ref, watch } from "vue";
     import LoadingOverlay from "./loadingOverlay.partial.obs";
     import PreviewAs from "./previewAs.partial.obs";
     import { BinaryFileAttachment, BlockActionCallbacks, PreviewAsType } from "./types.partial";
@@ -222,16 +222,18 @@
     import { vShortcut } from "@Obsidian/Directives/shortcut";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { Guid } from "@Obsidian/Types";
+    import { ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { resizeImageFileProcessor } from "@Obsidian/Utility/file";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
     import { asCommaAnd } from "@Obsidian/Utility/stringUtils";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import { debounceAsync, isNullish } from "@Obsidian/Utility/util";
+    import { SmsFromNumberListItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/smsFromNumberListItemBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-    import { ICancellationToken } from "@Obsidian/Utility/cancellation";
 
     const props = defineProps({
         areNavigationShortcutsDisabled: {
@@ -329,7 +331,7 @@
         },
 
         smsFromNumbers: {
-            type: Object as PropType<ListItemBag[]>,
+            type: Object as PropType<SmsFromNumberListItemBag[]>,
             required: true
         },
 
@@ -619,5 +621,28 @@
 
     updatePreview();
 
-    // #endregion
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onBeforeMount(() => {
+        // If no From Number is selected yet,
+        // default to the first number that is assigned to the logged in person;
+        // otherwise, default to the first number.
+        // This must happen in onBeforeMount before the dropdown is rendered.
+        // If done in onMounted, the dropdown will have already, automatically selected the first item
+        // and this will never run.
+        if (!internalSmsFromSystemPhoneNumberGuid.value) {
+            const bestNumber = Enumerable
+                .from(props.smsFromNumbers)
+                .orderBy(n => n.isNumberAssignedToCurrentPerson ? 0 : 1)
+                .firstOrDefault();
+
+            if (bestNumber) {
+                internalSmsFromSystemPhoneNumberGuid.value = bestNumber.value;
+            }
+        }
+    });
+
+    // #endregion Hooks
 </script>

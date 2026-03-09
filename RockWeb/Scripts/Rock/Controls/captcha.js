@@ -401,21 +401,23 @@
                     });
                 }
 
-                let rockCaptcha = captchaControls[config.id];
-                if (!rockCaptcha) {
-                    await loadCap();
-                    const captchaConfig = await api.getConfiguration();
-
-                    rockCaptcha = new RockCaptcha({
-                        api: api,
-                        captchaMode: captchaConfig.captchaMode,
-                        controlId: config.id,
-                        postBackScript: config.postBackScript
-                    });
-
-                    // Store a ref to the new control so it can be managed later.
-                    captchaControls[config.id] = rockCaptcha;
+                const rockCaptcha = captchaControls[config.id];
+                if (rockCaptcha) {
+                    if (rockCaptcha.widgetEl) {
+                        rockCaptcha.widgetEl.remove();
+                    }
                 }
+
+                await loadCap();
+                const captchaConfig = await api.getConfiguration();
+
+                // Store a ref to the new control so it can be managed later.
+                captchaControls[config.id] = new RockCaptcha({
+                    api: api,
+                    captchaMode: captchaConfig.captchaMode,
+                    controlId: config.id,
+                    postBackScript: config.postBackScript
+                });
 
                 $(document).ready(async function () {
                     await captchaControls[config.id].render();

@@ -1,0 +1,84 @@
+<template>
+    <Modal v-model="isModalVisible"
+           title="Stay for Service"
+           saveText="Check In"
+           @closeModal="onCloseModal"
+           @save="onSaveClick">
+        <p>Which scheduled time would you like {{ row!.attendee.fullName }} to stay for?</p>
+
+        <RadioButtonList v-model="selectedSchedule"
+                         label="Schedule"
+                         horizontal
+                         rules="required"
+                         :items="scheduleItems" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { ref } from "vue";
+    import { RosterSingleAttendanceRecord } from "./types.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
+
+    defineExpose({ show });
+
+    // #region Values
+
+    const isModalVisible = ref(false);
+    const row = ref<RosterSingleAttendanceRecord>();
+    const scheduleItems = ref<ListItemBag[]>([]);
+    const selectedSchedule = ref<string>("");
+
+    let promiseSource: PromiseCompletionSource<string> | null = null;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Shows the modal and calls the callback with the attendance and selected
+     * schedule to use when creating the new attendance record.
+     *
+     * @param record The attendance record that will be staying another service.
+     * @param schedules The available schedules.
+     * @param callback The callback to invoke when confirmed.
+     */
+    async function show(record: RosterSingleAttendanceRecord, schedules: ListItemBag[], callback: ((attendanceIdKey: string, scheduleValue: string) => Promise<void>)): Promise<void> {
+        row.value = record;
+        scheduleItems.value = schedules;
+        selectedSchedule.value = "";
+        isModalVisible.value = true;
+
+        promiseSource = new PromiseCompletionSource<string>();
+        const result = await promiseSource.promise;
+        promiseSource = null;
+
+        if (result) {
+            await callback(record.idKey, result);
+        }
+
+        isModalVisible.value = false;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles when the save button is clicked.
+     */
+    async function onSaveClick(): Promise<void> {
+        promiseSource?.resolve(selectedSchedule.value);
+    }
+
+    /**
+     * Handles when the modal is closed without saving.
+     */
+    function onCloseModal(): void {
+        promiseSource?.resolve("");
+    }
+
+    // #endregion
+</script>

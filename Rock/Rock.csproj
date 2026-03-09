@@ -2,21 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <RockWebPath>..\RockWeb</RockWebPath>
     <CopyToRockWeb>True</CopyToRockWeb>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <DefineConstants>$(DefineConstants);WEBFORMS</DefineConstants>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
-      <Link>Properties\AssemblySharedInfo.cs</Link>
-    </Compile>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="1.4.0" />
@@ -125,9 +114,6 @@
     <Reference Include="FCM.Net, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\FCM\FCM.Net.dll</HintPath>
-    </Reference>
-    <Reference Include="Humanizer">
-      <HintPath>..\libs\Humanizer.2.1.0\Humanizer.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="PresentationCore" />

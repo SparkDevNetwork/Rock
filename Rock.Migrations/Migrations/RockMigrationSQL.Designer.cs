@@ -1992,6 +1992,138 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: 790E [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202601212358292_AddEntitySetAdditionalSettingsJson_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_202601212358292_AddEntitySetAdditionalSettingsJson_spCrm_PersonMerge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;
+        ///        If calling this outside of C#, wrap in a transaction if you  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202602021859057_UpdatePersonMergeWithThrow {
+            get {
+                return ResourceManager.GetString("_202602021859057_UpdatePersonMergeWithThrow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        Evaluates requirement status for applicable Group Members and updates 
+        ///        or inserts corresponding GroupMemberRequirement records. Also returns 
+        ///        any records that should trigger automatic &apos;Not Met&apos; or &apos;Warning&apos; workflows.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;param name=&quot;GroupRequirementId&quot; datatype=&quot;int&quot;&gt;
+        ///        The Id of the GroupRequirement definition being evaluated.
+        ///    &lt;/param&gt;
+        ///
+        ///    &lt;param name=&quot;GroupId&quot; datatype=&quot;int&quot;&gt;
+        ///        The Id of the Group whose members  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202602062214190_GroupRequirementsImprovements_spUpdateGroupMemberRequiremennts {
+            get {
+                return ResourceManager.GetString("_202602062214190_GroupRequirementsImprovements_spUpdateGroupMemberRequiremennts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;
+        ///        If calling this outside of C#, wrap in a transaction if you  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202602182336503_Update_spCrm_PersonMerge6572 {
+            get {
+                return ResourceManager.GetString("_202602182336503_Update_spCrm_PersonMerge6572", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        Synchronizes the pending recipients of a communication with the current, active members of its list group,
+        ///        respecting scheduled send cutoffs, recipient/person communication preferences, and optional personalization
+        ///        segment filters.
+        ///    &lt;/summary&gt;
+        ///    &lt;params&gt;
+        ///        &lt;param name=&quot;@CommunicationId&quot; type=&quot;INT&quot; required=&quot;true&quot;&gt;
+        ///            The Id of the [Communication] to synchronize.
+        ///        &lt;/param&gt;
+        ///    &lt;/params&gt;
+        ///    &lt;examples&gt;
+        ///        &lt;code&gt;
+        ///      [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202602251704362_Rollup_20260225_268_ImproveSyncListRecipientsPerformance_spCommunication_SynchronizeListRecipients {
+            get {
+                return ResourceManager.GetString("_202602251704362_Rollup_20260225_268_ImproveSyncListRecipientsPerformance_spCommu" +
+                        "nication_SynchronizeListRecipients", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        Synchronizes the pending recipients of a communication with the current, active members of its list group,
+        ///        respecting scheduled send cutoffs, recipient/person communication preferences, and optional personalization
+        ///        segment filters.
+        ///    &lt;/summary&gt;
+        ///    &lt;params&gt;
+        ///        &lt;param name=&quot;@CommunicationId&quot; type=&quot;INT&quot; required=&quot;true&quot;&gt;
+        ///            The Id of the [Communication] to synchronize.
+        ///        &lt;/param&gt;
+        ///    &lt;/params&gt;
+        ///    &lt;examples&gt;
+        ///        &lt;code&gt;
+        ///      [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202602251704362_Rollup_20260225_277_ExcludeArchivedAndDuplicateListMembers_spCommunication_SynchronizeListRecipients {
+            get {
+                return ResourceManager.GetString("_202602251704362_Rollup_20260225_277_ExcludeArchivedAndDuplicateListMembers_spCom" +
+                        "munication_SynchronizeListRecipients", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {

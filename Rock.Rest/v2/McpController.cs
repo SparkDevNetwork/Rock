@@ -19,6 +19,7 @@ using System.Net;
 using System.Net.Http.Headers;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Enums.AI.Agent;
 using Rock.Data;
@@ -47,7 +48,7 @@ namespace Rock.Rest.v2
     /// </summary>
     [RoutePrefix( "api/v2/mcp" )]
     [SystemGuid.RestControllerGuid( "0a73df31-46d0-41e2-a0f6-0a762b97fd07" )]
-    internal class McpController : ApiControllerBase
+    public class McpController : ApiControllerBase
     {
         private readonly IMcpServer _mcpServer;
 
@@ -56,12 +57,11 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Initializes a new instance of the <see cref="McpController"/> class.
         /// </summary>
-        /// <param name="mcpServer">The server instance used to manage AI agent actions.</param>
-        /// <param name="agentBuilder">The factory that will build our agent.</param>
-        public McpController( IMcpServer mcpServer, IChatAgentBuilder agentBuilder )
+        /// <param name="serviceProvider">The service provider.</param>
+        public McpController( IServiceProvider serviceProvider )
         {
-            _mcpServer = mcpServer ?? throw new ArgumentNullException( nameof( mcpServer ) );
-            _agentBuilder = agentBuilder ?? throw new ArgumentNullException( nameof( agentBuilder ) );
+            _mcpServer = serviceProvider.GetRequiredService<IMcpServer>();
+            _agentBuilder = serviceProvider.GetRequiredService<IChatAgentBuilder>();
         }
 
         /// <summary>

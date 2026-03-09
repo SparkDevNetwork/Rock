@@ -1,0 +1,1626 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer sidebar>
+        <ContentSection light>
+            <div class="basic-fields">
+                <NotificationBox v-if="isSystem" :alertType="AlertType.Info">
+                    <strong>Note</strong> Because this group type is used by Rock, editing is restricted.
+                </NotificationBox>
+
+                <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
+                    {{ errorMessage }}
+                </NotificationBox>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name" label="Name" rules="required" :disabled="isSystem" />
+                    </div>
+                </div>
+
+                <TextBox v-model="description" label="Description" textMode="multiline" :disabled="isSystem" />
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <ColorPicker v-model="groupTypeColor" label="Group Type Color"
+                                     help="Specifies the color used to visually distinguish this group type in lists."
+                                     trailblazerField />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <IconPicker v-model="iconCssClass" label="Group Type Icon"
+                                    help="Specifies the icon used to represent groups of this type." />
+                    </div>
+                </div>
+            </div>
+        </ContentSection>
+
+        <!-- GENERAL -->
+        <ContentSection title="General" icon="ti ti-settings">
+            <ContentStack title="Purpose &amp; Structure"
+                          description="Defines the overall purpose, identity, and hierarchical relationships of the group type, including what it inherits and what children it can contain.">
+                <DefinedValuePicker label="Group Type Purpose" v-model="groupTypePurposeValue" :showBlankItem="true"
+                                    help="Defines the overall purpose of this group type. This field is optional. To add or edit available options, update the 'Group Type Purpose' Defined Type."
+                                    :definedTypeGuid="DefinedType.GrouptypePurpose" trailblazerField enhanceForLongLists
+                                    :disabled="isSystem" />
+
+                <GroupTypePicker label="Inherit Group Type Attributes From" v-model="inheritedGroupType"
+                                 :showBlankItem="true" :excludeGroupTypes="excludedGroupTypes"
+                                 help="Select which Group Type to inherit attributes from." trailblazerField enhanceForLongLists
+                                 :disabled="isSystem" />
+
+                <div class="form-group">
+                    <InlineCheckBox label="Allow Any Child Group Type" v-model="allowAnyChildGroupType"
+                                    help="When enabled, groups of any type can be added as child groups to this group type." />
+                </div>
+
+                <div v-if="!allowAnyChildGroupType" class="allow-any-child-groupType">
+                    <GroupTypePicker label="Allowed Child Group Types" v-model="childGroupTypes" multiple
+                                     :showBlankItem="true" enhanceForLongLists
+                                     help="Defines which child group types can be added to groups of this type. This setting controls the group hierarchy. To allow an unlimited hierarchy, include this group type as one of its own allowed child types." />
+                </div>
+
+                <div class="form-group">
+                    <InlineCheckBox label="Require Campus For Groups" v-model="groupsRequireCampus"
+                                    help="When enabled, all groups of this type must have a campus selected when being added or edited." />
+                </div>
+
+                <div class="form-group">
+                    <InlineCheckBox label="Enable Group Administrator" v-model="showAdministrator"
+                                    help="When enabled, groups of this type can have an assigned group administrator." />
+                </div>
+
+                <div class="form-group">
+                    <InlineCheckBox label="Enable Specific Group Requirements" v-model="enableSpecificGroupRequirements"
+                                    help="When enabled, groups of this type can have their own Group Requirements. This displays the Group Requirements section on the Group Details block. If a group already has specific requirements, the section will remain visible even when this setting is disabled." />
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Location &amp; Scheduling"
+                          description="Configures how locations are chosen, how many can be used, whether schedules tie to locations, and which location types are allowed.">
+                <CheckBoxList label="Allowed Location Selection Modes" v-model="locationSelectionModeValue"
+                              :items="locationSelectionModeOptions" :repeatColumns="2"
+                              help="Specifies which location selection modes are available when adding locations to groups of this type."
+                              :disabled="isSystem" />
+
+                <DefinedValuePicker label="Allowed Location Types" v-model="locationTypes" :multiple="true"
+                                    :definedTypeGuid="DefinedType.GroupLocationType"
+                                    help="Defines the location types that can be associated with groups of this type. For example, you might include a meeting location and an assignment target location." />
+
+                <div class="form-group">
+                    <InlineCheckBox label="Allow Multiple Locations" v-model="allowMultipleLocations"
+                                    help="When enabled, groups of this type can have more than one location."
+                                    :disabled="isSystem" />
+                </div>
+
+                <div class="form-group">
+                    <InlineCheckBox label="Enable Location Schedules" v-model="enableLocationSchedules"
+                                    help="When enabled, group locations can be linked to one or more predefined schedules."
+                                    :disabled="isSystem" />
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Capacity &amp; Status" description="Controls how group capacity is enforced.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <RadioButtonList label="Group Capacity Enforcement" v-model="groupCapacityRuleValue"
+                                         :items="enumToListItemBag(GroupCapacityRuleDescription)"
+                                         help="Specifies whether this group type supports a capacity limit and how that limit is enforced." />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBox v-if="groupCapacityRule !== GroupCapacityRule.None" label="Require Group Capacity"
+                                  v-model="isCapacityRequired"
+                                  help="When enabled, a Group Capacity value is required for all groups of this type." />
+                    </div>
+                </div>
+
+                <DropDownList label="Group Status Defined Type" v-model="groupStatusDefinedTypeValue"
+                              :items="props.options.definedTypeOptions ?? []" :showBlankItem="true" enhanceForLongLists
+                              help="Specifies the Defined Type used to set a group's status. Leave blank if groups of this type should not prompt for a status."
+                              trailblazerField :disabled="isSystem" />
+
+            </ContentStack>
+
+            <ContentStack title="Record Source &amp; Group-Specific Settings"
+                          description="Determines what record source to add to members of this group type and which group-specific settings to allow.">
+                <DefinedValuePicker label="Group Member Record Source" v-model="groupMemberRecordSourceValue"
+                                    :definedTypeGuid="DefinedType.RecordSourceType" :showBlankItem="true" enhanceForLongLists
+                                    help="Specifies the record source to assign to group members added to groups of this type." />
+
+                <div class="form-group">
+                    <div class="allowed-group-specific-settings">
+                        <RockLabel>Allowed Group Specific Settings</RockLabel>
+                    </div>
+                    <InlineCheckBox label="Record Source" v-model="allowGroupSpecificRecordSource"
+                                    help="When enabled, groups of this type can override the default record source." />
+
+                    <InlineCheckBox label="Member Attributes" v-model="allowSpecificGroupMemberAttributes"
+                                    help="When enabled, groups of this type can have their own Group Member Attributes. This displays the Member Attributes section on the Group Details block. Existing specific member attributes are preserved." />
+
+                    <InlineCheckBox label="Member Workflows" v-model="allowSpecificGroupMemberWorkflows"
+                                    help="When enabled, groups of this type can have their own Group Member Workflows. This displays the Group Member Workflows section on the Group Details block. Existing workflows are retained even if this setting is later disabled." />
+
+                    <InlineCheckBox label="Tags" v-model="enableGroupTag"
+                                    help="When enabled, groups of this type can create and manage their own tags." />
+                </div>
+            </ContentStack>
+
+            <ContentStack title="System Management"
+                          description="Manages system features for syncing and tracking groups.">
+                <div class="form-group">
+                    <InlineCheckBox label="Preserve Member Status on Person Inactivation"
+                                    v-model="ignorePersonInactivated"
+                                    help="When enabled, members of groups of this type will remain active even if their person record is inactivated."
+                                    trailblazerField />
+                </div>
+
+                <div v-if="props.options.isIndexingOptionAvailable" class="form-group">
+                    <InlineCheckBox label="Enable Universal Search Indexing" v-model="isIndexEnabled"
+                                    help="When enabled, groups of this type are included in Universal Search indexing."
+                                    trailblazerField />
+                </div>
+
+                <div class="form-group">
+                    <InlineCheckBox label="Enable Group History Tracking" v-model="enableGroupHistory"
+                                    help="When enabled, groups of this type will track changes to the group and its members in Group History." />
+                </div>
+
+                <div class="form-group">
+                    <InlineCheckBox label="Allow Group Sync" v-model="allowGroupSync"
+                                    help="When enabled, groups of this type can use Group Sync. This displays the Group Sync Settings section on the Group Details block. Existing syncs are retained, and disabling this setting does not stop them from running." />
+                </div>
+
+                <div class="form-group">
+                    <InlineCheckBox label="Allow Inactivation Reasons" v-model="enableInactiveReasonValue"
+                                    help="When enabled, a reason can be selected when a group is inactivated. The available reasons are defined in the Inactive Group Reasons Defined Type."
+                                    trailblazerField />
+                </div>
+
+                <div class="form-group">
+                    <InlineCheckBox label="Require Inactive Reason" v-model="requiresInactiveReason"
+                                    help="When enabled, an Inactive Reason must be selected when a group is inactivated. The available reasons are defined in the Inactive Group Reasons Defined Type."
+                                    :disabled="!enableInactiveReason" trailblazerField />
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <!-- DISPLAY OPTIONS -->
+        <ContentSection title="Display Options" icon="ti ti-device-desktop">
+            <ContentStack title="Group Appearance"
+                          description="Customize how groups of this type appear throughout Rock.">
+                <TextBox v-model="groupTerm" label="Group Term" rules="required"
+                         help="Defines the term used to refer to groups of this type." :disabled="isSystem" />
+
+                <TextBox v-model="groupMemberTerm" label="Group Member Term" rules="required"
+                         help="Defines the term used to refer to members within groups of this type." :disabled="isSystem" />
+
+                <TextBox v-if="showAdministrator" v-model="administratorTerm" label="Administrator Term"
+                         rules="required" help="Defines the term used for the administrator of groups of this type."
+                         :disabled="isSystem" />
+
+                <div class="form-group">
+                    <InlineCheckBox label="Show in Group Lists" v-model="showInGroupList"
+                                    help="When enabled, groups of this type appear in the GroupList block's list of groups." />
+                </div>
+
+                <div class="form-group">
+                    <InlineCheckBox label="Show in Group Navigation" v-model="showInNavigation"
+                                    help="When enabled, groups of this type appear in the GroupTreeView block's navigation panel." />
+                </div>
+
+                <div class="form-group">
+                    <InlineCheckBox label="Show Connection Status in Group Member List" v-model="showConnectionStatus"
+                                    help="When enabled, the connection status of each person is displayed as a column in the group member list." />
+                </div>
+
+                <div class="form-group">
+                    <InlineCheckBox label="Show Marital Status in Group Member List" v-model="showMaritalStatus"
+                                    help="When enabled, the marital status of each person is displayed as a column in the group member list." />
+                </div>
+
+            </ContentStack>
+
+            <ContentStack v-if="props.options.enableGroupViewLavaTemplate" title="Group View Lava Template"
+                          description="This Lava template will be used by the Group Details block when viewing a group. This allows you to customize the layout of a group base on its type.">
+                <HtmlEditor v-model="groupViewLavaTemplate" :editorHeight="400" :startInCodeEditorMode="true" />
+            </ContentStack>
+        </ContentSection>
+
+        <!-- ROLES -->
+        <ContentSection title="Roles" icon="ti ti-masks-theater">
+            <GroupTypeRoles v-model:roles="roles" v-model:defaultGroupRole="defaultGroupRole"
+                            :isChatAllowed="isChatAllowed" :groupRequirementRoles="groupRequirementRoles"
+                            :workflowTriggerRoles="workflowTriggerRoles" :groupTerm="groupTerm"
+                            :groupMemberTerm="groupMemberTerm" />
+        </ContentSection>
+
+        <!-- GROUP TYPE ATTRIBUTES -->
+        <ContentSection title="Type Attributes" icon="ti ti-binary-tree-2">
+            <GroupTypeAttributes v-model:groupTypeAttributes="groupTypeAttributes"
+                                 v-model:attributeValues="attributeValues" :inheritedGroupTypeAttributes="inheritedGroupTypeAttributes"
+                                 :attributesForAttributeValueContainer="attributes" />
+        </ContentSection>
+
+        <!-- GROUP ATTRIBUTES -->
+        <ContentSection title="Group Attributes" icon="ti ti-users-group">
+            <GroupAttributes v-model:groupAttributes="groupAttributes"
+                             :inheritedGroupAttributes="inheritedGroupAttributes" />
+        </ContentSection>
+
+        <!-- GROUP MEMBER ATTRIBUTES -->
+        <ContentSection title="Member Attributes" icon="ti ti-user-cog">
+            <GroupMemberAttributes v-model:groupMemberAttributes="groupMemberAttributes"
+                                   :inheritedGroupMemberAttributes="inheritedGroupMemberAttributes" />
+        </ContentSection>
+
+        <!-- SCHEDULING -->
+        <ContentSection title="Scheduling" icon="ti ti-calendar-month">
+            <ContentStack :title="schedulingSectionTitle" :description="schedulingSectionDescription">
+                <div class="form-group">
+                    <InlineSwitch label="Enable Scheduling" v-model="isSchedulingEnabled" />
+                </div>
+            </ContentStack>
+
+            <TransitionVerticalCollapse>
+                <div v-if="isSchedulingEnabled" class="contentsection-body-collapse">
+                    <ContentStack title="Confirmations"
+                                  description="Controls how and when group members are notified about their scheduled assignments, including confirmation messages and coordinator notifications.">
+                        <DropDownList label="Schedule Confirmation Communication"
+                                      v-model="scheduleConfirmationSystemCommunicationGuid"
+                                      :items="props.options.systemCommunicationOptions ?? []" :showBlankItem="true"
+                                      enhanceForLongLists
+                                      help="Specifies the System Communication used when a person is scheduled or when their schedule is updated." />
+                        <div class="form-group">
+                            <InlineCheckBox label="Require Reason if Schedule Declined"
+                                            v-model="requiresReasonIfDeclineSchedule"
+                                            help="When enabled, individuals must provide a reason when declining or canceling a scheduled assignment." />
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <NumberBox label="Schedule Confirmation Lead Time"
+                                           v-model="scheduleConfirmationEmailOffsetDays" :minimumValue="0"
+                                           help="Defines how many days before the scheduled date a confirmation notification is sent.">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">Days</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+                        </div>
+                        <RadioButtonList label="Schedule Confirmation Behavior" v-model="scheduleConfirmationLogicValue"
+                                         :items="enumToListItemBag(ScheduleConfirmationLogicDescription)"
+                                         help="Specifies whether individuals are prompted to accept or decline a schedule or if their assignment is automatically accepted. This setting applies by default to all groups of this type." />
+                        <CheckBoxList label="Coordinator Notification Triggers"
+                                      v-model="scheduleCoordinatorNotificationTypesValue"
+                                      :items="scheduleCoordinatorNotificationTypesOptions"
+                                      help="Specifies which notifications coordinators receive about scheduled individuals. For example, selecting “Self-Schedule” notifies the coordinator when someone signs up for additional times via the Group Schedule Toolbox." />
+                    </ContentStack>
+                    <ContentStack title="Reminders"
+                                  description="Set up reminders sent before the event to keep attendees informed.">
+                        <DropDownList label="Schedule Reminder Communication"
+                                      v-model="scheduleReminderSystemCommunicationGuid"
+                                      :items="props.options.systemCommunicationOptions ?? []" :showBlankItem="true"
+                                      enhanceForLongLists
+                                      help="Specifies the System Communication used to send schedule reminders." />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <NumberBox label="Schedule Reminder Lead Time" v-model="scheduleReminderEmailOffsetDays"
+                                           :minimumValue="0"
+                                           help="Defines the default number of days before a scheduled event that a reminder notification is sent.">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">Days</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+                        </div>
+                    </ContentStack>
+                    <ContentStack v-if="store.state.trailblazerMode" title="Cancellation Settings"
+                                  description="Manage workflow for when a registration is canceled.">
+                        <WorkflowTypePicker label="Schedule Cancellation Workflow"
+                                            v-model="scheduleCancellationWorkflowType" :showBlankItem="true"
+                                            help="Specifies the workflow type that runs when a person indicates they cannot attend their scheduled time." />
+                    </ContentStack>
+                </div>
+            </TransitionVerticalCollapse>
+        </ContentSection>
+
+        <!-- PEER NETWORK -->
+        <ContentSection title="Peer Network" icon="ti ti-affiliate">
+            <ContentStack title="Peer Network Feature" :description="peerNetworkSectionDescription">
+                <div class="form-group">
+                    <InlineSwitch label="Enable Peer Network" v-model="isPeerNetworkEnabled" />
+                </div>
+            </ContentStack>
+
+            <TransitionVerticalCollapse>
+                <div v-if="isPeerNetworkEnabled" class="contentsection-body-collapse">
+                    <ContentStack title="Relationship Settings"
+                                  description="Manage how connected group members are and if their relationships can develop over time.">
+                        <RadioButtonList label="Group Relationship Strength" v-model="relationshipStrengthValue"
+                                         :items="enumToListItemBag(RelationshipStrengthDescription)"
+                                         help="Specifies the relationship strength between individuals in groups of this type. Advanced settings allow further customization based on each person’s group role." />
+                        <div class="form-group">
+                            <InlineCheckBox label="Enable Relationship Growth Over Time"
+                                            v-model="relationshipGrowthEnabled"
+                                            help="When enabled, relationship strength can increase over time as individuals spend more time together in the group." />
+                        </div>
+                    </ContentStack>
+                    <ContentStack v-if="store.state.trailblazerMode" title="Relationship Scoring"
+                                  description="Use the matrix to adjust relationship scores based on group member relationships. For example, if members have strong connections with group leaders but little interaction with other non-leaders, you can reduce or remove the score percentage between non-leaders.">
+                        <div class="d-grid grid-cols-3 gap-2" style="width: max-content;">
+                            <!-- Header Row -->
+                            <div></div>
+                            <div class="d-flex align-items-center">
+                                <RockLabel>Leader</RockLabel>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <RockLabel>Non-Leader</RockLabel>
+                            </div>
+                            <!-- Leader Row -->
+                            <div class="d-flex align-items-center">
+                                <RockLabel>Leader</RockLabel>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <NumberBox v-model="leaderToLeaderRelationshipMultiplierValue" :decimalCount="0"
+                                           :minimumValue="0" :maximumValue="100" :maxLength="3" style="width: 100px;"
+                                           validationTitle="Leader to Leader Relationship Multiplier">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">%</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <NumberBox v-model="leaderToNonLeaderRelationshipMultiplierValue" :decimalCount="0"
+                                           :minimumValue="0" :maximumValue="100" :maxLength="3" style="width: 100px;"
+                                           validationTitle="Leader to Non-Leader Relationship Multiplier">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">%</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+                            <!-- Non-Leader Row -->
+                            <div class="d-flex align-items-center">
+                                <RockLabel>Non-Leader</RockLabel>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <NumberBox v-model="nonLeaderToLeaderRelationshipMultiplierValue" :decimalCount="0"
+                                           :minimumValue="0" :maximumValue="100" :maxLength="3" style="width: 100px;"
+                                           validationTitle="Non-Leader to Leader Relationship Multiplier">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">%</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <NumberBox v-model="nonLeaderToNonLeaderRelationshipMultiplierValue" :decimalCount="0"
+                                           :minimumValue="0" :maximumValue="100" :maxLength="3" style="width: 100px;"
+                                           validationTitle="Non-Leader to Non-Leader Relationship Multiplier">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">%</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+                        </div>
+                    </ContentStack>
+                </div>
+            </TransitionVerticalCollapse>
+        </ContentSection>
+
+        <!-- ATTENDANCE -->
+        <ContentSection title="Attendance" icon="ti ti-clipboard-check">
+            <ContentStack title="Attendance &amp; Check-In Features"
+                          description="Enable groups of this type to take and manage attendance.">
+                <div class="form-group">
+                    <InlineSwitch label="Enable Attendance Tracking" v-model="takesAttendance" />
+                </div>
+            </ContentStack>
+
+            <TransitionVerticalCollapse>
+                <div v-if="takesAttendance" class="contentsection-body-collapse">
+                    <ContentStack title="Attendance Settings"
+                                  description="Define how attendance is tracked for this group, including schedule options, exclusions, and location or schedule requirements.">
+
+                        <CheckBoxList label="Available Group Schedule Types" v-model="allowedScheduleTypesValue"
+                                      :items="allowedScheduleTypesOptions"
+                                      help="Specifies which schedule option types are available when editing groups of this type."
+                                      :disabled="isSystem" />
+
+                        <NotificationBox v-if="scheduleExclusionsErrorMessage" :alertType="AlertType.Danger">
+                            {{ scheduleExclusionsErrorMessage }}
+                        </NotificationBox>
+                        <div class="form-group">
+                            <RockLabel help="Defines the date ranges when groups of this type do not meet, regardless of their individual schedules.">
+                                Schedule Exclusions
+                            </RockLabel>
+                            <Grid :data="groupScheduleExclusionsGridData" keyField="guid" itemTerm="Schedule Exclusion"
+                                  liveUpdates light @addItem="onAddScheduleExclusion">
+                                <TextColumn name="dateRange" field="dateRange" />
+                                <EditColumn @click="onEditScheduleExclusion" />
+                                <DeleteColumn @click="onDeleteScheduleExclusion" disableConfirmation />
+                            </Grid>
+                        </div>
+
+                        <div class="form-group">
+                            <InlineCheckBox label="Count Attendance Toward Weekend Service"
+                                            v-model="attendanceCountsAsWeekendService"
+                                            help="When enabled, attendance in groups of this type is counted toward weekend service attendance." />
+                        </div>
+                        <div class="form-group">
+                            <InlineCheckBox label="Location Required for Attendance"
+                                            v-model="groupAttendanceRequiresLocation"
+                                            help="When enabled, all attendance occurrences for groups of this type must include a location."
+                                            trailblazerField />
+                        </div>
+                        <div class="form-group">
+                            <InlineCheckBox label="Schedule Required for Attendance"
+                                            v-model="groupAttendanceRequiresSchedule"
+                                            help="When enabled, all attendance occurrences for groups of this type must include a schedule."
+                                            trailblazerField />
+                        </div>
+                    </ContentStack>
+                    <ContentStack title="Attendance Notifications"
+                                  description="Set up automatic reminders to encourage attendance or follow-up communication after events.">
+                        <div class="form-group">
+                            <InlineCheckBox label="Enable Attendance Reminder" v-model="sendAttendanceReminder"
+                                            help="When enabled, automatic attendance reminders are sent for all groups of this type." />
+                        </div>
+                        <ConditionalWell v-if="sendAttendanceReminder">
+                            <DropDownList label="Attendance Reminder Communication"
+                                          v-model="attendanceReminderSystemCommunicationGuid"
+                                          :items="props.options.systemCommunicationOptions ?? []" :showBlankItem="true"
+                                          enhanceForLongLists
+                                          help="Specifies the communication template used when sending attendance reminders for groups of this type."
+                                          rules="required" />
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <NumberBox label="Attendance Reminder Lead Time"
+                                               v-model="attendanceReminderSendStartOffsetMinutes" :minimumValue="0"
+                                               help="Defines how many minutes before a group starts the attendance reminder is sent, when “Send Attendance Reminder” is enabled. The Send Group Attendance Reminders job runs every 15 minutes and only sends reminders once this time has passed for a group.">
+                                        <template #inputGroupAppend>
+                                            <span class="input-group-addon">Minutes</span>
+                                        </template>
+                                    </NumberBox>
+                                </div>
+                            </div>
+
+                            <CheckBoxList label="Attendance Reminder Follow-Up"
+                                          v-model="attendanceReminderFollowupDaysValue"
+                                          :items="attendanceReminderFollowupDaysOptions"
+                                          help="Specifies which days after an occurrence a reminder should be sent if attendance has not been entered. Follow-up reminders are sent at the same time as the original reminder." />
+                        </ConditionalWell>
+                    </ContentStack>
+                </div>
+            </TransitionVerticalCollapse>
+            <Modal v-model="isScheduleExclusionModalVisible"
+                   :title="`${isEditingScheduleExclusion ? 'Edit' : 'Add'} Schedule Exclusion`" saveText="Save"
+                   cancelText="Cancel" :onSave="onSaveScheduleExclusion">
+                <div class="row">
+                    <div class="col-md-12">
+                        <DateRangePicker v-model="editingScheduleExclusionDateRange" label="Schedule Exclusion"
+                                         rules="required" />
+                    </div>
+                </div>
+            </Modal>
+        </ContentSection>
+
+        <!-- RSVP -->
+        <ContentSection title="RSVP" icon="ti ti-ticket">
+            <ContentStack title="RSVP Feature" description="This option will allow group RSVP.">
+                <div class="form-group">
+                    <InlineSwitch label="Enable RSVP" v-model="enableRSVP" />
+                </div>
+            </ContentStack>
+
+            <TransitionVerticalCollapse>
+                <div v-if="enableRSVP" class="contentsection-body-collapse">
+                    <ContentStack title="Reminder Settings"
+                                  description="Configure RSVP reminders and messages sent to members before an event.">
+                        <DropDownList label="RSVP Reminder Communication" v-model="rsvpReminderSystemCommunicationGuid"
+                                      :items="props.options.rsvpSystemCommunicationOptions ?? []" :showBlankItem="true" enhanceForLongLists
+                                      help="Specifies the System Communication used to remind group members to RSVP for upcoming group events."
+                                      rules="required" />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <NumberBox label="RSVP Reminder Lead Time" v-model="rsvpReminderOffsetDays"
+                                           :minimumValue="0" :maximumValue="30"
+                                           help="Defines how many days (between 0 and 30) before a group event the RSVP reminder is sent. Set to 0 to manage the reminder timing at the individual group level."
+                                           rules="required">
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">Days</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+                        </div>
+
+                    </ContentStack>
+                </div>
+            </TransitionVerticalCollapse>
+        </ContentSection>
+
+        <!-- CHAT -->
+        <ContentSection v-if="store.state.trailblazerMode && isChatEnabledSystem" title="Chat"
+                        icon="ti ti-message-dots">
+            <NotificationBox :alertType="AlertType.Info">
+                You'll need to run the Chat Sync Job after saving for these changes to take effect in chat channels of this type.
+            </NotificationBox>
+
+            <NotificationBox v-if="chatChannelsDisabledMessage" :alertType="AlertType.Warning">
+                {{ chatChannelsDisabledMessage }}
+            </NotificationBox>
+
+            <ContentStack title="Chat Feature"
+                          description="Enable groups of this type to participate in the chat system as chat channels.">
+                <div class="form-group">
+                    <InlineSwitch label="Enable Chat" v-model="isChatAllowed" :disabled="isSystem" />
+                </div>
+            </ContentStack>
+
+            <TransitionVerticalCollapse>
+                <div v-if="isChatAllowed" class="contentsection-body-collapse">
+                    <ContentStack title="Group Chat Settings"
+                                  description="Control how group chat works for this group type.">
+                        <div class="form-group">
+                            <InlineCheckBox label="Enable Chat for All Groups" v-model="isChatEnabledForAllGroups"
+                                            help="When enabled, all groups of this type have chat functionality enabled by default."
+                                            :disabled="isSystem" />
+                        </div>
+
+                        <div class="form-group">
+                            <InlineCheckBox label="Allow Members to Leave Chat Channel"
+                                            v-model="isLeavingChatChannelAllowed"
+                                            help="When enabled, individuals can leave chat channels of this group type."
+                                            :disabled="isSystem" />
+                        </div>
+
+                        <div class="form-group">
+                            <InlineCheckBox label="Make Chat Channel Public" v-model="isChatChannelPublic"
+                                            help="When enabled, chat channels of this type are public and visible to everyone in search results. Public channels can be joined by anyone through the chat application."
+                                            :disabled="isSystem" />
+                        </div>
+
+                        <div class="form-group">
+                            <InlineCheckBox label="Always Show Chat Channel" v-model="isChatChannelAlwaysShown"
+                                            help="When enabled, chat channels of this type are always shown in the channel list, even for people who have not joined. Public visibility also allows anyone to join via the chat application."
+                                            :disabled="isSystem" />
+                        </div>
+                    </ContentStack>
+
+                    <RadioButtonList label="Default Channel Notification Setting"
+                                     v-model="chatPushNotificationModeValue"
+                                     :items="enumToListItemBag(ChatNotificationModeDescription)"
+                                     help="Specifies how push notifications are sent for chat channels of this type."
+                                     :disabled="isSystem" />
+                </div>
+            </TransitionVerticalCollapse>
+        </ContentSection>
+
+        <!-- GROUP REQUIREMENTS -->
+        <ContentSection v-if="store.state.trailblazerMode" title="Group Requirements" icon="ti ti-checklist">
+            <GroupRequirements v-model:groupRequirements="groupRequirements"
+                               :groupRequirementTypeOptions="groupRequirementTypeOptions" :groupRoleOptions="groupRoleOptions"
+                               :groupAttributeOptions="groupAttributeOptions" />
+        </ContentSection>
+
+        <!-- GROUP MEMBER WORKFLOWS -->
+        <ContentSection v-if="store.state.trailblazerMode" title="Group Member Workflows" icon="ti ti-settings-cog">
+            <GroupMemberWorkflows v-model:groupMemberWorkflowTriggers="groupMemberWorkflowTriggers"
+                                  :groupRoleOptions="groupRoleOptions" />
+        </ContentSection>
+    </ContentSectionContainer>
+</template>
+
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { useStore } from "@Obsidian/PageState";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { setPropertiesBoxValue, useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { GroupTypeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/groupTypeBag";
+    import { GroupTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/groupTypeDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { GroupLocationPickerMode, GroupLocationPickerModeDescription } from "@Obsidian/Enums/Group/groupLocationPickerMode";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { GroupCapacityRule, GroupCapacityRuleDescription } from "@Obsidian/Enums/Group/groupCapacityRule";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import GroupTypeRoles from "./roles.partial.obs";
+    import GroupAttributes from "./groupAttributes.partial.obs";
+    import GroupMemberAttributes from "./groupMemberAttributes.partial.obs";
+    import GroupTypeAttributes from "./groupTypeAttributes.partial.obs";
+    import { GroupTypeInheritedAttributeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/groupTypeInheritedAttributeBag";
+    import { GetInheritedAttributesResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/getInheritedAttributesResponseBag";
+    import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import { ScheduleConfirmationLogic, ScheduleConfirmationLogicDescription } from "@Obsidian/Enums/Group/scheduleConfirmationLogic";
+    import { ScheduleCoordinatorNotificationType, ScheduleCoordinatorNotificationTypeDescription } from "@Obsidian/Enums/Group/scheduleCoordinatorNotificationType";
+    import { RelationshipStrength, RelationshipStrengthDescription } from "@Obsidian/Enums/Group/relationshipStrength";
+    import { ScheduleType, ScheduleTypeDescription } from "@Obsidian/Enums/Group/scheduleType";
+    import Grid, { TextColumn, DeleteColumn, EditColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { GroupTypeGroupScheduleExclusionBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/groupTypeGroupScheduleExclusionBag";
+    import { CanDeleteRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/canDeleteRequestBag";
+    import { CanDeleteResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/canDeleteResponseBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ChatNotificationMode, ChatNotificationModeDescription } from "@Obsidian/Enums/Communication/Chat/chatNotificationMode";
+    import GroupRequirements from "./groupRequirements.partial.obs";
+    import GroupMemberWorkflows from "./groupMemberWorkflows.partial.obs";
+    import { EntityKey } from "./types.partial";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { decimalToPercentage, percentageToDecimal } from "./utility.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<GroupTypeBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<GroupTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<GroupTypeBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const store = useStore();
+    const isSystem = ref(props.modelValue.bag?.isSystem ?? false);
+    const isChatEnabledSystem = ref(props.options.isChatEnabledSystem ?? false);
+    const errorMessage = ref<string | null>(null);
+    const chatChannelsDisabledMessage = ref<string | null>(null);
+
+    // GENERAL
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const groupTypeColor = propertyRef(props.modelValue.bag?.groupTypeColor ?? "", "GroupTypeColor");
+    const iconCssClass = propertyRef(props.modelValue.bag?.iconCssClass ?? "", "IconCssClass");
+    const groupTypePurposeValue = propertyRef(props.modelValue.bag?.groupTypePurposeValue ?? null, "GroupTypePurposeValueId");
+    const inheritedGroupType = propertyRef(props.modelValue.bag?.inheritedGroupType ?? null, "InheritedGroupTypeId");
+    const allowAnyChildGroupType = propertyRef(props.modelValue.bag?.allowAnyChildGroupType ?? false, "AllowAnyChildGroupType");
+    const childGroupTypes = propertyRef(props.modelValue.bag?.childGroupTypes ?? [], "ChildGroupTypes");
+    const groupsRequireCampus = propertyRef(props.modelValue.bag?.groupsRequireCampus ?? false, "GroupsRequireCampus");
+    const showAdministrator = propertyRef(props.modelValue.bag?.showAdministrator ?? false, "ShowAdministrator");
+    const enableSpecificGroupRequirements = propertyRef(props.modelValue.bag?.enableSpecificGroupRequirements ?? false, "EnableSpecificGroupRequirements");
+    const locationSelectionMode = propertyRef(props.modelValue.bag?.locationSelectionMode ?? GroupLocationPickerMode.None, "LocationSelectionMode");
+    const locationTypes = propertyRef(props.modelValue.bag?.locationTypes ?? [], "LocationTypes");
+    const allowMultipleLocations = propertyRef(props.modelValue.bag?.allowMultipleLocations ?? false, "AllowMultipleLocations");
+    const enableLocationSchedules = propertyRef(props.modelValue.bag?.enableLocationSchedules ?? false, "EnableLocationSchedules");
+    const groupCapacityRule = propertyRef(props.modelValue.bag?.groupCapacityRule ?? 0, "GroupCapacityRule");
+    const isCapacityRequired = propertyRef(props.modelValue.bag?.isCapacityRequired ?? false, "IsCapacityRequired");
+    const groupStatusDefinedType = propertyRef(props.modelValue.bag?.groupStatusDefinedType ?? null, "GroupStatusDefinedType");
+    const groupMemberRecordSourceValue = propertyRef(props.modelValue.bag?.groupMemberRecordSourceValue ?? null, "GroupMemberRecordSourceValue");
+    const allowGroupSpecificRecordSource = propertyRef(props.modelValue.bag?.allowGroupSpecificRecordSource ?? false, "AllowGroupSpecificRecordSource");
+    const allowSpecificGroupMemberAttributes = propertyRef(props.modelValue.bag?.allowSpecificGroupMemberAttributes ?? false, "AllowSpecificGroupMemberAttributes");
+    const allowSpecificGroupMemberWorkflows = propertyRef(props.modelValue.bag?.allowSpecificGroupMemberWorkflows ?? false, "AllowSpecificGroupMemberWorkflows");
+    const enableGroupTag = propertyRef(props.modelValue.bag?.enableGroupTag ?? false, "EnableGroupTag");
+    const ignorePersonInactivated = propertyRef(props.modelValue.bag?.ignorePersonInactivated ?? false, "IgnorePersonInactivated");
+    const isIndexEnabled = propertyRef(props.modelValue.bag?.isIndexEnabled ?? false, "IsIndexEnabled");
+    const enableGroupHistory = propertyRef(props.modelValue.bag?.enableGroupHistory ?? false, "EnableGroupHistory");
+    const allowGroupSync = propertyRef(props.modelValue.bag?.allowGroupSync ?? false, "AllowGroupSync");
+    const enableInactiveReason = propertyRef(props.modelValue.bag?.enableInactiveReason ?? false, "EnableInactiveReason");
+    const requiresInactiveReason = propertyRef(props.modelValue.bag?.requiresInactiveReason ?? false, "RequiresInactiveReason");
+
+    // DISPLAY OPTIONS
+    const groupTerm = propertyRef(props.modelValue.bag?.groupTerm ?? "", "GroupTerm");
+    const groupMemberTerm = propertyRef(props.modelValue.bag?.groupMemberTerm ?? "", "GroupMemberTerm");
+    const administratorTerm = propertyRef(props.modelValue.bag?.administratorTerm ?? "", "AdministratorTerm");
+    const showInGroupList = propertyRef(props.modelValue.bag?.showInGroupList ?? false, "ShowInGroupList");
+    const showInNavigation = propertyRef(props.modelValue.bag?.showInNavigation ?? false, "ShowInNavigation");
+    const showConnectionStatus = propertyRef(props.modelValue.bag?.showConnectionStatus ?? false, "ShowConnectionStatus");
+    const showMaritalStatus = propertyRef(props.modelValue.bag?.showMaritalStatus ?? false, "ShowMaritalStatus");
+    const groupViewLavaTemplate = propertyRef(props.modelValue.bag?.groupViewLavaTemplate ?? "", "GroupViewLavaTemplate");
+
+    // ROLES
+    const roles = propertyRef(props.modelValue.bag?.roles ?? [], "Roles");
+    const defaultGroupRole = propertyRef(props.modelValue.bag?.defaultGroupRole ?? null, "DefaultGroupRole");
+
+    // ATTRIBUTE SECTIONS
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const groupAttributes = ref(props.modelValue.bag?.groupAttributes ?? []);
+    const groupMemberAttributes = ref(props.modelValue.bag?.groupMemberAttributes ?? []);
+    const groupTypeAttributes = ref(props.modelValue.bag?.groupTypeAttributes ?? []);
+    const inheritedGroupMemberAttributes = ref<GroupTypeInheritedAttributeBag[]>([]);
+    const inheritedGroupAttributes = ref<GroupTypeInheritedAttributeBag[]>([]);
+    const inheritedGroupTypeAttributes = ref<GroupTypeInheritedAttributeBag[]>([]);
+
+    // SCHEDULING
+    const isSchedulingEnabled = propertyRef(props.modelValue.bag?.isSchedulingEnabled ?? false, "IsSchedulingEnabled");
+    const scheduleConfirmationSystemCommunication = propertyRef(props.modelValue.bag?.scheduleConfirmationSystemCommunication ?? null, "ScheduleConfirmationSystemCommunication");
+    const requiresReasonIfDeclineSchedule = propertyRef(props.modelValue.bag?.requiresReasonIfDeclineSchedule ?? false, "RequiresReasonIfDeclineSchedule");
+    const scheduleConfirmationEmailOffsetDays = propertyRef(props.modelValue.bag?.scheduleConfirmationEmailOffsetDays ?? 4, "ScheduleConfirmationEmailOffsetDays");
+    const scheduleConfirmationLogic = propertyRef(props.modelValue.bag?.scheduleConfirmationLogic ?? ScheduleConfirmationLogic.Ask, "ScheduleConfirmationLogic");
+    const scheduleCoordinatorNotificationTypes = propertyRef(props.modelValue.bag?.scheduleCoordinatorNotificationTypes ?? ScheduleCoordinatorNotificationType.None, "ScheduleCoordinatorNotificationTypes");
+    const scheduleReminderSystemCommunication = propertyRef(props.modelValue.bag?.scheduleReminderSystemCommunication ?? null, "ScheduleReminderSystemCommunication");
+    const scheduleReminderEmailOffsetDays = propertyRef(props.modelValue.bag?.scheduleReminderEmailOffsetDays ?? 2, "ScheduleReminderEmailOffsetDays");
+    const scheduleCancellationWorkflowType = propertyRef(props.modelValue.bag?.scheduleCancellationWorkflowType ?? null, "ScheduleCancellationWorkflowType");
+
+    // PEER NETWORK
+    const isPeerNetworkEnabled = propertyRef(props.modelValue.bag?.isPeerNetworkEnabled ?? false, "IsPeerNetworkEnabled");
+    const relationshipStrength = propertyRef(props.modelValue.bag?.relationshipStrength ?? 0, "RelationshipStrength");
+    const relationshipGrowthEnabled = propertyRef(props.modelValue.bag?.relationshipGrowthEnabled ?? false, "RelationshipGrowthEnabled");
+    const leaderToLeaderRelationshipMultiplier = propertyRef(props.modelValue.bag?.leaderToLeaderRelationshipMultiplier ?? 1.00, "LeaderToLeaderRelationshipMultiplier");
+    const leaderToNonLeaderRelationshipMultiplier = propertyRef(props.modelValue.bag?.leaderToNonLeaderRelationshipMultiplier ?? 1.00, "LeaderToNonLeaderRelationshipMultiplier");
+    const nonLeaderToLeaderRelationshipMultiplier = propertyRef(props.modelValue.bag?.nonLeaderToLeaderRelationshipMultiplier ?? 1.00, "NonLeaderToLeaderRelationshipMultiplier");
+    const nonLeaderToNonLeaderRelationshipMultiplier = propertyRef(props.modelValue.bag?.nonLeaderToNonLeaderRelationshipMultiplier ?? 1.00, "NonLeaderToNonLeaderRelationshipMultiplier");
+
+    // ATTENDANCE
+    const takesAttendance = propertyRef(props.modelValue.bag?.takesAttendance ?? false, "TakesAttendance");
+    const allowedScheduleTypes = propertyRef(props.modelValue.bag?.allowedScheduleTypes ?? ScheduleType.None, "AllowedScheduleTypes");
+    const scheduleExclusions = propertyRef(props.modelValue.bag?.scheduleExclusions ?? [], "ScheduleExclusions");
+    const editingScheduleExclusion = ref<GroupTypeGroupScheduleExclusionBag>(createNewScheduleExclusion());
+    const isScheduleExclusionModalVisible = ref(false);
+    const isEditingScheduleExclusion = ref<boolean>(false);
+    const scheduleExclusionsErrorMessage = ref<string | null>(null);
+    const attendanceCountsAsWeekendService = propertyRef(props.modelValue.bag?.attendanceCountsAsWeekendService ?? false, "AttendanceCountsAsWeekendService");
+    const groupAttendanceRequiresLocation = propertyRef(props.modelValue.bag?.groupAttendanceRequiresLocation ?? false, "GroupAttendanceRequiresLocation");
+    const groupAttendanceRequiresSchedule = propertyRef(props.modelValue.bag?.groupAttendanceRequiresSchedule ?? false, "GroupAttendanceRequiresSchedule");
+    const sendAttendanceReminder = propertyRef(props.modelValue.bag?.sendAttendanceReminder ?? false, "SendAttendanceReminder");
+    const attendanceReminderSystemCommunication = propertyRef(props.modelValue.bag?.attendanceReminderSystemCommunication ?? null, "AttendanceReminderSystemCommunication");
+    const attendanceReminderSendStartOffsetMinutes = propertyRef(props.modelValue.bag?.attendanceReminderSendStartOffsetMinutes ?? null, "AttendanceReminderSendStartOffsetMinutes");
+    const attendanceReminderFollowupDays = propertyRef(props.modelValue.bag?.attendanceReminderFollowupDays ?? null, "AttendanceReminderFollowupDays");
+
+    // RSVP
+    const enableRSVP = propertyRef(props.modelValue.bag?.enableRSVP ?? false, "EnableRSVP");
+    const rsvpReminderSystemCommunication = propertyRef(props.modelValue.bag?.rsvpReminderSystemCommunication ?? null, "RSVPReminderSystemCommunication");
+    const rsvpReminderOffsetDays = propertyRef(props.modelValue.bag?.rsvpReminderOffsetDays ?? 0, "RSVPReminderOffsetDays");
+
+    // CHAT
+    const isChatAllowed = propertyRef(props.modelValue.bag?.isChatAllowed ?? false, "IsChatAllowed");
+    const isChatEnabledForAllGroups = propertyRef(props.modelValue.bag?.isChatEnabledForAllGroups ?? false, "IsChatEnabledForAllGroups");
+    const isLeavingChatChannelAllowed = propertyRef(props.modelValue.bag?.isLeavingChatChannelAllowed ?? false, "IsLeavingChatChannelAllowed");
+    const isChatChannelPublic = propertyRef(props.modelValue.bag?.isChatChannelPublic ?? false, "IsChatChannelPublic");
+    const isChatChannelAlwaysShown = propertyRef(props.modelValue.bag?.isChatChannelAlwaysShown ?? false, "IsChatChannelAlwaysShown");
+    const chatPushNotificationMode = propertyRef(props.modelValue.bag?.chatPushNotificationMode ?? ChatNotificationMode.AllMessages, "ChatPushNotificationMode");
+
+    // GROUP REQUIREMENTS
+    const groupRequirements = propertyRef(props.modelValue.bag?.groupRequirements ?? null, "GroupRequirements");
+    const groupRequirementTypeOptions = props.options.groupRequirementTypeOptions ?? [];
+
+    // GROUP MEMBER WORKFLOWS
+    const groupMemberWorkflowTriggers = propertyRef(props.modelValue.bag?.groupMemberWorkflowTriggers ?? null, "GroupMemberWorkflowTriggers");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, description, groupTypeColor, iconCssClass, groupTypePurposeValue, inheritedGroupType, allowAnyChildGroupType, childGroupTypes,
+        groupsRequireCampus, showAdministrator, enableSpecificGroupRequirements, locationSelectionMode, locationTypes, allowMultipleLocations, enableLocationSchedules,
+        groupCapacityRule, isCapacityRequired, groupStatusDefinedType, groupMemberRecordSourceValue, allowGroupSpecificRecordSource, allowSpecificGroupMemberAttributes,
+        allowSpecificGroupMemberWorkflows, enableGroupTag, ignorePersonInactivated, isIndexEnabled, enableGroupHistory, allowGroupSync, enableInactiveReason, requiresInactiveReason,
+        groupTerm, groupMemberTerm, administratorTerm, showInGroupList, showInNavigation, showConnectionStatus, showMaritalStatus, groupViewLavaTemplate, roles, defaultGroupRole,
+        isSchedulingEnabled, scheduleConfirmationSystemCommunication, requiresReasonIfDeclineSchedule, scheduleConfirmationEmailOffsetDays, scheduleConfirmationLogic,
+        scheduleCoordinatorNotificationTypes, scheduleReminderSystemCommunication, scheduleReminderEmailOffsetDays, scheduleCancellationWorkflowType, isPeerNetworkEnabled,
+        relationshipStrength, relationshipGrowthEnabled, leaderToLeaderRelationshipMultiplier, leaderToNonLeaderRelationshipMultiplier, nonLeaderToLeaderRelationshipMultiplier, nonLeaderToNonLeaderRelationshipMultiplier,
+        takesAttendance, allowedScheduleTypes, scheduleExclusions, attendanceCountsAsWeekendService, groupAttendanceRequiresLocation, groupAttendanceRequiresSchedule, sendAttendanceReminder,
+        attendanceReminderSystemCommunication, attendanceReminderSendStartOffsetMinutes, attendanceReminderFollowupDays, enableRSVP, rsvpReminderSystemCommunication, rsvpReminderOffsetDays,
+        isChatAllowed, isChatEnabledForAllGroups, isLeavingChatChannelAllowed, isChatChannelPublic, isChatChannelAlwaysShown, chatPushNotificationMode, groupRequirements, groupMemberWorkflowTriggers];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Used to prevent selecting the current group type as its own inherited group type.
+     */
+    const excludedGroupTypes = computed((): string[] => {
+        return props.modelValue.bag?.guid ? [props.modelValue.bag.guid] : [];
+    });
+
+    const groupStatusDefinedTypeValue = computed({
+        get(): string {
+            return groupStatusDefinedType.value?.value ?? "";
+        },
+        set(newValue: string) {
+            const theText = props.options.definedTypeOptions?.find(dt => dt.value === newValue)?.text ?? "";
+            groupStatusDefinedType.value = {
+                value: newValue,
+                text: theText
+            };
+        }
+    });
+
+    const locationSelectionModeValue = computed({
+        get(): string[] {
+            const value = locationSelectionMode.value ?? GroupLocationPickerMode.None;
+            const values: string[] = [];
+
+            if ((value & GroupLocationPickerMode.Address) === GroupLocationPickerMode.Address) {
+                values.push(GroupLocationPickerMode.Address.toString());
+            }
+
+            if ((value & GroupLocationPickerMode.Named) === GroupLocationPickerMode.Named) {
+                values.push(GroupLocationPickerMode.Named.toString());
+            }
+
+            if ((value & GroupLocationPickerMode.Point) === GroupLocationPickerMode.Point) {
+                values.push(GroupLocationPickerMode.Point.toString());
+            }
+
+            if ((value & GroupLocationPickerMode.Polygon) === GroupLocationPickerMode.Polygon) {
+                values.push(GroupLocationPickerMode.Polygon.toString());
+            }
+
+            if ((value & GroupLocationPickerMode.GroupMember) === GroupLocationPickerMode.GroupMember) {
+                values.push(GroupLocationPickerMode.GroupMember.toString());
+            }
+
+            return values;
+        },
+        set(newValue: string[]) {
+            let value = 0;
+
+            for (const val of newValue) {
+                value |= parseInt(val, 10);
+            }
+
+            locationSelectionMode.value = value as GroupLocationPickerMode;
+        }
+    });
+
+    const locationSelectionModeOptions = enumToListItemBag(GroupLocationPickerModeDescription)
+        .filter(item => item.value !== GroupLocationPickerMode.None.toString() && item.value !== GroupLocationPickerMode.All.toString())
+        .map(item => {
+            if (item.value === GroupLocationPickerMode.Polygon.toString()) {
+                item.text = "Geo-fence";
+            }
+
+            return item;
+        });
+
+    const groupCapacityRuleValue = computed({
+        get(): string {
+            return (groupCapacityRule.value).toString();
+        },
+        set(newValue: string) {
+            const value = parseInt(newValue, 10) as GroupCapacityRule;
+            groupCapacityRule.value = value;
+
+            if (value === GroupCapacityRule.None) {
+                isCapacityRequired.value = false;
+            }
+        }
+    });
+
+    const enableInactiveReasonValue = computed({
+        get(): boolean {
+            return enableInactiveReason.value;
+        },
+        set(newValue: boolean) {
+            enableInactiveReason.value = newValue;
+
+            if (!newValue) {
+                requiresInactiveReason.value = false;
+            }
+        }
+    });
+
+    const scheduleConfirmationLogicValue = computed({
+        get(): string {
+            return (scheduleConfirmationLogic.value ?? ScheduleConfirmationLogic.Ask).toString();
+        },
+        set(newValue: string) {
+            scheduleConfirmationLogic.value = parseInt(newValue, 10) as ScheduleConfirmationLogic;
+        }
+    });
+
+    const scheduleCoordinatorNotificationTypesValue = computed({
+        get(): string[] {
+            const value = scheduleCoordinatorNotificationTypes.value ?? ScheduleCoordinatorNotificationType.None;
+            const values: string[] = [];
+
+            if ((value & ScheduleCoordinatorNotificationType.Accept) === ScheduleCoordinatorNotificationType.Accept) {
+                values.push(ScheduleCoordinatorNotificationType.Accept.toString());
+            }
+
+            if ((value & ScheduleCoordinatorNotificationType.Decline) === ScheduleCoordinatorNotificationType.Decline) {
+                values.push(ScheduleCoordinatorNotificationType.Decline.toString());
+            }
+
+            if ((value & ScheduleCoordinatorNotificationType.SelfSchedule) === ScheduleCoordinatorNotificationType.SelfSchedule) {
+                values.push(ScheduleCoordinatorNotificationType.SelfSchedule.toString());
+            }
+
+            return values;
+        },
+        set(newValue: string[]) {
+            let value = 0;
+
+            for (const val of newValue) {
+                value |= parseInt(val, 10);
+            }
+
+            scheduleCoordinatorNotificationTypes.value = value as ScheduleCoordinatorNotificationType;
+        }
+    });
+
+
+    const scheduleCoordinatorNotificationTypesOptions = enumToListItemBag(ScheduleCoordinatorNotificationTypeDescription)
+        .filter(item => item.value !== ScheduleCoordinatorNotificationType.None.toString());
+
+    const schedulingSectionTitle = computed((): string => {
+        if (isSchedulingEnabled.value) {
+            return "Scheduling Feature";
+        }
+        else {
+            return "Confirmation Settings";
+        }
+    });
+
+    const schedulingSectionDescription = computed((): string => {
+        if (isSchedulingEnabled.value) {
+            return "Enable groups of this type to schedule and remind members of upcoming events.";
+        }
+        else {
+            return "Controls how and when group members are notified about their scheduled assignments, including confirmation messages and coordinator notifications.";
+        }
+    });
+
+    const peerNetworkSectionDescription = computed((): string => {
+        if (isPeerNetworkEnabled.value) {
+            return "Enable groups of this type to build peer network relationships among their members.";
+        }
+        else {
+            return "Enable the ability to add Peer Network features for groups of this type, including managing relationships.";
+        }
+    });
+
+    const relationshipStrengthValue = computed({
+        get(): string {
+            return (relationshipStrength.value ?? RelationshipStrength.None).toString();
+        },
+        set(newValue: string) {
+            relationshipStrength.value = parseInt(newValue, 10) as RelationshipStrength;
+        }
+    });
+
+    /**
+     * Relationship multipliers are stored as a decimal value (0.00 - 1.00) in the model,
+     * but edited as a percentage (0 - 100) in the UI.
+     */
+    const leaderToLeaderRelationshipMultiplierValue = computed({
+        get(): number | null {
+            return decimalToPercentage(leaderToLeaderRelationshipMultiplier.value);
+        },
+        set(newValue: number | null) {
+            leaderToLeaderRelationshipMultiplier.value = percentageToDecimal(newValue);
+        }
+    });
+
+    const leaderToNonLeaderRelationshipMultiplierValue = computed({
+        get(): number | null {
+            return decimalToPercentage(leaderToNonLeaderRelationshipMultiplier.value);
+        },
+        set(newValue: number | null) {
+            leaderToNonLeaderRelationshipMultiplier.value = percentageToDecimal(newValue);
+        }
+    });
+
+    const nonLeaderToLeaderRelationshipMultiplierValue = computed({
+        get(): number | null {
+            return decimalToPercentage(nonLeaderToLeaderRelationshipMultiplier.value);
+        },
+        set(newValue: number | null) {
+            nonLeaderToLeaderRelationshipMultiplier.value = percentageToDecimal(newValue);
+        }
+    });
+
+    const nonLeaderToNonLeaderRelationshipMultiplierValue = computed({
+        get(): number | null {
+            return decimalToPercentage(nonLeaderToNonLeaderRelationshipMultiplier.value);
+        },
+        set(newValue: number | null) {
+            nonLeaderToNonLeaderRelationshipMultiplier.value = percentageToDecimal(newValue);
+        }
+    });
+
+    const allowedScheduleTypesValue = computed({
+        get(): string[] {
+            const value = allowedScheduleTypes.value ?? ScheduleType.None;
+            const values: string[] = [];
+
+            if ((value & ScheduleType.Weekly) === ScheduleType.Weekly) {
+                values.push(ScheduleType.Weekly.toString());
+            }
+
+            if ((value & ScheduleType.Custom) === ScheduleType.Custom) {
+                values.push(ScheduleType.Custom.toString());
+            }
+
+            if ((value & ScheduleType.Named) === ScheduleType.Named) {
+                values.push(ScheduleType.Named.toString());
+            }
+
+            return values;
+        },
+        set(newValue: string[]) {
+            let value = 0;
+
+            for (const val of newValue) {
+                value |= parseInt(val, 10);
+            }
+
+            allowedScheduleTypes.value = value as ScheduleType;
+        }
+    });
+
+    const allowedScheduleTypesOptions = enumToListItemBag(ScheduleTypeDescription)
+        .filter(item => item.value !== ScheduleType.None.toString());
+
+    const groupScheduleExclusionsGridData = computed(() => {
+        const rows = (scheduleExclusions.value ?? []).map(s => {
+            const start = s.startDate ? RockDateTime.parseISO(s.startDate)?.toASPString("MM/dd/yyyy") ?? "" : "";
+            const end = s.endDate ? RockDateTime.parseISO(s.endDate)?.toASPString("MM/dd/yyyy") ?? "" : "";
+            return {
+                guid: s.guid,
+                dateRange: `${start} - ${end}`
+            };
+        });
+
+        return { rows };
+    });
+
+    const editingScheduleExclusionDateRange = computed<DateRangeParts | undefined>({
+        get() {
+            if (!editingScheduleExclusion.value.startDate && !editingScheduleExclusion.value.endDate) {
+                return undefined;
+            }
+
+            return {
+                lowerValue: editingScheduleExclusion.value.startDate || "",
+                upperValue: editingScheduleExclusion.value.endDate || ""
+            };
+        },
+        set(newValue) {
+            editingScheduleExclusion.value.startDate = newValue?.lowerValue || null;
+            editingScheduleExclusion.value.endDate = newValue?.upperValue || null;
+        }
+    });
+
+    const attendanceReminderFollowupDaysValue = computed({
+        get(): string[] {
+            return (attendanceReminderFollowupDays.value ?? []).map(val => val.toString());
+        },
+        set(newValue: string[]) {
+            attendanceReminderFollowupDays.value = newValue.map(val => parseInt(val, 10));
+        }
+    });
+
+    const attendanceReminderFollowupDaysOptions: ListItemBag[] = [
+        { value: "1", text: "1 Day After" },
+        { value: "2", text: "2 Days After" },
+        { value: "3", text: "3 Days After" },
+        { value: "4", text: "4 Days After" },
+        { value: "5", text: "5 Days After" },
+        { value: "6", text: "6 Days After" },
+        { value: "7", text: "7 Days After" },
+    ];
+
+    const chatPushNotificationModeValue = computed({
+        get(): string {
+            return (chatPushNotificationMode.value ?? ChatNotificationMode.AllMessages).toString();
+        },
+        set(newValue: string) {
+            chatPushNotificationMode.value = parseInt(newValue, 10) as ChatNotificationMode;
+        }
+    });
+
+    /**
+     * System Communication pickers are stored as ListItemBag (value + text) in the model,
+     * but edited as a Guid string via a dropdown list.
+     */
+    const scheduleConfirmationSystemCommunicationGuid = computed({
+        get(): string {
+            return scheduleConfirmationSystemCommunication.value?.value ?? "";
+        },
+        set(newValue: string) {
+            if (!newValue) {
+                scheduleConfirmationSystemCommunication.value = null;
+                return;
+            }
+
+            const item = (props.options.systemCommunicationOptions ?? []).find(i => (i.value ?? "") === newValue) ?? null;
+            scheduleConfirmationSystemCommunication.value = item
+                ? { value: item.value ?? "", text: item.text ?? "" }
+                : null;
+        }
+    });
+
+    const scheduleReminderSystemCommunicationGuid = computed({
+        get(): string {
+            return scheduleReminderSystemCommunication.value?.value ?? "";
+        },
+        set(newValue: string) {
+            if (!newValue) {
+                scheduleReminderSystemCommunication.value = null;
+                return;
+            }
+
+            const item = (props.options.systemCommunicationOptions ?? []).find(i => (i.value ?? "") === newValue) ?? null;
+            scheduleReminderSystemCommunication.value = item
+                ? { value: item.value ?? "", text: item.text ?? "" }
+                : null;
+        }
+    });
+
+    const attendanceReminderSystemCommunicationGuid = computed({
+        get(): string {
+            return attendanceReminderSystemCommunication.value?.value ?? "";
+        },
+        set(newValue: string) {
+            if (!newValue) {
+                attendanceReminderSystemCommunication.value = null;
+                return;
+            }
+
+            const item = (props.options.systemCommunicationOptions ?? []).find(i => (i.value ?? "") === newValue) ?? null;
+            attendanceReminderSystemCommunication.value = item
+                ? { value: item.value ?? "", text: item.text ?? "" }
+                : null;
+        }
+    });
+
+    const rsvpReminderSystemCommunicationGuid = computed({
+        get(): string {
+            return rsvpReminderSystemCommunication.value?.value ?? "";
+        },
+        set(newValue: string) {
+            if (!newValue) {
+                rsvpReminderSystemCommunication.value = null;
+                return;
+            }
+
+            const item = (props.options.rsvpSystemCommunicationOptions ?? []).find(i => (i.value ?? "") === newValue) ?? null;
+            rsvpReminderSystemCommunication.value = item
+                ? { value: item.value ?? "", text: item.text ?? "" }
+                : null;
+        }
+    });
+
+    const groupRoleOptions = computed<ListItemBag[]>(() => {
+        return (roles.value ?? []).map(r => ({
+            value: r.guid,
+            text: r.name
+        }));
+    });
+
+    const groupAttributeOptions = computed<ListItemBag[]>(() => {
+        return (groupAttributes.value ?? []).map(a => ({
+            value: a.guid,
+            text: a.name
+        }));
+    });
+
+    const groupRequirementRoles = computed((): string[] => {
+        return (groupRequirements.value ?? [])
+            .map(r => r.role?.value)
+            .filter(r => r) as string[];
+    });
+
+    const workflowTriggerRoles = computed((): string[] => {
+        const roles: string[] = [];
+        (groupMemberWorkflowTriggers.value ?? []).forEach(t => {
+            if (t.toRoleGuid) roles.push(t.toRoleGuid);
+            if (t.fromRoleGuid) roles.push(t.fromRoleGuid);
+        });
+
+        return roles;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Loads inherited group, group member, and group type attributes based on the currently-selected
+     * "Inherited Group Type" value.
+     */
+    async function loadAttributesForGroupType(): Promise<void> {
+        const inheritedGroupTypeGuid = inheritedGroupType.value?.value ?? emptyGuid;
+
+        const result = await invokeBlockAction<GetInheritedAttributesResponseBag>("GetInheritedAttributes", {
+            inheritedGroupTypeGuid
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage || "Failed to load any related attributes for this group type.";
+            return;
+        }
+
+        if (result.data) {
+            inheritedGroupAttributes.value = result.data.inheritedGroupAttributes ?? [];
+            inheritedGroupMemberAttributes.value = result.data.inheritedGroupMemberAttributes ?? [];
+            inheritedGroupTypeAttributes.value = result.data.inheritedGroupTypeAttributes ?? [];
+        }
+    }
+
+    /**
+     * Creates a new schedule exclusion record for the grid and edit modal.
+     */
+    function createNewScheduleExclusion(): GroupTypeGroupScheduleExclusionBag {
+        return {
+            guid: newGuid(),
+            startDate: null,
+            endDate: null
+        };
+    }
+
+    /**
+     * Called when the Add Schedule Exclusion button is clicked.
+     */
+    function onAddScheduleExclusion(): void {
+        isEditingScheduleExclusion.value = false;
+        scheduleExclusionsErrorMessage.value = null;
+        editingScheduleExclusion.value = createNewScheduleExclusion();
+
+        isScheduleExclusionModalVisible.value = true;
+    }
+
+    /**
+     * Called when the Edit button for a schedule exclusion row is clicked.
+     *
+     * @param guid The unique identifier of the schedule exclusion to edit.
+     */
+    function onEditScheduleExclusion(guid: string): void {
+        const exclusion = scheduleExclusions.value.find(e => e.guid === guid);
+
+        if (!exclusion) {
+            return;
+        }
+
+        isEditingScheduleExclusion.value = true;
+        editingScheduleExclusion.value = { ...exclusion };
+        scheduleExclusionsErrorMessage.value = null;
+        isScheduleExclusionModalVisible.value = true;
+    }
+
+    /**
+     * Called when the Delete button for a schedule exclusion row is clicked.
+     *
+     * @param guid The unique identifier of the schedule exclusion to delete.
+     */
+    async function onDeleteScheduleExclusion(guid: string): Promise<void> {
+        const result = await invokeBlockAction<CanDeleteResponseBag>("CanDeleteEntity", {
+            request: {
+                entityKey: EntityKey.ScheduleExclusion,
+                entityGuid: guid
+            } as CanDeleteRequestBag
+        });
+
+        if (!result.isSuccess || !result.data) {
+            scheduleExclusionsErrorMessage.value = result.errorMessage || "Unable to delete this schedule exclusion.";
+            return;
+        }
+
+        if (!result.data.canDelete) {
+            scheduleExclusionsErrorMessage.value = result.data.errorMessage || "This schedule exclusion cannot be deleted.";
+            return;
+        }
+
+        const updatedExclusions = scheduleExclusions.value.filter(e => e.guid !== guid);
+        scheduleExclusions.value = updatedExclusions;
+        scheduleExclusionsErrorMessage.value = null;
+    }
+
+    /**
+     * Called when the schedule exclusion modal Save button is clicked.
+     * Validates the date range and then updates the backing list.
+     */
+    function onSaveScheduleExclusion(): void {
+        const startDate = editingScheduleExclusion.value.startDate;
+        const endDate = editingScheduleExclusion.value.endDate;
+
+        if (!startDate || !endDate) {
+            scheduleExclusionsErrorMessage.value = "Both start and end dates are required for a schedule exclusion.";
+            isScheduleExclusionModalVisible.value = false;
+            return;
+        }
+
+        if (RockDateTime.parseISO(startDate)! > RockDateTime.parseISO(endDate)!) {
+            scheduleExclusionsErrorMessage.value = "The start date for a schedule exclusion cannot be after the end date.";
+            isScheduleExclusionModalVisible.value = false;
+            return;
+        }
+
+        const currentExclusions = [...scheduleExclusions.value];
+        const index = currentExclusions.findIndex(e => e.guid === editingScheduleExclusion.value.guid);
+
+        let updatedExclusions: GroupTypeGroupScheduleExclusionBag[];
+        if (index >= 0) {
+            updatedExclusions = [...currentExclusions];
+            updatedExclusions.splice(index, 1, { ...editingScheduleExclusion.value });
+        }
+        else {
+            updatedExclusions = [...currentExclusions, { ...editingScheduleExclusion.value }];
+        }
+
+        // Sort by start date
+        updatedExclusions.sort((a, b) => {
+            const dateA = new Date(a.startDate || 0).getTime();
+            const dateB = new Date(b.startDate || 0).getTime();
+            return dateA - dateB;
+        });
+
+        scheduleExclusions.value = updatedExclusions;
+        scheduleExclusionsErrorMessage.value = null;
+        isScheduleExclusionModalVisible.value = false;
+    }
+
+    // #endregion Functions
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+
+        // GENERAL
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(groupTypeColor, props.modelValue.bag?.groupTypeColor ?? "");
+        updateRefValue(iconCssClass, props.modelValue.bag?.iconCssClass ?? "");
+        updateRefValue(groupTypePurposeValue, props.modelValue.bag?.groupTypePurposeValue ?? null);
+        updateRefValue(inheritedGroupType, props.modelValue.bag?.inheritedGroupType ?? null);
+        updateRefValue(allowAnyChildGroupType, props.modelValue.bag?.allowAnyChildGroupType ?? false);
+        updateRefValue(childGroupTypes, props.modelValue.bag?.childGroupTypes ?? []);
+        updateRefValue(groupsRequireCampus, props.modelValue.bag?.groupsRequireCampus ?? false);
+        updateRefValue(showAdministrator, props.modelValue.bag?.showAdministrator ?? false);
+        updateRefValue(enableSpecificGroupRequirements, props.modelValue.bag?.enableSpecificGroupRequirements ?? false);
+        updateRefValue(locationSelectionMode, props.modelValue.bag?.locationSelectionMode ?? GroupLocationPickerMode.None);
+        updateRefValue(locationTypes, props.modelValue.bag?.locationTypes ?? []);
+        updateRefValue(allowMultipleLocations, props.modelValue.bag?.allowMultipleLocations ?? false);
+        updateRefValue(enableLocationSchedules, props.modelValue.bag?.enableLocationSchedules ?? false);
+        updateRefValue(groupCapacityRule, props.modelValue.bag?.groupCapacityRule ?? 0);
+        updateRefValue(isCapacityRequired, props.modelValue.bag?.isCapacityRequired ?? false);
+        updateRefValue(groupStatusDefinedType, props.modelValue.bag?.groupStatusDefinedType ?? null);
+        updateRefValue(groupMemberRecordSourceValue, props.modelValue.bag?.groupMemberRecordSourceValue ?? null);
+        updateRefValue(allowGroupSpecificRecordSource, props.modelValue.bag?.allowGroupSpecificRecordSource ?? false);
+        updateRefValue(allowSpecificGroupMemberAttributes, props.modelValue.bag?.allowSpecificGroupMemberAttributes ?? false);
+        updateRefValue(allowSpecificGroupMemberWorkflows, props.modelValue.bag?.allowSpecificGroupMemberWorkflows ?? false);
+        updateRefValue(enableGroupTag, props.modelValue.bag?.enableGroupTag ?? false);
+        updateRefValue(ignorePersonInactivated, props.modelValue.bag?.ignorePersonInactivated ?? false);
+        updateRefValue(isIndexEnabled, props.modelValue.bag?.isIndexEnabled ?? false);
+        updateRefValue(enableGroupHistory, props.modelValue.bag?.enableGroupHistory ?? false);
+        updateRefValue(allowGroupSync, props.modelValue.bag?.allowGroupSync ?? false);
+        updateRefValue(enableInactiveReason, props.modelValue.bag?.enableInactiveReason ?? false);
+        updateRefValue(requiresInactiveReason, props.modelValue.bag?.requiresInactiveReason ?? false);
+
+        // DISPLAY OPTIONS
+        updateRefValue(groupTerm, props.modelValue.bag?.groupTerm ?? "");
+        updateRefValue(groupMemberTerm, props.modelValue.bag?.groupMemberTerm ?? "");
+        updateRefValue(administratorTerm, props.modelValue.bag?.administratorTerm ?? "");
+        updateRefValue(showInGroupList, props.modelValue.bag?.showInGroupList ?? false);
+        updateRefValue(showInNavigation, props.modelValue.bag?.showInNavigation ?? false);
+        updateRefValue(showConnectionStatus, props.modelValue.bag?.showConnectionStatus ?? false);
+        updateRefValue(showMaritalStatus, props.modelValue.bag?.showMaritalStatus ?? false);
+        updateRefValue(groupViewLavaTemplate, props.modelValue.bag?.groupViewLavaTemplate ?? "");
+
+        // ROLES
+        updateRefValue(roles, props.modelValue.bag?.roles ?? []);
+        updateRefValue(defaultGroupRole, props.modelValue.bag?.defaultGroupRole ?? null);
+
+        // ATTRIBUTE SECTIONS
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(groupAttributes, props.modelValue.bag?.groupAttributes ?? []);
+        updateRefValue(groupMemberAttributes, props.modelValue.bag?.groupMemberAttributes ?? []);
+        updateRefValue(groupTypeAttributes, props.modelValue.bag?.groupTypeAttributes ?? []);
+
+        // SCHEDULING
+        updateRefValue(isSchedulingEnabled, props.modelValue.bag?.isSchedulingEnabled ?? false);
+        updateRefValue(scheduleConfirmationSystemCommunication, props.modelValue.bag?.scheduleConfirmationSystemCommunication ?? null);
+        updateRefValue(requiresReasonIfDeclineSchedule, props.modelValue.bag?.requiresReasonIfDeclineSchedule ?? false);
+        updateRefValue(scheduleConfirmationEmailOffsetDays, props.modelValue.bag?.scheduleConfirmationEmailOffsetDays ?? 4);
+        updateRefValue(scheduleConfirmationLogic, props.modelValue.bag?.scheduleConfirmationLogic ?? ScheduleConfirmationLogic.Ask);
+        updateRefValue(scheduleCoordinatorNotificationTypes, props.modelValue.bag?.scheduleCoordinatorNotificationTypes ?? ScheduleCoordinatorNotificationType.None);
+        updateRefValue(scheduleReminderSystemCommunication, props.modelValue.bag?.scheduleReminderSystemCommunication ?? null);
+        updateRefValue(scheduleReminderEmailOffsetDays, props.modelValue.bag?.scheduleReminderEmailOffsetDays ?? 2);
+        updateRefValue(scheduleCancellationWorkflowType, props.modelValue.bag?.scheduleCancellationWorkflowType ?? null);
+
+        // PEER NETWORK
+        updateRefValue(isPeerNetworkEnabled, props.modelValue.bag?.isPeerNetworkEnabled ?? false);
+        updateRefValue(relationshipStrength, props.modelValue.bag?.relationshipStrength ?? 0);
+        updateRefValue(relationshipGrowthEnabled, props.modelValue.bag?.relationshipGrowthEnabled ?? false);
+        updateRefValue(leaderToLeaderRelationshipMultiplier, props.modelValue.bag?.leaderToLeaderRelationshipMultiplier ?? 1.00);
+        updateRefValue(leaderToNonLeaderRelationshipMultiplier, props.modelValue.bag?.leaderToNonLeaderRelationshipMultiplier ?? 1.00);
+        updateRefValue(nonLeaderToLeaderRelationshipMultiplier, props.modelValue.bag?.nonLeaderToLeaderRelationshipMultiplier ?? 1.00);
+        updateRefValue(nonLeaderToNonLeaderRelationshipMultiplier, props.modelValue.bag?.nonLeaderToNonLeaderRelationshipMultiplier ?? 1.00);
+
+        // ATTENDANCE
+        updateRefValue(takesAttendance, props.modelValue.bag?.takesAttendance ?? false);
+        updateRefValue(allowedScheduleTypes, props.modelValue.bag?.allowedScheduleTypes ?? ScheduleType.None);
+        updateRefValue(scheduleExclusions, props.modelValue.bag?.scheduleExclusions ?? []);
+        updateRefValue(attendanceCountsAsWeekendService, props.modelValue.bag?.attendanceCountsAsWeekendService ?? false);
+        updateRefValue(groupAttendanceRequiresLocation, props.modelValue.bag?.groupAttendanceRequiresLocation ?? false);
+        updateRefValue(groupAttendanceRequiresSchedule, props.modelValue.bag?.groupAttendanceRequiresSchedule ?? false);
+        updateRefValue(sendAttendanceReminder, props.modelValue.bag?.sendAttendanceReminder ?? false);
+        updateRefValue(attendanceReminderSystemCommunication, props.modelValue.bag?.attendanceReminderSystemCommunication ?? null);
+        updateRefValue(attendanceReminderSendStartOffsetMinutes, props.modelValue.bag?.attendanceReminderSendStartOffsetMinutes ?? null);
+        updateRefValue(attendanceReminderFollowupDays, props.modelValue.bag?.attendanceReminderFollowupDays ?? null);
+
+        // RSVP
+        updateRefValue(enableRSVP, props.modelValue.bag?.enableRSVP ?? false);
+        updateRefValue(rsvpReminderSystemCommunication, props.modelValue.bag?.rsvpReminderSystemCommunication ?? null);
+        updateRefValue(rsvpReminderOffsetDays, props.modelValue.bag?.rsvpReminderOffsetDays ?? 0);
+
+        // CHAT
+        updateRefValue(isChatAllowed, props.modelValue.bag?.isChatAllowed ?? false);
+        updateRefValue(isChatEnabledForAllGroups, props.modelValue.bag?.isChatEnabledForAllGroups ?? false);
+        updateRefValue(isLeavingChatChannelAllowed, props.modelValue.bag?.isLeavingChatChannelAllowed ?? false);
+        updateRefValue(isChatChannelPublic, props.modelValue.bag?.isChatChannelPublic ?? false);
+        updateRefValue(isChatChannelAlwaysShown, props.modelValue.bag?.isChatChannelAlwaysShown ?? false);
+        updateRefValue(chatPushNotificationMode, props.modelValue.bag?.chatPushNotificationMode ?? ChatNotificationMode.AllMessages);
+
+        // GROUP REQUIREMENTS
+        updateRefValue(groupRequirements, props.modelValue.bag?.groupRequirements ?? null);
+
+        // GROUP MEMBER WORKFLOWS
+        updateRefValue(groupMemberWorkflowTriggers, props.modelValue.bag?.groupMemberWorkflowTriggers ?? null);
+
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([groupAttributes, groupMemberAttributes, groupTypeAttributes, attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<GroupTypeBag> = {
+            bag: { ...props.modelValue.bag } as GroupTypeBag
+        };
+
+        // GENERAL
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "groupTypeColor", groupTypeColor.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "groupTypePurposeValue", groupTypePurposeValue.value);
+        setPropertiesBoxValue(newValue, "inheritedGroupType", inheritedGroupType.value);
+        setPropertiesBoxValue(newValue, "allowAnyChildGroupType", allowAnyChildGroupType.value);
+        setPropertiesBoxValue(newValue, "childGroupTypes", childGroupTypes.value);
+        setPropertiesBoxValue(newValue, "groupsRequireCampus", groupsRequireCampus.value);
+        setPropertiesBoxValue(newValue, "showAdministrator", showAdministrator.value);
+        setPropertiesBoxValue(newValue, "enableSpecificGroupRequirements", enableSpecificGroupRequirements.value);
+        setPropertiesBoxValue(newValue, "locationSelectionMode", locationSelectionMode.value);
+        setPropertiesBoxValue(newValue, "locationTypes", locationTypes.value);
+        setPropertiesBoxValue(newValue, "allowMultipleLocations", allowMultipleLocations.value);
+        setPropertiesBoxValue(newValue, "enableLocationSchedules", enableLocationSchedules.value);
+        setPropertiesBoxValue(newValue, "groupCapacityRule", groupCapacityRule.value);
+        setPropertiesBoxValue(newValue, "isCapacityRequired", isCapacityRequired.value);
+        setPropertiesBoxValue(newValue, "groupStatusDefinedType", groupStatusDefinedType.value);
+        setPropertiesBoxValue(newValue, "groupMemberRecordSourceValue", groupMemberRecordSourceValue.value);
+        setPropertiesBoxValue(newValue, "allowGroupSpecificRecordSource", allowGroupSpecificRecordSource.value);
+        setPropertiesBoxValue(newValue, "allowSpecificGroupMemberAttributes", allowSpecificGroupMemberAttributes.value);
+        setPropertiesBoxValue(newValue, "allowSpecificGroupMemberWorkflows", allowSpecificGroupMemberWorkflows.value);
+        setPropertiesBoxValue(newValue, "enableGroupTag", enableGroupTag.value);
+        setPropertiesBoxValue(newValue, "ignorePersonInactivated", ignorePersonInactivated.value);
+        setPropertiesBoxValue(newValue, "isIndexEnabled", isIndexEnabled.value);
+        setPropertiesBoxValue(newValue, "enableGroupHistory", enableGroupHistory.value);
+        setPropertiesBoxValue(newValue, "allowGroupSync", allowGroupSync.value);
+        setPropertiesBoxValue(newValue, "enableInactiveReason", enableInactiveReason.value);
+        setPropertiesBoxValue(newValue, "requiresInactiveReason", requiresInactiveReason.value);
+
+        // DISPLAY OPTIONS
+        setPropertiesBoxValue(newValue, "groupTerm", groupTerm.value);
+        setPropertiesBoxValue(newValue, "groupMemberTerm", groupMemberTerm.value);
+        setPropertiesBoxValue(newValue, "administratorTerm", administratorTerm.value);
+        setPropertiesBoxValue(newValue, "showInGroupList", showInGroupList.value);
+        setPropertiesBoxValue(newValue, "showInNavigation", showInNavigation.value);
+        setPropertiesBoxValue(newValue, "showConnectionStatus", showConnectionStatus.value);
+        setPropertiesBoxValue(newValue, "showMaritalStatus", showMaritalStatus.value);
+        setPropertiesBoxValue(newValue, "groupViewLavaTemplate", groupViewLavaTemplate.value);
+
+        // ROLES
+        setPropertiesBoxValue(newValue, "roles", roles.value);
+        setPropertiesBoxValue(newValue, "defaultGroupRole", defaultGroupRole.value);
+
+        // ATTRIBUTE SECTIONS
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "groupAttributes", groupAttributes.value);
+        setPropertiesBoxValue(newValue, "groupMemberAttributes", groupMemberAttributes.value);
+        setPropertiesBoxValue(newValue, "groupTypeAttributes", groupTypeAttributes.value);
+
+        // SCHEDULING
+        setPropertiesBoxValue(newValue, "isSchedulingEnabled", isSchedulingEnabled.value);
+        setPropertiesBoxValue(newValue, "scheduleConfirmationSystemCommunication", scheduleConfirmationSystemCommunication.value);
+        setPropertiesBoxValue(newValue, "requiresReasonIfDeclineSchedule", requiresReasonIfDeclineSchedule.value);
+        setPropertiesBoxValue(newValue, "scheduleConfirmationEmailOffsetDays", scheduleConfirmationEmailOffsetDays.value);
+        setPropertiesBoxValue(newValue, "scheduleConfirmationLogic", scheduleConfirmationLogic.value);
+        setPropertiesBoxValue(newValue, "scheduleCoordinatorNotificationTypes", scheduleCoordinatorNotificationTypes.value);
+        setPropertiesBoxValue(newValue, "scheduleReminderSystemCommunication", scheduleReminderSystemCommunication.value);
+        setPropertiesBoxValue(newValue, "scheduleReminderEmailOffsetDays", scheduleReminderEmailOffsetDays.value);
+        setPropertiesBoxValue(newValue, "scheduleCancellationWorkflowType", scheduleCancellationWorkflowType.value);
+
+        // PEER NETWORK
+        setPropertiesBoxValue(newValue, "isPeerNetworkEnabled", isPeerNetworkEnabled.value);
+        setPropertiesBoxValue(newValue, "relationshipStrength", relationshipStrength.value);
+        setPropertiesBoxValue(newValue, "relationshipGrowthEnabled", relationshipGrowthEnabled.value);
+        setPropertiesBoxValue(newValue, "leaderToLeaderRelationshipMultiplier", leaderToLeaderRelationshipMultiplier.value);
+        setPropertiesBoxValue(newValue, "leaderToNonLeaderRelationshipMultiplier", leaderToNonLeaderRelationshipMultiplier.value);
+        setPropertiesBoxValue(newValue, "nonLeaderToLeaderRelationshipMultiplier", nonLeaderToLeaderRelationshipMultiplier.value);
+        setPropertiesBoxValue(newValue, "nonLeaderToNonLeaderRelationshipMultiplier", nonLeaderToNonLeaderRelationshipMultiplier.value);
+
+        // ATTENDANCE
+        setPropertiesBoxValue(newValue, "takesAttendance", takesAttendance.value);
+        setPropertiesBoxValue(newValue, "allowedScheduleTypes", allowedScheduleTypes.value);
+        setPropertiesBoxValue(newValue, "scheduleExclusions", scheduleExclusions.value);
+        setPropertiesBoxValue(newValue, "attendanceCountsAsWeekendService", attendanceCountsAsWeekendService.value);
+        setPropertiesBoxValue(newValue, "groupAttendanceRequiresLocation", groupAttendanceRequiresLocation.value);
+        setPropertiesBoxValue(newValue, "groupAttendanceRequiresSchedule", groupAttendanceRequiresSchedule.value);
+        setPropertiesBoxValue(newValue, "sendAttendanceReminder", sendAttendanceReminder.value);
+        setPropertiesBoxValue(newValue, "attendanceReminderSystemCommunication", attendanceReminderSystemCommunication.value);
+        setPropertiesBoxValue(newValue, "attendanceReminderSendStartOffsetMinutes", attendanceReminderSendStartOffsetMinutes.value);
+        setPropertiesBoxValue(newValue, "attendanceReminderFollowupDays", attendanceReminderFollowupDays.value);
+
+        // RSVP
+        setPropertiesBoxValue(newValue, "enableRSVP", enableRSVP.value);
+        setPropertiesBoxValue(newValue, "rsvpReminderSystemCommunication", rsvpReminderSystemCommunication.value);
+        setPropertiesBoxValue(newValue, "rsvpReminderOffsetDays", rsvpReminderOffsetDays.value);
+
+        // CHAT
+        setPropertiesBoxValue(newValue, "isChatAllowed", isChatAllowed.value);
+        setPropertiesBoxValue(newValue, "isChatEnabledForAllGroups", isChatEnabledForAllGroups.value);
+        setPropertiesBoxValue(newValue, "isLeavingChatChannelAllowed", isLeavingChatChannelAllowed.value);
+        setPropertiesBoxValue(newValue, "isChatChannelPublic", isChatChannelPublic.value);
+        setPropertiesBoxValue(newValue, "isChatChannelAlwaysShown", isChatChannelAlwaysShown.value);
+        setPropertiesBoxValue(newValue, "chatPushNotificationMode", chatPushNotificationMode.value);
+
+        // GROUP REQUIREMENTS
+        setPropertiesBoxValue(newValue, "groupRequirements", groupRequirements.value);
+
+        // GROUP MEMBER WORKFLOWS
+        setPropertiesBoxValue(newValue, "groupMemberWorkflowTriggers", groupMemberWorkflowTriggers.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // #region Watchers
+
+    watch(() => inheritedGroupType.value?.value, () => {
+        loadAttributesForGroupType();
+    }, { immediate: true });
+
+    watch(isChatAllowed, async (value) => {
+        chatChannelsDisabledMessage.value = null;
+
+        if (value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<number>("GetChatEnabledGroupCount");
+
+        // Warn if there are any chat channels that will be disabled
+        // if they disable chat for this group type.
+        if (result.isSuccess && result.data && result.data > 0) {
+            chatChannelsDisabledMessage.value = `${result.data.toLocaleString()} chat ${pluralize("channel", result.data)} will be immediately disabled if you disable chat for this group type.`;
+        }
+    });
+
+    // #endregion Watchers
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

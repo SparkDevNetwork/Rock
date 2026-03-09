@@ -549,7 +549,6 @@ namespace Rock.Model
                         groupMemberRequirement.RequirementWarningDateTime = currentDateTime;
                     }
 
-                    groupMemberRequirement.RequirementMetDateTime = null;
                     groupMemberRequirement.RequirementFailDateTime = null;
                 }
                 else

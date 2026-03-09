@@ -153,7 +153,7 @@ namespace Rock.Model
             target.Order = source.Order;
             target.PhotoId = source.PhotoId;
             target.PublicName = source.PublicName;
-            target.RequestDueDateOffestInDays = source.RequestDueDateOffestInDays;
+            target.RequestDueDateOffsetInDays = source.RequestDueDateOffsetInDays;
             target.RequestDueSoonOffsetInDays = source.RequestDueSoonOffsetInDays;
             target.ShowCampusOnTransfer = source.ShowCampusOnTransfer;
             target.ShowConnectButton = source.ShowConnectButton;

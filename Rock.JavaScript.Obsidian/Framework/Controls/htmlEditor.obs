@@ -637,7 +637,7 @@
                 // Define the options for the `link` toolbar button.
                 // https://www.tiny.cloud/docs/plugins/opensource/link/
                 link_context_toolbar: true,
-                link_assume_external_targets: "https",
+                link_assume_external_targets: false, // Do not automatically prepend with "http://" or "https://" in case relative links are being used.
                 link_title: false,
                 default_link_target: "_blank",
                 target_list: [

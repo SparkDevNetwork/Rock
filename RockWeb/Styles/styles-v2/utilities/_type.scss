@@ -92,7 +92,7 @@ mark,
 // Text size
 .text-lg { font-size: var(--font-size-h5); }
 .text-md { font-size: var(--font-size-regular); }
-.text-sm { font-size: var(--font-size-xsmall); }
+.text-sm { font-size: var(--font-size-small); }
 .text-xs { font-size: var(--font-size-xsmall); }
 
 // Alignment
@@ -198,7 +198,7 @@ ul,
 ol {
   margin-top: 0;
   // margin-bottom: calc($line-height-computed / 2);
-  margin-bottom: 0;
+  margin-bottom: var(--spacing-medium);
   ul,
   ol {
     margin-bottom: 0;

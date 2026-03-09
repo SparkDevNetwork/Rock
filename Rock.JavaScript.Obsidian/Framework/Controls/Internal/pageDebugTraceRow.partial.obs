@@ -7,6 +7,7 @@
                 <i v-else-if="!isExpanded" class="ti ti-chevron-right fa-fw" @click="isExpanded = true"></i>
                 <i v-else class="ti ti-chevron-down fa-fw" @click="isExpanded = false"></i>
 
+                <i v-if="isErrorSpan" class="ti ti-exclamation-circle text-danger"></i>
                 <span class="trace-name" @click="emit('select', trace)">{{ getTraceName(trace) }}</span>
             </div>
         </td>
@@ -19,9 +20,9 @@
             {{ asFormattedString(trace.duration, 2) }} ms
         </td>
 
-        <td class="trace-waterfall">
-            <div class="trace-chart">
-                <span class="trace-chart-bar" :style="waterfallStyle"></span>
+        <td class="waterfall-cell">
+            <div class="waterfall-cell-chart">
+                <span class="waterfall-cell-chart-bar" :style="waterfallStyle"></span>
             </div>
         </td>
     </tr>
@@ -36,24 +37,6 @@
                        @select="emit('select', $event)" />
 </template>
 
-<style scoped>
-.ti-chevron-right,
-.ti-chevron-down,
-.trace-name {
-    cursor: pointer;
-}
-
-.trace-title {
-    display: flex;
-    gap: var(--spacing-small);
-    align-items: center;
-}
-
-.trace-title .trace-name {
-    flex-grow: 1;
-}
-</style>
-
 <script setup lang="ts">
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
     import { computed, PropType, ref, watch } from "vue";
@@ -63,6 +46,7 @@
         traceId?: string | null;
         spanId?: string | null;
         parentSpanId?: string | null;
+        status?: string | null;
         name?: string | null;
         startTime: number;
         duration: number;
@@ -120,6 +104,10 @@
         const pixels = props.indentLevel * 24;
         return `padding-left: ${pixels}px`;
 
+    });
+
+    const isErrorSpan = computed((): boolean => {
+        return props.trace.status === "Error";
     });
 
     const waterfallStyle = computed((): string => {

@@ -120,6 +120,11 @@ namespace Rock.Blocks.Lms
 
 </style>
 
+{% if CourseInfo.Id == 0 %}
+    <div class=""alert alert-warning"">You are not authorized to view this content.</div>
+    {% return %}
+{% endif %}
+
 <div class=""d-flex flex-column gap-4"">
     
     <div class=""hero-section"">

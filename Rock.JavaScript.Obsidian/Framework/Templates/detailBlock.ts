@@ -475,7 +475,7 @@ export default defineComponent({
          * @returns A string that contains the CSS classes to apply to the DOM element.
          */
         const getClassForIconAction = (action: PanelAction): string => {
-            let cssClass = action.handler ? "action clickable" : "action";
+            let cssClass = action.handler ? "btn btn-panel-action" : "btn btn-panel-action not-clickable";
 
             if (action.type !== "default" && action.type !== "link") {
                 cssClass += ` text-${action.type}`;
@@ -922,7 +922,7 @@ export default defineComponent({
     </template>
 
     <template #headerActions>
-        <div v-if="showExperienceMode" class="action panel-experience-mode">
+        <div v-if="showExperienceMode" class="panel-experience-mode">
             <ExperienceModePicker />
         </div>
 

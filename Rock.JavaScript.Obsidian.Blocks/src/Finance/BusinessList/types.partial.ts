@@ -29,6 +29,7 @@ export type GridSettingsOptions = {
 
 export type Row = {
     id: number;
+    idKey: string;
     businessName: string;
     phoneNumber: string;
     email: string;

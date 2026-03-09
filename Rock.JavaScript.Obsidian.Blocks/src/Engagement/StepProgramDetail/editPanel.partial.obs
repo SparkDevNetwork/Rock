@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentSectionContainer sidebar>
+    <ContentSectionContainer :sidebar="false">
         <ContentSection light>
             <ContentStack>
                 <div class="row">
@@ -45,6 +45,7 @@
                                  v-model="defaultListView"
                                  rules="required"
                                  label="Default List View"
+                                 help="Choose the default view used when showing this program’s steps on a person’s profile page."
                                  :items="viewModes" />
             </ContentStack>
         </ContentSection>
@@ -111,12 +112,12 @@
             </Modal>
         </ContentSection>
 
-        <ContentSection title="Step Type Attributes"
+        <ContentSection title="Type Attributes"
                         icon="ti ti-binary-tree-2">
             <ContentStack>
                 <Grid :data="attributesGridData"
                       keyField="key"
-                      itemTerm="Step Type Attribute"
+                      itemTerm="Type Attribute"
                       liveUpdates
                       light
                       @addItem="onAddAttribute">
@@ -139,7 +140,7 @@
             </ContentStack>
 
             <Modal v-model="isAttributeModalOpen"
-                   title="Step Type Attributes">
+                   title="Type Attributes">
 
                 <RockForm v-model:submit="saveAttribute"
                           @submit="onSaveAttribute">
@@ -167,8 +168,9 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Workflows"
-                        icon="ti ti-route-alt-right">
+        <ContentSection v-if="store.state.trailblazerMode"
+                        title="Workflows"
+                        icon="ti ti-settings-cog">
             <ContentStack>
                 <Grid :data="workflowGridData"
                       keyField="key"
@@ -275,6 +277,7 @@
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { CompletionFlow, CompletionFlowDescription } from "@Obsidian/Enums/Engagement/completionFlow";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { useStore } from "@Obsidian/PageState";
 
     const props = defineProps({
         modelValue: {
@@ -313,6 +316,7 @@
     const defaultListView = propertyRef(props.modelValue?.bag?.defaultListView?.toString() ?? "", "DefaultListView");
     const viewModes = ref(props.options.viewModes ?? []);
     const areViewModesDisplayed = ref(props.options.areViewDisplayOptionsVisible ?? false);
+    const store = useStore();
 
     const stepStatuses = ref(props.modelValue?.bag?.statuses ?? []);
     const isStatusModalOpen = ref(false);

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentSectionWrapper :sidebar="false">
+    <ContentSectionContainer :sidebar="false">
         <ContentSection light>
             <ContentStack>
                 <div class="row">
@@ -37,13 +37,13 @@
                 </ul>
             </template>
         </ContentSection>
-    </ContentSectionWrapper>
+    </ContentSectionContainer>
 </template>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
-    import ContentSectionWrapper from "@Obsidian/Controls/contentSectionWrapper.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import InstructionList from "./instructionList.partial.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";

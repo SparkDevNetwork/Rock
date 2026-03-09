@@ -175,7 +175,7 @@ namespace Rock.Data
         /// use <see cref="WrapTransactionIf(Func{bool})" /> instead.
         /// </summary>
         /// <param name="action">The action.</param>
-        public void WrapTransaction( Action action )
+        public virtual void WrapTransaction( Action action )
         {
             WrapTransactionIf( () =>
             {
@@ -189,7 +189,7 @@ namespace Rock.Data
         /// If the action returns false, the transaction will be rolled back.
         /// </summary>
         /// <param name="action">The action.</param>
-        public bool WrapTransactionIf( Func<bool> action )
+        public virtual bool WrapTransactionIf( Func<bool> action )
         {
             if ( !_transactionInProgress )
             {

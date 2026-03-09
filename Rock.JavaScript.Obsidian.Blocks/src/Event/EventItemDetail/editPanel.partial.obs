@@ -80,7 +80,10 @@
         </Panel>
 
         <Panel title="Event Occurrence Attributes" hasCollapse>
-            <Grid :data="occurenceAttributesGridData" keyField="key" itemTerm="Event Occurrence Attributes" liveUpdates light @addItem="onAddAttribute">
+            <Grid :data="occurenceAttributesGridData" keyField="guid" itemTerm="Event Occurrence Attributes" liveUpdates
+                  light @addItem="onAddAttribute">
+                <ReorderColumn @orderChanged="onOrderChanged" />
+
                 <TextColumn name="name"
                             field="name"
                             title="Attribute" />
@@ -138,7 +141,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, reactive, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -157,7 +160,7 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { EventItemOccurenceAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventItemOccurenceAttributeBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -217,12 +220,14 @@
 
     // #region Computed Values
 
-    const audienceGridData: GridDataBag = reactive<GridDataBag>({
-        rows: audiences.value.map((searchKey: ListItemBag) => toAudienceRowItem(searchKey))
+    const audienceGridData = computed((): GridDataBag => {
+        const rows = audiences.value.map((audience: ListItemBag) => toAudienceRowItem(audience));
+        return { rows };
     });
 
-    const occurenceAttributesGridData: GridDataBag = reactive<GridDataBag>({
-        rows: eventOccurenceAttributes.value.map(x => toAttributeGridRowItem(x))
+    const occurenceAttributesGridData = computed((): GridDataBag => {
+        const rows = (eventOccurenceAttributes.value ?? []).map(x => toAttributeGridRowItem(x));
+        return { rows };
     });
 
     const computedAudiences = computed((): ListItemBag[] => {
@@ -248,7 +253,7 @@
         }
 
         return {
-            key: bag.attribute?.guid,
+            guid: bag.attribute?.guid,
             name: bag.attribute?.name,
             fieldType: bag.fieldType,
             description: bag.attribute?.description,
@@ -270,8 +275,6 @@
             const audience = availableAudiences.value.find(x => x.value === audienceValue);
             if (audience) {
                 audiences.value.push(audience);
-                const rowItem = toAudienceRowItem(audience);
-                audienceGridData.rows?.push(rowItem);
             }
         }
 
@@ -285,15 +288,6 @@
     const onDeleteAudience = async (key: string): Promise<void> => {
         isAudienceModalOpen.value = false;
         audiences.value = audiences.value.filter(s => s.value !== key);
-
-        // Update the grid.
-        if (audienceGridData.rows) {
-            const index = audienceGridData.rows.findIndex(r => r.key === key);
-
-            if (index !== -1) {
-                audienceGridData.rows?.splice(index, 1);
-            }
-        }
     };
 
     const onAddAttribute = (): void => {
@@ -323,15 +317,6 @@
         if (deletedAttribute?.attribute) {
             reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== deletedAttribute.attribute?.key);
         }
-
-        // Update the grid.
-        if (occurenceAttributesGridData.rows) {
-            const index = occurenceAttributesGridData.rows.findIndex(r => r.key === key);
-
-            if (index !== -1) {
-                occurenceAttributesGridData.rows?.splice(index, 1);
-            }
-        }
     };
 
     const onSaveAttribute = (): void => {
@@ -340,19 +325,11 @@
             const index = eventOccurenceAttributes.value.findIndex(a => a.attribute?.guid === occurrenceAttribute.value?.guid);
 
             if (index !== -1) {
-                let editedAttribute = eventOccurenceAttributes.value.find(a => a.attribute?.guid === occurrenceAttribute.value?.guid);
-                let rowItem = occurenceAttributesGridData.rows?.find(x => x.key === occurrenceAttribute.value?.key);
+                const editedAttribute = eventOccurenceAttributes.value.find(a => a.attribute?.guid === occurrenceAttribute.value?.guid);
 
                 if (editedAttribute?.attribute) {
                     editedAttribute.attribute = occurrenceAttribute.value;
                     eventOccurenceAttributes.value.splice(index, 1, editedAttribute);
-                }
-
-                if (rowItem && occurenceAttributesGridData.rows && editedAttribute?.attribute) {
-                    // Update GridRowItem so changes are reflected in the UI.
-                    const rowIndex = occurenceAttributesGridData.rows.findIndex(r => r.key === occurrenceAttribute.value?.key);
-                    rowItem = toAttributeGridRowItem(editedAttribute);
-                    occurenceAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
                 }
             }
             else {
@@ -362,10 +339,6 @@
                 };
                 newEventAttribute.attribute.guid = newGuid();
                 eventOccurenceAttributes.value.push(newEventAttribute);
-
-                // Add new RowItem to the grid to represent the newly added attribute.
-                const newRowItem = toAttributeGridRowItem(newEventAttribute);
-                occurenceAttributesGridData.rows?.push(newRowItem);
             }
 
             isAttributeModalOpen.value = false;
@@ -376,6 +349,36 @@
     const onStartSaveAttribute = (): void => {
         submitEditAttribute.value = true;
     };
+
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const itemGuid = item["guid"] as string;
+        const beforeItemGuid = beforeItem?.["guid"] as string | null;
+
+        const currentItems = [...(eventOccurenceAttributes.value ?? [])];
+        const idx = currentItems.findIndex(i => i.attribute?.guid === itemGuid);
+
+        if (idx < 0) {
+            return false;
+        }
+
+        const itemToMove = currentItems.splice(idx, 1)[0];
+
+        if (beforeItemGuid) {
+            const beforeIndex = currentItems.findIndex(i => i.attribute?.guid === beforeItemGuid);
+            if (beforeIndex < 0) {
+                currentItems.push(itemToMove);
+            }
+            else {
+                currentItems.splice(beforeIndex, 0, itemToMove);
+            }
+        }
+        else {
+            currentItems.push(itemToMove);
+        }
+
+        eventOccurenceAttributes.value = currentItems;
+        return true;
+    }
 
     // #endregion
 

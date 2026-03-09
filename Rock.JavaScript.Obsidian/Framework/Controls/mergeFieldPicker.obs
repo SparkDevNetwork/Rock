@@ -17,7 +17,7 @@
                 <TextBox v-model="searchValue" size="small">
                     <template #inputGroupAppend>
                         <span class="input-group-btn">
-                            <button class="btn btn-default" @click.prevent="search"><i class="ti ti-search"></i></button>
+                            <button class="btn btn-default" type="button" @click.prevent="search"><i class="ti ti-search"></i></button>
                         </span>
                     </template>
                 </TextBox>

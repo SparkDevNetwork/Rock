@@ -484,10 +484,8 @@ namespace RockWeb.Blocks.Cms
             var contentItem = contentItemService.Get( e.RowKeyId );
             if ( contentItem != null )
             {
-                var blockAllows = IsUserAuthorized( Authorization.EDIT );
-                var channelAllows = ContentChannelCache.Get( contentItem.ContentChannelId )?.IsAuthorized( Authorization.EDIT, CurrentPerson ) == true;
-                var itemAllows = contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                if ( !blockAllows || !channelAllows || !itemAllows )
+                var authorized = contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                if ( !authorized )
                 {
                     mdGridWarning.Show( "You are not authorized to delete this item.", ModalAlertType.Alert );
                     return;
@@ -1075,7 +1073,7 @@ namespace RockWeb.Blocks.Cms
                     tagField.HtmlEncode = false;
                 }
 
-                bool canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT ) && channel.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+                bool canEdit = channel.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
                 gContentChannelItems.Actions.ShowAdd = canEdit;
                 gContentChannelItems.IsDeleteEnabled = canEdit;
                 if ( canEdit )

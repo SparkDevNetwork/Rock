@@ -179,7 +179,7 @@ namespace Rock.Model
             target.OutreachEnableDailyNotification = source.OutreachEnableDailyNotification;
             target.OutreachEnableSpecialEventsNotification = source.OutreachEnableSpecialEventsNotification;
             target.OutreachNotificationTimeOfDay = source.OutreachNotificationTimeOfDay;
-            target.OutreachTouchpointNotificationsEnabled = source.OutreachTouchpointNotificationsEnabled;
+            target.OutreachTouchpointGenerationEnabled = source.OutreachTouchpointGenerationEnabled;
             target.OutreachTouchpointSchedule = source.OutreachTouchpointSchedule;
             target.PhotoId = source.PhotoId;
             target.PreferredLanguageValueId = source.PreferredLanguageValueId;

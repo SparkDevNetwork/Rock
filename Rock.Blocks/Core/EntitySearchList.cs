@@ -412,7 +412,11 @@ namespace Rock.Blocks.Core
 
                 var sw = System.Diagnostics.Stopwatch.StartNew();
                 var results = EntitySearchService.GetSearchResults( entity, null, RequestContext.CurrentPerson, rockContext );
+#if REVIEW_WEBFORMS
                 resultsBag.Data = Rock.Rest.Utility.BlockUtilities.ToV2ResponseJson( results.Items, true );
+#else
+                throw new NotImplementedException();
+#endif
                 sw.Stop();
 
                 resultsBag.Duration = sw.Elapsed.TotalMilliseconds;

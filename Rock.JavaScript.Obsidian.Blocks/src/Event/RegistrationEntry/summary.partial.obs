@@ -244,15 +244,7 @@
         const actionContext: BlockActionContextBag = {};
 
         if (captchaElement.value) {
-            try {
-                // Retrieve existing token if previously solved or await a new one.
-                actionContext.captcha = await captchaElement.value.getToken();
-                // Do not immediately refresh; allow reuse of the token in this submission cycle.
-            }
-            catch {
-                // If an error occurs refresh the captcha for another attempt.
-                captchaElement.value.refreshToken();
-            }
+            actionContext.captcha = await captchaElement.value.getToken();
         }
 
         const result = await invokeBlockAction<RegistrationEntrySuccessBag>("SubmitRegistration", {

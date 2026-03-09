@@ -342,7 +342,17 @@
         return tokenPromiseSource.promise;
     }
 
-    /** Refreshes the token so it can be used again (mirrors the old reset behavior). */
+    /**
+     * Manually resets the CAPTCHA by clearing the current token and re-rendering
+     * or re-solving the widget if invisible.
+     *
+     * This should only be used in rare cases where the component is already
+     * mounted in the DOM but the existing token is no longer valid, such as
+     * token expiration or a server side CAPTCHA configuration change.
+     *
+     * The CAPTCHA normally refreshes itself through component mount and
+     * unmount, which should be preferred in standard flows.
+     */
     function refreshToken(): void {
         // Complete the previous one-shot promise and start a new one.
         tokenPromiseSource.resolve(undefined);

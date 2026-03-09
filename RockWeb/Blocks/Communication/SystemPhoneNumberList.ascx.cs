@@ -210,8 +210,6 @@ namespace RockWeb.Blocks.Communication
                 systemPhoneNumberService.Delete( systemPhoneNumber );
 
                 rockContext.SaveChanges();
-
-                SystemPhoneNumberService.DeleteLegacyPhoneNumber( systemPhoneNumber );
             }
 
             BindGrid();

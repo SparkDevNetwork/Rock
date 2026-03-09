@@ -208,25 +208,21 @@ namespace Rock.Model
         public int? ConnectionTypeSourceId { get; set; }
 
         /// <summary>
-        /// Note entered when a celebration action occurs on this request.
-        /// </summary>
-        [DataMember]
-        public string CelebrationNote { get; set; }
-
-        /// <summary>
         /// The due date for this request.
         /// </summary>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime? DueDate { get; set; }
 
         /// <summary>
         /// The date when this request becomes considered due soon.
         /// </summary>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime? DueSoonDate { get; set; }
 
         /// <summary>
-        /// Additional celebration text.
+        /// Text entered when a celebration action occurs on this request.
         /// </summary>
         [DataMember]
         public string CelebrationText { get; set; }
@@ -329,6 +325,22 @@ namespace Rock.Model
         }
 
         private ICollection<ConnectionRequestActivity> _connectionRequestActivities;
+
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionRequestStatusHistory">ConnectionRequestStatusHistory</see> records associated with the ConnectionRequest.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionRequestStatusHistory"> ConnectionRequestStatusHistory</see> records associated with the ConnectionRequest.
+        /// </value>
+        [LavaVisible]
+        public virtual ICollection<ConnectionRequestStatusHistory> ConnectionRequestStatusHistories
+        {
+            get { return _connectionRequestStatusHistories; }
+            set { _connectionRequestStatusHistories = value; }
+        }
+
+        private ICollection<ConnectionRequestStatusHistory> _connectionRequestStatusHistories;
+
 
         /// <summary>
         /// Gets or sets the created source date.

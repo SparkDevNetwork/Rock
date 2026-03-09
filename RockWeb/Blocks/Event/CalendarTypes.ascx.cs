@@ -40,6 +40,15 @@ namespace RockWeb.Blocks.Event
     [Rock.SystemGuid.BlockTypeGuid( "041B5C23-5F1F-4B02-A767-FB7F4B1A5345" )]
     public partial class CalendarTypes : Rock.Web.UI.RockBlock
     {
+        #region Keys
+
+        private static class PageParameterKey
+        {
+            public const string EventCalendarId = "EventCalendarId";
+        }
+
+        #endregion Keys
+
         #region Base Control Methods
 
         /// <summary>
@@ -72,7 +81,7 @@ namespace RockWeb.Blocks.Event
             base.OnLoad( e );
         }
 
-        #endregion
+        #endregion Base Control Methods
 
         #region Events
 
@@ -113,16 +122,24 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptEventCalendars_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            int? eventCalendarId = e.CommandArgument.ToString().AsIntegerOrNull();
-            if ( eventCalendarId.HasValue )
+            string eventCalendarIdKey = new EventCalendarService( new RockContext() ).GetNoTracking(
+                e.CommandArgument.ToString(),
+                !PageCache.Layout.Site.DisablePredictableIds
+            )?.IdKey;
+
+            if ( !string.IsNullOrEmpty( eventCalendarIdKey ) )
             {
-                NavigateToLinkedPage( "DetailPage", "EventCalendarId", eventCalendarId.Value );
+                var qryParams = new Dictionary<string, string>();
+
+                qryParams[PageParameterKey.EventCalendarId] = eventCalendarIdKey;
+
+                NavigateToLinkedPage( "DetailPage", qryParams );
             }
 
             GetData();
         }
 
-        #endregion
+        #endregion Events
 
         #region Methods
 
@@ -147,7 +164,7 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion
+        #endregion Methods
 
     }
 }

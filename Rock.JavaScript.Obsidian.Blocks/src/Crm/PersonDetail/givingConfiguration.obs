@@ -3,7 +3,7 @@
         <template #default class="panel-body">
             <!-- Add One-time Gift Button -->
             <div>
-                <button class="btn btn-default btn-sm btn-block mb-3" @click.prevent="addOneTimeGift">
+                <button class="btn btn-default btn-sm btn-block mb-3" type="button" @click.prevent="addOneTimeGift">
                     Add One-time Gift
                 </button>
             </div>
@@ -17,7 +17,7 @@
                         <h5 class="my-0">Text-To-Give Settings</h5>
                     </div>
                     <div class="col-sm-2">
-                        <button v-if="!isEditingTextToGive && showTextToGive" class="btn btn-default btn-square btn-xs pull-right" title="Edit Text-To-Give Configuration" @click.prevent="toggleEditTextToGive">
+                        <button v-if="!isEditingTextToGive && showTextToGive" class="btn btn-default btn-square btn-xs pull-right" title="Edit Text-To-Give Configuration" type="button" @click.prevent="toggleEditTextToGive">
                             <i class="ti ti-pencil"></i>
                         </button>
                     </div>
@@ -74,7 +74,7 @@
             <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-start">
                     <h5 class="my-0">Scheduled Transactions</h5>
-                    <button v-if="hasInactiveTransactions" class="text-left text-sm showinactive" @click.prevent="toggleShowInactive">
+                    <button v-if="hasInactiveTransactions" class="text-left text-sm showinactive" type="button" @click.prevent="toggleShowInactive">
                         {{ showInactiveText }}
                     </button>
                 </div>
@@ -102,10 +102,10 @@
                                     {{ toCurrencyOrNull(transaction.totalAmount) }}
                                 </span>
                                 <div class="rollover-item mt-3">
-                                    <button class="btn btn-sm btn-link text-muted py-0 px-1" @click.prevent="editScheduledTransaction(transaction)" title="Edit Scheduled Transaction">
+                                    <button class="btn btn-sm btn-link text-muted py-0 px-1" type="button" @click.prevent="editScheduledTransaction(transaction)" title="Edit Scheduled Transaction">
                                         <i class="ti ti-pencil"></i>
                                     </button>
-                                    <button v-if="transaction.isActive" class="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-inactivate-scheduled-transaction" @click.prevent="inactivateScheduledTransaction(transaction)" title="Inactivate Scheduled Transaction">
+                                    <button v-if="transaction.isActive" class="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-inactivate-scheduled-transaction" type="button" @click.prevent="inactivateScheduledTransaction(transaction)" title="Inactivate Scheduled Transaction">
                                         <i class="ti ti-x"></i>
                                     </button>
                                 </div>
@@ -161,7 +161,7 @@
                                     Not In Use
                                 </div>
                                 <div class="rollover-item">
-                                    <button v-if="!account.isDefault && !accountIsInUse(account.id.toString())" class="btn btn-sm btn-link text-muted py-0 px-1 js-delete-saved-account" @click.prevent="deleteSavedAccount(account)">
+                                    <button v-if="!account.isDefault && !accountIsInUse(account.id.toString())" class="btn btn-sm btn-link text-muted py-0 px-1 js-delete-saved-account" type="button" @click.prevent="deleteSavedAccount(account)">
                                         <i class="ti ti-x"></i>
                                     </button>
                                 </div>
@@ -207,10 +207,10 @@
                                     {{ toCurrencyOrNull(pledge.totalAmount) }}
                                 </span>
                                 <div class="rollover-item d-flex justify-content-end">
-                                    <button class="btn btn-sm btn-link text-muted py-0 px-1" @click.prevent="editPledge(pledge)" title="Edit Pledge">
+                                    <button class="btn btn-sm btn-link text-muted py-0 px-1" type="button" @click.prevent="editPledge(pledge)" title="Edit Pledge">
                                         <i class="ti ti-pencil"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-delete-pledge" @click.prevent="deletePledge(pledge)" title="Delete Pledge">
+                                    <button class="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-delete-pledge" type="button" @click.prevent="deletePledge(pledge)" title="Delete Pledge">
                                         <i class="ti ti-x"></i>
                                     </button>
                                 </div>
@@ -220,7 +220,7 @@
                 </table>
                 <div class="row">
                     <div class="col-sm-12">
-                        <button class="btn btn-default btn-square btn-xs mt-3 pull-right" @click.prevent="addPledge" title="Add Pledge">
+                        <button class="btn btn-default btn-square btn-xs mt-3 pull-right" type="button" @click.prevent="addPledge" title="Add Pledge">
                             <i class="ti ti-plus"></i>
                         </button>
                     </div>
@@ -236,7 +236,7 @@
                         Contribution Statements
                     </h5>
                     <div>
-                        <button v-for="statement in contributionStatements" :key="statement.year" class="btn btn-sm btn-default mx-1" @click.prevent="viewContributionStatement(statement)">
+                        <button v-for="statement in contributionStatements" :key="statement.year" class="btn btn-sm btn-default mx-1" type="button" @click.prevent="viewContributionStatement(statement)">
                             {{ statement.isCurrentYear ? `${statement.year} YTD` : statement.year }}
                         </button>
                     </div>

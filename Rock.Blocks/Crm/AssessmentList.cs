@@ -15,17 +15,16 @@
 // </copyright>
 //
 
-using Rock.Attribute;
-using Rock.Badge.Component;
-using Rock.Data;
-using Rock.Model;
-using Rock.Utility;
-using Rock.ViewModels.Blocks.Crm.AssessmentList;
-using Rock.Web.UI.Controls;
 using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Attribute;
+using Rock.Model;
+using Rock.Utility;
+using Rock.ViewModels.Blocks.Crm.AssessmentList;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Crm
 {
