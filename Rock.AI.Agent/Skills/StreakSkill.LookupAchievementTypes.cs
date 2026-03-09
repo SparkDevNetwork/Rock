@@ -45,9 +45,9 @@ namespace Rock.AI.Agent.Skills
 
             var result = Success( achievementTypeResults );
 
-            if ( achievementTypeResults.Count < 50 )
+            if ( achievementTypeResults.Count > 50 )
             {
-                result.WithHistoryContent( achievementTypeResults );
+                result = result.WithoutHistoryContent();
             }
 
             return result;

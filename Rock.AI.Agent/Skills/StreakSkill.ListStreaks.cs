@@ -4,7 +4,6 @@ using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Entity;
-using Rock.AI.Agent.Classes.Skills.PersonSkill;
 using Rock.AI.Agent.Classes.Skills.StreakSkill;
 using Rock.Model;
 using Rock.Security;

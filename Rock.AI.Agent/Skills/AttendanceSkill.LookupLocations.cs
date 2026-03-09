@@ -80,9 +80,9 @@ namespace Rock.AI.Agent.Skills
 
             var result = Success( locationResults );
 
-            if ( locationResults.Count < 50 )
+            if ( locationResults.Count > 50 )
             {
-                result.WithHistoryContent( locationResults );
+                result = result.WithoutHistoryContent();
             }
 
             return result;

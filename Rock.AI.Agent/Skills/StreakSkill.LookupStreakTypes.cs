@@ -53,9 +53,9 @@ namespace Rock.AI.Agent.Skills
 
             var result = Success( streakTypeResults );
 
-            if ( streakTypeResults.Count < 50 )
+            if ( streakTypeResults.Count > 50 )
             {
-                result.WithHistoryContent( streakTypeResults );
+                result = result.WithoutHistoryContent();
             }
 
             return result;

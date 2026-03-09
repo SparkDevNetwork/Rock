@@ -14,24 +14,29 @@
 // limitations under the License.
 // </copyright>
 
-using Rock.AI.Agent.Classes.Common;
+using System.Collections.Generic;
+
 using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Skills.PersonSkill
+namespace Rock.AI.Agent.Classes.Skills.StepSkill;
+
+/// <summary>
+/// A single step program record.
+/// </summary>
+internal class StepProgramResult : EntityResultBase
 {
     /// <summary>
-    /// A single step type record.
+    /// The name of the step program.
     /// </summary>
-    internal class StepTypeResult : EntityResultBase
-    {
-        /// <summary>
-        /// The name of the step type.
-        /// </summary>
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        /// <summary>
-        /// The program this step type belongs to.
-        /// </summary>
-        public KeyNameResult StepProgram { get; set; }
-    }
+    /// <summary>
+    /// The list of step types configured on this program.
+    /// </summary>
+    public List<StepTypeResult> StepTypes { get; set; }
+
+    /// <summary>
+    /// The status options configured for the program.
+    /// </summary>
+    public List<StepStatusResult> StepStatuses { get; set; }
 }
