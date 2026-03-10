@@ -51,6 +51,5 @@ namespace Rock.AI.Agent.Skills
         }
 
         #endregion
-
     }
 }

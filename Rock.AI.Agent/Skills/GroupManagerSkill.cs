@@ -1,4 +1,7 @@
-﻿// <copyright>
+﻿#if false
+// This is not used, the GroupSkill should be used instead. This is only here for historical access.
+
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -488,3 +491,4 @@ Example:
 
     }
 }
+#endif
