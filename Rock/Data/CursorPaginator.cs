@@ -80,6 +80,12 @@ namespace Rock.Data
         /// </summary>
         private readonly Person _person;
 
+        /// <summary>
+        /// Additional filter predicates that should be applied to the source
+        /// before including them in the page results.
+        /// </summary>
+        private readonly List<Func<T, bool>> _filterPredicates = new List<Func<T, bool>>();
+
         #endregion
 
         #region Properties
@@ -125,6 +131,16 @@ namespace Rock.Data
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Adds a custom predicate that will be used to filter the items in
+        /// the source before they are added to the page.
+        /// </summary>
+        /// <param name="predicate">The custom predicate to use when filtering results.</param>
+        public void AddPredicate( Func<T, bool> predicate )
+        {
+            _filterPredicates.Add( predicate );
+        }
 
         /// <summary>
         /// <para>
@@ -201,11 +217,6 @@ namespace Rock.Data
         /// <returns>A list containing up to the specified number of items from the source.</returns>
         private List<T> FillPage( IOrderedQueryable<T> source, int desiredCount )
         {
-            if ( !EnforceEntitySecurity || !typeof( ISecured ).IsAssignableFrom( typeof( T ) ) )
-            {
-                return source.Take( desiredCount ).ToList();
-            }
-
             var items = new List<T>();
             var offset = 0;
 
@@ -213,6 +224,7 @@ namespace Rock.Data
             {
                 var takeCount = desiredCount - items.Count;
                 var batch = source.Skip( offset ).Take( takeCount ).ToList();
+                var batchCount = batch.Count;
 
                 // If we got no more items, then we are confirmed to be done.
                 if ( batch.Count == 0 )
@@ -220,17 +232,26 @@ namespace Rock.Data
                     break;
                 }
 
-                var securedBatch = batch
-                    .Where( item => ( ( ISecured ) item ).IsAuthorized( Authorization.VIEW, _person ) );
+                var filteredBatch = batch.AsEnumerable();
 
-                items.AddRange( securedBatch );
+                if ( typeof( ISecured ).IsAssignableFrom( typeof( T ) ) && EnforceEntitySecurity )
+                {
+                    filteredBatch = filteredBatch.Where( item => ( ( ISecured ) item ).IsAuthorized( Authorization.VIEW, _person ) );
+                }
 
-                if ( items.Count >= desiredCount || batch.Count < takeCount )
+                foreach ( var filterPredicate in _filterPredicates )
+                {
+                    filteredBatch = filteredBatch.Where( filterPredicate );
+                }
+
+                items.AddRange( filteredBatch );
+
+                if ( items.Count >= desiredCount || batchCount < takeCount )
                 {
                     break;
                 }
 
-                offset += batch.Count;
+                offset += batchCount;
             }
 
             return items;

@@ -89,6 +89,42 @@ namespace Rock.Tests.Data
         }
 
         [TestMethod]
+        public void GetNextPage_WithCustomPredicateAndNoMatch_ExcludesItem()
+        {
+            var campus = new Campus
+            {
+                Id = 42
+            };
+
+            var campuses = new List<Campus> { campus };
+
+            var cursorBuilder = new CursorPaginator<Campus>( q => q.OrderBy( c => c.Id ) );
+            cursorBuilder.AddPredicate( c => c.Id != 42 );
+
+            var page1 = cursorBuilder.GetNextPage( campuses.AsQueryable(), null, 1, false );
+
+            Assert.IsEmpty( page1.Items );
+        }
+
+        [TestMethod]
+        public void GetNextPage_WithCustomPredicateAndMatch_IncludesItem()
+        {
+            var campus = new Campus
+            {
+                Id = 42
+            };
+
+            var campuses = new List<Campus> { campus };
+
+            var cursorBuilder = new CursorPaginator<Campus>( q => q.OrderBy( c => c.Id ) );
+            cursorBuilder.AddPredicate( c => c.Id == 42 );
+
+            var page1 = cursorBuilder.GetNextPage( campuses.AsQueryable(), null, 1, false );
+
+            Assert.IsNotEmpty( page1.Items );
+        }
+
+        [TestMethod]
         public void GetNextPage_WithoutLookAheadOnLastItem_ReturnsNextCursor()
         {
             var campuses = GetTestCampuses();
