@@ -612,7 +612,7 @@ namespace Rock.Blocks.Event
                 }
             }
 
-            RockContext.SaveChanges();
+            rockContext.SaveChanges();
         }
 
         /// <summary>

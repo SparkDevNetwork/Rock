@@ -37,6 +37,15 @@ namespace Rock.Model
             /// </summary>
             protected override void PreSave()
             {
+                // Set the API Key purpose to "General" if this is an API Key UserLogin and if a purpose is not specified.
+                if ( Entity.ApiKey.IsNotNullOrWhiteSpace() && !Entity.ApiKeyPurpose.HasValue )
+                {
+                    if ( State == EntityContextState.Added || State == EntityContextState.Modified )
+                    {
+                        Entity.ApiKeyPurpose = Enums.Security.ApiKeyPurpose.General;
+                    }
+                }
+
                 HistoryChanges = new History.HistoryChangeList();
 
                 switch ( State )

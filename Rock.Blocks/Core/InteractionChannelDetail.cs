@@ -393,25 +393,24 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            var result = new BreadCrumbResult();
-
-            if ( pageReference == null )
-            {
-                return result;
-            }
-
             var key = pageReference.GetPageParameter( PageParameterKey.InteractionChannelId );
-            string name = null;
+            var pageParameters = new Dictionary<string, string>();
 
-            if ( !string.IsNullOrWhiteSpace( key ) )
+            var name = new InteractionChannelService( RockContext )
+                .GetSelect( key, ic => ic.Name );
+
+            if ( name != null )
             {
-                name = new InteractionChannelService( RockContext )
-                    .GetSelect( key, ic => ic.Name );
+                pageParameters.Add( PageParameterKey.InteractionChannelId, key );
             }
 
-            result.BreadCrumbs = new List<IBreadCrumb> { new BreadCrumbLink( name ?? "Interaction Channel", pageReference ) };
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+            var breadCrumb = new BreadCrumbLink( name ?? "Interaction Channel", breadCrumbPageRef );
 
-            return result;
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+            };
         }
 
         #endregion Methods

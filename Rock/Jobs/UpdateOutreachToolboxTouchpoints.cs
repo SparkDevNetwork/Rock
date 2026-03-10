@@ -1113,11 +1113,11 @@ namespace Rock.Jobs
             using ( var rockContext = CreateRockContext() )
             {
                 // If they specified the app in the job settings then use that.
-                var siteGuid = GetAttributeValue( AttributeKey.MobileApplication ).AsGuidOrNull();
+                var siteId = GetAttributeValue( AttributeKey.MobileApplication ).AsIntegerOrNull();
 
-                if ( siteGuid.HasValue )
+                if ( siteId.HasValue )
                 {
-                    var site = SiteCache.Get( siteGuid.Value, rockContext );
+                    var site = SiteCache.Get( siteId.Value, rockContext );
                     var settings = site?.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
                     var pageId = settings?.OutreachToolboxTouchpointPageId;
                     var page = pageId.HasValue ? PageCache.Get( pageId.Value, rockContext ) : null;

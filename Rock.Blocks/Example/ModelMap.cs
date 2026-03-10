@@ -43,6 +43,7 @@ namespace Rock.Blocks.Example
     [Category( "Obsidian > Example" )]
     [Description( "Displays the details about each model class in Rock.Model." )]
     [IconCssClass( "ti ti-map" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -511,7 +512,7 @@ namespace Rock.Blocks.Example
 
             // Map XML doc structural tags to their HTML equivalents.
             innerXml = innerXml
-                .Replace( "<para>", "<p>" ).Replace( "</para>", "</p>" )
+                .Replace( "<para>", " " ).Replace( "</para>", " " )
                 .Replace( "<example>", "<p>" ).Replace( "</example>", "</p>" )
                 .Replace( "<code>", "<pre>" ).Replace( "</code>", "</pre>" )
                 .Replace( "<c>", "<code>" ).Replace( "</c>", "</code>" );

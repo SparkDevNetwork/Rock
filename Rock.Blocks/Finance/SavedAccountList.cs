@@ -114,7 +114,6 @@ namespace Rock.Blocks.Finance
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = false;
-            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
             box.ExpectedRowCount = null;
             box.Options = GetBoxOptions();
             box.GridDefinition = builder.BuildDefinition();
@@ -197,9 +196,24 @@ namespace Rock.Blocks.Finance
                 return ActionBadRequest( $"{FinancialPersonSavedAccount.FriendlyTypeName} not found." );
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            var requester = RequestContext?.CurrentPerson;
+            if ( requester == null )
             {
-                return ActionBadRequest( $"Not authorized to delete {FinancialPersonSavedAccount.FriendlyTypeName}." );
+                return ActionForbidden( "You must be logged in to delete this saved account." );
+            }
+
+            var contextPerson = GetContextEntity() as Person;
+            var effectivePersonId = contextPerson?.Id ?? requester.Id;
+
+            var isAdminEdit = entity.IsAuthorized( Authorization.EDIT, requester );
+            // In the future, perhaps this block might show Saved Accounts for anyone in the family with the
+            // same GivingId (entity.PersonAlias?.Person?.GivingId) but today this block does not show those
+            // saved accounts.
+            var isOwner = entity.PersonAlias?.PersonId == effectivePersonId;
+            var canDelete = isAdminEdit || isOwner;
+            if ( !canDelete )
+            {
+                return ActionForbidden( "You are not authorized to delete this saved account." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

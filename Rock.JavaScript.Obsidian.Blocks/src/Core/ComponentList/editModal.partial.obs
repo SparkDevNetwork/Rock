@@ -1,0 +1,120 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           :title="modalTitle"
+           saveText="Save"
+           @save="onSave">
+
+        <NotificationBox v-if="isSmtpTransport" alertType="warning">
+            This transport should only be used for development and testing.
+        </NotificationBox>
+
+        <NotificationBox v-if="errorMessage" alertType="danger" :title="'There is a problem with one or more of the values you entered'">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <AttributeValuesContainer v-model="attributeValues"
+                                  :attributes="attributes"
+                                  isEditMode
+                                  :numberOfColumns="1" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { ComponentListEditBag } from "@Obsidian/ViewModels/Blocks/Core/ComponentList/componentListEditBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        editBag: {
+            type: Object as PropType<ComponentListEditBag | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "save", attributeValues: Record<string, string>): void;
+    }>();
+
+    // #region Values
+
+    const attributes = ref<Record<string, PublicAttributeBag>>({});
+    const attributeValues = ref<Record<string, string>>({});
+    const modalTitle = ref("");
+    const isSmtpTransport = ref(false);
+    const errorMessage = ref("");
+    const isVisible = ref(props.modelValue);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Populates the modal fields from the edit bag data.
+     */
+    function loadFromBag(bag: ComponentListEditBag | null): void {
+        if (bag) {
+            attributes.value = bag.attributes ?? {};
+            attributeValues.value = bag.attributeValues ?? {};
+            modalTitle.value = (bag.name ?? "Component") + " Properties";
+            isSmtpTransport.value = bag.isSmtpTransport ?? false;
+        }
+        else {
+            attributes.value = {};
+            attributeValues.value = {};
+            modalTitle.value = "Component Properties";
+            isSmtpTransport.value = false;
+        }
+
+        errorMessage.value = "";
+    }
+
+    /**
+     * Sets the error message to display in the modal.
+     *
+     * @param message The error message to display.
+     */
+    function setError(message: string): void {
+        errorMessage.value = message;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the save button is clicked.
+     */
+    function onSave(): void {
+        emit("save", { ...attributeValues.value });
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, (newVal) => {
+        isVisible.value = newVal;
+    });
+
+    watch(isVisible, (newVal) => {
+        emit("update:modelValue", newVal);
+    });
+
+    watch(() => props.editBag, (newBag) => {
+        loadFromBag(newBag);
+    }, { immediate: true });
+
+    // #endregion
+
+    defineExpose({ setError });
+</script>

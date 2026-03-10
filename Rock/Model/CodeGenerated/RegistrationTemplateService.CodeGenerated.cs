@@ -142,6 +142,7 @@ namespace Rock.Model
             target.AddPersonNote = source.AddPersonNote;
             target.AllowExternalRegistrationUpdates = source.AllowExternalRegistrationUpdates;
             target.AllowMultipleRegistrants = source.AllowMultipleRegistrants;
+            target.AreDuplicateRegistrantsPrevented = source.AreDuplicateRegistrantsPrevented;
             target.BatchNamePrefix = source.BatchNamePrefix;
             target.CategoryId = source.CategoryId;
             target.ConfirmationEmailTemplate = source.ConfirmationEmailTemplate;

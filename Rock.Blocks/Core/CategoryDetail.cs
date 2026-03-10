@@ -748,7 +748,8 @@ namespace Rock.Blocks.Core
             var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuid();
             var entityTypeId = EntityTypeCache.GetId( entityTypeGuid ).ToStringSafe();
 
-            return ActionOk( ChildCategoriesGridBuilder( entityTypeId ).Build( OrderedChildCategories( idKey, RockContext ) ) );
+            var categoryService = new CategoryService( RockContext );
+            return ActionOk( ChildCategoriesGridBuilder( entityTypeId, categoryService ).Build( OrderedChildCategories( idKey, RockContext ) ) );
         }
 
         /// <summary>
@@ -782,7 +783,7 @@ namespace Rock.Blocks.Core
         /// Gets the <see cref="GridBuilder"/> for the child categories list.
         /// </summary>
         /// <returns>a <see cref="GridBuilder{Category}"/> for the child categories grid.</returns>
-        private GridBuilder<Category> ChildCategoriesGridBuilder( string qualifierValue )
+        private GridBuilder<Category> ChildCategoriesGridBuilder( string qualifierValue, CategoryService categoryService = null )
         {
             var entityTypeId = EntityTypeCache.Get<Category>()?.Id;
 
@@ -795,6 +796,7 @@ namespace Rock.Blocks.Core
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddField( "isSystem", a => a.IsSystem )
+                .AddField( "isDeletable", a => categoryService != null && categoryService.CanDelete( a, out _ ) )
                 .AddAttributeFields( gridAttributes );
         }
 

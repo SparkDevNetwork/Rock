@@ -122,6 +122,7 @@
                     <ul class="pl-spacing-lg m-0 text-muted mb-0">
                         <li v-for="theMethod in theModel.methods" :key="theMethod.id" class="text-sm line-height-normal font-monospace">
                             <span>{{ theMethod.signature }}</span>
+                            <span v-if="theMethod.comments" class="text-xs font-italic ml-1" v-html="' - ' + theMethod.comments"></span>
 
                             <span v-if="theMethod.isInherited" class="text-xs font-italic ml-1">(inherited)</span>
 

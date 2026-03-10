@@ -40,6 +40,7 @@
                               :showMergeTemplate="false"
                               :showLaunchWorkflow="false"
                               :showExport="false"
+                              :onAddItem="onNewChildCategoryClick"
                               @selectItem="onCategoryClick"
                               stickyHeader>
                             <ReorderColumn @orderChanged="onChildCategoryOrderChanged" />
@@ -54,13 +55,8 @@
 
                             <AttributeColumns visiblePriority="md" :attributes="gridDefinition?.attributeFields ?? []" />
 
-                            <DeleteColumn visiblePriority="xs" @click="onDeleteChildCategoryClick" :rowDisabled="(row) => row.isSystem === true" />
+                            <DeleteColumn visiblePriority="xs" @click="onDeleteChildCategoryClick" :rowDisabled="(row) => row.isDeletable !== true" />
 
-                            <template #gridFooterAppend>
-                                <div class="add-button pull-right">
-                                    <i class="ti ti-circle-plus" @click.prevent="onNewChildCategoryClick"></i>
-                                </div>
-                            </template>
                         </Grid>
                     </div>
                 </template>
@@ -73,13 +69,6 @@
     </DetailBlock>
 </template>
 
-<style scoped>
-.add-button > i.ti-circle-plus {
-    color: var(--color-interface-soft);
-    padding: 8px;
-    cursor: pointer;
-}
-</style>
 <script setup lang="ts">
     import { computed, reactive, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -174,16 +163,22 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        // Get the current URL and check if query params match ?CategoryId=0&ExpandedIds=
-        // This is a workaround until the CategoryTreeView has been converted to Obsidian.
-        const searchParams = new URLSearchParams(window.location.search);
+        // When adding a new category, navigate back to where we came from.
+        if (panelMode.value === DetailPanelMode.Add) {
+            const params = new URLSearchParams(window.location.search);
+            const returnUrl = params.get("returnUrl") ?? "";
 
-        // Check if query parameters match the specific pattern
-        if (searchParams.get("CategoryId") === "0" && searchParams.get("ExpandedIds") === "") {
-            const baseUrl = window.location.href.split("?")[0];
-            return baseUrl;
+            if (returnUrl) {
+                return returnUrl;
+            }
+
+            // If no returnUrl (e.g., "Add New Top Level" from the tree view),
+            // use browser history to return to the previous page state.
+            window.history.back();
+            return false;
         }
 
+        // When editing an existing category, return to view mode.
         return true;
     }
 
@@ -361,30 +356,34 @@
     function navigateToCategoryDetail(categoryId: number, parentCategoryId?: number, autoEdit = false): void {
         const currentPageTemplate = config.navigationUrls?.[NavigationUrlKey.CurrentPageTemplate] ?? "";
         const categoryIdRouteParamKey = "{CategoryId}";
+
+        const params = new URLSearchParams(window.location.search);
+
+        // Set the returnUrl to the current url before making changes.
+        params.set("returnUrl", window.location.href);
+
+        if (autoEdit) {
+            params.set("autoEdit", autoEdit.toString());
+        }
+        else {
+            params.delete("autoEdit");
+        }
+
+        if (parentCategoryId && parentCategoryId > 0) {
+            params.set("ParentCategoryId", parentCategoryId.toString());
+        }
+        else {
+            params.delete("ParentCategoryId");
+        }
+
         if (currentPageTemplate) {
-
-            const params = new URLSearchParams(window.location.search);
-
-            // First set the returnUrl to the url before making changes to it.
-            params.set("returnUrl", window.location.href);
-
-            if (autoEdit) {
-                params.set("autoEdit", autoEdit.toString());
-            }
-            else {
-                params.delete("autoEdit");
-            }
-
-            if (parentCategoryId && parentCategoryId > 0) {
-                params.set("ParentCategoryId", parentCategoryId.toString());
-            }
-            else {
-                params.delete("ParentCategoryId");
-            }
-
             const navigationUrl = currentPageTemplate.replace(categoryIdRouteParamKey, categoryId.toString()) + "?" + params.toString();
-
             window.location.href = navigationUrl;
+        }
+        else {
+            // Fallback: use query string navigation on the current page.
+            params.set("CategoryId", categoryId.toString());
+            window.location.href = window.location.pathname + "?" + params.toString();
         }
     }
 

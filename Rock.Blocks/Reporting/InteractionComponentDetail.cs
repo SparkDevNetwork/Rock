@@ -70,6 +70,7 @@ namespace Rock.Blocks.Reporting
         private static class PageParameterKey
         {
             public const string ComponentId = "ComponentId";
+            public const string InteractionChannelId = "ChannelId";
         }
 
         private static class MergeFieldKeys
@@ -131,7 +132,7 @@ namespace Rock.Blocks.Reporting
             if ( interactionComponent != null )
             {
                 IEntity interactionEntity = null;
-                if ( interactionComponent.EntityId.HasValue )
+                if ( interactionComponent.EntityId.HasValue && interactionComponent.InteractionChannel.ComponentEntityTypeId.HasValue )
                 {
                     interactionEntity = GetComponentEntity( RockContext, interactionComponent );
                 }
@@ -186,25 +187,31 @@ namespace Rock.Blocks.Reporting
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            var result = new BreadCrumbResult();
-
-            if ( pageReference == null )
-            {
-                return result;
-            }
-
             var key = pageReference.GetPageParameter( PageParameterKey.ComponentId );
-            string name = null;
+            var pageParameters = new Dictionary<string, string>();
+            var additionalParameters = new Dictionary<string, string>();
 
-            if ( !string.IsNullOrWhiteSpace( key ) )
+            var data = new InteractionComponentService( RockContext )
+                .GetSelect( key, ic => new
+                {
+                    ic.Name,
+                    ic.InteractionChannelId
+                } );
+
+            if ( data != null )
             {
-                name = new InteractionComponentService( RockContext )
-                    .GetSelect( key, ic => ic.Name );
+                pageParameters.Add( PageParameterKey.ComponentId, key );
+                additionalParameters.Add( PageParameterKey.InteractionChannelId, data.InteractionChannelId.ToString() );
             }
 
-            result.BreadCrumbs = new List<IBreadCrumb> { new BreadCrumbLink( name ?? "Interaction Component", pageReference ) };
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+            var breadCrumb = new BreadCrumbLink( data?.Name ?? "Interaction Component", breadCrumbPageRef );
 
-            return result;
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb> { breadCrumb },
+                AdditionalParameters = additionalParameters
+            };
         }
 
         #endregion Methods

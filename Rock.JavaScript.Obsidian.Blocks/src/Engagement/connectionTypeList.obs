@@ -72,7 +72,7 @@
         return [
             {
                 title: "Connection Campaigns",
-                iconCssClass: "",
+                iconCssClass: "ti ti-chart-line",
                 handler: onConnectionCampaignsClick
             },
         ];
