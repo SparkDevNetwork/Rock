@@ -249,7 +249,14 @@ namespace Rock.Lava.Fluid
 
                 if ( placeCount == 0 )
                 {
-                    return ( int ) d;
+                    if ( d >= int.MinValue && d <= int.MaxValue )
+                    {
+                        return ( int ) d;
+                    }
+                    else
+                    {
+                        return ( long ) d;
+                    }
                 }
 
                 return d;

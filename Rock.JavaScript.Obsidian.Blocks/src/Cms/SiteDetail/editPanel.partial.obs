@@ -212,7 +212,7 @@
                 <Modal v-model="isModalOpen" title="Page Attributes">
 
                     <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                        <AttributeEditor v-model="siteAttribute" :reservedKeyNames="reservedKeyNames" />
+                        <AttributeEditor v-model="siteAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.Page" />
                     </RockForm>
 
                     <template #customButtons>
@@ -319,6 +319,7 @@
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";

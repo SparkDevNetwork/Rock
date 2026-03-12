@@ -99,6 +99,11 @@ namespace Rock.Security
         public const string VIEW = "View";
 
         /// <summary>
+        /// Authorization to view all objects (e.g., overruling entity security)
+        /// </summary>
+        public const string VIEW_ALL = "ViewAll";
+
+        /// <summary>
         /// Authorization to edit object ( add, set properties, delete, etc )
         /// </summary>
         public const string EDIT = "Edit";

@@ -22,7 +22,7 @@
                     </Grid>
                 </div>
                 <Modal v-model="isAttributeModalOpen" title="Defined Type Attributes" saveText="Save" @save="onSaveAttribute">
-                    <AttributeEditor v-model="definedTypeAttribute" :reservedKeyNames="reservedKeyNames" />
+                    <AttributeEditor v-model="definedTypeAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.DefinedValue" />
                 </Modal>
 
             </div>
@@ -48,6 +48,7 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 
     const props = defineProps({

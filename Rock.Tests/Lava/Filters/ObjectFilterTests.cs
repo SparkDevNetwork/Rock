@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
@@ -54,6 +56,60 @@ namespace Rock.Tests.Lava.Filters
             var mergeValues = new LavaDataDictionary { { "CurrentPerson", TestHelper.GetTestPersonTedDecker() } };
 
             TestHelper.AssertTemplateOutput( string.Empty, "{{ CurrentPerson | Property:'NonexistentProperty' }}", mergeValues );
+        }
+
+        /// <summary>
+        /// For testing the Where filter using the optional 'contains' equality parameter against
+        /// a single object.
+        /// </summary>
+        [TestMethod]
+        public void Where_ObjectWithSingleContainsConditionMatch_ReturnsContainedValue()
+        {
+            var singlePocoObject = new List<object>
+            {
+                new
+                {
+                    Number = "6235558888",
+                    NumberFormatted = "(623) 555-8888"
+                }
+            };
+
+            var mergeValues = new LavaDataDictionary { { "Item", singlePocoObject } };
+
+            var templateInput = @"{%- assign matches = Item | Where:'NumberFormatted','55-88','contains' %}
+{%- for match in matches %}
+{{- match.Number }}<br>
+{%- endfor %}";
+
+            var expectedOutput = @"6235558888<br>";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, mergeValues );
+        }
+
+        /// <summary>
+        /// For testing the Where filter using the optional 'contains' equality parameter against
+        /// a dictionary with of objects.
+        /// </summary>
+        [TestMethod]
+        public void Where_DictionaryWithSingleContainsConditionHavingOneMatch_ReturnsContainedValue()
+        {
+            var items = new List<Dictionary<string, object>>
+                {
+                   new Dictionary<string, object> { { "Id", "11" } },
+                   new Dictionary<string, object> { { "Id", "22" } },
+                   new Dictionary<string, object> { { "Id", "33" } }
+                };
+
+            var mergeValues = new LavaDataDictionary { { "Items", items } };
+
+            var templateInput = @"{%- assign matches = Items | Where:'Id','2','contains' %}
+{%- for match in matches %}
+{{- match.Id }}<br>
+{%- endfor %}";
+
+            var expectedOutput = @"22<br>";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, mergeValues );
         }
 
         /// <summary>

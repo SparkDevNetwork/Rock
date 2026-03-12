@@ -11,7 +11,7 @@
         <slot name="prepend" />
 
         <div v-if="badgeText" class="displaycard-badge">
-            <Badge :badgeType="badgeType">{{ badgeText }}</Badge>
+            <Badge :badgeType="badgeType === 'default' ? undefined : badgeType">{{ badgeText }}</Badge>
         </div>
 
         <div class="displaycard-heading">
@@ -108,7 +108,7 @@
         },
 
         badgeType: {
-            type: String as PropType<BadgeType>,
+            type: String as PropType<BadgeType | "default">,
             required: false,
             default: "success" as const
         },

@@ -42,7 +42,7 @@
         </div>
         <Modal v-model="isAttributeModalOpen" title="Matrix Template Attributes" saveText="Save" @save="onSaveAttribute">
             <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
-            <AttributeEditor v-model="templateAttribute" :reservedKeyNames="reservedKeyNames" />
+            <AttributeEditor v-model="templateAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.AttributeMatrixItem" />
         </Modal>
 
         <Panel title="Advanced" class="mb-0" :isDrawerOpen="false" :hasCollapse="true">

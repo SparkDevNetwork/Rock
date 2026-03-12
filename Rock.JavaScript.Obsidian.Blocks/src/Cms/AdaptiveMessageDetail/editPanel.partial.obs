@@ -80,7 +80,7 @@
             </div>
             <Modal v-model="isModalOpen" title="Adaptation Attributes" saveText="Okay" :onSave="onStartSaveAttribute">
                 <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                    <AttributeEditor v-model="adaptationAttribute" :reservedKeyNames="reservedKeyNames" />
+                    <AttributeEditor v-model="adaptationAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.AdaptiveMessageAdaptation" />
                 </RockForm>
             </Modal>
         </Panel>

@@ -16,6 +16,7 @@
 //
 
 using Rock.AI.Agent.Classes.Common;
+using Rock.Model;
 
 namespace Rock.AI.Agent.Classes.Entity
 {
@@ -42,6 +43,6 @@ namespace Rock.AI.Agent.Classes.Entity
         /// <summary>
         /// The status of the group member (e.g., Active, Inactive).
         /// </summary>
-        public string Status { get; set; }
+        public GroupMemberStatus Status { get; set; }
     }
 }

@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
 
 namespace Rock.Model
@@ -215,6 +216,19 @@ namespace Rock.Model
         [DataMember]
         [LavaHidden]
         public virtual EntityType EntityType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the purpose for which the API key is intended.
+        /// </summary>
+        [DataMember]
+        public ApiKeyPurpose? ApiKeyPurpose { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description associated with the UserLogin.
+        /// </summary>
+        [MaxLength( 250 )]
+        [DataMember]
+        public string Description { get; set; }
 
         #endregion
 

@@ -79,25 +79,25 @@
 .communication-detail-delivery-breakdown-bar-pending,
 .communication-detail-delivery-breakdown-legend-pending > div {
     color: var(--color-interface-strong);
-    background: var(--color-interface-soft);
+    background: var(--color-neutral-primary);
 }
 
 .communication-detail-delivery-breakdown-bar-delivered,
 .communication-detail-delivery-breakdown-legend-delivered > div {
     color: var(--base-interface-softest);
-    background: var(--color-success-strong);
+    background: var(--color-positive-primary);
 }
 
 .communication-detail-delivery-breakdown-bar-failed,
 .communication-detail-delivery-breakdown-legend-failed > div {
     color: var(--base-interface-softest);
-    background: var(--color-danger-strong);
+    background: var(--color-negative-primary);
 }
 
 .communication-detail-delivery-breakdown-bar-cancelled,
 .communication-detail-delivery-breakdown-legend-cancelled > div {
     color: var(--base-interface-softest);
-    background: var(--color-warning-strong);
+    background: var(--color-caution-primary);
 }
 
 .communication-detail-delivery-breakdown-legend {

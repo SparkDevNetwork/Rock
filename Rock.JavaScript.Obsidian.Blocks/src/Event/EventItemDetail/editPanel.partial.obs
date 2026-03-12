@@ -116,7 +116,7 @@
             <Modal v-model="isAttributeModalOpen" title="Event Occurrence Attribute" saveText="Save" :onSave="onStartSaveAttribute">
 
                 <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                    <AttributeEditor v-model="occurrenceAttribute" :reservedKeyNames="reservedKeyNames" :isAllowSearchVisible="true" />
+                    <AttributeEditor v-model="occurrenceAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.EventItemOccurrence" :isAllowSearchVisible="true" />
                 </RockForm>
 
             </Modal>
@@ -162,6 +162,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
     import { newGuid } from "@Obsidian/Utility/guid";
 

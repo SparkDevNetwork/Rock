@@ -2,9 +2,7 @@
 <template>
     <div v-if="!config.isHidden" class="communication-detail">
 
-        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
-            {{ errorMessage }}
-        </NotificationBox>
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning" v-html="errorMessage"></NotificationBox>
 
         <Panel v-else
                type="block"

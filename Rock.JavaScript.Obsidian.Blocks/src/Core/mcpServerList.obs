@@ -1,0 +1,67 @@
+<template>
+    <Panel title="MCP Server List">
+        <template #headerActions>
+            <HighlightLabel>{{ panelLabel }}</HighlightLabel>
+        </template>
+
+        <template v-if="items.length">
+            <NotificationBox alertType="warning">
+                <p><strong>Security Notice</strong></p>
+                Do not share the MCP links below. They are tied directly to your user account and permissions — sharing them could compromise your account and expose sensitive data.
+            </NotificationBox>
+
+            <DisplayCardContainer>
+                <DisplayCard v-for="(item, index) in items"
+                             :key="index"
+                             :badgeText="AudienceTypeDescription[item.audienceType]"
+                             :badgeType="item.audienceType === AudienceType.Public ? 'info' : 'default'"
+                             :title="item.name"
+                             :description="item.description"
+                             :aside="item.partialUrl"
+                             asideIconCssClass="ti ti-link">
+                    <template v-if="item.fullUrl" #actions>
+                        <CopyButton :value="item.fullUrl" tooltip="Copy URL" />
+                    </template>
+                </DisplayCard>
+            </DisplayCardContainer>
+        </template>
+
+        <template v-else>
+            <p class="mcp-list-empty">No MCP Servers Found</p>
+        </template>
+    </Panel>
+</template>
+
+<style scoped>
+.mcp-list-empty {
+    color: var(--color-interface-medium);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { AudienceType, AudienceTypeDescription } from "@Obsidian/Enums/AI/Agent/audienceType";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { InitializationBox } from "@Obsidian/ViewModels/Blocks/Core/McpServerList/initializationBox";
+    import { McpServerListItemBag } from "@Obsidian/ViewModels/Blocks/Core/McpServerList/mcpServerListItemBag";
+
+    const config = useConfigurationValues<InitializationBox>();
+
+    const items = computed<McpServerListItemBag[]>(() => {
+        return config.items || [];
+    });
+
+    const panelLabel = computed<string>(() => {
+        if (items.value.length === 0) {
+            return "No MCP Servers";
+        }
+
+        return `${items.value.length} MCP Server${items.value.length === 1 ? "" : "s"}`;
+    });
+</script>

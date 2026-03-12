@@ -1,0 +1,14 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <SearchField v-model="searchTerm" />
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+    import SearchField from "@Obsidian/Controls/searchField.obs";
+
+    const searchTerm = ref("");
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

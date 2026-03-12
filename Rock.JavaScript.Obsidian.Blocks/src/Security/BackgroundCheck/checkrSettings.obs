@@ -1,0 +1,221 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
+    <NotificationBox v-if="warningMessage" alertType="warning">{{ warningMessage }}</NotificationBox>
+    <NotificationBox v-if="successMessage" alertType="success">{{ successMessage }}</NotificationBox>
+
+    <Panel type="block" title="Checkr Background Checks">
+        <template #headerActions>
+            <RockButton v-if="options.isConfigured && !options.isDefaultProvider && !isEditing"
+                        :btnType="BtnType.Default"
+                        :btnSize="BtnSize.ExtraSmall"
+                        @click="onEnableAsDefault">
+                Enable As Default
+            </RockButton>
+        </template>
+        <!-- Token Entry Mode -->
+        <RockForm v-if="isTokenEntryMode" @submit="onSave">
+            <div class="row">
+                <div class="col-md-6">
+                    <img :src="checkrLogoUrl" style="max-width: 35%; margin: 0 auto 16px; display: block;" alt="Checkr Logo">
+                    <p>
+                        <a href="https://checkr.com" target="_blank" rel="noopener noreferrer">Checkr</a>
+                        provides modern and compliant background checks for use with Rock.
+                        With your <a :href="checkrAuthUrl" target="_blank" rel="noopener noreferrer">Checkr token from RockRMS.com</a>
+                        you'll be able to initiate background checks using Checkr's scalable, cost-effective, and rapid screening solutions.
+                    </p>
+                    <a :href="checkrAuthUrl" class="btn btn-primary btn-block" target="_blank" rel="noopener noreferrer">Connect to Checkr</a>
+                </div>
+                <div class="col-md-5 col-md-offset-1 col-sm-6">
+                    <TextBox v-model="accessTokenInput"
+                             label="Checkr Access Token"
+                             help="The Checkr Access Token is generated when a Checkr Account is created on the Rock website."
+                             rules="required" />
+                    <div class="panel-actions">
+                        <RockButton :btnType="BtnType.Primary"
+                                    :isLoading="isSaving"
+                                    type="submit">
+                            Save
+                        </RockButton>
+                    </div>
+                </div>
+            </div>
+        </RockForm>
+
+        <!-- View Mode -->
+        <div v-else>
+            <div class="row">
+                <div class="col-md-6">
+                    <dl>
+                        <dt>Access Token</dt>
+                        <dd>{{ options.accessToken }}</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl>
+                        <dt>Enabled Background Check Types</dt>
+                        <dd>
+                            <div v-for="pkg in options.packages" :key="pkg">{{ pkg }}</div>
+                            <span v-if="!options.packages?.length" class="text-muted">No packages found.</span>
+                        </dd>
+                    </dl>
+                    <div class="panel-actions">
+                        <RockButton :btnType="BtnType.Default"
+                                    :btnSize="BtnSize.ExtraSmall"
+                                    :isLoading="isUpdatingPackages"
+                                    :disabled="!options.isDefaultProvider"
+                                    @click="onUpdatePackages">
+                            <i class="ti ti-refresh"></i> Update Packages
+                        </RockButton>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <RockButton :btnType="BtnType.Primary" @click="onEdit">Edit</RockButton>
+            </div>
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged, hideBlockRole, showBlockRole } from "@Obsidian/Utility/block";
+    import { BlockRole } from "@Obsidian/Enums/Cms/blockRole";
+    import { CheckrSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/BackgroundCheck/CheckrSettings/checkrSettingsOptionsBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const options = ref(useConfigurationValues<CheckrSettingsOptionsBag>());
+    const errorMessage = ref("");
+    const warningMessage = ref("");
+    const successMessage = ref("");
+    const accessTokenInput = ref(options.value.accessToken ?? "");
+    const isEditing = ref(false);
+    const isSaving = ref(false);
+    const isUpdatingPackages = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Whether to show the token entry UI (not configured or user clicked Edit). */
+    const isTokenEntryMode = computed((): boolean => {
+        return !options.value.isConfigured || isEditing.value;
+    });
+
+    const checkrLogoUrl = "/Assets/Images/Checkr.svg";
+
+    /** The URL for the Checkr auth/signup page with the organization name. */
+    const checkrAuthUrl = computed((): string => {
+        const orgName = encodeURIComponent(options.value.organizationName ?? "");
+        return `https://rockrms.com/checkrauth?organization=${orgName}`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** Saves the access token and switches to view mode. */
+    async function onSave(): Promise<void> {
+        if (!accessTokenInput.value) {
+            errorMessage.value = "An access token is required.";
+            return;
+        }
+
+        isSaving.value = true;
+        errorMessage.value = "";
+        successMessage.value = "";
+
+        const result = await invokeBlockAction<CheckrSettingsOptionsBag>("SaveAccessToken", {
+            bag: { accessToken: accessTokenInput.value }
+        });
+
+        isSaving.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "An error occurred while saving the access token.";
+            return;
+        }
+
+        options.value = result.data;
+        warningMessage.value = result.data.warningMessage ?? "";
+        isEditing.value = false;
+        await showBlockRole(BlockRole.Secondary);
+    }
+
+    /** Switches to token entry (edit) mode. */
+    async function onEdit(): Promise<void> {
+        errorMessage.value = "";
+        warningMessage.value = "";
+        successMessage.value = "";
+        accessTokenInput.value = options.value.accessToken ?? "";
+        isEditing.value = true;
+        await hideBlockRole(BlockRole.Secondary);
+    }
+
+    /** Calls the API to refresh the package list. */
+    async function onUpdatePackages(): Promise<void> {
+        isUpdatingPackages.value = true;
+        errorMessage.value = "";
+        warningMessage.value = "";
+        successMessage.value = "";
+
+        const result = await invokeBlockAction<CheckrSettingsOptionsBag>("UpdatePackages");
+
+        isUpdatingPackages.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "An error occurred while updating packages.";
+            return;
+        }
+
+        options.value = result.data;
+        warningMessage.value = result.data.warningMessage ?? "";
+        await alert("Update Packages Complete.");
+    }
+
+    /** Enables Checkr as the default background check provider. */
+    async function onEnableAsDefault(): Promise<void> {
+        errorMessage.value = "";
+        successMessage.value = "";
+
+        const result = await invokeBlockAction<CheckrSettingsOptionsBag>("EnableAsDefault");
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "An error occurred while enabling Checkr as the default provider.";
+            return;
+        }
+
+        options.value = result.data;
+        warningMessage.value = result.data.warningMessage ?? "";
+        successMessage.value = "Checkr has been set as the default background check provider.";
+    }
+
+    // #endregion Event Handlers
+
+    // #region Lifecycle Hooks
+
+    // On mount, hide secondary blocks if not configured.
+    onMounted(async () => {
+        if (!options.value.isConfigured) {
+            await hideBlockRole(BlockRole.Secondary);
+        }
+        else {
+            await showBlockRole(BlockRole.Secondary);
+        }
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

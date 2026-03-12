@@ -141,7 +141,7 @@
             <Modal v-model="isAttributeModalOpen" title="Attributes">
 
                 <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                    <AttributeEditor v-model="stepAttribute" :reservedKeyNames="reservedKeyNames" />
+                    <AttributeEditor v-model="stepAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.Step" />
                 </RockForm>
 
                 <template #customButtons>
@@ -275,6 +275,7 @@
     import { StepAttributeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepAttributeBag";
     import { StepTypeWorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeWorkflowTriggerBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";

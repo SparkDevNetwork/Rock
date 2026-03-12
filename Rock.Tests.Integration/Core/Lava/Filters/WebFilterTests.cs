@@ -190,6 +190,26 @@ Employer:
         }
 
         /// <summary>
+        /// Test the Where filter using a 'contains' comparison on a collection of phone numbers for a test person.
+        /// The filter should return only the phone number that contains the specified value.
+        /// </summary>
+        [TestMethod]
+        public void Where_WithSingleContainsCondition_ReturnsContainedValues()
+        {
+            var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonSarahSimmons() } };
+
+            var templateInput = @"
+{{ CurrentPerson.PhoneNumbers | Where:'Number', 555, 'contains' | Select:'NumberFormatted' | Join:', ' }}
+";
+
+            var expectedOutput = @"
+(623) 555-8888
+";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
+        }
+
+        /// <summary>
         /// Verify that the example used in the Lava documentation produces the expected outcome.
         /// </summary>
         [TestMethod]
@@ -395,6 +415,19 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
             Assert.IsNotNull( personTedDecker, "Test person not found in current database." );
 
             return personTedDecker;
+        }
+        private Person GetWhereFilterTestPersonSarahSimmons()
+        {
+            var rockContext = new RockContext();
+
+            var personSarahSimmons = new PersonService( rockContext ).Queryable()
+                .FirstOrDefault( x => x.LastName == "Simmons" && x.NickName == "Sarah" );
+
+            var phones = personSarahSimmons.PhoneNumbers;
+
+            Assert.IsNotNull( personSarahSimmons, "Test person not found in current database." );
+
+            return personSarahSimmons;
         }
 
         private class TestWhereFilterCollectionItem : RockDynamic

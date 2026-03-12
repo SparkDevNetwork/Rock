@@ -1,16 +1,16 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="smartsearch searchinput" style="height: 40px;width: 340px;">
+    <div class="smartsearch searchinput">
         <i class="ti ti-search"></i>
         <ul class="nav pull-right smartsearch-type">
-            <li class="dropdown"><a class="dropdown-toggle navbar-link" data-toggle="dropdown"><span>Name</span><b class="ti ti-caret-down-filled"></b></a>
+            <li class="dropdown"><a class="dropdown-toggle navbar-link" data-toggle="dropdown"><span>{{ defaultFilterLabel }}</span><b class="ti ti-caret-down-filled"></b></a>
                 <ul class="dropdown-menu">
                     <li v-for="(filter, key) in searchFilters" :key="key" :data-key="key" :data-target="filter.value"><a>{{ filter.text }}</a></li>
                 </ul>
             </li>
         </ul>
         <input type="search" ref="inputElement" :id="uniqueId" v-model="internalValue" accesskey="q" class="searchinput tt-query" autocomplete="off" spellcheck="false" style="position: relative; vertical-align: top; background-color: transparent;" dir="auto">
-        <input type="hidden" name="searchField_hSearchFilter" id="searchField_hSearchFilter" value="1">
+        <input type="hidden" name="searchField_hSearchFilter" id="searchField_hSearchFilter" :value="defaultFilterKey">
     </div>
 </template>
 
@@ -23,7 +23,6 @@
     padding: 0;
     margin: 0;
     font-size: 0.875em;
-    color: inherit;
     border-color: var(--input-border);
 }
 
@@ -38,10 +37,6 @@
     margin: 0 0 0 10px
 }
 
-.smartsearch input {
-    color: inherit;
-}
-
 .smartsearch .twitter-typeahead {
     flex-grow: 1;
     margin-right: 0
@@ -50,10 +45,6 @@
 .smartsearch .smartsearch-type {
     order: 10;
     width: auto
-}
-
-.smartsearch .dropdown .navbar-link {
-    color: inherit;
 }
 
 .smartsearch .dropdown .dropdown-menu {
@@ -67,7 +58,6 @@
 .smartsearch .tt-hint {
     height: 100%;
     padding: 0 0 0 34px;
-    color: inherit;
     opacity: 0.5
 }
 
@@ -78,7 +68,7 @@
 </style>
 
 <script setup lang="ts">
-    import { ref, watch } from "vue";
+    import { computed, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -92,20 +82,59 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ListItemBag): void
+        (e: "update:modelValue", value: string): void
     }>();
+
+    // #region Values
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
     const http = useHttp();
     const uniqueId = `rock-searchField-${newGuid()}`;
-
     const inputElement = ref<HTMLInputElement>();
 
-    const searchFilters = ref<ListItemBag[]>();
+    /**
+     * The available search filters keyed by component ID.
+     * The API returns a Dictionary<string, ListItemBag> where keys are
+     * the integer component IDs from the search container.
+     */
+    const searchFilters = ref<Record<string, ListItemBag>>();
 
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Gets the component ID key of the first search filter.
+     */
+    const defaultFilterKey = computed<string>(() => {
+        if (!searchFilters.value) {
+            return "";
+        }
+
+        const keys = Object.keys(searchFilters.value);
+
+        return keys.length > 0 ? keys[0] : "";
+    });
+
+    /**
+     * Gets the display label of the default search filter (e.g. "Name").
+     */
+    const defaultFilterLabel = computed<string>(() => {
+        if (!searchFilters.value || !defaultFilterKey.value) {
+            return "";
+        }
+
+        return searchFilters.value[defaultFilterKey.value]?.text ?? "";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Fetches the available search filters from the API. */
     async function fetchSearchFilters(): Promise<void> {
         const url = "/api/v2/Controls/SearchFieldGetSearchFilters";
-        const response = await http.post<ListItemBag[]>(url);
+        const response = await http.post<Record<string, ListItemBag>>(url);
 
         if (response.isSuccess && response.data) {
             searchFilters.value = response.data;
@@ -115,11 +144,17 @@
         }
     }
 
+    // #endregion
+
+    // #region Watchers
+
     watch([inputElement, searchFilters], () => {
         if (inputElement.value && searchFilters.value) {
             window.Rock.controls.searchField.initialize({ controlId: uniqueId });
         }
     });
+
+    // #endregion
 
     fetchSearchFilters();
 </script>
