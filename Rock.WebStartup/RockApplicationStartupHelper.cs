@@ -49,6 +49,7 @@ using Rock.Utility.CaptchaApi;
 using Rock.Utility.Settings;
 using Rock.Web;
 using Rock.Web.Cache;
+using Rock.Web.LavaPage;
 using Rock.Web.UI;
 using Rock.WebFarm;
 
@@ -362,6 +363,7 @@ namespace Rock.WebStartup
             sc.AddSingleton<ObsidianFingerprintManager>();
             sc.AddSingleton<ILavaEngineFactory, LavaEngineFactory>();
             sc.AddSingleton<DebugTraceObserver>();
+            sc.AddSingleton<IPageHandlerFactory, LavaPageHandlerFactory>();
 
             sc.AddScoped<RockContext>();
 

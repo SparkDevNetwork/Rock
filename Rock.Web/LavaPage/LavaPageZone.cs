@@ -14,27 +14,26 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Web.v2
+namespace Rock.Web.LavaPage;
+
+/// <summary>
+/// Defines a single zone within a Lava page layout.
+/// </summary>
+internal class LavaPageZone
 {
     /// <summary>
-    /// Defines a single zone within a Lava page layout.
+    /// The name of the zone.
     /// </summary>
-    internal class LavaPageZone
-    {
-        /// <summary>
-        /// The name of the zone.
-        /// </summary>
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        /// <summary>
-        /// The unique key for the zone, this is usually a sanitized version
-        /// of the name.
-        /// </summary>
-        public string Key { get; set; }
+    /// <summary>
+    /// The unique key for the zone, this is usually a sanitized version
+    /// of the name.
+    /// </summary>
+    public string Key { get; set; }
 
-        /// <summary>
-        /// Additional CSS classes to apply to the zone container.
-        /// </summary>
-        public string Classes { get; set; }
-    }
+    /// <summary>
+    /// Additional CSS classes to apply to the zone container.
+    /// </summary>
+    public string Classes { get; set; }
 }

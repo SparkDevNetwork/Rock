@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>12</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" Version="4.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rock.Tests.Shared\Rock.Tests.Shared.csproj" />
+    <ProjectReference Include="..\Rock\Rock.csproj" />
+    <ProjectReference Include="..\Rock.Web\Rock.Web.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Rock.Common.Mobile">
+      <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

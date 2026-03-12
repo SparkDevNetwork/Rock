@@ -24,6 +24,7 @@
     <ProjectReference Include="..\Rock.Migrations\Rock.Migrations.csproj" />
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj" />
     <ProjectReference Include="..\Rock.Version\Rock.Version.csproj" />
+    <ProjectReference Include="..\Rock.Web\Rock.Web.csproj" />
     <ProjectReference Include="..\Rock\Rock.csproj" />
   </ItemGroup>
 

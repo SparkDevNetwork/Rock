@@ -29,6 +29,8 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration.Performance" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Performance" )]
 [assembly: InternalsVisibleTo( "Rock.Update" )]
+[assembly: InternalsVisibleTo( "Rock.Web" )]
+[assembly: InternalsVisibleTo( "Rock.Web.Tests" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
 [assembly: InternalsVisibleTo( "Rock.AI.OpenAI" )]
 [assembly: InternalsVisibleTo( "DynamicProxyGenAssembly2" )] // Used by Moq

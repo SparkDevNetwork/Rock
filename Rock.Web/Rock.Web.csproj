@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>12</LangVersion>
+    <RockWebPath>..\RockWeb</RockWebPath>
+    <CopyToRockWeb>True</CopyToRockWeb>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Rock.Web.Tests" />
+    <InternalsVisibleTo Include="Rock.WebStartup" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rock\Rock.csproj" />
+  </ItemGroup>
+
+</Project>

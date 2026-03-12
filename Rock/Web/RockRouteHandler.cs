@@ -23,6 +23,7 @@ using System.Web;
 using System.Web.Compilation;
 using System.Web.Routing;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Rock.Bus.Message;
@@ -30,12 +31,10 @@ using Rock.Cms.Utm;
 using Rock.Configuration;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Net;
 using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.v2;
 
 namespace Rock.Web
 {
@@ -376,19 +375,14 @@ namespace Rock.Web
 
                     if ( useLavaEngine )
                     {
-                        var filePath = RockApp.Current.MapPath( layoutPath ).Replace( ".aspx", ".lava" );
+                        var pageHandlerFactory = RockApp.Current.GetRequiredService<IPageHandlerFactory>();
 
-                        if ( File.Exists( filePath ) )
+                        var pageReference = new PageReference( page.Id, routeId, parms, routeHttpRequest.QueryString );
+                        var pageHandler = pageHandlerFactory.CreateHandler( page, pageReference, requestContext.HttpContext );
+
+                        if ( pageHandler != null )
                         {
-                            var requestWrapper = new HttpRequestBaseWrapper( requestContext.HttpContext.Request );
-                            var responseWrapper = new RockResponseBase();
-                            var user = UserLoginService.GetCurrentUser( false );
-                            var rockRequestContext = new RockRequestContext( requestWrapper, responseWrapper, user );
-                            var pageReference = new PageReference( page.Id, routeId, parms, routeHttpRequest.QueryString );
-
-                            rockRequestContext.PrepareRequestForPage( page, pageReference );
-
-                            return new LavaPageHandler( filePath, rockRequestContext );
+                            return pageHandler;
                         }
                     }
 
