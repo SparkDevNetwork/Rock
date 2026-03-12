@@ -376,14 +376,14 @@ namespace Rock.Web
 
                     if ( useLavaEngine )
                     {
-                        var requestWrapper = new HttpRequestBaseWrapper( requestContext.HttpContext.Request );
-                        var responseWrapper = new RockResponseBase();
-                        var user = UserLoginService.GetCurrentUser( false );
-                        var rockRequestContext = new RockRequestContext( requestWrapper, responseWrapper, user );
                         var filePath = RockApp.Current.MapPath( layoutPath ).Replace( ".aspx", ".lava" );
 
                         if ( File.Exists( filePath ) )
                         {
+                            var requestWrapper = new HttpRequestBaseWrapper( requestContext.HttpContext.Request );
+                            var responseWrapper = new RockResponseBase();
+                            var user = UserLoginService.GetCurrentUser( false );
+                            var rockRequestContext = new RockRequestContext( requestWrapper, responseWrapper, user );
                             var pageReference = new PageReference( page.Id, routeId, parms, routeHttpRequest.QueryString );
 
                             rockRequestContext.PrepareRequestForPage( page, pageReference );

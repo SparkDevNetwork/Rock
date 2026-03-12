@@ -29,7 +29,6 @@ using Rock.Configuration;
 using Rock.Lava;
 using Rock.Net;
 using Rock.Observability;
-using Rock.Web.Cache;
 
 namespace Rock.Web.v2
 {
@@ -60,6 +59,15 @@ namespace Rock.Web.v2
                     RockApp.Current.GetRequiredService<DebugTraceObserver>()
                         .ValidateTrace( Activity.Current.TraceId.ToString() );
                 }
+            }
+
+            // Store the page, layout and site information on the context. This
+            // is used in a few rare places, such as application error handling.
+            if ( _rockRequestContext.Page != null )
+            {
+                context.Items["Rock:PageId"] = _rockRequestContext.Page.Id;
+                context.Items["Rock:LayoutId"] = _rockRequestContext.Page.Layout.Id;
+                context.Items["Rock:SiteId"] = _rockRequestContext.Page.Layout.Site.Id;
             }
 
             var internalAccessor = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() as RockRequestContextAccessor;
