@@ -313,6 +313,7 @@ namespace Rock.Blocks.Cms
                 .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.PageShortLink.IdKey )
                 .AddTextField( "url", a => a.PageShortLink.Url )
+                .AddDateTimeField( "createdDateTime", a => a.PageShortLink.CreatedDateTime )
                 .AddTextField( "site", a => a.PageShortLink.Site?.Name )
                 .AddTextField( "token", a => a.PageShortLink.Token )
                 .AddTextField( "category", a => a.CategoryName )
