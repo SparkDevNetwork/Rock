@@ -58,9 +58,9 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            if ( groupGuid.HasValue )
             {
-                if ( groupGuid.HasValue )
+                using ( var rockContext = new RockContext() )
                 {
                     var groupName = new GroupService( rockContext ).GetSelect( groupGuid.Value, g => g.Name );
 
@@ -69,14 +69,14 @@ namespace Rock.Field.Types
                         return $"Group: {groupName}";
                     }
                 }
-                else if ( groupTypeGuid.HasValue )
-                {
-                    var groupTypeName = new GroupTypeService( rockContext ).GetSelect( groupTypeGuid.Value, gt => gt.Name );
+            }
+            else if ( groupTypeGuid.HasValue )
+            {
+                var groupTypeName = GroupTypeCache.Get( groupTypeGuid.Value )?.Name;
 
-                    if ( groupTypeName != null )
-                    {
-                        return $"Group type: {groupTypeName}";
-                    }
+                if ( groupTypeName != null )
+                {
+                    return $"Group type: {groupTypeName}";
                 }
             }
 
@@ -154,6 +154,16 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        #endregion
+
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
+        {
+            return GetSimpleTextPersistedValues( privateValue, privateConfigurationValues );
+        }
 
         #endregion
 

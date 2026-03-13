@@ -368,15 +368,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public sealed override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
         {
-            var textValue = GetTextValue( privateValue, privateConfigurationValues );
-
-            return new PersistedValues
-            {
-                TextValue = textValue,
-                HtmlValue = textValue,
-                CondensedTextValue = textValue,
-                CondensedHtmlValue = textValue
-            };
+            return GetSimpleTextPersistedValues( privateValue, privateConfigurationValues );
         }
 
         /// <inheritdoc/>
