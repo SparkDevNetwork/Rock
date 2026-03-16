@@ -22,29 +22,21 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Model;
-using Rock.Obsidian.UI;
-using Rock.Security;
-using Rock.Store;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.NcoaResults;
-using Rock.ViewModels.Blocks.Store.PackageDetail;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
-using static Rock.Blocks.Security.Oidc.AuthClientList;
-
 namespace Rock.Blocks.Crm
 {
     /// <summary>
-    /// Displays a list of people.
+    /// Displays a list of Ncoa Results.
     /// </summary>
-
     [DisplayName( "NCOA Results" )]
     [Category( "CRM" )]
     [Description( "Displays a list of ncoa results." )]
@@ -397,7 +389,6 @@ namespace Rock.Blocks.Crm
             if ( lastName.IsNotNullOrWhiteSpace() )
             {
                 var personAliasQuery = new PersonAliasService( RockContext ).Queryable().Where( p => p.Person.LastName.Contains( lastName ) ).Select( p => p.Id);
-
                 ncoaQuery = ncoaQuery.Where( i => personAliasQuery.Contains( i.PersonAliasId ) );
             }
 
