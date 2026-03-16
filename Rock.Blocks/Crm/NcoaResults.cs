@@ -238,7 +238,6 @@ namespace Rock.Blocks.Crm
             string result = string.Format( "{0} {1} {2}, {3} {4}",
               street1, street2, city, state, postalCode ).ReplaceWhileExists( "  ", " " );
 
-            // Remove blank lines
             while ( result.Contains( Environment.NewLine + Environment.NewLine ) )
             {
                 result = result.Replace( Environment.NewLine + Environment.NewLine, Environment.NewLine );
