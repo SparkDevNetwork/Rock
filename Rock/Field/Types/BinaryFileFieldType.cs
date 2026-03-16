@@ -350,7 +350,7 @@ namespace Rock.Field.Types
 
             if ( !guid.HasValue || guid.Value.IsEmpty() )
             {
-                PersistedValues.Empty();
+                return PersistedValues.Empty();
             }
 
             using ( var rockContext = new RockContext() )
