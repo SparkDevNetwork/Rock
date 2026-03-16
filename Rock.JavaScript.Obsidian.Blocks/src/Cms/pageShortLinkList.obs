@@ -63,12 +63,6 @@
                        :filter="booleanValueFilter"
                        visiblePriority="xs" />
 
-        <ButtonColumn name="qrCode"
-                      tooltip="Download QR Code Image"
-                      iconClass="ti ti-qrcode"
-                      visiblePriority="xs"
-                      @click="onGetQrCodeClick" />
-
         <ButtonColumn name="copy"
                       tooltip="Copy to Clipboard"
                       iconClass="ti ti-clipboard"
@@ -190,46 +184,6 @@
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
-        }
-    }
-
-    /**
-    * The function to download a QR code for a specific short link.
-    *
-    * @param key The key of the row whose QR code is to be downloaded.
-    * @param grid The grid state.
-    */
-    async function onGetQrCodeClick(key: string, grid: IGridState): Promise<void> {
-        const row = grid.rows.find(r => r.idKey === key);
-        const shortLink = row?.shortLink;
-
-        if (!shortLink || typeof shortLink !== "string") {
-            await alert("Unable to generate the QR code for this short link.");
-            return;
-        }
-
-        try {
-            const qrCodeUrl = `/GetQRCode.ashx?data=${encodeURIComponent(shortLink)}`;
-            const response = await fetch(qrCodeUrl);
-
-            if (!response.ok) {
-                throw new Error("QR code request failed.");
-            }
-
-            const blob = await response.blob();
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            const fileNameBase = typeof row.token === "string" && row.token ? row.token : key;
-
-            link.href = downloadUrl;
-            link.download = `${fileNameBase}-qr-code.png`;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(downloadUrl);
-        }
-        catch {
-            await alert("Unknown error while trying to download the QR code.");
         }
     }
 
