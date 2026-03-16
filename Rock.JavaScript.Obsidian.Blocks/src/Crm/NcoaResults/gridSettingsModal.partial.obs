@@ -14,13 +14,13 @@
         <div class="row">
             <div class="col-md-6">
                 <DropDownList v-model="gridSettingsForm.filterProcessed"
-                              :items="filterProcessedItems"
+                              :items="enumToListItemBag(ProcessedDescription)"
                               label="Processed" />
             </div>
 
             <div class="col-md-6">
                 <DropDownList v-model="gridSettingsForm.filterMoveType"
-                              :items="moveTypeItems"
+                              :items="enumToListItemBag(MoveTypeDescription)"
                               label="Move Type" />
             </div>
         </div>
@@ -42,13 +42,13 @@
         <div class="row">
             <div class="col-md-6">
                 <DropDownList v-model="gridSettingsForm.filterAddressStatus"
-                              :items="addressStatusItems"
+                              :items="enumToListItemBag(AddressStatusDescription)"
                               label="Address Status" />
             </div>
 
             <div class="col-md-6">
                 <DropDownList v-model="gridSettingsForm.filterInvalidReason"
-                              :items="addressInvalidItems"
+                              :items="enumToListItemBag(AddressInvalidReasonDescription)"
                               label="Invalid Reason" />
             </div>
         </div>
@@ -88,6 +88,11 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import { MoveTypeDescription } from "@Obsidian/Enums/Core/moveType";
+    import { ProcessedDescription } from "@Obsidian/Enums/Core/processed";
+    import { AddressStatusDescription } from "@Obsidian/Enums/Core/addressStatus";
+    import { AddressInvalidReasonDescription } from "@Obsidian/Enums/Core/addressInvalidReason";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
 
     const props = defineProps({
         modelValue: {
@@ -116,70 +121,6 @@
     const gridSettingsForm = ref(clone(props.modelValue));
 
     const isVisible = useVModelPassthrough(props, "visible", emit);
-
-    const filterProcessedItems = <ListItemBag[]>[
-        {
-            text: "Not Processed",
-            value: "0"
-        },
-        {
-            text: "Complete",
-            value: "1"
-        },
-        {
-            text: "Manual Update Required",
-            value: "2"
-        },
-        {
-            text: "Manual Update Required Or Not Processed",
-            value: "3"
-        }
-    ];
-
-    const moveTypeItems = <ListItemBag[]>[
-        {
-            text: "None",
-            value: "0"
-        },
-        {
-            text: "Family",
-            value: "1"
-        },
-        {
-            text: "Individual",
-            value: "2"
-        },
-        {
-            text: "Business",
-            value: "3"
-        }
-    ];
-
-    const addressStatusItems = <ListItemBag[]>[
-        {
-            text: "Invalid",
-            value: "0"
-        },
-        {
-            text: "Valid",
-            value: "1"
-        }
-    ];
-
-    const addressInvalidItems = <ListItemBag[]>[
-        {
-            text: "None",
-            value: "0"
-        },
-        {
-            text: "Not Found",
-            value: "1"
-        },
-        {
-            text: "Vacant",
-            value: "2"
-        }
-    ];
 
     function onSave(): void {
 

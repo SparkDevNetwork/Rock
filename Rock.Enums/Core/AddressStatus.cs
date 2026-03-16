@@ -20,6 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents the address statuses.
     /// </summary>
+    [Enums.EnumDomain( "Core" )]
     public enum AddressStatus
     {
         /// <summary>
