@@ -7,18 +7,17 @@ using System.Threading.Tasks;
 namespace Rock.ViewModels.Blocks.Crm.NcoaResults
 {
     /// <summary>
-    /// 
+    /// Family group of Ncoa history items
     /// </summary>
-    public class NcoaResultsBag
+    public class NcoaFamilyGroupBag
     {
         /// <summary>
         /// 
         /// </summary>
-        public List<NcoaFamilyGroupBag> NcoaList { get; set; }
-
+        public string FamilyName { get; set; }
         /// <summary>
         /// 
         /// </summary>
-        public int? TotalResults { get; set; }
+        public List<NcoaDataBag> NcoaItems { get; set; }
     }
 }

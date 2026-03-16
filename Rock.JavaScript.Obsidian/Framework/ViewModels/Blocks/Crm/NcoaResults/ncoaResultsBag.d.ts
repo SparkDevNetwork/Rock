@@ -21,10 +21,10 @@
 // </copyright>
 //
 
-import { NcoaDataBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaDataBag";
+import { NcoaFamilyGroupBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaFamilyGroupBag";
 
 export type NcoaResultsBag = {
-    ncoaList?: NcoaDataBag[] | null;
+    ncoaList?: NcoaFamilyGroupBag[] | null;
 
     totalResults?: number | null;
 };

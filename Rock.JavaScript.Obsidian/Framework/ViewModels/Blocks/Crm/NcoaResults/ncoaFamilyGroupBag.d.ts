@@ -21,28 +21,11 @@
 // </copyright>
 //
 
-export type NcoaDataBag = {
-    addressStatus?: string | null;
+import { NcoaDataBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaDataBag";
 
-    familyId: number;
+/** Family group of Ncoa history items */
+export type NcoaFamilyGroupBag = {
+    familyName?: string | null;
 
-    familyMembers?: string | null;
-
-    idKey?: string | null;
-
-    individualIdKey?: string | null;
-
-    individualName?: string | null;
-
-    moveDate?: string | null;
-
-    moveDistance?: number | null;
-
-    newAddress?: string | null;
-
-    originalAddress?: string | null;
-
-    processStatus?: string | null;
-
-    type?: string | null;
+    ncoaItems?: NcoaDataBag[] | null;
 };

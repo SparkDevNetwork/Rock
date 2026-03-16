@@ -4,102 +4,92 @@
            type="block">
         <template #headerActions>
 
+            <span class="label label-default">
+                Results: {{ totalCount }}
+            </span>
             <button @click.prevent.stop="onGridSettingsClick" class="btn btn-panel-action" :class="{ 'active': hasSettingsFilters }"><i class="ti ti-adjustments-horizontal"></i></button>
 
         </template>
 
-        <p class="justify-self-end">Results: {{ totalCount }}</p>
-        <div v-for="(row, idx) in ncoaResults" :key="row.idKey ?? idx" class="justify-content-start m-4">
-            <h3 class="pl-0">{{ row.individualName?.split(' ')?.[1] }} Family</h3>
+        <div v-for="(family, idx) in ncoaResults" :key="idx" class="m-4">
+            <h3 class="pl-0">{{ family.familyName || family.ncoaItems?.[0]?.individualName?.split(' ')?.[1] }} Family</h3>
 
-            <div class="displaycard align-items-start overflow-auto">
-                <div class="col-md-2">
-                    <div v-if="row.type?.toLowerCase() === 'move'">
-                        <h4 class="mt-0">
-                            <span class="label label-success">
-                                {{ row.familyMembers?.trim() ? "Family" : "Individual" }}
-                            </span>
+            <div v-for="(row, rowIdx) in family.ncoaItems" :key="row.idKey ?? rowIdx">
+                <div class="displaycard">
+                    <!-- Group 1: Badge + Members -->
+                    <div class="ncoa-group">
+                        <div v-if="row.type?.toLowerCase() === 'move'">
+                            <h4 class="mt-0">
+                                <span class="label label-success">
+                                    {{ row.familyMembers?.trim() ? "Family" : "Individual" }}
+                                </span>
+                            </h4>
+                            <div class="d-flex flex-column" v-if="row.moveDate">
+                                <label class="text-muted font-weight-normal">Move Date</label>
+                                <span>{{ row.moveDate }}</span>
+                            </div>
+                        </div>
+                        <h4 class="mt-spacing-none" v-else-if="row.type?.toLowerCase() === 'month48move'">
+                            <span class="label label-info">48 Month Move</span>
                         </h4>
-                        <dl class="mb-spacing-none">
-                            <dt>Move Date</dt>
-                            <dd>{{ row.moveDate }}</dd>
+                        <h4 class="mt-spacing-none" v-else-if="row.addressStatus?.toLowerCase() === 'invalid'">
+                            <span class="label label-warning">Invalid Address</span>
+                        </h4>
+
+                        <dl>
+                            <dt>{{ row.familyMembers?.trim() ? "Family Members" : "Individual" }}</dt>
+                            <dd v-for="(member, i) in (row.familyMembers?.trim()
+                                ? row.familyMembers.split(',').map(m => m.trim())
+                                : [row.individualName])"
+                                :key="i">
+                                {{ member }}
+                                <a v-if="i === 0" :href="'/Person/' + row.individualIdKey" target="_blank">
+                                    <i class="ti ti-users"></i>
+                                </a>
+                            </dd>
                         </dl>
                     </div>
 
-                    <h4 class="mt-spacing-none" v-else-if="row.type?.toLowerCase() === 'month48move'">
-                        <span class="label label-info">
-                            48 Month Move
-                        </span>
-                    </h4>
-
-                    <h4 class="mt-spacing-none" v-else-if="row.addressStatus?.toLowerCase() === 'invalid'">
-                        <span class="label label-warning">
-                            Invalid Address
-                        </span>
-                    </h4>
-                </div>
-
-                <div class="col-md-2">
-                    <dl>
-                        <dt>{{ row.familyMembers?.trim() ? "Family Members" : "Individual" }}</dt>
-
-                        <dd v-for="(member, i) in (row.familyMembers?.trim()
-                            ? row.familyMembers.split(',').map(m => m.trim())
-                            : [row.individualName])"
-                            :key="i"
-                            class="text-nowrap">
-
-                            {{ member }}
-
-                            <a v-if="i === 0" :href="'/Person/' + row.individualIdKey" target="_blank">
-                                <i class="ti ti-users"></i>
-                            </a>
-
-                        </dd>
-                    </dl>
-                </div>
-
-                <div class="col-md-2">
-                    <dl>
-                        <dt>Original Address</dt>
-                        <dd>{{ row.originalAddress }}</dd>
-                    </dl>
-
-                </div>
-
-                <div class="col-md-2">
-                    <dl v-if="row.type?.toLowerCase() === 'move'">
-                        <dt>New Address</dt>
-                        <dd>{{ row.newAddress }}</dd>
-                    </dl>
-                </div>
-
-                <div class="col-md-2">
-                    <dl v-if="row.moveDistance">
-                        <dt>Move Distance</dt>
-                        <dd>{{ row.moveDistance }}</dd>
-                    </dl>
-                </div>
-
-                <div class="col-md-2" v-if="row.processStatus">
-                    <div>
-                        <label class="label label-default w-fit" :class="{ 'label-success': row.processStatus.toLowerCase() == 'processed' }">{{ row.processStatus }}</label>
+                    <!-- Group 2: Original + New Address stacked -->
+                    <div class="ncoa-group">
+                        <dl>
+                            <dt>Original Address</dt>
+                            <dd>{{ row.originalAddress }}</dd>
+                        </dl>
+                        <dl v-if="row.type?.toLowerCase() === 'move'">
+                            <dt>New Address</dt>
+                            <dd>{{ row.newAddress }}</dd>
+                        </dl>
                     </div>
-                    <RockButton v-if="(row.addressStatus?.toLocaleLowerCase() === 'invalid' || row.type?.toLocaleLowerCase() === 'month48move') && row.processStatus.toLocaleLowerCase() == 'not processed'"
-                                @click="markNcoaHistoryItem(row.idKey ?? '', false)">
-                        Mark Address As Previous
-                    </RockButton>
-                    <RockButton v-if="row.type?.toLocaleLowerCase() === 'move' && row.processStatus.toLocaleLowerCase() == 'not processed'"
-                                @click="markNcoaHistoryItem(row.idKey ?? '', true)">
-                        Mark Processed
-                    </RockButton>
-                    <div class="alert alert-warning font-size-sm mt-2" v-if="warnings[row.idKey ?? '']">
-                        <p>{{ warnings[row.idKey ?? ''] }}</p>
-                    </div>
-                </div>
 
+                    <!-- Group 3: Move Distance + Status/Actions -->
+                    <div class="ncoa-group">
+                        <dl v-if="row.moveDistance">
+                            <dt>Move Distance</dt>
+                            <dd>{{ row.moveDistance }}</dd>
+                        </dl>
+                        <div v-if="row.processStatus" class="d-flex flex-column" style="width: fit-content;">
+                            <label class="label label-default" style="width: fit-content;"
+                                   :class="{ 'label-success': row.processStatus.toLowerCase() == 'processed' }">
+                                {{ row.processStatus }}
+                            </label>
+                            <RockButton v-if="(row.addressStatus?.toLocaleLowerCase() === 'invalid' || row.type?.toLocaleLowerCase() === 'month48move') && row.processStatus.toLocaleLowerCase() == 'not processed'"
+                                        @click="markNcoaHistoryItem(row.idKey ?? '', false)">
+                                Mark Address As Previous
+                            </RockButton>
+                            <RockButton v-if="row.type?.toLocaleLowerCase() === 'move' && row.processStatus.toLocaleLowerCase() == 'not processed'"
+                                        @click="markNcoaHistoryItem(row.idKey ?? '', true)">
+                                Mark Processed
+                            </RockButton>
+                            <div class="alert alert-warning font-size-sm mt-2" v-if="warnings[row.idKey ?? '']">
+                                <p>{{ warnings[row.idKey ?? ''] }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <hr>
             </div>
-            <hr>
         </div>
         <div class="clearfix">
             <button class="btn btn-primary pull-left" v-if="canPrev" @click.prevent="prevPage">
@@ -128,6 +118,7 @@
     import { NcoaDataBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaDataBag";
     import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { NcoaFamilyGroupBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaFamilyGroupBag";
 
     const config = useConfigurationValues<ListBlockBox<NcoaResultsOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -139,7 +130,8 @@
     onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
-    const ncoaResults = ref<NcoaDataBag[] | null>(null);
+
+    const ncoaResults = ref<NcoaFamilyGroupBag[] | null>(null);
 
     const isGridSettingsVisible = ref(false);
 
@@ -174,6 +166,7 @@
         if (result.isSuccess && result.data) {
             ncoaResults.value = result.data.ncoaList ?? null;
             totalCount.value = result.data.totalResults ?? 0;
+            console.log(ncoaResults.value);
         }
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
@@ -282,10 +275,38 @@
 
 <style scoped>
 .displaycard {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-large);
+    padding: var(--spacing-large);
+    border-radius: var(--rounded-xsmall);
+    border: 1px solid var(--color-interface-soft);
+    transition: background-color 0.15s ease-in-out;
+    flex-wrap: wrap;
+    align-items: flex-start;
     background-color: var(--base-interface-softer);
 }
 
-dd {
+.ncoa-group {
+    flex: 1 1 30%;
     min-width: 200px;
+}
+
+@media (min-width: 1200px) {
+    .displaycard {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .ncoa-group {
+        display: contents;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 767px) {
+    .ncoa-group {
+        flex: 1 1 100%;
+    }
 }
 </style>

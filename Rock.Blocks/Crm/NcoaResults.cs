@@ -419,11 +419,29 @@ namespace Rock.Blocks.Crm
                 ncoaQuery = ncoaQuery.Where( i => campusQuery.Contains( i.PersonAliasId ) );
             }
 
-            var totalResults = ncoaQuery.Count();
+            // Group duplicate family moves.
+            var groupedFamilyMoves = ncoaQuery
+                .Where( i => i.MoveType != MoveType.Individual )
+                .GroupBy( i => new { i.FamilyId, i.MoveType, i.MoveDate } )
+                .Select( g => g.OrderByDescending( x => x.Id ).FirstOrDefault() )
+                .ToList();
 
-            ncoaQuery = ncoaQuery.OrderBy( i => i.Id ).Skip( ( pageNumber - 1 ) * resultCount ).Take( resultCount );
+            var individualMoves = ncoaQuery
+                .Where( i => i.MoveType == MoveType.Individual )
+                .ToList();
 
-            var ncoaHistoryData = ncoaQuery.ToList();
+            var combinedData = groupedFamilyMoves
+                .Concat( individualMoves )
+                .OrderBy( i => i.FamilyId )
+                .ToList();
+
+            var totalResults = combinedData.Count();
+
+            var ncoaHistoryData = combinedData
+                .OrderBy(i => i.Id)
+                .Skip( ( pageNumber - 1 ) * resultCount )
+                .Take( resultCount )
+                .ToList();
 
             // Records that are not individual move types and will represent family moves.
             var familyIds = ncoaHistoryData
@@ -445,36 +463,48 @@ namespace Rock.Blocks.Crm
                     p.Person.LastName,
                 } ).ToList();
 
+            var ncoaItems = ncoaHistoryData.Select( i =>
+            {
+                var individual = personData.Where( p => p.personAliasId == i.PersonAliasId ).FirstOrDefault();
+
+
+                return new NcoaDataBag
+                {
+                    IdKey = i.Id.AsIdKey(),
+                    FamilyId = i.FamilyId,
+                    Type = i.NcoaType.ToString(),
+                    IndividualIdKey = individual.personId.AsIdKey(),
+                    IndividualName = individual.NickName + ' ' + individual.LastName,
+                    FamilyMembers = familyNamesKey.ContainsKey( i.FamilyId ) ? familyNamesKey[i.FamilyId] : string.Empty,
+
+                    OriginalAddress = FormattedAddress(
+                            i.OriginalStreet1, i.OriginalStreet2, i.OriginalCity, i.OriginalState, i.OriginalPostalCode )
+                        .ConvertCrLfToHtmlBr(),
+
+                    NewAddress = FormattedAddress(
+                            i.UpdatedStreet1, i.UpdatedStreet2, i.UpdatedCity, i.UpdatedState, i.UpdatedPostalCode )
+                        .ConvertCrLfToHtmlBr(),
+
+                    MoveDate = i.MoveDate.ToShortDateString(),
+                    MoveDistance = i.MoveDistance,
+                    ProcessStatus = i.Processed == Processed.Complete ? "Processed" : "Not Processed",
+                    AddressStatus = i.AddressStatus.ToString()
+                };
+            } ).ToList();
+
+            var groupedNcoaItems = ncoaItems
+                .GroupBy( n => n.FamilyId )
+                .Select( g => new NcoaFamilyGroupBag
+                {
+                    FamilyName = familyNamesKey.ContainsKey( g.Key ) ? familyNamesKey[g.Key].Split( ' ' ).Last() : null,
+                    NcoaItems = g.ToList()
+                } ).ToList();
+
+
             var bag = new NcoaResultsBag
             {
                 TotalResults = totalResults,
-                NcoaList = ncoaHistoryData.Select( i =>
-                {
-                    var individual = personData.Where( p => p.personAliasId == i.PersonAliasId ).FirstOrDefault();
-
-
-                    return new NcoaDataBag
-                    {
-                        IdKey = i.Id.AsIdKey(),
-                        Type = i.NcoaType.ToString(),
-                        IndividualIdKey = individual.personId.AsIdKey(),
-                        IndividualName = individual.NickName + ' ' + individual.LastName,
-                        FamilyMembers = familyNamesKey.ContainsKey( i.FamilyId ) ? familyNamesKey[i.FamilyId] : string.Empty,
-
-                        OriginalAddress = FormattedAddress(
-                                i.OriginalStreet1, i.OriginalStreet2, i.OriginalCity, i.OriginalState, i.OriginalPostalCode )
-                            .ConvertCrLfToHtmlBr(),
-
-                        NewAddress = FormattedAddress(
-                                i.UpdatedStreet1, i.UpdatedStreet2, i.UpdatedCity, i.UpdatedState, i.UpdatedPostalCode )
-                            .ConvertCrLfToHtmlBr(),
-
-                        MoveDate = i.MoveDate.ToShortDateString(),
-                        MoveDistance = i.MoveDistance,
-                        ProcessStatus = i.Processed == Processed.Complete ? "Processed" : "Not Processed",
-                        AddressStatus = i.AddressStatus.ToString()
-                    };
-                } ).ToList()
+                NcoaList = groupedNcoaItems
             };
 
             return ActionOk( bag );

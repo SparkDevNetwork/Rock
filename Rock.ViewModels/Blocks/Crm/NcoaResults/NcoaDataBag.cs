@@ -19,6 +19,11 @@ namespace Rock.ViewModels.Blocks.Crm.NcoaResults
         /// <summary>
         /// 
         /// </summary>
+        public int FamilyId { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public string Type { get; set; }
 
         /// <summary>
