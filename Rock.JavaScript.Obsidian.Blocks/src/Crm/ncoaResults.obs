@@ -110,7 +110,6 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import GridSettingsModal from "./NcoaResults/gridSettingsModal.partial.obs";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
-    import { NcoaDataBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaDataBag";
     import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { NcoaFamilyGroupBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaFamilyGroupBag";
@@ -161,7 +160,6 @@
         if (result.isSuccess && result.data) {
             ncoaResults.value = result.data.ncoaList ?? null;
             totalCount.value = result.data.totalResults ?? 0;
-            console.log(ncoaResults.value);
         }
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
@@ -256,7 +254,7 @@
 
     watch(
         gridSettings,
-        async (value) => {
+        async () => {
             await preferences.save();
 
             currentPage.value = 1;
