@@ -52,7 +52,7 @@ namespace Rock.AI.Agent.Skills
             qry = helper.WhereOptionalIdKey( qry, ft => ft.FinancialPaymentDetail.CurrencyTypeValueId, paymentMethodTypeValueIdKey );
             qry = helper.WhereOptionalPropertyBetween( qry, ft => ft.TransactionDateTime, startDate, endDate );
 
-            if ( !TryGetMatchingAccountIds( accountIdKeys, campusIdKey, out var accountIds ) )
+            if ( !TryGetMatchingAccountIds( AgentRequestContext, accountIdKeys, campusIdKey, out var accountIds ) )
             {
                 return NoData()
                     .WithInstructions( "No active financial accounts matched the supplied accountIdKeys and/or campusIdKey." );

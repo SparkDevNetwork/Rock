@@ -60,7 +60,7 @@ namespace Rock.AI.Agent.Skills
 
             qry = helper.WhereOptionalIdKey( qry, ft => ft.AuthorizedPersonAlias.PersonId, personIdKey );
 
-            var result = GetFinancialTransactionResult( helper, qry, campusIdKey, accountIdKeys, paymentMethodTypeValueIdKey, startDate, endDate, pageNumber, items =>
+            var result = GetFinancialTransactionResult( helper, AgentRequestContext, qry, campusIdKey, accountIdKeys, paymentMethodTypeValueIdKey, startDate, endDate, pageNumber, items =>
             {
                 var registrationEntityTypeId = EntityTypeCache.Get<Registration>( true, AgentRequestContext.RockContext ).Id;
                 var registrationIds = items

@@ -59,7 +59,7 @@ namespace Rock.AI.Agent.Skills
 
             qry = WherePersonOrGivingGroup( qry, helper, personIdKey );
 
-            var result = GetFinancialTransactionResult( helper, qry, campusIdKey, accountIdKeys, paymentMethodTypeValueIdKey, startDate, endDate, pageNumber, null );
+            var result = GetFinancialTransactionResult( helper, AgentRequestContext, qry, campusIdKey, accountIdKeys, paymentMethodTypeValueIdKey, startDate, endDate, pageNumber, null );
 
             if ( !helper.HasErrors && personIdKey.IsNotNullOrWhiteSpace() )
             {

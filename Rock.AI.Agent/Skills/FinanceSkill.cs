@@ -51,7 +51,7 @@ namespace Rock.AI.Agent.Skills
         /// <param name="originalAccountIds">The account ids requested to be filtered on.</param>
         /// <param name="campusId">The campus id requested to be filtered on.</param>
         /// <returns></returns>
-        private List<FinancialAccountCache> GetFinancialAccountsForQuery( List<string> originalAccountIds, string campusId )
+        private static List<FinancialAccountCache> GetFinancialAccountsForQuery( IAgentRequestContext agentRequestContext, List<string> originalAccountIds, string campusId )
         {
             // The filtering for accounts will be handled as such:
             // A. If no accounts are specified, but a campus is specified, find all accounts for that campus. 
@@ -88,7 +88,7 @@ namespace Rock.AI.Agent.Skills
 
                 foreach ( var acctId in accountIds )
                 {
-                    var acct = FinancialAccountCache.Get( acctId, AgentRequestContext.RockContext );
+                    var acct = FinancialAccountCache.Get( acctId, agentRequestContext.RockContext );
                     if ( acct == null )
                     {
                         continue;
@@ -102,7 +102,7 @@ namespace Rock.AI.Agent.Skills
 
                         foreach ( var child in children )
                         {
-                            var childAcct = FinancialAccountCache.Get( child.Id, AgentRequestContext.RockContext );
+                            var childAcct = FinancialAccountCache.Get( child.Id, agentRequestContext.RockContext );
                             if ( childAcct != null && !accounts.Any( a => a.Id == childAcct.Id ) )
                             {
                                 accounts.Add( childAcct );
@@ -130,7 +130,7 @@ namespace Rock.AI.Agent.Skills
 
                 foreach ( var acctId in accountIds )
                 {
-                    var acct = FinancialAccountCache.Get( acctId, AgentRequestContext.RockContext );
+                    var acct = FinancialAccountCache.Get( acctId, agentRequestContext.RockContext );
                     if ( acct == null )
                     {
                         continue;
@@ -144,7 +144,7 @@ namespace Rock.AI.Agent.Skills
 
                         foreach ( var child in children )
                         {
-                            var childAcct = FinancialAccountCache.Get( child.Id, AgentRequestContext.RockContext );
+                            var childAcct = FinancialAccountCache.Get( child.Id, agentRequestContext.RockContext );
 
                             if ( childAcct != null && !accounts.Any( a => a.Id == childAcct.Id ) )
                             {
@@ -168,13 +168,13 @@ namespace Rock.AI.Agent.Skills
         /// <param name="campusIdKey">The campus id requested to be filtered on.</param>
         /// <param name="accountIds">The resulting account ids to filter on.</param>
         /// <returns><c>false</c> if filtering was performed and no accounts were available; otherwise <c>true</c>.</returns>
-        private bool TryGetMatchingAccountIds( List<string> accountIdKeys, string campusIdKey, out IList<int> accountIds )
+        private static bool TryGetMatchingAccountIds( IAgentRequestContext agentRequestContext, List<string> accountIdKeys, string campusIdKey, out IList<int> accountIds )
         {
             // If they specified any accoun tkeys or a campus key, then we need
             // to resolve the account ids to filter on.
             if ( accountIdKeys?.Any() == true || campusIdKey.IsNotNullOrWhiteSpace() )
             {
-                accountIds = GetFinancialAccountsForQuery( accountIdKeys ?? [], campusIdKey )
+                accountIds = GetFinancialAccountsForQuery( agentRequestContext, accountIdKeys ?? [], campusIdKey )
                     .Select( a => a.Id )
                     .ToList();
 
@@ -236,8 +236,9 @@ namespace Rock.AI.Agent.Skills
         /// <param name="pageNumber">The page number to retrieve in the set.</param>
         /// <param name="updateItems">A callback that will be called for any items when constructing the result.</param>
         /// <returns>A tool result.</returns>
-        private IAgentToolResult GetFinancialTransactionResult(
+        internal static IAgentToolResult GetFinancialTransactionResult(
             AgentToolHelper helper,
+            IAgentRequestContext agentRequestContext,
             IQueryable<FinancialTransaction> qry,
             string campusIdKey,
             List<string> accountIdKeys,
@@ -251,9 +252,9 @@ namespace Rock.AI.Agent.Skills
             qry = helper.WhereOptionalIdKey( qry, ft => ft.FinancialPaymentDetail.CurrencyTypeValueId, paymentMethodTypeValueIdKey );
             qry = helper.WhereOptionalPropertyBetween( qry, ft => ft.TransactionDateTime, startDate, endDate );
 
-            if ( !TryGetMatchingAccountIds( accountIdKeys, campusIdKey, out var accountIds ) )
+            if ( !TryGetMatchingAccountIds( agentRequestContext, accountIdKeys, campusIdKey, out var accountIds ) )
             {
-                return NoData()
+                return AgentToolResult.NoData()
                     .WithInstructions( "No active financial accounts matched the supplied accountIdKeys and/or campusIdKey." );
             }
 
