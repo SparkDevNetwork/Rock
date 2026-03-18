@@ -34,114 +34,14 @@ namespace Rock.AI.Agent.Skills
                 return Error( "No person could be found with the provided personIdKey." );
             }
 
-            var profileResult = new PersonResult();
-
-            profileResult.Id = person.Id;
-            profileResult.FirstName = person.FirstName;
-            profileResult.NickName = person.NickName;
-            profileResult.LastName = person.LastName;
-            profileResult.MiddleName = person.MiddleName;
-            profileResult.Suffix = person.SuffixValue != null ? person.SuffixValue.Value : null;
-            profileResult.Age = person.Age;
-            profileResult.AgeClassification = person.AgeClassification;
-            profileResult.Gender = person.Gender;
-            profileResult.BirthMonth = person.BirthMonth;
-            profileResult.BirthDay = person.BirthDay;
-            profileResult.BirthYear = person.BirthYear;
-            profileResult.AnniversaryDate = person.AnniversaryDate;
-            profileResult.GraduationYear = person.GraduationYear;
-            profileResult.MaritalStatus = person.MaritalStatusValue != null ? person.MaritalStatusValue.Value : null;
-            profileResult.PhotoId = person.PhotoId;
-            profileResult.PrimaryFamilyId = person.PrimaryFamilyId;
-            profileResult.PrimaryFamilyId = person.PrimaryFamilyId;
-            profileResult.MaritalStatusGuid = person.MaritalStatusValue != null ? person.MaritalStatusValue.Guid : Guid.Empty;
-            profileResult.RecordTypeValueId = person.RecordTypeValueId;
-            profileResult.RecordStatus = person.RecordStatusValue != null ? person.RecordStatusValue.Value : null;
-            profileResult.ConnectionStatus = person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : null;
-            profileResult.Email = person.Email;
-            profileResult.MaritalStatus = person.MaritalStatusValue != null ? person.MaritalStatusValue.Value : null;
-            profileResult.Campus = person.PrimaryCampus != null ? new KeyNameResult { Id = person.PrimaryCampus.Id, Name = person.PrimaryCampus.Name } : null;
-            profileResult.IncludePublicProfile = true;
-
-            profileResult.PreviousLastNames = person.GetPreviousNames()
-                .Select( p => p.LastName )
-                .ToList();
-
+            var profileResult = GetPrimaryPersonResult( person );
             var family = person.GetFamily();
 
-            // Add phone numbers
-            profileResult.PhoneNumbers = person.PhoneNumbers
-                .Select( n => new PhoneNumberResult
-                {
-                    IsUnlisted = n.IsUnlisted,
-                    PhoneNumber = n.NumberFormatted,
-                    PhoneType = new KeyNameResult
-                    {
-                        Id = n.NumberTypeValueId ?? 0,
-                        Name = n.NumberTypeValue != null ? n.NumberTypeValue.Value : string.Empty
-                    },
-                    IsMessagingEnabled = n.IsMessagingEnabled
-                } ).ToList();
-
-            // Add addresses
-            profileResult.Addresses = family
-                .GroupLocations.Select( l => new LocationResult
-                {
-                    Street1 = l.Location.Street1,
-                    Street2 = l.Location.Street2,
-                    City = l.Location.City,
-                    State = l.Location.State,
-                    PostalCode = l.Location.PostalCode,
-                    Country = l.Location.Country,
-                    LocationType = l.GroupLocationTypeValue != null ? l.GroupLocationTypeValue.Value : string.Empty,
-                    IsMailingAddress = l.IsMailingLocation,
-                    IsMappedLocation = l.IsMappedLocation,
-                    GeographyPoint = ( l.Location.Latitude.HasValue && l.Location.Longitude.HasValue ) ? new GeographyPoint( l.Location.Latitude.Value, l.Location.Longitude.Value ) : null
-                } ).ToList();
-
-            // Add adults
-            profileResult.AdultsInFamily = family.Members.Where( m => m.Person.AgeClassification == AgeClassification.Adult )
-                .Select( m => new PersonResult
-                {
-                    Id = m.Person.Id,
-                    FirstName = m.Person.FirstName,
-                    NickName = m.Person.NickName,
-                    PhotoId = m.Person.PhotoId,
-                    LastName = m.Person.LastName,
-                    Age = m.Person.Age,
-                    Suffix = m.Person.SuffixValue != null ? m.Person.SuffixValue.Value : null
-                } ).ToList();
-
-            // Add children
-            profileResult.ChildrenInFamily = family.Members.Where( m => m.Person.AgeClassification == AgeClassification.Child )
-                .Select( m => new PersonResult
-                {
-                    Id = m.Person.Id,
-                    FirstName = m.Person.FirstName,
-                    NickName = m.Person.NickName,
-                    PhotoId = m.Person.PhotoId,
-                    LastName = m.Person.LastName,
-                    Age = m.Person.Age,
-                    Suffix = m.Person.SuffixValue != null ? m.Person.SuffixValue.Value : null
-                } ).ToList();
-
-            // Add spouse
-            var spouse = person.GetSpouse();
-
-            if ( spouse != null )
-            {
-                profileResult.Spouse = new PersonResult
-                {
-                    Id = spouse.Id,
-                    FirstName = spouse.FirstName,
-                    NickName = spouse.NickName,
-                    PhotoId = spouse.PhotoId,
-                    Email = spouse.Email,
-                    LastName = spouse.LastName,
-                    Age = spouse.Age,
-                    Suffix = spouse.SuffixValue != null ? spouse.SuffixValue.Value : null
-                };
-            }
+            PopulatePhoneNumbers( profileResult, person );
+            PopulateAddresses( profileResult, family );
+            PopulateSpouse(profileResult, person );
+            PopulateAdults( profileResult, family );
+            PopulateChildren( profileResult, family );
 
             // Add Attributes
             person.LoadAttributes();

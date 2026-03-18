@@ -85,7 +85,7 @@ namespace Rock.AI.Agent.Skills
                     Age = p.Age,
                     Email = p.Email,
                     Gender = p.Gender,
-                    IncludePublicProfile = true
+                    IncludeProfileLink = true
                 } )
                 .OrderBy( p => p.LastName )
                 .ThenBy( p => p.NickName )

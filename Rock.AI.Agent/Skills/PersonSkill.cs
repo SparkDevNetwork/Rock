@@ -27,7 +27,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Annotations;
+using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
+using Rock.Core.Geography.Classes;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -110,13 +112,13 @@ namespace Rock.AI.Agent.Skills
                 result.ChildrenInFamily = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId
                                                 && m.GroupRoleGuid == childGuid
                                                 && m.PersonId != result.Id )
-                                            .Select( m => new PersonResult { NickName = m.NickName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix, Age = m.Age, IncludePublicProfile = true } )
+                                            .Select( m => new PersonResult { NickName = m.NickName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix, Age = m.Age, IncludeProfileLink = true } )
                                             .ToList();
 
                 result.AdultsInFamily = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId
                                                 && m.GroupRoleGuid == adultGuid
                                                 && m.PersonId != result.Id )
-                                            .Select( m => new PersonResult { NickName = m.NickName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix, Age = m.Age, IncludePublicProfile = true } )
+                                            .Select( m => new PersonResult { NickName = m.NickName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix, Age = m.Age, IncludeProfileLink = true } )
                                             .ToList();
 
                 var personRoleInFamily = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId && m.PersonId == result.Id )
@@ -131,7 +133,7 @@ namespace Rock.AI.Agent.Skills
                                                 && m.PersonId != result.Id
                                                 && m.MaritalStatusGuid == marriedMaritalStatusGuid
                                                 && ( !isBibleStrictSpouse || m.Gender != result.Gender || m.Gender == Gender.Unknown || result.Gender == Gender.Unknown ) )
-                                             .Select( m => new PersonResult { NickName = m.NickName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix, Age = m.Age, IncludePublicProfile = true } )
+                                             .Select( m => new PersonResult { NickName = m.NickName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix, Age = m.Age, IncludeProfileLink = true } )
                                              .FirstOrDefault();
                 }
             }
@@ -147,6 +149,137 @@ namespace Rock.AI.Agent.Skills
         /// <returns>A <see cref="SqlParameter"/> instance.</returns>
         private static SqlParameter GetParameterValueOrDbNull( string key, object value )
             => new SqlParameter( key, value ?? ( object ) DBNull.Value );
+
+        /// <summary>
+        /// Gets the <see cref="PersonResult"/> object for the primary person
+        /// being queried.
+        /// </summary>
+        /// <param name="person">The person object that was originally queried for.</param>
+        /// <returns>An instance of <see cref="PersonResult"/> that represents the person.</returns>
+        internal static PersonResult GetPrimaryPersonResult( Model.Person person, bool publicProfile = false )
+        {
+            var personResult = new PersonResult
+            {
+                Id = person.Id,
+                FirstName = person.FirstName,
+                NickName = person.NickName,
+                LastName = person.LastName,
+                MiddleName = person.MiddleName,
+                Suffix = person.SuffixValue?.Value,
+                Age = person.Age,
+                AgeClassification = person.AgeClassification,
+                Gender = person.Gender,
+                BirthMonth = person.BirthMonth,
+                BirthDay = person.BirthDay,
+                BirthYear = person.BirthYear,
+                AnniversaryDate = person.AnniversaryDate,
+                GraduationYear = person.GraduationYear,
+                MaritalStatus = person.MaritalStatusValue?.Value,
+                MaritalStatusGuid = person.MaritalStatusValue?.Guid,
+                PhotoId = person.PhotoId,
+                PrimaryFamilyId = person.PrimaryFamilyId,
+                RecordTypeValueId = person.RecordTypeValueId,
+                RecordStatus = person.RecordStatusValue?.Value,
+                ConnectionStatus = person.ConnectionStatusValue?.Value,
+                Email = person.Email,
+                Campus = person.PrimaryCampus != null ? new KeyNameResult( person.PrimaryCampus.Id, person.PrimaryCampus.Name ) : null,
+            };
+
+            if ( !publicProfile )
+            {
+                personResult.IncludeProfileLink = true;
+                personResult.PreviousLastNames = person.GetPreviousNames()
+                    .Select( p => p.LastName )
+                    .ToList();
+            }
+
+            return personResult;
+        }
+
+        internal static void PopulatePhoneNumbers( PersonResult profileResult, Model.Person person )
+        {
+            profileResult.PhoneNumbers = person.PhoneNumbers
+                .Select( n => new PhoneNumberResult
+                {
+                    IsUnlisted = n.IsUnlisted,
+                    PhoneNumber = n.NumberFormatted,
+                    PhoneType = new KeyNameResult
+                    {
+                        Id = n.NumberTypeValueId ?? 0,
+                        Name = n.NumberTypeValue != null ? n.NumberTypeValue.Value : string.Empty
+                    },
+                    IsMessagingEnabled = n.IsMessagingEnabled
+                } ).ToList();
+        }
+
+        internal static void PopulateAddresses( PersonResult profileResult, Model.Group family)
+        {
+            profileResult.Addresses = family
+                .GroupLocations.Select( l => new LocationResult
+                {
+                    Street1 = l.Location.Street1,
+                    Street2 = l.Location.Street2,
+                    City = l.Location.City,
+                    State = l.Location.State,
+                    PostalCode = l.Location.PostalCode,
+                    Country = l.Location.Country,
+                    LocationType = l.GroupLocationTypeValue != null ? l.GroupLocationTypeValue.Value : string.Empty,
+                    IsMailingAddress = l.IsMailingLocation,
+                    IsMappedLocation = l.IsMappedLocation,
+                    GeographyPoint = ( l.Location.Latitude.HasValue && l.Location.Longitude.HasValue ) ? new GeographyPoint( l.Location.Latitude.Value, l.Location.Longitude.Value ) : null
+                } ).ToList();
+        }
+
+        internal static void PopulateAdults( PersonResult profileResult, Model.Group family )
+        {
+            profileResult.AdultsInFamily = family.Members.Where( m => m.Person.AgeClassification == AgeClassification.Adult )
+                .Select( m => new PersonResult
+                {
+                    Id = m.Person.Id,
+                    FirstName = m.Person.FirstName,
+                    NickName = m.Person.NickName,
+                    PhotoId = m.Person.PhotoId,
+                    LastName = m.Person.LastName,
+                    Age = m.Person.Age,
+                    Suffix = m.Person.SuffixValue?.Value
+                } ).ToList();
+        }
+
+        internal static void PopulateChildren( PersonResult profileResult, Model.Group family )
+        {
+            profileResult.ChildrenInFamily = family.Members.Where( m => m.Person.AgeClassification == AgeClassification.Child )
+                .Select( m => new PersonResult
+                {
+                    Id = m.Person.Id,
+                    FirstName = m.Person.FirstName,
+                    NickName = m.Person.NickName,
+                    PhotoId = m.Person.PhotoId,
+                    LastName = m.Person.LastName,
+                    Age = m.Person.Age,
+                    Suffix = m.Person.SuffixValue?.Value
+                } ).ToList();
+        }
+
+        internal static void PopulateSpouse( PersonResult profileResult, Model.Person person )
+        {
+            var spouse = person.GetSpouse();
+
+            if ( spouse == null )
+            {
+                return;
+            }
+
+            profileResult.Spouse = new PersonResult
+            {
+                Id = spouse.Id,
+                FirstName = spouse.FirstName,
+                NickName = spouse.NickName,
+                PhotoId = spouse.PhotoId,
+                LastName = spouse.LastName,
+                Age = spouse.Age,
+                Suffix = spouse.SuffixValue?.Value
+            };
+        }
 
         #endregion
     }
