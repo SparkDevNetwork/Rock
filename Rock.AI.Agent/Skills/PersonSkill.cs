@@ -26,6 +26,8 @@ using System.Linq.Dynamic.Core;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
+using OpenXmlPowerTools;
+
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
@@ -230,37 +232,39 @@ namespace Rock.AI.Agent.Skills
                 } ).ToList();
         }
 
-        internal static void PopulateAdults( PersonResult profileResult, Model.Group family )
+        internal static PersonResult GetFamilyMemberResult( Model.Person person, Action<Model.Person, PersonResult> setCustomValues = null )
+        {
+            var result = new PersonResult
+            {
+                Id = person.Id,
+                FirstName = person.FirstName,
+                NickName = person.NickName,
+                PhotoId = person.PhotoId,
+                LastName = person.LastName,
+                Age = person.Age,
+                Suffix = person.SuffixValue?.Value,
+            };
+
+            setCustomValues?.Invoke( person, result );
+
+            return result;
+        }
+
+        internal static void PopulateAdults( PersonResult profileResult, Model.Group family, Action<Model.Person, PersonResult> setCustomValues = null )
         {
             profileResult.AdultsInFamily = family.Members.Where( m => m.Person.AgeClassification == AgeClassification.Adult )
-                .Select( m => new PersonResult
-                {
-                    Id = m.Person.Id,
-                    FirstName = m.Person.FirstName,
-                    NickName = m.Person.NickName,
-                    PhotoId = m.Person.PhotoId,
-                    LastName = m.Person.LastName,
-                    Age = m.Person.Age,
-                    Suffix = m.Person.SuffixValue?.Value
-                } ).ToList();
+                .Select( m => GetFamilyMemberResult( m.Person, setCustomValues ) )
+                .ToList();
         }
 
-        internal static void PopulateChildren( PersonResult profileResult, Model.Group family )
+        internal static void PopulateChildren( PersonResult profileResult, Model.Group family, Action<Model.Person, PersonResult> setCustomValues = null )
         {
             profileResult.ChildrenInFamily = family.Members.Where( m => m.Person.AgeClassification == AgeClassification.Child )
-                .Select( m => new PersonResult
-                {
-                    Id = m.Person.Id,
-                    FirstName = m.Person.FirstName,
-                    NickName = m.Person.NickName,
-                    PhotoId = m.Person.PhotoId,
-                    LastName = m.Person.LastName,
-                    Age = m.Person.Age,
-                    Suffix = m.Person.SuffixValue?.Value
-                } ).ToList();
+                .Select( m => GetFamilyMemberResult( m.Person, setCustomValues ) )
+                .ToList();
         }
 
-        internal static void PopulateSpouse( PersonResult profileResult, Model.Person person )
+        internal static void PopulateSpouse( PersonResult profileResult, Model.Person person, Action<Model.Person, PersonResult> setCustomValues = null )
         {
             var spouse = person.GetSpouse();
 
@@ -269,16 +273,7 @@ namespace Rock.AI.Agent.Skills
                 return;
             }
 
-            profileResult.Spouse = new PersonResult
-            {
-                Id = spouse.Id,
-                FirstName = spouse.FirstName,
-                NickName = spouse.NickName,
-                PhotoId = spouse.PhotoId,
-                LastName = spouse.LastName,
-                Age = spouse.Age,
-                Suffix = spouse.SuffixValue?.Value
-            };
+            profileResult.Spouse = GetFamilyMemberResult( spouse, setCustomValues );
         }
 
         #endregion

@@ -18,6 +18,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
+using Rock.AI.Agent.Classes;
 using Rock.AI.Agent.Classes.Common;
 using Rock.Configuration;
 using Rock.Data;
@@ -77,25 +78,67 @@ internal sealed partial class PersonSkill
             return helper.ErrorResult;
         }
 
+        var location = AddOrUpdateAddress( helper,
+            rockContext,
+            person,
+            locationTypeValue,
+            street1,
+            street2,
+            city,
+            state,
+            postalCode,
+            country,
+            county,
+            isMappedLocation,
+            isMailingLocation );
+
+        helper.SaveChangesIfNoErrors();
+
+        if ( helper.HasErrors )
+        {
+            return helper.ErrorResult;
+        }
+
+        return Success( $"The {locationTypeValue.Value} address for {person.FullName} has been updated to {location.GetFullStreetAddress()}." );
+    }
+
+    #endregion
+
+    internal static Location AddOrUpdateAddress(
+        AgentToolHelper helper,
+        RockContext rockContext,
+        Model.Person person,
+        DefinedValueCache locationTypeValue,
+        string street1 = null,
+        string street2 = null,
+        string city = null,
+        string state = null,
+        string postalCode = null,
+        string country = null,
+        string county = null,
+        bool? isMappedLocation = null,
+        bool? isMailingLocation = null )
+    {
         // Add/Update the new address
         var groupLocation = person.PrimaryFamily
             .GroupLocations
             .FirstOrDefault( gl => gl.GroupId == person.PrimaryFamilyId
-                && gl.GroupLocationTypeValueId == locationTypeValueId.Value );
+                && gl.GroupLocationTypeValueId == locationTypeValue.Id );
 
         if ( groupLocation == null )
         {
             // If no address exists today we should at least have street1, city and postal code
             if ( street1.IsNullOrWhiteSpace() || city.IsNullOrWhiteSpace() || postalCode.IsNullOrWhiteSpace() )
             {
-                return Error( "At minimum, street1, city, and postal code must be provided when adding a new address." );
+                helper.AddError( "At minimum, street1, city, and postal code must be provided when adding a new address." );
+                return null;
             }
 
             groupLocation = rockContext.Set<GroupLocation>().Create();
             new GroupLocationService( rockContext ).Add( groupLocation );
 
             groupLocation.GroupId = person.PrimaryFamilyId.Value;
-            groupLocation.GroupLocationTypeValueId = locationTypeValueId;
+            groupLocation.GroupLocationTypeValueId = locationTypeValue.Id;
             groupLocation.Location = rockContext.Set<Location>().Create();
             groupLocation.Location.State = GlobalAttributesCache.Get().OrganizationState;
 
@@ -153,17 +196,31 @@ internal sealed partial class PersonSkill
             }
         }
 
-        helper.SaveChangesIfNoErrors();
-
-        if ( helper.HasErrors )
-        {
-            return helper.ErrorResult;
-        }
-
-        return Success( $"The {locationTypeValue.Value} address for {person.FullName} has been updated to {groupLocation.Location.GetFullStreetAddress()}." );
+        return groupLocation.Location;
     }
 
-    #endregion
+    internal static bool RemoveAddress(
+        RockContext rockContext,
+        Model.Person person,
+        DefinedValueCache locationTypeValue )
+    {
+        // Add/Update the new address
+        var groupLocation = person.PrimaryFamily
+            .GroupLocations
+            .FirstOrDefault( gl => gl.GroupId == person.PrimaryFamilyId
+                && gl.GroupLocationTypeValueId == locationTypeValue.Id );
+
+        if ( groupLocation == null )
+        {
+            return false;
+        }
+        else
+        {
+            CreatePreviousAddress( rockContext, person.PrimaryFamily, groupLocation.Location );
+
+            return true;
+        }
+    }
 
     /// <summary>
     /// Creates a previous address record to mirror the current address that
@@ -172,7 +229,7 @@ internal sealed partial class PersonSkill
     /// <param name="rockContext">The database context to use when creating the new location.</param>
     /// <param name="familyGroup">The family to associate the previous address with.</param>
     /// <param name="currentAddress">The current address that will become the previous address.</param>
-    private void CreatePreviousAddress( RockContext rockContext, Model.Group familyGroup, Location currentAddress )
+    private static void CreatePreviousAddress( RockContext rockContext, Model.Group familyGroup, Location currentAddress )
     {
         var previousAddress = new GroupLocation();
 

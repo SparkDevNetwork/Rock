@@ -50,7 +50,6 @@ namespace Rock.AI.Agent.Skills
                     .WithHistoryContent( phoneTypes )
                     .WithInstructions( "Use the following phone types to determine the proper IdKey for the tool." );
             }
-
             
             using var rockContext = RockApp.Current.CreateRockContext();
 
