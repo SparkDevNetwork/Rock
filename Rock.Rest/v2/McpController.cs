@@ -99,7 +99,72 @@ namespace Rock.Rest.v2
 
                 if ( !isAuthorized )
                 {
-                    return Unauthorized( "You are not authorized to view this data view." );
+                    return Unauthorized( "You are not authorized to use this MCP service." );
+                }
+
+                var agent = _agentBuilder.Build( agentCache.Id );
+
+                using ( var contentStream = await Request.Content.ReadAsStreamAsync() )
+                {
+                    var mcpRequest = new McpRequest
+                    {
+                        Content = contentStream
+                    };
+
+                    var mcpResponse = await _mcpServer.HandleRequestAsync( agent, mcpRequest, cancellationToken );
+
+                    if ( mcpResponse.Content == null )
+                    {
+                        return StatusCode( HttpStatusCode.Accepted );
+                    }
+
+                    var result = new HttpResponseMessage( HttpStatusCode.OK )
+                    {
+                        Content = new StreamContent( mcpResponse.Content )
+                    };
+
+                    result.Content.Headers.ContentType = new MediaTypeHeaderValue( "application/json" );
+
+                    return ResponseMessage( result );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Executes an MCP request for the agent. This does not authenticate the
+        /// person so the agent will always be run in anonymous mode.
+        /// </summary>
+        /// <param name="slug">The slug of the agent for this MCP request.</param>
+        /// <param name="cancellationToken">Cancellation token to cancel the request.</param>
+        /// <returns>The response data from the MCP request.</returns>
+        [HttpPost]
+        [Route( "public/{slug}" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK )]
+        [ProducesResponse( HttpStatusCode.Accepted )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
+        [SystemGuid.RestActionGuid( "bfc72a48-ec2d-4ba9-9b1e-87ea48b63f9d" )]
+        public async Task<IActionResult> PostPublicMcp( string slug, CancellationToken cancellationToken )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var agentCache = AIAgentCache.All()
+                    .FirstOrDefault( a => a.AgentType == AgentType.Mcp
+                        && a.GetAdditionalSettings<McpAgentSettings>().Slug == slug
+                        && a.AudienceType == AudienceType.Public );
+
+                if ( agentCache == null )
+                {
+                    return NotFound( "The AI Agent was not found or was not public." );
+                }
+
+                var isAuthorized = agentCache.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson );
+
+                if ( !isAuthorized )
+                {
+                    return Unauthorized( "You are not authorized to use this MCP service." );
                 }
 
                 var agent = _agentBuilder.Build( agentCache.Id );
