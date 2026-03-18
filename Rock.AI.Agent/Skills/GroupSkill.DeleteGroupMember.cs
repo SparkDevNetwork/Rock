@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel;
+using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
@@ -38,9 +39,14 @@ internal sealed partial class GroupSkill
         using var rockContext = RockApp.Current.CreateRockContext();
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
         var groupMemberService = new GroupMemberService( rockContext );
+        var groupTypeIds = GetConfiguredGroupTypes().Select( gt => gt.Id ).ToList();
 
         var existingGroupMember = helper.GetRequiredEntity<GroupMember>( groupMemberIdKey, checkSecurity: false );
 
+        if ( existingGroupMember != null && !groupTypeIds.Contains( existingGroupMember.Group.GroupTypeId ) )
+        {
+            return Error( "The specified group member does not belong to a valid group type." );
+        }
         if ( helper.HasErrors )
         {
             return helper.ErrorResult;

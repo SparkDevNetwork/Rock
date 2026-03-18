@@ -40,12 +40,7 @@ internal partial class GroupSkill
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
 
-        var groupTypeGuids = ConfigurationValues.GetReadOnlyValueOrDefault( ConfigurationKey.GroupTypes, string.Empty )
-            .SplitDelimitedValues()
-            .AsGuidList();
-
-        var groupTypeResults = GroupTypeCache.GetMany( groupTypeGuids, AgentRequestContext.RockContext )
-            .Where( gt => gt.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
+        var groupTypeResults = GetConfiguredGroupTypes()
             .OrderBy( gt => gt.Name )
             .Select( gt => new GroupTypeResult
             {

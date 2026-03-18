@@ -41,12 +41,18 @@ internal sealed partial class GroupSkill
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var currentPerson = AgentRequestContext.CurrentPerson;
+        var groupTypeIds = GetConfiguredGroupTypes().Select( gt => gt.Id ).ToList();
 
         var group = helper.GetRequiredEntity<Model.Group>( groupIdKey, checkSecurity: true );
 
         if ( group != null && !group.IsAuthorized( Authorization.VIEW, currentPerson ) )
         {
             helper.AddError( "You do not have permission to view the group." );
+        }
+
+        if ( group != null && !groupTypeIds.Contains( group.GroupTypeId ) )
+        {
+            helper.AddError( "The specified group is not of a valid group type." );
         }
 
         if ( helper.HasErrors )

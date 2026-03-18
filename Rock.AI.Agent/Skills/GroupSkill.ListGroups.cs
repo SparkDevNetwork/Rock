@@ -40,10 +40,12 @@ internal sealed partial class GroupSkill
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var currentPerson = AgentRequestContext.CurrentPerson;
+        var groupTypeIds = GetConfiguredGroupTypes().Select( gt => gt.Id ).ToList();
 
         var query = new GroupService( AgentRequestContext.RockContext )
             .Queryable()
-            .Where( g => g.IsActive );
+            .Where( g => g.IsActive
+                && groupTypeIds.Contains( g.GroupTypeId ) );
 
         query = helper.WhereOptionalIdKey( query, g => g.GroupTypeId, groupTypeIdKey );
 

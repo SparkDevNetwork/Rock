@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
@@ -25,6 +26,7 @@ internal sealed partial class GroupSkill
     {
         using var rockContext = RockApp.Current.CreateRockContext();
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
+        var groupTypeIds = GetConfiguredGroupTypes().Select( gt => gt.Id ).ToList();
 
         GroupMember groupMember;
 
@@ -63,6 +65,11 @@ internal sealed partial class GroupSkill
         else if ( groupIdKey.IsNotNullOrWhiteSpace() )
         {
             helper.AddError( $"{nameof( groupIdKey )} cannot be specified when updating an existing group member." );
+        }
+
+        if ( !groupTypeIds.Contains( groupMember.Group.GroupTypeId ) )
+        {
+            helper.AddError( $"The specified group is not of a supported group type." );
         }
 
         helper.UpdateNavigationProperty( groupMember, gm => gm.Person, personIdKey );

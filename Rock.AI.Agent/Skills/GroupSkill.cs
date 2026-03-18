@@ -16,13 +16,17 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Annotations;
 using Rock.Attribute;
+using Rock.Security;
 using Rock.SystemGuid;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
 
@@ -71,6 +75,25 @@ internal sealed partial class GroupSkill : AgentSkillComponent
     public GroupSkill( ILogger<ConnectionSkill> logger )
     {
         _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
+    }
+
+    #endregion
+
+    #region Methods
+
+    private IEnumerable<GroupTypeCache> GetConfiguredGroupTypes()
+    {
+        var groupTypeGuids = ConfigurationValues.GetReadOnlyValueOrDefault( ConfigurationKey.GroupTypes, string.Empty )
+            .SplitDelimitedValues()
+            .AsGuidList();
+
+        if ( groupTypeGuids.Count == 0 )
+        {
+            return [];
+        }
+
+        return GroupTypeCache.GetMany( groupTypeGuids, AgentRequestContext.RockContext )
+            .Where( gt => gt.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) );
     }
 
     #endregion

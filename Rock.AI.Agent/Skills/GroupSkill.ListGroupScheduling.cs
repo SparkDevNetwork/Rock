@@ -52,6 +52,7 @@ internal sealed partial class GroupSkill
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var currentPerson = AgentRequestContext.CurrentPerson;
+        var groupTypeIds = GetConfiguredGroupTypes().Select( gt => gt.Id ).ToList();
 
         var query = new AttendanceService( AgentRequestContext.RockContext )
             .Queryable()
@@ -60,7 +61,8 @@ internal sealed partial class GroupSkill
             .Include( a => a.Occurrence.Location )
             .Where( a => a.Occurrence.Group.GroupType.IsSchedulingEnabled
                 && a.Occurrence.Group.IsActive
-                && a.RequestedToAttend == true );
+                && a.RequestedToAttend == true
+                && groupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) );
 
         if ( !startDate.HasValue && !endDate.HasValue )
         {
