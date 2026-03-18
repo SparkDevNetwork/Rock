@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
-using System.Data.SqlTypes;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -337,12 +336,27 @@ namespace Rock.Rest.Controllers
                 t.TransactionDateTime.HasValue &&
                 t.TransactionDateTime.Value.Year == yearFilter );
 
-            // If we include the giving group, then query for everyone in it, otherwise just the id sent
-            if ( includeGivingGroup )
+            // Look up the querying person to determine their giving group status.
+            // Uses the same logic as ContributionStatementGenerator:
+            // GivingGroupId.HasValue → combined giving, else → individual only.
+            var personService = new PersonService( rockContext );
+            var queryingPerson = personService.Queryable().AsNoTracking()
+                .Where( p => p.Aliases.Any( a => a.Id == personAliasId ) )
+                .Select( p => new { p.GivingGroupId } )
+                .FirstOrDefault();
+
+            if ( queryingPerson == null )
             {
+                var errorMessage = $"A person was expected for alias id '{personAliasId}', but was not found";
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, errorMessage );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            if ( includeGivingGroup && queryingPerson.GivingGroupId.HasValue )
+            {
+                var givingGroupId = queryingPerson.GivingGroupId.Value;
                 query = query.Where( t =>
-                    t.AuthorizedPersonAliasId == personAliasId ||
-                    t.AuthorizedPersonAlias.Person.GivingGroup.Members.Any( m => m.Person.Aliases.Any( a => a.Id == personAliasId ) ) );
+                    t.AuthorizedPersonAlias.Person.GivingGroupId == givingGroupId );
             }
             else
             {
