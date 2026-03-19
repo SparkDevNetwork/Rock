@@ -50,7 +50,7 @@ internal sealed partial class StepSkill : AgentSkillComponent
     /// The constructor for the Step Skill.
     /// </summary>
     /// <param name="logger">Logger for diagnostics and error reporting.</param>
-    public StepSkill( ILogger<ConnectionSkill> logger )
+    public StepSkill( ILogger<StepSkill> logger )
     {
         _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
     }

@@ -50,7 +50,7 @@ namespace Rock.AI.Agent.Skills
         /// The constructor for the Attendance Skill.
         /// </summary>
         /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public AttendanceSkill( ILogger<ConnectionSkill> logger )
+        public AttendanceSkill( ILogger<AttendanceSkill> logger )
         {
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }

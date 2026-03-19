@@ -72,7 +72,7 @@ internal sealed partial class GroupSkill : AgentSkillComponent
     /// The constructor for the Group Skill.
     /// </summary>
     /// <param name="logger">Logger for diagnostics and error reporting.</param>
-    public GroupSkill( ILogger<ConnectionSkill> logger )
+    public GroupSkill( ILogger<GroupSkill> logger )
     {
         _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
     }

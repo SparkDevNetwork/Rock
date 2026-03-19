@@ -52,7 +52,7 @@ internal sealed partial class LearningManagementSkill : AgentSkillComponent
     /// The constructor for the Learning Management Skill.
     /// </summary>
     /// <param name="logger">Logger for diagnostics and error reporting.</param>
-    public LearningManagementSkill( ILogger<ConnectionSkill> logger )
+    public LearningManagementSkill( ILogger<LearningManagementSkill> logger )
     {
         _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
     }

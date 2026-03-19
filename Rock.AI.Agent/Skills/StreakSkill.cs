@@ -48,7 +48,7 @@ namespace Rock.AI.Agent.Skills
         /// The constructor for the Streak Skill.
         /// </summary>
         /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public StreakSkill( ILogger<ConnectionSkill> logger )
+        public StreakSkill( ILogger<StreakSkill> logger )
         {
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }

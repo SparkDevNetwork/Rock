@@ -68,7 +68,7 @@ namespace Rock.AI.Agent.Skills
         /// Initializes a new instance of the <see cref="WorkflowSkill"/> class.
         /// </summary>
         /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public WorkflowSkill( ILogger<SiteSkill> logger )
+        public WorkflowSkill( ILogger<WorkflowSkill> logger )
         {
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }

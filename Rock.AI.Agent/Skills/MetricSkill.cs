@@ -67,7 +67,7 @@ internal sealed partial class MetricSkill : AgentSkillComponent
     /// The constructor for the Metric Skill.
     /// </summary>
     /// <param name="logger">Logger for diagnostics and error reporting.</param>
-    public MetricSkill( ILogger<ConnectionSkill> logger )
+    public MetricSkill( ILogger<MetricSkill> logger )
     {
         _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
     }
