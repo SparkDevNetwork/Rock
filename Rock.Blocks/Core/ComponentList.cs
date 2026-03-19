@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -150,7 +150,7 @@ namespace Rock.Blocks.Core
         {
             var supportOrdering = GetAttributeValue( AttributeKey.SupportOrdering ).AsBoolean( true );
 
-            // Get the dictionary entries in either order-based or name-based sequence.
+            // When ordering is not supported, sort by name up-front.
             var entries = supportOrdering
                 ? container.Dictionary.ToList()
                 : container.Dictionary.OrderBy( c => c.Value.Key ).ToList();
@@ -170,6 +170,14 @@ namespace Rock.Blocks.Core
                 descriptions.Add( new ComponentDescription( entry.Key, entry.Value ) );
             }
 
+            // Apply a deterministic sort by Order then Name to break ties regardless
+            // of MEF discovery order, and to incorporate any Order values that
+            // LoadAttributes may have updated during the loop above.
+            if ( supportOrdering )
+            {
+                descriptions = descriptions.OrderBy( d => d.Order ).ThenBy( d => d.Name ).ToList();
+            }
+
             return descriptions;
         }
 
@@ -182,18 +190,19 @@ namespace Rock.Blocks.Core
                 return Enumerable.Empty<ComponentListRowBag>().AsQueryable();
             }
 
-            // Refresh the container so newly deployed MEF components are discovered.
-            container.Refresh();
+            var componentDescriptions = GetComponentDescriptions( container, rockContext );
 
-            var descriptions = GetComponentDescriptions( container, rockContext );
-
-            var rows = descriptions.Select( d => new ComponentListRowBag
+            var rows = componentDescriptions.Select( d =>
             {
-                Id = d.Id,
-                Name = d.Name,
-                Description = d.Description,
-                IsActive = d.IsActive,
-                EntityTypeId = EntityTypeCache.GetId( d.Type.FullName ) ?? 0
+                var entityType = EntityTypeCache.Get( d.Type );
+                return new ComponentListRowBag
+                {
+                    Guid = entityType?.Guid ?? Guid.Empty,
+                    Name = d.Name,
+                    Description = d.Description,
+                    IsActive = d.IsActive,
+                    EntityTypeId = entityType?.Id ?? 0
+                };
             } );
 
             return rows.AsQueryable();
@@ -204,7 +213,7 @@ namespace Rock.Blocks.Core
         {
             return new GridBuilder<ComponentListRowBag>()
                 .WithBlock( this )
-                .AddTextField( "idKey", a => a.Id.ToString() )
+                .AddTextField( "guid", a => a.Guid.ToString() )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "description", a => a.Description )
                 .AddField( "isActive", a => a.IsActive )
@@ -218,32 +227,36 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Gets the component's public attributes for editing in the modal.
         /// </summary>
-        /// <param name="key">The component identifier (dictionary key).</param>
+        /// <param name="key">The EntityType GUID of the component.</param>
         /// <returns>A <see cref="ComponentListEditBag"/> with attribute data.</returns>
         [BlockAction]
         public BlockActionResult GetComponentAttributes( string key )
         {
-            var componentId = key.AsIntegerOrNull();
-            if ( !componentId.HasValue )
+            if ( !Guid.TryParse( key, out var entityTypeGuid ) || entityTypeGuid == Guid.Empty )
             {
                 return ActionBadRequest( "Invalid component key." );
             }
 
             var container = GetContainer();
-            if ( container == null || !container.Dictionary.ContainsKey( componentId.Value ) )
+            if ( container == null )
             {
                 return ActionNotFound( "Component not found." );
             }
 
-            var component = container.Dictionary[componentId.Value].Value;
-            var componentName = container.Dictionary[componentId.Value].Key;
+            var entry = container.Dictionary
+                .Select( c => new
+                {
+                    Name = c.Value.Key,
+                    Component = c.Value.Value
+                } )
+                .FirstOrDefault( c => EntityTypeCache.Get( c.Component.GetType() )?.Guid == entityTypeGuid );
 
-            using ( var rockContext = new RockContext() )
+            if ( entry == null )
             {
-                var type = component.GetType();
-                Rock.Attribute.Helper.UpdateAttributes( type, EntityTypeCache.GetId( type.FullName ), string.Empty, string.Empty, rockContext );
-                component.LoadAttributes( rockContext );
+                return ActionNotFound( "Component not found." );
             }
+
+            entry.Component.LoadAttributes( RockContext );
 
             // Exclude the "Order" attribute from the edit UI.
             bool ExcludeOrderAttribute( Web.Cache.AttributeCache attr ) => attr.Key != "Order";
@@ -252,10 +265,20 @@ namespace Rock.Blocks.Core
 
             var editBag = new ComponentListEditBag
             {
-                Name = componentName,
-                Attributes = component.GetPublicAttributesForEdit( currentPerson, enforceSecurity: true, attributeFilter: ExcludeOrderAttribute ),
-                AttributeValues = component.GetPublicAttributeValuesForEdit( currentPerson, enforceSecurity: true, attributeFilter: ExcludeOrderAttribute ),
-                IsSmtpTransport = component is Rock.Communication.Transport.SMTP
+                Name = entry.Name,
+                /*
+                    3/11/2026 - MSE
+
+                    Attribute-level security is not enforced here. Access to this action relies on
+                    page-level security. Enforcing attribute-level security would exclude users who
+                    lack explicit permissions on individual attributes, preventing them from seeing
+                    and editing certain fields.
+
+                    Reason: Avoid hiding editable fields from users who lack attribute-level permissions.
+                */
+                Attributes = entry.Component.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false, attributeFilter: ExcludeOrderAttribute ),
+                AttributeValues = entry.Component.GetPublicAttributeValuesForEdit( currentPerson, enforceSecurity: false, attributeFilter: ExcludeOrderAttribute ),
+                IsSmtpTransport = entry.Component is Rock.Communication.Transport.SMTP
             };
 
             return ActionOk( editBag );
@@ -264,35 +287,36 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Saves the edited attribute values for a component.
         /// </summary>
-        /// <param name="key">The component identifier (dictionary key).</param>
+        /// <param name="key">The EntityType GUID of the component.</param>
         /// <param name="attributeValues">The updated attribute values.</param>
         /// <returns>An action result indicating success or failure.</returns>
         [BlockAction]
         public BlockActionResult SaveComponentAttributes( string key, Dictionary<string, string> attributeValues )
         {
-            var componentId = key.AsIntegerOrNull();
-            if ( !componentId.HasValue )
+            if ( !Guid.TryParse( key, out var entityTypeGuid ) || entityTypeGuid == Guid.Empty )
             {
                 return ActionBadRequest( "Invalid component key." );
             }
 
             var container = GetContainer();
-            if ( container == null || !container.Dictionary.ContainsKey( componentId.Value ) )
+            if ( container == null )
             {
                 return ActionNotFound( "Component not found." );
             }
 
-            var component = container.Dictionary[componentId.Value].Value;
+            var component = container.Dictionary.Values
+                .Select( kvp => kvp.Value )
+                .FirstOrDefault( c => EntityTypeCache.Get( c.GetType() )?.Guid == entityTypeGuid );
 
-            using ( var rockContext = new RockContext() )
+            if ( component == null )
             {
-                var type = component.GetType();
-                Rock.Attribute.Helper.UpdateAttributes( type, EntityTypeCache.GetId( type.FullName ), string.Empty, string.Empty, rockContext );
-                component.LoadAttributes( rockContext );
+                return ActionNotFound( "Component not found." );
             }
 
+            component.LoadAttributes( RockContext );
+
             // Apply the public attribute values from the client.
-            component.SetPublicAttributeValues( attributeValues, RequestContext.CurrentPerson );
+            component.SetPublicAttributeValues( attributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
 
             // Validate attribute values before saving.
             if ( !component.ValidateAttributeValues( out var errorMessage ) )
@@ -311,8 +335,8 @@ namespace Rock.Blocks.Core
         /// component identified by <paramref name="beforeKey"/>. If
         /// <paramref name="beforeKey"/> is null the item is moved to the end.
         /// </summary>
-        /// <param name="key">The component identifier to move.</param>
-        /// <param name="beforeKey">The component identifier to insert before, or <c>null</c> to move to the end.</param>
+        /// <param name="key">The EntityType GUID of the component to move.</param>
+        /// <param name="beforeKey">The EntityType GUID of the component to insert before, or <c>null</c> to move to the end.</param>
         /// <returns>An action result indicating success or failure.</returns>
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
@@ -323,15 +347,19 @@ namespace Rock.Blocks.Core
                 return ActionBadRequest( "Could not resolve component container." );
             }
 
-            var itemId = key.AsIntegerOrNull();
-            if ( !itemId.HasValue || !container.Dictionary.ContainsKey( itemId.Value ) )
+            var itemEntityTypeGuid = key.AsGuidOrNull();
+            if ( !itemEntityTypeGuid.HasValue )
             {
                 return ActionBadRequest( "Invalid component key." );
             }
 
-            // Build the ordered list from the current dictionary.
-            var components = container.Dictionary.ToList();
-            var movedIndex = components.FindIndex( c => c.Key == itemId.Value );
+            // Sort by Order then Name — the same criteria used when displaying the grid —
+            // so that positional indices here exactly match what the user saw.
+            var components = container.Dictionary
+                .OrderBy( c => c.Value.Value.Order )
+                .ThenBy( c => c.Value.Key )
+                .ToList();
+            var movedIndex = components.FindIndex( c => EntityTypeCache.Get( c.Value.Value.GetType() )?.Guid == itemEntityTypeGuid.Value );
             if ( movedIndex < 0 )
             {
                 return ActionBadRequest( "Component not found in container." );
@@ -342,19 +370,17 @@ namespace Rock.Blocks.Core
 
             if ( beforeKey.IsNotNullOrWhiteSpace() )
             {
-                var beforeId = beforeKey.AsIntegerOrNull();
-                var beforeIndex = beforeId.HasValue
-                    ? components.FindIndex( c => c.Key == beforeId.Value )
+                var beforeEntityTypeGuid = beforeKey.AsGuidOrNull();
+                var beforeIndex = beforeEntityTypeGuid.HasValue
+                    ? components.FindIndex( c => EntityTypeCache.Get( c.Value.Value.GetType() )?.Guid == beforeEntityTypeGuid.Value )
                     : -1;
 
-                if ( beforeIndex >= 0 )
+                if ( beforeIndex < 0 )
                 {
-                    components.Insert( beforeIndex, movedItem );
+                    return ActionBadRequest( "Before component not found in container." );
                 }
-                else
-                {
-                    components.Add( movedItem );
-                }
+
+                components.Insert( beforeIndex, movedItem );
             }
             else
             {
@@ -362,19 +388,16 @@ namespace Rock.Blocks.Core
             }
 
             // Persist the new order by updating each component's "Order" attribute value.
-            using ( var rockContext = new RockContext() )
+            var order = 0;
+            foreach ( var item in components )
             {
-                var order = 0;
-                foreach ( var item in components )
+                var component = item.Value.Value;
+                if ( component.Attributes != null && component.Attributes.ContainsKey( "Order" ) )
                 {
-                    var component = item.Value.Value;
-                    if ( component.Attributes != null && component.Attributes.ContainsKey( "Order" ) )
-                    {
-                        Rock.Attribute.Helper.SaveAttributeValue( component, component.Attributes["Order"], order.ToString(), rockContext );
-                    }
-
-                    order++;
+                    Rock.Attribute.Helper.SaveAttributeValue( component, component.Attributes["Order"], order.ToString(), RockContext );
                 }
+
+                order++;
             }
 
             container.Refresh();

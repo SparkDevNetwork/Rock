@@ -23,20 +23,20 @@
 
 /** The initialization options for the Checkr Settings block. */
 export type CheckrSettingsOptionsBag = {
-    /** Gets or sets a value indicating whether an access token has been configured. */
-    isConfigured?: boolean;
-
-    /** Gets or sets a value indicating whether Checkr is the current default background check provider. */
-    isDefaultProvider?: boolean;
-
     /** Gets or sets the decrypted access token for display. */
     accessToken?: string | null;
 
-    /** Gets or sets the list of active Checkr package names (with the type prefix stripped). */
-    packages?: string[] | null;
+    /** Gets or sets a value indicating whether an access token has been configured. */
+    isConfigured: boolean;
+
+    /** Gets or sets a value indicating whether Checkr is the current default background check provider. */
+    isDefaultProvider: boolean;
 
     /** Gets or sets the organization name used to construct the Checkr signup URL. */
     organizationName?: string | null;
+
+    /** Gets or sets the list of active Checkr package names (with the type prefix stripped). */
+    packages?: string[] | null;
 
     /**
      * Gets or sets an optional warning message to display after a successful action

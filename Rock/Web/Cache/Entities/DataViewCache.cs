@@ -576,5 +576,39 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
+        #region ISecured
+
+        /*
+             3/12/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
+        /// <summary>
+        /// Gets the parent security authority for the DataView which is its Category
+        /// </summary>
+        /// <value>
+        /// The parent authority of the DataView.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.Category != null )
+                {
+                    return this.Category;
+                }
+
+                return base.ParentAuthority;
+            }
+        }
+
+        #endregion ISecured
     }
 }

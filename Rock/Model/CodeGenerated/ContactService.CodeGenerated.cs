@@ -149,7 +149,7 @@ namespace Rock.Model
             target.BirthMonth = source.BirthMonth;
             target.BirthYear = source.BirthYear;
             target.ConnectionCadence = source.ConnectionCadence;
-            target.ConnectionNote = source.ConnectionNote;
+            target.ContactNote = source.ContactNote;
             target.Email = source.Email;
             target.FacebookProfileUrl = source.FacebookProfileUrl;
             target.FirstName = source.FirstName;
@@ -165,7 +165,6 @@ namespace Rock.Model
             target.OwnerPersonAliasId = source.OwnerPersonAliasId;
             target.PhotoId = source.PhotoId;
             target.PrayerCadence = source.PrayerCadence;
-            target.PrayerNote = source.PrayerNote;
             target.RelationshipFocus = source.RelationshipFocus;
             target.RelationshipStrength = source.RelationshipStrength;
             target.SalvationDay = source.SalvationDay;

@@ -1,0 +1,247 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Get Connection Requests"
+           :isSaveButtonDisabled="isSaving"
+           :saveText="areNoCampaigns && !isLoading ? 'OK' : 'Assign'"
+           :cancelText="areNoCampaigns && !isLoading ? '' : 'Cancel'"
+           @save="onSubmit">
+        <template v-if="isLoading">
+            <Loading :isLoading="isLoading" />
+        </template>
+        <template v-else>
+            <NotificationBox v-if="areNoCampaigns"
+                             alertType="warning">
+                <p>There aren’t any campaigns available for you to get requests from right now. Confirm that you’re included in the global connector group, or contact an administrator.</p>
+            </NotificationBox>
+            <NotificationBox v-if="!isNullOrWhiteSpace(errorMessage)"
+                             alertType="danger"
+                             dismissible
+                             @dismiss="emit('dismissErrorMessage')">
+                {{ errorMessage }}
+            </NotificationBox>
+            <template v-else>
+                <div class="row">
+                    <div class="col-md-4">
+                        <template v-if="!isNullOrWhiteSpace(selectedOpportunityName)">
+                            <RockLabel>
+                                Opportunity
+                            </RockLabel>
+                            <div class="mb-spacing-sm">
+                                {{ selectedOpportunityName }}
+                            </div>
+                        </template>
+                        <template v-else-if="filteredConnectionOpportunityItems.length === 1">
+                            <RockLabel>
+                                Opportunity
+                            </RockLabel>
+                            <div class="mb-spacing-sm">
+                                {{ filteredConnectionOpportunityItems[0].text }}
+                            </div>
+                        </template>
+                        <DropDownList v-else
+                                      v-model="opportunity"
+                                      :items="filteredConnectionOpportunityItems"
+                                      label="Opportunity"
+                                      showBlankItem
+                                      rules="required" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <template v-if="campaignItemsForOpportunity.length === 1">
+                            <RockLabel>
+                                Campaign
+                            </RockLabel>
+                            <div class="mb-spacing-sm">
+                                {{ campaignItemsForOpportunity[0].text }}
+                            </div>
+                        </template>
+
+                        <DropDownList v-else
+                                      v-model="campaign"
+                                      :items="campaignItemsForOpportunity"
+                                      label="Campaign"
+                                      showBlankItem
+                                      rules="required" />
+                    </div>
+                </div>
+                <div v-if="campaignItemsForOpportunity.length > 0" class="row">
+                    <div class="col-md-3">
+                        <NumberBox v-model="numberOfRequests"
+                                   label="Number of Requests"
+                                   rules="required"
+                                   help="You’ll be assigned up to this many people from the selected campaign. You can request more later." />
+                    </div>
+                </div>
+            </template>
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { ref, PropType, watch, computed } from "vue";
+    import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ConnectionCampaignBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionCampaignBag";
+    import { AssignFromCampaignBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/assignFromCampaignBag";
+
+    const props = defineProps({
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isLoading: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isSaving: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        selectedOpportunityGuid: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        allConnectionOpportunityItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        campaignRecordBags: {
+            type: Object as PropType<Record<string, ConnectionCampaignBag[]> | undefined>,
+            default: {}
+        },
+
+        errorMessage: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+        (e: "assignRequests", value: AssignFromCampaignBag): void;
+        (e: "dismissErrorMessage"): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const opportunity = ref();
+    const campaign = ref();
+    const numberOfRequests = ref();
+
+    // True when there are no campaigns available for the selected opportunity
+    // (or for any opportunity if none is selected)
+    const areNoCampaigns = computed(() => {
+        const record = props.campaignRecordBags ?? {};
+
+        if (!record || Object.keys(record).length === 0) {
+            return true;
+        }
+
+        // If an opportunity is selected, only check that one
+        if (!isNullOrWhiteSpace(props.selectedOpportunityGuid)) {
+            return (record[props.selectedOpportunityGuid]?.length ?? 0) === 0;
+        }
+
+        // Otherwise check all opportunities
+        return !Object.values(record).some(bags => bags.length > 0);
+    });
+
+    // Only include opportunities that have at least one available campaign
+    const filteredConnectionOpportunityItems = computed(() =>
+        props.allConnectionOpportunityItems.filter(o =>
+            (props.campaignRecordBags?.[o.value ?? ""]?.length ?? 0) > 0
+        )
+    );
+
+
+    const campaignRecordItems = computed<Record<string, ListItemBag[]>>(() => {
+        const result: Record<string, ListItemBag[]> = {};
+
+        if (!props.campaignRecordBags) {
+            return {};
+        }
+
+        for (const [key, campaigns] of Object.entries(props.campaignRecordBags)) {
+            result[key] = campaigns.map(c => ({
+                value: c.guid,
+                text: c.name + ` (${c.pendingCount} pending ${pluralize("connection", c.pendingCount)})`
+            }));
+        }
+
+        return result;
+    });
+
+    const selectedOpportunityName = computed(() => props.allConnectionOpportunityItems.find(c => c.value === props.selectedOpportunityGuid)?.text);
+
+    const campaignItemsForOpportunity = computed(() =>
+        campaignRecordItems.value[opportunity.value] ?? []
+    );
+
+    function onSubmit(): void {
+        if (areNoCampaigns.value) {
+            isVisible.value = false;
+            return;
+        }
+        const bag = {
+            connectionOpportunityGuid: opportunity.value,
+            connectionCampaignGuid: campaign.value,
+            numberOfRequests: numberOfRequests.value
+        };
+        emit("assignRequests", bag);
+    }
+
+    function resetModal(): void {
+        opportunity.value = undefined;
+        campaign.value = undefined;
+        numberOfRequests.value = undefined;
+    }
+
+    watch(() => props.selectedOpportunityGuid, guid => {
+        opportunity.value = isNullOrWhiteSpace(guid) ? "" : guid;
+    }, { immediate: true });
+
+    watch(filteredConnectionOpportunityItems, items => {
+        if (items.length === 1 && isNullOrWhiteSpace(opportunity.value)) {
+            opportunity.value = items[0].value;
+        }
+    }, { immediate: true });
+
+
+    watch(campaignItemsForOpportunity, items => {
+        if (items.length === 1) {
+            campaign.value = items[0].value;
+        }
+    });
+
+    watch(campaign, () => {
+        if (!props.campaignRecordBags || isNullOrWhiteSpace(opportunity.value)) {
+            return;
+        }
+
+        // Set number of requests to the default number whenever the selected campaign changes.
+        numberOfRequests.value = props.campaignRecordBags[opportunity.value].find(c => c.guid === campaign.value)?.defaultNumberOfRequests;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            resetModal();
+            emit("close");
+        }
+    });
+
+</script>

@@ -1,0 +1,604 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning" v-html="config.errorMessage"></NotificationBox>
+
+    <BreakpointObserver v-else @breakpointHelper="breakpointHelper = $event">
+        <ContextSlicer title="Filters" class="connection-opportunity-navigation-slicer" showCampus>
+            <DropDownList v-if="showConnectionTypeFilter"
+                          v-model="connectionTypeIdKey"
+                          :items="config.connectionTypeItems ?? []"
+                          :showBlankItem="false" />
+
+            <DropDownList v-model="opportunityVisibility"
+                          :items="config.opportunityVisibilityItems ?? []"
+                          :showBlankItem="false" />
+        </ContextSlicer>
+
+        <Panel :title="connectionTypeName"
+               :titleIconCssClass="connectionTypeIconCssClass">
+            <template v-if="showPanelHeaderActions" #headerActions>
+                <RockButton v-if="isListViewEnabled"
+                            :btnType="BtnType.Primary"
+                            :title="viewRequestsBtnTooltip"
+                            @click="onViewRequestsClick">
+                    <i class="ti ti-layout-list"></i> <span v-if="breakpointHelper?.isSmOrLarger">{{ viewRequestsBtnText }}</span>
+                </RockButton>
+
+                <RockButton v-if="isSnapshotViewEnabled"
+                            :title="operationalSnapshotBtnTooltip"
+                            @click="onOperationalSnapshotClick">
+                    <i class="ti ti-chart-bar"></i> <span v-if="breakpointHelper?.isSmOrLarger">{{ operationalSnapshotBtnText }}</span>
+                </RockButton>
+            </template>
+
+            <template v-if="anyConnectionOpportunities" #preBody>
+                <div class="connection-opportunity-navigation-metrics" :class="{ 'connection-opportunity-navigation-metrics-flex': breakpointHelper?.isMdOrLarger }">
+
+                    <div class="connection-opportunity-navigation-metric connection-opportunity-navigation-metric-active-requests">
+                        <div class="connection-opportunity-navigation-metric-card">
+                            <div class="connection-opportunity-navigation-metric-card-label">
+                                Active Requests
+                            </div>
+                            <Kpi :value="navigationDetails?.totalActiveRequestsCount ?? 0"
+                                 label="Currently In Progress" />
+                        </div>
+                    </div>
+
+                    <div class="connection-opportunity-navigation-metric connection-opportunity-navigation-metric-request-health">
+                        <div class="connection-opportunity-navigation-metric-card">
+                            <LinearGaugeChart :series="linearGaugeChartData"
+                                              title="Request Health Overview"
+                                              :tooltip="formatRequestHealthOverviewTooltip"
+                                              tooltipTitle="Current Status"
+                                              titleAlign="start"
+                                              legendAlign="start" />
+                        </div>
+                    </div>
+
+                    <div class="connection-opportunity-navigation-metric connection-opportunity-navigation-metric-new-vs-completed">
+                        <div class="connection-opportunity-navigation-metric-card">
+                            <BarChart appearance="stylized"
+                                      :barBorderRadius="3"
+                                      labelDateFormat="auto"
+                                      :labels="requestsPerDayLabels"
+                                      legendAlign="start"
+                                      :minBarLength="5"
+                                      :series="requestsPerDaySeries"
+                                      title="New vs. Completed Requests per Day"
+                                      titleAlign="start"
+                                      :tooltip="requestsPerDayTooltip"
+                                      :valueSuggestedMax="requestsPerDayValueSuggestedMax" />
+                        </div>
+                    </div>
+
+                </div>
+            </template>
+
+            <template #default>
+                <NotificationBox v-if="fetchNavigationDetailsErrorMessage"
+                                 :alertType="AlertType.Warning"
+                                 v-html="fetchNavigationDetailsErrorMessage"></NotificationBox>
+
+                <NotificationBox v-else-if="!anyConnectionOpportunities" :alertType="AlertType.Info">
+                    There are no connection opportunities that match the current filters.
+                </NotificationBox>
+
+                <DisplayCardContainer v-else>
+
+                    <DisplayCard v-for="summary of connectionOpportunitySummaries"
+                                 :key="summary.idKey!"
+                                 :iconCssClass="summary.iconCssClass"
+                                 iconLabelType="default"
+                                 :title="summary.name"
+                                 :description="summary.summary"
+                                 :primaryActions="getPrimaryActions(summary)">
+
+                        <template #prepend>
+                            <HighlightLabel iconCssClass="ti ti-user-circle"
+                                            labelType="info"
+                                            tooltip="Assigned to You"
+                                            tooltipPlacement="top">
+                                {{ asFormattedString(summary.assignedToYouRequestCount) }}
+                            </HighlightLabel>
+                        </template>
+
+                        <template #rightMiddleSection>
+                            <div class="connection-opportunity-navigation-request-counts">
+                                <HighlightLabel iconCssClass="ti ti-bolt"
+                                                labelType="success"
+                                                tooltip="Active Requests"
+                                                tooltipPlacement="top">
+                                    {{ asFormattedString(summary.activeRequestCount) }}
+                                </HighlightLabel>
+                                <HighlightLabel iconCssClass="ti ti-user-off"
+                                                labelType="default"
+                                                tooltip="Unassigned Requests"
+                                                tooltipPlacement="top">
+                                    {{ asFormattedString(summary.unassignedRequestCount) }}
+                                </HighlightLabel>
+                                <HighlightLabel iconCssClass="ti ti-calendar-due"
+                                                labelType="warning"
+                                                tooltip="Due Soon Requests"
+                                                tooltipPlacement="top">
+                                    {{ asFormattedString(summary.dueSoonRequestCount) }}
+                                </HighlightLabel>
+                                <HighlightLabel iconCssClass="ti ti-exclamation-circle"
+                                                labelType="danger"
+                                                tooltip="Overdue Requests"
+                                                tooltipPlacement="top">
+                                    {{ asFormattedString(summary.overdueRequestCount) }}
+                                </HighlightLabel>
+                            </div>
+                        </template>
+
+                    </DisplayCard>
+
+                </DisplayCardContainer>
+            </template>
+        </Panel>
+    </BreakpointObserver>
+</template>
+
+<style>
+.connection-opportunity-navigation-slicer {
+    margin-bottom: var(--spacing-large);
+}
+
+.connection-opportunity-navigation-metrics {
+    background-color: var(--color-interface-softer);
+    border-bottom: 1px solid var(--color-interface-soft);
+    padding: var(--spacing-large);
+}
+
+.connection-opportunity-navigation-metrics > div:not(:last-of-type) {
+    margin-bottom: var(--spacing-large);
+}
+
+.connection-opportunity-navigation-metrics-flex {
+    display: flex;
+    gap: var(--spacing-large);
+    align-items: stretch;
+}
+
+.connection-opportunity-navigation-metrics-flex > div:not(:last-of-type) {
+    margin-bottom: 0;
+}
+
+.connection-opportunity-navigation-metrics-flex .connection-opportunity-navigation-metric {
+    min-width: 0;
+}
+
+.connection-opportunity-navigation-metrics-flex .connection-opportunity-navigation-metric-active-requests {
+    flex: 1 1 0;
+}
+
+.connection-opportunity-navigation-metrics-flex .connection-opportunity-navigation-metric-request-health,
+.connection-opportunity-navigation-metrics-flex .connection-opportunity-navigation-metric-new-vs-completed {
+    flex: 2 1 0;
+}
+
+.connection-opportunity-navigation-metric-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: var(--color-interface-softest);
+    padding: var(--spacing-medium) var(--spacing-large);
+    border-radius: var(--rounded-medium)
+}
+
+.connection-opportunity-navigation-metric-new-vs-completed .connection-opportunity-navigation-metric-card {
+    height: 144px;
+    padding: var(--spacing-xsmall);
+}
+
+.connection-opportunity-navigation-metric-card-label {
+    color: var(--color-interface-strong);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+}
+
+.connection-opportunity-navigation-metric-active-requests .kpi {
+    flex: 0 1 auto;
+    margin: 0;
+}
+
+.connection-opportunity-navigation-metric-active-requests .kpi-stat {
+    padding-bottom: 0;
+}
+
+.connection-opportunity-navigation-request-counts {
+    display: flex;
+    gap: var(--spacing-small);
+}
+
+:deep(.displaycard-heading-icon .label-default) {
+    color: var(--color-interface-medium);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import BreakpointObserver from "./ConnectionOpportunityNavigation/breakpointObserver.partial.obs";
+    import { BreakpointHelper, NavigationUrlKey, PreferenceKey } from "./ConnectionOpportunityNavigation/types.partial";
+    import BarChart from "@Obsidian/Controls/barChart.obs";
+    import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import LinearGaugeChart from "@Obsidian/Controls/linearGaugeChart.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BarSeries, LinearGaugeSeries, TooltipContext } from "@Obsidian/Core/Controls/chart";
+    import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { syncRefsWithQueryParams } from "@Obsidian/Utility/url";
+    import { ConnectionOpportunityNavigationDetailsBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunityNavigation/ConnectionOpportunityNavigationDetailsBag";
+    import { ConnectionOpportunityNavigationInitializationBox } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunityNavigation/connectionOpportunityNavigationInitializationBox";
+    import { ConnectionOpportunitySummaryBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunityNavigation/connectionOpportunitySummaryBag";
+    import { ConnectionRequestCountsPerDayBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunityNavigation/connectionRequestCountsPerDayBag";
+    import { ConnectionTypeSummaryBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunityNavigation/connectionTypeSummaryBag";
+    import { GetNavigationDetailsRequestBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunityNavigation/getNavigationDetailsRequestBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<ConnectionOpportunityNavigationInitializationBox>();
+    const preferences = usePersonPreferences().blockPreferences;
+    const breakpointHelper = ref<BreakpointHelper>();
+    const contextEntities = useContextEntities();
+    const browserBus = useBlockBrowserBus();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    browserBus.subscribe(PageMessages.ContextEntityChanged, async (message: Message<ContextEntityChangedData>) => {
+        if (areEqual(message.data.entityTypeGuid, EntityType.Campus)) {
+            const campusBag = await contextEntities.get(EntityType.Campus);
+            updateRefValue(selectedCampus, campusBag ?? null);
+
+            await fetchNavigationDetails();
+        }
+    });
+
+    // #region Values
+
+    const selectedCampus = ref<ListItemBag | null>(null);
+    const connectionTypeIdKey = ref("");
+    const opportunityVisibility = ref(preferences.getValue(PreferenceKey.OpportunityVisibility) || "my-opportunities");
+
+    const navigationDetails = ref<ConnectionOpportunityNavigationDetailsBag | null>(config.navigationDetails ?? null);
+    const isFetchingNavigationDetails = ref(false);
+    const fetchNavigationDetailsErrorMessage = ref("");
+
+    const viewRequestsBtnText = ref("View Requests");
+    const operationalSnapshotBtnText = ref("Operational Snapshot");
+
+    // Connection Type-level URLs.
+    const typeConnectionsListPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeConnectionsListPage]);
+    const typeOperationalSnapshotPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeOperationalSnapshotPage]);
+
+    // Connection Opportunity-level URLs.
+    const opportunityConnectionsListPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsListPage]);
+    const opportunityConnectionBoardPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionBoardPage]);
+
+    syncRefsWithQueryParams([
+        { param: "ConnectionType", ref: connectionTypeIdKey, type: "string" }
+    ]);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const campusPageParam = computed((): string => {
+        return selectedCampus.value ? `&Campus=${selectedCampus.value.value}` : "";
+    });
+
+    const showConnectionTypeFilter = computed((): boolean => {
+        return (config.connectionTypeItems?.length ?? 0) > 1;
+    });
+
+    const connectionTypeSummary = computed((): ConnectionTypeSummaryBag | null | undefined => {
+        return navigationDetails.value?.connectionTypeSummary;
+    });
+
+    const connectionTypeName = computed((): string => {
+        return connectionTypeSummary.value?.name ?? "";
+    });
+
+    const connectionTypeIconCssClass = computed((): string => {
+        return connectionTypeSummary.value?.iconCssClass ?? "";
+    });
+
+    const isListViewEnabled = computed((): boolean => {
+        return connectionTypeSummary.value?.isListViewEnabled ?? false;
+    });
+
+    const isBoardViewEnabled = computed((): boolean => {
+        return connectionTypeSummary.value?.isBoardViewEnabled ?? false;
+    });
+
+    const isGridViewEnabled = computed((): boolean => {
+        return connectionTypeSummary.value?.isGridViewEnabled ?? false;
+    });
+
+    const isSnapshotViewEnabled = computed((): boolean => {
+        return connectionTypeSummary.value?.isSnapshotViewEnabled ?? false;
+    });
+
+    const showPanelHeaderActions = computed((): boolean => {
+        return isListViewEnabled.value || isSnapshotViewEnabled.value;
+    });
+
+    const viewRequestsBtnTooltip = computed((): string | undefined => {
+        if (breakpointHelper.value?.isSmOrLarger) {
+            return undefined;
+        }
+
+        return viewRequestsBtnText.value;
+    });
+
+    const operationalSnapshotBtnTooltip = computed((): string | undefined => {
+        if (breakpointHelper.value?.isSmOrLarger) {
+            return undefined;
+        }
+
+        return operationalSnapshotBtnText.value;
+    });
+
+    const linearGaugeChartData = computed<LinearGaugeSeries[]>(() => {
+        if (!navigationDetails.value) {
+            return [];
+        }
+
+        return [
+            { label: "On Track", data: [navigationDetails.value.totalOnTrackRequestsCount], color: "var(--color-success-strong)" },
+            { label: "Due Soon", data: [navigationDetails.value.totalDueSoonRequestsCount], color: "#F59E0B" },
+            { label: "Overdue", data: [navigationDetails.value.totalOverdueRequestsCount], color: "#EF4444" }
+        ];
+    });
+
+    const requestCountsPerDay = computed((): ConnectionRequestCountsPerDayBag | null | undefined => {
+        return navigationDetails.value?.requestCountsPerDay;
+    });
+
+    const requestsPerDayStartDate = computed((): RockDateTime | null => {
+        const isValid = !!(
+            requestCountsPerDay.value?.startDate
+            && requestCountsPerDay.value.newRequestCounts?.length
+            && requestCountsPerDay.value.newRequestCounts.length
+            === requestCountsPerDay.value.completedRequestCounts?.length
+        );
+
+        if (isValid) {
+            return RockDateTime.parseISO(requestCountsPerDay.value.startDate!);
+        }
+
+        return null;
+    });
+
+    const requestsPerDayLabels = computed((): string[] => {
+        let currentDate = requestsPerDayStartDate.value;
+        if (!currentDate) {
+            return [];
+        }
+
+        const labels: string[] = Enumerable
+            .from(requestCountsPerDay.value!.newRequestCounts!)
+            .select<string>(_ => {
+                const label = currentDate!.toISOString();
+
+                currentDate = currentDate!.addDays(1);
+
+                return label;
+            })
+            .toArray();
+
+        return labels;
+    });
+
+    const newRequestCountsPlusOne = computed((): number[] => {
+        return requestCountsPerDay.value
+            ?.newRequestCounts
+            ?.map(count => count + 1) ?? [];
+    });
+
+    const completedRequestCountsPlusOne = computed((): number[] => {
+        return requestCountsPerDay.value
+            ?.completedRequestCounts
+            ?.map(count => count + 1) ?? [];
+    });
+
+    const requestsPerDaySeries = computed((): BarSeries[] => {
+        if (!requestsPerDayStartDate.value) {
+            return [];
+        }
+
+        const series: BarSeries[] = [
+            {
+                label: "New",
+                data: newRequestCountsPlusOne.value,
+                color: "#06B6D4"
+            },
+            {
+                label: "Completed",
+                data: completedRequestCountsPlusOne.value,
+                color: "#22C55E"
+            }
+        ];
+
+        return series;
+    });
+
+    const requestsPerDayValueSuggestedMax = computed((): number | undefined => {
+        return (newRequestCountsPlusOne.value.every(c => c === 1) && completedRequestCountsPlusOne.value.every(c => c === 1))
+            ? 10
+            : undefined;
+    });
+
+    const connectionOpportunitySummaries = computed((): ConnectionOpportunitySummaryBag[] => {
+        return navigationDetails.value?.connectionOpportunitySummaries ?? [];
+    });
+
+    const anyConnectionOpportunities = computed((): boolean => {
+        return !!connectionOpportunitySummaries.value.length;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Loads the context entity values for the current session.
+     */
+    async function loadContextValues(): Promise<void> {
+        const item = await contextEntities.get(EntityType.Campus);
+
+        if (item) {
+            selectedCampus.value = item;
+        }
+    }
+
+    /**
+     * Formats the tooltip for the Request Health Overview linear gauge chart.
+     * @param context The tooltip context provided by the chart control.
+     */
+    function formatRequestHealthOverviewTooltip(context: TooltipContext): string {
+        return `${context.label ? `${context.label}: ` : ""}${(context.value ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} requests (${context.formattedValue || "0%"})`;
+    }
+
+    /**
+     * Formats the tooltip for the New vs. Completed Requests per Day bar chart.
+     * @param context The tooltip context provided by the chart control.
+     */
+    function requestsPerDayTooltip(context: TooltipContext): string {
+        return `${context.seriesLabel}: ${context.value ? context.value - 1 : 0}`;
+    }
+
+    /**
+     * Generates the primary actions for a given connection opportunity summary.
+     * @param summary The connection opportunity summary for which to generate actions.
+     * @returns An array of menu actions relevant to the provided summary.
+     */
+    function getPrimaryActions(summary: ConnectionOpportunitySummaryBag): MenuAction[] {
+        const actions: MenuAction[] = [];
+
+        if (opportunityConnectionsListPageUrl.value && isListViewEnabled.value) {
+            actions.push({
+                iconCssClass: "ti ti-layout-list",
+                title: "Connections List",
+                type: "default",
+                handler: () => {
+                    window.location.href = opportunityConnectionsListPageUrl.value!.replace("((Key))", summary.idKey!);
+                }
+            });
+        }
+
+        if (opportunityConnectionBoardPageUrl.value) {
+            if (isBoardViewEnabled.value) {
+                actions.push({
+                    iconCssClass: "ti ti-layout-cards",
+                    title: "Connection Board",
+                    type: "default",
+                    handler: () => {
+                        window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}&IsCardViewMode=True${campusPageParam.value}`;
+                    }
+                });
+            }
+
+            if (isGridViewEnabled.value) {
+                actions.push({
+                    iconCssClass: "ti ti-table",
+                    title: "Connection Board (List View)",
+                    type: "default",
+                    handler: () => {
+                        window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}&IsCardViewMode=False${campusPageParam.value}`;
+                    }
+                });
+            }
+        }
+
+        return actions;
+    }
+
+    /**
+     * Fetches the connection opportunity metrics and summaries from the server.
+     */
+    async function fetchNavigationDetails(): Promise<void> {
+        if (isFetchingNavigationDetails.value) {
+            return;
+        }
+
+        isFetchingNavigationDetails.value = true;
+        fetchNavigationDetailsErrorMessage.value = "";
+
+        var bag: GetNavigationDetailsRequestBag = {
+            connectionTypeIdKeyOverride: connectionTypeIdKey.value,
+        };
+
+        const result = await invokeBlockAction<ConnectionOpportunityNavigationDetailsBag>("GetNavigationDetails", { bag });
+        isFetchingNavigationDetails.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            fetchNavigationDetailsErrorMessage.value = "Unknown error while trying to load connection opportunities.";
+            return;
+        }
+
+        navigationDetails.value = result.data;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Handles the click event for the "View Requests" button in the panel header.
+     * Navigates the individual to the connections list page for the connection type.
+     */
+    function onViewRequestsClick(): void {
+        if (typeConnectionsListPageUrl.value) {
+            window.location.href = typeConnectionsListPageUrl.value;
+        }
+    }
+
+    /**
+     * Handles the click event for the "Operational Snapshot" button in the panel header.
+     * Navigates the individdual to the operational snapshot page for the connection type.
+     */
+    function onOperationalSnapshotClick(): void {
+        if (typeOperationalSnapshotPageUrl.value) {
+            window.location.href = typeOperationalSnapshotPageUrl.value;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(opportunityVisibility, async () => {
+        preferences.setValue(PreferenceKey.OpportunityVisibility, opportunityVisibility.value);
+
+        await preferences.save();
+        await fetchNavigationDetails();
+    });
+
+    watch(connectionTypeIdKey, async () => {
+        await fetchNavigationDetails();
+    });
+
+    // #endregion Watchers
+
+    loadContextValues();
+</script>

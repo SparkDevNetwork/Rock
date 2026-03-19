@@ -198,6 +198,11 @@ namespace Rock.Security
         /// </summary>
         public const string EXECUTE = "Execute";
 
+        /// <summary>
+        /// Authorization to view the lists of the entity type.
+        /// </summary>
+        public const string VIEW_LIST = "ViewList";
+
         #region API Security Actions
 
         /// <summary>

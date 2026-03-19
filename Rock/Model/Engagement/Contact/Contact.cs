@@ -145,18 +145,11 @@ namespace Rock.Model
         public RelationshipFocus RelationshipFocus { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection note.
-        /// </summary>
-        [MaxLength( 500 )]
-        [DataMember]
-        public string ConnectionNote { get; set; }
-
-        /// <summary>
         /// Gets or sets the prayer note.
         /// </summary>
         [MaxLength( 500 )]
         [DataMember]
-        public string PrayerNote { get; set; }
+        public string ContactNote { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this contact has accepted Jesus as their personal savior.

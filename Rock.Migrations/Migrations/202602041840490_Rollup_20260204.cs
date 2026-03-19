@@ -36,7 +36,8 @@ namespace Rock.Migrations
 
             PS_RenameBeaconDashboardToOutreachDashboard_Up();
 
-            NA_CleanupOldObsoleteBlockTypes_Up();
+            // Removed.  See note below.
+            // NA_CleanupOldObsoleteBlockTypes_Up();
         }
 
         private void JE_IconTransitionTableUpdate_Up()
@@ -119,25 +120,35 @@ WHERE [BlockType].[Guid] IN (
         /// </summary>
         private void NA_CleanupOldObsoleteBlockTypes_Up()
         {
-            Sql( @"
--- Delete old, chopped (v15.2) core webforms FamilyPreRegistration.ascx block
-DELETE [BlockType] WHERE [Path] = '~/Blocks/Crm/FamilyPreRegistration.ascx' AND [Guid] = '463a454a-6370-4b4a-bca1-415f2d9b0cb7'
+            /*
+                 3/17/2026 - NA
 
--- Delete old, chopped (v17.1) core Scheduled Job Detail block
-DELETE [BlockType] WHERE [Path] = '~/Blocks/Core/ScheduledJobDetail.ascx'
+                 Disabled cleanup of legacy BlockTypes because some installations may not yet
+                 have the Obsidian replacements if Chop Jobs have not executed. Running
+                 this cleanup too early could remove required WebForms blocks and cause missing
+                 functionality (the Obsidian block won't be put onto the right pages).
 
--- Delete old, very obsolete (v0.1) PluginManager block
-DECLARE @PluginManagerBlockTypeId INT = ( SELECT TOP (1) [Id] FROM [BlockType] WHERE [Path] = '~/Blocks/Core/PluginManager.ascx' AND [Guid] = 'F80268E6-2625-4565-AA2E-790C5E40A119' );
+                 Reason: Prevent premature deletion of BlockTypes before Obsidian equivalents exist.
+            */
+            //            Sql( @"
+            //-- Delete old, chopped (v15.2) core webforms FamilyPreRegistration.ascx block
+            //DELETE [BlockType] WHERE [Path] = '~/Blocks/Crm/FamilyPreRegistration.ascx' AND [Guid] = '463a454a-6370-4b4a-bca1-415f2d9b0cb7'
 
-IF @PluginManagerBlockTypeId IS NOT NULL
-BEGIN
-    DELETE FROM [Block]
-    WHERE [BlockTypeId] = @PluginManagerBlockTypeId;
+            //-- Delete old, chopped (v17.1) core Scheduled Job Detail block
+            //DELETE [BlockType] WHERE [Path] = '~/Blocks/Core/ScheduledJobDetail.ascx'
 
-    DELETE FROM [BlockType]
-    WHERE [Id] = @PluginManagerBlockTypeId;
-END
-" );
+            //-- Delete old, very obsolete (v0.1) PluginManager block
+            //DECLARE @PluginManagerBlockTypeId INT = ( SELECT TOP (1) [Id] FROM [BlockType] WHERE [Path] = '~/Blocks/Core/PluginManager.ascx' AND [Guid] = 'F80268E6-2625-4565-AA2E-790C5E40A119' );
+
+            //IF @PluginManagerBlockTypeId IS NOT NULL
+            //BEGIN
+            //    DELETE FROM [Block]
+            //    WHERE [BlockTypeId] = @PluginManagerBlockTypeId;
+
+            //    DELETE FROM [BlockType]
+            //    WHERE [Id] = @PluginManagerBlockTypeId;
+            //END
+            //" );
         }
 
         /// <summary>

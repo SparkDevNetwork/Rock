@@ -1,0 +1,218 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode">
+        <DockedPanel v-model="isOpen"
+                     v-model:width="width"
+                     :canResize="canResize"
+                     :minWidth="minWidth"
+                     :maxWidth="maxWidth">
+            <template #header>
+                <div style="padding: var(--spacing-xsmall) var(--spacing-large);
+                            border-bottom: 1px solid var(--color-interface-soft);">
+                    <h3 style="margin: 0;">Example Docked Panel</h3>
+                </div>
+            </template>
+
+            <template #default>
+                <div style="padding: var(--spacing-large);">
+                    <h4>Overview</h4>
+                    <p>
+                        The <strong>DockedPanel</strong> component displays secondary or contextual content in
+                        a persistent panel that docks to the side of the screen. Its visibility and
+                        size are controlled by the component that uses it.
+                    </p>
+
+                    <h4>Props</h4>
+                    <ul>
+                        <li>
+                            <strong>v-model (modelValue)</strong> <em>Boolean</em><br />
+                            Determines whether the DockedPanel is open or closed.
+                        </li>
+                        <li>
+                            <strong>width</strong> <em>String</em><br />
+                            Sets the width of the DockedPanel. Accepts any valid CSS length value. This
+                            value updates automatically when resizing is enabled.
+                        </li>
+                        <li>
+                            <strong>minWidth</strong> <em>String</em><br />
+                            Sets the minimum width the DockedPanel can be resized to.
+                        </li>
+                        <li>
+                            <strong>maxWidth</strong> <em>String</em><br />
+                            Sets the maximum width the DockedPanel can be resized to.
+                        </li>
+                        <li>
+                            <strong>canResize</strong> <em>Boolean</em><br />
+                            Enables a resize handle that allows the individual to adjust the panel’s width.
+                        </li>
+                    </ul>
+
+                    <h4>Emitted Events</h4>
+                    <ul>
+                        <li>
+                            <strong>update:modelValue</strong><br />
+                            Emitted when the open or close state of the DockedPanel changes.
+                        </li>
+                        <li>
+                            <strong>update:width</strong><br />
+                            Emitted when the DockedPanel is resized by the individual.
+                        </li>
+                    </ul>
+
+                    <h4>Slots</h4>
+                    <ul>
+                        <li>
+                            <strong>header</strong><br />
+                            (Optional) Displays content at the top of the DockedPanel. This area stays fixed while the main content scrolls.
+                        </li>
+                        <li>
+                            <strong>default</strong><br />
+                            (Required) The main content area of the DockedPanel. This area scrolls vertically when the content exceeds the available height or width.
+                        </li>
+                        <li>
+                            <strong>footer</strong><br />
+                            (Optional) Displays content at the bottom of the DockedPanel, typically used for actions. This area stays fixed while the main content scrolls.
+                        </li>
+                    </ul>
+
+                    <h4>Behavior</h4>
+                    <ul>
+                        <li>
+                            The DockedPanel is a controlled component, meaning its open and close state must be managed externally.
+                        </li>
+                        <li>
+                            It does not close automatically in response to interaction.
+                        </li>
+                        <li>
+                            The DockedPanel is non-modal and does not block interaction with the main page content.
+                        </li>
+                        <li>
+                            When resizing is enabled, any width changes are emitted and must be handled by the parent component.
+                        </li>
+                    </ul>
+
+                    <h4>Usage Guidelines</h4>
+                    <ul>
+                        <li>
+                            Include a clear action, such as a Close button, to update the bound <code>v-model</code> value.
+                        </li>
+                        <li>
+                            Bind the <code>width</code> prop when <code>canResize</code> is enabled so that resize changes persist.
+                        </li>
+                        <li>
+                            Use the DockedPanel for secondary or contextual content that benefits from remaining visible alongside the primary content.
+                        </li>
+                        <li>
+                            If you need to block interaction or dismiss automatically, consider using a modal instead.
+                        </li>
+                    </ul>
+                </div>
+            </template>
+
+            <template #footer>
+                <div style="padding: var(--spacing-xsmall) var(--spacing-large);
+                            background-color: var(--color-interface-softer);
+                            border-top: 1px solid var(--color-interface-soft);
+                            display: flex;
+                            flex-direction: row;
+                            justify-content: flex-end;
+                            align-items: center;
+                            gap: var(--spacing-xsmall);">
+                    <RockButton btnType="default"
+                                @click="isOpen = false">
+                        Close
+                    </RockButton>
+                </div>
+            </template>
+        </DockedPanel>
+
+        <RockButton @click="isOpen = !isOpen">Toggle Docked Panel</RockButton>
+
+        <template #settings>
+            <div class="settings">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <Switch v-model="canResize"
+                                label="Can Resize?"
+                                help="When enabled, the user can resize the docked panel by dragging the resize handle." />
+                    </div>
+                    <div class="col-sm-3">
+                        <TextBox v-model="width"
+                                 label="Width"
+                                 help="The width of the docked panel when opened. Must be a valid CSS length value. Clear to use the default width." />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-3">
+                        <TextBox v-model="minWidth"
+                                 label="Min Width"
+                                 help="The minimum width of the docked panel when opened. Must be a valid CSS length value. Clear to use the default minimum width." />
+                    </div>
+                    <div class="col-sm-3">
+                        <TextBox v-model="maxWidth"
+                                 label="Max Width"
+                                 help="The maximum width of the docked panel when opened. Must be a valid CSS length value. Clear to use the default maximum width." />
+                    </div>
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<style scoped>
+.settings {
+    max-height: 350px;
+    overflow: auto;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import DockedPanel from "@Obsidian/Controls/Internal/dockedPanel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+
+    const isOpen = ref<boolean>(false);
+    const width = ref<string>("400px");
+    const minWidth = ref<string>("250px");
+    const maxWidth = ref<string>("100%");
+    const canResize = ref<boolean>(false);
+
+    const importCode = getSfcControlImportPath("dockedPanel");
+    const exampleCode = `
+<!--
+    The DockedPanel provides layout only.
+    No padding, margins, or visual styling are applied automatically.
+    Consumers are responsible for styling header, body, and footer content.
+-->
+<DockedPanel v-model="isOpen" canResize width="400px" minWidth="250px" maxWidth="100%">
+    <template #header>
+        <div style="padding: 16px; border-bottom: 1px solid #e0e0e0;">
+            <h3 style="margin: 0;">DockedPanel Title</h3>
+        </div>
+    </template>
+
+    <template #default>
+        <div style="padding: 16px;">
+            <p>
+                DockedPanel content goes here.
+                This area scrolls when content exceeds the available height.
+            </p>
+        </div>
+    </template>
+
+    <template #footer>
+        <div style="padding: 16px; border-top: 1px solid #e0e0e0; text-align: right;">
+            <RockButton btnType="default"
+                        @click="isOpen = false">
+                Close
+            </RockButton>
+        </div>
+    </template>
+</DockedPanel>`.trim();
+
+</script>

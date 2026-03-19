@@ -170,7 +170,7 @@ namespace Rock.Blocks.Communication
                 .ToList();
 
             var communicationLists = new GroupService( RockContext ).Queryable()
-                .Where( a => a.GroupTypeId == communicationListGroupTypeId && !commGroupSyncsForDefaultRole.Contains( a.Id ) )
+                .Where( a => a.GroupTypeId == communicationListGroupTypeId && !commGroupSyncsForDefaultRole.Contains( a.Id ) && a.IsPublic )
                 .IsActive()
                 .ToList();
 

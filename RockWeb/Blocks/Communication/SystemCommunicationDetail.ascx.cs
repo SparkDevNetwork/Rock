@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Communication
                     communicationIdentifier = PageParameter( "emailId" );
                 }
 
-                ShowEdit( communicationIdentifier.AsInteger() );
+                ShowEdit( communicationIdentifier );
             }
             else
             {
@@ -129,11 +129,9 @@ namespace RockWeb.Blocks.Communication
                 communicationIdentifier = PageParameter( "emailId" );
             }
 
-            int? communicationId = communicationIdentifier.AsIntegerOrNull();
-
-            if ( communicationId.HasValue )
+            if ( communicationIdentifier.IsNotNullOrWhiteSpace() )
             {
-                var communication = new SystemCommunicationService( new RockContext() ).Get( communicationId.Value );
+                var communication = new SystemCommunicationService( new RockContext() ).Get( communicationIdentifier, !PageCache.Layout.Site.DisablePredictableIds );
 
                 if ( communication != null )
                 {
@@ -252,7 +250,7 @@ namespace RockWeb.Blocks.Communication
         /// Shows the edit.
         /// </summary>
         /// <param name="emailTemplateId">The email template id.</param>
-        protected void ShowEdit( int emailTemplateId )
+        protected void ShowEdit( string communicationKey )
         {
             var globalAttributes = GlobalAttributesCache.Get();
 
@@ -264,8 +262,10 @@ namespace RockWeb.Blocks.Communication
 
             tbTo.Help = "You can specify multiple email addresses by separating them with a comma.";
 
-            SystemCommunicationService emailTemplateService = new SystemCommunicationService( new RockContext() );
-            SystemCommunication emailTemplate = emailTemplateService.Get( emailTemplateId );
+            var emailTemplateService = new SystemCommunicationService( new RockContext() );
+            SystemCommunication emailTemplate = communicationKey.IsNotNullOrWhiteSpace()
+                ? emailTemplateService.Get( communicationKey, !PageCache.Layout.Site.DisablePredictableIds )
+                : null;
 
             bool showMessagePreview = false;
 

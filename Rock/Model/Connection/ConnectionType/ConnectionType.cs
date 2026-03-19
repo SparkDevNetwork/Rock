@@ -454,6 +454,21 @@ namespace Rock.Model
 
         private ICollection<ConnectionOpportunity> _connectionOpportunities;
 
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionTypeSource">ConnectionTypeSources</see> that are associated with the ConnectionType.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionTypeSource">ConnectionTypeSources</see> that are associated with the ConnectionType.
+        /// </value>
+        [LavaVisible]
+        public virtual ICollection<ConnectionTypeSource> ConnectionTypeSources
+        {
+            get { return _connectionTypeSources ?? ( _connectionTypeSources = new Collection<ConnectionTypeSource>() ); }
+            set { _connectionTypeSources = value; }
+        }
+
+        private ICollection<ConnectionTypeSource> _connectionTypeSources;
+
         #endregion
 
         #region Public Methods

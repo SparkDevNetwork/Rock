@@ -23,6 +23,7 @@
 
 import { PersonNoteCreationBehavior } from "@Obsidian/Enums/Connection/personNoteCreationBehavior";
 import { Guid } from "@Obsidian/Types";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** Minimal bag representation of a Connection Activity Type */
@@ -47,4 +48,6 @@ export type ConnectionActivityTypeBag = {
 
     /** Gets or sets the person note creation behavior. */
     personNoteCreationBehavior?: PersonNoteCreationBehavior | null;
+
+    personNoteType?: ListItemBag | null;
 };

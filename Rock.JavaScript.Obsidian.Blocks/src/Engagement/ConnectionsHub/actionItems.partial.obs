@@ -1,0 +1,179 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="d-flex gap-xs align-items-start justify-content-between">
+        <div class="d-flex flex-column w-100">
+            <div class="d-flex gap-xs flex-wrap w-100" ref="actionItemsContainer">
+                <RockButton v-for="actionItem in rowActions"
+                            :btnSize="BtnSize.Small"
+                            @click="onActionClick(actionItem)">
+                    {{ actionItem.text }}
+                </RockButton>
+            </div>
+            <TransitionVerticalCollapse>
+                <div v-show="areActionItemsExpanded">
+                    <div class="d-flex gap-xs flex-wrap w-100 mt-spacing-xs">
+                        <RockButton v-for="actionItem in hiddenActions"
+                                    :btnSize="BtnSize.Small"
+                                    @click="onActionClick(actionItem)">
+                            {{ actionItem.text }}
+                        </RockButton>
+                    </div>
+                </div>
+            </TransitionVerticalCollapse>
+        </div>
+        <div v-if="hiddenActions.length > 0" class="d-flex align-items-center gap-xs">
+            <div v-if="!areActionItemsExpanded" class="text-interface-medium">+{{ hiddenActions.length }}</div>
+            <RockButton @click="toggleActionItems">
+                <i v-if="areActionItemsExpanded" class="ti ti-chevrons-up"></i>
+                <i v-else class="ti ti-chevrons-down"></i>
+            </RockButton>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.gap-xs {
+    gap: var(--spacing-xsmall);
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, PropType, watch, computed, onBeforeUnmount, onMounted, nextTick } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps({
+        actionItems: {
+            type: Array as PropType<ListItemBag[]>,
+            default: []
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "onActionClick", value: string): void;
+    }>();
+
+    const areActionItemsExpanded = ref<boolean>(false);
+    const actionItemsContainer = ref();
+    // Index of the first item that wraps to row 2.
+    const firstWrappedIndex = ref(0);
+    // When true, we temporarily render ALL actions in the row so we can measure wrapping.
+    const isMeasuring = ref(false);
+
+    let resizeObserver: ResizeObserver | null = null;
+    let observedElement: HTMLElement | null = null;
+
+    const rowActions = computed(() => {
+        if (!props.actionItems) {
+            return [];
+        }
+
+        if (isMeasuring.value) {
+            return props.actionItems; // measurement pass: render all
+        }
+
+        // normal: only render the prefix in the row
+        return props.actionItems.slice(0, firstWrappedIndex.value);
+    });
+
+    const hiddenActions = computed(() => {
+        // remainder always starts at firstWrappedIndex
+        return props.actionItems.slice(firstWrappedIndex.value);
+    });
+
+    function toggleActionItems(): void {
+        areActionItemsExpanded.value = !areActionItemsExpanded.value;
+    }
+
+    function attachResizeObserver(el: HTMLElement): void {
+        if (observedElement === el) {
+            return; // already observing this exact element
+        }
+
+        resizeObserver?.disconnect();
+
+        resizeObserver = new ResizeObserver(() => void recalculateVisibleActionItems());
+        resizeObserver.observe(el);
+
+        observedElement = el;
+    }
+
+    async function recalculateVisibleActionItems(): Promise<void> {
+        const el = actionItemsContainer.value;
+
+        if (!el) {
+            firstWrappedIndex.value = props.actionItems?.length ?? 0;
+            return;
+        }
+
+        // If we have 0/1 items, nothing wraps.
+        if (props.actionItems && props.actionItems.length <= 1) {
+            firstWrappedIndex.value = props.actionItems?.length;
+            return;
+        }
+
+        // Measurement pass: temporarily render all items in the row.
+        isMeasuring.value = true;
+        await nextTick();
+
+        const children = Array.from(el.children) as HTMLElement[];
+        if (children.length === 0) {
+            firstWrappedIndex.value = 0;
+            isMeasuring.value = false;
+            return;
+        }
+
+        const firstRowTop = children[0].offsetTop;
+
+        // Find the first element that wrapped to the next line.
+        const wrappedAt = children.findIndex(c => c.offsetTop !== firstRowTop);
+
+        firstWrappedIndex.value = wrappedAt === -1 ? children.length : wrappedAt;
+
+        // Exit measurement mode: row will now render only the prefix.
+        isMeasuring.value = false;
+    }
+
+    function onActionClick(actionItem: ListItemBag): void {
+        if (!actionItem.value || isNullOrWhiteSpace(actionItem.value)) {
+            return;
+        }
+
+        emit("onActionClick", actionItem.value);
+    }
+
+    watch(actionItemsContainer, el => {
+        if (el) {
+            attachResizeObserver(el);
+            void recalculateVisibleActionItems();
+        }
+        else {
+            // ref became null (v-if toggled). Stop observing.
+            resizeObserver?.disconnect();
+            observedElement = null;
+        }
+    });
+
+    watch(areActionItemsExpanded, () => recalculateVisibleActionItems());
+
+    onMounted(() => {
+        recalculateVisibleActionItems();
+
+        // Observe the container so docked-panel resizes trigger the recalculate visible action items function.
+        resizeObserver = new ResizeObserver(() => recalculateVisibleActionItems());
+
+        if (actionItemsContainer.value) {
+            resizeObserver.observe(actionItemsContainer.value);
+        }
+
+        window.addEventListener("resize", recalculateVisibleActionItems);
+    });
+
+    onBeforeUnmount(() => {
+        resizeObserver?.disconnect();
+        window.removeEventListener("resize", recalculateVisibleActionItems);
+    });
+</script>

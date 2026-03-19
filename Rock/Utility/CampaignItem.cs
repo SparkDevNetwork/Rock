@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -104,6 +103,7 @@ namespace Rock.Utility
         /// <value>
         /// The Family Limits
         /// </value>
+        [JsonConverter( typeof( StringEnumConverter ) )]
         public FamilyLimits FamilyLimits { get; set; }
 
         /// <summary>
@@ -112,6 +112,7 @@ namespace Rock.Utility
         /// <value>
         /// The create connection request option.
         /// </value>
+        [JsonConverter( typeof( StringEnumConverter ) )]
         public CreateConnectionRequestOptions CreateConnectionRequestOption { get; set; }
 
         /// <summary>
@@ -148,43 +149,5 @@ namespace Rock.Utility
         {
             return this.Name ?? base.ToString();
         }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    [JsonConverter( typeof( StringEnumConverter ) )]
-    public enum FamilyLimits
-    {
-        /// <summary>
-        /// Head Of House
-        /// </summary>
-        [Description( "Limit to Head of House" )]
-        HeadOfHouse,
-
-        /// <summary>
-        /// Everyone in Data View
-        /// </summary>
-        [Description( "Everyone in Data View" )]
-        Everyone
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    [JsonConverter( typeof( StringEnumConverter ) )]
-    public enum CreateConnectionRequestOptions
-    {
-        /// <summary>
-        /// As Needed
-        /// </summary>
-        [Description( "As Needed" )]
-        AsNeeded = 0,
-
-        /// <summary>
-        /// All at Once
-        /// </summary>
-        [Description( "All at Once" )]
-        AllAtOnce = 1,
     }
 }

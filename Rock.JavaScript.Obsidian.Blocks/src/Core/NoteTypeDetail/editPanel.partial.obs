@@ -55,13 +55,8 @@
                 <template v-if="options.hasActiveAIProviders">
                     <div class="row">
                         <div class="col-md-6">
-                            <CheckBox v-model="requiresApprovals"
-                                      label="Enabled Approvals"
-                                      @click="toggleRequiresApprovals()" />
-                        </div>
-                        <div class="col-md-6" v-if="requiresApprovals">
                             <CheckBox v-model="enabledAIApprovals"
-                                      label="Enabled AI Approvals"
+                                      label="Enable AI Approvals"
                                       help="Determines if AI should be used to automatically approve notes of this type. Ensure to provide guidelines on what constitutes an appropriate note." />
 
                         </div>
@@ -190,7 +185,6 @@
     const binaryFileType = propertyRef(props.modelValue.bag?.binaryFileType ?? {}, "BinaryFileTypeId");
     const formatType = propertyRef(props.modelValue.bag?.formatType.toString() ?? "", "FormatType");
     const isMentionEnabled = propertyRef(props.modelValue.bag?.isMentionEnabled ?? false, "IsMentionEnabled");
-    const requiresApprovals = propertyRef(props.modelValue.bag?.requiresApprovals ?? false, "RequiresApprovals");
     const enabledAIApprovals = propertyRef(props.modelValue.bag?.enabledAIApprovals ?? false, "AdditionalSettingsJson");
     const aiApprovalGuidelines = propertyRef(props.modelValue.bag?.aiApprovalGuidelines ?? "", "AdditionalSettingsJson");
     const aiProvider = propertyRef(props.modelValue.bag?.aiProvider ?? null, "AdditionalSettingsJson");
@@ -207,7 +201,7 @@
     // objects returned by propertyRef().
     const propRefs = [name, entityType, iconCssClass, color, userSelectable,
         allowsWatching, autoWatchAuthors, allowsReplies, maxReplyDepth, allowsAttachments,
-        binaryFileType, formatType, isMentionEnabled, requiresApprovals, enabledAIApprovals, aiApprovalGuidelines, aiProvider];
+        binaryFileType, formatType, isMentionEnabled, enabledAIApprovals, aiApprovalGuidelines, aiProvider];
 
     const formatTypeItems = enumToListItemBag(NoteFormatTypeDescription);
 
@@ -244,20 +238,6 @@
         return true;
     }
 
-    /**
-     * Function that's called after clicking the "Enabled Approvals" checkbox.
-     * This function is called before the model value is changed so references
-     * to requiresApprovals would be the previously selected value.
-     */
-    function toggleRequiresApprovals(): void {
-        const wasRequired = requiresApprovals.value;
-        if (wasRequired) {
-            // If the "Enabled Approvals" checkbox was checked, but is no longer
-            // then uncheck the "Enabled AI Approvals" checkbox as well.
-            enabledAIApprovals.value = false;
-        }
-    }
-
     function isValidNumber(num: number): boolean {
         return !isNaN(num) && isFinite(num);
     }
@@ -279,7 +259,6 @@
         updateRefValue(binaryFileType, props.modelValue.bag?.binaryFileType ?? {});
         updateRefValue(formatType, props.modelValue.bag?.formatType.toString() ?? "");
         updateRefValue(isMentionEnabled, props.modelValue.bag?.isMentionEnabled ?? false);
-        updateRefValue(requiresApprovals, props.modelValue.bag?.requiresApprovals ?? false);
         updateRefValue(enabledAIApprovals, props.modelValue.bag?.enabledAIApprovals ?? false);
         updateRefValue(aiApprovalGuidelines, props.modelValue.bag?.aiApprovalGuidelines ?? "");
         updateRefValue(aiProvider, props.modelValue.bag?.aiProvider ?? null);
@@ -306,7 +285,6 @@
         setPropertiesBoxValue(newValue, "binaryFileType", binaryFileType.value);
         setPropertiesBoxValue(newValue, "formatType", parseInt(formatType.value ?? "") as NoteFormatType);
         setPropertiesBoxValue(newValue, "isMentionEnabled", isMentionEnabled.value ?? false);
-        setPropertiesBoxValue(newValue, "requiresApprovals", requiresApprovals.value ?? false);
         setPropertiesBoxValue(newValue, "enabledAIApprovals", enabledAIApprovals.value ?? false);
         setPropertiesBoxValue(newValue, "aiApprovalGuidelines", aiApprovalGuidelines.value);
         setPropertiesBoxValue(newValue, "aiProvider", aiProvider.value ?? null);

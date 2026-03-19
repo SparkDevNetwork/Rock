@@ -91,13 +91,6 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div class="col-sm-5">
-                                        <Switch v-if="!isBulkCommunicationForced"
-                                                v-model="internalIsBulkCommunication"
-                                                label="Bulk Communication"
-                                                :text="internalIsBulkCommunication ? 'Yes' : 'No'" />
-                                    </div>
                                 </div>
 
                                 <div v-if="selectedCommunicationListGuidOrManualOrEmptyString !== manualRecipientList && personalizationSegmentItems.length"
@@ -137,69 +130,75 @@
                                         <div v-if="allowedMediums.length" class="form-group">
                                             <label class="text-md">Medium</label>
                                             <div class="mediums-section">
-                                                <div v-if="allowedMediums.includes(CommunicationType.Email)"
-                                                     :class="['medium', { 'selected': internalCommunicationType === CommunicationType.Email }]"
-                                                     @click="internalCommunicationType = CommunicationType.Email">
-                                                    <div class="medium-content">
-                                                        <i class="ti ti-mail ti-2x"></i>
-                                                        <h5>Email</h5>
-                                                        <small>Send an email to everyone in your targeted segment.</small>
-                                                        <HighlightLabel labelType="info">
-                                                            <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
-                                                            <template v-else>Reachable Audience: {{ emailRecipientCount }}</template>
-                                                        </HighlightLabel>
-                                                        <i :class="internalCommunicationType === CommunicationType.Email ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
-                                                    </div>
+                                                <Medium v-if="allowedMediums.includes(CommunicationType.Email)"
+                                                        :isSelected="internalCommunicationType === CommunicationType.Email"
+                                                        iconCssClass="ti ti-mail ti-2x"
+                                                        title="Email"
+                                                        description="Send an email to everyone in your targeted segment."
+                                                        @click="internalCommunicationType = CommunicationType.Email">
+                                                    <HighlightLabel labelType="info">
+                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
+                                                        <template v-else>Reachable Audience: {{ emailRecipientCount }}</template>
+                                                    </HighlightLabel>
+                                                </Medium>
 
-                                                </div>
+                                                <Medium v-if="allowedMediums.includes(CommunicationType.SMS)"
+                                                        :isSelected="internalCommunicationType === CommunicationType.SMS"
+                                                        iconCssClass="ti ti-device-mobile-message ti-2x"
+                                                        title="SMS"
+                                                        description="Send a text message to your targeted segment."
+                                                        @click="internalCommunicationType = CommunicationType.SMS">
+                                                    <HighlightLabel labelType="info">
+                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
+                                                        <template v-else>Reachable Audience: {{ smsRecipientCount }}</template>
+                                                    </HighlightLabel>
+                                                </Medium>
 
-                                                <div v-if="allowedMediums.includes(CommunicationType.SMS)"
-                                                     :class="['medium', { 'selected': internalCommunicationType === CommunicationType.SMS }]"
-                                                     @click="internalCommunicationType = CommunicationType.SMS">
-                                                    <div class="medium-content">
-                                                        <i class="ti ti-device-mobile-message ti-2x"></i>
-                                                        <h5>SMS</h5>
-                                                        <small>Send a text message to your targeted segment.</small>
-                                                        <HighlightLabel labelType="info">
-                                                            <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
-                                                            <template v-else>Reachable Audience: {{ smsRecipientCount }}</template>
-                                                        </HighlightLabel>
-                                                        <i :class="internalCommunicationType === CommunicationType.SMS ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
-                                                    </div>
+                                                <Medium v-if="allowedMediums.includes(CommunicationType.PushNotification)"
+                                                        :isSelected="internalCommunicationType === CommunicationType.PushNotification"
+                                                        iconCssClass="ti ti-bell ti-2x"
+                                                        title="Push Notifications"
+                                                        description="Notify targeted segment via the church app."
+                                                        @click="internalCommunicationType = CommunicationType.PushNotification">
+                                                    <HighlightLabel labelType="info">
+                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
+                                                        <template v-else>Reachable Audience: {{ pushNotificationRecipientCount }}</template>
+                                                    </HighlightLabel>
+                                                </Medium>
 
-                                                </div>
+                                                <Medium v-if="allowedMediums.includes(CommunicationType.RecipientPreference)"
+                                                        :isSelected="internalCommunicationType === CommunicationType.RecipientPreference"
+                                                        iconCssClass="ti ti-user ti-2x"
+                                                        title="Personal Preference"
+                                                        description="Notify targeted segment via person's preferred channel."
+                                                        @click="internalCommunicationType = CommunicationType.RecipientPreference">
+                                                    <HighlightLabel labelType="info">
+                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
+                                                        <template v-else>Reachable Audience: {{ personalPreferenceRecipientCount }}</template>
+                                                    </HighlightLabel>
+                                                </Medium>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                                <div v-if="allowedMediums.includes(CommunicationType.PushNotification)"
-                                                     :class="['medium', { 'selected': internalCommunicationType === CommunicationType.PushNotification }]"
-                                                     @click="internalCommunicationType = CommunicationType.PushNotification">
-                                                    <div class="medium-content">
-                                                        <i class="ti ti-bell ti-2x"></i>
-                                                        <h5>Push Notifications</h5>
-                                                        <small>Notify targeted segment via the church app.</small>
-                                                        <HighlightLabel labelType="info">
-                                                            <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
-                                                            <template v-else>Reachable Audience: {{ pushNotificationRecipientCount }}</template>
-                                                        </HighlightLabel>
-                                                        <i :class="internalCommunicationType === CommunicationType.PushNotification ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
-                                                    </div>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="form-group">
+                                            <label class="text-md">Message Classification</label>
+                                            <div class="mediums-section">
+                                                <Medium v-if="allowedMediums.includes(CommunicationType.Email)"
+                                                        :isSelected="!internalIsBulkCommunication"
+                                                        iconCssClass="ti ti-messages ti-2x"
+                                                        :title="customText.isNotBulkOptionTitle"
+                                                        :description="customText.isNotBulkOptionDescription"
+                                                        @click="internalIsBulkCommunication = false" />
 
-                                                </div>
-
-                                                <div v-if="allowedMediums.includes(CommunicationType.RecipientPreference)"
-                                                     :class="['medium', { 'selected': internalCommunicationType === CommunicationType.RecipientPreference }]"
-                                                     @click="internalCommunicationType = CommunicationType.RecipientPreference">
-                                                    <div class="medium-content">
-                                                        <i class="ti ti-user ti-2x"></i>
-                                                        <h5>Personal Preference</h5>
-                                                        <small>Notify targeted segment via person's preferred channel.</small>
-                                                        <HighlightLabel labelType="info">
-                                                            <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-clockwise-2 ti-pulse"></i></template>
-                                                            <template v-else>Reachable Audience: {{ personalPreferenceRecipientCount }}</template>
-                                                        </HighlightLabel>
-                                                        <i :class="internalCommunicationType === CommunicationType.RecipientPreference ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
-                                                    </div>
-                                                </div>
-
+                                                <Medium :isSelected="internalIsBulkCommunication"
+                                                        iconCssClass="ti ti-speakerphone ti-2x"
+                                                        :title="customText.isBulkOptionTitle"
+                                                        :description="customText.isBulkOptionDescription"
+                                                        @click="internalIsBulkCommunication = true" />
                                             </div>
                                         </div>
                                     </div>
@@ -268,9 +267,10 @@
 
 <script setup lang="ts">
     import { computed, nextTick, PropType, Ref, ref, watch } from "vue";
+    import Medium from "./medium.partial.obs";
     import RecipientModal from "./recipientModal.partial.obs";
     import { get } from "./utils.partial";
-    import { SendTimePreference } from "./types.partial";
+    import { CustomText, SendTimePreference } from "./types.partial";
     import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -340,6 +340,11 @@
 
         communicationType: {
             type: Number as PropType<CommunicationType>,
+            required: true
+        },
+
+        customText: {
+            type: Object as PropType<CustomText>,
             required: true
         },
 

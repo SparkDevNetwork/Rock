@@ -2,7 +2,7 @@
 <template>
     <span ref="anchorElement" @click.prevent="onAnchorClick">
         <slot name="anchor">
-            <i class="ti ti-dots-vertical"></i>
+            <i class="ti ti-dots-vertical cursor-pointer"></i>
         </slot>
     </span>
 
@@ -15,6 +15,23 @@
         </div>
     </div>
 </template>
+
+<style>
+/* Global styles that can be used on any implementation of the Control. */
+.dropdown-content {
+    min-width: 200px;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+}
+
+.dropdown-content-item {
+    cursor: pointer;
+}
+
+.dropdown-content-item:hover {
+    background-color: var(--color-interface-softer);
+}
+</style>
 
 <style scoped>
 .floating-dropdown {
@@ -44,7 +61,7 @@
 </style>
 
 <script setup lang="ts">
-    import { arrow, autoUpdate, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+    import { arrow, autoUpdate, flip, shift, useFloating } from "@Obsidian/Libs/floating-ui";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { PropType, ref, watch } from "vue";
 
@@ -68,6 +85,11 @@
 
         preventOverflowClipping: {
             type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        enableFlip: {
+            type: Boolean,
             default: false
         }
     });
@@ -93,6 +115,7 @@
                 // then the scroll bar vanishes and we adjust position again.
                 padding: 1
             }),
+            ...(props.enableFlip ? [flip()] : []),
             arrow({
                 element: arrowElement
             })

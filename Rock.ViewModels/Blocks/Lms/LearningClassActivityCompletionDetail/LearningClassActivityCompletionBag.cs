@@ -121,6 +121,12 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail
         public bool IsStudentCompleted { get; set; }
 
         /// <summary>
+        /// Indicates whether or not the related activity instance has been completed by the party (student or facilitator)
+        /// who's actually responsible for completing it based on the activity's "assigned to" value.
+        /// </summary>
+        public bool IsCompleted { get; set; }
+
+        /// <summary>
         /// Gets or sets the IdKey of the <see cref="ClassActivityBag"/>.
         /// </summary>
         public string LearningClassActivityIdKey { get; set; }

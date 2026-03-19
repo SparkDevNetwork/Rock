@@ -148,6 +148,7 @@ namespace Rock.Model
             target.ConnectedDateTime = source.ConnectedDateTime;
             target.ConnectionOpportunityId = source.ConnectionOpportunityId;
             target.ConnectionState = source.ConnectionState;
+            target.ConnectionStatusHistoryNote = source.ConnectionStatusHistoryNote;
             target.ConnectionStatusId = source.ConnectionStatusId;
             target.ConnectionTypeId = source.ConnectionTypeId;
             target.ConnectionTypeSourceId = source.ConnectionTypeSourceId;

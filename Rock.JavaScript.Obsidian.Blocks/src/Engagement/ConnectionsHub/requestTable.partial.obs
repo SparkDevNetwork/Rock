@@ -1,0 +1,134 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="styled-scroll">
+        <RockLabel v-if="isLabelVisible">{{ pluralize("Request", requestDetails.length) }}</RockLabel>
+        <div class="d-flex flex-column gap-xs request-table">
+            <div v-for="request in requestDetails" class="bg-interface-softer py-spacing-xs px-spacing-md border rounded request-row mr-spacing-tiny">
+                <div class="d-flex align-items-center">
+                    <template v-if="request.requester">
+                        <PersonAvatar :personIdKey="request.requester?.idKey ?? ''"
+                                      :photoUrl="request.requester?.photoUrl ?? ''"
+                                      :photoSize="36"
+                                      marginRight="3" />
+
+                        <div>
+                            <strong>{{ getFormattedName(request.requester) }}</strong>
+                            <div v-if="request.requester?.connectionStatus" class="text-muted">{{ request.requester?.connectionStatus }}</div>
+                        </div>
+                    </template>
+                </div>
+                <div v-if="isConnectionOpportunityVisible" class="d-flex flex-column align-items-start justify-content-center gap-1">
+                    <HighlightLabel labelType="custom"
+                                    customClass="label-default text-xs text-semibold text-interface-strong">
+                        {{ request.connectionOpportunity }}
+                    </HighlightLabel>
+                    <span v-if="!isNullOrWhiteSpace(request.connectionTypeSource) && viewOptions.isRequestSourceShown"
+                          class="text-small text-interface-medium">
+                        {{ request.connectionTypeSource }}
+                    </span>
+                </div>
+                <div v-if="isDueDateVisible" class="d-flex align-items-center">
+                    <template v-if="!isNullOrWhiteSpace(request.dueDate)">
+                        <i class="ti ti-calendar pr-spacing-tiny"></i>
+                        <span>{{ getDueDateElapsedString(request.dueDate) }}</span>
+                    </template>
+                    <div v-else>
+                        <i class="ti ti-minus"></i>
+                    </div>
+                </div>
+                <div v-if="isConnectorVisible" class="d-flex align-items-center">
+                    <i class="ti ti-user-circle pr-spacing-tiny"></i>
+                    <span>{{ request.connector?.text }}</span>
+                </div>
+                <div class="d-flex align-items-center justify-content-end">
+                    <div v-if="request.connectionStatus"
+                         class="w-100 py-spacing-tiny px-spacing-xs rounded-huge text-semibold text-interface-softest text-center"
+                         :style="`background-color: ${request.connectionStatus.highlightColor}`">
+                        {{ request.connectionStatus.name }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.gap-xs {
+    gap: var(--spacing-xsmall);
+}
+
+.request-table {
+    max-height: 30vh;
+    overflow: auto;
+}
+
+.request-row {
+    display: grid;
+    grid-template-columns: repeat(v-bind(colsPerRow), minmax(180px, 1fr));
+}
+</style>
+
+<script setup lang="ts">
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import { ref, PropType, watch, computed, Prop } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
+    import { BulkRequestViewBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/bulkRequestViewBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { ViewOptions } from "./types.partial";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { request } from "http";
+
+    const props = defineProps({
+        requestDetails: {
+            type: Array as PropType<BulkRequestViewBag[]>,
+            default: []
+        },
+        viewOptions: {
+            type: Object as PropType<ViewOptions>,
+            required: true
+        },
+        isConnectorVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+        },
+        isLabelVisible: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        }
+    });
+
+    function getFormattedName(person: PersonFieldBag): string {
+        return `${person.nickName ?? ""} ${person.lastName ?? ""}`;
+    }
+
+    function getDueDateElapsedString(dueDate: string | null | undefined): string {
+        const due = RockDateTime.parseISO(dueDate ?? "");
+
+        return due?.toElapsedString() ?? "";
+    }
+
+    const isConnectionOpportunityVisible = computed(() => props.viewOptions.gridDataToShow?.includes("connectionOpportunity"));
+
+    const isDueDateVisible = computed(() => props.viewOptions.gridDataToShow?.includes("dueDate"));
+
+    const colsPerRow = computed(() => {
+        let colsPerRow = 5;
+
+        if (!props.isConnectorVisible) {
+            colsPerRow--;
+        }
+        if (!isConnectionOpportunityVisible.value) {
+            colsPerRow--;
+        }
+        if (!isDueDateVisible.value) {
+            colsPerRow--;
+        }
+
+        return colsPerRow;
+    });
+
+</script>

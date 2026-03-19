@@ -1,0 +1,677 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DockedPanel v-model="isVisible"
+                 v-model:width="dockedPanelWidth"
+                 :canResize="true"
+                 class="docked-panel"
+                 :closeOnOutsideClick="dockedPanelCloseOnOutsideClick">
+        <template #header>
+            <template v-if="isLoading">
+                <div v-if="isInEditMode" class="p-spacing-md">
+                    <div class="skeleton skeleton-heading my-spacing-none"></div>
+                </div>
+                <div v-else class="bg-interface-softer">
+                    <div class="py-spacing-lg px-spacing-md">
+                        <div class="d-flex gap-sm align-items-center">
+                            <div class="skeleton skeleton-avatar flex-shrink-0"></div>
+                            <div class="w-100">
+                                <div class="skeleton skeleton-text"></div>
+                                <div class="skeleton skeleton-text"></div>
+                                <div class="skeleton skeleton-text mb-spacing-none"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+            <div v-else class="mb-spacing-sm">
+                <div v-if="isInEditMode" class="d-flex align-items-center justify-content-between p-spacing-md">
+                    <div class="font-size-h5 text-semibold">Connection Request</div>
+                    <i class="ti ti-x cursor-pointer" @click="closeDockedPanel"></i>
+                </div>
+                <div v-else class="pt-spacing-xs bg-interface-softer">
+                    <div class="d-flex justify-content-between px-spacing-sm">
+                        <div class="d-flex gap-sm">
+                            <i class="ti ti-chevron-left cursor-pointer" :class="{ disabled: !hasPrevious }" @click="goPrevious"></i>
+                            <i class="ti ti-chevron-right cursor-pointer" :class="{ disabled: !hasNext }" @click="goNext"></i>
+                        </div>
+                        <div class="d-flex gap-sm">
+                            <i v-if="!isFullWidth" class="ti ti-layout-sidebar-right-expand cursor-pointer" @click="setFullWidth(true)"></i>
+                            <i v-else class="ti ti-layout-sidebar-right-collapse cursor-pointer" @click="setFullWidth(false)"></i>
+                            <i class="ti ti-x cursor-pointer" @click="closeDockedPanel"></i>
+                        </div>
+                    </div>
+                    <template v-if="requestDetails?.requesterPerson">
+                        <div class="px-spacing-md py-spacing-xs d-flex align-items-center justify-content-between">
+                            <div class="d-flex gap-sm">
+                                <PersonAvatar :personIdKey="requestDetails.requesterPerson.idKey ?? ''"
+                                              :photoUrl="requestDetails.requesterPerson.photoUrl ?? ''"
+                                              :photoSize="70" />
+                                <div class="d-flex flex-column flex-shrink-0 person-details">
+                                    <div class="text-interface-stronger text-md">{{ requestDetails.requesterPerson.nickName }} {{ requestDetails.requesterPerson.lastName }}</div>
+                                    <div v-if="!isNullOrWhiteSpace(requestDetails.requesterPerson.connectionStatus)" class="text-interface-medium text-sm">{{ requestDetails.requesterPerson.connectionStatus }}</div>
+                                    <div v-if="requestDetails.requesterPerson.age" class="text-interface-medium text-sm">{{ requestDetails.requesterPerson.age }} {{ pluralize("year", requestDetails.requesterPerson.age) }} old</div>
+                                    <div class="text-interface-medium text-sm">{{ requestDetails.requesterPerson.gender }} | {{ requestDetails.requesterPerson.maritalStatus }}</div>
+                                </div>
+                            </div>
+                            <div>
+                                <!-- TODO: Fix Styling -->
+                                <BadgeList :entityTypeGuid="EntityType.Person"
+                                           :entityKey="requestDetails.requesterPerson.idKey ?? ''"
+                                           :badgeTypeGuids="options?.badgeGuids ?? []"
+                                           class="align-items-center justify-content-center flex-wrap" />
+                            </div>
+                            <div class="d-flex py-spacing-lg gap-xs">
+                                <RockButton :btnType="BtnType.Default"
+                                            isSquare
+                                            title="View Profile"
+                                            @click="navigateToPersonProfile">
+                                    <i class="ti ti-user"></i>
+                                </RockButton>
+                                <RockButton :btnType="BtnType.Default"
+                                            isSquare
+                                            title="SMS"
+                                            @click="emit('onSMSClick')">
+                                    <i class="ti ti-message-circle-plus"></i>
+                                </RockButton>
+                                <RockButton :btnType="BtnType.Default"
+                                            isSquare
+                                            title="Email"
+                                            @click="emit('onEmailClick')">
+                                    <i class="ti ti-mail-plus"></i>
+                                </RockButton>
+                            </div>
+                        </div>
+                    </template>
+                    <template v-if="requestDetails?.personNotes && requestDetails.personNotes.length > 0">
+                        <div class="bg-info-soft py-spacing-tiny">
+                            <div class="w-100 text-center cursor-pointer text-link text-small" @click="toggleVisibleNotes">
+                                {{ areNotesVisible ? "Hide" : "Show" }} {{ requestDetails.personNotes.length }} {{ pluralize("Note", requestDetails.personNotes.length) }}
+                            </div>
+                        </div>
+                        <TransitionVerticalCollapse>
+                            <div v-show="areNotesVisible" class="bg-interface-softest">
+                                <NoteItem v-for="note in requestDetails.personNotes" :note="note" />
+                            </div>
+                        </TransitionVerticalCollapse>
+                    </template>
+                </div>
+            </div>
+        </template>
+        <template #default>
+            <template v-if="isLoading">
+                <div class="p-spacing-md h-100">
+                    <div class="skeleton rounded h-100"></div>
+                </div>
+            </template>
+            <template v-else>
+                <EditDockedPanelBody v-if="isInEditMode"
+                                     :modelValue="editConnectionRequestBox"
+                                     @update:modelValue="onEditConnectionRequestSaved"
+                                     ref="editDockedPanelBodyRef"
+                                     :options="options"
+                                     :editConnectionRequestFormId="editConnectionRequestFormId"
+                                     :errorMessage="editErrorMessage"
+                                     @dismissErrorMessage="setErrorMessage('edit', '')" />
+                <ViewDockedPanelBody v-else
+                                     :requestDetails="requestDetails"
+                                     :connectionRequestBreadcrumbs="connectionRequestBreadcrumbs"
+                                     :aiSummary="aiSummary"
+                                     :aiSummaryError="aiSummaryError"
+                                     :isAiSummaryLoading="isAiSummaryLoading"
+                                     :options="options"
+                                     :dockedPanelWidthNumber="dockedPanelWidthNumber"
+                                     :canEditConnectionRequest="canEditConnectionRequest"
+                                     :canEditConnectionRequestNote="canEditConnectionRequestNote"
+                                     :activityErrorMessage="activityErrorMessage"
+                                     @navigateToBreadcrumb="(index) => emit('navigateToBreadcrumb', index)"
+                                     @navigateToAdditionalRequest="(key) => emit('navigateToAdditionalRequest', key)"
+                                     @editActivity="(entry) => emit('editActivity', entry)"
+                                     @onCelebrationClick="emit('onCelebrationClick', detailsBox)"
+                                     @onReminderClick="emit('onReminderClick', detailsBox)"
+                                     @onReassignConnector="(connector) => emit('onReassignConnector', connector)"
+                                     @launchWorkflow="(bag) => emit('launchWorkflow', bag)" />
+            </template>
+        </template>
+        <template #footer>
+            <div class="d-flex align-items-center justify-content-between px-spacing-lg py-spacing-xs bg-interface-softer border-top">
+                <template v-if="isLoading">
+                    <div class="skeleton skeleton-button m-spacing-none"></div>
+                </template>
+                <template v-else>
+                    <template v-if="isInEditMode">
+                        <div class="d-flex align-items-center gap-xs">
+                            <RockButton :btnType="BtnType.Primary"
+                                        :form="editConnectionRequestFormId"
+                                        :disabled="isSaving"
+                                        type="submit">
+                                Save
+                            </RockButton>
+                            <RockButton :btnType="BtnType.Link"
+                                        @click="setEditMode(false)">
+                                Cancel
+                            </RockButton>
+                        </div>
+                        <div class="d-flex align-items-center gap-xs">
+                            <RockButton v-if="!isRequestComplete"
+                                        :btnType="BtnType.Default"
+                                        :disabled="isCompleteButtonDisabled"
+                                        :title="completeButtonTooltip"
+                                        @click="changeRequestState(ConnectionState.Connected)">
+                                <i class="ti ti-circle-check"></i>
+                                Complete Request
+                            </RockButton>
+                            <RockButton :btnType="BtnType.Link"
+                                        @click="emit('deleteRequest')">
+                                Delete
+                            </RockButton>
+                        </div>
+                    </template>
+                    <template v-else-if="canEditConnectionRequest">
+                        <div class="d-flex align-items-center gap-xs">
+                            <RockButton :btnType="BtnType.Primary"
+                                        @click="onEditClick">
+                                Edit
+                            </RockButton>
+                            <RockButton v-if="isRequestComplete"
+                                        class="bg-success-soft text-success border-success"
+                                        @click="changeRequestState(ConnectionState.Active)">
+                                Completed
+                            </RockButton>
+                            <RockButton v-else
+                                        :btnType="BtnType.Default"
+                                        :disabled="isCompleteButtonDisabled"
+                                        :title="completeButtonTooltip"
+                                        @click="changeRequestState(ConnectionState.Connected)">
+                                Complete
+                            </RockButton>
+                            <RockButton :btnType="BtnType.Link"
+                                        @click="() => emit('transferRequest')">
+                                Transfer
+                            </RockButton>
+                        </div>
+                        <div class="d-flex align-items-center gap-xs">
+                            <RockButton :btnType="BtnType.Default"
+                                        @click="() => emit('addActivity')">
+                                <i class="ti ti-activity"></i>
+                                Add Activity
+                            </RockButton>
+                            <div style="min-width: 150px;">
+                                <ConnectionStatusButton :isSequentialStatusMode="options?.isSequentialStatusMode"
+                                                        :highlightColor="requestDetails?.connectionStatus?.highlightColor"
+                                                        :currentStatusName="requestDetails?.connectionStatus?.name"
+                                                        @click="(e) => emit('onStatusButtonClick', e, !isCompleteButtonDisabled)" />
+                            </div>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class="d-flex align-items-center justify-content-end w-100">
+                            <div style="min-width: 150px;">
+                                <ConnectionStatusButton :isSequentialStatusMode="options?.isSequentialStatusMode"
+                                                        :highlightColor="requestDetails?.connectionStatus?.highlightColor"
+                                                        :currentStatusName="requestDetails?.connectionStatus?.name"
+                                                        disabled />
+                            </div>
+                        </div>
+                    </template>
+                </template>
+            </div>
+        </template>
+    </DockedPanel>
+</template>
+
+<style scoped>
+.disabled {
+    cursor: default;
+    color: var(--color-interface-medium);
+}
+
+.person-details {
+    white-space: nowrap;
+}
+
+.header-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.additional-request {
+    display: flex;
+    flex-direction: column;
+}
+
+.person-dropdown {
+    min-width: 200px;
+    max-height: 40vh;
+    overflow-y: auto;
+}
+
+.dropdown-content-item.selected {
+    color: var(--color-interface-strong);
+    font-weight: var(--font-weight-semibold);
+    background-color: var(--color-info-soft);
+}
+
+.text-regular {
+    font-weight: var(--font-weight-regular);
+}
+
+/* text-sm is incorrectly returning xsmall at the moment in develop */
+.text-small {
+    font-size: var(--font-size-small);
+}
+
+.text-slate {
+    color: #64748B;
+}
+
+.text-emerald {
+    color: #10B981;
+}
+
+.gap-tiny {
+    gap: var(--spacing-tiny);
+}
+
+.gap-xs {
+    gap: var(--spacing-xsmall);
+}
+
+.gap-sm {
+    gap: var(--spacing-small);
+}
+
+.gap-md {
+    gap: var(--spacing-medium);
+}
+
+.gap-lg {
+    gap: var(--spacing-large);
+}
+
+.w-fit {
+    width: fit-content;
+}
+
+.h-fit {
+    height: fit-content;
+}
+
+/* Skeleton adjustments */
+.skeleton {
+    background: var(--color-interface-soft);
+}
+
+.skeleton-heading {
+    max-width: none;
+    border-radius: var(--rounded-small);
+}
+</style>
+
+<script setup lang="ts">
+    import DockedPanel from "@Obsidian/Controls/Internal/dockedPanel.obs";
+    import { ref, PropType, watch, computed } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ConnectionRequestDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailsBag";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import BadgeList from "@Obsidian/Controls/badgeList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { ActivityEntryBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/activityEntryBag";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import ViewDockedPanelBody from "./viewDockedPanelBody.partial.obs";
+    import EditDockedPanelBody from "./editDockedPanelBody.partial.obs";
+    import { ConnectionRequestDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ConnectionRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestBag";
+    import { ConnectionRequestDetailBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailBox";
+    import { UpdateConnectionRequestStatesBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/updateConnectionRequestStatesBag";
+    import { ConnectionState } from "@Obsidian/Enums/Connection/connectionState";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { GetAiSummaryResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/getAiSummaryResponseBag";
+    import NoteItem from "./noteItem.partial.obs";
+    import ConnectionStatusButton from "./connectionStatusButton.partial.obs";
+    import { LaunchWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/launchWorkflowBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        currentKey: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        connectionRequestBreadcrumbs: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        orderedKeys: {
+            type: Array as PropType<string[]>,
+            required: true
+        },
+
+        detailsBox: {
+            type: Object as PropType<ConnectionRequestDetailBox | undefined>,
+            required: true
+        },
+
+        dockedPanelCloseOnOutsideClick: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        isInSingleRequestMode: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isSaving: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        editBox: {
+            type: Object as PropType<ValidPropertiesBox<ConnectionRequestBag>>,
+            default: {}
+        }
+    });
+
+    /*
+    When in single request mode:
+     - Force full width
+     - Hide navigation arrows
+     - Hide close button
+     - Disable resize?
+    */
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "navigate", value: string | null): void;
+        (e: "navigateToBreadcrumb", value: number): void;
+        (e: "navigateToAdditionalRequest", value: string): void;
+        (e: "editActivity", value: ActivityEntryBag): void;
+        (e: "editRequest", value: ValidPropertiesBox<ConnectionRequestBag>): void;
+        (e: "transferRequest"): void;
+        (e: "addActivity"): void;
+        (e: "onCelebrationClick", value: ConnectionRequestDetailBox | undefined): void;
+        (e: "onReminderClick", value: ConnectionRequestDetailBox | undefined): void;
+        (e: "onSMSClick"): void;
+        (e: "onEmailClick"): void;
+        (e: "onReassignConnector", value: string): void;
+        (e: "onRequestStateChanged", value: UpdateConnectionRequestStatesBag): void;
+        (e: "onStatusButtonClick", event: MouseEvent, canCompleteRequest: boolean): void;
+        (e: "launchWorkflow", value: LaunchWorkflowBag): void;
+        (e: "deleteRequest"): void;
+        (e: "fetchEditDetails"): void;
+    }>();
+
+    defineExpose({
+        setEditMode,
+        setIsLoading,
+        setErrorMessage
+    });
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const editConnectionRequestFormId = `edit-connection-request-form-${newGuid()}`;
+
+    const defaultDockedPanelWidth = "700px";
+    let previousDockedPanelWidth = defaultDockedPanelWidth;
+
+    const isLoading = ref(true);
+    const isInEditMode = ref<boolean>(false);
+
+    const viewErrorMessage = ref<string>("");
+    const editErrorMessage = ref<string>("");
+    const activityErrorMessage = ref<string>("");
+
+    const requestDetails = ref<ConnectionRequestDetailsBag>();
+    const options = ref<ConnectionRequestDetailOptionsBag>();
+
+    const isFullWidth = ref(false);
+    const dockedPanelWidth = ref(defaultDockedPanelWidth);
+    const areNotesVisible = ref(false);
+    const aiSummary = ref<string>("");
+    const aiSummaryError = ref<string>("");
+    const isAiSummaryLoading = ref(false);
+
+    const editDockedPanelBodyRef = ref<InstanceType<typeof EditDockedPanelBody>>();
+    const editConnectionRequestBox = ref<ValidPropertiesBox<ConnectionRequestBag>>({});
+
+    const canEditConnectionRequest = computed(() => true);
+    const canEditConnectionRequestNote = computed(() => props.detailsBox?.options?.canEditConnectionRequestNote ?? false);
+
+    const currentIndex = computed(() =>
+        props.orderedKeys.indexOf(props.currentKey)
+    );
+
+    const hasPrevious = computed(() =>
+        currentIndex.value > 0
+    );
+
+    const hasNext = computed(() =>
+        currentIndex.value !== -1 && currentIndex.value < props.orderedKeys.length - 1
+    );
+
+    const previousKey = computed(() =>
+        hasPrevious.value ? props.orderedKeys[currentIndex.value - 1] : null
+    );
+
+    const nextKey = computed(() =>
+        hasNext.value ? props.orderedKeys[currentIndex.value + 1] : null
+    );
+
+    const dockedPanelWidthNumber = computed(() => {
+        if (!dockedPanelWidth) {
+            return 0;
+        }
+
+        return parseInt(dockedPanelWidth.value, 10);
+    });
+
+    const isRequestComplete = computed(() => requestDetails.value?.connectionState === ConnectionState.Connected);
+
+    const isCompleteButtonDisabled = computed(() => {
+        if (options.value?.requiresPlacementGroupToComplete && !requestDetails.value?.placementGroup) {
+            return true;
+        }
+
+        const groupMemberRequirements = requestDetails.value?.placementGroup?.groupMemberRequirements;
+        if (groupMemberRequirements) {
+            const failingRequirmentsThatMustBeMet = groupMemberRequirements.filter(r => r.mustMeetRequirementToAddMember && (r.groupMemberRequirementState === MeetsGroupRequirement.NotMet || r.groupMemberRequirementState === MeetsGroupRequirement.Error));
+
+            if (failingRequirmentsThatMustBeMet.length > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    });
+
+    const completeButtonTooltip = computed(() => {
+        if (isCompleteButtonDisabled.value) {
+            return "Missing Placement Group Requirements.";
+        }
+        return "";
+    });
+
+    function setFullWidth(value: boolean): void {
+        isFullWidth.value = value;
+
+        if (value) {
+            previousDockedPanelWidth = dockedPanelWidth.value;
+            dockedPanelWidth.value = "100%";
+        }
+        else {
+            dockedPanelWidth.value = previousDockedPanelWidth;
+        }
+    }
+
+    function goPrevious(): void {
+        if (hasPrevious.value) {
+            emit("navigate", previousKey.value);
+        }
+    }
+
+    function goNext(): void {
+        if (hasNext.value) {
+            emit("navigate", nextKey.value);
+        }
+    }
+
+    function closeDockedPanel(): void {
+        isVisible.value = false;
+    }
+
+    function navigateToPersonProfile(): void {
+        if (!props.detailsBox?.entity?.requesterPerson?.idKey) {
+            return;
+        }
+        const url = `/Person/${props.detailsBox.entity.requesterPerson.idKey}`;
+        // TODO - Ask Jon if new tab is desired.
+        window.open(url, "_blank");
+    }
+
+    function toggleVisibleNotes(): void {
+        areNotesVisible.value = !areNotesVisible.value;
+    }
+
+    function onEditClick(): void {
+        isLoading.value = true;
+        //Set edit mode
+        setEditMode(true);
+        onEdit();
+    }
+
+    function setEditMode(value: boolean): void {
+        isInEditMode.value = value;
+    }
+
+    function setIsLoading(value: boolean): void {
+        isLoading.value = value;
+    }
+
+    function setErrorMessage(type: string, message: string): void {
+        if (type === "edit") {
+            editErrorMessage.value = message;
+        }
+        else if (type === "activity") {
+            activityErrorMessage.value = message;
+        }
+        else {
+            viewErrorMessage.value = message;
+        }
+    }
+
+    function onEditConnectionRequestSaved(editBox: ValidPropertiesBox<ConnectionRequestBag>): void {
+        editConnectionRequestBox.value = editBox;
+        emit("editRequest", editBox);
+    }
+
+    function changeRequestState(state: ConnectionState, followUpDate: string | null = null): void {
+        var bag = <UpdateConnectionRequestStatesBag>{
+            connectionRequestIdKeys: [requestDetails.value?.connectionRequestIdKey],
+            connectionState: state,
+            followUpDate: followUpDate,
+            groupMemberRequirements: requestDetails.value?.placementGroup?.groupMemberRequirements
+        };
+
+        emit("onRequestStateChanged", bag);
+    }
+
+    async function onEdit(): Promise<void> {
+        const result = await invokeBlockAction<ValidPropertiesBox<ConnectionRequestBag>>("Edit", {
+            key: requestDetails.value?.connectionRequestIdKey
+        });
+
+        if (result.isSuccess && result.data) {
+            editConnectionRequestBox.value = result.data;
+        }
+        else {
+            setErrorMessage("edit", result.errorMessage ?? "An error occurred while getting the Connection Request edit details.");
+        }
+
+        isLoading.value = false;
+    }
+
+    async function fetchAiSummary(): Promise<void> {
+        if (!requestDetails.value?.connectionRequestIdKey) {
+            return;
+        }
+
+        isAiSummaryLoading.value = true;
+        const result = await invokeBlockAction<GetAiSummaryResponseBag>("GetAiSummary", {
+            connectionRequestIdKey: requestDetails.value.connectionRequestIdKey
+        });
+
+        if (result.isSuccess && result.data?.summary) {
+            aiSummary.value = result.data.summary;
+        }
+        else {
+            aiSummaryError.value = result.errorMessage ?? "An error occurred while creating the AI Summary.";
+        }
+
+        isAiSummaryLoading.value = false;
+    }
+
+    // watch(isFullWidth, () => {
+    //     if (isFullWidth.value) {
+    //         previousDockedPanelWidth = dockedPanelWidth.value;
+    //         dockedPanelWidth.value = "100%";
+    //     }
+    //     else {
+    //         dockedPanelWidth.value = previousDockedPanelWidth;
+    //     }
+    // });
+
+    function resetDockedPanel(): void {
+        requestDetails.value = undefined;
+        options.value = undefined;
+        isInEditMode.value = false;
+        editConnectionRequestBox.value = {};
+        aiSummary.value = "";
+        aiSummaryError.value = "";
+
+        // Cleanup error message if displayed on previous request.
+        setErrorMessage("edit", "");
+        setErrorMessage("view", "");
+        setErrorMessage("activity", "");
+    }
+
+    /**
+     * Handles case where the user manually resizes the panel out of "full width" mode.
+     */
+    watch(dockedPanelWidth, (width) => {
+        if (width !== "100%") {
+            isFullWidth.value = false;
+        }
+    });
+
+    watch(() => props.currentKey, () => {
+        resetDockedPanel();
+    });
+
+    watch(() => props.detailsBox, () => {
+        if (!props.detailsBox || !props.detailsBox.entity || !props.detailsBox.options) {
+            isLoading.value = true;
+        }
+        else {
+            requestDetails.value = props.detailsBox.entity;
+            options.value = props.detailsBox.options;
+            isLoading.value = false;
+
+            if (props.detailsBox.options.isAISummaryVisible) {
+                fetchAiSummary();
+            }
+        }
+    });
+</script>

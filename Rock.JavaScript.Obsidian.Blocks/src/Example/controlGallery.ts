@@ -260,6 +260,10 @@ import PieChartGallery from "./ControlGallery/pieChartGallery.partial.obs";
 import DoughnutChartGallery from "./ControlGallery/doughnutChartGallery.partial.obs";
 import ExperieceModePickerGallery from "./ControlGallery/experienceModePickerGallery.partial.obs";
 import SearchResultsSearchField from "./ControlGallery/searchResultsSearchFieldGallery.partial.obs";
+import PillListGallery from "./ControlGallery/pillListGallery.partial.obs";
+import DockedPanelGallery from "./ControlGallery/dockedPanelGallery.partial.obs";
+import EventItemOccurrencePickerGalleryPartial from "./ControlGallery/eventItemOccurrencePickerGallery.partial.obs";
+import LinearGaugeChartGallery from "./ControlGallery/linearGaugeChartGallery.partial.obs";
 import EventItemOccurrencePickerGallery from "./ControlGallery/eventItemOccurrencePickerGallery.partial.obs";
 import TooltipGallery from "./ControlGallery/tooltipGallery.partial.obs";
 
@@ -467,6 +471,10 @@ const controlGalleryComponents: Record<string, Component> = [
     DoughnutChartGallery,
     ExperieceModePickerGallery,
     SearchResultsSearchField,
+    EventItemOccurrencePickerGalleryPartial,
+    PillListGallery,
+    DockedPanelGallery,
+    LinearGaugeChartGallery,
     EventItemOccurrencePickerGallery,
     TooltipGallery,
 ]

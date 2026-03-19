@@ -6,6 +6,7 @@
                              v-model:quickFilterValue="quickFilterValue"
                              :grid="gridState"
                              :title="title"
+                             :titleIconCssClass="titleIconCssClass"
                              :isTitleHidden="isTitleHidden"
                              :gridActions="gridActions"
                              :visibleColumnCount="visibleColumnCount"
@@ -65,7 +66,7 @@
                       @width="dataRowWidthCalculation = $event"
                       @click="onRowClick" />
 
-            <div class="grid-body" v-else-if="!keyField || light || isNestedInScrollable">
+            <div class="grid-body" v-else-if="!keyField || (light && !forceVirtualRowsOnLight) || isNestedInScrollable">
                 <DataRows
                           :columns="visibleColumnDefinitions"
                           :rows="visibleRows"
@@ -205,6 +206,12 @@
         title: {
             type: String as PropType<string>,
             required: false
+        },
+
+        /** The Icon CSS class to display in the title. */
+        titleIconCssClass: {
+            type: String as PropType<string>,
+            default: ""
         },
 
         /** When `true`, the grid's title will be hidden. */
@@ -589,6 +596,11 @@
             default: false
         },
 
+        forceVirtualRowsOnLight: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         /**
          * When defined, this function will be called when a column's header
          * is clicked for sorting. This allows the consumer to implement manual
@@ -610,7 +622,8 @@
     defineExpose({
         deleteRow,
         rowUpdated,
-        rowsUpdated
+        rowsUpdated,
+        clearSelectedKeys
     });
 
     // #endregion
@@ -956,7 +969,7 @@
      * Contains `true` if paging should be disabled on this grid.
      */
     const isPagingDisabled = computed((): boolean => {
-        return props.isFooterHidden || props.disablePaging;
+        return props.light || props.isFooterHidden || props.disablePaging;
     });
 
     /**
@@ -1869,6 +1882,13 @@
         selectedRowCount.value = gridState.selectedKeys.length;
 
         emit("selectedKeysChanged", gridState);
+    }
+
+    /**
+     * Clears all selected keys
+     */
+    function clearSelectedKeys(): void {
+        gridState.selectedKeys = [];
     }
 
     /**

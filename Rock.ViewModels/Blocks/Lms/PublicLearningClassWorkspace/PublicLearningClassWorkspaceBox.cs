@@ -86,7 +86,7 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         /// <summary>
         /// Gets or sets the current Grade scale that the student has achieved in the class (if configured to show grades).
         /// </summary>
-        public LearningGradingSystemScaleBag CurrentGrade {  get; set; }
+        public LearningGradingSystemScaleBag CurrentGrade { get; set; }
 
         /// <summary>
         /// Whether announcements are enabled.
@@ -142,5 +142,10 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         /// Gets or sets the communication preference
         /// </summary>
         public CommunicationType CommunicationPreference { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to enable smart scroll.
+        /// </summary>
+        public bool EnableSmartScroll { get; set; }
     }
 }

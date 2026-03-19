@@ -1,0 +1,78 @@
+<template>
+    <div class="kpi-tile" :class="{ 'no-borders': noBorders }">
+        <div class="kpi-tile-header" v-ellipsis-tooltip>
+            <slot name="label">
+                {{ label }}
+            </slot>
+        </div>
+
+        <div class="kpi-tile-value" :style="{ color: valueColor }" v-ellipsis-tooltip>
+            <slot name="value">
+                {{ value?.toLocaleString(undefined) }}
+            </slot>
+        </div>
+
+        <div v-if="$slots.footer || trend" class="kpi-tile-footer" v-ellipsis-tooltip>
+            <slot name="footer">
+                {{ trend }}
+            </slot>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.kpi-tile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+    padding: var(--spacing-large);
+
+    background: var(--color-interface-softer);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+}
+
+.kpi-tile.no-borders {
+    border: none;
+}
+
+.kpi-tile-header {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-strong);
+}
+
+.kpi-tile-value {
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-bold);
+}
+
+.kpi-tile-footer {
+    font-size: var(--font-size-xsmall);
+    color: var(--color-interface-medium);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { ellipsisTooltip as vEllipsisTooltip } from "./ellipsisTooltipDirective.partial";
+
+    defineProps({
+        label: {
+            type: String as PropType<string | undefined>
+        },
+        value: {
+            type: [String, Number] as PropType<string | number | undefined>
+        },
+        valueColor: {
+            type: String as PropType<string | undefined>
+        },
+        trend: {
+            type: String as PropType<string | undefined>
+        },
+        noBorders: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+</script>

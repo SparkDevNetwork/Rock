@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { Guid } from "@Obsidian/Types";
     import { MediaPlayerInterfaceType } from "@Obsidian/Enums/Controls/mediaPlayerInterfaceType";
@@ -205,6 +205,7 @@
     });
 
     const emit = defineEmits<{
+        (e: "loaded"): void
         (e: "update:watchedPercentage", value: number): void
     }>();
 
@@ -305,6 +306,14 @@
         player?.on("progress", () => {
             updateRefValue(watchedPercentage, player?.percentWatched ?? 0);
         });
+
+        /**
+         * Since media is asynchronously loaded, this gives the parent component
+         * the opportunity to perform any custom actions once it's sure the
+         * child component is fully loaded and ready.
+         */
+        await nextTick();
+        emit("loaded");
     });
 
 </script>

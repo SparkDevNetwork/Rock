@@ -2,7 +2,7 @@
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="idKey"
+          keyField="guid"
           itemTerm="Component"
           title="Component List"
           stickyHeader
@@ -153,8 +153,8 @@
      */
     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
         const result = await invokeBlockAction<string>("ReorderItem", {
-            key: item["idKey"],
-            beforeKey: beforeItem?.["idKey"] ?? null
+            key: item["guid"],
+            beforeKey: beforeItem?.["guid"] ?? null
         });
 
         return result.isSuccess;

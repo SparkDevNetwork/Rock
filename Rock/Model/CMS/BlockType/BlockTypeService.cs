@@ -353,6 +353,7 @@ namespace Rock.Model
         /// assigning the target <see cref="EntityType"/> and clearing the block's <c>Path</c>. Flushes the cache for each updated block.
         ///
         /// NOTE: It's the callers responsibility to save any changes to the blockTypeService.
+        /// <returns>A list of block type IDs that were staged for migration.</returns>
         /// </summary>
         /// <param name="blocksTypesToCheck">Map of block type GUID to the target <see cref="EntityType"/> that will replace the legacy WebForms block type.</param>
         /// <param name="rockContext">The database context used to query and update block types. The caller is responsible for calling <c>SaveChanges()</c> to persist changes.</param>
@@ -361,37 +362,125 @@ namespace Rock.Model
         /// This method stages updates only and does not call <c>SaveChanges()</c>.
         /// </remarks>
         /// 
-        internal static void StagePossibleMigrateWebFormsToObsidianBlock( Dictionary<Guid, EntityType> blocksTypesToCheck, RockContext rockContext )
+        internal static List<int> StagePossibleMigrateWebFormsToObsidianBlock( Dictionary<Guid, EntityType> blocksTypesToCheck, RockContext rockContext )
         {
-            var blockTypeService = new BlockTypeService( rockContext );
-            var webFormBlocksToMigrateToObsidian = blockTypeService.Queryable()
-                .Where( b => b.EntityTypeId == null && !string.IsNullOrEmpty( b.Path ) && blocksTypesToCheck.Keys.Contains( b.Guid ) )
-                .ToList();
+            var stagedBlockTypeIds = new List<int>();
 
             using ( ObservabilityHelper.StartActivity( "ObsidianMigration: Migrating webforms blocks to Obsidian" ) )
             {
-                foreach ( var block in webFormBlocksToMigrateToObsidian )
+                var blockTypeService = new BlockTypeService( rockContext );
+                var webFormBlocksToMigrateToObsidian = blockTypeService.Queryable()
+                    .Where( b => b.EntityTypeId == null && !string.IsNullOrEmpty( b.Path ) && blocksTypesToCheck.Keys.Contains( b.Guid ) )
+                    .ToList();
+                var rockBlockEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.BLOCK.AsGuid() );
+
+                foreach ( var blockType in webFormBlocksToMigrateToObsidian )
                 {
-                    var entityType = blocksTypesToCheck[block.Guid];
+                    var entityType = blocksTypesToCheck[blockType.Guid];
 
                     // We need to use the entityType and not the entityType.Id because the entityType.Id
                     // may not be set if the entityType was just added.
-                    block.EntityType = entityType;
-                    block.Path = null;
+                    blockType.EntityType = entityType;
+                    blockType.Path = null;
 
                     // Look for older blocktypes that were formerly using that EntityId
                     // and remove them.
                     if ( entityType.Id != 0 )
                     {
+                        // Fetch the attributes for this blockType (we'll need this below).
+                        var blockTypeAttributeCache = AttributeCache.GetByEntityTypeQualifier( rockBlockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), false );
+
                         var oldBlockTypes = blockTypeService.Queryable()
-                            .Where( b => b.Id != block.Id && b.EntityTypeId == entityType.Id );
+                            .Where( b => b.Id != blockType.Id && b.EntityTypeId == entityType.Id );
+
                         foreach ( var oldBlockType in oldBlockTypes )
                         {
-                            blockTypeService.Delete( oldBlockType );
+                            stagedBlockTypeIds.Add( oldBlockType.Id );
+                            var attributeValueService = new AttributeValueService( rockContext );
+
+                            /*
+                                3/11/2026 - NA
+
+                                Before deleting the old BlockTypes, we must first locate any existing Block
+                                instances that reference them and update those instances to:
+
+                                1) Point the block instance to the NEW 'hijacked' BlockTypeId.
+
+                                2a) Update their AttributeValues to reference the AttributeId of the newly
+                                   hijacked Block Type's attribute.
+
+                                2b) For any attributes that do not exist on the hijacked BlockType
+                                    (which is a WebForms block), assign the Attribute to the hijacked
+                                    BlockType by setting "EntityTypeQualifierValue" to the hijacked
+                                    BlockType ID.
+
+                                These situations likely occurred during an earlier "sneak" when some
+                                blocks were created with the new Obsidian BlockType.
+                            */
+
+                            var attributesIdsToReConnectToNewBlock = new HashSet<int>();
+
+                            foreach ( var oldBlockInstance in oldBlockType.Blocks )
+                            {
+                                oldBlockInstance.LoadAttributes();
+                                var attributeIds = oldBlockInstance.Attributes.Values.Select( a => a.Id ).ToList();
+                                var attributeValues = attributeValueService.GetByAttributeIdsAndEntityId( attributeIds, oldBlockInstance.Id );
+
+                                // Item 2a)
+                                foreach ( var attributeValue in attributeValues )
+                                {
+                                    var newAttributeCache = blockTypeAttributeCache.FirstOrDefault( a => a.Key == attributeValue.Attribute.Key );
+                                    if ( newAttributeCache != null )
+                                    {
+                                        attributeValue.AttributeId = newAttributeCache.Id;
+                                    }
+                                    else
+                                    {
+                                        // The hijacked BlockType does not have this attribute, so we'll just point
+                                        // the attribute to the hijacked BlockType later/below in 2b.
+                                        attributesIdsToReConnectToNewBlock.Add( attributeValue.AttributeId );
+                                    }
+                                }
+
+                                // Item 1)
+                                // Do this last so we don't interfere with trying to load the attribute values above.
+                                // Now we can set the block instance to use the surviving BlockType's Id.
+                                oldBlockInstance.BlockTypeId = blockType.Id;
+                                oldBlockInstance.BlockType = blockType;
+                            }
+
+                            // Item 2b)
+                            // If there are any, point these attributes to the hijacked blocktype
+                            if ( attributesIdsToReConnectToNewBlock.Any() )
+                            {
+                                var attributeService = new AttributeService( rockContext );
+                                foreach ( var attributeId in attributesIdsToReConnectToNewBlock )
+                                {
+                                    var attribute = attributeService.Get( attributeId );
+                                    attribute.EntityTypeQualifierValue = blockType.Id.ToString();
+                                }
+                            }
+
+                            /*
+                                3/11/2026 - NA
+
+                                At this point nothing should reference the old BlockType anymore, so it can
+                                be safely deleted...
+
+                                However, DO NOT delete the old Block Type here:
+
+                                    oldBlockType.Blocks = null;
+                                    blockTypeService.Delete( oldBlockType );
+
+                                Doing so will also delete Block instances that were intentionally
+                                reconnected to the hijacked BlockType earlier in this method.
+                                Instead do it after the SaveChanges() later.
+                            */
                         }
                     }
                 }
             }
+            return stagedBlockTypeIds;
         }
 
         /// <summary>

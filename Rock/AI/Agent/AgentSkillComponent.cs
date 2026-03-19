@@ -81,7 +81,26 @@ namespace Rock.AI.Agent
         /// <param name="agentRequestContext">The context for this chat agent request.</param>
         internal void Initialize( IReadOnlyDictionary<string, string> configurationValues, IAgentRequestContext agentRequestContext )
         {
-            ConfigurationValues = configurationValues;
+            var writableConfigurationValues = configurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
+            var fieldTypeAttributes = GetConfigurationAttributes();
+
+            // Update any missing configuration values with defaults from the
+            // attributes.
+            foreach ( var fieldTypeAttribute in fieldTypeAttributes )
+            {
+                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                if ( fieldTypeCache == null || fieldTypeCache.Field == null )
+                {
+                    continue;
+                }
+
+                if ( !writableConfigurationValues.TryGetValue( fieldTypeAttribute.Key, out _ ) )
+                {
+                    writableConfigurationValues[fieldTypeAttribute.Key] = fieldTypeAttribute.DefaultValue ?? string.Empty;
+                }
+            }
+
+            ConfigurationValues = writableConfigurationValues;
             AgentRequestContext = agentRequestContext;
         }
 
@@ -244,7 +263,11 @@ namespace Rock.AI.Agent
 
                 if ( !privateConfiguration.TryGetValue( fieldTypeAttribute.Key, out var privateValue ) )
                 {
-                    privateValue = string.Empty;
+                    privateValue = fieldTypeAttribute.DefaultValue ?? string.Empty;
+                }
+                else if ( privateValue.IsNullOrWhiteSpace() )
+                {
+                    privateValue = fieldTypeAttribute.DefaultValue ?? string.Empty;
                 }
 
                 var configurationValues = fieldTypeAttribute.FieldConfigurationValues

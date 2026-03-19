@@ -208,7 +208,6 @@ namespace Rock.Field.Types
                 : imageTag;
         }
 
-
         #endregion
 
         #region Edit Control
@@ -250,6 +249,27 @@ namespace Rock.Field.Types
             }
 
             return false;
+        }
+
+        /// <inheritdoc/>
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
+        {
+            var imageGuid = privateValue.AsGuidOrNull();
+
+            if ( !imageGuid.HasValue )
+            {
+                return PersistedValues.Empty();
+            }
+
+            var textValue = GetTextValue( privateValue, privateConfigurationValues );
+
+            return new PersistedValues
+            {
+                TextValue = textValue,
+                HtmlValue = GetHtmlValue( privateValue, privateConfigurationValues ),
+                CondensedTextValue = textValue.Truncate( CondensedTruncateLength ),
+                CondensedHtmlValue = GetCondensedHtmlValue( privateValue, privateConfigurationValues ),
+            };
         }
 
         #endregion

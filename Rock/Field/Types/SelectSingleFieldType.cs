@@ -300,8 +300,8 @@ namespace Rock.Field.Types
                 {
                     TextValue = privateValue,
                     CondensedTextValue = privateValue,
-                    HtmlValue = privateValue,
-                    CondensedHtmlValue = privateValue
+                    HtmlValue = privateValue?.EncodeHtml(),
+                    CondensedHtmlValue = privateValue?.EncodeHtml(),
                 };
             }
 
@@ -319,8 +319,8 @@ namespace Rock.Field.Types
             {
                 TextValue = textValue,
                 CondensedTextValue = condensedTextValue,
-                HtmlValue = textValue,
-                CondensedHtmlValue = condensedTextValue
+                HtmlValue = textValue.EncodeHtml(),
+                CondensedHtmlValue = condensedTextValue.EncodeHtml(),
             };
         }
 

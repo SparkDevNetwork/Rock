@@ -1,0 +1,447 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Add Connection Request"
+           :isSaveButtonDisabled="isSaving"
+           saveText="Save"
+           @save="onSave">
+        <NotificationBox v-if="isExistingActiveRequesterOnConnectionType"
+                         alertType="warning">
+            The current requester already has an active request on this connection type.
+        </NotificationBox>
+        <NotificationBox v-if="!isNullOrWhiteSpace(errorMessage)"
+                         alertType="danger"
+                         dismissible
+                         @dismiss="emit('dismissErrorMessage')">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <div class="row" v-if="isNullOrWhiteSpace(connectionOpportunityGuid) || !props.isConnectionOpportunityFilterSelected">
+            <div class="col-md-6">
+                <DropDownList v-model="connectionOpportunityGuid"
+                              :items="props.options?.connectionOpportunities ?? []"
+                              label="Connection Opportunity"
+                              rules="required"
+                              @update:modelValue="onConnectionOpportunityChanged" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <PersonPicker v-model="requester"
+                              label="Requester"
+                              rules="required" />
+            </div>
+        </div>
+
+        <div class="row" v-if="connectionOpportunityGuid && props.connectionOpportunityDetails?.connectors">
+            <div class="col-md-6">
+                <DropDownList v-model="connectorPersonAliasGuid"
+                              label="Connector"
+                              :items="props.connectionOpportunityDetails.connectors"
+                              enhanceForLongLists />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <RadioButtonList v-model="connectionState"
+                                 :items="availableConnectionStates"
+                                 label="State" />
+            </div>
+        </div>
+
+        <div v-if="parseInt(connectionState) === ConnectionState.FutureFollowUp" class="row">
+            <div class="col-md-6">
+                <DatePicker v-model="followUpDate"
+                            label="Follow-Up Date"
+                            rules="required" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div v-if="options?.isSequentialStatusMode"
+                     class="form-group">
+                    <RockLabel class="text-interface-medium">Status</RockLabel>
+                    <div class="text-interface-stronger">{{ connectionStatusText }}</div>
+                </div>
+                <DropDownList v-else
+                              v-model="connectionStatusGuid"
+                              :items="connectionStatusItems"
+                              label="Status"
+                              :showBlankItem="false" />
+            </div>
+        </div>
+
+        <div class="row" v-if="connectionOpportunityGuid && props.connectionOpportunityDetails?.placementGroups">
+            <div class="col-md-6">
+                <DropDownList v-model="placementGroupGuid"
+                              label="Placement Group"
+                              :items="props.connectionOpportunityDetails.placementGroups"
+                              enhanceForLongLists />
+            </div>
+        </div>
+
+        <ConditionalWell v-if="placementGroupGuid && hasGroupProperties">
+            <template #default>
+                <div class="row" v-if="props.placementGroupDetails?.groupMemberRoles && props.placementGroupDetails.groupMemberRoles.length > 1">
+                    <div class="col-md-6">
+                        <DropDownList v-model="groupMemberRoleGuid"
+                                      :items="props.placementGroupDetails.groupMemberRoles"
+                                      label="Group Member Role"
+                                      :showBlankItem="false" />
+                    </div>
+                </div>
+                <div class="row" v-if="groupMemberStatusItems.length > 1">
+                    <div class="col-md-6">
+                        <DropDownList v-model="groupMemberStatus"
+                                      :items="groupMemberStatusItems"
+                                      label="Group Member Status"
+                                      :showBlankItem="false" />
+                    </div>
+                </div>
+                <div class="row" v-if="props.placementGroupDetails?.groupMemberAttributes">
+                    <div class="col-md-6">
+                        <AttributeValuesContainer v-model="placementGroupMemberAttributeValues"
+                                                  :attributes="props.placementGroupDetails.groupMemberAttributes"
+                                                  isEditMode
+                                                  :numberOfColumns="1"
+                                                  :showCategoryLabel="false" />
+
+                    </div>
+                </div>
+            </template>
+        </ConditionalWell>
+
+        <div class="row">
+            <div class="col-md-12">
+                <TextBox v-model="comments"
+                         label="Comments"
+                         textMode="multiline" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="requestSourceGuid"
+                              :items="props.options?.requestSourceItems ?? []"
+                              label="Request Source" />
+            </div>
+        </div>
+
+        <div class="row" v-if="props.options?.connectionTypeRequestAttributes">
+            <div class="col-md-6">
+                <AttributeValuesContainer v-model="connectionRequestAttributeValues"
+                                          :attributes="props.options.connectionTypeRequestAttributes"
+                                          isEditMode
+                                          :numberOfColumns="1"
+                                          :showCategoryLabel="false" />
+            </div>
+        </div>
+
+        <div class="row" v-if="props.connectionOpportunityDetails?.connectionOpportunityRequestAttributes">
+            <div class="col-md-6">
+                <AttributeValuesContainer v-model="connectionRequestAttributeValues"
+                                          :attributes="props.connectionOpportunityDetails.connectionOpportunityRequestAttributes"
+                                          isEditMode
+                                          :numberOfColumns="1"
+                                          :showCategoryLabel="false" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { ref, PropType, watch, computed } from "vue";
+    import { propertyRef, updateRefValue, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ConnectionRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestBag";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
+    import { ConnectionState } from "@Obsidian/Enums/Connection/connectionState";
+    import { ConnectionOpportunityDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionOpportunityDetailBag";
+    import { PlacementGroupDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/placementGroupDetailsBag";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { GroupMemberStatus } from "@Obsidian/Enums/Group/groupMemberStatus";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<ConnectionRequestBag>>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ConnectionsHubOptionsBag | null | undefined>,
+            required: true
+        },
+
+        isConnectionOpportunityFilterSelected: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        connectionOpportunityDetails: {
+            type: Object as PropType<ConnectionOpportunityDetailBag>,
+            required: false
+        },
+
+        placementGroupDetails: {
+            type: Object as PropType<PlacementGroupDetailsBag>,
+            required: false
+        },
+
+        isExistingActiveRequesterOnConnectionType: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isSaving: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        errorMessage: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "save", value: ValidPropertiesBox<ConnectionRequestBag>): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "checkForActiveRequester", value: string): void;
+        (e: "fetchConnectionOpportunityDetails", value: string): void;
+        (e: "fetchPlacementGroupDetails", connectionOpportunityGuid: string, placementGroupGuid: string): void;
+        (e: "close"): void;
+        (e: "dismissErrorMessage"): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const requester = propertyRef(props.modelValue.bag?.requester ?? undefined, "Requester");
+    const connectionOpportunityGuid = propertyRef(props.modelValue.bag?.connectionOpportunityGuid ?? "", "ConnectionOpportunityGuid");
+    const connectorPersonAliasGuid = propertyRef(props.modelValue.bag?.connectorPersonAliasGuid ?? "", "ConnectorPersonAliasGuid");
+    const connectionState = propertyRef(props.modelValue.bag?.connectionState?.toString() ?? ConnectionState.Active.toString(), "ConnectionState");
+    const followUpDate = propertyRef(props.modelValue.bag?.followUpDate ?? "", "FollowUpDate");
+    const connectionStatusGuid = propertyRef(isNullOrWhiteSpace(props.modelValue.bag?.connectionStatusGuid) ? (props.options?.connectionStatuses ? props.options.connectionStatuses[0].guid : "") : (props.modelValue.bag?.connectionStatusGuid ?? ""), "ConnectionStatusGuid");
+    const placementGroupGuid = propertyRef(props.modelValue.bag?.placementGroupGuid ?? "", "PlacementGroupGuid");
+    const groupMemberRoleGuid = propertyRef(props.modelValue.bag?.groupMemberRoleGuid ?? "", "GroupMemberRoleGuid");
+    const groupMemberStatus = propertyRef(props.modelValue.bag?.groupMemberStatus?.toString() ?? "", "GroupMemberStatus");
+    const placementGroupMemberAttributeValues = propertyRef(props.modelValue.bag?.placementGroupMemberAttributeValues ?? {}, "PlacementGroupMemberAttributeValues");
+    const comments = propertyRef(props.modelValue.bag?.comments ?? "", "Comments");
+    const requestSourceGuid = propertyRef(props.modelValue.bag?.requestSourceGuid ?? "", "RequestSourceGuid");
+    const connectionRequestAttributeValues = propertyRef(props.modelValue.bag?.connectionRequestAttributeValues ?? {}, "ConnectionRequestAttributeValues");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    // const propRefs = [requester, connectionOpportunityGuid, connectorPersonAliasGuid, connectionState, connectionStatusGuid, placementGroupGuid, groupMemberRoleGuid, groupMemberStatus,
+    //     placementGroupMemberAttributeValues, comments, requestSourceGuid, connectionRequestAttributeValues];
+
+    /**
+     * Computed boolean to determine whether we should render the conditional well for the selected group.
+     */
+    const hasGroupProperties = computed((): boolean => {
+        const details = props.placementGroupDetails;
+
+        if (!details) {
+            return false;
+        }
+
+        if (details.groupMemberAttributes && Object.keys(details.groupMemberAttributes).length > 0) {
+            return true;
+        }
+
+        if (details.groupMemberRoles && details.groupMemberRoles.length > 1) {
+            return true;
+        }
+
+        if (groupMemberStatusItems.value.length > 1) {
+            return true;
+        }
+
+        return false;
+    });
+
+    /**
+     * Filters group member status items by the selected group member role.
+     */
+    const groupMemberStatusItems = computed((): ListItemBag[] => {
+        const roleGuid = groupMemberRoleGuid.value;
+        const statuses = props.placementGroupDetails?.groupMemberStatuses;
+
+        if (isNullOrWhiteSpace(roleGuid) || !statuses || Object.keys(statuses).length === 0) {
+            return [];
+        }
+
+        return statuses[roleGuid] ?? [];
+    });
+
+    const availableConnectionStates = computed<ListItemBag[]>(() => {
+        return (props.options?.connectionStates ?? []).filter(s => parseInt(s.value ?? "") !== ConnectionState.Connected);
+    });
+
+    const connectionStatusItems = computed<ListItemBag[]>(() => {
+        return (
+            props.options?.connectionStatuses?.map(s => ({
+                value: s.guid,
+                text: s.name
+            })) ?? []
+        );
+    });
+
+    const connectionStatusText = computed<string>(() => connectionStatusItems.value.find(s => s.value === connectionStatusGuid.value)?.text ?? "");
+
+    function onSave(): void {
+        const newValue: ValidPropertiesBox<ConnectionRequestBag> = {
+            bag: { ...props.modelValue.bag } as ConnectionRequestBag,
+            validProperties: props.modelValue.validProperties
+        };
+
+        setPropertiesBoxValue(newValue, "comments", comments.value);
+        setPropertiesBoxValue(newValue, "connectionOpportunityGuid", connectionOpportunityGuid.value);
+        setPropertiesBoxValue(newValue, "connectionRequestAttributeValues", connectionRequestAttributeValues.value);
+        setPropertiesBoxValue(newValue, "connectionState", parseInt(connectionState.value) as ConnectionState);
+        setPropertiesBoxValue(newValue, "followUpDate", followUpDate.value);
+        setPropertiesBoxValue(newValue, "connectionStatusGuid", connectionStatusGuid.value);
+        setPropertiesBoxValue(newValue, "connectorPersonAliasGuid", connectorPersonAliasGuid.value);
+        setPropertiesBoxValue(newValue, "groupMemberRoleGuid", groupMemberRoleGuid.value);
+        setPropertiesBoxValue(newValue, "groupMemberStatus", parseInt(groupMemberStatus.value) as GroupMemberStatus);
+        setPropertiesBoxValue(newValue, "placementGroupGuid", placementGroupGuid.value);
+        setPropertiesBoxValue(newValue, "placementGroupMemberAttributeValues", placementGroupMemberAttributeValues.value);
+        setPropertiesBoxValue(newValue, "requestSourceGuid", requestSourceGuid.value);
+        setPropertiesBoxValue(newValue, "requester", requester.value);
+
+        emit("save", newValue);
+    }
+
+    /**
+     * Prunes request attribute values to only those whose attribute keys are still
+     * valid for the currently selected Connection Type and Connection Opportunity.
+     *
+     * This is necessary because request attributes come from multiple dynamic
+     * sources and the shared AttributeValues object may contain stale entries
+     * when the opportunity (and its attribute schema) changes. A new object is
+     * assigned to ensure downstream components react to removed keys.
+     */
+    function pruneAttributeValues(): void {
+        if (!connectionRequestAttributeValues.value) {
+            connectionRequestAttributeValues.value = {};
+            return;
+        }
+
+        const currentValues = connectionRequestAttributeValues.value ?? {};
+        const connectionTypeAttributeKeys = Object.keys(props.options?.connectionTypeRequestAttributes ?? {});
+        const connectionOpportunityAttributeKeys = Object.keys(props.connectionOpportunityDetails?.connectionOpportunityRequestAttributes ?? {});
+
+        const validKeys = new Set<string>([
+            ...connectionTypeAttributeKeys,
+            ...connectionOpportunityAttributeKeys
+        ]);
+
+        const prunedValues: Record<string, string> = {};
+
+        for (const key of Object.keys(currentValues)) {
+            if (validKeys.has(key)) {
+                prunedValues[key] = currentValues[key];
+            }
+        }
+
+        connectionRequestAttributeValues.value = prunedValues;
+    }
+
+    function onConnectionOpportunityChanged(value: string | string[]): void {
+        const guid = Array.isArray(value) ? value[0] ?? "" : value;
+
+        connectorPersonAliasGuid.value = "";
+        placementGroupGuid.value = "";
+
+        if (!guid) {
+            return;
+        }
+
+        emit("fetchConnectionOpportunityDetails", guid);
+    }
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    watch(requester, () => {
+        if (!requester.value?.value || isNullOrWhiteSpace(requester.value.value)) {
+            return;
+        }
+
+        emit("checkForActiveRequester", requester.value.value);
+    });
+
+    watch(() => props.connectionOpportunityDetails, () => {
+        pruneAttributeValues();
+
+        if (isNullOrWhiteSpace(connectorPersonAliasGuid.value)) {
+            connectorPersonAliasGuid.value = props.connectionOpportunityDetails?.defaultConnectorPersonAliasGuid ?? "";
+        }
+    });
+
+    watch(placementGroupGuid, () => {
+        if (!placementGroupGuid.value || isNullOrWhiteSpace(placementGroupGuid.value)) {
+            return;
+        }
+
+        placementGroupMemberAttributeValues.value = {};
+        groupMemberRoleGuid.value = "";
+        groupMemberStatus.value = "";
+        emit("fetchPlacementGroupDetails", connectionOpportunityGuid.value, placementGroupGuid.value);
+    });
+
+    /**
+     * If there is only one group member role then we will hide the dropdown and set the value to that role by default.
+     */
+    watch(() => props.placementGroupDetails?.groupMemberRoles, () => {
+        if (props.placementGroupDetails?.groupMemberRoles && props.placementGroupDetails.groupMemberRoles.length === 1) {
+            groupMemberRoleGuid.value = props.placementGroupDetails.groupMemberRoles[0].value ?? "";
+        }
+    });
+
+    /**
+     * If there is only one group member status for the selected role then we will hide the dropdown and set the value to that status by default.
+     */
+    watch(groupMemberStatusItems, () => {
+        if (groupMemberStatusItems.value.length === 1) {
+            groupMemberStatus.value = groupMemberStatusItems.value[0].value ?? "";
+        }
+    });
+
+    watch(() => props.modelValue.bag, () => {
+        updateRefValue(comments, props.modelValue.bag?.comments ?? "");
+        updateRefValue(connectionOpportunityGuid, props.modelValue.bag?.connectionOpportunityGuid ?? "");
+        updateRefValue(connectionRequestAttributeValues, props.modelValue.bag?.connectionRequestAttributeValues ?? {});
+        updateRefValue(connectionState, props.modelValue.bag?.connectionState?.toString() ?? ConnectionState.Active.toString());
+        updateRefValue(connectionStatusGuid, isNullOrWhiteSpace(props.modelValue.bag?.connectionStatusGuid) ? (props.options?.connectionStatuses ? props.options.connectionStatuses[0].guid : "") : (props.modelValue.bag?.connectionStatusGuid ?? ""));
+        updateRefValue(connectorPersonAliasGuid, props.modelValue.bag?.connectorPersonAliasGuid ?? "");
+        updateRefValue(groupMemberRoleGuid, props.modelValue.bag?.groupMemberRoleGuid ?? "");
+        updateRefValue(groupMemberStatus, props.modelValue.bag?.groupMemberStatus?.toString() ?? "");
+        updateRefValue(placementGroupGuid, props.modelValue.bag?.placementGroupGuid ?? "");
+        updateRefValue(placementGroupMemberAttributeValues, props.modelValue.bag?.placementGroupMemberAttributeValues ?? {});
+        updateRefValue(requestSourceGuid, props.modelValue.bag?.requestSourceGuid ?? "");
+        updateRefValue(requester, props.modelValue.bag?.requester ?? {});
+    });
+
+</script>

@@ -81,6 +81,15 @@ namespace Rock.Blocks.Lms
         DefaultBooleanValue = true,
         Order = 4 )]
 
+    [BooleanField(
+        "Enable Smart Scroll",
+        Key = AttributeKey.EnableSmartScroll,
+        Description = "Determines if the block should automatically scroll the main content section to the top whenever an activity is selected.",
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        Order = 5 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "1bf70976-85ac-43d3-b98a-0b87a2ffd9b6" )]
@@ -108,6 +117,7 @@ namespace Rock.Blocks.Lms
             public const string HeaderTemplate = "HeaderTemplate";
             public const string NumberOfNotificationsToShow = "NumberOfNotificationsToShow";
             public const string ShowGrades = "ShowGrades";
+            public const string EnableSmartScroll = "EnableSmartScroll";
         }
 
         private static class PageParameterKey
@@ -329,6 +339,7 @@ namespace Rock.Blocks.Lms
                     IsFacilitatorCompleted = activity.IsFacilitatorCompleted,
                     IsLate = activity.IsLate,
                     IsStudentCompleted = activity.IsStudentCompleted,
+                    IsCompleted = activity.IsCompleted,
                     LearningClassActivityIdKey = activity.LearningClassActivity.IdKey,
                     PointsEarned = activity.PointsEarned,
                     RequiresScoring = activity.RequiresGrading,
@@ -377,7 +388,8 @@ namespace Rock.Blocks.Lms
                     CourseSummary = course.Summary,
                     ProgramConfigurationMode = course.LearningProgram.ConfigurationMode,
                     NumberOfNotificationsToShow = NumberOfNotificationsToShow,
-                    ShowGrades = AreGradesShown
+                    ShowGrades = AreGradesShown,
+                    EnableSmartScroll = GetAttributeValue( AttributeKey.EnableSmartScroll ).AsBoolean()
                 };
 
             if ( box.CourseName.IsNullOrWhiteSpace() )
@@ -692,6 +704,7 @@ namespace Rock.Blocks.Lms
 
             completion.IsStudentCompleted = true;
             activityCompletionBag.IsStudentCompleted = true;
+            activityCompletionBag.IsCompleted = completion.IsCompleted;
 
             var activityComponent = LearningActivityContainer.Instance.Components.Values
                 .FirstOrDefault( c => c.Value.EntityType.Id == completion.LearningClassActivity.LearningActivity.ActivityComponentId )

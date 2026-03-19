@@ -351,7 +351,7 @@ namespace Rock.Model
             get
             {
                 var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( "ViewList", "The roles and/or users that have access to view the workflow lists of this type." );
+                supportedActions.AddOrReplace( Rock.Security.Authorization.VIEW_LIST, "The roles and/or users that have access to view the workflow lists of this type." );
                 return supportedActions;
             }
         }

@@ -94,6 +94,12 @@ namespace Rock.Model
         [LavaVisible]
         public virtual ConnectionType ConnectionType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.NoteType">type</see> for the Connection Activity Type/> 
+        /// </summary>
+        [LavaVisible]
+        public virtual NoteType PersonNoteType { get; set; }
+
         #endregion
 
         #region overrides
@@ -125,6 +131,7 @@ namespace Rock.Model
         public ConnectionActivityTypeConfiguration()
         {
             this.HasOptional( p => p.ConnectionType ).WithMany( p => p.ConnectionActivityTypes ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.PersonNoteType ).WithMany().HasForeignKey( p => p.PersonNoteTypeId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -5479,7 +5479,10 @@ IF NOT EXISTS (
     AND [EntityId] = 0
     AND [Action] = '{3}'
     AND [SpecialRole] = {5}
-    AND [GroupId] = @groupId
+    AND (
+        ([GroupId] = @groupId)
+        OR ([GroupId] IS NULL AND @groupId IS NULL)
+    )
 )
 BEGIN
     INSERT INTO [dbo].[Auth]

@@ -59,6 +59,16 @@ namespace Rock.Migrations
             //  Layout: -
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "87BD0803-9532-49DA-B584-D9568A2AD796".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "54B23A63-87C0-4955-B915-C91F23C36D48".AsGuid(), "MCP Server List", "Main", @"", @"", 0, "30A085FD-A7FD-4B8C-933D-5DA6B13881F2" );
+            
+            // Set MCP Servers page cacheability to "no-store" since the page can contain sensitive information.
+            var cacheControlNoStore = new Rock.Utility.RockCacheability
+            {
+                RockCacheablityType = Rock.Utility.RockCacheablityType.NoStore
+            };
+            Sql( $@"
+UPDATE [dbo].[Page]
+   SET [CacheControlHeaderSettings] = '{cacheControlNoStore.ToJson()}'
+ WHERE [Guid] = '87BD0803-9532-49DA-B584-D9568A2AD796'" );
         }
 
         /// <summary>

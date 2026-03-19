@@ -237,8 +237,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 FirstName = contact.FirstName,
                 LastName = contact.LastName,
                 Gender = ( int ) contact.Gender.ToMobile(),
-                ConnectionNote = contact.ConnectionNote,
-                PrayerNote = contact.PrayerNote,
+                ContactNote = contact.ContactNote,
                 MobilePhone = contact.MobilePhone,
                 SystemNote = touchpoint.SystemNote,
                 Note = touchpoint.Note,
@@ -337,7 +336,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 return ActionNotFound( "Contact not found." );
             }
 
-            contact.ConnectionNote = updateContactConnectionBag.ConnectionNote;
+            contact.ContactNote = updateContactConnectionBag.ContactNote;
             if ( updateContactConnectionBag.ConnectionCadence.HasValue )
             {
                 contact.ConnectionCadence = updateContactConnectionBag.ConnectionCadence.Value.ToNative();
@@ -385,7 +384,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 return ActionNotFound( "Contact not found." );
             }
 
-            contact.PrayerNote = updateContactPrayerBag.PrayerNote;
+            contact.ContactNote = updateContactPrayerBag.ContactNote;
             if ( updateContactPrayerBag.PrayerCadence.HasValue )
             {
                 contact.PrayerCadence = updateContactPrayerBag.PrayerCadence.Value.ToNative();

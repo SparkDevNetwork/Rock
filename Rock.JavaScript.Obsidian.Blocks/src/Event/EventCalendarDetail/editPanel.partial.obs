@@ -65,7 +65,7 @@
             <Modal v-model="isAttributeModalOpen" title="Calendar Event Attribute" saveText="Save" :onSave="onStartSaveAttribute">
                 <hr />
                 <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                    <AttributeEditor v-model="eventAttribute" :reservedKeyNames="reservedKeyNames" />
+                    <AttributeEditor v-model="eventAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.EventCalendarItem" />
                 </RockForm>
             </Modal>
         </Panel>
@@ -119,6 +119,7 @@
     import { newGuid } from "@Obsidian/Utility/guid";
     import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 

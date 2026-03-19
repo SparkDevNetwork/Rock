@@ -164,3 +164,7 @@ using System.Runtime.CompilerServices;
 
 // The following type forwardings were setup in Rock 19.0.5
 [assembly: TypeForwardedTo( typeof( Rock.Model.ConnectionState ) )]
+
+// The following type forwardings were setup in Rock 19.0.6
+[assembly: TypeForwardedTo( typeof( Rock.Utility.FamilyLimits ) )]
+[assembly: TypeForwardedTo( typeof( Rock.Utility.CreateConnectionRequestOptions ) )]

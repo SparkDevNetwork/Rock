@@ -1,0 +1,294 @@
+<template>
+    <teleport :to="teleportTarget">
+        <div v-if="isRendered"
+             class="docked-panel-container styled-scroll"
+             data-position="right">
+
+            <transition name="docked-panel-slide"
+                        appear
+                        @after-leave="onAfterLeave">
+                <div v-show="internalValue"
+                     ref="dockedPanelRef"
+                     class="docked-panel"
+                     :class="{ dragging: isResizing }">
+                    <div v-if="$slots.header"
+                         class="docked-panel-header">
+                        <slot name="header"></slot>
+                    </div>
+
+                    <div class="docked-panel-body">
+                        <slot></slot>
+                    </div>
+
+                    <div v-if="$slots.footer"
+                         class="docked-panel-footer">
+                        <slot name="footer"></slot>
+                    </div>
+                </div>
+            </transition>
+
+            <div v-if="canResize && internalValue"
+                 ref="dockedPanelResizeHandleRef"
+                 class="docked-panel-resize-handle"
+                 @pointerdown="onResizeStart"></div>
+        </div>
+    </teleport>
+</template>
+
+<style scoped>
+.docked-panel-container {
+    /*
+     * Use the same z-index as dropdowns so the docked panel is on top of all dropdowns
+     * from the main window, but underneath dropdowns inside the docked panel.
+     */
+    --z-docked-panel: 1050;
+
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-docked-panel);
+
+    /* Container is layout only */
+    pointer-events: none;
+}
+
+.docked-panel-resize-handle {
+    --resize-handle-width: 5px;
+
+    position: absolute;
+    top: var(--top-header-height);
+    bottom: 0;
+
+    width: var(--resize-handle-width);
+    height: 100%;
+    cursor: col-resize;
+    pointer-events: auto;
+    touch-action: none;
+    background: var(--color-interface-strong);
+    opacity: 0;
+    transition: opacity 150ms ease;
+}
+
+.docked-panel-container[data-position="right"] .docked-panel-resize-handle {
+    right: min(min(calc(v-bind(maxWidth)), max(calc(v-bind(minWidth)), calc(v-bind(width)))),
+            calc(100% - var(--resize-handle-width)));
+    left: auto;
+}
+
+.docked-panel-resize-handle:hover {
+    opacity: .3;
+}
+
+.docked-panel {
+    position: absolute;
+    top: var(--top-header-height);
+    bottom: 0;
+
+    width: v-bind(width);
+    min-width: v-bind(minWidth);
+    max-width: v-bind(maxWidth);
+
+    display: flex;
+    flex-direction: column;
+
+    border: 1px solid var(--color-interface-soft);
+    background: var(--color-interface-softest);
+    box-shadow: var(--popup-box-shadow);
+    overflow: hidden;
+
+    /* Drawer is the only interactive surface */
+    pointer-events: auto;
+
+    /* Add width transition so setting the width programmatically animates smoothly (like when maximizing to fullscreen). */
+    transition: width 150ms ease;
+}
+
+.docked-panel.dragging {
+    /* Disable transitions while dragging, otherwise the drag feels sluggish. */
+    transition: none;
+}
+
+.docked-panel-container[data-position="right"] .docked-panel {
+    right: 0;
+    border-radius: var(--rounded-large) 0 0 var(--rounded-large);
+}
+
+.docked-panel-header,
+.docked-panel-footer {
+    flex: 0 0 auto;
+}
+
+.docked-panel-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+.docked-panel-slide-enter-active,
+.docked-panel-slide-leave-active {
+    transition: transform 250ms ease;
+}
+
+.docked-panel-container[data-position="right"] .docked-panel-slide-enter-from,
+.docked-panel-container[data-position="right"] .docked-panel-slide-leave-to {
+    transform: translateX(100%);
+}
+
+.docked-panel-slide-enter-to,
+.docked-panel-slide-leave-from {
+    transform: translateX(0);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { isHTMLElement } from "@Obsidian/Utility/dom";
+
+    const props = defineProps({
+        /**
+         * Indicates whether the docked panel is open or closed.
+         */
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /**
+         * The width of the docked panel.
+         */
+        width: {
+            type: String as PropType<string>,
+            default: "400px"
+        },
+
+        maxWidth: {
+            type: String as PropType<string>,
+            default: "100%"
+        },
+
+        minWidth: {
+            type: String as PropType<string>,
+            default: "250px"
+        },
+
+        canResize: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        closeOnOutsideClick: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "update:width", value: string): void;
+
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const isRendered = ref(false);
+
+    const fullscreenElement = ref<Element | null>(null);
+    const teleportTarget = computed(() => fullscreenElement.value ?? document.body);
+
+    const dockedPanelRef = ref<HTMLElement | null>(null);
+    const dockedPanelResizeHandleRef = ref<HTMLElement | null>(null);
+    const startX = ref(0);
+    const startWidth = ref(0);
+    const isResizing = ref(false);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onResizeStart(e: PointerEvent): void {
+        e.preventDefault();
+
+        if (!dockedPanelRef.value) {
+            return;
+        }
+
+        startX.value = e.clientX;
+        startWidth.value = dockedPanelRef.value.getBoundingClientRect().width;
+        isResizing.value = true;
+
+        document.addEventListener("pointermove", onResizeMove);
+        document.addEventListener("pointerup", onResizeEnd);
+    }
+
+    function onResizeMove(e: PointerEvent): void {
+        if (!isResizing.value) {
+            return;
+        }
+
+        // TODO If position "left" is supported, this calculation will need to flip the operands.
+        const delta = startX.value - e.clientX;
+        const nextWidth = startWidth.value + delta;
+
+        emit("update:width", `${Math.round(nextWidth)}px`);
+    }
+
+    function onResizeEnd(): void {
+        isResizing.value = false;
+
+        document.removeEventListener("pointermove", onResizeMove);
+        document.removeEventListener("pointerup", onResizeEnd);
+    }
+
+    function onDocumentPointerDown(e: PointerEvent): void {
+        if (isHTMLElement(e.target)
+            && props.closeOnOutsideClick
+            && internalValue.value
+            && dockedPanelRef.value
+            && !dockedPanelRef.value.contains(e.target)
+            && !dockedPanelResizeHandleRef.value?.contains(e.target)) {
+            internalValue.value = false;
+        }
+    }
+
+    function onAfterLeave(): void {
+        // Stop rendering after close animation completes
+        isRendered.value = false;
+    }
+
+    function onFullscreenChange(): void {
+        fullscreenElement.value = document.fullscreenElement;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(internalValue, (open) => {
+        // Ensure the docked panel is rendered before opening
+        if (open) {
+            isRendered.value = true;
+            document.addEventListener("pointerdown", onDocumentPointerDown);
+        }
+        else {
+            document.removeEventListener("pointerdown", onDocumentPointerDown);
+        }
+    }, { immediate: true });
+
+    // #endregion Watchers
+
+    // #region Lifecycle
+
+    onMounted(() => {
+        document.addEventListener("fullscreenchange", onFullscreenChange);
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("pointermove", onResizeMove);
+        document.removeEventListener("pointerup", onResizeEnd);
+        document.removeEventListener("pointerdown", onDocumentPointerDown);
+        document.removeEventListener("fullscreenchange", onFullscreenChange);
+    });
+
+    // #endregion Lifecycle
+</script>

@@ -1129,15 +1129,15 @@ icon {
 }
 
 .rounded-sm {
-    border-radius: 4;
+    border-radius: 16;
 }
 
 .rounded {
-    border-radius: 8;
+    border-radius: 24;
 }
 
 .rounded-lg {
-    border-radius: 16;
+    border-radius: 32;
 }
 
 .rounded-full {

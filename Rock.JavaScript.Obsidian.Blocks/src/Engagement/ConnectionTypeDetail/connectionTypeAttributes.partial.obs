@@ -26,7 +26,7 @@
 
     <Modal v-model="isModalVisible" title="Type Attributes" saveText="Save" cancelText="Cancel"
            :onSave="onSave">
-        <AttributeEditor v-model="theAttribute" :reservedKeyNames="reservedKeyNames" />
+        <AttributeEditor v-model="theAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.ConnectionType" />
     </Modal>
 </template>
 
@@ -37,6 +37,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";

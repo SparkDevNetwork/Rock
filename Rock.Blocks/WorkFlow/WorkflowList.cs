@@ -171,7 +171,7 @@ namespace Rock.Blocks.Workflow
         {
             var workflowType = GetWorkflowType();
             return workflowType != null && ( GetIsAddDeleteEnabled()
-                || ( workflowType.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) && workflowType.IsAuthorized( "ViewList", GetCurrentPerson() ) ) );
+                || ( workflowType.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) && workflowType.IsAuthorized( Rock.Security.Authorization.VIEW_LIST, GetCurrentPerson() ) ) );
         }
 
         /// <summary>

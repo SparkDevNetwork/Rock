@@ -82,7 +82,7 @@ export const EditComponent = defineComponent({
             const futureYearConfig = this.configurationValues[ConfigurationValueKey.FutureYearCount];
             const futureYears = toNumber(futureYearConfig);
 
-            if (futureYears > 0) {
+            if (futureYears !== null) {
                 attributes.futureYearCount = futureYears;
             }
 
@@ -184,7 +184,6 @@ export const FilterComponent = defineComponent({
             configurationValues.value = { ...props.configurationValues };
             configurationValues.value[ConfigurationValueKey.DisplayCurrentOption] = "True";
         });
-
         // Watch for changes from the standard DatePicker.
         watch(dateValue, () => {
             if (props.comparisonType !== ComparisonType.Between) {
@@ -211,7 +210,6 @@ export const FilterComponent = defineComponent({
         watch(internalValue, () => {
             emit("update:modelValue", internalValue.value);
         });
-
         return {
             configurationValues,
             dateValue,

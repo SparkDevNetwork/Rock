@@ -30,6 +30,7 @@
                     <GroupTypePicker label="Group Type"
                                      v-model="thePlacementGroupCfg.groupType"
                                      rules="required"
+                                     :enhanceForLongLists="true"
                                      help="The group type that the user will be placed in" />
                 </div>
             </div>

@@ -37,6 +37,12 @@ namespace Rock.ViewModels.Utility
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the description of the category.
+        /// </summary>
+        /// <value>The description of the category</value>
+        public string Description { get; set; }
+
+        /// <summary>
         /// Gets or sets the order of the category. This provides ordering
         /// information when multiple attributes need to be grouped by
         /// category and then order the categories for display.

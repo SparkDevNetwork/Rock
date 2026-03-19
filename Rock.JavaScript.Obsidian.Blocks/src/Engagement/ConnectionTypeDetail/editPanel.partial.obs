@@ -91,7 +91,7 @@
         </ContentSection>
 
         <ContentSection title="Activity Types" icon="ti ti-activity">
-            <ActivitiesSection v-model:activityTypes="activityTypes" :workflows="workflows" />
+            <ActivitiesSection v-model:activityTypes="activityTypes" :personNoteTypeItems="options.personNoteTypeItems ?? []" :workflows="workflows" />
         </ContentSection>
 
         <ContentSection title="Statuses" icon="ti ti-select">
@@ -104,7 +104,6 @@
 
         <ContentSection title="Additional Settings" icon="ti ti-file-settings">
             <AdditionalSettingsSection v-model:additionalSettings="additionalSettings"
-                                       :communicationTemplateOptions="props.options.communicationTemplateOptions ?? []"
                                        :connectionTypeOptions="props.options.connectionTypeOptions ?? []"
                                        :hasActiveAIProvider="props.options.hasActiveAIProvider ?? false" />
         </ContentSection>

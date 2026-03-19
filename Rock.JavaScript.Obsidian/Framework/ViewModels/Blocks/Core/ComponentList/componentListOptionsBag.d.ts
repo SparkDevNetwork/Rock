@@ -21,13 +21,19 @@
 // </copyright>
 //
 
-/**
- * The options bag for the Component List block.
- */
+/** The options bag for the Component List block. */
 export type ComponentListOptionsBag = {
-    /** Gets or sets a value indicating whether ordering is supported. */
-    isSupportOrdering?: boolean;
+    /**
+     * Gets or sets a value indicating whether ordering is supported.
+     * When true and the individual has Administrate access, a
+     * reorder column is displayed in the grid.
+     */
+    isSupportOrdering: boolean;
 
-    /** Gets or sets a value indicating whether per-component security is supported. */
-    isSupportSecurity?: boolean;
+    /**
+     * Gets or sets a value indicating whether per-component security is supported.
+     * When true and the individual has Administrate access, a
+     * security button is displayed for each row.
+     */
+    isSupportSecurity: boolean;
 };

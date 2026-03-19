@@ -101,30 +101,24 @@ namespace Rock.Blocks.Engagement
         /// <returns>The options that provide additional details to the block.</returns>
         private ConnectionTypeDetailOptionsBag GetBoxOptions( bool isEditable )
         {
-            var currentPerson = RequestContext.CurrentPerson;
             var currentConnectionTypeId = GetInitialEntity()?.Id ?? 0;
-            var communicationTemplates = new CommunicationTemplateService( RockContext ).Queryable()
-                .AsNoTracking()
-                .Where( t => t.IsActive && t.UsageType == null )
-                .ToList()
-                .Where( t => t.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                .Where( t => !t.SupportsEmailWizard() )
-                .OrderBy( t => t.Name )
-                .Select( t => t.ToListItemBag() )
-                .ToList();
 
-            var connectionTypes = new ConnectionTypeService( RockContext ).Queryable()
-                .AsNoTracking()
+            var connectionTypes = ConnectionTypeCache.All()
                 .Where( ct => ct.Id != currentConnectionTypeId )
                 .OrderBy( ct => ct.Order )
                 .ThenBy( ct => ct.Name )
                 .ToListItemBagList();
 
+            var personEntityTypeId = EntityTypeCache.Get( SystemGuid.EntityType.PERSON ).Id;
+            var personNoteTypeItems = NoteTypeCache.All()
+                .Where( nt => nt.EntityTypeId == personEntityTypeId && nt.UserSelectable )
+                .ToListItemBagList();
+
             var options = new ConnectionTypeDetailOptionsBag
             {
-                CommunicationTemplateOptions = communicationTemplates,
                 ConnectionTypeOptions = connectionTypes,
-                HasActiveAIProvider = AIProviderCache.All( RockContext ).Any( a => a.IsActive )
+                HasActiveAIProvider = AIProviderCache.All( RockContext ).Any( a => a.IsActive ),
+                PersonNoteTypeItems = personNoteTypeItems
             };
 
             return options;
@@ -165,6 +159,20 @@ namespace Rock.Blocks.Engagement
                 {
                     errorMessage = "At least one activity type is required.";
                     return false;
+                }
+
+                foreach ( var activityType in bag.ActivityTypes )
+                {
+                    if ( activityType.PersonNoteCreationBehavior == PersonNoteCreationBehavior.DoNotCreatePersonNote )
+                    {
+                        continue;
+                    }
+
+                    if ( activityType.PersonNoteType?.Value == null || activityType.PersonNoteType.Value.IsNullOrWhiteSpace()  )
+                    {
+                        errorMessage = "A Person Note Type is required for the selected activity type configuration.";
+                        return false;
+                    }
                 }
 
                 var statusGuids = statuses
@@ -794,7 +802,8 @@ namespace Rock.Blocks.Engagement
                     Guid = activityType.Guid,
                     Name = activityType.Name,
                     IsActive = activityType.IsActive,
-                    PersonNoteCreationBehavior = activityType.PersonNoteCreationBehavior
+                    PersonNoteCreationBehavior = activityType.PersonNoteCreationBehavior ?? PersonNoteCreationBehavior.DoNotCreatePersonNote,
+                    PersonNoteType = activityType.PersonNoteType?.ToListItemBag()
                 };
 
                 bag.LoadAttributesAndValuesForPublicEdit( activityType, RequestContext.CurrentPerson, enforceSecurity: true );
@@ -1410,6 +1419,7 @@ namespace Rock.Blocks.Engagement
                             activityType.Name = bag.Name;
                             activityType.IsActive = bag.IsActive;
                             activityType.PersonNoteCreationBehavior = bag.PersonNoteCreationBehavior;
+                            activityType.PersonNoteTypeId = bag.PersonNoteType?.GetEntityId<NoteType>( RockContext );
                         } );
                 } );
 

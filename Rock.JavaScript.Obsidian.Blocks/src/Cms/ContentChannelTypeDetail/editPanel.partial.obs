@@ -54,7 +54,7 @@
                     </Grid>
                 </div>
                 <Modal v-model="isChannelAttributeModalOpen" title="Content Channel Attributes" saveText="Save" @save="onSaveChannelAttribute">
-                    <AttributeEditor v-model="channelAttribute" :reservedKeyNames="channelAttributesReservedKeyNames" />
+                    <AttributeEditor v-model="channelAttribute" :reservedKeyNames="channelAttributesReservedKeyNames" :attributeEntityTypeGuid="EntityType.ContentChannel" />
                 </Modal>
             </Panel>
 

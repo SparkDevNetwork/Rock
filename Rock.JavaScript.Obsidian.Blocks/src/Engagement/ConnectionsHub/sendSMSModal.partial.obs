@@ -1,0 +1,283 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           saveAutoDisable
+           :isSaveButtonDisabled="isSendDisabled"
+           saveText="Send"
+           title="Send SMS"
+           @save="onSend">
+        <PillList :modelValue="communicationRecipients ?? []"
+                  :disabled="isSending"
+                  canExpand
+                  label="Recipients"
+                  :rules="hasAtLeastOneValidRecipient">
+            <template #item="{ item }">
+                <Pill :disabled="isSending"
+                      :tooltip="getRecipientTooltip(item)"
+                      :tokenType="getRecipientTokenType(item)">
+                    <img :src="item?.photoUrl ?? undefined" style="border-radius: 24px; width: 24px; height: 24px" />
+                    <span class="item-content">{{ item.name }}</span>
+                </Pill>
+            </template>
+        </PillList>
+
+        <div v-if="smsNotAllowedMessage" class="recipients-sms-error">{{ smsNotAllowedMessage }}</div>
+
+        <div class="row">
+            <div class="col-sm-6">
+                <DropDownList v-model="smsFromSystemNumberGuidOrEmptyString"
+                              :disabled="isSending"
+                              help="The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers)."
+                              :items="smsFromSystemPhoneNumbers"
+                              label="From Phone"
+                              rules="required"
+                              :showBlankItem="false" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <RockButton btnType="link"
+                            class="text-small"
+                            @click="areSnippetsShown = !areSnippetsShown">{{ showHideSnippetsText }}<i :class="areSnippetsShown ? 'ti ti-chevron-up' : 'ti ti-chevron-down'"></i></RockButton>
+            </div>
+        </div>
+
+        <TransitionVerticalCollapse>
+            <ButtonList v-if="areSnippetsShown"
+                        :disabled="isSending"
+                        :items="smsSnippets"
+                        @click="onInsertSmsSnippet($event)" />
+        </TransitionVerticalCollapse>
+
+        <SmsMessageEditor v-model="smsMessage"
+                          :commonMergeFields="commonMergeFields"
+                          :disabled="isSending"
+                          :editorHeight="210"
+                          :isCharacterCountShown="true"
+                          :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
+                          rules="required"
+                          toolbarLabel="Message">
+            <template #plugins>
+                <InsertTextPlugin :insertTextRequest="insertTextRequest" />
+            </template>
+        </SmsMessageEditor>
+
+        <AttachmentPicker v-model="attachments"
+                          :disabled="isSending"
+                          @isUploading="isUploadingAttachment = $event" />
+
+        <NotificationBox v-if="sendErrorMessage" alertType="danger">{{ sendErrorMessage }}</NotificationBox>
+    </Modal>
+</template>
+
+<style scoped>
+.recipients-sms-error {
+    color: var(--color-danger-strong);
+    margin-bottom: var(--spacing-medium);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, watch, computed, ref } from "vue";
+    import AttachmentPicker from "./attachmentPicker.partial.obs";
+    import ButtonList from "./buttonList.partial.obs";
+    import InsertTextPlugin from "./insertTextPlugin.partial.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Pill from "@Obsidian/Controls/pill.obs";
+    import PillList from "@Obsidian/Controls/pillList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import SmsMessageEditor from "@Obsidian/Controls/smsMessageEditor.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { CommunicationBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/communicationBag";
+    import { CommunicationRecipientBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/communicationRecipientBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        communicationRecipients: {
+            type: Array as PropType<CommunicationRecipientBag[] | null | undefined>,
+            required: true
+        },
+
+        smsFromSystemPhoneNumbers: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        smsSnippets: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:visible", value: boolean): void;
+        (e: "onSuccessfulSend"): void;
+        (e: "close"): void;
+    }>();
+
+    const commonMergeFields = [
+        "Person.FirstName^First Name|ti ti-user",
+        "Person.NickName^Nick Name|ti ti-user",
+        "Person.FullName^Full Name|ti ti-user",
+    ];
+
+    // #region Values
+
+    // UI state
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const areSnippetsShown = ref<boolean>(false);
+    const insertTextRequest = ref<{ text: string; } | null | undefined>();
+    const sendErrorMessage = ref<string | null>(null);
+    const isUploadingAttachment = ref<boolean>(false);
+    const isSending = ref<boolean>(false);
+
+    // Communication state
+    const smsMessage = ref<string>("");
+    const smsFromSystemNumberGuidOrEmptyString = ref<string>("");
+    const attachments = ref<ListItemBag[]>([]);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const showHideSnippetsText = computed<string>(() => {
+        return areSnippetsShown.value ? "Hide Snippets" : "Show Snippets";
+    });
+
+    const smsNotAllowedMessage = computed<string | null>(() => {
+        const count = Enumerable.from(props.communicationRecipients ?? []).count(cr => !cr.isSmsAllowed);
+
+        if (count === 0) {
+            return null;
+        }
+
+        return `${count.toLocaleString(undefined)} Recipients won't receive this SMS.`;
+    });
+
+    const isSendDisabled = computed<boolean>(() => {
+        return isUploadingAttachment.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function hasAtLeastOneValidRecipient(value: unknown): boolean | string {
+        if (!value || !Array.isArray(value)) {
+            return "is required";
+        }
+
+        function isCommunicationRecipientBag(obj: unknown): obj is CommunicationRecipientBag {
+            return !!obj && typeof obj === "object" && "isSmsAllowed" in obj;
+        }
+
+        if (Enumerable
+            .from(value)
+            .ofType(isCommunicationRecipientBag)
+            .any(crb => crb.isSmsAllowed)
+        ) {
+            return true;
+        }
+
+        return "is required";
+    }
+
+    function getRecipientTooltip(recipient: CommunicationRecipientBag): string {
+        if (!recipient || recipient.isSmsAllowed) {
+            // No tooltip when recipient is missing.
+            return "";
+        }
+
+        // This recipient cannot receive SMS messages. Get the error.
+        return `${recipient.name ?? "This recipient"} doesn't have a phone number with SMS enabled.`;
+    }
+
+    function getRecipientTokenType(recipient: CommunicationRecipientBag): "default" | "danger" {
+        if (!recipient || recipient.isSmsAllowed) {
+            // No tooltip when recipient is missing.
+            return "default";
+        }
+
+        // This recipient cannot receive SMS messages. Get the error.
+        return "danger";
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onInsertSmsSnippet(item: ListItemBag): void {
+        insertTextRequest.value = { text: item.value ?? "" };
+    }
+
+    async function onSend(): Promise<void> {
+        try {
+            isSending.value = true;
+            sendErrorMessage.value = null;
+
+            const bag: CommunicationBag = {
+                communicationRecipients: props.communicationRecipients,
+                communicationType: CommunicationType.SMS,
+                smsAttachments: attachments.value,
+                smsFromSystemPhoneNumberGuid: toGuidOrNull(smsFromSystemNumberGuidOrEmptyString.value),
+                smsMessage: smsMessage.value
+            };
+
+            const result = await invokeBlockAction("SendCommunication", {
+                bag
+            });
+
+            if (result.isSuccess) {
+                isVisible.value = false;
+                emit("onSuccessfulSend");
+            }
+            else {
+                sendErrorMessage.value = result.errorMessage ?? "An error occurred while sending the message.";
+            }
+        }
+        finally {
+            isSending.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            // Reset state when closed.
+
+            // UI state
+            areSnippetsShown.value = false;
+            insertTextRequest.value = null;
+            sendErrorMessage.value = null;
+            isUploadingAttachment.value = false;
+            isSending.value = false;
+
+            // Communication state
+            smsMessage.value = "";
+            smsFromSystemNumberGuidOrEmptyString.value = "";
+            attachments.value = [];
+
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+</script>

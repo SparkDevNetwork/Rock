@@ -116,6 +116,7 @@ namespace Rock.Attribute
                 {
                     Guid = c.Guid,
                     Name = c.Name,
+                    Description = c.Description,
                     Order = c.Order
                 } ).ToList(),
                 Key = attribute.Key,
@@ -145,6 +146,7 @@ namespace Rock.Attribute
                 {
                     Guid = c.Guid,
                     Name = c.Name,
+                    Description = c.Description,
                     Order = c.Order
                 } ).ToList(),
                 Order = attribute.Order,

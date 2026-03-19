@@ -1,0 +1,84 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSection :title="sectionTitle" icon="ti ti-alert-triangle">
+        <template #headerActions>
+            <HighlightLabel :labelType="'default'">Exception Id: {{ exception.id }}</HighlightLabel>
+        </template>
+
+        <dl class="mb-0">
+            <template v-if="exception.source">
+                <dt>Source</dt>
+                <dd>{{ exception.source }}</dd>
+            </template>
+
+            <template v-if="exception.description">
+                <dt>Description</dt>
+                <dd class="text-wrap">{{ exception.description }}</dd>
+            </template>
+        </dl>
+
+        <div v-if="exception.stackTrace">
+            <RockButton btnType="link" class="p-0 text-decoration-none font-weight-semibold" @click="onToggleStackTrace">
+                <i class="ti ti-stack"></i>
+                {{ isStackTraceVisible ? "Hide" : "Show" }} Stack Trace
+                <i :class="['ti ti-chevron-up stacktrace-chevron', { 'stacktrace-chevron-collapsed': !isStackTraceVisible }]"></i>
+            </RockButton>
+
+            <TransitionVerticalCollapse>
+                <div v-if="isStackTraceVisible" class="contentsection-body-collapse">
+                    <div class="well mt-3 mb-0">
+                        <div class="stacktrace-text text-sm line-height-normal font-monospace text-muted">{{ exception.stackTrace }}</div>
+                    </div>
+                </div>
+            </TransitionVerticalCollapse>
+        </div>
+    </ContentSection>
+</template>
+
+<style scoped>
+.stacktrace-chevron {
+    transition: transform 0.35s ease-in-out;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.stacktrace-chevron-collapsed {
+    transform: rotate(180deg);
+}
+
+.stacktrace-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+</style>
+
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { ExceptionLogItemBag } from "@Obsidian/ViewModels/Blocks/Core/ExceptionDetail/exceptionLogItemBag";
+
+    const props = defineProps<{
+        exception: ExceptionLogItemBag;
+    }>();
+
+    // #region Values
+
+    const isStackTraceVisible = ref(false);
+
+    // #endregion Values
+
+    const sectionTitle = props.exception.exceptionType ?? "Unknown Exception";
+
+    // #region Functions
+
+    /** Toggles the visibility of the stack trace. */
+    function onToggleStackTrace(): void {
+        isStackTraceVisible.value = !isStackTraceVisible.value;
+    }
+
+    // #endregion Functions
+</script>

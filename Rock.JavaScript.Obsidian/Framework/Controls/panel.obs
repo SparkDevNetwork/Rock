@@ -22,6 +22,8 @@
                     <QuickFilter v-model="internalQuickFilterValue"
                                  quickFilterButtonClass="btn-panel-action" />
 
+                    <slot name="postFilterHeaderActions" />
+
                     <span v-if="isZoomActive && hasZoom" class="panel-action-zoom-control">
                         <span class="input-group">
                             <span class="input-group-addon">

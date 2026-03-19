@@ -105,14 +105,6 @@ namespace Rock.ViewModels.Blocks.Core.NoteTypeDetail
         public bool ShowEntityTypePicker { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [requires approvals].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [requires approvals]; otherwise, <c>false</c>.
-        /// </value>
-        public bool RequiresApprovals { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [enabled AI approvals].
         /// </summary>
         /// <value>

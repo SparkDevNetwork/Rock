@@ -178,6 +178,38 @@ namespace Rock.Blocks.Communication
        Category = BlockAttributeCategory.Advanced,
        Order = 100 )]
 
+    [TextField( "Personal / Need-to-Know Title",
+        Key = AttributeKey.IsNotBulkOptionTitle,
+        Description = "The title text to display for the Personal / Need-to-Know option.",
+        DefaultValue = "Personal / Need-to-Know",
+        IsRequired = false,
+        Category = BlockAttributeCategory.CustomText_MessageClassification,
+        Order = 0 )]
+
+    [TextField( "Personal / Need-to-Know Description",
+        Key = AttributeKey.IsNotBulkOptionDescription,
+        Description = "The description text to display for the Personal / Need-to-Know option.",
+        DefaultValue = "Direct messages an individual expects or considers important or timely.",
+        IsRequired = false,
+        Category = BlockAttributeCategory.CustomText_MessageClassification,
+        Order = 1 )]
+
+    [TextField( "Bulk / Marketing Title",
+        Key = AttributeKey.IsBulkOptionTitle,
+        Description = "The title text to display for the Bulk / Marketing option.",
+        DefaultValue = "Bulk / Marketing",
+        IsRequired = false,
+        Category = BlockAttributeCategory.CustomText_MessageClassification,
+        Order = 2 )]
+
+    [TextField( "Bulk / Marketing Description",
+        Key = AttributeKey.IsBulkOptionDescription,
+        Description = "The description text to display for the Bulk / Marketing option.",
+        DefaultValue = "Marketing messages sent to large groups; regulated by law, and misuse can cause fines and reputational harm.",
+        IsRequired = false,
+        Category = BlockAttributeCategory.CustomText_MessageClassification,
+        Order = 3 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "26917C58-C8A2-4BF5-98CB-378A02761CD7" )]
@@ -208,6 +240,12 @@ namespace Rock.Blocks.Communication
             public const string MinimumShortLinkTokenLength = "MinimumShortLinkTokenLength";
             public const string DisableNavigationShortcuts = "DisableNavigationShortcuts";
             public const string AllowUnrestrictedUploads = "AllowUnrestrictedUploads";
+
+            public const string IsNotBulkOptionTitle = "IsNotBulkOptionTitle";
+            public const string IsNotBulkOptionDescription = "IsNotBulkOptionDescription";
+            
+            public const string IsBulkOptionTitle = "IsBulkOptionTitle";
+            public const string IsBulkOptionDescription = "IsBulkOptionDescription";
         }
 
         /// <summary>
@@ -216,7 +254,7 @@ namespace Rock.Blocks.Communication
         private static class BlockAttributeCategory
         {
             public const string Advanced = "Advanced";
-
+            public const string CustomText_MessageClassification = "Customize Text^Message Classification";
         }
 
         #endregion Attribute Keys
@@ -387,6 +425,7 @@ namespace Rock.Blocks.Communication
                 box.Communication = communicationBag;
                 box.CommunicationTemplateDetail = communicationTemplateDetailBag;
                 box.CommunicationTopicValues = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_TOPIC ).DefinedValues.ToListItemBagList();
+                box.CustomText = GetCustomTextBag();
                 box.HasDetailBlockOnCurrentPage = this.PageCache.Blocks.Any( a => a.BlockType.Guid == SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() );
                 box.ImageComponentBinaryFileTypeGuid = this.ImageBinaryFileTypeGuid;
                 box.IsAddingIndividualsToRecipientListsDisabled = this.DisableAddingIndividualsToRecipientLists;
@@ -1111,6 +1150,18 @@ namespace Rock.Blocks.Communication
                         Size = Math.Max( 1, personalizationSegmentIds.Length )
                     }
                 ).ToList();
+        }
+
+        private CommunicationEntryWizardCustomTextBag GetCustomTextBag()
+        {
+            return new CommunicationEntryWizardCustomTextBag
+            {
+                IsBulkOptionTitle = GetAttributeValue( AttributeKey.IsBulkOptionTitle ),
+                IsBulkOptionDescription = GetAttributeValue( AttributeKey.IsBulkOptionDescription ),
+
+                IsNotBulkOptionTitle = GetAttributeValue( AttributeKey.IsNotBulkOptionTitle ),
+                IsNotBulkOptionDescription = GetAttributeValue( AttributeKey.IsNotBulkOptionDescription ),
+            };
         }
 
         /// <summary>

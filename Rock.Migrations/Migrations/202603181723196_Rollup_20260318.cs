@@ -1,0 +1,51 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+namespace Rock.Migrations
+{
+    using System;
+    using System.Data.Entity.Migrations;
+    
+    /// <summary>
+    ///
+    /// </summary>
+    public partial class Rollup_20260318 : Rock.Migrations.RockMigration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            NA_Fix_ViewListAuthForCategory_Up();
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+        }
+
+        /// <summary>
+        /// Updates the Category EntityType to add "ViewList" that goes along with the fix to issue 6712.
+        /// https://github.com/SparkDevNetwork/Rock/issues/6712
+        /// </summary>
+        private void NA_Fix_ViewListAuthForCategory_Up()
+        {
+            RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.Category", 0, "ViewList", true, null, 1, "E59FFA9D-1CE9-409B-B70E-F50F5008970C" );
+        }
+    }
+}

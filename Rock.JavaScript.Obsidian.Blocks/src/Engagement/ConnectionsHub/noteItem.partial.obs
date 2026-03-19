@@ -1,0 +1,77 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="p-spacing-md border-bottom d-flex flex-column gap-xs">
+        <div class="d-flex gap-xs align-items-center">
+            <PersonAvatar v-if="note.createdByPhotoUrl"
+                          :photoUrl="note.createdByPhotoUrl"
+                          marginRight="0" />
+            <div class="d-flex flex-column">
+                <div class="text-interface-strong text-semibold">{{ note.createdByName }}</div>
+                <div>
+                    <span class="text-interface-strong">
+                        {{ note.noteTypeName }}
+                    </span>
+                    <span class="text-interface-medium" v-if="!isNullOrWhiteSpace(createdDateTimeElapsed)">
+                        • {{ createdDateTimeElapsed }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="text-interface-strong">
+            {{ note.text }}
+        </div>
+    </div>
+</template>
+
+<style scoped>
+/* text-sm is incorrectly returning xsmall at the moment in develop */
+.text-small {
+    font-size: var(--font-size-small);
+}
+
+.gap-tiny {
+    gap: var(--spacing-tiny);
+}
+
+.gap-xs {
+    gap: var(--spacing-xsmall);
+}
+
+.gap-md {
+    gap: var(--spacing-medium);
+}
+
+.h-fit {
+    height: fit-content;
+}
+
+:deep(.request-note-editor .form-control) {
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid var(--color-interface-soft);
+    box-shadow: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import { PersonNoteBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/personNoteBag";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const props = defineProps({
+        note: {
+            type: Object as PropType<PersonNoteBag>,
+            default: {}
+        },
+    });
+
+    const createdDateTimeElapsed = computed(() => {
+        if (isNullOrWhiteSpace(props.note.createdDateTime)) {
+            return;
+        }
+
+        return RockDateTime.parseISO(props.note.createdDateTime!)?.toElapsedString();
+    });
+</script>

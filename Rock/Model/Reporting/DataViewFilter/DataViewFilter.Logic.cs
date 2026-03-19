@@ -50,109 +50,6 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Determines whether the person is authorized for the DataViewFilter and Child filters
-        /// </summary>
-        /// <param name="action">A <see cref="System.String" /> containing the action that is being performed.</param>
-        /// <param name="person">the <see cref="Rock.Model.Person" /> who is trying to perform the action.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
-        /// </returns>
-        public override bool IsAuthorized( string action, Person person )
-        {
-            // First check if user is authorized for model
-            bool authorized = base.IsAuthorized( action, person );
-
-            if ( !authorized )
-            {
-                return false;
-            }
-
-            // If viewing, make sure user is authorized to view the component that filter is using
-            // and all the child models/components
-            if ( string.Compare( action, Authorization.VIEW, true ) == 0 )
-            {
-                if ( EntityType != null )
-                {
-                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
-                    if ( filterComponent != null )
-                    {
-                        authorized = filterComponent.IsAuthorized( action, person );
-                    }
-                }
-
-                if ( !authorized )
-                {
-                    return false;
-                }
-
-                foreach ( var childFilter in ChildFilters )
-                {
-                    if ( !childFilter.IsAuthorized( action, person ) )
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return authorized;
-        }
-
-        /// <summary>
-        /// Determines whether the specified action is authorized but instead of traversing child 
-        /// filters (an expensive query), a list of all filters can be passed in and this will be 
-        /// checked instead ( See DataViewPicker.LoadDropDownItems() for example of use ).
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="allEntityFilters">All entity filters.</param>
-        /// <returns></returns>
-        public bool IsAuthorized( string action, Person person, List<DataViewFilter> allEntityFilters )
-        {
-            // First check if user is authorized for model
-            bool authorized = base.IsAuthorized( action, person );
-
-            if ( !authorized )
-            {
-                return false;
-            }
-
-            // If viewing, make sure user is authorized to view the component that filter is using
-            // and all the child models/components
-            if ( string.Compare( action, Authorization.VIEW, true ) == 0 )
-            {
-                if ( EntityTypeId.HasValue )
-                {
-                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityTypeCache.Get( this.EntityTypeId.Value )?.Name );
-                    if ( filterComponent != null )
-                    {
-                        authorized = filterComponent.IsAuthorized( action, person );
-                    }
-                }
-
-                if ( !authorized )
-                {
-                    return false;
-                }
-
-                // If there are no filters to evaluate return the current authorized value.
-                if ( allEntityFilters.Count == 0 )
-                {
-                    return authorized;
-                }
-
-                foreach ( var childFilter in allEntityFilters.Where( f => f.ParentId == Id ) )
-                {
-                    if ( !childFilter.IsAuthorized( action, person, allEntityFilters ) )
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return authorized;
-        }
-
-        /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="dataViewEntityTypeType">Type of the data view entity type.</param>
@@ -457,9 +354,129 @@ namespace Rock.Model
 
         #region ISecured
 
+        /*
+             3/12/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             ModelCache<T>.SetFromEntity() only snapshots SupportedActions. Security
+             methods such as ParentAuthority, ParentAuthorityPre, IsAuthorized, and
+             IsAllowedByDefault are NOT copied automatically. If the cache does not
+             override them, it will fall back to ModelCache defaults and may evaluate
+             permissions differently than the model.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
         /// <inheritdoc/>
         public override ISecured ParentAuthority => DataView ?? base.ParentAuthority;
 
-        #endregion
+        /// <summary>
+        /// Determines whether the person is authorized for the DataViewFilter and Child filters
+        /// </summary>
+        /// <param name="action">A <see cref="System.String" /> containing the action that is being performed.</param>
+        /// <param name="person">the <see cref="Rock.Model.Person" /> who is trying to perform the action.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            // First check if user is authorized for model
+            bool authorized = base.IsAuthorized( action, person );
+
+            if ( !authorized )
+            {
+                return false;
+            }
+
+            // If viewing, make sure user is authorized to view the component that filter is using
+            // and all the child models/components
+            if ( string.Compare( action, Authorization.VIEW, true ) == 0 )
+            {
+                if ( EntityType != null )
+                {
+                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
+                    if ( filterComponent != null )
+                    {
+                        authorized = filterComponent.IsAuthorized( action, person );
+                    }
+                }
+
+                if ( !authorized )
+                {
+                    return false;
+                }
+
+                foreach ( var childFilter in ChildFilters )
+                {
+                    if ( !childFilter.IsAuthorized( action, person ) )
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return authorized;
+        }
+
+        /// <summary>
+        /// Determines whether the specified action is authorized but instead of traversing child 
+        /// filters (an expensive query), a list of all filters can be passed in and this will be 
+        /// checked instead ( See DataViewPicker.LoadDropDownItems() for example of use ).
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="allEntityFilters">All entity filters.</param>
+        /// <returns></returns>
+        public bool IsAuthorized( string action, Person person, List<DataViewFilter> allEntityFilters )
+        {
+            // First check if user is authorized for model
+            bool authorized = base.IsAuthorized( action, person );
+
+            if ( !authorized )
+            {
+                return false;
+            }
+
+            // If viewing, make sure user is authorized to view the component that filter is using
+            // and all the child models/components
+            if ( string.Compare( action, Authorization.VIEW, true ) == 0 )
+            {
+                if ( EntityTypeId.HasValue )
+                {
+                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityTypeCache.Get( this.EntityTypeId.Value )?.Name );
+                    if ( filterComponent != null )
+                    {
+                        authorized = filterComponent.IsAuthorized( action, person );
+                    }
+                }
+
+                if ( !authorized )
+                {
+                    return false;
+                }
+
+                // If there are no filters to evaluate return the current authorized value.
+                if ( allEntityFilters.Count == 0 )
+                {
+                    return authorized;
+                }
+
+                foreach ( var childFilter in allEntityFilters.Where( f => f.ParentId == Id ) )
+                {
+                    if ( !childFilter.IsAuthorized( action, person, allEntityFilters ) )
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return authorized;
+        }
+
+        #endregion ISecured
     }
 }

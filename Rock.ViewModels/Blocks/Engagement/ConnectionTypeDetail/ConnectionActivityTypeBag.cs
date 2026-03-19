@@ -46,5 +46,7 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
         /// Gets or sets the person note creation behavior.
         /// </summary>
         public PersonNoteCreationBehavior? PersonNoteCreationBehavior { get; set; }
+
+        public ListItemBag PersonNoteType { get; set; }
     }
 }

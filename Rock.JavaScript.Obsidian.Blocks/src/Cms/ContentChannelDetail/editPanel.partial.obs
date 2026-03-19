@@ -85,7 +85,7 @@
             </div>
             <Modal v-model="isAttributeModalOpen" title="Content Channel Item Attributes" saveText="Save"
                    @save="onSaveAttribute">
-                <AttributeEditor v-model="itemAttribute" :reservedKeyNames="reservedKeyNames" />
+                <AttributeEditor v-model="itemAttribute" :reservedKeyNames="reservedKeyNames" :attributeEntityTypeGuid="EntityType.ContentChannelItem" />
             </Modal>
         </Panel>
 

@@ -18,6 +18,7 @@
                              v-model:segmentCriteria="segmentCriteria"
                              :allowedMediums="allowedMediums"
                              :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
+                             :customText="customText"
                              :communicationId="communicationId"
                              :communicationListGroups="config.communicationListGroups ?? []"
                              :communicationTopicValues="config.communicationTopicValues ?? []"
@@ -166,6 +167,7 @@
                               :communicationName="communicationName"
                               :communicationTopicValueName="communicationTopicValue?.text"
                               :communicationType="communicationType"
+                              :customText="customText"
                               :emailAttachmentNames="emailAttachmentNames"
                               :emailTo="emailTo"
                               :fromAddress="fromEmail"
@@ -239,7 +241,7 @@
     import SendingStep from "./CommunicationEntryWizard/sendingStep.partial.obs";
     import SentStep from "./CommunicationEntryWizard/sentStep.partial.obs";
     import SmsEditorStep from "./CommunicationEntryWizard/smsEditorStep.partial.obs";
-    import { BinaryFileAttachment, BlockActionCallbacks, NavigationUrlKey, PreviewAsType } from "./CommunicationEntryWizard/types.partial";
+    import { BinaryFileAttachment, BlockActionCallbacks, CustomText, NavigationUrlKey, PreviewAsType } from "./CommunicationEntryWizard/types.partial";
     import { useCache, useInvokeBlockActionHelper, usePersonPreferencesHelper } from "./CommunicationEntryWizard/utils.partial";
     import WizardStartStep from "./CommunicationEntryWizard/wizardStartStep.partial.obs";
     import { EmailEditorApi, GetHtmlResponse } from "@Obsidian/Controls/emailEditor";
@@ -270,6 +272,7 @@
     import { CancellationTokenNone, CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { CommunicationEntryWizardGetPreviewBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardGetPreviewBag";
+    import { CommunicationEntryWizardCustomTextBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCustomTextBag";
 
     const config = useConfigurationValues<CommunicationEntryWizardInitializationBox>();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
@@ -480,6 +483,19 @@
                 value: t.guid
             }));
         }
+    });
+
+    const customText = computed<CustomText>(() => {
+        return {
+            isBulkOptionDescription: config.customText?.isBulkOptionDescription
+                ?? "Marking this communication as bulk will exclude it from being sent to individuals who have opted out of receiving bulk communications. This is typically used for communications such as newsletters that are sent to a large audience on a regular basis.",
+            isBulkOptionTitle: config.customText?.isBulkOptionTitle
+                ?? "Is Bulk Communication",
+            isNotBulkOptionDescription: config.customText?.isNotBulkOptionDescription
+                ?? "Marking this communication as not bulk will allow it to be sent to individuals regardless of their bulk communication preferences. This is typically used for communications such as event reminders or account notifications that are important for individuals to receive.",
+            isNotBulkOptionTitle: config.customText?.isNotBulkOptionTitle
+                ?? "Is Not Bulk Communication"
+        };
     });
 
     const nextStep = computed<Step | null>(() => {

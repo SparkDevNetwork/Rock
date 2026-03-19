@@ -21,6 +21,12 @@
                     :filter="textValueFilter"
                     visiblePriority="xs" />
 
+        <DateTimeColumn name="createdDateTime"
+                        title="Created On"
+                        field="createdDateTime"
+                        :filter="dateValueFilter"
+                        visiblePriority="xs" />
+
         <TextColumn name="site"
                     title="Site"
                     field="site"
@@ -32,6 +38,12 @@
                     field="token"
                     :filter="textValueFilter"
                     visiblePriority="xs" />
+
+        <TextColumn name="url"
+                    title="Original URL"
+                    field="url"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
 
         <TextColumn name="category"
                     title="Category"
@@ -70,7 +82,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, DeleteColumn, NumberColumn, numberValueFilter, ButtonColumn, pickExistingValueFilter, BooleanColumn, booleanValueFilter, AttributeColumns } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, NumberColumn, numberValueFilter, ButtonColumn, pickExistingValueFilter, BooleanColumn, booleanValueFilter, AttributeColumns, DateTimeColumn, dateValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PageShortLinkListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkList/pageShortLinkListOptionsBag";

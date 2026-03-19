@@ -360,6 +360,21 @@ namespace Rock.Model
         [LavaVisible]
         public virtual ConnectionTypeSource ConnectionTypeSource { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets a transient note used when recording a <see cref="ConnectionRequestStatusHistory"/> entry during a <see cref="ConnectionRequest"/> status change.
+        /// </summary>
+        /// <remarks>
+        /// This property is not persisted to the database and exists solely to pass client-provided context into the ConnectionRequest save hook.
+        /// When a ConnectionRequest status is changed, the save hook will read this value and use it to populate the Note field on the corresponding
+        /// ConnectionRequestStatusHistory record.
+        ///
+        /// This property must be populated before the entity is saved for the save hook to have access to the value. Because this is a transient,
+        /// write-through value, it will not be available on subsequent loads of the entity.
+        /// </remarks>
+        [NotMapped]
+        public string ConnectionStatusHistoryNote { get; set; }
+
         #endregion
 
         #region Methods

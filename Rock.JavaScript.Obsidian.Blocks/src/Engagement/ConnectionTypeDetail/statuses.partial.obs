@@ -37,8 +37,10 @@
 
                     <div class="row">
                         <div class="col-md-3">
-                            <ColorPicker v-model="statusHighlightColor" label="Highlight Color"
-                                         help="Choose the color used to visually highlight this status throughout the application." />
+                            <ColorPicker v-model="statusHighlightColor"
+                                         label="Highlight Color"
+                                         help="Choose the color used to visually highlight this status throughout the application."
+                                         rules="required" />
                         </div>
                     </div>
                 </div>
@@ -495,7 +497,7 @@
             name: "",
             order: maxOrder + 1, // order will be corrected on the server
             description: "",
-            highlightColor: "#F8F8FC",
+            highlightColor: "#00a6f4",
             isActive: true,
             isDefault: false,
             isNoteRequiredOnCompletion: false,

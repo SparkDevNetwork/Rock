@@ -128,6 +128,7 @@
         (e: "update:modelValue", value: ListItemBag | undefined): void;
         (e: "fileRemoved"): void;
         (e: "error", value: string): void;
+        (e: "isUploading", value: boolean): void;
     }>();
 
     const internalValue = ref(props.modelValue);
@@ -322,5 +323,9 @@
         if (error) {
             emit("error", error);
         }
+    });
+
+    watch(isUploading, uploading => {
+        emit("isUploading", uploading);
     });
 </script>

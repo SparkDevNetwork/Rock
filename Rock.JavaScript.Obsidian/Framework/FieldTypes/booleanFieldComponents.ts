@@ -51,10 +51,17 @@ export const EditComponent = defineComponent({
         const booleanControlType = computed((): BooleanControlType => {
             const controlType = props.configurationValues[ConfigurationValueKey.BooleanControlType];
 
+            // Hello future developer, this is yourself form the past. When
+            // configuring the control type via the UI, the value is stored as
+            // a number. However, when the control type is configured via a
+            // C# attribute on a field type, the value is stored as the name of
+            // the enum value. So we need to handle both.
             switch (controlType) {
                 case "1":
+                case "Checkbox":
                     return BooleanControlType.Checkbox;
                 case "2":
+                case "Toggle":
                     return BooleanControlType.Toggle;
                 default:
                     return BooleanControlType.DropDown;
@@ -90,8 +97,8 @@ export const EditComponent = defineComponent({
 
         // configuration for a toggle button
         const toggleOptions = computed((): Record<string, unknown> => ({
-                trueText: trueText.value,
-                falseText: falseText.value
+            trueText: trueText.value,
+            falseText: falseText.value
         }));
 
         // configuration for a dropdown control

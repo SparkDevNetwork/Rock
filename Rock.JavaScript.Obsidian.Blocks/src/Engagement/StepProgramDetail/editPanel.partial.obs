@@ -145,7 +145,8 @@
                 <RockForm v-model:submit="saveAttribute"
                           @submit="onSaveAttribute">
                     <AttributeEditor v-model="stepAttribute"
-                                     :reservedKeyNames="reservedKeyNames" />
+                                     :reservedKeyNames="reservedKeyNames"
+                                     :attributeEntityTypeGuid="EntityType.StepType" />
                 </RockForm>
 
                 <template #customButtons>

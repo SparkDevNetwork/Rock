@@ -308,25 +308,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        public override ISecured ParentAuthority
-        {
-            get
-            {
-                using ( var rockContext = RockApp.Current.CreateRockContext() )
-                {
-                    var contentChannelType = new ContentChannelTypeService( rockContext ).Get( ContentChannelTypeId );
-                    return contentChannelType ?? base.ParentAuthority;
-                }
-
-            }
-        }
-
-        /// <summary>
         /// Gets the content channel type cache.
         /// </summary>
         /// <value>
@@ -408,6 +389,24 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
+        #region ISecured
+
+        /*
+             3/12/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
+        /// <inheritdoc />
+        public override ISecured ParentAuthority => ContentChannelType ?? base.ParentAuthority;
+
+        #endregion ISecured
 
     }
 }

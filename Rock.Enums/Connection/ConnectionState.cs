@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.ComponentModel;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -41,6 +43,7 @@ namespace Rock.Model
         /// <summary>
         /// Connected
         /// </summary>
+        [Description( "Completed" )]
         Connected = 3,
     }
 }

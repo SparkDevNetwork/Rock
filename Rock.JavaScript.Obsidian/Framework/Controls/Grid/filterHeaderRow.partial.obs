@@ -2,7 +2,9 @@
 <template>
     <div class="grid-title-header">
         <div class="grid-title">
-            <template v-if="!isTitleHidden">{{ internalTitle }}</template>
+            <template v-if="!isTitleHidden">
+                <i v-if="titleIconCssClass" :class="titleIconCssClass"></i> {{ internalTitle }}
+            </template>
             <template v-else>&nbsp;</template>
         </div>
 
@@ -31,6 +33,13 @@
                           :grid="grid" />
     </div>
 </template>
+
+<style scoped>
+.grid-title i {
+    margin-right: var(--spacing-tiny);
+    color: var(--color-interface-medium);
+}
+</style>
 
 <script setup lang="ts">
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -66,6 +75,12 @@
         title: {
             type: String as PropType<string>,
             required: false
+        },
+
+        /** The Icon CSS class to display in the title. */
+        titleIconCssClass: {
+            type: String as PropType<string>,
+            default: ""
         },
 
         /** When `true`, the grid's title will be hidden. */

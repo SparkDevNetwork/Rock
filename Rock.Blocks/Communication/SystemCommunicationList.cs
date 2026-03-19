@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -28,7 +27,6 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Communication.SystemCommunicationList;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication
@@ -36,19 +34,19 @@ namespace Rock.Blocks.Communication
     /// <summary>
     /// Displays a list of system communications.
     /// </summary>
-
     [DisplayName( "System Communication List" )]
     [Category( "Communication" )]
     [Description( "Lists the system communications that can be configured for use by the system and other automated (non-user) tasks." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the system communication details.",
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "6452b97c-2777-44ce-8dca-72f32d07e500" )]
-    [Rock.SystemGuid.BlockTypeGuid( "411a5ad2-d667-4283-b58d-8a8614b07b0f" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "411a5ad2-d667-4283-b58d-8a8614b07b0f" )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.SYSTEM_COMMUNICATION_LIST )]
     [CustomizedGrid]
     public class SystemCommunicationList : RockEntityListBlockType<SystemCommunication>
     {
@@ -64,86 +62,30 @@ namespace Rock.Blocks.Communication
             public const string DetailPage = "DetailPage";
         }
 
-        private static class PreferenceKey
+        private static class PageParameterKey
         {
-            public const string FilterCategory = "filter-category";
-            public const string FilterActive = "filter-active";
-            public const string FilterSupports = "filter-supports";
+            public const string CommunicationId = "CommunicationId";
         }
 
         #endregion Keys
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the category to filter results by.
-        /// </summary>
-        /// <value>
-        /// The filter category.
-        /// </value>
-        protected Guid? FilterCategory => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterCategory )
-            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
-
-        /// <summary>
-        /// Gets the active status to filter results by, if value is inactive, inactive results are returned.
-        /// </summary>
-        /// <value>
-        /// The filter active.
-        /// </value>
-        protected string FilterActive => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterActive );
-
-        /// <summary>
-        /// Gets the supported media to filter results by, i.e whether results should include communications sent
-        /// via SMs or PushNotifications.
-        /// </summary>
-        /// <value>
-        /// The filter supports.
-        /// </value>
-        protected string FilterSupports => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterSupports );
-
-        #endregion
 
         #region Methods
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var box = new ListBlockBox<SystemCommunicationListOptionsBag>();
+            var canAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+            var box = new ListBlockBox<SystemCommunicationListOptionsBag>();
+            box.IsAddEnabled = canAdministrate;
+            box.IsDeleteEnabled = canAdministrate;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
-            box.Options = GetBoxOptions();
+            box.Options = new SystemCommunicationListOptionsBag { CanAdministrate = canAdministrate };
             box.GridDefinition = builder.BuildDefinition();
 
             return box;
-        }
-
-        /// <summary>
-        /// Gets the box options required for the component to render the list.
-        /// </summary>
-        /// <returns>The options that provide additional details to the block.</returns>
-        private SystemCommunicationListOptionsBag GetBoxOptions()
-        {
-            var options = new SystemCommunicationListOptionsBag()
-            {
-                CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
-            };
-            return options;
-        }
-
-        /// <summary>
-        /// Determines if the add button should be enabled in the grid.
-        /// <summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
-        {
-            return BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -154,46 +96,15 @@ namespace Rock.Blocks.Communication
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["SystemCommunicationId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { [PageParameterKey.CommunicationId] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } )
             };
         }
 
         /// <inheritdoc/>
         protected override IQueryable<SystemCommunication> GetListQueryable( RockContext rockContext )
         {
-            var systemCommunicationService = new SystemCommunicationService( rockContext );
-
-            IQueryable<SystemCommunication> systemCommunicationsQuery = systemCommunicationService.Queryable().Include( sc => sc.Category );
-
-            // Filter By: Category
-            if ( FilterCategory.HasValue )
-            {
-                systemCommunicationsQuery = systemCommunicationsQuery.Where( a => a.CategoryId.HasValue && a.Category.Guid == FilterCategory.Value );
-            }
-
-            // Filter By: Is Active
-            switch ( FilterActive )
-            {
-                case "Active":
-                    systemCommunicationsQuery = systemCommunicationsQuery.Where( a => a.IsActive ?? false );
-                    break;
-                case "Inactive":
-                    systemCommunicationsQuery = systemCommunicationsQuery.Where( a => !( a.IsActive ?? false ) );
-                    break;
-            }
-
-            // Filter By: Supports (Email|SMS)
-            switch ( FilterSupports )
-            {
-                case "SMS":
-                    systemCommunicationsQuery = systemCommunicationsQuery.Where( a => a.SMSMessage != null && a.SMSMessage.Trim() != "" );
-                    break;
-                case "Push Notification":
-                    systemCommunicationsQuery = systemCommunicationsQuery.Where( a => a.PushMessage != null && a.PushMessage.Trim() != "" );
-                    break;
-            }
-
-            return systemCommunicationsQuery;
+            return base.GetListQueryable( rockContext )
+                .Include( sc => sc.Category );
         }
 
         /// <inheritdoc/>
@@ -206,17 +117,14 @@ namespace Rock.Blocks.Communication
         protected override List<SystemCommunication> GetListItems( IQueryable<SystemCommunication> queryable, RockContext rockContext )
         {
             return queryable
-                .AsEnumerable()
-                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.GetCurrentPerson() ) )
+                .ToList()
+                .Where( a => a.IsAuthorized( Authorization.VIEW, this.GetCurrentPerson() ) )
                 .ToList();
         }
 
         /// <inheritdoc/>
         protected override GridBuilder<SystemCommunication> GetGridBuilder()
         {
-            var page = PageCache.Get( Rock.SystemGuid.Page.SYSTEM_COMMUNICATION_PREVIEW.AsGuid() );
-            var rockContext = new RockContext();
-
             return new GridBuilder<SystemCommunication>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
@@ -228,25 +136,31 @@ namespace Rock.Blocks.Communication
                 .AddTextField( "pushMessage", a => a.PushMessage )
                 .AddField( "isActive", a => a.IsActive )
                 .AddField( "isSystem", a => a.IsSystem )
-                .AddTextField( "previewUrl", a => GetPreviewUrl( a, rockContext, page ) )
+                .AddTextField( "previewUrl", a => GetPreviewUrl( a ) )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 
-        private string GetPreviewUrl( SystemCommunication systemCommunication, RockContext rockContext, PageCache page )
+        /// <summary>
+        /// Gets the preview URL for the specified system communication,
+        /// or an empty string if the preview page or its route cannot be found.
+        /// </summary>
+        /// <param name="systemCommunication">The system communication to get the preview URL for.</param>
+        /// <returns>The resolved preview URL, or an empty string.</returns>
+        private string GetPreviewUrl( SystemCommunication systemCommunication )
         {
-            string url = string.Empty;
-
-            if ( page != null )
+            var page = PageCache.Get( Rock.SystemGuid.Page.SYSTEM_COMMUNICATION_PREVIEW.AsGuid() );
+            if ( page == null )
             {
-                var route = new PageRouteService( rockContext ).GetByPageId( page.Id ).First();
-
-                if ( route != null )
-                {
-                    url = RequestContext.ResolveRockUrl( $"~/{route.Route}/?SystemCommunicationId={systemCommunication.Id}" );
-                }
+                return string.Empty;
             }
 
-            return url;
+            var route = new PageRouteService( RockContext ).GetByPageId( page.Id ).FirstOrDefault();
+            if ( route == null )
+            {
+                return string.Empty;
+            }
+
+            return RequestContext.ResolveRockUrl( $"~/{route.Route}/?SystemCommunicationId={systemCommunication.Id}" );
         }
 
         #endregion

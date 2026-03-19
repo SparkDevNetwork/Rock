@@ -53,6 +53,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            if ( new Service<ConnectionActivityType>( Context ).Queryable().Any( a => a.PersonNoteTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", NoteType.FriendlyTypeName, ConnectionActivityType.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<NoteWatch>( Context ).Queryable().Any( a => a.NoteTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", NoteType.FriendlyTypeName, NoteWatch.FriendlyTypeName );

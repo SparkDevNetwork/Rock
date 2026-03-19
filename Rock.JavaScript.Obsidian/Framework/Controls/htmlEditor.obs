@@ -98,7 +98,7 @@
     import ShortLinkPlugin from "./NoteEditor/shortLinkPlugin.partial.obs";
     import StylesheetsPlugin from "./NoteEditor/stylesheetsPlugin.partial.obs";
     import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
-    import { providePluginsFeature } from "./NoteEditor/utils.partial";
+    import { providePluginsFeature } from "./Internal/NoteEditor/utils";
     import { tinymce, Editor, EditorEvent, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";

@@ -1,0 +1,799 @@
+<template>
+    <NotificationBox v-if="config.errorMessage" alertType="danger">
+        {{ config.errorMessage }}
+    </NotificationBox>
+
+    <BreakpointObserver v-else @breakpointHelper="breakpointHelper = $event">
+        <div class="connection-operational-snapshot">
+            <ContextSlicer class="context-slicer"
+                           showCampus
+                           title="Filters">
+                <template #default>
+                    <DropDownList v-model="selectedOpportunityGuidOrDefaultText"
+                                  :items="config.options?.connectionOpportunities ?? []"
+                                  :blankValue="blankConnectionOpportunityValue" />
+                </template>
+            </ContextSlicer>
+
+            <div class="row">
+                <div class="col-md-5">
+                    <Panel :title="config.options?.connectionTypeName || 'Connection Type'" titleIconCssClass="ti ti-seeding">
+                        <div class="involvement-container">
+                            <div class="panel-section-title">Current Metrics</div>
+
+                            <div class="row row-grouped gutter-0" :class="breakpointHelper?.breakpoint">
+                                <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
+                                    <KpiTile noBorders label="Active" :value="currentMetricsKpis.active.value" />
+                                </div>
+
+                                <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
+                                    <KpiTile noBorders label="Unassigned" :value="currentMetricsKpis.unassigned.value" />
+                                </div>
+
+                                <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
+                                    <KpiTile noBorders label="Due Soon" :value="currentMetricsKpis.dueSoon.value" :valueColor="currentMetricsKpis.dueSoon.color" />
+                                </div>
+
+                                <div class="col-lg-3 col-md-6 col-sm-3 col-xs-6">
+                                    <KpiTile noBorders label="Overdue" :value="currentMetricsKpis.overdue.value" :valueColor="currentMetricsKpis.overdue.color" />
+                                </div>
+                            </div>
+
+                            <ChartPanel>
+                                <LinearGaugeChart legendAlign="start"
+                                                  :series="linearGaugeChartData"
+                                                  title="Request Health Overview"
+                                                  titleAlign="start"
+                                                  :tooltip="formatRequestHealthOverviewTooltip"
+                                                  tooltipTitle="Current Status" />
+                            </ChartPanel>
+
+                            <ChartPanel label="Upcoming Future Follow-Ups">
+                                <BarChart hideLegend
+                                          :labels="upcomingFutureFollowUpsLabels"
+                                          stack
+                                          :series="upcomingFutureFollowUpsSeries"
+                                          :tooltip="(ctx) => ctx.value === null ? '' : ctx.formattedValue"
+                                          valueHideGridLines
+                                          :valuePrecision="0" />
+                            </ChartPanel>
+
+                            <ChartPanel label="Count By Status">
+                                <BarChart hideLegend
+                                          :labels="countByStatusLabels"
+                                          stack
+                                          :series="countByStatusSeries"
+                                          :tooltip="(ctx) => ctx.value === null ? '' : ctx.formattedValue"
+                                          :tooltipTitle="formatCountByStatusTooltipTitle"
+                                          valueHideGridLines
+                                          :valuePrecision="0" />
+                            </ChartPanel>
+
+                            <div class="panel-section-title">Completion Metrics</div>
+
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <DropDownList v-model="selectedDateRangeOrEmptyString"
+                                                  :items="dateRangeItems"
+                                                  label="Date Range"
+                                                  :showBlankItem="false" />
+                                </div>
+                            </div>
+
+                            <div class="row row-grid gutter-4" :class="{ [`${breakpointHelper?.breakpoint}-actual`]: true, [`${breakpointHelper?.breakpoints}`]: true, 'stacked': breakpointHelper?.isXsOrSmaller || breakpointHelper?.isMd }">
+                                <div class="col-lg-6 col-md-12 col-sm-6">
+                                    <KpiTile label="Timeliness"
+                                             help="The percentage of requests which were completed on time."
+                                             :value="completionMetricsKpis.timeliness.value">
+                                        <template #footer>
+                                            <span :style="{ color: completionMetricsKpis.timeliness.color }">{{ completionMetricsKpis.timeliness.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
+                                        </template>
+                                    </KpiTile>
+                                </div>
+
+                                <div class="col-lg-6 col-md-12 col-sm-6">
+                                    <KpiTile label="Responsiveness (Rsp)"
+                                             help=""
+                                             :value="completionMetricsKpis.responsiveness.value">
+                                        <template #footer>
+                                            <span :style="{ color: completionMetricsKpis.responsiveness.color }">{{ completionMetricsKpis.responsiveness.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
+                                        </template>
+                                    </KpiTile>
+                                </div>
+
+                                <div class="col-lg-6 col-md-12 col-sm-6">
+                                    <KpiTile label="Requests Completed"
+                                             :value="completionMetricsKpis.requestsCompleted.value">
+                                        <template #footer>
+                                            <span :style="{ color: completionMetricsKpis.requestsCompleted.color }">{{ completionMetricsKpis.requestsCompleted.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
+                                        </template>
+                                    </KpiTile>
+                                </div>
+
+                                <div class="col-lg-6 col-md-12 col-sm-6">
+                                    <KpiTile label="Average Time to Complete"
+                                             :value="completionMetricsKpis.averageTimeToComplete.value">
+                                        <template #footer>
+                                            <span :style="{ color: completionMetricsKpis.averageTimeToComplete.color }">{{ completionMetricsKpis.averageTimeToComplete.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
+                                        </template>
+                                    </KpiTile>
+                                </div>
+                            </div>
+                        </div>
+                    </Panel>
+                </div>
+
+                <div class="col-md-7">
+                    <Grid comfy
+                          :definition="config.gridDefinition ?? undefined"
+                          :data="gridDataSource"
+                          :entityTypeGuid="EntityType.PersonAlias"
+                          itemTerm="Connector"
+                          :keyField="getGridRowPropertyName('idKey')"
+                          :onSelectItem="onConnectorRowClicked"
+                          title="Connectors"
+                          titleIconCssClass="ti ti-user-circle">
+                        <Column name="overdue-indicator"
+                                width="8px"
+                                disableSort
+                                headerClass="indicator-column"
+                                itemClass="indicator-column">
+                            <template #format="{ row }">
+                                <div v-if="(row as ConnectorBag).overdueRequestCount > 0"
+                                     class="overdue-indicator">
+                                </div>
+                            </template>
+                        </Column>
+
+                        <PersonColumn :field="getGridRowPropertyName('person')"
+                                      :name="getGridRowPropertyName('person')"
+                                      title="Name"
+                                      :filter="pickExistingValueFilter"
+                                      :filterValue="getPersonTextValue"
+                                      :quickFilterValue="getPersonTextValue"><template #></template></PersonColumn>
+
+                        <NumberColumn :field="getGridRowPropertyName('activeRequestCount')"
+                                      :name="getGridRowPropertyName('activeRequestCount')"
+                                      title="Active"
+                                      :filterable="true"
+                                      :filterFunction="numberValueFilter"
+                                      :sortField="getGridRowPropertyName('activeRequestCount')"
+                                      width="100px" />
+
+                        <Column :name="getGridRowPropertyName('overdueRequestCount')"
+                                title="Overdue"
+                                :filterable="true"
+                                columnType="number"
+                                :filterFunction="numberValueFilter"
+                                :sortField="getGridRowPropertyName('overdueRequestCount')"
+                                width="100px">
+                            <template #format="{ row }">
+                                <div class="overdue-column-data" :class="{ 'has-value': (row as ConnectorBag).overdueRequestCount > 0 }">
+                                    {{ (row as ConnectorBag).overdueRequestCount }}
+                                </div>
+                            </template>
+                        </Column>
+
+                        <Column name="performance"
+                                title="Performance (Last 28d)"
+                                disableSort
+                                width="180px">
+                            <template #format="{ row }">
+                                <div class="performance-column-data">
+                                    <div v-ellipsis-tooltip><i class="ti ti-circle-check"></i> Completed: {{ (row as ConnectorBag).completedRequestCount }}</div>
+                                    <div v-ellipsis-tooltip><i class="ti ti-calendar-check"></i> Avg Time: {{ (row as ConnectorBag).averageCompletionDays.toLocaleString(undefined, { maximumFractionDigits: 1 }) }}d</div>
+                                </div>
+                            </template>
+                        </Column>
+
+                        <Column name="navigate"
+                                title=""
+                                disableSort
+                                width="54px">
+                            <template #format>
+                                <i class="ti ti-chevron-right"></i>
+                            </template>
+                        </Column>
+                    </Grid>
+                </div>
+            </div>
+        </div>
+    </BreakpointObserver>
+</template>
+
+<style scoped>
+.context-slicer {
+    margin-bottom: var(--spacing-large);
+}
+
+.connection-operational-snapshot {
+    --gutter-0: 0;
+    --gutter-1: var(--spacing-tiny);
+    --gutter-2: var(--spacing-xsmall);
+    --gutter-3: var(--spacing-small);
+    --gutter-4: var(--spacing-medium);
+    --gutter-5: var(--spacing-large);
+    --gutter-6: var(--spacing-xlarge);
+    --gutter-7: var(--spacing-huge);
+}
+
+.involvement-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+}
+
+.panel-section-title {
+    font-size: var(--font-size-h6);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-strong);
+}
+
+.row.row-grouped {
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+    padding: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.row.row-grouped > [class*="col-"] {
+    padding: 0;
+}
+
+.row.row-grouped.xl > .col-xl-3:not(:nth-child(4n + 1)),
+.row.row-grouped.lg > .col-lg-3:not(:nth-child(4n + 1)),
+.row.row-grouped.md > .col-md-3:not(:nth-child(4n + 1)),
+.row.row-grouped.sm > .col-sm-3:not(:nth-child(4n + 1)),
+.row.row-grouped.xs > .col-xs-3:not(:nth-child(4n + 1)) {
+    border-left: solid 1px var(--color-interface-soft);
+}
+
+.row.row-grouped.xl > .col-xl-3:nth-child(n + 5),
+.row.row-grouped.lg > .col-lg-3:nth-child(n + 5),
+.row.row-grouped.md > .col-md-3:nth-child(n + 5),
+.row.row-grouped.sm > .col-sm-3:nth-child(n + 5),
+.row.row-grouped.xs > .col-xs-3:nth-child(n + 5) {
+    border-top: solid 1px var(--color-interface-soft);
+}
+
+.row.row-grouped.xl > .col-xl-6:nth-child(even),
+.row.row-grouped.lg > .col-lg-6:nth-child(even),
+.row.row-grouped.md > .col-md-6:nth-child(even),
+.row.row-grouped.sm > .col-sm-6:nth-child(even),
+.row.row-grouped.xs > .col-xs-6:nth-child(even) {
+    border-left: 1px solid var(--color-interface-soft);
+}
+
+.row.row-grouped.xl > .col-xl-6:nth-child(n + 3),
+.row.row-grouped.lg > .col-lg-6:nth-child(n + 3),
+.row.row-grouped.md > .col-md-6:nth-child(n + 3),
+.row.row-grouped.sm > .col-sm-6:nth-child(n + 3),
+.row.row-grouped.xs > .col-xs-6:nth-child(n + 3) {
+    border-top: solid 1px var(--color-interface-soft);
+}
+
+.row.row-grouped.xl > .col-xl-6:nth-child(n + 3),
+.row.row-grouped.lg > .col-lg-6:nth-child(n + 3),
+.row.row-grouped.md > .col-md-6:nth-child(n + 3),
+.row.row-grouped.sm > .col-sm-6:nth-child(n + 3),
+.row.row-grouped.xs > .col-xs-6:nth-child(n + 3) {
+    border-top: solid 1px var(--color-interface-soft);
+}
+
+.row.row-grid.gutter-4.xl > .col-xl-6:nth-child(odd),
+.row.row-grid.gutter-4.lg > .col-lg-6:nth-child(odd),
+.row.row-grid.gutter-4.md > .col-md-6:nth-child(odd),
+.row.row-grid.gutter-4.sm > .col-sm-6:nth-child(odd),
+.row.row-grid.gutter-4.xs > .col-xs-6:nth-child(odd) {
+    padding-right: calc(var(--gutter-4) / 2);
+}
+
+.row.row-grid.gutter-4.xl > .col-xl-6:nth-child(even),
+.row.row-grid.gutter-4.lg > .col-lg-6:nth-child(even),
+.row.row-grid.gutter-4.md > .col-md-6:nth-child(even),
+.row.row-grid.gutter-4.sm > .col-sm-6:nth-child(even),
+.row.row-grid.gutter-4.xs > .col-xs-6:nth-child(even) {
+    padding-left: calc(var(--gutter-4) / 2);
+}
+
+.row.row-grid.gutter-4.xl > .col-xl-6:nth-child(n + 3),
+.row.row-grid.gutter-4.lg > .col-lg-6:nth-child(n + 3),
+.row.row-grid.gutter-4.md > .col-md-6:nth-child(n + 3),
+.row.row-grid.gutter-4.sm > .col-sm-6:nth-child(n + 3),
+.row.row-grid.gutter-4.xs > .col-xs-6:nth-child(n + 3) {
+    margin-top: var(--gutter-4);
+}
+
+.row.row-grid.gutter-4.stacked.xl > .col-xl-6,
+.row.row-grid.gutter-4.stacked.lg > .col-lg-6,
+.row.row-grid.gutter-4.stacked.md > .col-md-6,
+.row.row-grid.gutter-4.stacked.sm > .col-sm-6,
+.row.row-grid.gutter-4.stacked.xs > .col-xs-6 {
+    /* Set to default col-sm-6 padding */
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.row.row-grid.gutter-4.stacked > .col-xl-6:nth-child(n + 2),
+.row.row-grid.gutter-4.stacked > .col-lg-6:nth-child(n + 2),
+.row.row-grid.gutter-4.stacked > .col-md-6:nth-child(n + 2),
+.row.row-grid.gutter-4.stacked > .col-sm-6:nth-child(n + 2),
+.row.row-grid.gutter-4.stacked > .col-xs-6:nth-child(n + 2) {
+    margin-top: var(--gutter-4);
+}
+
+:deep(.indicator-column) {
+    padding: 0;
+}
+
+.overdue-indicator {
+    width: 8px;
+    min-width: 8px;
+    height: 100%;
+    background-color: var(--color-danger-strong);
+}
+
+.overdue-column-data.has-value {
+    color: var(--color-danger-strong);
+    font-weight: var(--font-weight-semibold);
+}
+
+.performance-column-data {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--font-size-small);
+    color: var(--color-interface-strong);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import BreakpointObserver from "./ConnectionOperationalSnapshot/breakpointObserver.partial.obs";
+    import ChartPanel from "./ConnectionOperationalSnapshot/chartPanel.partial.obs";
+    import { ellipsisTooltip as vEllipsisTooltip } from "./ConnectionOperationalSnapshot/ellipsisTooltipDirective.partial";
+    import KpiTile from "./ConnectionOperationalSnapshot/kpiTile.partial.obs";
+    import { BreakpointHelper } from "./ConnectionOperationalSnapshot/types.partial";
+    import BarChart from "@Obsidian/Controls/barChart.obs";
+    import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Grid, {
+        Column,
+        NumberColumn,
+        numberValueFilter,
+        pickExistingValueFilter,
+        PersonColumn
+    } from "@Obsidian/Controls/grid";
+    import LinearGaugeChart from "@Obsidian/Controls/linearGaugeChart.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { BarSeries, LinearGaugeSeries, TooltipContext } from "@Obsidian/Core/Controls/chart";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
+    import {
+        onConfigurationValuesChanged,
+        useBlockBrowserBus,
+        useConfigurationValues,
+        useInvokeBlockAction,
+        usePersonPreferences,
+        useReloadBlock
+    } from "@Obsidian/Utility/block";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ConnectorBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/connectorBag";
+    import { MetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/metricsBag";
+    import { OptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/optionsBag";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/completionMetricsBag";
+    import { GetMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/getMetricsBag";
+    import { RequestStateBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/requestStateBag";
+    import { RequestTimelineBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/requestTimelineBag";
+
+    const config = useConfigurationValues<ListBlockBox<OptionsBag>>();
+    const personPreferences = usePersonPreferences();
+    const breakpointHelper = ref<BreakpointHelper>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+    const browserBus = useBlockBrowserBus();
+
+    // #region Types
+
+    type CompletionMetric = {
+        value: string;
+        difference: string;
+        color: TrendColor;
+    };
+
+    type CompletionMetrics = {
+        timeliness: CompletionMetric;
+        responsiveness: CompletionMetric;
+        requestsCompleted: CompletionMetric;
+        averageTimeToComplete: CompletionMetric;
+    };
+
+    enum TrendColor {
+        Positive = "var(--color-success-strong)",
+        Negative = "var(--color-danger-strong)",
+        Neutral = "var(--color-interface-medium)"
+    }
+
+    const selectedDateRangeFilterPreferenceKey = "SelectedDateRangeFilter";
+    const blankConnectionOpportunityValue = "All Opportunities";
+
+    // #endregion Types
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    const requestState = ref<RequestStateBag | null | undefined>(config.options?.requestState);
+    const requestTimeline = ref<RequestTimelineBag | null | undefined>(config.options?.requestTimeline);
+    const completionMetrics = ref<CompletionMetricsBag | null | undefined>(config.options?.completionMetrics);
+
+    const selectedDateRangeOrEmptyString = ref<string>((() => {
+        if (selectedDateRangeFilterPreferenceKey) {
+            const preferenceValue = personPreferences.blockPreferences.getValue(selectedDateRangeFilterPreferenceKey);
+            if (preferenceValue) {
+                return preferenceValue;
+            }
+        }
+
+        if (config.options?.filters?.defaultDateRangeValue) {
+            return config.options.filters.defaultDateRangeValue;
+        }
+
+        return "";
+    })());
+
+    const selectedOpportunityGuidOrDefaultText = ref<string>("");
+
+    const selectedOpportunityIdKeyOrEmptyString = computed<string>(() => {
+        return config.options
+            ?.connectionOpportunities
+            ?.find(o => areEqual(o.value, selectedOpportunityGuidOrDefaultText.value))
+            ?.idKey ?? "";
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const countByStatusSeries = computed<BarSeries[]>(() => {
+        const statuses = requestState.value?.byStatus ?? [];
+
+        return Enumerable
+            .from(statuses)
+            .withIndex()
+            .select<BarSeries>(([s, index]) => {
+                return {
+                    label: s.status ?? "",
+                    data: Enumerable.from(statuses)
+                        .withIndex()
+                        .select<number | null>(([_, i]) => i === index ? s.count : null)
+                        .toArray(),
+                    color: s.color ?? undefined
+                };
+            })
+            .toArray();
+    });
+
+    const currentMetricsKpis = computed(() => {
+        const state = requestState.value;
+
+        return {
+            active: {
+                value: state?.totalActive ?? 0
+            },
+            unassigned: {
+                value: state?.totalUnassigned ?? 0
+            },
+            dueSoon: {
+                value: state?.totalDueSoon ?? 0,
+                color: "var(--color-warning-strong)"
+            },
+            overdue: {
+                value: state?.totalOverdue ?? 0,
+                color: "var(--color-danger-strong)"
+            }
+        };
+    });
+
+    const completionMetricsKpis = computed<CompletionMetrics>(() => {
+        const metrics = completionMetrics.value;
+
+        if (isNullish(metrics)) {
+            return {
+                timeliness: { value: "-", difference: "", color: TrendColor.Neutral },
+                responsiveness: { value: "-", difference: "", color: TrendColor.Neutral },
+                requestsCompleted: { value: "-", difference: "", color: TrendColor.Neutral },
+                averageTimeToComplete: { value: "-", difference: "", color: TrendColor.Neutral }
+            };
+        }
+        else {
+            return {
+                timeliness: {
+                    value: metrics.timelinessPercent.toLocaleString(undefined, { style: "percent" }),
+                    difference: formatDeltaPercent(metrics.timelinessPercentDelta),
+                    color: getTrendColor(metrics.timelinessPercentDelta)
+                },
+                responsiveness: {
+                    value: metrics.averageResponsivenessDays === 1 ? "1 Day" : `${metrics.averageResponsivenessDays.toLocaleString(undefined, { style: "decimal", maximumFractionDigits: 1 })} Days`,
+                    difference: formatDeltaDecimal(metrics.averageResponsivenessDaysDelta),
+                    // For responsiveness, an increase is a negative trend.
+                    color: getTrendColorInverted(metrics.averageResponsivenessDaysDelta)
+                },
+                requestsCompleted: {
+                    value: metrics.requestsCompletedCount.toLocaleString(),
+                    difference: formatDeltaDecimal(metrics.requestsCompletedCountDelta),
+                    color: getTrendColor(metrics.requestsCompletedCountDelta)
+                },
+                averageTimeToComplete: {
+                    value:
+                        metrics.averageCompletionDays === 1 ? "1 Day"
+                            : `${metrics.averageCompletionDays.toLocaleString(undefined, { style: "decimal", maximumFractionDigits: 1 })} Days`,
+                    difference: formatDeltaDecimal(metrics.averageCompletionDaysDelta),
+                    // For average time to complete, an increase is a negative trend.
+                    color: getTrendColorInverted(metrics.averageCompletionDaysDelta)
+                }
+            };
+        }
+    });
+
+    const linearGaugeChartData = computed<LinearGaugeSeries[]>(() => {
+        const state = requestState.value;
+
+        return [
+            { label: "On Track", data: [state?.totalOnTrack ?? 0], color: "var(--color-success-strong)" },
+            { label: "Due Soon", data: [state?.totalDueSoon ?? 0], color: "#F59E0B" },
+            { label: "Overdue", data: [state?.totalOverdue ?? 0], color: "#EF4444" },
+        ];
+    });
+
+    const upcomingFutureFollowUpsLabels = computed<string[]>(() => {
+        return Enumerable
+            .from(requestTimeline.value?.upcomingFollowUps ?? [])
+            .select(f => `Next ${f.daysAhead} Days`)
+            .toArray();
+    });
+
+    const upcomingFutureFollowUpsSeries = computed<BarSeries[]>(() => {
+        const upcomingFollowUps = requestTimeline.value?.upcomingFollowUps ?? [];
+
+        return Enumerable
+            .from(upcomingFollowUps)
+            .withIndex()
+            .select<BarSeries>(([f, index]) => {
+                return {
+                    label: `Next ${f.daysAhead} Days`,
+                    data: Enumerable.from(upcomingFollowUps)
+                        .withIndex()
+                        .select<number | null>(([_, i]) => i === index ? f.count : null)
+                        .toArray(),
+                    color: getTimelineColor(index)
+                };
+            })
+            .toArray();
+    });
+
+    const countByStatusLabels = computed<(string | string[])[]>(() => {
+        return Enumerable
+            .from(requestState.value?.byStatus ?? [])
+            .select<(string | string[])>(s => wrapByWords(s.status ?? "", 13))
+            .toArray();
+    });
+
+    const dateRangeItems = computed<ListItemBag[]>(() => {
+        return config.options?.filters?.dateRanges ?? [];
+    });
+
+    const completionMetricsKpiFooterSuffix = computed<string>(() => {
+        return selectedDateRangeOrEmptyString.value ? ` vs. Previous ${selectedDateRangeOrEmptyString.value} Days` : "";
+    });
+
+    const getMetricsBag = computed<GetMetricsBag>(() => {
+        return {
+            connectionOpportunityGuid: toGuidOrNull(selectedOpportunityGuidOrDefaultText.value)
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function getTimelineColor(index: number): string {
+        const colors = ["#2C5282", "#3182CE", "#90CDF4"];
+        return colors[index % colors.length];
+    }
+
+    /**
+     * Gets the text value for the "Person" column.
+     *
+     * @param row The row whose value to get.
+     */
+    function getPersonTextValue(row: Record<string, unknown>): string {
+        const person = (row as ConnectorBag).person;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    function wrapByWords(text: string, lineSize: number): string | string[] {
+        if (text.length <= lineSize) {
+            return text;
+        }
+
+        const words = text.split(" ");
+        const lines: string[] = [];
+        let currentLine = "";
+
+        for (const word of words) {
+            // If adding this word would exceed the line size
+            if ((currentLine.length + (currentLine ? 1 : 0) + word.length) > lineSize) {
+                if (currentLine) {
+                    lines.push(currentLine);
+                    currentLine = word;
+                }
+                else {
+                    // Edge case: single word longer than lineSize
+                    lines.push(word);
+                    currentLine = "";
+                }
+            }
+            else {
+                currentLine = currentLine ? `${currentLine} ${word}` : word;
+            }
+        }
+
+        if (currentLine) {
+            lines.push(currentLine);
+        }
+
+        return lines.length === 1 ? lines[0] : lines;
+    }
+
+    function formatDeltaPercent(deltaPercent: number): string {
+        if (deltaPercent > 0) {
+            return `+${deltaPercent.toLocaleString(undefined, { style: "percent" })}`;
+        }
+        else if (deltaPercent < 0) {
+            return deltaPercent.toLocaleString(undefined, { style: "percent" });
+        }
+        else {
+            return "No change";
+        }
+    }
+
+    function formatDeltaDecimal(deltaDecimal: number): string {
+        if (deltaDecimal > 0) {
+            return `+${deltaDecimal.toLocaleString(undefined, { style: "decimal", maximumFractionDigits: 1 })}`;
+        }
+        else if (deltaDecimal < 0) {
+            return deltaDecimal.toLocaleString(undefined, { style: "decimal", maximumFractionDigits: 1 });
+        }
+        else {
+            return "No change";
+        }
+    }
+
+    function getTrendColor(deltaPercent: number): TrendColor {
+        if (deltaPercent === 0) {
+            return TrendColor.Neutral;
+        }
+        else if (deltaPercent > 0) {
+            return TrendColor.Positive;
+        }
+        else {
+            return TrendColor.Negative;
+        }
+    }
+
+    function getTrendColorInverted(deltaPercent: number): TrendColor {
+        if (deltaPercent === 0) {
+            return TrendColor.Neutral;
+        }
+        else if (deltaPercent > 0) {
+            return TrendColor.Negative;
+        }
+        else {
+            return TrendColor.Positive;
+        }
+    }
+
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetRowData", {
+            bag: getMetricsBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    function formatRequestHealthOverviewTooltip(context: TooltipContext): string {
+        return `${context.label ? `${context.label}: ` : ""}${(context.value ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} requests (${context.formattedValue || "0%"})`;
+    }
+
+    function formatCountByStatusTooltipTitle(context: TooltipContext): string {
+        return context.seriesLabel;
+    }
+
+    function getGridRowPropertyName(name: keyof ConnectorBag): string {
+        return name;
+    }
+
+    async function refreshMetrics(): Promise<void> {
+        const result = await invokeBlockAction<MetricsBag>("GetMetrics", {
+            bag: getMetricsBag.value
+        });
+
+        if (result.isSuccess) {
+            completionMetrics.value = result.data?.completionMetrics;
+            requestState.value = result.data?.requestState;
+            requestTimeline.value = result.data?.requestTimeline;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while trying to refresh metrics.");
+        }
+    }
+
+    async function refreshCompletionMetrics(): Promise<void> {
+        const result = await invokeBlockAction<CompletionMetricsBag>("GetCompletionMetrics");
+
+        if (result.isSuccess) {
+            completionMetrics.value = result.data;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while trying to refresh completion metrics.");
+        }
+    }
+
+    function refreshGrid(): void {
+        gridDataSource.value = loadGridData();
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onConnectorRowClicked(personIdKey: string): void {
+        const connectionsHubUrl = config.navigationUrls?.["ConnectionsHub"]?.replace("((Key))", personIdKey).replace("((ConnectionOpportunityKey))", selectedOpportunityIdKeyOrEmptyString.value);
+        if (connectionsHubUrl) {
+            window.location.href = connectionsHubUrl;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(selectedDateRangeOrEmptyString, async () => {
+        if (selectedDateRangeFilterPreferenceKey) {
+            personPreferences.blockPreferences.setValue(selectedDateRangeFilterPreferenceKey, selectedDateRangeOrEmptyString.value);
+            await personPreferences.blockPreferences.save();
+        }
+
+        await refreshCompletionMetrics();
+    });
+
+    watch(getMetricsBag, async () => {
+        await Promise.all([refreshMetrics(), refreshGrid()]);
+    });
+
+    // #endregion Watchers
+
+    if (!config.errorMessage) {
+        gridDataSource.value = loadGridData();
+    }
+
+    browserBus.subscribe(PageMessages.ContextEntityChanged, async (message: Message<ContextEntityChangedData>) => {
+        if (areEqual(message.data.entityTypeGuid, EntityType.Campus)) {
+            await Promise.all([refreshMetrics(), refreshGrid()]);
+        }
+    });
+
+    onConfigurationValuesChanged(reloadBlock);
+</script>

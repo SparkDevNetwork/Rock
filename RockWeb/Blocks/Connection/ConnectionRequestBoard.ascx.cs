@@ -24,10 +24,11 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Lava;
+using Rock.Enums.Connection;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemKey;
@@ -76,22 +77,6 @@ namespace RockWeb.Blocks.Connection
         Order = 4,
         Key = AttributeKey.WorkflowEntryPage,
         DefaultValue = Rock.SystemGuid.Page.WORKFLOW_ENTRY )]
-
-    [CodeEditorField(
-        "Status Template",
-        Description = "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.",
-        EditorMode = CodeEditorMode.Lava,
-        DefaultValue = StatusTemplateDefaultValue,
-        Order = 5,
-        Key = AttributeKey.StatusTemplate )]
-
-    [CodeEditorField(
-        "Connection Request Status Icons Template",
-        Description = "Lava Template that can be used to customize what is displayed for the status icons in the connection request grid.",
-        EditorMode = CodeEditorMode.Lava,
-        DefaultValue = ConnectionRequestStatusIconsTemplateDefaultValue,
-        Key = AttributeKey.ConnectionRequestStatusIconsTemplate,
-        Order = 6 )]
 
     [LinkedPage(
         "Group Detail Page",
@@ -243,27 +228,17 @@ ORDER BY ct.[Name], cs.[Name]",
         /// </summary>
         private const int InitialActivitiesToShowInGrid = 10;
 
-        private const string StatusTemplateDefaultValue = @"
-<div class='pull-left badge-legend padding-r-md'>
-    <span class='pull-left badge badge-info badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'><span class='sr-only'>Assigned To You</span></span>
-    <span class='pull-left badge badge-warning badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned Item'><span class='sr-only'>Unassigned Item</span></span>
-    <span class='pull-left badge badge-critical badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Critical Status'><span class='sr-only'>Critical Status</span></span>
-    <span class='pull-left badge badge-danger badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'><span class='sr-only'>{{ IdleTooltip }}</span></span>
-</div>";
-
-        private const string ConnectionRequestStatusIconsTemplateDefaultValue = @"
+        private const string IndicatorLabelTemplate = @"
 <div class='board-card-pills'>
-    {% if ConnectionRequestStatusIcons.IsAssignedToYou %}
-    <span class='board-card-pill badge-info js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'><span class='sr-only'>Assigned To You</span></span>
+    {% if IndicatorOptions.IsAssignedToYou %}
+    <span class='label label-info' data-toggle='tooltip' data-original-title='Assigned To You' data-html='true'><i class='ti ti-user-circle'></i></span>
+    {% elseif IndicatorOptions.IsUnassigned %}
+    <span class='label label-default' data-toggle='tooltip' data-original-title='Unassigned' data-html='true'><i class='ti ti-user-off'></i></span>
     {% endif %}
-    {% if ConnectionRequestStatusIcons.IsUnassigned %}
-    <span class='board-card-pill badge-warning js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned'><span class='sr-only'>Unassigned</span></span>
-    {% endif %}
-    {% if ConnectionRequestStatusIcons.IsCritical %}
-    <span class='board-card-pill badge-critical js-legend-badge' data-toggle='tooltip' data-original-title='Critical'><span class='sr-only'>Critical</span></span>
-    {% endif %}
-    {% if ConnectionRequestStatusIcons.IsIdle %}
-    <span class='board-card-pill badge-danger js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'><span class='sr-only'>{{ IdleTooltip }}</span></span>
+    {% if IndicatorOptions.IsOverdue %}
+    <span class='label label-danger' data-toggle='tooltip' data-original-title='{{ IndicatorOptions.OverdueHtml }}' data-html='true'><i class='ti ti-exclamation-circle'></i></span>
+    {% elseif IndicatorOptions.IsDueSoon %}
+    <span class='label label-warning' data-toggle='tooltip' data-original-title='{{ IndicatorOptions.DueSoonHtml }}' data-html='true'><i class='ti ti-calendar-due'></i></span>
     {% endif %}
 </div>
 ";
@@ -280,12 +255,30 @@ ORDER BY ct.[Name], cs.[Name]",
         private static class PageParameterKey
         {
             public const string WorkflowId = "WorkflowId";
-            public const string ConnectionRequestId = "ConnectionRequestId";
-            public const string ConnectionRequestGuid = "ConnectionRequestGuid";
-            public const string ConnectionOpportunityId = "ConnectionOpportunityId";
-            public const string CampusId = "CampusId";
-            public const string ConnectionTypeId = "ConnectionTypeId";
             public const string EntitySetId = "EntitySetId";
+
+            // "ConnectionRequest" allows ConnectionRequest Id, Guid or IdKey values,
+            // while the older "ConnectionRequestId" / "ConnectionRequestGuid" only support Id and Guid, respectively.
+            public const string ConnectionRequest = "ConnectionRequest";
+            public const string ConnectionRequestId = "ConnectionRequestId";
+            public const string ConnectionRequestGuid = "ConnectionRequestGuid"; // Only used for outgoing URLs.
+
+            // "ConnectionOpportunity" allows ConnectionOpportunity Id, Guid or IdKey values,
+            // while the older "ConnectionOpportunityId" only supports Id.
+            public const string ConnectionOpportunity = "ConnectionOpportunity";
+            public const string ConnectionOpportunityId = "ConnectionOpportunityId";
+
+            // "ConnectionType" allows ConnectionType Id, Guid or IdKey values,
+            // while the older "ConnectionTypeId" only supports Id.
+            public const string ConnectionType = "ConnectionType";
+            public const string ConnectionTypeId = "ConnectionTypeId";
+
+            // "Campus" allows Campus Id, Guid or IdKey values,
+            // while the older "CampusId" only supports Id.
+            public const string Campus = "Campus";
+            public const string CampusId = "CampusId";
+
+            public const string IsCardViewMode = "IsCardViewMode";
         }
 
         /// <summary>
@@ -301,11 +294,9 @@ ORDER BY ct.[Name], cs.[Name]",
             public const string LavaBadgeBar = "LavaBadgeBar";
             public const string LavaHeadingTemplate = "LavaHeadingTemplate";
             public const string MaxCards = "MaxCards";
-            public const string ConnectionRequestStatusIconsTemplate = "ConnectionRequestStatusIconsTemplate";
             public const string PersonProfilePage = "PersonProfilePage";
             public const string WorkflowDetailPage = "WorkflowDetailPage";
             public const string WorkflowEntryPage = "WorkflowEntryPage";
-            public const string StatusTemplate = "StatusTemplate";
             public const string ConnectionRequestHistoryPage = "ConnectionRequestHistoryPage";
             public const string BulkUpdateRequestsPage = "BulkUpdateRequestsPage";
             public const string DefaultFilteredConnectionStates = "DefaultFilteredConnectionStates";
@@ -399,7 +390,164 @@ ORDER BY ct.[Name], cs.[Name]",
 
         #endregion Keys
 
-        #region ViewState Properties
+        #region Fields
+
+        private int? _connectionRequestIdParam;
+        private int? _connectionOpportunityIdParam;
+        private int? _connectionTypeIdParam;
+        private int? _campusIdParam;
+
+        #endregion Fields
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the <see cref="ConnectionRequest"/> identifier from either the "ConnectionRequestId" or "ConnectionRequest" page parameter.
+        /// </summary>
+        private int? ConnectionRequestIdParam
+        {
+            get
+            {
+                if ( _connectionRequestIdParam.HasValue )
+                {
+                    return _connectionRequestIdParam;
+                }
+
+                var connectionRequestId = PageParameter( PageParameterKey.ConnectionRequestId ).AsIntegerOrNull();
+                if ( connectionRequestId.HasValue && !PageCache.Layout.Site.DisablePredictableIds )
+                {
+                    _connectionRequestIdParam = connectionRequestId;
+                }
+                else
+                {
+                    var connectionRequestKey = PageParameter( PageParameterKey.ConnectionRequest );
+
+                    connectionRequestId = connectionRequestKey.AsIntegerOrNull();
+                    if ( connectionRequestId.HasValue && !PageCache.Layout.Site.DisablePredictableIds )
+                    {
+                        _connectionRequestIdParam = connectionRequestId;
+                    }
+                    else if ( connectionRequestKey.IsNotNullOrWhiteSpace() )
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            _connectionRequestIdParam = new ConnectionRequestService( rockContext )
+                                .GetQueryableByKey( connectionRequestKey, !PageCache.Layout.Site.DisablePredictableIds )
+                                .Select( cr => cr.Id )
+                                .FirstOrDefault();
+                        }
+                    }
+                }
+
+                return _connectionRequestIdParam;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ConnectionOpportunity"/> identifier from either the "ConnectionOpportunityId" or "ConnectionOpportunity" page parameter.
+        /// </summary>
+        private int? ConnectionOpportunityIdParam
+        {
+            get
+            {
+                if ( _connectionOpportunityIdParam.HasValue )
+                {
+                    return _connectionOpportunityIdParam;
+                }
+
+                var connectionOpportunityId = PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull();
+                if ( connectionOpportunityId.HasValue && !PageCache.Layout.Site.DisablePredictableIds )
+                {
+                    _connectionOpportunityIdParam = connectionOpportunityId;
+                }
+                else
+                {
+                    var connectionOpportunityKey = PageParameter( PageParameterKey.ConnectionOpportunity );
+
+                    connectionOpportunityId = connectionOpportunityKey.AsIntegerOrNull();
+                    if ( connectionOpportunityId.HasValue && !PageCache.Layout.Site.DisablePredictableIds )
+                    {
+                        _connectionOpportunityIdParam = connectionOpportunityId;
+                    }
+                    else if ( connectionOpportunityKey.IsNotNullOrWhiteSpace() )
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            _connectionOpportunityIdParam = new ConnectionOpportunityService( rockContext )
+                                .GetQueryableByKey( connectionOpportunityKey, !PageCache.Layout.Site.DisablePredictableIds )
+                                .Select( cr => cr.Id )
+                                .FirstOrDefault();
+                        }
+                    }
+                }
+
+                return _connectionOpportunityIdParam;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ConnectionType"/> identifier from either the "ConnectionTypeId" or "ConnectionType" page parameter.
+        /// </summary>
+        private int? ConnectionTypeIdParam
+        {
+            get
+            {
+                if ( _connectionTypeIdParam.HasValue )
+                {
+                    return _connectionTypeIdParam;
+                }
+
+                var connectionTypeId = PageParameter( PageParameterKey.ConnectionTypeId ).AsIntegerOrNull();
+                if ( connectionTypeId.HasValue && !PageCache.Layout.Site.DisablePredictableIds )
+                {
+                    _connectionTypeIdParam = connectionTypeId;
+                }
+                else
+                {
+                    var connectionTypeKey = PageParameter( PageParameterKey.ConnectionType );
+                    if ( connectionTypeKey.IsNotNullOrWhiteSpace() )
+                    {
+                        _connectionTypeIdParam = ConnectionTypeCache
+                            .Get( connectionTypeKey, !PageCache.Layout.Site.DisablePredictableIds )
+                            ?.Id;
+                    }
+                }
+
+                return _connectionTypeIdParam;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="Campus"/> identifier from either the "CampusId" or "Campus" page parameter.
+        /// </summary>
+        private int? CampusIdParam
+        {
+            get
+            {
+                if ( _campusIdParam.HasValue )
+                {
+                    return _campusIdParam;
+                }
+
+                var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+                if ( campusId.HasValue && !PageCache.Layout.Site.DisablePredictableIds )
+                {
+                    _campusIdParam = campusId;
+                }
+                else
+                {
+                    var campusKey = PageParameter( PageParameterKey.Campus );
+                    if ( campusKey.IsNotNullOrWhiteSpace() )
+                    {
+                        _campusIdParam = CampusCache
+                            .Get( campusKey, !PageCache.Layout.Site.DisablePredictableIds )
+                            ?.Id;
+                    }
+                }
+
+                return _campusIdParam;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the connection opportunity identifier.
@@ -601,7 +749,26 @@ ORDER BY ct.[Name], cs.[Name]",
             }
         }
 
-        #endregion ViewState Properties
+        /// <summary>
+        /// Gets whether group placement is enabled for the <see cref="ConnectionType"/>.
+        /// </summary>
+        private bool IsGroupPlacementEnabled
+        {
+            get
+            {
+                var connectionType = GetConnectionType();
+                return connectionType
+                    ?.EnabledFeatures
+                    .HasFlag( EnabledFeatureFlags.GroupPlacement ) == true;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether sequential status is enforced for the <see cref="ConnectionType"/>.
+        /// </summary>
+        private bool IsSequentialStatusEnforced => GetConnectionType()?.IsSequentialStatusEnforced == true;
+
+        #endregion Properties
 
         #region Base Control Methods
 
@@ -1053,35 +1220,6 @@ ORDER BY ct.[Name], cs.[Name]",
         }
 
         /// <summary>
-        /// Gets the status icon HTML.
-        /// </summary>
-        /// <returns></returns>
-        private string GetStatusIconHtml( ConnectionRequestViewModel viewModel )
-        {
-            if ( viewModel == null )
-            {
-                return string.Empty;
-            }
-
-            var connectionType = GetConnectionType();
-            var daysUntilRequestIdle = connectionType == null ? ( int? ) null : connectionType.DaysUntilRequestIdle;
-            var connectionRequestStatusIconTemplate = GetAttributeValue( AttributeKey.ConnectionRequestStatusIconsTemplate );
-            var mergeFields = new Dictionary<string, object>();
-
-            var connectionRequestStatusIcons = new
-            {
-                viewModel.IsAssignedToYou,
-                viewModel.IsCritical,
-                viewModel.IsIdle,
-                viewModel.IsUnassigned
-            };
-
-            mergeFields.Add( "ConnectionRequestStatusIcons", LavaDataObject.FromAnonymousObject( connectionRequestStatusIcons ) );
-            mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", daysUntilRequestIdle ) );
-            return connectionRequestStatusIconTemplate.ResolveMergeFields( mergeFields );
-        }
-
-        /// <summary>
         /// Shows the request detail modal.
         /// </summary>
         private void BindRequestModalViewMode()
@@ -1117,7 +1255,7 @@ ORDER BY ct.[Name], cs.[Name]",
             // Bind the more straightforward UI pieces
             divRequestModalViewModePhoto.Attributes["title"] = string.Format( "{0} Profile Photo", viewModel.PersonFullname );
             divRequestModalViewModePhoto.Attributes["style"] = string.Format( "background-image: url( '{0}' );", viewModel.PersonPhotoUrl );
-            lRequestModalViewModeStatusIcons.Text = GetStatusIconHtml( viewModel );
+            lRequestModalViewModeStatusIcons.Text = ConnectionRequestService.GetIndicatorLabelHtml( viewModel, IndicatorLabelTemplate );
             lRequestModalViewModePersonFullName.Text = viewModel.PersonFullname;
             lRequestModalViewModeEmail.Text = requesterPerson.GetEmailTag( ResolveRockUrl( "/" ) );
             aRequestModalViewModeProfileLink.Attributes["href"] = string.Format( "/person/{0}", viewModel.PersonId );
@@ -1175,14 +1313,30 @@ ORDER BY ct.[Name], cs.[Name]",
                     string.Format( "{0} ({1})", viewModel.DateOpened.Value.ToShortDateString(), viewModel.DaysOrWeeksSinceOpeningText ) );
             }
 
+            if ( viewModel.IsOverdue )
+            {
+                rightDescList.Add(
+                    "Due Date",
+                    $"<span class='text-danger'>{viewModel.DueDate.Value:d} ({viewModel.OverdueDaysText} Overdue)</span>"
+                );
+            }
+            else if ( viewModel.DueDate.HasValue )
+            {
+                var textClass = viewModel.IsDueSoon ? "text-warning" : string.Empty;
+                rightDescList.Add(
+                    "Due Date",
+                    $"<span class='{textClass}'>{viewModel.DueDate.Value:d} ({viewModel.DueInDaysText})</span>"
+                );
+            }
+
             // Placement group HTML
             var placementGroupHtml = string.Empty;
 
-            if ( viewModel.GroupName.IsNullOrWhiteSpace() )
+            if ( IsGroupPlacementEnabled && viewModel.GroupName.IsNullOrWhiteSpace() )
             {
                 placementGroupHtml = "None Assigned";
             }
-            else
+            else if ( IsGroupPlacementEnabled )
             {
                 var groupDetailPageUrl = LinkedPageUrl(
                     AttributeKey.GroupDetailPage,
@@ -1240,7 +1394,10 @@ ORDER BY ct.[Name], cs.[Name]",
                 }
             }
 
-            rightDescList.Add( "Placement Group", placementGroupHtml );
+            if ( placementGroupHtml.IsNotNullOrWhiteSpace() )
+            {
+                rightDescList.Add( "Placement Group", placementGroupHtml );
+            }
 
             lRequestModalViewModeSideDescription.Text = rightDescList.Html;
 
@@ -1556,12 +1713,45 @@ ORDER BY ct.[Name], cs.[Name]",
                 connectionRequest.ConnectionState = ConnectionState.Active;
             }
 
-            if ( connectionRequest.ConnectionStatusId != rblRequestModalAddEditModeStatus.SelectedValueAsInt().Value )
+            var connectionStatusId = rblRequestModalAddEditModeStatus.SelectedValueAsInt() ?? 0;
+            var isSequentialAddMode = isAddMode && IsSequentialStatusEnforced;
+            if ( isSequentialAddMode || connectionStatusId == 0 )
             {
-                MaintainRequestOrder( connectionRequest, connectionRequestService, connectionRequest.Order, connectionRequest.ConnectionStatusId, rblRequestModalAddEditModeStatus.SelectedValueAsInt().Value, rockContext );
+                var allStatuses = GetConnectionType()
+                    .ConnectionStatuses
+                    .OrderBy( cs => cs.Order )
+                    .ThenByDescending( cs => cs.IsDefault )
+                    .ThenBy( cs => cs.Name );
+
+                if ( isSequentialAddMode )
+                {
+                    // If sequential, default is the first active status (ignoring [IsDefault] flag).
+                    connectionStatusId = allStatuses
+                        .FirstOrDefault( s => s.IsActive )
+                        ?.Id ?? 0;
+                }
+                else
+                {
+                    // If not sequential, default is the first active [IsDefault] status.
+                    connectionStatusId = allStatuses
+                        .FirstOrDefault( s => s.IsActive && s.IsDefault )
+                        ?.Id ?? 0;
+                }
+
+                if ( connectionStatusId == 0 )
+                {
+                    cvRequestModalCustomValidator.IsValid = false;
+                    cvRequestModalCustomValidator.ErrorMessage = "Unable to determine Connection Status.";
+                    return;
+                }
             }
 
-            connectionRequest.ConnectionStatusId = rblRequestModalAddEditModeStatus.SelectedValueAsInt().Value;
+            if ( connectionRequest.ConnectionStatusId != connectionStatusId )
+            {
+                MaintainRequestOrder( connectionRequest, connectionRequestService, connectionRequest.Order, connectionRequest.ConnectionStatusId, connectionStatusId, rockContext );
+            }
+
+            connectionRequest.ConnectionStatusId = connectionStatusId;
             connectionRequest.Comments = tbRequestModalAddEditModeComments.Text.SanitizeHtml();
 
             // If this request is a Future FollowUp state, use the selected date from the date picker, otherwise it should be null.
@@ -1859,6 +2049,14 @@ ORDER BY ct.[Name], cs.[Name]",
                     groups.Add( currentGroup );
                 }
             }
+
+            if ( !IsGroupPlacementEnabled || !groups.Any() )
+            {
+                ddlRequestModalAddEditModePlacementGroup.Visible = false;
+                return;
+            }
+
+            ddlRequestModalAddEditModePlacementGroup.Visible = true;
 
             foreach ( var g in groups.OrderBy( g => g.Name ).ThenBy( g => g.Id ) )
             {
@@ -2173,12 +2371,28 @@ ORDER BY ct.[Name], cs.[Name]",
                 .ThenByDescending( cs => cs.IsDefault )
                 .ThenBy( cs => cs.Name );
 
+            var currentStatusId = viewModel?.StatusId;
+
             foreach ( var status in allStatuses )
             {
                 // Add Status to selection list only if marked as active or currently selected.
-                if ( status.IsActive )
+                var isCurrentStatus = currentStatusId.HasValue && status.Id == currentStatusId.Value;
+
+                if ( status.IsActive || isCurrentStatus )
                 {
-                    rblRequestModalAddEditModeStatus.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
+                    // In non-sequential status mode, all active statuses should be enabled.
+                    // In sequential mode, only the current status and the one immediately following should be enabled.
+                    var isEnabled = !IsSequentialStatusEnforced
+                        || isCurrentStatus
+                        || ConnectionType.IsNextSequentialActiveStatus(
+                            connectionType.Id,
+                            currentStatusId ?? 0,
+                            status.Id
+                        );
+
+                    var statusListItem = new ListItem( status.Name, status.Id.ToString().ToUpper(), isEnabled );
+
+                    rblRequestModalAddEditModeStatus.Items.Add( statusListItem );
                 }
             }
 
@@ -2193,11 +2407,15 @@ ORDER BY ct.[Name], cs.[Name]",
 
                 rblRequestModalAddEditModeState.SetValue( ( int ) viewModel.ConnectionState );
                 tbRequestModalAddEditModeComments.Text = viewModel.Comments;
-                rblRequestModalAddEditModeStatus.SetValue( viewModel.StatusId );
+                rblRequestModalAddEditModeStatus.SetValue( currentStatusId );
                 ddlRequestModalAddEditModePlacementGroup.SetValue( viewModel.PlacementGroupId );
                 ddlRequestModalAddEditModePlacementRole.SetValue( viewModel.PlacementGroupRoleId );
                 ddlRequestModalAddEditModePlacementStatus.SetValue( ( int? ) viewModel.PlacementGroupMemberStatus );
                 dpRequestModalAddEditModeFollowUp.SelectedDate = viewModel.FollowupDate;
+
+
+                pnlRequestModalAddModeSequentialStatus.Visible = false;
+                rblRequestModalAddEditModeStatus.Visible = true;
             }
             else
             {
@@ -2205,11 +2423,24 @@ ORDER BY ct.[Name], cs.[Name]",
                 mdRequest.SubTitle = string.Empty;
 
                 // Clear controls and set defaults
-                var defaultStatus = allStatuses.FirstOrDefault( s => s.IsDefault );
-
-                if ( defaultStatus != null )
+                if ( IsSequentialStatusEnforced )
                 {
-                    rblRequestModalAddEditModeStatus.SetValue( defaultStatus.Id );
+                    // If sequential, default is the first active status (ignoring [IsDefault] flag).
+                    var defaultStatus = allStatuses.FirstOrDefault( s => s.IsActive );
+                    lRequestModalAddModeSequentialStatus.Text = defaultStatus?.Name;
+
+                    pnlRequestModalAddModeSequentialStatus.Visible = true;
+                    rblRequestModalAddEditModeStatus.Visible = false;
+                }
+                else
+                {
+                    // If not sequential, default is the first active [IsDefault] status.
+                    var defaultStatus = allStatuses.FirstOrDefault( s => s.IsActive && s.IsDefault );
+
+                    rblRequestModalAddEditModeStatus.SetValue( defaultStatus?.Id );
+
+                    pnlRequestModalAddModeSequentialStatus.Visible = false;
+                    rblRequestModalAddEditModeStatus.Visible = true;
                 }
 
                 ppRequestModalAddEditModePerson.SetValue( null );
@@ -2617,7 +2848,7 @@ ORDER BY ct.[Name], cs.[Name]",
 
             if ( lStatusIcons != null )
             {
-                lStatusIcons.Text = GetStatusIconHtml( connectionRequestViewModel );
+                lStatusIcons.Text = ConnectionRequestService.GetIndicatorLabelHtml( connectionRequestViewModel, IndicatorLabelTemplate );
             }
 
             // Status
@@ -2781,6 +3012,7 @@ ORDER BY ct.[Name], cs.[Name]",
             }
             else
             {
+                // TODO - Find this feature
                 NavigateToLinkedPage( AttributeKey.WorkflowDetailPage, PageParameterKey.WorkflowId, requestWorkflow.Workflow.Id );
             }
         }
@@ -2943,6 +3175,8 @@ ORDER BY ct.[Name], cs.[Name]",
                     .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id );
                 var campuses = CampusCache.All().Where( c => c.IsActive ?? true ).ToList();
 
+                // If there is only one campus OR the group is not set to a specific campus...
+
                 // Grant edit access to any of those in a non campus-specific connector group
                 userCanEditConnectionRequest = qryConnectionOpportunityConnectorGroups
                     .Any( g =>
@@ -2952,6 +3186,7 @@ ORDER BY ct.[Name], cs.[Name]",
 
                 if ( !userCanEditConnectionRequest )
                 {
+                    // Current Person still has to be a Connector.
                     // If this is a new request, grant edit access to any connector group. Otherwise, match the request's campus to the corresponding campus-specific connector group
                     var groupCampuses = qryConnectionOpportunityConnectorGroups
                         .Where( g =>
@@ -2963,6 +3198,7 @@ ORDER BY ct.[Name], cs.[Name]",
                         groupCampuses = groupCampuses.Where( g => ( connectionRequest.Id == 0 || ( connectionRequest.CampusId.HasValue && g.CampusId == connectionRequest.CampusId.Value ) ) );
                     }
 
+                    // If the connetion request is new OR the group campus matches the connection request campus.
                     foreach ( var groupCampus in groupCampuses )
                     {
                         userCanEditConnectionRequest = true;
@@ -4707,18 +4943,6 @@ ORDER BY ct.[Name], cs.[Name]",
         }
 
         /// <summary>
-        /// Gets the connection request status icons template.
-        /// </summary>
-        /// <returns></returns>
-        private string GetConnectionRequestStatusIconsTemplate()
-        {
-            var value = GetAttributeValue( AttributeKey.ConnectionRequestStatusIconsTemplate );
-            return value.IsNullOrWhiteSpace() ?
-                ConnectionRequestStatusIconsTemplateDefaultValue :
-                value;
-        }
-
-        /// <summary>
         /// Gets the placement groups.
         /// </summary>
         /// <param name="campusId">The campus identifier.</param>
@@ -5021,11 +5245,17 @@ ORDER BY ct.[Name], cs.[Name]",
         {
             // Get the available opportunity
             var typeViewModels = GetConnectionTypeViewModels();
-            var availableOpportunityIds = typeViewModels.SelectMany( vm => vm.ConnectionOpportunities.Select( co => co.Id ) );
+            var availableTypeIds = typeViewModels.Select( vm => vm.Id ).ToList();
+            var availableOpportunityIds = typeViewModels.SelectMany( vm => vm.ConnectionOpportunities.Select( co => co.Id ) ).ToList();
 
             // Check for a connection request or opportunity id param. The request takes priority since it is more specific
-            var connectionRequestIdParam = PageParameter( PageParameterKey.ConnectionRequestId ).AsIntegerOrNull();
-            var connectionOpportunityIdParam = PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull();
+            var connectionRequestIdParam = ConnectionRequestIdParam;
+            var connectionOpportunityIdParam = ConnectionOpportunityIdParam;
+            var connectionTypeIdParam = ConnectionTypeIdParam;
+
+            // Leave this here, even though we'll also check for a "Campus" page parameter below on initial block load.
+            // This is to preserve the existing behavior where we'll only set the person's block Campus preference if
+            // the "CampusId" page parameter is passed.
             var campusIdParam = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
 
             if ( !ConnectionOpportunityId.HasValue && connectionRequestIdParam.HasValue )
@@ -5053,7 +5283,7 @@ ORDER BY ct.[Name], cs.[Name]",
                 }
             }
 
-            // If the opportunity is not yet set by the request id param, then set it
+            // If the opportunity is not yet set by the request id param, then set it from the opportunity id param
             if ( !ConnectionOpportunityId.HasValue &&
                 connectionOpportunityIdParam.HasValue &&
                 availableOpportunityIds.Contains( connectionOpportunityIdParam.Value ) )
@@ -5065,7 +5295,25 @@ ORDER BY ct.[Name], cs.[Name]",
                 RequestModalViewModeSubMode = RequestModalViewModeSubMode_View;
             }
 
-            // If the opportunity is not yet set by the request or opportunity id params, then set it from preference
+            // If the opportunity is not yet set by the request or opportunity id parms, then set it from the type id param
+            if ( !ConnectionOpportunityId.HasValue &&
+                connectionTypeIdParam.HasValue &&
+                availableTypeIds.Contains( connectionTypeIdParam.Value ) )
+            {
+                // We'll choose the first opportunity of this type.
+                ConnectionOpportunityId = typeViewModels
+                    .FirstOrDefault( t => t.Id == connectionTypeIdParam.Value )
+                    ?.ConnectionOpportunities
+                    ?.FirstOrDefault()
+                    ?.Id;
+
+                ConnectionRequestId = null;
+                ViewAllActivities = false;
+                IsRequestModalAddEditMode = false;
+                RequestModalViewModeSubMode = RequestModalViewModeSubMode_View;
+            }
+
+            // If the opportunity is not yet set by the request, opportunity or type id params, then set it from preference
             if ( !ConnectionOpportunityId.HasValue )
             {
                 var preferences = GetBlockPersonPreferences();
@@ -5083,6 +5331,17 @@ ORDER BY ct.[Name], cs.[Name]",
 
             // Load the view mode
             IsCardViewMode = LoadSettingByConnectionType( UserPreferenceKey.ViewMode ).AsBooleanOrNull() ?? true;
+
+            if ( !Page.IsPostBack )
+            {
+                // On initial block load, the page parameter should overrule person preferences.
+                // (But should not WRITE to person preferences.)
+                var isCardViewModePageParam = PageParameter( PageParameterKey.IsCardViewMode ).AsBooleanOrNull();
+                if ( isCardViewModePageParam.HasValue )
+                {
+                    IsCardViewMode = isCardViewModePageParam.Value;
+                }
+            }
 
             // Load the sort property
             ConnectionRequestViewModelSortProperty sortProperty;
@@ -5103,6 +5362,17 @@ ORDER BY ct.[Name], cs.[Name]",
 
             // Load the campus id
             CampusId = LoadSettingByConnectionType( UserPreferenceKey.CampusFilter ).AsIntegerOrNull();
+
+            if ( !Page.IsPostBack )
+            {
+                // On initial block load, the "Campus" page parameter should overrule person preferences.
+                // (But should not WRITE to person preferences).
+                campusIdParam = CampusIdParam;
+                if ( campusIdParam.HasValue )
+                {
+                    CampusId = campusIdParam;
+                }
+            }
 
             // Load the connector filter
             ConnectorPersonAliasId = LoadSettingByConnectionType( UserPreferenceKey.ConnectorPersonAliasId ).AsIntegerOrNull();
@@ -5230,7 +5500,7 @@ ORDER BY ct.[Name], cs.[Name]",
                 CurrentPersonAliasId.Value,
                 ConnectionRequestId.Value,
                 new ConnectionRequestViewModelQueryArgs(),
-                GetConnectionRequestStatusIconsTemplate() );
+                IndicatorLabelTemplate );
 
             return _connectionRequestViewModel;
         }
@@ -5865,7 +6135,7 @@ ORDER BY ct.[Name], cs.[Name]",
         /// </summary>
         private void RefreshRequestCard()
         {
-            var rawTemplate = GetConnectionRequestStatusIconsTemplate();
+            var rawTemplate = IndicatorLabelTemplate;
             var whitespaceRemovedTemplate = Regex.Replace( rawTemplate, @"\s+", " " );
 
             var script = string.Format(
@@ -5911,7 +6181,7 @@ ORDER BY ct.[Name], cs.[Name]",
         /// </summary>
         private void BindBoard()
         {
-            var rawTemplate = GetConnectionRequestStatusIconsTemplate();
+            var rawTemplate = IndicatorLabelTemplate;
             var whitespaceRemovedTemplate = Regex.Replace( rawTemplate, @"\s+", " " );
 
             var script = string.Format(
@@ -5930,7 +6200,8 @@ ORDER BY ct.[Name], cs.[Name]",
     lastActivityTypeIds: {11},
     controlClientId: {12},
     pastDueOnly: {13},
-    connectionRequestId: {14}
+    connectionRequestId: {14},
+    isSequentialStatusEnforced: {15}
 }});",
                 ToJavaScript( ConnectionOpportunityId ), // 0
                 ToJavaScript( GetMaxCardsPerColumn() ), // 1
@@ -5946,7 +6217,8 @@ ORDER BY ct.[Name], cs.[Name]",
                 ToJavaScript( cblLastActivityFilter.SelectedValuesAsInt ), // 11
                 ToJavaScript( lbJavaScriptCommand.ClientID ), // 12
                 ToJavaScript( rcbPastDueOnly.Checked ), //13
-                ToJavaScript( ConnectionRequestId ) /* 14 */ );
+                ToJavaScript( ConnectionRequestId ), // 14
+                ToJavaScript( IsSequentialStatusEnforced ) /* 15 */);
 
             ScriptManager.RegisterStartupScript(
                 upnlJavaScript,

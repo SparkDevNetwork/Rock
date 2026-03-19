@@ -97,11 +97,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
     [Rock.SystemGuid.BlockTypeGuid( "E1FF677D-5E52-4259-90C7-5560ECBBD82B" )]
     public partial class WorkflowTypeDetail : RockBlock
     {
-        protected static class AuthorizationMisc
-        {
-            public const string VIEW_LIST = "ViewList";
-        }
-
         #region Properties
 
         private List<Attribute> AttributesState { get; set; }
@@ -1426,6 +1421,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 readOnly = true;
                 nbEditModeMessage.Heading = "Information";
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( WorkflowType.FriendlyTypeName );
+                btnCopy.Visible = false;
             }
 
             if ( workflowType.IsSystem )
@@ -1436,7 +1432,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             }
 
             // ViewList authorization is also used by WorkflowNavigation and WorkflowList
-            if ( !workflowType.IsAuthorized( AuthorizationMisc.VIEW_LIST, CurrentPerson ) )
+            if ( !workflowType.IsAuthorized( Rock.Security.Authorization.VIEW_LIST, CurrentPerson ) )
             {
                 lbManage.Enabled = false;
             }
@@ -1444,13 +1440,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             if ( !hasAdministrate )
             {
                 btnSecurity.Visible = false;
-            }
-
-            // Only block editors can see the copy button. Otherwise Rock.Security.Authorization.AllowPerson()
-            // would be needed upon save (adding) if someone else created a 'copy' of a workflow.
-            if ( !isBlockEditor )
-            {
-                btnCopy.Visible = false;
             }
 
             if ( readOnly )

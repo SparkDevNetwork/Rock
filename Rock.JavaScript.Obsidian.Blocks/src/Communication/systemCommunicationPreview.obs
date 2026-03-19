@@ -330,7 +330,7 @@
         queryParams.set("TargetPersonIdKey", targetPersonIdKey.value);
         queryParams.set("PublicationDate", selectedMessageDate.value);
 
-        history.pushState(null, "", "?" + queryParams.toString());
+        history.replaceState(null, "", "?" + queryParams.toString());
     }
 
     // #endregion

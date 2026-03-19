@@ -25,6 +25,7 @@ using Rock.Cms;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -221,5 +222,38 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
+        #region ISecured
+
+        /*
+             3/12/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                var metadata = GetMetadata();
+
+                // Version 2 endpoints are restricted by default. Explicit
+                // permissions must be granted to each controller or endpoint.
+                if ( metadata?.Version == 2 )
+                {
+                    return new GlobalRestrictedDefault();
+                }
+
+                return base.ParentAuthority;
+            }
+        }
+
+        #endregion ISecured
     }
 }

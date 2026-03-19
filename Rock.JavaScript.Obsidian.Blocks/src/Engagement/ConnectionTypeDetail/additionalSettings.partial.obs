@@ -22,11 +22,10 @@
                   headerLocation="top">
         <div class="row">
             <div class="col-md-6">
-                <DropDownList v-model="communicationTemplateGuidValue"
-                              label="Communication Templates Category"
-                              :items="communicationTemplateOptions"
-                              :showBlankItem="true"
-                              :multiple="false" />
+                <CategoryPicker v-model="communicationTemplateCategoryValue"
+                                label="Communication Templates Category"
+                                :entityTypeGuid="EntityType.CommunicationTemplate"
+                                :multiple="false" />
             </div>
         </div>
 
@@ -119,14 +118,6 @@
         },
 
         /**
-         * The available communication template category options to show in the Communication Templates Category dropdown.
-         */
-        communicationTemplateOptions: {
-            type: Array as PropType<ListItemBag[]>,
-            required: true
-        },
-
-        /**
          * The available connection type options to show in the "Show Additional Requests From" dropdown.
          */
         connectionTypeOptions: {
@@ -203,16 +194,25 @@
         }
     });
 
-    const communicationTemplateGuidValue = computed({
-        get(): string {
-            return additionalSettings.value.communicationSettings?.communicationTemplateCategoryGuid ?? "";
+    const communicationTemplateCategoryValue = computed({
+        get(): ListItemBag | null {
+            const guid = additionalSettings.value.communicationSettings?.communicationTemplateCategoryGuid;
+
+            if (!guid) {
+                return null;
+            }
+
+            return {
+                value: guid,
+                text: ""
+            };
         },
-        set(value: string) {
+        set(value: ListItemBag | null) {
             additionalSettings.value = {
                 ...additionalSettings.value,
                 communicationSettings: {
                     ...(additionalSettings.value.communicationSettings ?? {}),
-                    communicationTemplateCategoryGuid: value || null
+                    communicationTemplateCategoryGuid: value?.value ?? null
                 }
             };
         }

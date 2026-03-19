@@ -61,7 +61,7 @@ namespace Rock.Model
         /// <returns>A string representing the text for the percentage and earned grade.</returns>
         public string GetGradeText( IEnumerable<LearningGradingSystemScale> scales = null, int decimalPlaces = 0 )
         {
-            if ( !IsStudentCompleted && !IsFacilitatorCompleted )
+            if ( !IsCompleted )
             {
                 // If incomplete return an empty string.
                 return string.Empty;
@@ -138,6 +138,13 @@ namespace Rock.Model
                 return FacilitatorComment.IsNotNullOrWhiteSpace();
             }
         }
+
+        /// <summary>
+        /// Gets whether the assigned party (student or facilitator) has completed the activity.
+        /// </summary>
+        public bool IsCompleted =>
+            ( IsStudentCompleted && LearningClassActivity?.AssignTo == AssignTo.Student )
+            || ( IsFacilitatorCompleted && LearningClassActivity?.AssignTo == AssignTo.Facilitator );
 
         /// <summary>
         /// Determines if the activity was completed late or is currently incomplete and late.

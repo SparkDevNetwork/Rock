@@ -21,22 +21,28 @@
 // </copyright>
 //
 
-/**
- * A single row in the Component List grid representing a MEF component.
- */
+import { Guid } from "@Obsidian/Types";
+
+/** A single row in the Component List grid representing a MEF component. */
 export type ComponentListRowBag = {
-    /** Gets or sets the component identifier. */
-    id?: number;
-
-    /** Gets or sets the friendly name of the component. */
-    name?: string;
-
     /** Gets or sets the description of the component. */
-    description?: string;
+    description?: string | null;
+
+    /**
+     * Gets or sets the EntityType identifier for this component,
+     * used to display per-component security.
+     */
+    entityTypeId: number;
+
+    /**
+     * Gets or sets the EntityType GUID for this component. Used as
+     * the row identifier for the grid.
+     */
+    guid: Guid;
 
     /** Gets or sets a value indicating whether the component is active. */
-    isActive?: boolean;
+    isActive: boolean;
 
-    /** Gets or sets the EntityType identifier for this component. */
-    entityTypeId?: number;
+    /** Gets or sets the friendly name of the component. */
+    name?: string | null;
 };

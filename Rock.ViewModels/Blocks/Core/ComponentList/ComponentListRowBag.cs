@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.ViewModels.Blocks.Core.ComponentList
 {
     /// <summary>
@@ -23,9 +25,10 @@ namespace Rock.ViewModels.Blocks.Core.ComponentList
     public class ComponentListRowBag
     {
         /// <summary>
-        /// Gets or sets the component identifier (the dictionary key in the container).
+        /// Gets or sets the EntityType GUID for this component. Used as
+        /// the row identifier for the grid.
         /// </summary>
-        public int Id { get; set; }
+        public Guid Guid { get; set; }
 
         /// <summary>
         /// Gets or sets the friendly name of the component.

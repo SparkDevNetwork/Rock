@@ -79,6 +79,12 @@ export type LearningClassActivityCompletionBag = {
     /** Indicates whether or not the activity is currently available. */
     isAvailable: boolean;
 
+    /**
+     * Indicates whether or not the related activity instance has been completed by the party (student or facilitator)
+     * who's actually responsible for completing it based on the activity's "assigned to" value.
+     */
+    isCompleted: boolean;
+
     /** Indicates whether or not the activity is due within a week. */
     isDueSoon: boolean;
 

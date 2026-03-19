@@ -44,7 +44,7 @@ export const ConnectionStateDescription: Record<number, string> = {
 
     2: "Future Follow Up",
 
-    3: "Connected"
+    3: "Completed"
 };
 
 /** Type of connection state */

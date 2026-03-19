@@ -24,18 +24,25 @@
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /**
- * The data bag returned when editing a component's attributes.
+ * The data bag returned when editing a component's attributes in the
+ * Component List block.
  */
 export type ComponentListEditBag = {
-    /** Gets or sets the friendly name of the component being edited. */
-    name?: string;
+    /**
+     * Gets or sets the public attribute definitions for the component,
+     * keyed by attribute key.
+     */
+    attributes?: Record<string, PublicAttributeBag> | null;
 
-    /** Gets or sets the public attribute definitions for the component. */
-    attributes?: Record<string, PublicAttributeBag>;
-
-    /** Gets or sets the public attribute values for the component. */
-    attributeValues?: Record<string, string>;
+    /**
+     * Gets or sets the public attribute values for the component,
+     * keyed by attribute key.
+     */
+    attributeValues?: Record<string, string> | null;
 
     /** Gets or sets a value indicating whether to show the SMTP warning. */
-    isSmtpTransport?: boolean;
+    isSmtpTransport: boolean;
+
+    /** Gets or sets the friendly name of the component being edited. */
+    name?: string | null;
 };
