@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.Entity.SqlServer;
 using System.Data.SqlTypes;
 using System.Linq;
 
@@ -471,9 +472,17 @@ namespace Rock.Model
             var attributeService = new AttributeService( rockContext );
             var attributeValueService = new AttributeValueService( rockContext );
 
-            var matrixGuidQuery = attributeMatrixService.Queryable().AsNoTracking().Where( am =>
-                am.AttributeMatrixItems.Any( ami => ami.Id == EntityId ) )
-                .Select( am => am.Guid.ToString() );
+            // Get the matrix that contains the current entity.
+            var matrixQuery = attributeMatrixService.Queryable().AsNoTracking().Where( am =>
+                am.AttributeMatrixItems.Any( ami => ami.Id == EntityId ) );
+
+            var matrixGuidQuery = matrixQuery.Select( am => am.Guid.ToString() );
+
+            // Build a checksum subquery to leverage the indexed ValueChecksum
+            // column, preventing SQL Server from choosing a full table scan on
+            // AttributeValue.Value. See issue #6743.
+            var matrixGuidChecksumQuery = matrixQuery
+                .Select( am => SqlFunctions.Checksum( am.Guid.ToString() ) );
 
             var matrixFieldType = FieldTypeCache.Get( SystemGuid.FieldType.MATRIX );
             var attributeIdQuery = attributeService.Queryable().AsNoTracking().Where( a =>
@@ -481,7 +490,9 @@ namespace Rock.Model
                 .Select( a => a.Id );
 
             var attributeValue = attributeValueService.Queryable().AsNoTracking().FirstOrDefault( av =>
-                 attributeIdQuery.Contains( av.AttributeId ) && matrixGuidQuery.Contains( av.Value ) );
+                 attributeIdQuery.Contains( av.AttributeId )
+                 && matrixGuidChecksumQuery.Contains( ( int? ) av.ValueChecksum )
+                 && matrixGuidQuery.Contains( av.Value ) );
 
             return attributeValue;
         }
