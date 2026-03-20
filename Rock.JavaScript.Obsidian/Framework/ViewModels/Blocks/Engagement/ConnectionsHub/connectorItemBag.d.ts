@@ -21,10 +21,17 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Represents a connector option for selection in the Connections Hub, including a profile photo for display in the connector picker. */
 export type ConnectorItemBag = {
+    /** Gets or sets the list of campus identifiers that this connector is associated with. */
+    campusGuids?: Guid[] | null;
+
+    /** Gets or sets a boolean indicating whether this connector is available to all campuses (true) or only to specific campuses (false). */
+    isAvailableToAllCampuses: boolean;
+
     /** Gets or sets the list item containing the connector's identifier value and display name. */
     listItemBag?: ListItemBag | null;
 

@@ -63,8 +63,11 @@ export type ConnectionRequestDetailOptionsBag = {
     /** Gets or sets the encrypted identifier key of the Connection Type this request belongs to. */
     connectionTypeIdKey?: string | null;
 
-    /** Gets or sets the list of connectors (with photo URLs) available for assignment to the request. */
+    /** Gets or sets the list of connectors available for assignment to the request. Filtered by campus for view mode. */
     connectorItems?: ConnectorItemBag[] | null;
+
+    /** Gets or sets the list of connectors avaiable when editing a Connection Request. Includes all connectors regardless of campus association since edit mode will filter by campus on the client. */
+    connectorItemsForEdit?: ConnectorItemBag[] | null;
 
     /** Gets or sets a value indicating whether an active AI provider is configured. */
     isAISummaryVisible: boolean;

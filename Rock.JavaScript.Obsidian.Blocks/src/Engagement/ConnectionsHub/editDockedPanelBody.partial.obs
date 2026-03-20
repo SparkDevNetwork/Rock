@@ -37,18 +37,21 @@
                                                  label="State" />
                             </div>
                         </div>
-                        <div v-if="parseInt(connectionState) === ConnectionState.FutureFollowUp" class="row">
-                            <div class="col-md-6">
-                                <DatePicker v-model="followUpDate"
-                                            label="Follow-Up Date"
-                                            rules="required" />
-                            </div>
-                        </div>
+                        <ConditionalWell v-if="parseInt(connectionState) === ConnectionState.FutureFollowUp">
+                            <template #default>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <DatePicker v-model="followUpDate"
+                                                    label="Follow-Up Date"
+                                                    rules="required" />
+                                    </div>
+                                </div>
+                            </template>
+                        </ConditionalWell>
+
                         <div class="row">
                             <div class="col-md-6">
-                                <!-- TODO - The Figma states: "If in sequential mode, then disable previous statuses. (I'm worried about the UX here)" -->
-                                <DropDownList
-                                              v-model="connectionStatusGuid"
+                                <DropDownList v-model="connectionStatusGuid"
                                               :items="connectionStatusItems"
                                               label="Status"
                                               :showBlankItem="false" />
@@ -299,7 +302,8 @@
         return (
             props.options?.connectionStatuses?.map(s => ({
                 value: s.guid,
-                text: s.name
+                text: s.name,
+                disabled: s.disabled
             })) ?? []
         );
     });
@@ -308,16 +312,30 @@
 
     const isStatusHistoryNoteRequired = computed(() => props.options?.connectionStatuses?.find(s => s.guid === originalConnectionStatusGuid.value)?.isNoteRequiredOnCompletion ?? false);
 
+    /** Filters the connector items by selected campus and maps to a ListItemBag[] */
     const connectorItems = computed<ListItemBag[]>(() => {
-        if (props.options?.connectorItems) {
-            return props.options.connectorItems.map(c => c.listItemBag as ListItemBag);
+        if (props.options?.connectorItemsForEdit) {
+            return props.options.connectorItemsForEdit
+                .filter(c =>
+                    isNullOrWhiteSpace(campusGuid.value) ||
+                    c.isAvailableToAllCampuses ||
+                    c.campusGuids?.includes(campusGuid.value)
+                )
+                .map(c => c.listItemBag as ListItemBag) ?? [];
         }
         return [] as ListItemBag[];
     });
 
+    /** Filters the placement group items by selected campus and maps to a ListItemBag[] */
     const placementGroupItems = computed<ListItemBag[]>(() => {
         if (props.options?.placementGroups) {
-            return props.options.placementGroups.map(c => c.listItemBag as ListItemBag);
+            return props.options.placementGroups
+                .filter(g =>
+                    isNullOrWhiteSpace(campusGuid.value) ||
+                    isNullOrWhiteSpace(g.campusGuid) ||
+                    g.campusGuid === campusGuid.value
+                )
+                .map(g => g.listItemBag as ListItemBag);
         }
         return [] as ListItemBag[];
     });

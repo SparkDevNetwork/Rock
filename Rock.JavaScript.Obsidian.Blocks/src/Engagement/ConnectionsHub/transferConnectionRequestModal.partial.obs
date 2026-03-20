@@ -39,8 +39,7 @@
                     <div class="col-md-6">
                         <DropDownList v-model="selectedCampus"
                                       :items="selectedOpportunityDetails?.campuses ?? []"
-                                      label="Campus"
-                                      :showBlankItem="false" />
+                                      label="Campus" />
                     </div>
                 </div>
                 <div v-if="selectedOpportunityDetails?.showStatusOnTransfer" class="row">

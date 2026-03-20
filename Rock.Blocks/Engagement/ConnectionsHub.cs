@@ -1091,19 +1091,32 @@ namespace Rock.Blocks.Engagement
         /// <returns>A list of <see cref="ConnectorItemBag"/> representing the available connectors, including photo URLs.</returns>
         private List<ConnectorItemBag> GetConnectorItems( ConnectionOpportunity connectionOpportunity, int? campusId, Rock.Model.PersonAlias currentConnector = null, bool addUnassignedConnector = false )
         {
+            Guid? selectedCampusGuid = null;
+            if ( campusId.HasValue )
+            {
+                selectedCampusGuid = CampusCache.Get( campusId.Value )?.Guid;
+            }
+
             var connectors = connectionOpportunity.ConnectionOpportunityConnectorGroups
-                .Where( g => !campusId.HasValue || !g.CampusId.HasValue || g.CampusId.Value == campusId.Value )
-                .SelectMany( g => g.ConnectorGroup.Members )
-                .Select( m => new ConnectorItemBag
+                .SelectMany( g => g.ConnectorGroup.Members.Select( m => new { Member = m, g.Campus } ) )
+                .GroupBy( x => x.Member.Person.PrimaryAlias.Guid )
+                .Select( g => new ConnectorItemBag
                 {
                     ListItemBag = new ListItemBag
                     {
-                        Value = m.Person.PrimaryAlias.Guid.ToString(),
-                        Text = m.Person.FullName
+                        Value = g.Key.ToString(),
+                        Text = g.First().Member.Person.FullName
                     },
-                    PhotoUrl = m.Person.PhotoUrl
+                    PhotoUrl = g.First().Member.Person.PhotoUrl,
+                    IsAvailableToAllCampuses = g.Any( x => x.Campus == null ),
+                    CampusGuids = g.Where( x => x.Campus != null )
+                                 .Select( x => x.Campus.Guid )
+                                 .Distinct()
+                                 .ToList()
                 } )
-                .DistinctBy( i => i.ListItemBag.Value )
+                .Where( c => !selectedCampusGuid.HasValue ||
+                    c.IsAvailableToAllCampuses ||
+                    c.CampusGuids.Any( g => g == selectedCampusGuid ) )
                 .ToList();
 
             var currentPerson = RequestContext.CurrentPerson;
@@ -1117,7 +1130,8 @@ namespace Rock.Blocks.Engagement
                         Text = currentPerson.FullName,
                         Value = currentPersonAliasGuid.Value.ToString()
                     },
-                    PhotoUrl = currentPerson.PhotoUrl
+                    PhotoUrl = currentPerson.PhotoUrl,
+                    IsAvailableToAllCampuses = true
                 } );
             }
 
@@ -1131,9 +1145,13 @@ namespace Rock.Blocks.Engagement
                         Text = currentConnector.Person.FullName,
                         Value = currentConnector.Guid.ToString()
                     },
-                    PhotoUrl = currentConnector.Person.PhotoUrl
+                    PhotoUrl = currentConnector.Person.PhotoUrl,
+                    IsAvailableToAllCampuses = true
                 } );
             }
+
+            // Order by Connector Name before adding Unassigned to the end of the list.
+            connectors.OrderBy( c => c.ListItemBag.Text );
 
             // Add Unassigned Connector
             if ( addUnassignedConnector )
@@ -1145,7 +1163,8 @@ namespace Rock.Blocks.Engagement
                         Text = "Unassigned",
                         Value = "unassigned"
                     },
-                    PhotoUrl = Rock.Model.Person.GetPersonNoPictureUrl( new Rock.Model.Person() )
+                    PhotoUrl = Rock.Model.Person.GetPersonNoPictureUrl( new Rock.Model.Person() ),
+                    IsAvailableToAllCampuses = true
                 } );
             }
 
@@ -1911,7 +1930,10 @@ namespace Rock.Blocks.Engagement
                     Order = s.Order,
                     IsNoteRequiredOnCompletion = s.IsNoteRequiredOnCompletion,
                     IsDefaultStatus = s.IsDefault,
-                } ).ToList(),
+                    Disabled = connectionRequest.ConnectionOpportunity.ConnectionType.IsSequentialStatusEnforced
+                        ? s.Order < connectionRequest.ConnectionStatus.Order
+                        : false
+                } ).OrderBy( s => s.Order ).ToList(),
                 IsFutureFollowUpEnabled = connectionRequest.ConnectionOpportunity.ConnectionType.EnableFutureFollowup,
                 IsRequestSecurityEnabled = connectionRequest.ConnectionOpportunity.ConnectionType.EnableRequestSecurity,
                 IsSequentialStatusMode = connectionRequest.ConnectionOpportunity.ConnectionType.IsSequentialStatusEnforced,
@@ -1921,13 +1943,8 @@ namespace Rock.Blocks.Engagement
                 RequestSourceItems = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionTypeSources.ToListItemBagList()
             };
 
-            var connectorItems = GetConnectorItems( connectionRequest.ConnectionOpportunity, connectionRequest.CampusId, connectionRequest.ConnectorPersonAlias, true );
-
-            optionsBag.ConnectorItems = connectorItems;
-            optionsBag.ConnectorItemsForEdit = connectorItems
-                .Where( c => c.ListItemBag.Value != string.Empty )
-                .Select( c => c.ListItemBag )
-                .ToList();
+            optionsBag.ConnectorItems = GetConnectorItems( connectionRequest.ConnectionOpportunity, connectionRequest.CampusId, connectionRequest.ConnectorPersonAlias, true );
+            optionsBag.ConnectorItemsForEdit = GetConnectorItems( connectionRequest.ConnectionOpportunity, null, connectionRequest.ConnectorPersonAlias, false );
 
             var tempNote = new Note
             {

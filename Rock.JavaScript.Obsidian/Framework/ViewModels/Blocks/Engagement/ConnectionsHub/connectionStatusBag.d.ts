@@ -25,6 +25,9 @@ import { Guid } from "@Obsidian/Types";
 
 /** Represents a connection status and its display properties for use in the Connections Hub. */
 export type ConnectionStatusBag = {
+    /** Gets or sets whether this status is disabled. (This is used when editing a request in sequential status mode) */
+    disabled: boolean;
+
     /** Gets or sets the unique identifier of this connection status. */
     guid: Guid;
 

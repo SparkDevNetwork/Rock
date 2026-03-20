@@ -47,14 +47,14 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public bool RequiresPlacementGroupToComplete { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of connectors (with photo URLs) available for assignment to the request.
+        /// Gets or sets the list of connectors available for assignment to the request. Filtered by campus for view mode.
         /// </summary>
         public List<ConnectorItemBag> ConnectorItems { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of connectors avaiable when editing a Connection Request.
+        /// Gets or sets the list of connectors avaiable when editing a Connection Request. Includes all connectors regardless of campus association since edit mode will filter by campus on the client.
         /// </summary>
-        public List<ListItemBag> ConnectorItemsForEdit { get; set; }
+        public List<ConnectorItemBag> ConnectorItemsForEdit { get; set; }
 
         /// <summary>
         /// Gets or sets the list of connection statuses available for this Connection Type.
