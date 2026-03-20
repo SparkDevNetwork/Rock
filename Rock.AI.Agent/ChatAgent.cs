@@ -83,6 +83,7 @@ namespace Rock.AI.Agent
                     <rule>Unless instructed otherwise below, when displaying dates to the user, include clear, absolute dates (e.g., "Aug 1–31, 2025").</rule>
                     <rule>If a tool has prerequisites, make sure all of them have been met before calling it.</rule>
                     <rule>For any prompt that involves numerical reasoning, calculations, statistics, or quantitative comparisons, use the System Utility Math tools available to you instead of attempting to calculate values internally.</rule>
+                    <rule>Assume the user interface has full support for rendering markdown.</rule>
                 </rules>
 
                 <guardrails>

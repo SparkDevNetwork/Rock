@@ -36,5 +36,10 @@ namespace Rock.AI.Agent.Classes.Skills.FinanceSkill
         /// The breakdown of registration instances.
         /// </summary>
         public List<CurrencyBreakdown> RegistrationInstances { get; set; }
+
+        /// <summary>
+        /// The breakdown of scheduled frequencies.
+        /// </summary>
+        public List<CurrencyBreakdown> FrequencyTypes { get; set; }
     }
 }

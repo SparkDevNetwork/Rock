@@ -8,7 +8,10 @@ using Microsoft.Extensions.Logging;
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
+using Rock.AI.Agent.Classes.Skills.FinanceSkill;
+using Rock.Attribute;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -16,11 +19,28 @@ using Rock.Web.Cache;
 namespace Rock.AI.Agent.Skills
 {
     [Description( "This skill provides an overview of connection features." )]
+    [AgentUsage( "For analytical requests, prefer the SummarizeFinancialTransactions tool. Use ListFinancialTransactions for raw transaction information when explicitly requested." )]
+
+    [CustomCheckboxListField( "Benevolence Types",
+        Description = "Specifies which benevolence types to enable for use with the tools in this skill.",
+        ListSource = "SELECT [Guid] AS [Value], [Name] AS [Text] FROM [BenevolenceType]",
+        IsRequired = false,
+        Key = ConfigurationKey.BenevolenceTypes,
+
+        Order = 0 )]
     [AgentSkillGuid( "4FC57368-8362-49F0-A1A2-EBC9EFDD947C" )]
     [EntityTypeGuid( "92C9469F-C158-4476-8854-EF4805EA0970" )]
-    [AgentUsage( "For analytical requests, prefer the SummarizeFinancialTransactions tool. Use ListFinancialTransactions for raw transaction information when explicitly requested." )]
     internal sealed partial class FinanceSkill : AgentSkillComponent
     {
+        #region Keys
+
+        private static class ConfigurationKey
+        {
+            public const string BenevolenceTypes = "BenevolenceTypes";
+        }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -44,6 +64,25 @@ namespace Rock.AI.Agent.Skills
         #endregion
 
         #region Shared Helpers
+
+        private IEnumerable<Model.BenevolenceType> GetConfiguredBenevolenceTypes()
+        {
+            var benevolenceTypeGuids = ConfigurationValues.GetReadOnlyValueOrDefault( ConfigurationKey.BenevolenceTypes, string.Empty )
+                .SplitDelimitedValues()
+                .AsGuidList();
+
+            if ( benevolenceTypeGuids.Count == 0 )
+            {
+                return [];
+            }
+
+            return new BenevolenceTypeService( AgentRequestContext.RockContext )
+                .Queryable()
+                .Where( bt => benevolenceTypeGuids.Contains( bt.Guid )
+                    && bt.IsActive )
+                .ToList()
+                .Where( bt => bt.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) );
+        }
 
         /// <summary>
         /// Gets the financial accounts to be used for filtering based on the supplied account keys and campus key.
@@ -223,6 +262,41 @@ namespace Rock.AI.Agent.Skills
         }
 
         /// <summary>
+        /// Updates the FinancialScheduledTransaction query to filter by the specified
+        /// person or their giving group (if they have one).
+        /// </summary>
+        /// <param name="qry">The query to be extended.</param>
+        /// <param name="helper">The tool helper.</param>
+        /// <param name="personIdKey">The encoded person identifier.</param>
+        /// <returns>The same query or a new query with additional filtering applied.</returns>
+        private IQueryable<FinancialScheduledTransaction> WherePersonOrGivingGroup( IQueryable<FinancialScheduledTransaction> qry, AgentToolHelper helper, string personIdKey )
+        {
+            if ( personIdKey.IsNullOrWhiteSpace() )
+            {
+                return qry;
+            }
+
+            var person = helper.GetRequiredEntity<Model.Person>( personIdKey );
+
+            if ( person != null && person.GivingGroupId.HasValue )
+            {
+                var personIdQry = new PersonService( AgentRequestContext.RockContext ).Queryable()
+                    .Where( p => p.GivingGroupId == person.GivingGroupId.Value )
+                    .Select( p => p.Id );
+
+                return qry.Where( ft => personIdQry.Contains( ft.AuthorizedPersonAlias.PersonId ) );
+            }
+            else if ( person != null )
+            {
+                return qry.Where( ft => ft.AuthorizedPersonAlias.PersonId == person.Id );
+            }
+            else
+            {
+                return qry.Where( ft => false );
+            }
+        }
+
+        /// <summary>
         /// Gets the common financial transaction result data for the query.
         /// This is used by tools to list the transaction details.
         /// </summary>
@@ -337,6 +411,115 @@ namespace Rock.AI.Agent.Skills
             }
 
             return result;
+        }
+
+        private FinancialTransactionInsightsResult GetTransactionInsights( List<FinancialInsightsAggregateRow> txAgg, IQueryable<FinancialInsightsDetailRow> detailQry, IList<int> accountIds )
+        {
+            var hasAccountFilter = accountIds.Any();
+
+            // Effective set for stats: if filtering by accounts only include transactions that contributed (>0), else all.
+            var effectiveAmounts = hasAccountFilter
+                ? txAgg.Where( x => x.AmountFiltered > 0m ).Select( x => x.AmountFiltered ).ToList()
+                : txAgg.Select( x => x.AmountFiltered ).ToList();
+
+            var uniqueTransactionCount = effectiveAmounts.Count;
+            var totalAmount = effectiveAmounts.Sum();
+            decimal averageAmount = 0m, medianAmount = 0m, stdDeviationAmount = 0m;
+
+            if ( uniqueTransactionCount > 0 )
+            {
+                averageAmount = decimal.Round( effectiveAmounts.Average(), 2 );
+                var ordered = effectiveAmounts.OrderBy( a => a ).ToList();
+                var mid = ordered.Count / 2;
+                medianAmount = ordered.Count % 2 == 1
+                    ? ordered[mid]
+                    : decimal.Round( ( ordered[mid - 1] + ordered[mid] ) / 2m, 2 );
+                var meanD = ( double ) averageAmount;
+                var variance = ordered.Sum( a => Math.Pow( ( double ) a - meanD, 2 ) ) / ordered.Count;
+                stdDeviationAmount = ( decimal ) Math.Round( Math.Sqrt( variance ), 2 );
+            }
+
+            var fundRows = detailQry
+                .GroupBy( x => new { x.AccountId, x.AccountName } )
+                .Select( g => new
+                {
+                    g.Key.AccountId,
+                    g.Key.AccountName,
+                    TotalAmount = g.Sum( x => x.Amount ),
+                    UniqueTransactionCount = g.Select( x => x.TransactionId ).Distinct().Count()
+                } )
+                .OrderByDescending( x => x.TotalAmount )
+                .ToList();
+
+            var denom = totalAmount == 0m ? 1m : totalAmount;
+            var funds = fundRows.Select( fr => new CurrencyBreakdown
+            {
+                IdKey = IdHasher.Instance.GetHash( fr.AccountId!.Value ),
+                Name = fr.AccountName ?? "Unknown",
+                TotalAmount = fr.TotalAmount,
+                PercentOfTotal = fr.TotalAmount / denom * 100,
+                UniqueTransactionCount = fr.UniqueTransactionCount
+            } ).ToList();
+
+            // Currency/tender breakdown — count only contributing (>0) transactions.
+            var currencyTypeRows = txAgg
+                .GroupBy( x => new { x.CurrencyTypeId, x.CurrencyType } )
+                .Select( g => new
+                {
+                    Type = g.Key.CurrencyType ?? "Unknown",
+                    UniqueTransactionCount = g.Count( x => x.AmountFiltered > 0m ),
+                    TotalAmount = g.Where( x => x.AmountFiltered > 0m ).Sum( x => x.AmountFiltered )
+                } )
+                .OrderByDescending( r => r.TotalAmount )
+                .ToList();
+
+            var currencyTypes = currencyTypeRows.Select( r => new CurrencyBreakdown
+            {
+                Name = r.Type,
+                UniqueTransactionCount = r.UniqueTransactionCount,
+                TotalAmount = r.TotalAmount,
+                PercentOfTotal = totalAmount == 0m ? 0m : ( r.TotalAmount / totalAmount * 100 )
+            } ).ToList();
+
+            var insightsResult = new FinancialTransactionInsightsResult
+            {
+                Currency = "USD",
+                Totals = new FinancialTotalsBreakdown
+                {
+                    UniqueTransactionCount = uniqueTransactionCount,
+                    TotalAmount = totalAmount,
+                    AverageAmountPerTransaction = averageAmount,
+                    MedianAmountPerTransaction = medianAmount,
+                    StandardDeviationAmountPerTransaction = stdDeviationAmount
+                },
+                Funds = funds,
+                CurrencyTypes = currencyTypes
+            };
+
+            if ( txAgg.Any( t => t.Frequency != null ) )
+            {
+                // Frequency breakdown — count only contributing (>0) transactions.
+                var frequencyRows = txAgg
+                    .GroupBy( x => x.Frequency )
+                    .Select( g => new
+                    {
+                        Type = g.Key,
+                        UniqueTransactionCount = g.Count( x => x.AmountFiltered > 0m ),
+                        TotalAmount = g.Where( x => x.AmountFiltered > 0m ).Sum( x => x.AmountFiltered )
+                    } )
+                    .OrderByDescending( r => r.TotalAmount )
+                    .ToList();
+
+                insightsResult.FrequencyTypes = frequencyRows.Select( r => new CurrencyBreakdown
+                {
+                    Name = r.Type,
+                    UniqueTransactionCount = r.UniqueTransactionCount,
+                    TotalAmount = r.TotalAmount,
+                    PercentOfTotal = totalAmount == 0m ? 0m : ( r.TotalAmount / totalAmount * 100 )
+                } ).ToList();
+            }
+
+            return insightsResult;
         }
 
         #endregion

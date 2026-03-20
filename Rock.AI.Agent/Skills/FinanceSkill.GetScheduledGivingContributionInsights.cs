@@ -1,17 +1,28 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
-using Microsoft.Identity.Client;
-
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.FinanceSkill;
-using Rock.Data;
 using Rock.Model;
-using Rock.Reporting.DataFilter;
 using Rock.SystemGuid;
-using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills
@@ -20,22 +31,12 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Produces an analytic summary of giving financial transactions
-        /// matching the supplied filters.
-        /// </summary>
-        /// <param name="personIdKey">Encoded person identifier.</param>
-        /// <param name="campusIdKey">Encoded campus identifier.</param>
-        /// <param name="accountIdKeys">Encoded account identifiers.</param>
-        /// <param name="paymentMethodTypeValueIdKey">Encoded payment method identifier,</param>
-        /// <param name="startDate">The start date to limit results to.</param>
-        /// <param name="endDate">The end date to limit results to.</param>
-        /// <returns>Analytics wrapped in <see cref="FinancialTransactionInsightsResult"/>.</returns>
-        [AgentToolGuid( "8AE2C3D2-6965-47E2-AC82-0D422A1EF2FC" )]
+        [Description( "Retrieves a list of scheduled giving contributions." )]
+        [AgentPurpose( "Retrieves a list of scheduled giving contributions." )]
         [AgentUsage( "Any argument ending with 'ValueIdKey' must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the chosen IdKey." )]
-        [AgentUsage( "Only provide a personIdKey if the request is about a specific person. Do not assume that the current person should be used." )]
-        [AgentToolReturnDescription( "Summary of matching transactions: count, total, average, median, and std-dev of per-transaction amounts. Includes fund and payment-type breakdowns with amount, share of total, and contributing-transaction counts." )]
-        public IAgentToolResult GetGivingContributionInsights(
+        [AgentUsage( "The startDate and endDate parameters refer to the next scheduled payment date." )]
+        [AgentToolGuid( "8d789711-32f2-474f-b89b-fa8d3b718fad" )]
+        public IAgentToolResult GetScheduledGivingContributionInsights(
             string personIdKey = null,
             string campusIdKey = null,
             List<string> accountIdKeys = null,
@@ -45,51 +46,46 @@ namespace Rock.AI.Agent.Skills
         {
             var helper = new AgentToolHelper( AgentRequestContext, _logger );
             var contributionTransactionValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid(), AgentRequestContext.RockContext ).Id;
-            var qry = new FinancialTransactionService( AgentRequestContext.RockContext )
+            var qry = new FinancialScheduledTransactionService( AgentRequestContext.RockContext )
                 .Queryable()
-                .Where( ft => ft.TransactionTypeValueId == contributionTransactionValueId );
+                .Where( fst => fst.TransactionTypeValueId == contributionTransactionValueId
+                    && fst.IsActive );
 
             qry = WherePersonOrGivingGroup( qry, helper, personIdKey );
 
-            qry = helper.WhereOptionalIdKey( qry, ft => ft.Batch.CampusId, campusIdKey );
-            qry = helper.WhereOptionalIdKey( qry, ft => ft.FinancialPaymentDetail.CurrencyTypeValueId, paymentMethodTypeValueIdKey );
-            qry = helper.WhereOptionalPropertyBetween( qry, ft => ft.TransactionDateTime, startDate, endDate );
+            qry = helper.WhereOptionalIdKey( qry, fst => fst.FinancialPaymentDetail.CurrencyTypeValueId, paymentMethodTypeValueIdKey );
+            qry = helper.WhereOptionalPropertyBetween( qry, fst => fst.NextPaymentDate, startDate, endDate );
 
             if ( !TryGetMatchingAccountIds( AgentRequestContext, accountIdKeys, campusIdKey, out var accountIds ) )
             {
-                return NoData()
+                return AgentToolResult.NoData()
                     .WithInstructions( "No active financial accounts matched the supplied accountIdKeys and/or campusIdKey." );
-            }
-
-            if ( helper.HasErrors )
-            {
-                return helper.ErrorResult;
             }
 
             var hasAccountFilter = accountIds.Any();
 
             // Project per-transaction, with detail amount filtered by provided account ids if any.
             var txAgg = qry
-                .Select( t => new FinancialInsightsAggregateRow
+                .Select( fst => new FinancialInsightsAggregateRow
                 {
-                    Id = t.Id,
-                    TransactionDateTime = t.TransactionDateTime,
-                    CurrencyTypeId = t.FinancialPaymentDetail.CurrencyTypeValueId,
-                    CurrencyType = t.FinancialPaymentDetail.CurrencyTypeValue != null
-                        ? t.FinancialPaymentDetail.CurrencyTypeValue.Value
+                    Id = fst.Id,
+                    CurrencyTypeId = fst.FinancialPaymentDetail.CurrencyTypeValueId,
+                    CurrencyType = fst.FinancialPaymentDetail.CurrencyTypeValue != null
+                        ? fst.FinancialPaymentDetail.CurrencyTypeValue.Value
                         : "Unknown",
+                    Frequency = fst.TransactionFrequencyValue.Value,
                     AmountFiltered = hasAccountFilter
-                        ? t.TransactionDetails
+                        ? fst.ScheduledTransactionDetails
                             .Where( d => accountIds.Contains( d.AccountId ) )
                             .Sum( d => ( decimal? ) d.Amount ) ?? 0m
-                        : t.TransactionDetails
+                        : fst.ScheduledTransactionDetails
                             .Sum( d => ( decimal? ) d.Amount ) ?? 0m,
                 } )
                 .ToList();
 
             // Fund (account) rollup detail level honoring multi-account filter if provided.
             var detailProj = qry
-                .SelectMany( t => t.TransactionDetails.Select( d => new FinancialInsightsDetailRow
+                .SelectMany( t => t.ScheduledTransactionDetails.Select( d => new FinancialInsightsDetailRow
                 {
                     TransactionId = t.Id,
                     AccountId = ( int? ) d.AccountId,
