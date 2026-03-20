@@ -28,6 +28,9 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** Represents the data required to create or update a connection request. */
 export type ConnectionRequestBag = {
+    /** Gets or sets the Campus for the connection request. */
+    campusGuid?: string | null;
+
     /** Gets or sets the comments or notes on this connection request. */
     comments?: string | null;
 

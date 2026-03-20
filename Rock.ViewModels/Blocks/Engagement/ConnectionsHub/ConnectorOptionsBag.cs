@@ -24,34 +24,16 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
     /// <summary>
     /// Represents the detail data for a connection opportunity that is used to populate the request panel when an opportunity is selected.
     /// </summary>
-    public class ConnectionOpportunityDetailBag
+    public class ConnectorOptionsBag
     {
         /// <summary>
-        /// Gets or sets the encrypted identifier key of this connection opportunity.
+        /// Gets or sets the GUID of the default connector's person alias for this opportunity.
         /// </summary>
-        public string IdKey { get; set; }
+        public string DefaultConnectorPersonAliasGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the connector options.
+        /// Gets or sets the list of connectors available for assignment within this opportunity.
         /// </summary>
-        public ConnectorOptionsBag ConnectorOptions { get; set; }
-
-        /// <summary>
-        /// Gets or sets the list of placement groups available for this opportunity.
-        /// </summary>
-        public List<ListItemBag> PlacementGroups { get; set; }
-
-        /// <summary>
-        /// Gets or sets the list of available campuses for this opportunity.
-        /// </summary>
-        public List<ListItemBag> Campuses { get; set; }
-
-        /// <summary>
-        /// Gets or sets the attributes for Connection Request attributes specified at the Connection Opportunity level.
-        /// </summary>
-        /// <value>
-        /// The attributes.
-        /// </value>
-        public Dictionary<string, PublicAttributeBag> ConnectionOpportunityRequestAttributes { get; set; }
+        public List<ListItemBag> Connectors { get; set; }
     }
 }

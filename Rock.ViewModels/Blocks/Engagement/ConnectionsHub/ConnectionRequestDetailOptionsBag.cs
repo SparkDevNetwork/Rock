@@ -52,6 +52,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public List<ConnectorItemBag> ConnectorItems { get; set; }
 
         /// <summary>
+        /// Gets or sets the list of connectors avaiable when editing a Connection Request.
+        /// </summary>
+        public List<ListItemBag> ConnectorItemsForEdit { get; set; }
+
+        /// <summary>
         /// Gets or sets the list of connection statuses available for this Connection Type.
         /// </summary>
         public List<ConnectionStatusBag> ConnectionStatuses { get; set; }
@@ -75,6 +80,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the list of request source items available for selection.
         /// </summary>
         public List<ListItemBag> RequestSourceItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of available campuses for this connection request.
+        /// </summary>
+        public List<ListItemBag> Campuses { get; set; }
 
         /// <summary>
         /// Gets or sets the Lava template used to render the heading section of the request detail panel.

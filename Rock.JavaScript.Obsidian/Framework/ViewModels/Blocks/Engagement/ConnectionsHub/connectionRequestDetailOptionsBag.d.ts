@@ -42,6 +42,9 @@ export type ConnectionRequestDetailOptionsBag = {
     /** Gets or sets the GUIDs of the person profile badges to display on the request detail panel. */
     badgeGuids?: Guid[] | null;
 
+    /** Gets or sets the list of available campuses for this connection request. */
+    campuses?: ListItemBag[] | null;
+
     /** Gets or sets the boolean value indicating whether the current person can edit the Connection Request. */
     canEditConnectionRequest: boolean;
 

@@ -420,6 +420,8 @@
                                @save="onAddRequest"
                                @close="resetNewConnectionRequest"
                                @fetchConnectionOpportunityDetails="fetchConnectionOpportunityDetails"
+                               @fetchConnectorOptions="fetchConnectorOptions"
+                               @fetchPlacementGroupItems="fetchPlacementGroupItems"
                                @fetchPlacementGroupDetails="fetchPlacementGroupDetails" />
 
     <AddFromCampaignModal v-model:visible="isAddFromCampaignModalVisible"
@@ -752,6 +754,7 @@
     import ConnectionStatusButton from "./ConnectionsHub/connectionStatusButton.partial.obs";
     import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionActivityTypeBag";
     import { updateRefValue } from "@Obsidian/Utility/component";
+    import { ConnectorOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectorOptionsBag";
 
     const box = useConfigurationValues<ListBlockBox<ConnectionsHubOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -821,7 +824,7 @@
     }
 
     // Add Connection Request Configuration
-    const newConnectionRequest = ref<ValidPropertiesBox<ConnectionRequestBag>>({ bag: { connectionOpportunityGuid: internalSelectedOpportunity.value } as ConnectionRequestBag });
+    const newConnectionRequest = ref<ValidPropertiesBox<ConnectionRequestBag>>({ bag: { connectionOpportunityGuid: internalSelectedOpportunity.value, campusGuid: selectedCampus.value?.value } as ConnectionRequestBag });
     const isExistingActiveRequesterOnConnectionType = ref<boolean>(false);
     const isAddConnectionRequestModalVisible = ref(false);
     const connectionOpportunityDetails = ref<ConnectionOpportunityDetailBag>(box.options?.connectionOpportunityDetailsFromFilter ?? {});
@@ -1266,7 +1269,7 @@
     // #region Modal Functions
 
     function resetNewConnectionRequest(): void {
-        newConnectionRequest.value = { bag: { connectionOpportunityGuid: internalSelectedOpportunity.value } as ConnectionRequestBag };
+        newConnectionRequest.value = { bag: { connectionOpportunityGuid: internalSelectedOpportunity.value, campusGuid: selectedCampus.value?.value } as ConnectionRequestBag };
         isExistingActiveRequesterOnConnectionType.value = false;
         onModalErrorMessageDismissed();
     }
@@ -2321,9 +2324,10 @@
         return result.errorMessage ?? "An error occurred while updating the Activity.";
     }
 
-    async function fetchConnectionOpportunityDetails(connectionOpportunityGuid: string): Promise<void> {
+    async function fetchConnectionOpportunityDetails(connectionOpportunityGuid: string, campusGuid: string | null = null): Promise<void> {
         const result = await invokeBlockAction<ConnectionOpportunityDetailBag>("FetchConnectionOpportunityDetails", {
-            connectionOpportunityGuid: connectionOpportunityGuid
+            connectionOpportunityGuid: connectionOpportunityGuid,
+            campus: campusGuid
         });
 
         if (result.isSuccess && result.data) {
@@ -2331,6 +2335,28 @@
         }
         else {
             connectionOpportunityDetails.value = {};
+        }
+    }
+
+    async function fetchConnectorOptions(connectionOpportunityGuid: string, campusGuid: string): Promise<void> {
+        const result = await invokeBlockAction<ConnectorOptionsBag>("FetchConnectorOptions", {
+            connectionOpportunityGuid: connectionOpportunityGuid,
+            campus: campusGuid
+        });
+
+        if (result.isSuccess && result.data) {
+            connectionOpportunityDetails.value.connectorOptions = result.data;
+        }
+    }
+
+    async function fetchPlacementGroupItems(connectionOpportunityGuid: string, campusGuid: string): Promise<void> {
+        const result = await invokeBlockAction<ListItemBag[]>("FetchPlacementGroupItems", {
+            connectionOpportunityGuid: connectionOpportunityGuid,
+            campus: campusGuid
+        });
+
+        if (result.isSuccess && result.data) {
+            connectionOpportunityDetails.value.placementGroups = result.data;
         }
     }
 
@@ -2627,6 +2653,13 @@
         await preferences.save();
 
         loadGridData();
+    });
+
+    watch(selectedCampus, () => {
+        newConnectionRequest.value.bag = {
+            ...newConnectionRequest.value.bag,
+            campusGuid: selectedCampus.value?.value ?? null
+        };
     });
 
     watch(selectedOpportunity, async () => {

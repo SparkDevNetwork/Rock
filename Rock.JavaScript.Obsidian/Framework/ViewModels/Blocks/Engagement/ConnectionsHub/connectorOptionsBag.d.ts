@@ -21,25 +21,13 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** Represents a connection status and its display properties for use in the Connections Hub. */
-export type ConnectionStatusBag = {
-    /** Gets or sets the unique identifier of this connection status. */
-    guid: Guid;
+/** Represents the detail data for a connection opportunity that is used to populate the request panel when an opportunity is selected. */
+export type ConnectorOptionsBag = {
+    /** Gets or sets the list of connectors available for assignment within this opportunity. */
+    connectors?: ListItemBag[] | null;
 
-    /** Gets or sets the highlight color used to visually distinguish this status in the UI. */
-    highlightColor?: string | null;
-
-    /** Gets or sets a value indicating whether this status is the default status. */
-    isDefaultStatus: boolean;
-
-    /** Gets or sets a value indicating whether a note is required when completing a request with this status. */
-    isNoteRequiredOnCompletion: boolean;
-
-    /** Gets or sets the display name of this connection status. */
-    name?: string | null;
-
-    /** Gets or sets the sort order of this connection status relative to others in the same Connection Type. */
-    order: number;
+    /** Gets or sets the GUID of the default connector's person alias for this opportunity. */
+    defaultConnectorPersonAliasGuid?: string | null;
 };

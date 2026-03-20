@@ -63,7 +63,14 @@
                             </template>
                         </ConditionalWell>
 
-                        <!-- TODO - Campus picker? -->
+                        <div class="row" v-if="options?.campuses?.length && options.campuses.length > 0">
+                            <div class="col-md-6">
+                                <DropDownList v-model="campusGuid"
+                                              label="Campus"
+                                              :items="options.campuses"
+                                              :disabled="arePlacementGroupsAndCampusFieldsDisabled" />
+                            </div>
+                        </div>
 
                         <div class="row" v-if="options?.areGroupPlacementsEnabled">
                             <div class="col-md-6">
@@ -276,6 +283,7 @@
     const followUpDate = propertyRef(props.modelValue.bag?.followUpDate ?? "", "FollowUpDate");
     const connectionStatusGuid = propertyRef(isNullOrWhiteSpace(props.modelValue.bag?.connectionStatusGuid) ? (props.options?.connectionStatuses ? props.options.connectionStatuses[0].guid : "") : (props.modelValue.bag?.connectionStatusGuid ?? ""), "ConnectionStatusGuid");
     const connectionStatusHistoryNote = propertyRef("", "ConnectionStatusHistoryNote");
+    const campusGuid = propertyRef(props.modelValue.bag?.campusGuid ?? "", "CampusGuid");
     const placementGroupGuid = propertyRef(props.modelValue.bag?.placementGroupGuid ?? "", "PlacementGroupGuid");
     const groupMemberRoleGuid = propertyRef(props.modelValue.bag?.groupMemberRoleGuid ?? "", "GroupMemberRoleGuid");
     const groupMemberStatus = propertyRef(props.modelValue.bag?.groupMemberStatus?.toString() ?? "", "GroupMemberStatus");
@@ -371,6 +379,7 @@
         setPropertiesBoxValue(newValue, "connectorPersonAliasGuid", connectorPersonAliasGuid.value);
         setPropertiesBoxValue(newValue, "groupMemberRoleGuid", groupMemberRoleGuid.value);
         setPropertiesBoxValue(newValue, "groupMemberStatus", parseInt(groupMemberStatus.value) as GroupMemberStatus);
+        setPropertiesBoxValue(newValue, "campusGuid", campusGuid.value);
         setPropertiesBoxValue(newValue, "placementGroupGuid", placementGroupGuid.value);
         setPropertiesBoxValue(newValue, "placementGroupMemberAttributeValues", placementGroupMemberAttributeValues.value);
         setPropertiesBoxValue(newValue, "requestSourceGuid", requestSourceGuid.value);
@@ -387,6 +396,7 @@
         updateRefValue(connectorPersonAliasGuid, props.modelValue.bag?.connectorPersonAliasGuid ?? "");
         updateRefValue(groupMemberRoleGuid, props.modelValue.bag?.groupMemberRoleGuid ?? "");
         updateRefValue(groupMemberStatus, props.modelValue.bag?.groupMemberStatus?.toString() ?? "");
+        updateRefValue(campusGuid, props.modelValue.bag?.campusGuid ?? "");
         updateRefValue(placementGroupGuid, props.modelValue.bag?.placementGroupGuid ?? "");
         updateRefValue(placementGroupMemberAttributeValues, props.modelValue.bag?.placementGroupMemberAttributeValues ?? {});
         updateRefValue(requestSourceGuid, props.modelValue.bag?.requestSourceGuid ?? "");

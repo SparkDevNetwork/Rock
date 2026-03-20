@@ -385,14 +385,18 @@ namespace Rock.Blocks.Engagement
 
             options.WorkflowItems = authorizedWorkflowItems;
 
-            options.ConnectionStatuses = connectionType.ConnectionStatuses.Select( s => new ConnectionStatusBag
-            {
-                Guid = s.Guid,
-                Name = s.Name,
-                HighlightColor = s.HighlightColor,
-                Order = s.Order,
-                IsNoteRequiredOnCompletion = s.IsNoteRequiredOnCompletion
-            } ).ToList();
+            options.ConnectionStatuses = connectionType.ConnectionStatuses.Where( s => s.IsActive )
+                .Select( s => new ConnectionStatusBag
+                {
+                    Guid = s.Guid,
+                    Name = s.Name,
+                    HighlightColor = s.HighlightColor,
+                    Order = s.Order,
+                    IsNoteRequiredOnCompletion = s.IsNoteRequiredOnCompletion,
+                    IsDefaultStatus = s.IsDefault
+                } )
+                .OrderBy( s => s.Order )
+                .ToList();
 
             var tempConnectionRequest = new ConnectionRequest
             {
@@ -1014,42 +1018,150 @@ namespace Rock.Blocks.Engagement
         #endregion Placement Group Methods
 
         /// <summary>
-        /// Gets the Connection Opportunity Detail Bag.
+        /// Gets the Connection Opportunity Detail Bag for the specified Connection Opportunity.
         /// </summary>
         /// <remarks>
-        /// This method is used to fetch Connection Opportunity specific details needed in the Client. Currently this is being used
-        /// when fetching Options for the Block if there is a connection opportunity filter set and when we need to fetch Opportunity
-        /// details on Opportunity selection in the add connection request modal.
+        /// This method is used to fetch Connection Opportunity specific details needed by the client. It is currently
+        /// called when fetching block options if a Connection Opportunity filter is set, and when fetching Opportunity
+        /// details upon selection in the Add Connection Request modal.
+        /// If no <paramref name="campusId"/> is provided, the method will attempt to resolve one from the current campus context.
         /// </remarks>
-        /// <param name="connectionOpportunity">The Connection Opportunity we get the bag from</param>
-        /// <returns>A Connection Opportunity Details Bag</returns>
-        private ConnectionOpportunityDetailBag GetConnectionOpportunityDetailBag( ConnectionOpportunity connectionOpportunity )
+        /// <param name="connectionOpportunity">The Connection Opportunity to build the bag from.</param>
+        /// <param name="campusId">The optional campus ID to filter results by. If not provided, the campus context will be used if available.</param>
+        /// <returns>A <see cref="ConnectionOpportunityDetailBag"/> populated with the relevant details.</returns>
+        private ConnectionOpportunityDetailBag GetConnectionOpportunityDetailBag( ConnectionOpportunity connectionOpportunity, int? campusId = null )
         {
             var campusContext = RequestContext.GetContextEntity<Campus>();
-            int? campusId = campusContext?.Id;
+            var campusContextId = campusContext?.Id;
 
+            // If a campus Id was not passed in then get one from the campus context.
+            if ( !campusId.HasValue )
+            {
+                campusId = campusContextId;
+            }
+
+            var campusItems = connectionOpportunity.ConnectionOpportunityCampuses.Where( c => c.Campus != null && c.Campus.IsActive == true )
+                .Select( c => c.Campus )
+                .ToListItemBagList();
+
+            var connectorOptionsBag = GetConnectorOptionsBag( connectionOpportunity, campusId );
+
+            if ( campusContextId.HasValue )
+            {
+                // Add the selected campus context to the campus list if it is not already included.
+                var campus = CampusCache.Get( campusContextId.Value );
+                if ( campus != null && !campusItems.Any( c => c.Value == campus.Guid.ToString() ) )
+                {
+                    campusItems.Add( new ListItemBag
+                    {
+                        Text = campus.Name,
+                        Value = campus.Guid.ToString()
+                    } );
+                }
+            }
+
+            var placementGroups = GetPlacementGroupItems( connectionOpportunity, campusId );
+
+            var tempConnectionRequest = new ConnectionRequest
+            {
+                ConnectionOpportunityId = connectionOpportunity.Id
+            };
+
+            tempConnectionRequest.LoadAttributes();
+
+            return new ConnectionOpportunityDetailBag
+            {
+                IdKey = IdHasher.Instance.GetHash( connectionOpportunity.Id ),
+                ConnectorOptions = connectorOptionsBag,
+                PlacementGroups = placementGroups,
+                Campuses = campusItems,
+                ConnectionOpportunityRequestAttributes = tempConnectionRequest.GetPublicAttributesForEdit( RequestContext.CurrentPerson )
+            };
+        }
+
+        /// <summary>
+        /// Builds the list of available connectors for the specified Connection Opportunity,
+        /// optionally filtered by campus. Always includes the current logged-in person and,
+        /// if provided, the currently assigned connector — even if they fall outside the campus filter.
+        /// </summary>
+        /// <param name="connectionOpportunity">The Connection Opportunity to retrieve connectors for.</param>
+        /// <param name="campusId">The optional campus ID to filter connectors by. If not provided, all connectors are returned.</param>
+        /// <param name="currentConnector">The optional currently assigned connector to ensure is present in the list.</param>
+        /// <param name="addUnassignedConnector">If <c>true</c>, prepends an "Unassigned" option to the list.</param>
+        /// <returns>A list of <see cref="ConnectorItemBag"/> representing the available connectors, including photo URLs.</returns>
+        private List<ConnectorItemBag> GetConnectorItems( ConnectionOpportunity connectionOpportunity, int? campusId, Rock.Model.PersonAlias currentConnector = null, bool addUnassignedConnector = false )
+        {
             var connectors = connectionOpportunity.ConnectionOpportunityConnectorGroups
                 .Where( g => !campusId.HasValue || !g.CampusId.HasValue || g.CampusId.Value == campusId.Value )
                 .SelectMany( g => g.ConnectorGroup.Members )
-                .Select( m => new ListItemBag
+                .Select( m => new ConnectorItemBag
                 {
-                    Value = m.Person.PrimaryAlias.Guid.ToString(),
-                    Text = m.Person.FullName
+                    ListItemBag = new ListItemBag
+                    {
+                        Value = m.Person.PrimaryAlias.Guid.ToString(),
+                        Text = m.Person.FullName
+                    },
+                    PhotoUrl = m.Person.PhotoUrl
                 } )
-                .DistinctBy( i => i.Value )
+                .DistinctBy( i => i.ListItemBag.Value )
                 .ToList();
 
-            var currentPersonAliasGuid = RequestContext.CurrentPerson.PrimaryAlias?.Guid;
-
-            // Add current person to the connector list to mirror Webforms
-            if ( currentPersonAliasGuid.HasValue && !connectors.Any( c => c.Value == currentPersonAliasGuid.Value.ToString() ) )
+            var currentPerson = RequestContext.CurrentPerson;
+            var currentPersonAliasGuid = currentPerson.PrimaryAlias?.Guid;
+            if ( currentPersonAliasGuid.HasValue && !connectors.Any( c => c.ListItemBag.Value == currentPersonAliasGuid.Value.ToString() ) )
             {
-                connectors.Add( new ListItemBag
+                connectors.Add( new ConnectorItemBag
                 {
-                    Text = RequestContext.CurrentPerson.FullName,
-                    Value = currentPersonAliasGuid.Value.ToString()
+                    ListItemBag = new ListItemBag
+                    {
+                        Text = currentPerson.FullName,
+                        Value = currentPersonAliasGuid.Value.ToString()
+                    },
+                    PhotoUrl = currentPerson.PhotoUrl
                 } );
             }
+
+            // Adds the current connector to the connector items if the current connector does not exist in the list.
+            if ( currentConnector != null && !connectors.Any( c => c.ListItemBag.Value == currentConnector.Guid.ToString() ) )
+            {
+                connectors.Add( new ConnectorItemBag
+                {
+                    ListItemBag = new ListItemBag
+                    {
+                        Text = currentConnector.Person.FullName,
+                        Value = currentConnector.Guid.ToString()
+                    },
+                    PhotoUrl = currentConnector.Person.PhotoUrl
+                } );
+            }
+
+            // Add Unassigned Connector
+            if ( addUnassignedConnector )
+            {
+                connectors.Add( new ConnectorItemBag
+                {
+                    ListItemBag = new ListItemBag
+                    {
+                        Text = "Unassigned",
+                        Value = "unassigned"
+                    },
+                    PhotoUrl = Rock.Model.Person.GetPersonNoPictureUrl( new Rock.Model.Person() )
+                } );
+            }
+
+            return connectors;
+        }
+
+        /// <summary>
+        /// Builds a <see cref="ConnectorOptionsBag"/> containing the available connectors and default connector
+        /// for the specified Connection Opportunity, optionally filtered by campus.
+        /// </summary>
+        /// <param name="connectionOpportunity">The Connection Opportunity to retrieve connector options for.</param>
+        /// <param name="campusId">The optional campus ID to filter connectors by. If not provided, all connectors are returned.</param>
+        /// <returns>A <see cref="ConnectorOptionsBag"/> containing the connector list and default connector GUID.</returns>
+        private ConnectorOptionsBag GetConnectorOptionsBag( ConnectionOpportunity connectionOpportunity, int? campusId )
+        {
+            var connectors = GetConnectorItems( connectionOpportunity, campusId ).Select( c => c.ListItemBag ).ToList();
 
             string defaultConnectorPersonAliasGuid = string.Empty;
 
@@ -1065,7 +1177,31 @@ namespace Rock.Blocks.Engagement
                 }
             }
 
-            // TODO - hide if not enabled at connection type level
+            var bag = new ConnectorOptionsBag
+            {
+                DefaultConnectorPersonAliasGuid = defaultConnectorPersonAliasGuid,
+                Connectors = connectors
+            };
+
+            return bag;
+        }
+
+        /// <summary>
+        /// Gets the available placement groups for the specified Connection Opportunity,
+        /// optionally filtered by campus. Returns null if the Group Placement feature is not enabled for the Connection Type.
+        /// </summary>
+        /// <param name="connectionOpportunity">The Connection Opportunity to retrieve placement groups for.</param>
+        /// <param name="campusId">The optional campus ID to filter placement groups by. If not provided, all placement groups are returned.</param>
+        /// <returns>A list of <see cref="ListItemBag"/> representing the available placement groups, or null if Group Placement is not enabled.</returns>
+        private List<ListItemBag> GetPlacementGroupItems( ConnectionOpportunity connectionOpportunity, int? campusId )
+        {
+            var connectionType = ConnectionTypeCache.Get( connectionOpportunity.ConnectionTypeId );
+
+            if ( !connectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.GroupPlacement ) )
+            {
+                return null;
+            }
+
             var placementGroups = connectionOpportunity.ConnectionOpportunityGroups.Select( g => g.Group )
                 .Where( g => !campusId.HasValue || !g.CampusId.HasValue || g.CampusId.Value == campusId.Value )
                 .Select( g => new ListItemBag
@@ -1075,21 +1211,7 @@ namespace Rock.Blocks.Engagement
                 } )
                 .ToList();
 
-            var tempConnectionRequest = new ConnectionRequest
-            {
-                ConnectionOpportunityId = connectionOpportunity.Id
-            };
-
-            tempConnectionRequest.LoadAttributes();
-
-            return new ConnectionOpportunityDetailBag
-            {
-                IdKey = IdHasher.Instance.GetHash( connectionOpportunity.Id ),
-                DefaultConnectorPersonAliasGuid = defaultConnectorPersonAliasGuid,
-                Connectors = connectors,
-                PlacementGroups = placementGroups,
-                ConnectionOpportunityRequestAttributes = tempConnectionRequest.GetPublicAttributesForEdit( RequestContext.CurrentPerson )
-            };
+            return placementGroups;
         }
 
         /// <summary>
@@ -1112,6 +1234,7 @@ namespace Rock.Blocks.Engagement
                     Text = entity.PersonAlias.Person.FullName,
                     Value = entity.PersonAlias.Guid.ToString(),
                 },
+                CampusGuid = entity.Campus?.Guid.ToString(),
                 ConnectorPersonAliasGuid = entity.ConnectorPersonAlias?.Guid.ToString(),
                 ConnectionState = entity.ConnectionState,
                 FollowUpDate = entity.FollowupDate?.ToRockDateTimeOffset(),
@@ -1277,6 +1400,9 @@ namespace Rock.Blocks.Engagement
                 box.IfValidProperty( nameof( box.Bag.ConnectionStatusHistoryNote ),
                     () => entity.ConnectionStatusHistoryNote = box.Bag.ConnectionStatusHistoryNote );
             }
+
+            box.IfValidProperty( nameof( box.Bag.CampusGuid ),
+                () => entity.CampusId = CampusCache.GetId( box.Bag.CampusGuid.AsGuid() ) );
 
             box.IfValidProperty( nameof( box.Bag.Requester ),
                 () => entity.PersonAliasId = box.Bag.Requester.GetEntityId<PersonAlias>( RockContext ).Value );
@@ -1659,7 +1785,8 @@ namespace Rock.Blocks.Engagement
                 Name = connectionRequest.ConnectionStatus.Name,
                 Order = connectionRequest.ConnectionStatus.Order,
                 HighlightColor = connectionRequest.ConnectionStatus.HighlightColor,
-                IsNoteRequiredOnCompletion = connectionRequest.ConnectionStatus.IsNoteRequiredOnCompletion
+                IsNoteRequiredOnCompletion = connectionRequest.ConnectionStatus.IsNoteRequiredOnCompletion,
+                IsDefaultStatus = connectionRequest.ConnectionStatus.IsDefault
             };
 
             var reminderCount = new ReminderService( RockContext ).Queryable()
@@ -1775,26 +1902,15 @@ namespace Rock.Blocks.Engagement
                 ConnectionTypeIdKey = connectionRequest.ConnectionOpportunity.ConnectionType.IdKey,
                 CanEditConnectionRequest = CanEditSpecifiedConnectionRequest( connectionRequest, out _ ),
                 RequiresPlacementGroupToComplete = connectionRequest.ConnectionOpportunity.ConnectionType.RequiresPlacementGroupToConnect,
-                ConnectorItems = connectionRequest.ConnectionOpportunity.ConnectionOpportunityConnectorGroups
-                    .SelectMany( cg => cg.ConnectorGroup.Members )
-                    .Select( gm => gm.Person )
-                    .Distinct()
-                    .Select( p => new ConnectorItemBag
-                    {
-                        ListItemBag = new ListItemBag
-                        {
-                            Text = p.FullName,
-                            Value = p.PrimaryAliasGuid.ToString()
-                        },
-                        PhotoUrl = p.PhotoUrl
-                    } ).ToList(),
-                ConnectionStatuses = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.Select( s => new ConnectionStatusBag
+                ConnectionStatuses = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.Where( s => s.IsActive )
+                .Select( s => new ConnectionStatusBag
                 {
                     Guid = s.Guid,
                     Name = s.Name,
                     HighlightColor = s.HighlightColor,
                     Order = s.Order,
-                    IsNoteRequiredOnCompletion = s.IsNoteRequiredOnCompletion
+                    IsNoteRequiredOnCompletion = s.IsNoteRequiredOnCompletion,
+                    IsDefaultStatus = s.IsDefault,
                 } ).ToList(),
                 IsFutureFollowUpEnabled = connectionRequest.ConnectionOpportunity.ConnectionType.EnableFutureFollowup,
                 IsRequestSecurityEnabled = connectionRequest.ConnectionOpportunity.ConnectionType.EnableRequestSecurity,
@@ -1805,6 +1921,14 @@ namespace Rock.Blocks.Engagement
                 RequestSourceItems = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionTypeSources.ToListItemBagList()
             };
 
+            var connectorItems = GetConnectorItems( connectionRequest.ConnectionOpportunity, connectionRequest.CampusId, connectionRequest.ConnectorPersonAlias, true );
+
+            optionsBag.ConnectorItems = connectorItems;
+            optionsBag.ConnectorItemsForEdit = connectorItems
+                .Where( c => c.ListItemBag.Value != string.Empty )
+                .Select( c => c.ListItemBag )
+                .ToList();
+
             var tempNote = new Note
             {
                 EntityId = connectionRequest.Id,
@@ -1812,6 +1936,26 @@ namespace Rock.Blocks.Engagement
             };
 
             optionsBag.CanEditConnectionRequestNote = tempNote.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+
+            var campusItems = connectionRequest.ConnectionOpportunity.ConnectionOpportunityCampuses.Where( c => c.Campus != null && c.Campus.IsActive == true )
+                .Select( c => c.Campus )
+                .ToListItemBagList();
+
+            if ( connectionRequest.CampusId.HasValue )
+            {
+                // Add the selected campus context to the campus list if it is not already included.
+                var campus = CampusCache.Get( connectionRequest.CampusId.Value );
+                if ( campus != null && !campusItems.Any( c => c.Value == campus.Guid.ToString() ) )
+                {
+                    campusItems.Add( new ListItemBag
+                    {
+                        Text = campus.Name,
+                        Value = campus.Guid.ToString()
+                    } );
+                }
+            }
+
+            optionsBag.Campuses = campusItems;
 
             optionsBag.ConnectionActivities = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionActivityTypes.Where( at => at.IsActive )
             .Select( a => new ConnectionActivityTypeBag
@@ -1865,6 +2009,7 @@ namespace Rock.Blocks.Engagement
                                 Text = g.Group.CampusId.HasValue ? $"{g.Group.Name} ({g.Group.Campus.Name})" : $"{g.Group.Name} (No Campus)",
                                 Value = g.Group.Guid.ToString()
                             },
+                            CampusGuid = g.Group.Campus?.Guid,
                             GroupMemberRoles = configs
                                 .DistinctBy( c => c.Role.Guid )
                                 .Select( c => c.Role.ToListItemBag() )
@@ -1885,53 +2030,6 @@ namespace Rock.Blocks.Engagement
                             GroupMemberAttributes = tempGroupMember.GetPublicAttributesForEdit( RequestContext.CurrentPerson )
                         };
                     } ).ToList();
-            }
-
-            // Add Unassigned Connector
-            optionsBag.ConnectorItems.Add( new ConnectorItemBag
-            {
-                ListItemBag = new ListItemBag
-                {
-                    Text = "Unassigned",
-                    Value = "unassigned"
-                },
-                PhotoUrl = Rock.Model.Person.GetPersonNoPictureUrl( new Rock.Model.Person() )
-            } );
-
-            // If the current connector (from the request) isn't in the connector list, add it.
-            if ( connectionRequest.ConnectorPersonAlias != null && !optionsBag.ConnectorItems.Any( c => c.ListItemBag.Value == connectionRequest.ConnectorPersonAlias.Guid.ToString() ) )
-            {
-                // Get the Connector Person
-                var connectorPerson = connectionRequest.ConnectorPersonAlias.Person;
-
-                if ( connectorPerson != null )
-                {
-                    optionsBag.ConnectorItems.Add( new ConnectorItemBag
-                    {
-                        ListItemBag = new ListItemBag
-                        {
-                            Text = connectorPerson.FullName,
-                            Value = connectorPerson.PrimaryAliasGuid.ToString()
-                        },
-                        PhotoUrl = connectorPerson.PhotoUrl
-                    } );
-                }
-            }
-
-            // If the connector list does not include the current person, add them.
-            if ( !optionsBag.ConnectorItems.Any( c => c.ListItemBag.Value == RequestContext.CurrentPerson.PrimaryAliasGuid.ToString() ) )
-            {
-                var person = RequestContext.CurrentPerson;
-
-                optionsBag.ConnectorItems.Add( new ConnectorItemBag
-                {
-                    ListItemBag = new ListItemBag
-                    {
-                        Text = person.FullName,
-                        Value = person.PrimaryAliasGuid.ToString()
-                    },
-                    PhotoUrl = person.PhotoUrl
-                } );
             }
 
             var requesterPerson = connectionRequest.PersonAlias.Person;
@@ -1982,7 +2080,8 @@ namespace Rock.Blocks.Engagement
                     Name = connectionRequest.ConnectionStatus.Name,
                     HighlightColor = connectionRequest.ConnectionStatus.HighlightColor,
                     Order = connectionRequest.ConnectionStatus.Order,
-                    IsNoteRequiredOnCompletion = connectionRequest.ConnectionStatus.IsNoteRequiredOnCompletion
+                    IsNoteRequiredOnCompletion = connectionRequest.ConnectionStatus.IsNoteRequiredOnCompletion,
+                    IsDefaultStatus = connectionRequest.ConnectionStatus.IsDefault
                 } : null,
                 FollowUpDate = connectionRequest.FollowupDate?.ToRockDateTimeOffset(),
                 ConnectionOpportunityName = connectionRequest.ConnectionOpportunity.Name,
@@ -2769,7 +2868,8 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
             var connectionRequestsQry = new ConnectionRequestService( RockContext ).Queryable()
                 .AsNoTracking()
                 .Where( cr => cr.ConnectionOpportunity.ConnectionTypeId == connectionType.Id
-                    && cr.ConnectionOpportunity.IsActive )
+                    && cr.ConnectionOpportunity.IsActive
+                    && cr.ConnectionStatus.IsActive )
                 .Select( a => new ConnectionRow
                 {
                     ConnectionRequestId = a.Id,
@@ -2827,7 +2927,8 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                         Name = a.ConnectionStatus.Name, // TODO - Test what happens when a Connection Status is deleted.
                         Order = a.ConnectionStatus.Order,
                         HighlightColor = a.ConnectionStatus.HighlightColor,
-                        IsNoteRequiredOnCompletion = a.ConnectionStatus.IsNoteRequiredOnCompletion
+                        IsNoteRequiredOnCompletion = a.ConnectionStatus.IsNoteRequiredOnCompletion,
+                        IsDefaultStatus = a.ConnectionStatus.IsDefault
                     },
                     ConnectionState = a.ConnectionState,
                     LastActivityDateTime = a.ConnectionRequestActivities.Select( cra => cra.CreatedDateTime )
@@ -2899,7 +3000,8 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                     Name = request.ConnectionStatusProjection.Name,
                     Order = request.ConnectionStatusProjection.Order,
                     HighlightColor = request.ConnectionStatusProjection.HighlightColor,
-                    IsNoteRequiredOnCompletion = request.ConnectionStatusProjection.IsNoteRequiredOnCompletion
+                    IsNoteRequiredOnCompletion = request.ConnectionStatusProjection.IsNoteRequiredOnCompletion,
+                    IsDefaultStatus = request.ConnectionStatusProjection.IsDefaultStatus
                 };
 
                 request.Person = new PersonFieldBag
@@ -3019,17 +3121,31 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
         /// <param name="connectionOpportunityGuid">The GUID of the Connection Opportunity to retrieve details for.</param>
         /// <returns>A Block Action Result containing the <see cref="ConnectionOpportunityDetailBag"/> if found; otherwise a not found result.</returns>
         [BlockAction]
-        public BlockActionResult FetchConnectionOpportunityDetails( string connectionOpportunityGuid )
+        public BlockActionResult FetchConnectionOpportunityDetails( string connectionOpportunityGuid, string campus )
         {
-            // TODO - check if null exception is possible
-            var connectionOpportunity = new ConnectionOpportunityService( RockContext ).Get( connectionOpportunityGuid.AsGuid() );
+            Guid? opportunityGuid = connectionOpportunityGuid.AsGuidOrNull();
+            Guid? campusGuid = campus.AsGuidOrNull();
+
+            if ( !opportunityGuid.HasValue )
+            {
+                return ActionNotFound( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
+            }
+
+            var connectionOpportunity = new ConnectionOpportunityService( RockContext ).Get( opportunityGuid.Value );
 
             if ( connectionOpportunity == null )
             {
-                return ActionNotFound();
+                return ActionNotFound( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
             }
 
-            var bag = GetConnectionOpportunityDetailBag( connectionOpportunity );
+            int? campusId = null;
+
+            if ( campusGuid.HasValue )
+            {
+                campusId = CampusCache.GetId( campusGuid.Value );
+            }
+
+            var bag = GetConnectionOpportunityDetailBag( connectionOpportunity, campusId );
 
             if ( bag == null )
             {
@@ -3037,6 +3153,80 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
             }
 
             return ActionOk( bag );
+        }
+
+        /// <summary>
+        /// Gets the available connectors for the specified Connection Opportunity,
+        /// optionally filtered by campus.
+        /// </summary>
+        /// <param name="connectionOpportunityGuid">The GUID of the Connection Opportunity to retrieve connectors for.</param>
+        /// <param name="campus">The GUID of the campus to filter connectors by, or null to return all connectors.</param>
+        /// <returns>A Block Action Result containing the list of connector items if found; otherwise a not found result.</returns>
+        [BlockAction]
+        public BlockActionResult FetchConnectorOptions( string connectionOpportunityGuid, string campus )
+        {
+            Guid? opportunityGuid = connectionOpportunityGuid.AsGuidOrNull();
+            Guid? campusGuid = campus.AsGuidOrNull();
+
+            if ( !opportunityGuid.HasValue )
+            {
+                return ActionNotFound( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found.");
+            }
+
+            var connectionOpportunity = new ConnectionOpportunityService( RockContext ).Get( opportunityGuid.Value );
+
+            if ( connectionOpportunity == null )
+            {
+                return ActionNotFound( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
+            }
+
+            int? campusId = null;
+
+            if ( campusGuid.HasValue )
+            {
+                campusId = CampusCache.GetId( campusGuid.Value );
+            }
+
+            var bag = GetConnectorOptionsBag( connectionOpportunity, campusId );
+
+            return ActionOk( bag );
+        }
+
+        /// <summary>
+        /// Gets the available placement groups for the specified Connection Opportunity,
+        /// optionally filtered by campus.
+        /// </summary>
+        /// <param name="connectionOpportunityGuid">The GUID of the Connection Opportunity to retrieve placement groups for.</param>
+        /// <param name="campus">The GUID of the campus to filter placement groups by, or null to return all placement groups.</param>
+        /// <returns>A Block Action Result containing the list of placement group items if found; otherwise a not found result.</returns>
+        [BlockAction]
+        public BlockActionResult FetchPlacementGroupItems( string connectionOpportunityGuid, string campus )
+        {
+            Guid? opportunityGuid = connectionOpportunityGuid.AsGuidOrNull();
+            Guid? campusGuid = campus.AsGuidOrNull();
+
+            if ( !opportunityGuid.HasValue )
+            {
+                return ActionNotFound( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
+            }
+
+            var connectionOpportunity = new ConnectionOpportunityService( RockContext ).Get( opportunityGuid.Value );
+
+            if ( connectionOpportunity == null )
+            {
+                return ActionNotFound( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
+            }
+
+            int? campusId = null;
+
+            if ( campusGuid.HasValue )
+            {
+                campusId = CampusCache.GetId( campusGuid.Value );
+            }
+
+            var placementGroups = GetPlacementGroupItems( connectionOpportunity, campusId );
+
+            return ActionOk( placementGroups );
         }
 
         #region Placement Group Block Actions
@@ -3378,7 +3568,8 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                             Order = currentStatus.Order,
                             Name = currentStatus.Name,
                             HighlightColor = currentStatus.HighlightColor,
-                            IsNoteRequiredOnCompletion = currentStatus.IsNoteRequiredOnCompletion
+                            IsNoteRequiredOnCompletion = currentStatus.IsNoteRequiredOnCompletion,
+                            IsDefaultStatus = currentStatus.IsDefault
                         },
                         DueStatusGrouping = GetGroupingFieldBag( ( int ) dueStatus, "text", dueStatus.ToString(), dueStatus.GetOrder(), "ti ti-calendar", null, GetDueStatusTextColorCssClass( dueStatus ) ),
                         DueStatus = dueStatus,
@@ -3424,7 +3615,8 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                         Order = newStatus.Order,
                         Name = newStatus.Name,
                         HighlightColor = newStatus.HighlightColor,
-                        IsNoteRequiredOnCompletion = newStatus.IsNoteRequiredOnCompletion
+                        IsNoteRequiredOnCompletion = newStatus.IsNoteRequiredOnCompletion,
+                        IsDefaultStatus = newStatus.IsDefault
                     },
                     DueStatusGrouping = GetGroupingFieldBag( ( int ) dueStatus, "text", dueStatus.ToString(), dueStatus.GetOrder(), "ti ti-calendar", null, GetDueStatusTextColorCssClass( dueStatus ) ),
                     DueStatus = dueStatus,
@@ -3831,14 +4023,6 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                 return ActionBadRequest( "Invalid data." );
             }
 
-            // TODO - Fix this to use a campus picker
-            // If there is a campus filter then set the new Connection Request to that campus.
-            var campusContext = RequestContext.GetContextEntity<Campus>();
-            if ( campusContext != null )
-            {
-                entity.CampusId = campusContext.Id;
-            }
-
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();
@@ -3908,7 +4092,8 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                     Order = connectionRequestStatus.Order,
                     Name = connectionRequestStatus.Name,
                     HighlightColor = connectionRequestStatus.HighlightColor,
-                    IsNoteRequiredOnCompletion = connectionRequestStatus.IsNoteRequiredOnCompletion
+                    IsNoteRequiredOnCompletion = connectionRequestStatus.IsNoteRequiredOnCompletion,
+                    IsDefaultStatus = connectionRequestStatus.IsDefault
                 },
                 DueStatusGrouping = GetGroupingFieldBag( ( int ) dueStatus, "text", dueStatus.ToString(), dueStatus.GetOrder(), "ti ti-calendar", null, GetDueStatusTextColorCssClass( dueStatus ) ),
                 DueStatus = dueStatus,
@@ -5306,8 +5491,8 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
             public string Name { get; set; }
             public int Order { get; set; }
             public string HighlightColor { get; set; }
-
             public bool IsNoteRequiredOnCompletion { get; set; }
+            public bool IsDefaultStatus { get; set; }
         }
 
         public class PersonProjection
