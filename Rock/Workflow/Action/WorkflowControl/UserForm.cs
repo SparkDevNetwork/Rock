@@ -517,11 +517,10 @@ namespace Rock.Workflow.Action
                 }
             }
 
-            // Get current marital status or default to Married if this will
-            // be a new person.
-            var maritalStatusGuid = personEntryPerson != null
-                ? personEntryPerson.MaritalStatusValue?.Guid
-                : Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
+            // Get the current marital status if the person exists,
+            // otherwise leave it null so we don't default new people
+            // to "Married" when no marital status is provided.
+            var maritalStatusGuid = personEntryPerson?.MaritalStatusValue?.Guid;
 
             return new PersonEntryValuesBag
             {

@@ -1341,17 +1341,10 @@ namespace Rock.Blocks.Workflow
                 mobileAddress = familyLocation != null ? Rock.Mobile.MobileHelper.GetMobileAddress( familyLocation ) : null;
             }
 
-            Guid? maritalStatusGuid;
-
-            if ( personEntryPerson != null )
-            {
-                maritalStatusGuid = personEntryPerson.MaritalStatusValue?.Guid;
-            }
-            else
-            {
-                // default to Married if this is a new person
-                maritalStatusGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
-            }
+            // Get the current marital status if the person exists,
+            // otherwise leave it null so we don't default new people
+            // to "Married" when no marital status is provided.
+            Guid? maritalStatusGuid = personEntryPerson?.MaritalStatusValue?.Guid;
 
             return new WorkflowFormPersonEntry
             {
