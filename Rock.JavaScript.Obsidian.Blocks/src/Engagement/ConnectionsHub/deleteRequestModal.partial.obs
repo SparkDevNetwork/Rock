@@ -6,7 +6,7 @@
            saveText="Delete"
            @save="onSave">
         <NotificationBox alertType="danger">
-            Are you sure you want to delete the following {{ pluralize("request", requestDetails.length) }} This action can’t be undone.
+            Are you sure you want to delete the following {{ pluralize("request", requestDetails.length) }}? This action can’t be undone.
         </NotificationBox>
         <NotificationBox v-if="!isNullOrWhiteSpace(errorMessage)"
                          alertType="danger"

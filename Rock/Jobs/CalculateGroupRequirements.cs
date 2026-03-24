@@ -423,7 +423,7 @@ namespace Rock.Jobs
 
             workflow.SetAttributeValue( "Person", personAliasGuid );
 
-            new WorkflowService( rockContext ).Process( workflow, out var workflowErrors );
+            new WorkflowService( rockContext ).Process( workflow, groupMemberRequirement, out var workflowErrors );
 
             if ( workflowErrors?.Any() == true )
             {

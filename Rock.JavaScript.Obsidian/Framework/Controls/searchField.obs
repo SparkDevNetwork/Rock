@@ -5,12 +5,12 @@
         <ul class="nav pull-right smartsearch-type">
             <li class="dropdown"><a class="dropdown-toggle navbar-link" data-toggle="dropdown"><span>{{ defaultFilterLabel }}</span><b class="ti ti-caret-down-filled"></b></a>
                 <ul class="dropdown-menu">
-                    <li v-for="(filter, key) in searchFilters" :key="key" :data-key="key" :data-target="filter.value"><a>{{ filter.text }}</a></li>
+                    <li v-for="(filter, index) in searchFilters" :key="filter.key ?? index" :data-key="filter.key" :data-target="filter.resultUrl"><a>{{ filter.label }}</a></li>
                 </ul>
             </li>
         </ul>
         <input type="search" ref="inputElement" :id="uniqueId" v-model="internalValue" accesskey="q" class="searchinput tt-query" autocomplete="off" spellcheck="false" style="position: relative; vertical-align: top; background-color: transparent;" dir="auto">
-        <input type="hidden" name="searchField_hSearchFilter" id="searchField_hSearchFilter" :value="defaultFilterKey">
+        <input type="hidden" ref="hiddenFilterInput" name="searchField_hSearchFilter" id="searchField_hSearchFilter">
     </div>
 </template>
 
@@ -37,7 +37,7 @@
     margin: 0 0 0 10px
 }
 
-.smartsearch .twitter-typeahead {
+.smartsearch :deep(.twitter-typeahead) {
     flex-grow: 1;
     margin-right: 0
 }
@@ -47,29 +47,29 @@
     width: auto
 }
 
-.smartsearch .dropdown .dropdown-menu {
+.smartsearch :deep(.dropdown .dropdown-menu) {
     font-size: 1em
 }
 
-.smartsearch .tt-suggestion p {
+.smartsearch :deep(.tt-suggestion p) {
     padding: 10px 15px 10px 10px
 }
 
-.smartsearch .tt-hint {
+.smartsearch :deep(.tt-hint) {
     height: 100%;
     padding: 0 0 0 34px;
     opacity: 0.5
 }
 
-.smartsearch .tt-dropdown-menu {
+.smartsearch :deep(.tt-dropdown-menu) {
     min-width: 340px;
     padding: 0
 }
 </style>
 
 <script setup lang="ts">
-    import { computed, ref, watch } from "vue";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, PropType, ref, watch } from "vue";
+    import { SearchFilterBag } from "@Obsidian/ViewModels/Blocks/Core/SmartSearch/searchFilterBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
@@ -78,6 +78,11 @@
         modelValue: {
             type: String,
             required: true
+        },
+
+        initialSearchFilters: {
+            type: Array as PropType<SearchFilterBag[]>,
+            default: undefined
         }
     });
 
@@ -91,40 +96,26 @@
     const http = useHttp();
     const uniqueId = `rock-searchField-${newGuid()}`;
     const inputElement = ref<HTMLInputElement>();
+    const hiddenFilterInput = ref<HTMLInputElement>();
 
     /**
-     * The available search filters keyed by component ID.
-     * The API returns a Dictionary<string, ListItemBag> where keys are
-     * the integer component IDs from the search container.
+     * The available search filters.
      */
-    const searchFilters = ref<Record<string, ListItemBag>>();
+    const searchFilters = ref<SearchFilterBag[]>();
 
     // #endregion
 
     // #region Computed Values
 
     /**
-     * Gets the component ID key of the first search filter.
-     */
-    const defaultFilterKey = computed<string>(() => {
-        if (!searchFilters.value) {
-            return "";
-        }
-
-        const keys = Object.keys(searchFilters.value);
-
-        return keys.length > 0 ? keys[0] : "";
-    });
-
-    /**
      * Gets the display label of the default search filter (e.g. "Name").
      */
     const defaultFilterLabel = computed<string>(() => {
-        if (!searchFilters.value || !defaultFilterKey.value) {
+        if (!searchFilters.value || searchFilters.value.length === 0) {
             return "";
         }
 
-        return searchFilters.value[defaultFilterKey.value]?.text ?? "";
+        return searchFilters.value[0].label ?? "";
     });
 
     // #endregion
@@ -134,7 +125,7 @@
     /** Fetches the available search filters from the API. */
     async function fetchSearchFilters(): Promise<void> {
         const url = "/api/v2/Controls/SearchFieldGetSearchFilters";
-        const response = await http.post<Record<string, ListItemBag>>(url);
+        const response = await http.post<SearchFilterBag[]>(url);
 
         if (response.isSuccess && response.data) {
             searchFilters.value = response.data;
@@ -148,13 +139,22 @@
 
     // #region Watchers
 
-    watch([inputElement, searchFilters], () => {
-        if (inputElement.value && searchFilters.value) {
+    watch([inputElement, hiddenFilterInput, searchFilters], () => {
+        if (inputElement.value && hiddenFilterInput.value && searchFilters.value) {
+            if (searchFilters.value.length > 0) {
+                hiddenFilterInput.value.value = searchFilters.value[0].key ?? "";
+            }
+
             window.Rock.controls.searchField.initialize({ controlId: uniqueId });
         }
     });
 
     // #endregion
 
-    fetchSearchFilters();
+    if (props.initialSearchFilters) {
+        searchFilters.value = props.initialSearchFilters;
+    }
+    else {
+        fetchSearchFilters();
+    }
 </script>

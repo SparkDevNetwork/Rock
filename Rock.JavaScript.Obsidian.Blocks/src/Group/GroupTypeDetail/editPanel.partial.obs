@@ -37,7 +37,7 @@
         </ContentSection>
 
         <!-- GENERAL -->
-        <ContentSection title="General" icon="ti ti-settings">
+        <ContentSection title="General" icon="ti ti-settings" :order="1">
             <ContentStack title="Purpose &amp; Structure"
                           description="Defines the overall purpose, identity, and hierarchical relationships of the group type, including what it inherits and what children it can contain.">
                 <DefinedValuePicker label="Group Type Purpose" v-model="groupTypePurposeValue" :showBlankItem="true"
@@ -186,7 +186,7 @@
         </ContentSection>
 
         <!-- DISPLAY OPTIONS -->
-        <ContentSection title="Display Options" icon="ti ti-device-desktop">
+        <ContentSection title="Display Options" icon="ti ti-device-desktop" :order="2">
             <ContentStack title="Group Appearance"
                           description="Customize how groups of this type appear throughout Rock.">
                 <TextBox v-model="groupTerm" label="Group Term" rules="required"
@@ -228,7 +228,7 @@
         </ContentSection>
 
         <!-- ROLES -->
-        <ContentSection title="Roles" icon="ti ti-masks-theater">
+        <ContentSection title="Roles" icon="ti ti-masks-theater" :order="3">
             <GroupTypeRoles v-model:roles="roles" v-model:defaultGroupRole="defaultGroupRole"
                             :isChatAllowed="isChatAllowed" :groupRequirementRoles="groupRequirementRoles"
                             :workflowTriggerRoles="workflowTriggerRoles" :groupTerm="groupTerm"
@@ -236,26 +236,26 @@
         </ContentSection>
 
         <!-- GROUP TYPE ATTRIBUTES -->
-        <ContentSection title="Type Attributes" icon="ti ti-binary-tree-2">
+        <ContentSection title="Type Attributes" icon="ti ti-binary-tree-2" :order="4">
             <GroupTypeAttributes v-model:groupTypeAttributes="groupTypeAttributes"
                                  v-model:attributeValues="attributeValues" :inheritedGroupTypeAttributes="inheritedGroupTypeAttributes"
                                  :attributesForAttributeValueContainer="attributes" />
         </ContentSection>
 
         <!-- GROUP ATTRIBUTES -->
-        <ContentSection title="Group Attributes" icon="ti ti-users-group">
+        <ContentSection title="Group Attributes" icon="ti ti-users-group" :order="5">
             <GroupAttributes v-model:groupAttributes="groupAttributes"
                              :inheritedGroupAttributes="inheritedGroupAttributes" />
         </ContentSection>
 
         <!-- GROUP MEMBER ATTRIBUTES -->
-        <ContentSection title="Member Attributes" icon="ti ti-user-cog">
+        <ContentSection title="Member Attributes" icon="ti ti-user-cog" :order="6">
             <GroupMemberAttributes v-model:groupMemberAttributes="groupMemberAttributes"
                                    :inheritedGroupMemberAttributes="inheritedGroupMemberAttributes" />
         </ContentSection>
 
         <!-- SCHEDULING -->
-        <ContentSection title="Scheduling" icon="ti ti-calendar-month">
+        <ContentSection title="Scheduling" icon="ti ti-calendar-month" :order="7">
             <ContentStack :title="schedulingSectionTitle" :description="schedulingSectionDescription">
                 <div class="form-group">
                     <InlineSwitch label="Enable Scheduling" v-model="isSchedulingEnabled" />
@@ -325,7 +325,7 @@
         </ContentSection>
 
         <!-- PEER NETWORK -->
-        <ContentSection title="Peer Network" icon="ti ti-affiliate">
+        <ContentSection title="Peer Network" icon="ti ti-affiliate" :order="8">
             <ContentStack title="Peer Network Feature" :description="peerNetworkSectionDescription">
                 <div class="form-group">
                     <InlineSwitch label="Enable Peer Network" v-model="isPeerNetworkEnabled" />
@@ -407,7 +407,7 @@
         </ContentSection>
 
         <!-- ATTENDANCE -->
-        <ContentSection title="Attendance" icon="ti ti-clipboard-check">
+        <ContentSection title="Attendance" icon="ti ti-clipboard-check" :order="9">
             <ContentStack title="Attendance &amp; Check-In Features"
                           description="Enable groups of this type to take and manage attendance.">
                 <div class="form-group">
@@ -505,7 +505,7 @@
         </ContentSection>
 
         <!-- RSVP -->
-        <ContentSection title="RSVP" icon="ti ti-ticket">
+        <ContentSection title="RSVP" icon="ti ti-ticket" :order="10">
             <ContentStack title="RSVP Feature" description="This option will allow group RSVP.">
                 <div class="form-group">
                     <InlineSwitch label="Enable RSVP" v-model="enableRSVP" />
@@ -541,7 +541,8 @@
 
         <!-- CHAT -->
         <ContentSection v-if="store.state.trailblazerMode && isChatEnabledSystem" title="Chat"
-                        icon="ti ti-message-dots">
+                        icon="ti ti-message-dots"
+                        :order="11">
             <NotificationBox :alertType="AlertType.Info">
                 You'll need to run the Chat Sync Job after saving for these changes to take effect in chat channels of this type.
             </NotificationBox>
@@ -597,14 +598,14 @@
         </ContentSection>
 
         <!-- GROUP REQUIREMENTS -->
-        <ContentSection v-if="store.state.trailblazerMode" title="Group Requirements" icon="ti ti-checklist">
+        <ContentSection v-if="store.state.trailblazerMode" title="Group Requirements" icon="ti ti-checklist" :order="12">
             <GroupRequirements v-model:groupRequirements="groupRequirements"
                                :groupRequirementTypeOptions="groupRequirementTypeOptions" :groupRoleOptions="groupRoleOptions"
                                :groupAttributeOptions="groupAttributeOptions" />
         </ContentSection>
 
         <!-- GROUP MEMBER WORKFLOWS -->
-        <ContentSection v-if="store.state.trailblazerMode" title="Group Member Workflows" icon="ti ti-settings-cog">
+        <ContentSection v-if="store.state.trailblazerMode" title="Group Member Workflows" icon="ti ti-settings-cog" :order="13">
             <GroupMemberWorkflows v-model:groupMemberWorkflowTriggers="groupMemberWorkflowTriggers"
                                   :groupRoleOptions="groupRoleOptions" />
         </ContentSection>

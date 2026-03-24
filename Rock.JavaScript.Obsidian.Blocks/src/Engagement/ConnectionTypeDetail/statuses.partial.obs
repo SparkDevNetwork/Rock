@@ -56,8 +56,8 @@
 
                     <div class="form-group">
                         <InlineCheckBox v-model="theStatus.isNoteRequiredOnCompletion"
-                                        label="Note Required on Completion"
-                                        help="Require a note to be entered when a request is marked as complete while in this status." />
+                                        label="Note Required on Status Change"
+                                        help="Require a note when moving a request out of this status." />
                     </div>
 
                     <div class="form-group">
@@ -83,12 +83,6 @@
                                    help="Defines the number of days before the due date during which a request is considered due soon." />
                     </div>
 
-                    <div v-if="props.isFutureFollowupEnabled">
-                        <NumberBox v-model="theStatus.autoFutureFollowUpPauseInDays"
-                                   label="Future Follow-Up Duration (In Days)" inputClasses="input-width-md" :decimalCount="0"
-                                   :rules="futureFollowUpDurationRules"
-                                   help="Defines how long a request remains in the Future Follow-Up state before it becomes active." />
-                    </div>
                 </ContentStack>
             </ContentSection>
 
@@ -110,6 +104,13 @@
                             <EditColumn @click="onEditAutomation" />
                             <DeleteColumn @click="onDeleteAutomation" />
                         </Grid>
+
+                        <NumberBox v-if="props.isFutureFollowupEnabled" v-model="theStatus.autoFutureFollowUpPauseInDays"
+                                   label="Auto Future Follow-Up Period (Days)"
+                                   inputClasses="input-width-md"
+                                   :decimalCount="0"
+                                   :minimumValue="0"
+                                   help="When a connection request is changed to this status, the request's state will automatically be set to Future Follow-Up. This value determines how many days after the status change the follow-up date will be set." />
                     </template>
                     <template v-else-if="theAutomation">
                         <div class="automation-form">
@@ -393,7 +394,7 @@
      * settings are applicable (either status-based durations or future follow-up).
      */
     const showDateSettingsStack = computed((): boolean => {
-        return isDurationPerStatus.value || props.isFutureFollowupEnabled;
+        return isDurationPerStatus.value;
     });
 
     /**
@@ -411,12 +412,6 @@
         return ["required", validateDueSoonWindow];
     });
 
-    /**
-     * Rules for the future follow-up duration field.
-     */
-    const futureFollowUpDurationRules = computed((): (ValidationRuleFunction | string)[] => {
-        return ["required", validateFutureFollowUpDuration];
-    });
 
     // #endregion Computed Values
 
@@ -467,24 +462,6 @@
         return true;
     };
 
-    /**
-     * Validates the Future Follow-Up Duration field.
-     * The value is required and must be greater than 0.
-     */
-    const validateFutureFollowUpDuration: ValidationRuleFunction = (value): ValidationResult => {
-        if (typeof value !== "number" && typeof value !== "string") {
-            return "Invalid value provided.";
-        }
-
-        const futureFollowUpDuration = toNumber(value);
-
-        // Required & positive
-        if (futureFollowUpDuration <= 0) {
-            return "A number greater than 0 must be provided.";
-        }
-
-        return true;
-    };
 
     /**
      * Creates a new status instance for editing in the modal.
@@ -504,7 +481,7 @@
             autoInactivateState: false,
             requestStatusDueDateOffsetInDays: 0,
             requestStatusDueSoonOffsetInDays: 0,
-            autoFutureFollowUpPauseInDays: 0,
+            autoFutureFollowUpPauseInDays: null,
             automations: []
         };
     }

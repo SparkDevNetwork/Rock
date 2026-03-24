@@ -20,6 +20,8 @@ using System.Web;
 using System.Web.Caching;
 using System.Web.Hosting;
 
+using Rock.Configuration;
+
 namespace Rock.Web
 {
     /// <summary>
@@ -56,9 +58,13 @@ namespace Rock.Web
                 }
                 else
                 {
-                    // If the file does not exist at the absolute path, log the failed attempt, and return the requested relative path.
-                    Model.ExceptionLogService.LogException(
-                        new Exception( string.Format( "Could not find the file at '{0}'.  Could not add fingerprint.", absolute ) ) );
+                    var startedAt = RockApp.Current?.HostingSettings?.ApplicationStartDateTime;
+
+                    if ( startedAt.HasValue && RockDateTime.Now.Subtract( startedAt.Value ).TotalSeconds > 60 )
+                    {
+                        // If the file does not exist at the absolute path, log the failed attempt, and return the requested relative path.
+                        Model.ExceptionLogService.LogException( new Exception( $"Could not find the file at '{absolute}'. Could not add fingerprint.{Environment.NewLine}{Environment.StackTrace}" ) );
+                    }
                     return rootRelativePath;
                 }
             }

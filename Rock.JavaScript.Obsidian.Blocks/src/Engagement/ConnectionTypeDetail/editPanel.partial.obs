@@ -19,7 +19,7 @@
             </div>
         </ContentSection>
 
-        <ContentSection title="Settings" icon="ti ti-settings">
+        <ContentSection title="Settings" icon="ti ti-settings" :order="1">
             <ContentStack title="Features &amp; Views"
                           description="Control how request data from this connection type can be viewed and which features are available.">
                 <CheckBoxList label="Enabled Views" v-model="enabledViewsValue" :items="enabledViewsOptions"
@@ -77,32 +77,36 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection v-if="store.state.trailblazerMode" title="Type Attributes" icon="ti ti-binary-tree-2">
+        <ContentSection v-if="store.state.trailblazerMode" title="Type Attributes" icon="ti ti-binary-tree-2" :order="2">
             <ConnectionTypeAttributes v-model:connectionTypeAttributes="connectionTypeAttributes"
                                       v-model:attributeValues="attributeValues" :attributesForAttributeValueContainer="attributes" />
         </ContentSection>
 
-        <ContentSection title="Opportunity Attributes" icon="ti ti-route-2">
+        <ContentSection title="Opportunity Attributes" icon="ti ti-route-2" :order="3">
             <ConnectionOpportunityAttributes v-model:connectionOpportunityAttributes="connectionOpportunityAttributes" />
         </ContentSection>
 
-        <ContentSection title="Request Attributes" icon="ti ti-id">
+        <ContentSection title="Request Attributes" icon="ti ti-id" :order="4">
             <ConnectionRequestAttributes v-model:connectionRequestAttributes="connectionRequestAttributes" />
         </ContentSection>
 
-        <ContentSection title="Activity Types" icon="ti ti-activity">
+        <ContentSection title="Activity Types" icon="ti ti-activity" :order="5">
             <ActivitiesSection v-model:activityTypes="activityTypes" :personNoteTypeItems="options.personNoteTypeItems ?? []" :workflows="workflows" />
         </ContentSection>
 
-        <ContentSection title="Statuses" icon="ti ti-select">
+        <ContentSection title="Statuses" icon="ti ti-select" :order="6">
             <StatusesSection v-model:statuses="statuses" :workflows="workflows" :dueDateCalculationMode="dueDateCalculationMode" :isFutureFollowupEnabled="enableFutureFollowup" />
         </ContentSection>
 
-        <ContentSection v-if="store.state.trailblazerMode" title="Workflows" icon="ti ti-settings-cog">
+        <ContentSection title="Sources" icon="ti ti-inbox" :order="7">
+            <SourcesSection v-model:sources="sources" />
+        </ContentSection>
+
+        <ContentSection v-if="store.state.trailblazerMode" title="Workflows" icon="ti ti-settings-cog" :order="8">
             <WorkflowsSection v-model:workflows="workflows" :isFutureFollowupEnabled="enableFutureFollowup" :statusOptions="statusOptions" :activityTypeOptions="activityTypeOptions" />
         </ContentSection>
 
-        <ContentSection title="Additional Settings" icon="ti ti-file-settings">
+        <ContentSection title="Additional Settings" icon="ti ti-file-settings" :order="9">
             <AdditionalSettingsSection v-model:additionalSettings="additionalSettings"
                                        :connectionTypeOptions="props.options.connectionTypeOptions ?? []"
                                        :hasActiveAIProvider="props.options.hasActiveAIProvider ?? false" />
@@ -143,6 +147,7 @@
     import ConnectionOpportunityAttributes from "./connectionOpportunityAttributes.partial.obs";
     import ActivitiesSection from "./activities.partial.obs";
     import StatusesSection from "./statuses.partial.obs";
+    import SourcesSection from "./sources.partial.obs";
     import WorkflowsSection from "./workflows.partial.obs";
     import AdditionalSettingsSection from "./additionalSettings.partial.obs";
 
@@ -191,6 +196,7 @@
     const connectionOpportunityAttributes = propertyRef(props.modelValue.bag?.connectionOpportunityAttributes ?? [], "ConnectionOpportunityAttributes");
     const activityTypes = propertyRef(props.modelValue.bag?.activityTypes ?? [], "ActivityTypes");
     const statuses = propertyRef(props.modelValue.bag?.statuses ?? [], "Statuses");
+    const sources = propertyRef(props.modelValue.bag?.sources ?? [], "Sources");
     const workflows = propertyRef(props.modelValue.bag?.workflows ?? [], "Workflows");
     const additionalSettings = propertyRef(props.modelValue.bag?.additionalSettings ?? {}, "AdditionalSettings");
 
@@ -198,7 +204,7 @@
     // objects returned by propertyRef().
     const propRefs = [description, isActive, name, iconCssClass, enabledViews, enabledFeatures, enableFutureFollowup, isSequentialStatusEnforced, connectionRequestDetailPage,
         requiresPlacementGroupToConnect, enableFullActivityList, enableRequestSecurity, dueDateCalculationMode, requestDueDateOffsetInDays, requestDueSoonOffsetInDays,
-        connectionTypeAttributes, connectionRequestAttributes, connectionOpportunityAttributes, activityTypes, statuses, workflows, additionalSettings];
+        connectionTypeAttributes, connectionRequestAttributes, connectionOpportunityAttributes, activityTypes, statuses, sources, workflows, additionalSettings];
 
     // #endregion
 
@@ -505,6 +511,7 @@
         updateRefValue(connectionOpportunityAttributes, props.modelValue.bag?.connectionOpportunityAttributes ?? []);
         updateRefValue(activityTypes, props.modelValue.bag?.activityTypes ?? []);
         updateRefValue(statuses, props.modelValue.bag?.statuses ?? []);
+        updateRefValue(sources, props.modelValue.bag?.sources ?? []);
         updateRefValue(workflows, props.modelValue.bag?.workflows ?? []);
         updateRefValue(additionalSettings, props.modelValue.bag?.additionalSettings ?? {});
     });
@@ -537,6 +544,7 @@
         setPropertiesBoxValue(newValue, "connectionOpportunityAttributes", connectionOpportunityAttributes.value);
         setPropertiesBoxValue(newValue, "activityTypes", activityTypes.value);
         setPropertiesBoxValue(newValue, "statuses", statuses.value);
+        setPropertiesBoxValue(newValue, "sources", sources.value);
         setPropertiesBoxValue(newValue, "workflows", workflows.value);
         setPropertiesBoxValue(newValue, "additionalSettings", additionalSettings.value);
 

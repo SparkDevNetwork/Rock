@@ -481,6 +481,7 @@ namespace Rock.Blocks.Engagement
                             cr.CreatedDateTime.Value,
                             cr.ConnectedDateTime.Value ) )
                 } )
+                .Where( m => m.ActiveRequestCount > 0 )
                 .ToList();
 
             if ( !metrics.Any() )

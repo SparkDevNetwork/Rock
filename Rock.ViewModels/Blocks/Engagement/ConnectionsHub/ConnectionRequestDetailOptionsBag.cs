@@ -47,9 +47,14 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public bool RequiresPlacementGroupToComplete { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of connectors (with photo URLs) available for assignment to the request.
+        /// Gets or sets the list of connectors available for assignment to the request. Filtered by campus for view mode.
         /// </summary>
         public List<ConnectorItemBag> ConnectorItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of connectors avaiable when editing a Connection Request. Includes all connectors regardless of campus association since edit mode will filter by campus on the client.
+        /// </summary>
+        public List<ConnectorItemBag> ConnectorItemsForEdit { get; set; }
 
         /// <summary>
         /// Gets or sets the list of connection statuses available for this Connection Type.
@@ -75,6 +80,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the list of request source items available for selection.
         /// </summary>
         public List<ListItemBag> RequestSourceItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of available campuses for this connection request.
+        /// </summary>
+        public List<ListItemBag> Campuses { get; set; }
 
         /// <summary>
         /// Gets or sets the Lava template used to render the heading section of the request detail panel.

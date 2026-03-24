@@ -281,6 +281,16 @@ namespace Rock.Model
             public string AIInsightsPrompt { get; set; }
 
             /// <summary>
+            /// Gets or sets the AI summary trigger mode.
+            /// </summary>
+            public AISummaryTriggerMode? AISummaryTrigger { get; set; }
+
+            /// <summary>
+            /// Gets or sets the AI summary cache duration in minutes.
+            /// </summary>
+            public int? AISummaryCacheDurationMinutes { get; set; }
+
+            /// <summary>
             /// Defines a single "Additional Requests to Show" filter row.
             /// </summary>
             /// <remarks>

@@ -97,6 +97,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public DateTimeOffset? DueDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the date by which this request was completed.
+        /// </summary>
+        public DateTimeOffset? CompletedDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the due status indicating whether this request is on time, due soon, or overdue.
         /// </summary>
         public DueStatus DueStatus { get; set; }

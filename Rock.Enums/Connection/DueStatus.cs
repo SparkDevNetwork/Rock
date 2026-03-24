@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.ComponentModel;
+
 namespace Rock.Enums.Connection
 {
     /// <summary>
@@ -25,12 +27,14 @@ namespace Rock.Enums.Connection
         /// <summary>
         /// The request is not due yet.
         /// </summary>
+        [Description( "On Track" )]
         [EnumOrder( 2 )]
         DueLater = 0,
 
         /// <summary>
         /// The request is due soon.
         /// </summary>
+        [Description( "Due Soon" )]
         [EnumOrder( 1 )]
         DueSoon = 1,
 

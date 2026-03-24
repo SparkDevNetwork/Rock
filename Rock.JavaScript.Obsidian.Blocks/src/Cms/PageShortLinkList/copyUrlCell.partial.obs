@@ -1,0 +1,51 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="shortLinkUrl" v-tooltip="tooltip">
+        <button class="btn btn-default btn-sm"
+                type="button"
+                @mouseenter="resetTooltip"
+                @click.prevent.stop="onClick">
+            <i class="ti ti-clipboard"></i>
+        </button>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+
+    const props = defineProps(standardCellProps);
+
+    const defaultTooltip = "Copy URL";
+
+    // #region Values
+
+    const tooltip = ref(defaultTooltip);
+    const shortLinkUrl = ref(props.row?.shortLink as string ?? "");
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Reset the tooltip back to the default value.
+     */
+    function resetTooltip(): void {
+        tooltip.value = defaultTooltip;
+    }
+
+    /**
+     * Copy the URL to the clipboard and update the tooltip to indicate it
+     * was copied.
+     */
+    function onClick(): void {
+        if (shortLinkUrl.value) {
+            navigator.clipboard.writeText(shortLinkUrl.value);
+        }
+
+        tooltip.value = "Copied";
+    }
+
+    // #endregion Event Handlers
+</script>

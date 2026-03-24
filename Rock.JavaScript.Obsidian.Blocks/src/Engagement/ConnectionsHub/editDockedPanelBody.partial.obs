@@ -33,22 +33,25 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <RadioButtonList v-model="connectionState"
-                                                 :items="options?.connectionStates ?? []"
+                                                 :items="connectionStates"
                                                  label="State" />
                             </div>
                         </div>
-                        <div v-if="parseInt(connectionState) === ConnectionState.FutureFollowUp" class="row">
-                            <div class="col-md-6">
-                                <DatePicker v-model="followUpDate"
-                                            label="Follow-Up Date"
-                                            rules="required" />
-                            </div>
-                        </div>
+                        <ConditionalWell v-if="parseInt(connectionState) === ConnectionState.FutureFollowUp">
+                            <template #default>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <DatePicker v-model="followUpDate"
+                                                    label="Follow-Up Date"
+                                                    rules="required" />
+                                    </div>
+                                </div>
+                            </template>
+                        </ConditionalWell>
+
                         <div class="row">
                             <div class="col-md-6">
-                                <!-- TODO - The Figma states: "If in sequential mode, then disable previous statuses. (I'm worried about the UX here)" -->
-                                <DropDownList
-                                              v-model="connectionStatusGuid"
+                                <DropDownList v-model="connectionStatusGuid"
                                               :items="connectionStatusItems"
                                               label="Status"
                                               :showBlankItem="false" />
@@ -63,7 +66,14 @@
                             </template>
                         </ConditionalWell>
 
-                        <!-- TODO - Campus picker? -->
+                        <div class="row" v-if="options?.campuses?.length && options.campuses.length > 0">
+                            <div class="col-md-6">
+                                <DropDownList v-model="campusGuid"
+                                              label="Campus"
+                                              :items="options.campuses"
+                                              :disabled="arePlacementGroupsAndCampusFieldsDisabled" />
+                            </div>
+                        </div>
 
                         <div class="row" v-if="options?.areGroupPlacementsEnabled">
                             <div class="col-md-6">
@@ -276,6 +286,7 @@
     const followUpDate = propertyRef(props.modelValue.bag?.followUpDate ?? "", "FollowUpDate");
     const connectionStatusGuid = propertyRef(isNullOrWhiteSpace(props.modelValue.bag?.connectionStatusGuid) ? (props.options?.connectionStatuses ? props.options.connectionStatuses[0].guid : "") : (props.modelValue.bag?.connectionStatusGuid ?? ""), "ConnectionStatusGuid");
     const connectionStatusHistoryNote = propertyRef("", "ConnectionStatusHistoryNote");
+    const campusGuid = propertyRef(props.modelValue.bag?.campusGuid ?? "", "CampusGuid");
     const placementGroupGuid = propertyRef(props.modelValue.bag?.placementGroupGuid ?? "", "PlacementGroupGuid");
     const groupMemberRoleGuid = propertyRef(props.modelValue.bag?.groupMemberRoleGuid ?? "", "GroupMemberRoleGuid");
     const groupMemberStatus = propertyRef(props.modelValue.bag?.groupMemberStatus?.toString() ?? "", "GroupMemberStatus");
@@ -291,25 +302,48 @@
         return (
             props.options?.connectionStatuses?.map(s => ({
                 value: s.guid,
-                text: s.name
+                text: s.name,
+                disabled: s.disabled
             })) ?? []
         );
+    });
+
+    const connectionStates = computed<ListItemBag[]>(() => {
+        if (props.modelValue.bag?.connectionState === ConnectionState.Connected) {
+            return props.options?.connectionStates ?? [];
+        }
+
+        return props.options?.connectionStates?.filter(s => s.value !== ConnectionState.Connected.toString()) ?? [];
     });
 
     const statusChanged = computed(() => !!originalConnectionStatusGuid.value && originalConnectionStatusGuid.value !== connectionStatusGuid.value);
 
     const isStatusHistoryNoteRequired = computed(() => props.options?.connectionStatuses?.find(s => s.guid === originalConnectionStatusGuid.value)?.isNoteRequiredOnCompletion ?? false);
 
+    /** Filters the connector items by selected campus and maps to a ListItemBag[] */
     const connectorItems = computed<ListItemBag[]>(() => {
-        if (props.options?.connectorItems) {
-            return props.options.connectorItems.map(c => c.listItemBag as ListItemBag);
+        if (props.options?.connectorItemsForEdit) {
+            return props.options.connectorItemsForEdit
+                .filter(c =>
+                    isNullOrWhiteSpace(campusGuid.value) ||
+                    c.isAvailableToAllCampuses ||
+                    c.campusGuids?.includes(campusGuid.value)
+                )
+                .map(c => c.listItemBag as ListItemBag) ?? [];
         }
         return [] as ListItemBag[];
     });
 
+    /** Filters the placement group items by selected campus and maps to a ListItemBag[] */
     const placementGroupItems = computed<ListItemBag[]>(() => {
         if (props.options?.placementGroups) {
-            return props.options.placementGroups.map(c => c.listItemBag as ListItemBag);
+            return props.options.placementGroups
+                .filter(g =>
+                    isNullOrWhiteSpace(campusGuid.value) ||
+                    isNullOrWhiteSpace(g.campusGuid) ||
+                    g.campusGuid === campusGuid.value
+                )
+                .map(g => g.listItemBag as ListItemBag);
         }
         return [] as ListItemBag[];
     });
@@ -371,6 +405,7 @@
         setPropertiesBoxValue(newValue, "connectorPersonAliasGuid", connectorPersonAliasGuid.value);
         setPropertiesBoxValue(newValue, "groupMemberRoleGuid", groupMemberRoleGuid.value);
         setPropertiesBoxValue(newValue, "groupMemberStatus", parseInt(groupMemberStatus.value) as GroupMemberStatus);
+        setPropertiesBoxValue(newValue, "campusGuid", campusGuid.value);
         setPropertiesBoxValue(newValue, "placementGroupGuid", placementGroupGuid.value);
         setPropertiesBoxValue(newValue, "placementGroupMemberAttributeValues", placementGroupMemberAttributeValues.value);
         setPropertiesBoxValue(newValue, "requestSourceGuid", requestSourceGuid.value);
@@ -387,6 +422,7 @@
         updateRefValue(connectorPersonAliasGuid, props.modelValue.bag?.connectorPersonAliasGuid ?? "");
         updateRefValue(groupMemberRoleGuid, props.modelValue.bag?.groupMemberRoleGuid ?? "");
         updateRefValue(groupMemberStatus, props.modelValue.bag?.groupMemberStatus?.toString() ?? "");
+        updateRefValue(campusGuid, props.modelValue.bag?.campusGuid ?? "");
         updateRefValue(placementGroupGuid, props.modelValue.bag?.placementGroupGuid ?? "");
         updateRefValue(placementGroupMemberAttributeValues, props.modelValue.bag?.placementGroupMemberAttributeValues ?? {});
         updateRefValue(requestSourceGuid, props.modelValue.bag?.requestSourceGuid ?? "");

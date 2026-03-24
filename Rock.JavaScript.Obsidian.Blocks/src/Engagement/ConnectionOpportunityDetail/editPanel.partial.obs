@@ -39,7 +39,7 @@
             </div>
         </ContentSection>
 
-        <ContentSection title="Overview" icon="ti ti-list-details">
+        <ContentSection title="Overview" icon="ti ti-list-details" :order="1">
             <ContentStack title="Summary"
                           description="The content shown as a public summary for this opportunity (e.g., in search results).">
                 <HtmlEditor v-model="summary" :editorHeight="234" :mergeFields="editorMergeFields" />
@@ -51,7 +51,7 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection v-if="showConfigureOpportunitySection" title="Configure Opportunity" icon="ti ti-settings">
+        <ContentSection v-if="showConfigureOpportunitySection" title="Configure Opportunity" icon="ti ti-settings" :order="2">
 
             <ContentStack v-if="showRequestDueDates"
                           title="Request Due Dates" description="Define the default due date for requests of this opportunity type and when a request should be considered “Due Soon”.">
@@ -73,7 +73,7 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection v-if="store.state.trailblazerMode" title="Request Attributes" icon="ti ti-binary-tree-2">
+        <ContentSection v-if="store.state.trailblazerMode" title="Request Attributes" icon="ti ti-binary-tree-2" :order="3">
             <ConnectionRequestAttributes v-model:connectionRequestAttributes="connectionRequestAttributes"
                                          :inheritedConnectionRequestAttributes="inheritedConnectionRequestAttributes"
                                          :options="props.options"
@@ -81,24 +81,24 @@
                                          :connectionTypeUrl="props.modelValue.bag?.connectionTypeUrl ?? ''" />
         </ContentSection>
 
-        <ContentSection v-if="props.options.isGroupPlacementEnabled" title="Placement Groups" icon="ti ti-route-square">
+        <ContentSection v-if="props.options.isGroupPlacementEnabled" title="Placement Groups" icon="ti ti-route-square" :order="4">
             <PlacementGroups v-model:placementGroupSectionData="placementGroupsSectionData" @hasArchivedGroup="handleArchivedGroup" />
         </ContentSection>
 
-        <ContentSection title="Connector Groups" icon="ti ti-users-group">
+        <ContentSection title="Connector Groups" icon="ti ti-users-group" :order="5">
             <ConnectorGroups v-model:connectorGroups="connectorGroups"
                              v-model:defaultConnectorsForCampus="defaultConnectorsForCampus"
                              :campuses="campuses" />
         </ContentSection>
 
-        <ContentSection v-if="store.state.trailblazerMode" title="Workflows" icon="ti ti-settings-cog">
+        <ContentSection v-if="store.state.trailblazerMode" title="Workflows" icon="ti ti-settings-cog" :order="6">
             <Workflows v-model:connectionWorkflows="connectionWorkflows"
                        :inheritedConnectionWorkflows="inheritedConnectionWorkflows"
                        :connectionTypeName="props.modelValue.bag?.connectionTypeName ?? ''"
                        :connectionTypeUrl="props.modelValue.bag?.connectionTypeUrl ?? ''" :options="props.options" />
         </ContentSection>
 
-        <ContentSection v-if="store.state.trailblazerMode" title="Advanced Settings" icon="ti ti-adjustments-cog">
+        <ContentSection v-if="store.state.trailblazerMode" title="Advanced Settings" icon="ti ti-adjustments-cog" :order="7">
             <ContentStack title="Configurable Options"
                           description="Select which options to show on the Connection Request for this opportunity type.">
                 <div class="inline-checkbox-bold">

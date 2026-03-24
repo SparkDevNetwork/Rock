@@ -1,0 +1,86 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Filter Settings"
+           saveText="Apply"
+           @save="onSave">
+
+        <EntityTypePicker v-model="entityType"
+                          label="Entity Type"
+                          :includeGlobalOption="true"
+                          :excludeEntityTypeGuids="props.excludedEntityTypeGuids"
+                          showBlankItem
+                          enhanceForLongLists />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { Guid } from "@Obsidian/Types";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        excludedEntityTypeGuids: {
+            type: Array as PropType<Guid[]>,
+            default: () => []
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const entityType = ref<ListItemBag | ListItemBag[] | null>(props.modelValue.entityType ?? null);
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            entityType: entityType.value ?? null
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        entityType.value = props.modelValue.entityType ?? null;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion
+</script>

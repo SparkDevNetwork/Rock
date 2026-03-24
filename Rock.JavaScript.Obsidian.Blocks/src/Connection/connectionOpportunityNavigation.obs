@@ -521,7 +521,7 @@
             if (isGridViewEnabled.value) {
                 actions.push({
                     iconCssClass: "ti ti-table",
-                    title: "Connection Board (List View)",
+                    title: "Connection Board (Grid View)",
                     type: "default",
                     handler: () => {
                         window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}&IsCardViewMode=False${campusPageParam.value}`;

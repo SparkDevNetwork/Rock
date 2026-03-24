@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { AISummaryTriggerMode } from "@Obsidian/Enums/Connection/aiSummaryTriggerMode";
 import { ConnectionTypeAdditionalRequestToShowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionTypeAdditionalRequestToShowBag";
 import { ConnectionTypeCommunicationSettingsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionTypeCommunicationSettingsBag";
 
@@ -31,6 +32,12 @@ export type ConnectionTypeAdditionalSettingsBag = {
 
     /** Gets or sets the AI insights prompt. */
     aiInsightsPrompt?: string | null;
+
+    /** Gets or sets the AI summary cache duration in minutes. */
+    aiSummaryCacheDurationMinutes?: number | null;
+
+    /** Gets or sets the AI summary trigger mode. */
+    aiSummaryTrigger?: AISummaryTriggerMode | null;
 
     /** Gets or sets the communication settings. */
     communicationSettings?: ConnectionTypeCommunicationSettingsBag | null;

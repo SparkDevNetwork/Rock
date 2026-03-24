@@ -4,7 +4,7 @@
           :definition="config?.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="id"
-          :itemTerm="config?.options?.contentItemName + ' Items'"
+          :itemTerm="config?.options?.contentItemName + ' Item'"
           :entityTypeGuid="EntityType.ContentChannelItem"
           stickyHeader
           liveUpdates
@@ -19,21 +19,41 @@
                     field="title"
                     :filter="config?.options?.showFilters ? textValueFilter : undefined" />
 
-        <DateTimeColumn v-if="config?.options?.showStartDateTimeColumn && config?.options?.includeTime"
+        <Column v-if="showDurationColumn"
+                name="duration"
+                title="Duration"
+                :width="showTime ? '350' : '250'"
+                :quickFilterValue="getDurationTextValue"
+                :sortValue="getDurationSortValue"
+                :excludeFromExport="true">
+            <template #format="{ row }">
+                {{ getDurationTextValue(row) }}
+            </template>
+        </Column>
+
+        <DateTimeColumn v-if="showDurationColumn && showTime" name="startDateTime" field="startDateTime" title="Start" :hideOnScreen="true" />
+        <DateTimeColumn v-if="showDurationColumn && showTime" name="expireDateTime" field="expireDateTime" title="Expire" :hideOnScreen="true" />
+
+        <DateColumn v-if="showDurationColumn && !showTime" name="startDateTime" field="startDateTime" title="Start" :hideOnScreen="true" />
+        <DateColumn v-if="showDurationColumn && !showTime" name="expireDateTime" field="expireDateTime" title="Expire" :hideOnScreen="true" />
+
+        <DateTimeColumn v-else-if="showActiveColumn && showTime"
+                        headerClass="title-right"
                         itemClass="justify-content-end text-right"
                         name="startDateTime"
-                        :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
+                        title="Active"
                         field="startDateTime"
                         :filter="config?.options?.showFilters ? dateValueFilter : undefined"
-                        width="250" />
+                        width="200" />
 
-        <DateColumn v-if="config?.options?.showStartDateTimeColumn && !config?.options?.includeTime"
+        <DateColumn v-else-if="showActiveColumn && !showTime"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right"
                     name="startDateTime"
-                    :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
+                    title="Active"
                     field="startDateTime"
                     :filter="config?.options?.showFilters ? dateValueFilter : undefined"
-                    width="250" />
+                    width="125" />
 
         <Column v-if="showScheduledIconColumn"
                 name="isScheduled"
@@ -44,12 +64,9 @@
             </template>
         </Column>
 
+        <NumberColumn v-if="showTotalViewsColumns" name="last28DaysViewsCount" title="Views 28d" field="last28DaysViewsCount" :filter="config?.options?.showFilters ? numberValueFilter : undefined" width="150" />
 
-        <DateTimeColumn v-if="config?.options?.showExpireDateTimeColumn && config?.options?.includeTime" itemClass="justify-content-end text-right" name="expireDateTime" title="Expire" field="expireDateTime" :filter="config?.options?.showFilters ? dateValueFilter : undefined" width="250" />
-
-        <DateColumn v-if="config?.options?.showExpireDateTimeColumn && !config?.options?.includeTime" itemClass="justify-content-end text-right" name="expireDateTime" title="Expire" field="expireDateTime" :filter="config?.options?.showFilters ? dateValueFilter : undefined" width="250" />
-
-        <NumberColumn v-if="config?.options?.showPriorityColumn" name="priority" title="Priority" field="priority" :filter="config?.options?.showFilters ? numberValueFilter : undefined" width="125" />
+        <NumberColumn v-if="config?.options?.showPriorityColumn" name="priority" title="Priority" field="priority" :filter="config?.options?.showFilters ? numberValueFilter : undefined" width="150" />
 
         <BooleanColumn v-if="showOccurrencesColumn" itemClass="justify-content-center text-center" name="occurrences" title="Event Occurrences" field="occurrences" :filter="config?.options?.showFilters ? booleanValueFilter : undefined" width="120" />
 
@@ -91,6 +108,16 @@
 
         <LabelColumn v-if="config?.options?.showStatusColumn" name="status" title="Status" field="status" :filter="config?.options?.showFilters ? pickExistingValueFilter : undefined" :textSource="ContentChannelItemStatusDescription" :classSource="statusLabelColors" width="150" />
 
+        <ButtonColumn v-if="showItemUrlColumn"
+                      name="itemUrl"
+                      iconClass=""
+                      :formatComponent="CopyUrlCell" />
+
+        <ButtonColumn v-if="showLinkedMediaElementsColumn"
+                      name="linkedMediaElements"
+                      iconClass=""
+                      :formatComponent="LinkedMediaElementsCell" />
+
         <SecurityColumn v-if="config?.options?.showSecurityColumn" />
 
         <DeleteColumn v-if="config?.isDeleteEnabled" @click="onDeleteClick" />
@@ -126,44 +153,34 @@
     </ModalAlert>
 </template>
 
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
+
 <script setup lang="ts">
     import { computed, reactive, ref, watch } from "vue";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DateTimeColumn, DateColumn, dateValueFilter, DeleteColumn, SecurityColumn, LabelColumn, pickExistingValueFilter, BooleanColumn, booleanValueFilter, ReorderColumn, Column } from "@Obsidian/Controls/grid";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import CopyUrlCell from "./ContentChannelItemList/copyUrlCell.partial.obs";
+    import LinkedMediaElementsCell from "./ContentChannelItemList/linkedMediaElementsCell.partial.obs";
+    import { GridRowItem, NavigationUrlKey } from "./ContentChannelItemList/types.partial";
+    import { provideMediaElementUrl } from "./ContentChannelItemList/utils.partial";
+    import Grid, { AttributeColumns, BooleanColumn, ButtonColumn, booleanValueFilter, Column, DateColumn, DateTimeColumn, dateValueFilter, DeleteColumn, LabelColumn, NumberColumn, numberValueFilter, pickExistingValueFilter, ReorderColumn, SecurityColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { ContentChannelItemStatus, ContentChannelItemStatusDescription } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { type GridAction } from "@Obsidian/Types/Controls/grid";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { escapeHtml } from "@Obsidian/Utility/stringUtils";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ContentChannelItemListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemList/contentChannelItemListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./ContentChannelItemList/types.partial";
-    import { ContentChannelDateType } from "@Obsidian/Enums/Cms/contentChannelDateType";
-    import { ContentChannelItemStatus, ContentChannelItemStatusDescription } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-
-    type GridRowItem = {
-        id: string,
-        idKey: string,
-        contentChannelId: number,
-        title: string,
-        startDateTime: string,
-        expireDateTime: string,
-        isScheduled: boolean,
-        occurrences: boolean,
-        status: ContentChannelItemStatus,
-        priority: number,
-        isContentLibraryOwner: boolean | null,
-        contentLibrarySourceIdentifier: boolean | null,
-        isDownloadedFromContentLibrary: boolean,
-        isUploadedToContentLibrary: boolean,
-        contentLibraryLicenseTypeGuid: string | null,
-        isSecurityDisabled: boolean
-    };
 
     const config = useConfigurationValues<ListBlockBox<ContentChannelItemListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -173,7 +190,13 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
+    const showScheduledIconColumn = ref(false);
+    const showTotalViewsColumns = ref(false);
     const hasEventOccurrences = ref(false);
+    const showItemUrlColumn = ref(config.options?.showItemUrlColumn ?? false);
+    const showLinkedMediaElementsColumn = ref(false);
+
+    const mediaElementUrl = ref(config?.navigationUrls?.[NavigationUrlKey.MediaElementPage] ?? "");
 
     // Content Library Modals
     const isUpdateModalVisible = ref(false);
@@ -186,6 +209,16 @@
     //Error Modal
     const showError = ref(false);
     const errorMessage = ref("");
+
+    const statusLabelColors: Record<string, string> = {
+        [ContentChannelItemStatusDescription[ContentChannelItemStatus.PendingApproval]]: "default",
+        [ContentChannelItemStatusDescription[ContentChannelItemStatus.Approved]]: "success",
+        [ContentChannelItemStatusDescription[ContentChannelItemStatus.Denied]]: "danger"
+    };
+
+    // #endregion Values
+
+    // #region Computed Values
 
     const customActions = computed<GridAction[]>(() => {
         if (config.options?.isContentLibraryEnabled) {
@@ -204,19 +237,31 @@
         return [];
     });
 
-    const showOccurrencesColumn = computed(() => {
-        return hasEventOccurrences.value && config.options?.showOccurrencesColumn;
+    const showStartDate = computed<boolean>(() => {
+        return !!(config.options?.showStartDateTimeColumn);
     });
 
-    const showScheduledIconColumn = ref(false);
+    const showExpireDate = computed<boolean>(() => {
+        return !!(config.options?.showExpireDateTimeColumn);
+    });
 
-    const statusLabelColors: Record<string, string> = {
-        [ContentChannelItemStatusDescription[ContentChannelItemStatus.PendingApproval]]: "default",
-        [ContentChannelItemStatusDescription[ContentChannelItemStatus.Approved]]: "success",
-        [ContentChannelItemStatusDescription[ContentChannelItemStatus.Denied]]: "danger"
-    };
+    const showTime = computed<boolean>(() => {
+        return !!(config.options?.includeTime);
+    });
 
-    // #endregion
+    const showDurationColumn = computed<boolean>(() => {
+        return showStartDate.value && showExpireDate.value;
+    });
+
+    const showActiveColumn = computed<boolean>(() => {
+        return showStartDate.value && !showExpireDate.value;
+    });
+
+    const showOccurrencesColumn = computed<boolean>(() => {
+        return !!(hasEventOccurrences.value && config.options?.showOccurrencesColumn);
+    });
+
+    // #endregion Computed Values
 
     // #region Functions
 
@@ -224,13 +269,27 @@
      * Called when the grid is requesting the row data be loaded.
      */
     async function loadGridData(): Promise<GridDataBag> {
-        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+        const result = await invokeBlockAction<GridDataBag>("GetContentChannelItemListGridData");
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
 
+            showScheduledIconColumn.value = (gridData?.rows ?? []).some(i =>
+                RockDateTime.parseISO(i.startDateTime as string)?.isLaterThan(RockDateTime.now())
+            );
+
+            showTotalViewsColumns.value = !!(
+                config.options?.showTotalViewsColumns
+                && (gridData?.rows ?? []).some(i =>
+                    toNumber((i.last28DaysViewsCount as number | null | undefined)) > 0
+                )
+            );
+
             hasEventOccurrences.value = (gridData?.rows ?? []).some(i => i.occurrences);
-            showScheduledIconColumn.value = (gridData?.rows ?? []).some(i => RockDateTime.parseISO(i.startDateTime as string)?.isLaterThan(RockDateTime.now()));
+            showLinkedMediaElementsColumn.value = !!(
+                mediaElementUrl.value
+                && (gridData?.rows ?? []).some(i => i.hasLinkedMediaElements)
+            );
 
             return gridData;
         }
@@ -239,12 +298,61 @@
         }
     }
 
+    /**
+     * Gets the provided datetime string value as a formatted string.
+     *
+     * @param dateTime The datetime string value.
+     */
+    function getFormattedDateTime(dateTime: string | null | undefined): string {
+        const rockDateTime = RockDateTime.parseISO(dateTime ?? "");
+        if (!rockDateTime) {
+            return "";
+        }
+
+        const formatted = showTime.value
+            ? rockDateTime.toASPString("g")
+            : rockDateTime.toASPString("d");
+
+        return formatted;
+    }
+
+    /**
+     * Gets the text to display in the Duration column based on the provided
+     * row data.
+     *
+     * @param row The row data.
+     */
+    function getDurationTextValue(row: Record<string, unknown>): string {
+        const r = row as GridRowItem;
+        const startDateTime = r.startDateTime;
+        const expireDateTime = r.expireDateTime
+            ? getFormattedDateTime(r.expireDateTime)
+            : "Ongoing";
+        return `${getFormattedDateTime(startDateTime)} - ${expireDateTime}`;
+    }
+
+    /**
+     * Gets the value to use for sorting in the Duration column based on the
+     * provided row data.
+     *
+     * @param row The row data.
+     */
+    function getDurationSortValue(row: Record<string, unknown>): string {
+        const r = row as GridRowItem;
+        return r.startDateTime ?? "";
+    }
+
+    /**
+     * Shows an alert with the provided message.
+     *
+     * @param message The message to show in the alert.
+     */
     function showAlert(message: string): void {
         errorMessage.value = escapeHtml(message).replace("\n", "<br>");
         showError.value = true;
     }
 
-    // #endregion
+    // #endregion Functions
 
     // #region Event Handlers
 
@@ -386,7 +494,7 @@
         isUploadModalVisible.value = false;
     }
 
-    // #endregion
+    // #endregion Event Handlers
 
     // #region Watchers
 
@@ -396,7 +504,9 @@
         }
     });
 
-    // #endregion
+    // #endregion Watchers
 
     gridDataSource.value = loadGridData();
+
+    provideMediaElementUrl(mediaElementUrl);
 </script>

@@ -33,7 +33,7 @@
                 </template>
             </ActionToolbar>
         </template>
-        <ContentSectionContainer ref="sectionContainer" :sidebar="false">
+        <ContentSectionContainer v-if="rows.length > 0" ref="sectionContainer" :sidebar="false">
             <template v-for="(group, index) in filteredGroups" :key="`${groupingKey}-${group.key}`">
                 <ContentSection :isCollapsed="getInitialIsCollapsed(group.key, index)"
                                 :unmountOnCollapse="true"
@@ -64,6 +64,9 @@
                 </ContentSection>
             </template>
         </ContentSectionContainer>
+        <template v-else>
+            <slot name="emptyView" />
+        </template>
     </Panel>
 </template>
 

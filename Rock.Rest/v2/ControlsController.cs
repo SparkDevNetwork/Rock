@@ -58,6 +58,7 @@ using Rock.Storage.AssetStorage;
 using Rock.SystemKey;
 using Rock.Utility;
 using Rock.Utility.CaptchaApi;
+using Rock.ViewModels.Blocks.Core.SmartSearch;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Crm;
 using Rock.ViewModels.Rest.Controls;
@@ -5237,6 +5238,11 @@ namespace Rock.Rest.v2
                 if ( options.EntityTypeGuids != null && options.EntityTypeGuids.Any() )
                 {
                     itemQuery = itemQuery.Where( t => options.EntityTypeGuids.Contains( t.Guid ) );
+                }
+
+                if ( options.ExcludedEntityTypeGuids != null && options.ExcludedEntityTypeGuids.Any() )
+                {
+                    itemQuery = itemQuery.Where( t => !options.ExcludedEntityTypeGuids.Contains( t.Guid ) );
                 }
 
                 var items = itemQuery
@@ -10535,42 +10541,38 @@ namespace Rock.Rest.v2
         #region Search Field
 
         /// <summary>
-        /// Gets the search filters available for the Search Field control
+        /// Gets the search filters available for the Search Field control.
         /// </summary>
-        /// <returns>A Dictionary of <see cref="ListItemBag"/> objects that represent all of the availabe filters.</returns>
+        /// <returns>A list of <see cref="SearchFilterBag"/> objects that represent all of the available filters.</returns>
         [HttpPost]
         [Route( "SearchFieldGetSearchFilters" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponse( HttpStatusCode.OK, Type = typeof( Dictionary<string, ListItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<SearchFilterBag> ) )]
         [Rock.SystemGuid.RestActionGuid( "6FF52C9E-985B-46C3-B5A5-E69312D189CB" )]
         public IActionResult SearchFieldGetSearchFilters()
         {
-            var searchExtensions = new Dictionary<string, ListItemBag>();
+            var searchFilters = new List<SearchFilterBag>();
 
             var currentPerson = RockRequestContext.CurrentPerson;
-            if ( currentPerson != null )
+            foreach ( KeyValuePair<int, Lazy<Rock.Search.SearchComponent, Rock.Extension.IComponentData>> service in Rock.Search.SearchContainer.Instance.Components )
             {
-                foreach ( KeyValuePair<int, Lazy<Rock.Search.SearchComponent, Rock.Extension.IComponentData>> service in Rock.Search.SearchContainer.Instance.Components )
+                var searchComponent = service.Value.Value;
+                if ( searchComponent.IsAuthorized( Security.Authorization.VIEW, currentPerson ) )
                 {
-                    var searchComponent = service.Value.Value;
-                    if ( searchComponent.IsAuthorized( Security.Authorization.VIEW, currentPerson ) )
+                    if ( !searchComponent.AttributeValues.ContainsKey( "Active" ) || bool.Parse( searchComponent.AttributeValues["Active"].Value ) )
                     {
-                        if ( !searchComponent.AttributeValues.ContainsKey( "Active" ) || bool.Parse( searchComponent.AttributeValues["Active"].Value ) )
+                        searchFilters.Add( new SearchFilterBag
                         {
-                            var item = new ListItemBag
-                            {
-                                Value = searchComponent.ResultUrl,
-                                Text = searchComponent.SearchLabel,
-
-                            };
-                            searchExtensions.Add( service.Key.ToString(), item );
-                        }
+                            Key = service.Key.ToString(),
+                            Label = searchComponent.SearchLabel,
+                            ResultUrl = searchComponent.ResultUrl,
+                        } );
                     }
                 }
             }
 
-            return Ok( searchExtensions );
+            return Ok( searchFilters );
         }
 
         #endregion

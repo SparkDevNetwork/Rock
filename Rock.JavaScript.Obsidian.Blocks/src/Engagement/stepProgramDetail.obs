@@ -22,6 +22,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="isSecurityHidden"
+                 :showExperienceMode="true"
                  :isFullScreenVisible="false"
                  additionalDeleteMessage="All associated Step Types and Step Participants will also be deleted!"
                  @cancelEdit="onCancelEdit"

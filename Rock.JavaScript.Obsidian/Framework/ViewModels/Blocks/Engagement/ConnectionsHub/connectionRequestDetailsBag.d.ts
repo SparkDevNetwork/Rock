@@ -59,6 +59,9 @@ export type ConnectionRequestDetailsBag = {
     /** Gets or sets the comments or notes on this connection request. */
     comments?: string | null;
 
+    /** Gets or sets the date by which this request was completed. */
+    completedDateTime?: string | null;
+
     /** Gets or sets the CSS icon class for the connection opportunity this request belongs to. */
     connectionOpportunityIcon?: string | null;
 

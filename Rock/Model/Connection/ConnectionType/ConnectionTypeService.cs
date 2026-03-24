@@ -354,9 +354,8 @@ namespace Rock.Model
                 };
         }
 
-
         /// <summary>
-        /// Retrieves a queryable collection of connection request status distributions.
+        /// Retrieves a queryable collection of connection request status distributions for active connection requests.
         /// </summary>
         /// <param name="connectionTypeQuery">An <see cref="IQueryable{T}"/> sequence of connection types to include in the status distribution calculation.</param>
         /// <param name="options">The options used to filter the results by campus or connection opportunity. If <c>null</c>, no filtering is applied.</param>
@@ -378,9 +377,13 @@ namespace Rock.Model
                         || co.Guid == connectionOpportunityGuid.Value
                     )
                 from cr in co.ConnectionRequests
-                where !campusGuid.HasValue
-                      || cr.Campus.Guid == campusGuid.Value
-                      || (cr.Campus == null && campusGuid == null)
+                where
+                    cr.ConnectionState == ConnectionState.Active
+                    && (
+                        !campusGuid.HasValue
+                        || cr.Campus.Guid == campusGuid.Value
+                        || (cr.Campus == null && campusGuid == null)
+                    )
                 group cr by new
                 {
                     cr.ConnectionStatusId,
@@ -397,7 +400,6 @@ namespace Rock.Model
                     Count = g.Count()
                 };
         }
-
 
         /// <summary>
         /// Gets upcoming connection request follow up counts for the specified
@@ -434,8 +436,11 @@ namespace Rock.Model
                             .SelectMany( co =>
                                 co.ConnectionRequests
                                     .Where( cr =>
-                                        !campusGuid.HasValue
-                                        || cr.Campus.Guid == campusGuid.Value
+                                        cr.ConnectionState == ConnectionState.FutureFollowUp
+                                        && (
+                                            !campusGuid.HasValue
+                                            || cr.Campus.Guid == campusGuid.Value
+                                        )
                                     )
                             )
                     )

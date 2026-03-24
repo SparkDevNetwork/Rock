@@ -25,6 +25,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 using Humanizer;
 
@@ -357,6 +358,8 @@ namespace Rock.Jobs
             RunCleanupTask( "update campus average weekly attendance", () => UpdateCampusAverageWeekendAttendance() );
 
             RunCleanupTask( "delete expired short links", () => DeleteExpiredShortLinks() );
+
+            RunCleanupTask( "update schedule dates", () => UpdateScheduleDates() );
 
             /*
              * 21-APR-2022 DMV
@@ -3736,6 +3739,15 @@ SET @UpdatedCampusCount = @CampusCount;
 
                 return totalRowsDeleted;
             }
+        }
+
+        /// <summary>
+        /// Updates the ScheduleDates records for all schedules in the database.
+        /// </summary>
+        /// <returns>The total number of dates add or deleted.</returns>
+        private int UpdateScheduleDates()
+        {
+            return ScheduleService.UpdateScheduleDates( true, CancellationToken.None );
         }
 
         /// <summary>

@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-
         <NotificationBox v-if="!idkey" alertType="info">
             <strong>Note</strong> If a Default Page is not specified, Rock will automatically create a new page at the root and set it as the default page for this new site.
         </NotificationBox>
@@ -13,68 +12,71 @@
         <ContentSectionContainer :sidebar="false">
             <ContentSection icon="ti ti-icons"
                             light>
-                <div class="row">
-                    <div class="col-md-6">
-                        <TextBox v-model="name"
-                                :disabled="isSystem"
-                                label="Name"
-                                rules="required" />
+                <ContentStack>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <TextBox v-model="name"
+                                     :disabled="isSystem"
+                                     label="Name"
+                                     rules="required" />
+                        </div>
+                        <div class="col-md-6">
+                            <CheckBox v-model="isActive"
+                                      label="Active" />
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <CheckBox v-model="isActive"
-                                label="Active" />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <TextBox v-model="description"
+                                     :disabled="isSystem"
+                                     label="Description"
+                                     textMode="multiline" />
+                        </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <TextBox v-model="description"
-                                :disabled="isSystem"
-                                label="Description"
-                                textMode="multiline" />
-                    </div>
-                </div>
+                </ContentStack>
             </ContentSection>
             <ContentSection title="General"
-                            icon="ti ti-settings">
+                            icon="ti ti-settings"
+                            :order="1">
                 <ContentStack title="Site Theming"
                               description="Select the theme and upload branding assets for this site.">
                     <div class="row">
                         <div class="col-md-6">
                             <DropDownList v-model="theme"
-                                        label="Theme"
-                                        help="The theme that should be used for the site. Themes contain specific layouts and css styling that controls how a site and its pages will look."
-                                        :disabled="isSystem"
-                                        :items="themes" />
+                                          label="Theme"
+                                          help="The theme that should be used for the site. Themes contain specific layouts and css styling that controls how a site and its pages will look."
+                                          :disabled="isSystem"
+                                          :items="themes" />
                         </div>
                     </div>
                     <ImageUploader v-model="favIconBinaryFile"
-                                label="Favicon"
-                                help="Upload a favicon (site icon). Recommended size: 192x192. Rock will generate all other required sizes."
-                                :uploadAsTemporary="true"
-                                uploadButtonText="Upload"
-                                :binaryFileTypeGuid="binaryFileTypeGuid"
-                                :showDeleteButton="true" />
+                                   label="Favicon"
+                                   help="Upload a favicon (site icon). Recommended size: 192x192. Rock will generate all other required sizes."
+                                   :uploadAsTemporary="true"
+                                   uploadButtonText="Upload"
+                                   :binaryFileTypeGuid="binaryFileTypeGuid"
+                                   :showDeleteButton="true" />
 
                     <ImageUploader v-model="siteLogoBinaryFile"
-                                label="Logo"
-                                help="The site logo is used by certain themes to apply to the changes on the site. See the theme's documentation for information on sizing"
-                                :uploadAsTemporary="true"
-                                uploadButtonText="Upload"
-                                :showDeleteButton="true" />
+                                   label="Logo"
+                                   help="The site logo is used by certain themes to apply to the changes on the site. See the theme's documentation for information on sizing"
+                                   :uploadAsTemporary="true"
+                                   uploadButtonText="Upload"
+                                   :showDeleteButton="true" />
                 </ContentStack>
 
                 <ContentStack title="Site Settings"
-                            description="Define domains, analytics, and key options that control how this site operates.">
+                              description="Define domains, analytics, and key options that control how this site operates.">
                     <TextBox v-model="siteDomains"
-                            label="Domain(s)"
-                            help="Enter one or more domains for this site (comma-separated or one per line). Rock uses these domains to match incoming requests to the correct site. If no page or route is specified, the site's default page will be shown."
-                            textMode="multiline" />
+                             label="Domain(s)"
+                             help="Enter one or more domains for this site (comma-separated or one per line). Rock uses these domains to match incoming requests to the correct site. If no page or route is specified, the site's default page will be shown."
+                             textMode="multiline" />
 
                     <div class="row">
                         <div class="col-md-6">
                             <TextBox v-model="googleAnalyticsCode"
-                                    label="Google Analytics Code"
-                                    help="Provided Google Analytics code will track visits on all site pages." />
+                                     label="Google Analytics Code"
+                                     help="Provided Google Analytics code will track visits on all site pages." />
                         </div>
                     </div>
 
@@ -85,12 +87,12 @@
 
                     <ConditionalWell v-show="enablePageViews">
                         <NumberBox v-model="retentionDuration"
-                                label="Page View Retention (Days)"
-                                help="How many days to retain page view logs. Leave blank to keep indefinitely." />
+                                   label="Page View Retention (Days)"
+                                   help="How many days to retain page view logs. Leave blank to keep indefinitely." />
 
                         <InlineCheckBox v-model="enableVisitorTracking"
-                                    label="Enable Visitor Tracking"
-                                    help="Track anonymous visitor activity on the site." />
+                                        label="Enable Visitor Tracking"
+                                        help="Track anonymous visitor activity on the site." />
                     </ConditionalWell>
 
 
@@ -114,7 +116,8 @@
             </ContentSection>
             <ContentSection title="Page Routing"
                             icon="ti ti-sitemap"
-                            isCollapsed>
+                            isCollapsed
+                            :order="2">
                 <ContentStack title="Main Pages"
                               description="Define the key pages used for site navigation and interactions.">
                     <div class="row">
@@ -176,8 +179,8 @@
                     <div class="row">
                         <div class="col-md-6">
                             <TextBox v-model="errorPage"
-                                    label="Error Page"
-                                    help="URL users see if a site error occurs." />
+                                     label="Error Page"
+                                     help="URL users see if a site error occurs." />
                         </div>
                     </div>
                     <div class="row">
@@ -195,18 +198,19 @@
             <ContentSection v-if="store.state.trailblazerMode"
                             title="Page Attributes"
                             icon="ti ti-binary-tree-2"
-                            isCollapsed>
+                            isCollapsed
+                            :order="3">
                 <ContentStack title="Attribute List"
                               description="Page Attributes apply to all of the pages of this site. Each page will have its own value for these attributes."
                               headerLocation="top">
-                        <Grid :data="gridData" keyField="idKey" itemTerm="Page Attribute" liveUpdates light @addItem="onAddItem">
-                            <ReorderColumn @orderChanged="onOrderChanged" />
-                            <TextColumn name="name" field="name" title="Attribute" />
-                            <TextColumn name="description" field="description" title="Description" />
-                            <BooleanColumn name="isRequired" field="isRequired" title="Required" />
-                            <EditColumn @click="onEditItem" />
-                            <DeleteColumn @click="onDeleteItem" disableConfirmation />
-                        </Grid>
+                    <Grid :data="gridData" keyField="idKey" itemTerm="Page Attribute" liveUpdates light @addItem="onAddItem">
+                        <ReorderColumn @orderChanged="onOrderChanged" />
+                        <TextColumn name="name" field="name" title="Attribute" />
+                        <TextColumn name="description" field="description" title="Description" />
+                        <BooleanColumn name="isRequired" field="isRequired" title="Required" />
+                        <EditColumn @click="onEditItem" />
+                        <DeleteColumn @click="onDeleteItem" disableConfirmation />
+                    </Grid>
                 </ContentStack>
 
                 <Modal v-model="isModalOpen" title="Page Attributes">
@@ -224,7 +228,8 @@
             <ContentSection v-if="store.state.trailblazerMode"
                             title="Advanced Settings"
                             icon="ti ti-adjustments-cog"
-                            isCollapsed>
+                            isCollapsed
+                            :order="4">
                 <ContentStack title="Traffic"
                               description="Configure how visitors are redirected and how their activity is logged.">
 
@@ -243,8 +248,8 @@
                                             showSelectCurrentPage />
 
                                 <TextBox v-model="externalUrl"
-                                        label="Mobile Redirect URL"
-                                        help="External URL to send mobile visitors to (overrides Mobile Page)." />
+                                         label="Mobile Redirect URL"
+                                         help="External URL to send mobile visitors to (overrides Mobile Page)." />
 
                                 <InlineCheckBox v-model="redirectTablets"
                                                 label="Include Tablet Devices"
@@ -257,15 +262,15 @@
                 <ContentStack title="Security and Indexing"
                               description="Set rules for indexing, routing, and embedding.">
                     <TextBox v-model="allowedFrameDomains"
-                            label="Allowed Embed Domain(s)"
-                            textMode="multiline"
-                            :help="`Enter the domains allowed to embed this site in an iframe (comma-separated or one per line). Be sure to include your own domain(s) to avoid blocking modal use. These values are applied to the <a href='${frameAncestorsDirectiveLink}'>Content-Security-Policy frame-ancestors directive</a>. If left blank, Rock sets the header to frame-ancestors 'self', which prevents embedding on other domains.`" />
+                             label="Allowed Embed Domain(s)"
+                             textMode="multiline"
+                             :help="`Enter the domains allowed to embed this site in an iframe (comma-separated or one per line). Be sure to include your own domain(s) to avoid blocking modal use. These values are applied to the <a href='${frameAncestorsDirectiveLink}'>Content-Security-Policy frame-ancestors directive</a>. If left blank, Rock sets the header to frame-ancestors 'self', which prevents embedding on other domains.`" />
 
                     <div class="row">
                         <div class="col-md-6">
                             <TextBox v-model="indexStartingLocation"
-                                    label="Index Start Path"
-                                    help="Start page or path for the Rock site indexer." />
+                                     label="Index Start Path"
+                                     help="Start page or path for the Rock site indexer." />
                         </div>
                     </div>
 

@@ -50,5 +50,15 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets a value indicating whether a note is required when completing a request with this status.
         /// </summary>
         public bool IsNoteRequiredOnCompletion { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this status is the default status.
+        /// </summary>
+        public bool IsDefaultStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this status is disabled. (This is used when editing a request in sequential status mode)
+        /// </summary>
+        public bool Disabled { get; set; }
     }
 }

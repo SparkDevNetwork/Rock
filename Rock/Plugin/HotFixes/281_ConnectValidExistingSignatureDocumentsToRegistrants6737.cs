@@ -1,0 +1,111 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Plug-in migration
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 281, "18.2" )]
+    public class ConnectValidExistingSignatureDocumentsToRegistrants6737 : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            NA_Fix_ConnectValidExistingSignatureDocumentsToRegistrants6737_Up();
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            // Down migrations are not yet supported in plug-in migrations.
+        }
+
+        /// <summary>
+        /// Updates the Category EntityType to add "ViewList" that goes along with the fix to issue 6712.
+        /// https://github.com/SparkDevNetwork/Rock/issues/6712
+        /// </summary>
+        private void NA_Fix_ConnectValidExistingSignatureDocumentsToRegistrants6737_Up()
+        {
+            Sql( @"
+/* 
+    Migration: Backfill RegistrationRegistrant.SignatureDocumentId when missing, using an existing valid
+    signature document from another registrant for the same Person (across any PersonAlias),
+    AND only when both registrants' RegistrationTemplates require the same SignatureDocumentTemplateId
+    AND only when signed document was created before the registrant record.
+*/
+
+DECLARE @Today date = CONVERT( date,dbo.RockGetDate() );
+
+;WITH Targets AS
+(
+    SELECT
+        rr.Id              AS RegistrationRegistrantId,
+        rr.CreatedDateTime AS RegistrantCreatedDateTime,
+        paTarget.PersonId  AS PersonId,
+        sdt.Id             AS SignatureDocumentTemplateId,
+        DATEADD( day, 1 - sdt.ValidityDurationInDays, @Today ) AS EarliestSignatureDate
+    FROM dbo.RegistrationRegistrant rr
+    INNER JOIN dbo.PersonAlias paTarget ON paTarget.Id = rr.PersonAliasId
+    INNER JOIN dbo.RegistrationTemplate rt ON rt.Id = rr.RegistrationTemplateId
+    INNER JOIN dbo.SignatureDocumentTemplate sdt ON sdt.Id = rt.RequiredSignatureDocumentTemplateId
+    WHERE
+        rr.SignatureDocumentId IS NULL
+        AND rt.RequiredSignatureDocumentTemplateId IS NOT NULL
+        AND sdt.IsActive = 1
+        AND sdt.ProviderEntityTypeId IS NULL
+        AND sdt.IsValidInFuture = 1
+        AND sdt.ValidityDurationInDays IS NOT NULL
+)
+UPDATE rr
+    SET rr.SignatureDocumentId = v.SignatureDocumentId
+FROM dbo.RegistrationRegistrant rr
+INNER JOIN Targets t ON t.RegistrationRegistrantId = rr.Id
+CROSS APPLY
+(
+    SELECT TOP (1)
+        sd.Id AS SignatureDocumentId
+    FROM dbo.RegistrationRegistrant rr2
+    INNER JOIN dbo.RegistrationTemplate rt2 ON rt2.Id = rr2.RegistrationTemplateId
+    INNER JOIN dbo.SignatureDocument sd ON sd.Id = rr2.SignatureDocumentId
+    INNER JOIN dbo.PersonAlias paAppliesTo ON paAppliesTo.Id = sd.AppliesToPersonAliasId
+    WHERE
+        rr2.SignatureDocumentId IS NOT NULL
+        AND paAppliesTo.PersonId = t.PersonId
+        AND sd.SignatureDocumentTemplateId = t.SignatureDocumentTemplateId
+        AND sd.SignedDateTime >= t.EarliestSignatureDate
+        AND rt2.RequiredSignatureDocumentTemplateId = t.SignatureDocumentTemplateId
+        AND t.RegistrantCreatedDateTime IS NOT NULL
+        AND sd.CreatedDateTime IS NOT NULL
+        AND sd.CreatedDateTime < t.RegistrantCreatedDateTime
+    ORDER BY
+        sd.SignedDateTime DESC,
+        sd.Id DESC
+) v
+WHERE
+    rr.SignatureDocumentId IS NULL
+    AND v.SignatureDocumentId IS NOT NULL;
+" );
+        }
+    }
+}

@@ -27,6 +27,7 @@ import { EnabledViewFlags } from "@Obsidian/Enums/Connection/enabledViewFlags";
 import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionActivityTypeBag";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionStatusBag";
 import { ConnectionTypeAdditionalSettingsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionTypeAdditionalSettingsBag";
+import { ConnectionTypeSourceBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionTypeSourceBag";
 import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionWorkflowBag";
 import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -105,6 +106,9 @@ export type ConnectionTypeBag = {
 
     /** Gets or sets a value indicating whether this connection type requires a placement group to connect. */
     requiresPlacementGroupToConnect: boolean;
+
+    /** Gets or sets the connection type sources. */
+    sources?: ConnectionTypeSourceBag[] | null;
 
     /** Gets or sets the statuses. */
     statuses?: ConnectionStatusBag[] | null;

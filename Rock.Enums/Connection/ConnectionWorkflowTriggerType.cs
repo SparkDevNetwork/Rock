@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.ComponentModel;
 using Rock.Enums;
 
 namespace Rock.Model
@@ -80,8 +81,9 @@ namespace Rock.Model
         RequestAssigned = 8,
 
         /// <summary>
-        /// Future Follow-up Date Reached
+        /// Future Follow-Up Date Reached
         /// </summary>
+        [Description( "Future Follow-Up Date Reached" )]
         [EnumOrder( 15 )]
         FutureFollowupDateReached = 9,
         /// <summary>

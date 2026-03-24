@@ -110,6 +110,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public DateTime? DueDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the date by which this request was completed.
+        /// </summary>
+        public DateTime? CompletedDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the date from which this request is considered due soon.
         /// </summary>
         public DateTime? DueSoonDate { get; set; }

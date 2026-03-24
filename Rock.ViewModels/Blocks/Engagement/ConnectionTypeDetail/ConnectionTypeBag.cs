@@ -134,6 +134,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
         public List<ConnectionStatusBag> Statuses { get; set; }
 
         /// <summary>
+        /// Gets or sets the connection type sources.
+        /// </summary>
+        public List<ConnectionTypeSourceBag> Sources { get; set; }
+
+        /// <summary>
         /// Gets or sets the workflows.
         /// </summary>
         public List<ConnectionWorkflowBag> Workflows { get; set; }

@@ -94,6 +94,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import { ExceptionOccurrenceListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ExceptionOccurrenceList/exceptionOccurrenceListOptionsBag";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
@@ -118,8 +119,8 @@
 
     const gridSettings = ref<GridSettingsOptions>({
         site: preferences.getValue(PreferenceKey.FilterSite),
-        page: JSON.parse(preferences.getValue(PreferenceKey.FilterPage) || "null"),
-        user: JSON.parse(preferences.getValue(PreferenceKey.FilterUser) || "null"),
+        page: safeParseJson(preferences.getValue(PreferenceKey.FilterPage)) ?? null,
+        user: safeParseJson(preferences.getValue(PreferenceKey.FilterUser)) ?? null,
         dateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterDateRange))
     });
 

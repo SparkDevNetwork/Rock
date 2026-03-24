@@ -2,6 +2,13 @@
 <template>
     <div class="registrationentry-registrant-details">
         <RockForm @submit="onNext" :formResetKey="formResetKey">
+            <div ref="duplicateRegistrantRef">
+                <NotificationBox v-if="duplicateRegistrantError"
+                                 alertType="danger">
+                    {{ duplicateRegistrantError }}
+                </NotificationBox>
+            </div>
+
             <template v-if="isDataForm">
                 <template v-if="currentFormIndex === 0">
                     <div v-if="familyOptions.length > 1" class="well">
@@ -103,6 +110,8 @@
     import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+    import { isElementFullyVisible, scrollElementStartToTop } from "@Obsidian/Utility/dom";
+    import { ResolveRegistrantPersonResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/resolveRegistrantPersonResultBag";
 
     const props = defineProps({
         currentRegistrant: {
@@ -538,6 +547,9 @@
         return true;
     }
 
+    const duplicateRegistrantRef = ref<HTMLElement>();
+    const duplicateRegistrantError = ref<string>("");
+
     function onPrevious(): void {
         clearFormErrors();
 
@@ -553,6 +565,40 @@
     async function onNext(): Promise<void> {
         clearFormErrors();
         let lastFormIndex = formsToShow.value.length - 1;
+
+        // Before checking the signature document, make sure the registrant is not already registered
+        // if the template is configured to prevent duplicate registrants.
+        if (registrationEntryState.viewModel.areDuplicateRegistrantsPrevented) {
+            isNextDisabled.value = true;
+            try {
+                const result = await invokeBlockAction<ResolveRegistrantPersonResultBag>("ResolveRegistrantPerson", {
+                    args: getRegistrationEntryBlockArgs(),
+                    registrantGuid: toGuidOrNull(props.currentRegistrant.guid) ?? emptyGuid
+                });
+
+                if (!result.isSuccess) {
+                    console.error(`Duplicate check failed. ${result.errorMessage}`);
+                    // Don't prevent moving forward if the duplicate check fails here.
+                    // A final check is done when the registration is submitted.
+                }
+                else if (result.data) {
+                    if (result.data.isAlreadyInAnotherRegistration || result.data.isAlreadyInCurrentRegistration) {
+                        duplicateRegistrantError.value = result.data.isAlreadyInAnotherRegistration
+                            ? `${firstName.value} has already been registered.`
+                            : `${firstName.value} is already in this registration.`;
+                        if (duplicateRegistrantRef.value) {
+                            if (!isElementFullyVisible(duplicateRegistrantRef.value)) {
+                                scrollElementStartToTop(duplicateRegistrantRef.value);
+                            }
+                        }
+                        return;
+                    }
+                }
+            }
+            finally {
+                isNextDisabled.value = false;
+            }
+        }
 
         // If we have an inline signature then there is an additional form
         // screen that we need to show. Get the document to be signed from
@@ -648,6 +694,7 @@
      */
     function clearFormErrors(): void {
         formResetKey.value = newGuid();
+        duplicateRegistrantError.value = "";
     }
 
     async function onSigned(): Promise<void> {
@@ -849,6 +896,9 @@
             if (familyMember.value) {
                 props.currentRegistrant.familyGuid = familyMember.value.familyGuid;
             }
+
+            // Clear the duplicate registrant error when the registrant is changed.
+            duplicateRegistrantError.value = "";
         }
     });
 

@@ -597,6 +597,8 @@ namespace Rock.Model
             }
 
             RegistrantEligibilitySettings = template.GetRegistrantEligibilitySettingsOrNull();
+
+            AreDuplicateRegistrantsPrevented = template.AreDuplicateRegistrantsPrevented;
         }
 
         /// <summary>
@@ -1006,5 +1008,12 @@ namespace Rock.Model
         /// Gets the eligibility settings that determine which registrants are allowed to register using this template.
         /// </summary>
         public RegistrationTemplate.RegistrantEligibilitySettings RegistrantEligibilitySettings { get; private set; }
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether duplicate registrants are prevented.
+        /// When <see langword="true"/>, a Person may only be associated once with a given Registration Instance.
+        /// When <see langword="false"/>, duplicate registrants are allowed.
+        /// </summary>
+        public bool AreDuplicateRegistrantsPrevented { get; private set; }
     }
 }

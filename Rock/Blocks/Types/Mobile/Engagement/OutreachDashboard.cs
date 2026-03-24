@@ -53,7 +53,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         Order = 2 )]
 
 
-    [LinkedPage( "Add ContactPage",
+    [LinkedPage( "Add Contact Page",
         Description = "The page to open when someone taps on add contact button.",
         IsRequired = false,
         Key = AttributeKeys.AddContact,

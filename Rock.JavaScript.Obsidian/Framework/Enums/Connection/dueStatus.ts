@@ -35,7 +35,7 @@ export const DueStatus = {
 
 /** Due Status */
 export const DueStatusDescription: Record<number, string> = {
-    0: "Due Later",
+    0: "On Track",
 
     1: "Due Soon",
 

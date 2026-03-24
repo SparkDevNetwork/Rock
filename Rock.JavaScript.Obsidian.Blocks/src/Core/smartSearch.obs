@@ -1,13 +1,17 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <SearchField v-model="searchTerm" />
+    <SearchField v-model="searchTerm" :initialSearchFilters="options?.searchFilters ?? undefined" />
 </template>
 
 <script setup lang="ts">
     import { ref } from "vue";
-    import { onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { SmartSearchOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SmartSearch/smartSearchOptionsBag";
     import SearchField from "@Obsidian/Controls/searchField.obs";
 
+    const config = useConfigurationValues<CustomBlockBox<object, SmartSearchOptionsBag>>();
+    const options = config.options;
     const searchTerm = ref("");
 
     onConfigurationValuesChanged(useReloadBlock());

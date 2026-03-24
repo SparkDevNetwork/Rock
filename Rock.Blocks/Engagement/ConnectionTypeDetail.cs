@@ -74,6 +74,7 @@ namespace Rock.Blocks.Engagement
             public const string Status = "Status";
             public const string ConnectionStatusAutomation = "ConnectionStatusAutomation";
             public const string ConnectionWorkflow = "ConnectionWorkflow";
+            public const string ConnectionTypeSource = "ConnectionTypeSource";
         }
 
         #endregion Keys
@@ -235,24 +236,6 @@ namespace Rock.Blocks.Engagement
                     {
                         var label = invalidDueSoonStatusNames.Count == 1 ? "status" : "statuses";
                         errorMessage = $"A Due Soon Window is required and must not exceed Status Due Duration for the following {label}: {string.Join( ", ", invalidDueSoonStatusNames )}.";
-                        return false;
-                    }
-                }
-
-                if ( bag.EnableFutureFollowup )
-                {
-                    var invalidFutureFollowupStatusNames = statuses
-                        .Where( s =>
-                            !s.AutoFutureFollowUpPauseInDays.HasValue ||
-                            s.AutoFutureFollowUpPauseInDays.Value <= 0 )
-                        .Select( s => s.Name.Trim() )
-                        .Distinct()
-                        .ToList();
-
-                    if ( invalidFutureFollowupStatusNames.Any() )
-                    {
-                        var label = invalidFutureFollowupStatusNames.Count == 1 ? "status" : "statuses";
-                        errorMessage = $"Future Follow-Up Duration is required for the following {label}: {string.Join( ", ", invalidFutureFollowupStatusNames )}.";
                         return false;
                     }
                 }
@@ -447,6 +430,7 @@ namespace Rock.Blocks.Engagement
 
             bag.ActivityTypes = GetConnectionActivityTypeBags( entity.Id, out var activityTypeIdToGuidMap );
             bag.Statuses = GetConnectionStatusBags( entity.Id, out var statusIdToGuidMap );
+            bag.Sources = GetConnectionTypeSourceBags( entity.Id );
             bag.Workflows = GetConnectionWorkflowBags( entity.Id, statusIdToGuidMap, activityTypeIdToGuidMap );
             bag.AdditionalSettings = GetAdditionalSettingsBag( entity );
 
@@ -540,7 +524,9 @@ namespace Rock.Blocks.Engagement
                         CommunicationTemplateCategoryGuid = communicationSettings.CommunicationTemplateCategoryGuid,
                         SmsSnippetCategoryGuid = communicationSettings.SmsSnippetCategoryGuid
                     },
-                    AIInsightsPrompt = settings.AIInsightsPrompt
+                    AIInsightsPrompt = settings.AIInsightsPrompt,
+                    AISummaryTrigger = settings.AISummaryTrigger,
+                    AISummaryCacheDurationMinutes = settings.AISummaryCacheDurationMinutes
                 } );
             } );
 
@@ -874,6 +860,30 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <summary>
+        /// Gets the connection type source bags for the specified connection type.
+        /// </summary>
+        /// <param name="connectionTypeId">The connection type identifier.</param>
+        /// <returns>A list of ConnectionTypeSourceBag.</returns>
+        private List<ConnectionTypeSourceBag> GetConnectionTypeSourceBags( int connectionTypeId )
+        {
+            if ( connectionTypeId == 0 )
+            {
+                return new List<ConnectionTypeSourceBag>();
+            }
+
+            return new ConnectionTypeSourceService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( s => s.ConnectionTypeId == connectionTypeId )
+                .OrderBy( s => s.Name )
+                .Select( s => new ConnectionTypeSourceBag
+                {
+                    Guid = s.Guid,
+                    Name = s.Name
+                } )
+                .ToList();
+        }
+
+        /// <summary>
         /// Gets the connection workflow bags for the specified connection type.
         /// </summary>
         /// <param name="connectionTypeId">The connection type identifier.</param>
@@ -978,7 +988,9 @@ namespace Rock.Blocks.Engagement
                     CommunicationTemplateCategoryGuid = communicationSettings.CommunicationTemplateCategoryGuid,
                     SmsSnippetCategoryGuid = communicationSettings.SmsSnippetCategoryGuid
                 },
-                AIInsightsPrompt = additionalSettings.AIInsightsPrompt
+                AIInsightsPrompt = additionalSettings.AIInsightsPrompt,
+                AISummaryTrigger = additionalSettings.AISummaryTrigger,
+                AISummaryCacheDurationMinutes = additionalSettings.AISummaryCacheDurationMinutes
             };
         }
 
@@ -1531,6 +1543,31 @@ namespace Rock.Blocks.Engagement
                     }
                 } );
 
+                // Sources
+                box.IfValidProperty( nameof( box.Bag.Sources ), () =>
+                {
+                    var sourceService = new ConnectionTypeSourceService( RockContext );
+                    var sourceBags = ( box.Bag.Sources ?? new List<ConnectionTypeSourceBag>() ).Where( b => b != null ).ToList();
+
+                    foreach ( var b in sourceBags.Where( b => b.Guid == Guid.Empty ) )
+                    {
+                        b.Guid = Guid.NewGuid();
+                    }
+
+                    SyncRelatedEntities(
+                        sourceService,
+                        sourceService.Queryable().Where( s => s.ConnectionTypeId == entity.Id ),
+                        sourceBags,
+                        existingKeySelector: s => s.Guid,
+                        incomingKeySelector: b => b.Guid,
+                        createNew: b => new ConnectionTypeSource { Guid = b.Guid },
+                        updateEntity: ( source, bag ) =>
+                        {
+                            source.ConnectionType = entity;
+                            source.Name = bag.Name;
+                        } );
+                } );
+
                 // Workflows
                 box.IfValidProperty( nameof( box.Bag.Workflows ), () =>
                 {
@@ -1785,6 +1822,18 @@ namespace Rock.Blocks.Engagement
             else if ( entityKey == EntityKey.ConnectionStatusAutomation )
             {
                 var service = new ConnectionStatusAutomationService( RockContext );
+                var entity = service.Get( request.EntityGuid );
+
+                if ( entity == null )
+                {
+                    return ActionOk( new CanDeleteResponseBag { CanDelete = true } );
+                }
+
+                canDelete = service.CanDelete( entity, out errorMessage );
+            }
+            else if ( entityKey == EntityKey.ConnectionTypeSource )
+            {
+                var service = new ConnectionTypeSourceService( RockContext );
                 var entity = service.Get( request.EntityGuid );
 
                 if ( entity == null )

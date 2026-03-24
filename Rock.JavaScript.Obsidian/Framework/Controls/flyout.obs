@@ -3,7 +3,9 @@
     <teleport :to="teleportTarget" v-if="props.modelValue">
         <div ref="flyoutEl"
              class="flyout"
-             :style="style">
+             :style="style"
+             @mouseenter="onFlyoutEnter"
+             @mouseleave="onFlyoutLeave">
             <div v-if="hasHeader"
                  class="flyout-header">
                 <slot name="header" />
@@ -74,6 +76,8 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: boolean): void;
+        (e: "flyoutEnter"): void;
+        (e: "flyoutLeave"): void;
     }>();
 
     // const showFlyout = ref(props.modelValue);
@@ -124,6 +128,20 @@
             right: `${viewportWidth - anchorRect.right}px`,
             zIndex: "1060" // Needs to be above 1050 because the flyout can appear in the docked panel.
         };
+    }
+
+    /**
+     * Called when the individual mouses over the flyout.
+     */
+    function onFlyoutEnter(): void {
+        emit("flyoutEnter");
+    }
+
+    /**
+     * Called when the individual mouses out of the flyout.
+     */
+    function onFlyoutLeave(): void {
+        emit("flyoutLeave");
     }
 
     function close(): void {

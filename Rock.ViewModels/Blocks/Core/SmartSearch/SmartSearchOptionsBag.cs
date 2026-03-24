@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 namespace Rock.ViewModels.Blocks.Core.SmartSearch
 {
     /// <summary>
@@ -22,5 +24,10 @@ namespace Rock.ViewModels.Blocks.Core.SmartSearch
     /// </summary>
     public class SmartSearchOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the available search filters.
+        /// The list preserves the server-side iteration order.
+        /// </summary>
+        public List<SearchFilterBag> SearchFilters { get; set; }
     }
 }

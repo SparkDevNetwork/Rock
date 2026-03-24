@@ -152,7 +152,7 @@
                             </RockButton>
                         </div>
                         <div class="d-flex align-items-center gap-xs">
-                            <RockButton v-if="!isRequestComplete"
+                            <RockButton v-if="!isRequestComplete && isRequestActiveOrFutureFollowUp"
                                         :btnType="BtnType.Default"
                                         :disabled="isCompleteButtonDisabled"
                                         :title="completeButtonTooltip"
@@ -172,22 +172,24 @@
                                         @click="onEditClick">
                                 Edit
                             </RockButton>
-                            <RockButton v-if="isRequestComplete"
-                                        class="bg-success-soft text-success border-success"
-                                        @click="changeRequestState(ConnectionState.Active)">
-                                Completed
-                            </RockButton>
-                            <RockButton v-else
-                                        :btnType="BtnType.Default"
-                                        :disabled="isCompleteButtonDisabled"
-                                        :title="completeButtonTooltip"
-                                        @click="changeRequestState(ConnectionState.Connected)">
-                                Complete
-                            </RockButton>
-                            <RockButton :btnType="BtnType.Link"
-                                        @click="() => emit('transferRequest')">
-                                Transfer
-                            </RockButton>
+                            <template v-if="isRequestActiveOrFutureFollowUp">
+                                <RockButton v-if="isRequestComplete"
+                                            class="bg-success-soft text-success border-success"
+                                            @click="changeRequestState(ConnectionState.Active)">
+                                    Completed
+                                </RockButton>
+                                <RockButton v-else
+                                            :btnType="BtnType.Default"
+                                            :disabled="isCompleteButtonDisabled"
+                                            :title="completeButtonTooltip"
+                                            @click="changeRequestState(ConnectionState.Connected)">
+                                    Complete
+                                </RockButton>
+                                <RockButton :btnType="BtnType.Link"
+                                            @click="() => emit('transferRequest')">
+                                    Transfer
+                                </RockButton>
+                            </template>
                         </div>
                         <div class="d-flex align-items-center gap-xs">
                             <RockButton :btnType="BtnType.Default"
@@ -447,7 +449,7 @@
     const editDockedPanelBodyRef = ref<InstanceType<typeof EditDockedPanelBody>>();
     const editConnectionRequestBox = ref<ValidPropertiesBox<ConnectionRequestBag>>({});
 
-    const canEditConnectionRequest = computed(() => true);
+    const canEditConnectionRequest = computed(() => props.detailsBox?.options?.canEditConnectionRequest ?? false);
     const canEditConnectionRequestNote = computed(() => props.detailsBox?.options?.canEditConnectionRequestNote ?? false);
 
     const currentIndex = computed(() =>
@@ -479,6 +481,8 @@
     });
 
     const isRequestComplete = computed(() => requestDetails.value?.connectionState === ConnectionState.Connected);
+
+    const isRequestActiveOrFutureFollowUp = computed(() => requestDetails.value?.connectionState === ConnectionState.Active || requestDetails.value?.connectionState === ConnectionState.FutureFollowUp);
 
     const isCompleteButtonDisabled = computed(() => {
         if (options.value?.requiresPlacementGroupToComplete && !requestDetails.value?.placementGroup) {

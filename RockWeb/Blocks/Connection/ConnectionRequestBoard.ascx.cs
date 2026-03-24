@@ -4314,7 +4314,7 @@ ORDER BY ct.[Name], cs.[Name]",
         {
             if ( IsCardViewMode )
             {
-                lbToggleViewMode.Text = @"<i class=""ti ti-list""></i> List";
+                lbToggleViewMode.Text = @"<i class=""ti ti-table""></i> Grid";
             }
             else
             {

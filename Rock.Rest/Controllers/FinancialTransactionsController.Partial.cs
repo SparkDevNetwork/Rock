@@ -340,13 +340,23 @@ namespace Rock.Rest.Controllers
             // If we include the giving group, then query for everyone in it, otherwise just the id sent
             if ( includeGivingGroup )
             {
+                var personAliasService = new PersonAliasService( rockContext );
+                var personAliases = personAliasService.Queryable();
+
                 query = query.Where( t =>
-                    t.AuthorizedPersonAliasId == personAliasId ||
-                    t.AuthorizedPersonAlias.Person.GivingGroup.Members.Any( m => m.Person.Aliases.Any( a => a.Id == personAliasId ) ) );
+                    // Always include the requested person's own transactions (matches any alias for the same Person).
+                    t.AuthorizedPersonAlias.Person.Aliases.Any( a => a.Id == personAliasId )
+                    // Include other family members' transactions ONLY when the requested person has opted into combined giving:
+                    // In Rock, Person.GivingGroupId == NULL means "do not combine giving", so we gate the family match on ggId.HasValue.
+                    || personAliases
+                        .Where( pa => pa.Id == personAliasId )
+                        .Select( pa => pa.Person.GivingGroupId )
+                        .Any( ggId => ggId.HasValue && ggId.Value == t.AuthorizedPersonAlias.Person.GivingGroupId )
+                );
             }
             else
             {
-                query = query.Where( t => t.AuthorizedPersonAliasId == personAliasId );
+                query = query.Where( t => t.AuthorizedPersonAlias.Person.Aliases.Any( a => a.Id == personAliasId ) );
             }
 
             // If there is an excluded status param, then exclude those statuses from the results

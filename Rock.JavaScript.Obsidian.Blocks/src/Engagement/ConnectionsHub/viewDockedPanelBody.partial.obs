@@ -200,7 +200,8 @@
                                         <i class="ti ti-calendar-plus"></i>
                                         Created {{ createdDateTimeElapsed }}
                                     </div>
-                                    <div v-if="!isNullOrWhiteSpace(requestDetails?.dueDate)" :class="getDueDateColor(requestDetails?.dueStatus)">
+                                    <div v-if="!isNullOrWhiteSpace(requestDetails?.dueDate) && requestDetails?.connectionState !== ConnectionState.Inactive"
+                                         :class="getDueDateColor(requestDetails?.dueStatus, requestDetails?.connectionState === ConnectionState.Connected)">
                                         <i class="ti ti-clock"></i>
                                         {{ elapsedDueDate }}
                                     </div>
@@ -642,7 +643,7 @@
     });
 
     const elapsedDueDate = computed(() => {
-        if (isNullOrWhiteSpace(props.requestDetails?.dueDate)) {
+        if (isNullOrWhiteSpace(props.requestDetails?.dueDate) || props.requestDetails?.connectionState === ConnectionState.Inactive) {
             return;
         }
 
@@ -651,13 +652,36 @@
             return "";
         }
 
-        const today = RockDateTime.now().date;
+        const isCompleted = props.requestDetails?.connectionState === ConnectionState.Connected;
+
+        // Use the completion date as the reference point if completed, otherwise use today
+        const referenceDate = isCompleted
+            ? RockDateTime.parseISO(props.requestDetails?.completedDateTime ?? "")?.date
+            : RockDateTime.now().date;
+
+        if (!referenceDate) {
+            return "";
+        }
+
         const dueDay = due.date;
 
         const msPerDay = 1000 * 60 * 60 * 24;
 
         // signed whole days: positive => due in future, negative => overdue
-        const diffDays = Math.round((dueDay.toMilliseconds() - today.toMilliseconds()) / msPerDay);
+        const diffDays = Math.round((dueDay.toMilliseconds() - referenceDate.toMilliseconds()) / msPerDay);
+
+        if (isCompleted) {
+            if (diffDays > 0) {
+                return `Completed ${diffDays} ${diffDays === 1 ? "Day" : "Days"} Before Due`;
+            }
+            else if (diffDays < 0) {
+                const lateDays = Math.abs(diffDays);
+                return `Completed ${lateDays} ${lateDays === 1 ? "Day" : "Days"} After Due`;
+            }
+            else {
+                return "Completed on Due Date";
+            }
+        }
 
         if (diffDays > 0) {
             return `Due in ${diffDays} ${diffDays === 1 ? "Day" : "Days"}`;
@@ -884,10 +908,10 @@
         return rockDateTime?.toElapsedString();
     }
 
-    function getDueDateColor(dueStatus: DueStatus | null | undefined): string {
+    function getDueDateColor(dueStatus: DueStatus | null | undefined, isCompleted: boolean): string {
         switch (dueStatus) {
             case DueStatus.DueLater:
-                return "text-interface-medium";
+                return isCompleted ? "text-emerald" : "text-interface-medium";
             case DueStatus.DueSoon:
                 return "text-warning";
             case DueStatus.Overdue:

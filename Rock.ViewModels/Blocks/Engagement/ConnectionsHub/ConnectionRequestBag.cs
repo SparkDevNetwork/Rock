@@ -45,6 +45,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public ListItemBag Requester { get; set; }
 
         /// <summary>
+        /// Gets or sets the Campus for the connection request.
+        /// </summary>
+        public string CampusGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the GUID of the connector's person alias assigned to this request.
         /// </summary>
         public string ConnectorPersonAliasGuid { get; set; }

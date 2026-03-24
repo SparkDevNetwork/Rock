@@ -19,6 +19,9 @@ DECLARE @ConnectorAssignmentRate FLOAT = 0.9;
 DECLARE @CampusAssignmentRate FLOAT = 0.7;
 DECLARE @GroupAssignmentRate FLOAT = 0.7;
 
+-- Change the following (e.g., 0.1) to assign some of the requests to Admin Admin.
+DECLARE @ConnectorIsAdminAssignmentRate FLOAT = 0.0;
+
 -----------------------
 -- CONNECTION TYPES
 -----------------------
@@ -1025,6 +1028,21 @@ ORDER BY NEWID();
 -- INSERTING CONNECTION REQUESTS
 -------------------------------------------------
 
+DECLARE @AdminPersonId INT = (
+    SELECT TOP 1 [Id]
+    FROM [Person]
+    WHERE [FirstName] = 'Admin'
+        AND [LastName] = 'Admin'
+        AND [Email] = 'admin@organization.com'
+);
+
+DECLARE @AdminPrimaryAliasId INT = (
+    SELECT TOP 1 [Id]
+    FROM [PersonAlias]
+    WHERE [PersonId] = @AdminPersonId
+        AND [AliasPersonId] = @AdminPersonId
+);
+
 CREATE TABLE #InsertedRequests
 (
     ConnectionRequestId INT NOT NULL,
@@ -1181,14 +1199,25 @@ OUTER APPLY (
                 r.RequestRow
             )) / 2147483647.0 < @ConnectorAssignmentRate
             THEN (
-                SELECT TOP 1 ca.PersonAliasId
-                FROM ConnectorAliases ca
-                ORDER BY CHECKSUM(
-                    NEWID(),
-                    r.ConnectionOpportunityId,
-                    r.RequestRow,
-                    ca.PersonAliasId
-                )
+                CASE
+                    WHEN @AdminPrimaryAliasId IS NOT NULL
+                        AND ABS(CHECKSUM(
+                            NEWID(),
+                            r.ConnectionOpportunityId,
+                            r.RequestRow
+                        )) / 2147483647.0 < @ConnectorIsAdminAssignmentRate
+                    THEN @AdminPrimaryAliasId
+                    ELSE (
+                        SELECT TOP 1 ca.PersonAliasId
+                        FROM ConnectorAliases ca
+                        ORDER BY CHECKSUM(
+                            NEWID(),
+                            r.ConnectionOpportunityId,
+                            r.RequestRow,
+                            ca.PersonAliasId
+                        )
+                    )
+                END
             )
             ELSE NULL
         END AS PersonAliasId

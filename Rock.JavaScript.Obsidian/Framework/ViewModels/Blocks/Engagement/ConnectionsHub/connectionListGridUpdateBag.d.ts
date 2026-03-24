@@ -38,6 +38,9 @@ export type ConnectionListGridUpdateBag = {
     /** Gets or sets the celebration text to display for this request, if applicable. */
     celebrationText?: string | null;
 
+    /** Gets or sets the date by which this request was completed. */
+    completedDateTime?: string | null;
+
     /** Gets or sets the current connection state (e.g., Active, Inactive, Future Follow-up) for this request. */
     connectionState: ConnectionState;
 

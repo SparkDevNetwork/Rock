@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,8 +15,9 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
+
+using Rock.Enums.Connection;
 
 namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
 {
@@ -39,5 +40,15 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
         /// Gets or sets the AI insights prompt.
         /// </summary>
         public string AIInsightsPrompt { get; set; }
+
+        /// <summary>
+        /// Gets or sets the AI summary trigger mode.
+        /// </summary>
+        public AISummaryTriggerMode? AISummaryTrigger { get; set; }
+
+        /// <summary>
+        /// Gets or sets the AI summary cache duration in minutes.
+        /// </summary>
+        public int? AISummaryCacheDurationMinutes { get; set; }
     }
 }

@@ -233,8 +233,8 @@
                         field="dueDate"
                         width="2%">
                     <template #format="{ row }">
-                        <div v-if="!!row.dueDate" :class="getDueDateColor(row.dueStatus)">
-                            {{ formatDueDateShortLabel(row.dueDate) }}
+                        <div v-if="!!row.dueDate && row.connectionState !== ConnectionState.Inactive" :class="getDueDateColor(row.dueStatus, row.connectionState === ConnectionState.Connected)">
+                            {{ formatDueDateShortLabel(row.dueDate, row.connectionState === ConnectionState.Connected, row.completedDateTime) }}
                         </div>
                         <div v-else>
                             <i class="ti ti-minus"></i>
@@ -390,6 +390,30 @@
                 </Column>
             </Grid>
         </template>
+        <template #emptyView>
+            <template v-if="areRequestsLoading">
+                <div class="skeleton-list">
+                    <div v-for="index in skeletonCount" :key="index" class="skeleton rounded" style="height: 300px"></div>
+                </div>
+            </template>
+            <template v-else>
+                <NotificationBox v-if="!isNullOrWhiteSpace(requestListErrorMessage)"
+                                 alertType="danger">
+                    {{ requestListErrorMessage }}
+                </NotificationBox>
+                <div class="empty-list">
+                    <i class="ti ti-id-off text-interface-medium" style="font-size: 20px;"></i>
+                    <div class="text-interface-medium text-semibold text-lg">
+                        No Connection Requests Available
+                    </div>
+                    <div v-if="canEditConnectionRequests"
+                         class="text-link cursor-pointer"
+                         @click="onAddItem">
+                        Add a Request to Get Started
+                    </div>
+                </div>
+            </template>
+        </template>
     </GroupedGridPanel>
 
     <ChangeStatusFlyout v-model="isFlyoutOpen"
@@ -420,6 +444,8 @@
                                @save="onAddRequest"
                                @close="resetNewConnectionRequest"
                                @fetchConnectionOpportunityDetails="fetchConnectionOpportunityDetails"
+                               @fetchConnectorOptions="fetchConnectorOptions"
+                               @fetchPlacementGroupItems="fetchPlacementGroupItems"
                                @fetchPlacementGroupDetails="fetchPlacementGroupDetails" />
 
     <AddFromCampaignModal v-model:visible="isAddFromCampaignModalVisible"
@@ -596,6 +622,21 @@
     gap: 2px;
 }
 
+.skeleton-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+}
+
+.empty-list {
+    min-height: calc(70vh - 200px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xsmall);
+}
+
 .gap-tiny {
     gap: var(--spacing-tiny);
 }
@@ -752,6 +793,8 @@
     import ConnectionStatusButton from "./ConnectionsHub/connectionStatusButton.partial.obs";
     import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionActivityTypeBag";
     import { updateRefValue } from "@Obsidian/Utility/component";
+    import { ConnectorOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectorOptionsBag";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 
     const box = useConfigurationValues<ListBlockBox<ConnectionsHubOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -821,7 +864,7 @@
     }
 
     // Add Connection Request Configuration
-    const newConnectionRequest = ref<ValidPropertiesBox<ConnectionRequestBag>>({ bag: { connectionOpportunityGuid: internalSelectedOpportunity.value } as ConnectionRequestBag });
+    const newConnectionRequest = ref<ValidPropertiesBox<ConnectionRequestBag>>({ bag: { connectionOpportunityGuid: internalSelectedOpportunity.value, campusGuid: selectedCampus.value?.value } as ConnectionRequestBag });
     const isExistingActiveRequesterOnConnectionType = ref<boolean>(false);
     const isAddConnectionRequestModalVisible = ref(false);
     const connectionOpportunityDetails = ref<ConnectionOpportunityDetailBag>(box.options?.connectionOpportunityDetailsFromFilter ?? {});
@@ -836,6 +879,8 @@
     const openDropdownIndex = ref<string | null | undefined>();
     // Holds the raw grid data returned from the server
     const gridData = ref<GridDataBag>();
+    const requestListErrorMessage = ref<string>("");
+    const areRequestsLoading = ref<boolean>(true);
 
     // Modal Configuration
     const modalErrorMessage = ref<string>("");
@@ -967,6 +1012,8 @@
 
     const hasSelectedOpportunity = computed(() => !isNullOrWhiteSpace(selectedOpportunity.value));
 
+    const skeletonCount = computed<number>(() => selectedGrouping.value === "connectorGrouping" && asBoolean(areOnlyMyRequestsVisible.value) ? 1 : 3);
+
     const allSelectedKeys = computed(() => Object.values(selectedKeys.value).flat());
     const hasAnySelectedKeys = computed(() => allSelectedKeys.value.length > 0);
 
@@ -1057,19 +1104,6 @@
                 return false;
             }
 
-            // State Filter
-            if (viewOptions.value.stateFilter && viewOptions.value.stateFilter.length > 0) {
-                const stateValue = row["connectionState"] as ConnectionState | undefined;
-
-                if (stateValue === null || stateValue === undefined || typeof stateValue !== "number") {
-                    return false;
-                }
-
-                if (!viewOptions.value.stateFilter.includes(stateValue.toString())) {
-                    return false;
-                }
-            }
-
             // Status Filter
             if (viewOptions.value.statusFilter && viewOptions.value.statusFilter.length > 0) {
                 const statusValue = row["connectionStatus"] as ConnectionStatusBag | undefined;
@@ -1092,34 +1126,6 @@
                 }
 
                 if (!viewOptions.value.dueFilter.includes(dueStatusValue.toString())) {
-                    return false;
-                }
-            }
-
-            // Requests Assigned to Me (This filter is done on the server side, but included here to handle live updates)
-            if (areOnlyMyRequestsVisible.value === "true") {
-                const connectorValue = row["connectorDetails"] as ListItemBag | undefined;
-
-                if (!connectorValue || typeof connectorValue !== "object") {
-                    return false;
-                }
-
-                if (currentPerson.value?.idKey !== connectorValue.value) {
-                    return false;
-                }
-            }
-
-            // Requests assigned to a specific campus (This filter is done on the server side, but included here to handle live updates)
-            if (!isNullOrWhiteSpace(selectedCampus.value?.value)) {
-                const campusGuid = row["campusGuid"] as string | null | undefined;
-                if (!areEqual(selectedCampus.value?.value, campusGuid)) {
-                    return false;
-                }
-            }
-
-            if (!isNullOrWhiteSpace(selectedOpportunity.value)) {
-                const connectionOpportunityGuid = row["connectionOpportunityGuid"] as string | null | undefined;
-                if (!areEqual(selectedOpportunity.value, connectionOpportunityGuid)) {
                     return false;
                 }
             }
@@ -1224,6 +1230,62 @@
         });
     }
 
+    function applyServerFilters(): void {
+        if (!gridData.value?.rows) {
+            return;
+        }
+
+        gridData.value.rows = gridData.value.rows.filter(row => {
+            return isRowVisibleWithServerFilters(row);
+        });
+    }
+
+    function isRowVisibleWithServerFilters(row: Record<string, unknown>): boolean {
+        // State Filter
+        if (viewOptions.value.stateFilter && viewOptions.value.stateFilter.length > 0) {
+            const stateValue = row["connectionState"] as ConnectionState | undefined;
+
+            if (stateValue === null || stateValue === undefined || typeof stateValue !== "number") {
+                return false;
+            }
+
+            if (!viewOptions.value.stateFilter.includes(stateValue.toString())) {
+                return false;
+            }
+        }
+
+        // Requests Assigned to Me
+        if (areOnlyMyRequestsVisible.value === "true") {
+            const connectorValue = row["connectorDetails"] as ListItemBag | undefined;
+
+            if (!connectorValue || typeof connectorValue !== "object") {
+                return false;
+            }
+
+            if (currentPerson.value?.idKey !== connectorValue.value) {
+                return false;
+            }
+        }
+
+        // Campus Filter
+        if (!isNullOrWhiteSpace(selectedCampus.value?.value)) {
+            const campusGuid = row["campusGuid"] as string | null | undefined;
+            if (!areEqual(selectedCampus.value?.value, campusGuid)) {
+                return false;
+            }
+        }
+
+        // Connection Opportunity Filter
+        if (!isNullOrWhiteSpace(selectedOpportunity.value)) {
+            const connectionOpportunityGuid = row["connectionOpportunityGuid"] as string | null | undefined;
+            if (!areEqual(selectedOpportunity.value, connectionOpportunityGuid)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     function getOverdueCount(rows: Record<string, unknown>[]): number {
         return rows.filter(r => r["dueStatus"] === DueStatus.Overdue).length;
     }
@@ -1266,7 +1328,7 @@
     // #region Modal Functions
 
     function resetNewConnectionRequest(): void {
-        newConnectionRequest.value = { bag: { connectionOpportunityGuid: internalSelectedOpportunity.value } as ConnectionRequestBag };
+        newConnectionRequest.value = { bag: { connectionOpportunityGuid: internalSelectedOpportunity.value, campusGuid: selectedCampus.value?.value } as ConnectionRequestBag };
         isExistingActiveRequesterOnConnectionType.value = false;
         onModalErrorMessageDismissed();
     }
@@ -1305,30 +1367,34 @@
     }
 
 
-    function formatDueDateShortLabel(dueDate: string | null | undefined): string {
-        const today = RockDateTime.now().date;
+    function formatDueDateShortLabel(dueDate: string | null | undefined, isCompleted: boolean, completedDateTime: string | null | undefined): string {
+        // Use the completion date as the reference point if completed, otherwise use today
+        const referenceDate = isCompleted ? RockDateTime.parseISO(completedDateTime ?? "")?.date : RockDateTime.now().date;
         const due = RockDateTime.parseISO(dueDate ?? "")?.date;
 
-        if (!due) {
+        // If either date is missing/invalid, return empty string
+        if (!due || !referenceDate) {
             return "";
         }
 
+        // Calculate the difference in days between the due date and the reference date
         const msPerDay = 1000 * 60 * 60 * 24;
         const dayDiff = Math.round(
-            (due.toMilliseconds() - today.toMilliseconds()) / msPerDay
+            (due.toMilliseconds() - referenceDate.toMilliseconds()) / msPerDay
         );
 
-        if (dayDiff === 0) {
+        // Show "Today" label only for active (non-completed) tasks due today
+        if (dayDiff === 0 && !isCompleted) {
             return "Today";
         }
 
         return `${dayDiff}d`;
     }
 
-    function getDueDateColor(dueStatus: DueStatus | null | undefined): string {
+    function getDueDateColor(dueStatus: DueStatus | null | undefined, isCompleted: boolean): string {
         switch (dueStatus) {
             case DueStatus.DueLater:
-                return "text-interface-strong";
+                return isCompleted ? "text-emerald text-semibold" : "text-interface-strong";
             case DueStatus.DueSoon:
                 return "text-warning text-semibold";
             case DueStatus.Overdue:
@@ -1691,14 +1757,17 @@
         //     return;
         // }
 
+        gridData.value = undefined;
+        areRequestsLoading.value = true;
         const result = await invokeBlockAction<GridDataBag>("GetGridData");
 
         if (result.isSuccess && result.data) {
             gridData.value = reactive(result.data);
-            return;
         }
-
-        throw new Error(result.errorMessage ?? "Error loading grid data.");
+        else {
+            requestListErrorMessage.value = result.errorMessage ?? "Error loading grid data.";
+        }
+        areRequestsLoading.value = false;
     }
 
     // async function loadConnectionRequest(): Promise<void> {
@@ -1872,21 +1941,33 @@
         }
 
         if (!gridData.value) {
-            gridData.value = { rows: [gridRow] };
+            // Check if this row meets server side filters
+            if (isRowVisibleWithServerFilters(gridRow)) {
+                gridData.value = { rows: [gridRow] };
+            }
             return;
         }
 
         if (!gridData.value.rows) {
-            gridData.value.rows = [gridRow];
+            // Check if this row meets server side filters
+            if (isRowVisibleWithServerFilters(gridRow)) {
+                gridData.value.rows = [gridRow];
+            }
             return;
         }
 
         const index = gridData.value.rows.findIndex(r => r.idKey === gridRow.idKey);
 
         if (index !== -1) {
+            // Check if this row meets server side filters
+            if (!isRowVisibleWithServerFilters(gridRow)) {
+                gridData.value.rows.splice(index);
+                return;
+            }
+
             gridData.value.rows[index] = gridRow;
         }
-        else {
+        else if (isRowVisibleWithServerFilters(gridRow)) {
             gridData.value.rows.push(gridRow);
         }
     }
@@ -2008,7 +2089,11 @@
                 row.dueStatus = updateBag.dueStatus;
                 row.dueDate = updateBag.dueDate;
                 row.dueSoonDate = updateBag.dueSoonDate;
+                row.completedDateTime = updateBag.completedDateTime;
             }
+
+            // Need to validate the updated rows still meet server filter requirements.
+            applyServerFilters();
 
             // clear selected keys
             clearAllSelections();
@@ -2033,26 +2118,38 @@
             });
 
             if (result.isSuccess && result.data) {
-                const row = gridData.value?.rows?.find(r => r.idKey === bag.connectionRequestIdKey);
-                if (row) {
+                const rowIndex = gridData.value?.rows?.findIndex(r => r.idKey === bag.connectionRequestIdKey) ?? -1;
+
+                if (rowIndex !== -1 && gridData.value?.rows) {
+                    const row = gridData.value.rows[rowIndex];
+
                     row.statusGrouping = result.data.statusGrouping;
                     row.connectionStatus = result.data.connectionStatusBag;
                     row.dueStatusGrouping = result.data.dueStatusGrouping;
                     row.dueStatus = result.data.dueStatus;
                     row.dueDate = result.data.dueDate;
                     row.dueSoonDate = result.data.dueSoonDate;
+                    row.completedDateTime = result.data.completedDateTime;
+
+                    // If this row stopped meeting server filters then splice it.
+                    if (!isRowVisibleWithServerFilters(row)) {
+                        gridData.value.rows.splice(rowIndex, 1);
+                    }
                 }
 
                 if (!!dockedPanelDetailsBox.value?.entity && dockedPanelDetailsBox.value.entity.connectionRequestIdKey === bag.connectionRequestIdKey) {
                     dockedPanelDetailsBox.value.entity.connectionStatus = result.data.connectionStatusBag;
                     dockedPanelDetailsBox.value.entity.dueStatus = result.data.dueStatus;
                     dockedPanelDetailsBox.value.entity.dueDate = result.data.dueDate;
+                    dockedPanelDetailsBox.value.entity.completedDateTime = result.data.completedDateTime;
                     refreshActivityEntries(dockedPanelDetailsBox.value.entity.connectionRequestIdKey);
                 }
 
                 isFlyoutOpen.value = false;
             }
-            // display error
+
+
+            // TODO -display error
         }
         finally {
             isFlyoutSaving.value = false;
@@ -2126,12 +2223,19 @@
             if (result.data.length === 1) {
                 const resultBag = result.data[0];
 
-                const row = gridData.value?.rows?.find(r => r.idKey === resultBag.idKey);
+                const rowIndex = gridData.value?.rows?.findIndex(r => r.idKey === resultBag.idKey) ?? -1;
 
-                if (row) {
+                if (rowIndex !== -1 && gridData.value?.rows) {
+                    const row = gridData.value.rows[rowIndex];
+
                     row.stateGrouping = resultBag.stateGrouping;
                     row.connectionState = resultBag.connectionState;
                     row.followUpDate = resultBag.followUpDate;
+
+                    // If this row stopped meeting server filters then splice it.
+                    if (!isRowVisibleWithServerFilters(row)) {
+                        gridData.value.rows.splice(rowIndex, 1);
+                    }
                 }
 
                 // TODO - Determine if we need to make this work for bulk updates. The only case that this would matter is if the selected request
@@ -2139,6 +2243,7 @@
                 if (!!dockedPanelDetailsBox.value?.entity && dockedPanelDetailsBox.value.entity.connectionRequestIdKey === resultBag.idKey) {
                     dockedPanelDetailsBox.value.entity.connectionState = resultBag.connectionState;
                     dockedPanelDetailsBox.value.entity.followUpDate = resultBag.followUpDate;
+                    dockedPanelDetailsBox.value.entity.completedDateTime = resultBag.completedDateTime;
                     refreshActivityEntries(dockedPanelDetailsBox.value.entity.connectionRequestIdKey);
                 }
             }
@@ -2156,7 +2261,11 @@
                     row.stateGrouping = updateBag.stateGrouping;
                     row.connectionState = updateBag.connectionState;
                     row.followUpDate = updateBag.followUpDate;
+                    row.completedDateTime = updateBag.completedDateTime;
                 }
+
+                // Need to validate the updated rows still meet server filter requirements.
+                applyServerFilters();
             }
 
             return null;
@@ -2321,9 +2430,10 @@
         return result.errorMessage ?? "An error occurred while updating the Activity.";
     }
 
-    async function fetchConnectionOpportunityDetails(connectionOpportunityGuid: string): Promise<void> {
+    async function fetchConnectionOpportunityDetails(connectionOpportunityGuid: string, campusGuid: string | null = null): Promise<void> {
         const result = await invokeBlockAction<ConnectionOpportunityDetailBag>("FetchConnectionOpportunityDetails", {
-            connectionOpportunityGuid: connectionOpportunityGuid
+            connectionOpportunityGuid: connectionOpportunityGuid,
+            campus: campusGuid
         });
 
         if (result.isSuccess && result.data) {
@@ -2331,6 +2441,28 @@
         }
         else {
             connectionOpportunityDetails.value = {};
+        }
+    }
+
+    async function fetchConnectorOptions(connectionOpportunityGuid: string, campusGuid: string): Promise<void> {
+        const result = await invokeBlockAction<ConnectorOptionsBag>("FetchConnectorOptions", {
+            connectionOpportunityGuid: connectionOpportunityGuid,
+            campus: campusGuid
+        });
+
+        if (result.isSuccess && result.data) {
+            connectionOpportunityDetails.value.connectorOptions = result.data;
+        }
+    }
+
+    async function fetchPlacementGroupItems(connectionOpportunityGuid: string, campusGuid: string): Promise<void> {
+        const result = await invokeBlockAction<ListItemBag[]>("FetchPlacementGroupItems", {
+            connectionOpportunityGuid: connectionOpportunityGuid,
+            campus: campusGuid
+        });
+
+        if (result.isSuccess && result.data) {
+            connectionOpportunityDetails.value.placementGroups = result.data;
         }
     }
 
@@ -2491,6 +2623,9 @@
                 row.connectorDetails = updateBag.connectorDetails;
             }
 
+            // Need to validate the updated rows still meet server filter requirements.
+            applyServerFilters();
+
             if (fromDockedPanel) {
                 dockedPanelDetailsBox.value?.entity?.connectorPerson === result.data[0].connectorDetails?.value;
                 refreshActivityEntries(connectionRequestIdKeys[0]);
@@ -2629,6 +2764,13 @@
         loadGridData();
     });
 
+    watch(selectedCampus, () => {
+        newConnectionRequest.value.bag = {
+            ...newConnectionRequest.value.bag,
+            campusGuid: selectedCampus.value?.value ?? null
+        };
+    });
+
     watch(selectedOpportunity, async () => {
         preferences.setValue(getConnectionFilterKey(PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey), selectedOpportunity.value);
 
@@ -2675,14 +2817,18 @@
 
     watch(viewOptions, async () => {
         preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterSortByConnectionTypIdKey), viewOptions.value.sortBy ?? "");
-        // preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterIsAssignedToMeConnectionTypeIdKey), viewOptions.value.isAssignedToMe.toString());
         preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterGridDataToShowConnectionTypIdKey), JSON.stringify(viewOptions.value.gridDataToShow));
         preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterIsRequestSourceShownConnectionTypIdKey), viewOptions.value.isRequestSourceShown.toString());
-        preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterStateConnectionTypIdKey), JSON.stringify(viewOptions.value.stateFilter));
         preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterStatusConnectionTypIdKey), JSON.stringify(viewOptions.value.statusFilter));
         preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterDueConnectionTypIdKey), JSON.stringify(viewOptions.value.dueFilter));
 
         await preferences.save();
+    });
+
+    watch(() => viewOptions.value.stateFilter, async () => {
+        preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterStateConnectionTypIdKey), JSON.stringify(viewOptions.value.stateFilter));
+        await preferences.save();
+        loadGridData();
     });
 
     // watch(newConnectionRequest, () => {

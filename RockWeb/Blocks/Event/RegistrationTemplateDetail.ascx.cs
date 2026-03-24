@@ -2955,6 +2955,7 @@ The logged-in person's information will be used to complete the registrar inform
             cbWaitListEnabled.Checked = registrationTemplate.WaitListEnabled;
             cbShowSmsOptIn.Checked = registrationTemplate.ShowSmsOptIn;
             cbPreventDuplicateRegistrants.Checked = registrationTemplate.AreDuplicateRegistrantsPrevented;
+            divPreventDuplicateRegistrantsWarning.Attributes["style"] = registrationTemplate.AreDuplicateRegistrantsPrevented ? "display: block" : "display: none";
             cbAddPersonNote.Checked = registrationTemplate.AddPersonNote;
             cbLoginRequired.Checked = registrationTemplate.LoginRequired;
             cbAllowExternalUpdates.Checked = registrationTemplate.AllowExternalRegistrationUpdates;

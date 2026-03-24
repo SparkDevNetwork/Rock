@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
@@ -33,5 +36,15 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the URL of the connector's profile photo.
         /// </summary>
         public string PhotoUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean indicating whether this connector is available to all campuses (true) or only to specific campuses (false).
+        /// </summary>
+        public bool IsAvailableToAllCampuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of campus identifiers that this connector is associated with.
+        /// </summary>
+        public List<Guid> CampusGuids { get; set; }
     }
 }
