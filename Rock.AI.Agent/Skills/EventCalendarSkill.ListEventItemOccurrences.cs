@@ -20,7 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Common;
+using Rock.AI.Agent.Classes.Skills.EventCalendarSkill;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -34,7 +34,6 @@ namespace Rock.AI.Agent.Skills
 
         [Description( "Retrieves a list of event item occurrences." )]
         [AgentPurpose( "Retrieves a list of event item occurrences." )]
-        [AgentUsage( "Event items can exist on multiple calendars, so there may be duplicates." )]
         [AgentToolGuid( "ceaf039f-2404-476d-aa3f-c0cd02eeac84" )]
         public IAgentToolResult ListEventItemOccurrences(
             string eventCalendarIdKey = null,
@@ -51,9 +50,31 @@ namespace Rock.AI.Agent.Skills
             var query = new EventItemOccurrenceService( AgentRequestContext.RockContext )
                 .Queryable()
                 .Include( eio => eio.EventItem )
-                .Where( eio => eio.EventItem.EventCalendarItems.Any( eci => eventCalendarIds.Contains( eci.EventCalendarId ) ) );
+                .Where( eio => eio.EventItem.IsActive
+                    && eio.EventItem.EventCalendarItems.Any( eci => eventCalendarIds.Contains( eci.EventCalendarId ) ) );
 
             query = helper.WhereOptionalIdKey( query, eio => eio.CampusId, campusIdKey );
+
+            if ( startDate.HasValue || endDate.HasValue )
+            {
+                if ( startDate.HasValue && endDate.HasValue )
+                {
+                    query = query.Where( eio => eio.Schedule.ScheduleDates.Any( sd => sd.StartDateTime >= startDate.Value && sd.StartDateTime <= endDate.Value ) );
+                }
+                else if ( startDate.HasValue )
+                {
+                    query = query.Where( eio => eio.Schedule.ScheduleDates.Any( sd => sd.StartDateTime >= startDate.Value ) );
+                }
+                else if ( endDate.HasValue )
+                {
+                    query = query.Where( eio => eio.Schedule.ScheduleDates.Any( sd => sd.StartDateTime <= endDate.Value ) );
+                }
+            }
+            else
+            {
+                helper.AddError( $"At least one of {nameof( startDate )} or {nameof( endDate )} must be provided." );
+            }
+
             query = helper.WhereRequiredPropertyBetween( query, eio => eio.NextStartDateTime, startDate, endDate );
 
             if ( eventCalendarIdKey.IsNotNullOrWhiteSpace() )
@@ -81,8 +102,7 @@ namespace Rock.AI.Agent.Skills
             }
 
             var paginator = new CursorPaginator<EventItemOccurrence>( currentPerson, qry => qry
-                .OrderByDescending( cr => cr.CreatedDateTime.HasValue )
-                .ThenByDescending( cr => cr.CreatedDateTime )
+                .OrderByDescending( cr => cr.NextStartDateTime.HasValue )
                 .ThenBy( cr => cr.Id ) );
 
             var cursorPage = helper.GetCursorPaginatedItems( query, paginator, cursor );
@@ -90,10 +110,30 @@ namespace Rock.AI.Agent.Skills
             cursorPage.Items.LoadAttributes( AgentRequestContext.RockContext );
 
             var resultPage = cursorPage.WithItems( cursorPage.Items
-                .Select( eio => new KeyNameResult( eio.Id, eio.EventItem.Name ) )
+                .Select( eio => new EventItemOccurrenceResult
+                {
+                    Id = eio.Id,
+                    EventItem = new EventItemResult
+                    {
+                        Id = eio.EventItemId,
+                        Name = eio.EventItem.Name,
+                    },
+                    NextStartDateTime = eio.NextStartDateTime,
+                    AttributeValues = eio.GetGridAttributeValueResults( AgentRequestContext ).ToList(),
+                } )
                 .ToList() );
 
-            return helper.GetPaginatedResult( resultPage );
+            var historyResultPage = cursorPage.WithItems( resultPage.Items
+                .Select( eio => new EventItemOccurrenceResult
+                {
+                    Id = eio.Id,
+                    EventItem = eio.EventItem,
+                    NextStartDateTime = eio.NextStartDateTime,
+                } )
+                .ToList() );
+
+            return helper.GetPaginatedResult( resultPage, historyResultPage )
+                .WithInstructions( "Event items can exist on multiple calendars, so there may be duplicates." );
         }
 
         #endregion

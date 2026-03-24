@@ -39,6 +39,7 @@ namespace Rock.AI.Agent.Skills
 
     [CustomCheckboxListField( "Calendars",
         Description = "The calendars that will be available to work with.",
+        ListSource = "SELECT [Guid] AS [Value], [Name] AS [Text] FROM [EventCalendar]",
         IsRequired = false,
         Key = ConfigurationKey.Calendars,
         Order = 0 )]
