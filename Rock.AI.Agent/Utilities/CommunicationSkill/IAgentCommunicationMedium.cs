@@ -17,53 +17,52 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Rock.AI.Agent.Utilities.CommunicationSkill
+namespace Rock.AI.Agent.Utilities.CommunicationSkill;
+
+/// <summary>
+/// The interface for an agent communication medium. Each medium (email, sms, etc.) will implement this interface.
+/// </summary>
+internal interface IAgentCommunicationMedium
 {
     /// <summary>
-    /// The interface for an agent communication medium. Each medium (email, sms, etc.) will implement this interface.
+    /// Validates the recipients for the communication medium.
     /// </summary>
-    internal interface IAgentCommunicationMedium
-    {
-        /// <summary>
-        /// Validates the recipients for the communication medium.
-        /// </summary>
-        /// <param name="recipient"></param>
-        /// <returns></returns>
-        List<string> ValidateRecipients( List<Rock.Model.Person> recipient );
+    /// <param name="recipient"></param>
+    /// <returns></returns>
+    List<string> ValidateRecipients( List<Rock.Model.Person> recipient );
 
-        /// <summary>
-        /// Drafts the commmunication content by invoking an internal prompt via the kernel.
-        /// </summary>
-        /// <param name="kernel">The kernel to execute the prompt on.</param>
-        /// <param name="request">The details of the draft.</param>
-        /// <returns></returns>
-        Task<DraftResult> DraftAsync(
-            IChatAgent agent,
-            DraftRequest request );
+    /// <summary>
+    /// Drafts the commmunication content by invoking an internal prompt via the kernel.
+    /// </summary>
+    /// <param name="kernel">The kernel to execute the prompt on.</param>
+    /// <param name="request">The details of the draft.</param>
+    /// <returns></returns>
+    Task<DraftResult> DraftAsync(
+        IChatAgent agent,
+        DraftRequest request );
 
-        /// <summary>
-        /// Structures the communication entity from the draft content.
-        /// </summary>
-        /// <param name="request">The request associated with the draft.</param>
-        /// <param name="recipients">The recipients.</param>
-        /// <param name="content">The content of the draft.</param>
-        /// <returns></returns>
-        Rock.Model.Communication BuildCommunication(
-            DraftRequest request,
-            List<Rock.Model.Person> recipients,
-            DraftResult content );
+    /// <summary>
+    /// Structures the communication entity from the draft content.
+    /// </summary>
+    /// <param name="request">The request associated with the draft.</param>
+    /// <param name="recipients">The recipients.</param>
+    /// <param name="content">The content of the draft.</param>
+    /// <returns></returns>
+    Rock.Model.Communication BuildCommunication(
+        DraftRequest request,
+        List<Rock.Model.Person> recipients,
+        DraftResult content );
 
-        /// <summary>
-        /// Updates the communication entity from the draft content.
-        /// </summary>
-        /// <param name="request">The request associated with the draft.</param>
-        /// <param name="recipients">The recipients.</param>
-        /// <param name="content">The content of the draft.</param>
-        /// <returns></returns>
-        Rock.Model.Communication UpdateCommunication(
-            DraftRequest request,
-            List<Rock.Model.Person> recipients,
-            Rock.Model.Communication communication,
-            DraftResult content );
-    }
+    /// <summary>
+    /// Updates the communication entity from the draft content.
+    /// </summary>
+    /// <param name="request">The request associated with the draft.</param>
+    /// <param name="recipients">The recipients.</param>
+    /// <param name="content">The content of the draft.</param>
+    /// <returns></returns>
+    Rock.Model.Communication UpdateCommunication(
+        DraftRequest request,
+        List<Rock.Model.Person> recipients,
+        Rock.Model.Communication communication,
+        DraftResult content );
 }

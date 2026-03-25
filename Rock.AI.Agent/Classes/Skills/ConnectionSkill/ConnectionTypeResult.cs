@@ -19,35 +19,34 @@ using System.Collections.Generic;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
+namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill;
+
+/// <summary>
+/// Represents a single connection type.
+/// </summary>
+internal class ConnectionTypeResult : EntityResultBase
 {
     /// <summary>
-    /// Represents a single connection type.
+    /// The name of the connection type.
     /// </summary>
-    internal class ConnectionTypeResult : EntityResultBase
-    {
-        /// <summary>
-        /// The name of the connection type.
-        /// </summary>
-        public string Name { get; set; }
-        /// <summary>
-        /// The description of the connection type.
-        /// </summary>
-        public string Description { get; set; }
+    public string Name { get; set; }
+    /// <summary>
+    /// The description of the connection type.
+    /// </summary>
+    public string Description { get; set; }
 
-        /// <summary>
-        /// The activity types associated with the connection type.
-        /// </summary>
-        public List<KeyNameResult> ActivityTypes { get; set; }
+    /// <summary>
+    /// The activity types associated with the connection type.
+    /// </summary>
+    public List<KeyNameResult> ActivityTypes { get; set; }
 
-        /// <summary>
-        /// The list of statuses that the connection type supports.
-        /// </summary>
-        public List<KeyNameResult> Statuses { get; set; }
+    /// <summary>
+    /// The list of statuses that the connection type supports.
+    /// </summary>
+    public List<KeyNameResult> Statuses { get; set; }
 
-        /// <summary>
-        /// The connection opportunities associated with the connection type.
-        /// </summary>
-        public List<ConnectionOpportunityResult> Opportunities { get; set; }
-    }
+    /// <summary>
+    /// The connection opportunities associated with the connection type.
+    /// </summary>
+    public List<ConnectionOpportunityResult> Opportunities { get; set; }
 }

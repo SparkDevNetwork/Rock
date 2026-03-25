@@ -26,131 +26,130 @@ using Rock.Attribute;
 using Rock.Enums.AI.Agent;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Providers
+namespace Rock.AI.Agent.Providers;
+
+/// <summary>
+/// Provider to use Rock Intelligence for use in Rock chat agents.
+/// </summary>
+[Description( "Provider to use Rock Intelligence for use in Rock chat agents." )]
+[Export( typeof( AgentProviderComponent ) )]
+[ExportMetadata( "ComponentName", "Rock Intelligence" )]
+[EntityTypeGuid( "485db97f-37d1-480b-b536-f0e609f599be" )]
+
+[TextField( "API Key",
+    Description = "The API key for authenticating access to the service.",
+    IsRequired = true,
+    Order = 10,
+    Key = AttributeKey.ApiKey )]
+
+internal class RockIntelligenceProvider : AgentProviderComponent
 {
-    /// <summary>
-    /// Provider to use Rock Intelligence for use in Rock chat agents.
-    /// </summary>
-    [Description( "Provider to use Rock Intelligence for use in Rock chat agents." )]
-    [Export( typeof( AgentProviderComponent ) )]
-    [ExportMetadata( "ComponentName", "Rock Intelligence" )]
-    [EntityTypeGuid( "485db97f-37d1-480b-b536-f0e609f599be" )]
+    #region Keys
 
-    [TextField( "API Key",
-        Description = "The API key for authenticating access to the service.",
-        IsRequired = true,
-        Order = 10,
-        Key = AttributeKey.ApiKey )]
-
-    internal class RockIntelligenceProvider : AgentProviderComponent
+    private static class AttributeKey
     {
-        #region Keys
+        public const string ApiKey = "ApiKey";
+    }
 
-        private static class AttributeKey
+    #endregion
+
+    public RockIntelligenceProvider()
+    {
+    }
+
+    internal RockIntelligenceProvider( bool updateAttributes )
+        : base( updateAttributes )
+    {
+    }
+
+    /// <summary>
+    /// Gets the name of the language model to use for the specified role.
+    /// </summary>
+    /// <param name="role">The requested role.</param>
+    /// <returns>The name of the model to use when processing the request.</returns>
+    private string GetModelName( ModelServiceRole role )
+    {
+        return role switch
         {
-            public const string ApiKey = "ApiKey";
+            _ => "@preset/rock-default",
+        };
+    }
+
+    /// <inheritdoc/>
+    public override void AddChatCompletion( ModelServiceRole role, IServiceCollection serviceCollection )
+    {
+        serviceCollection.AddOpenAIChatCompletion(
+            serviceId: GetServiceKeyForRole( role ),
+            modelId: GetModelName( role ),
+            endpoint: new Uri( "https://openrouter.ai/api/v1/" ),
+            apiKey: GetAttributeValue( AttributeKey.ApiKey ) );
+    }
+
+    /// <inheritdoc/>
+    public override UsageMetric GetMetricUsageFromResult( ChatMessageContent result )
+    {
+        var resultMetadata = result?.Metadata;
+
+        if ( resultMetadata == null || !resultMetadata.ContainsKey( "Usage" ) || resultMetadata["Usage"] == null )
+        {
+            return null;
         }
 
-        #endregion
-
-        public RockIntelligenceProvider()
+        if ( resultMetadata["Usage"] is not OpenAI.Chat.ChatTokenUsage usage )
         {
+            return null;
         }
 
-        internal RockIntelligenceProvider( bool updateAttributes )
-            : base( updateAttributes )
+        return new UsageMetric
         {
+            InputTokenCount = usage.InputTokenCount,
+            OutputTokenCount = usage.OutputTokenCount,
+            TotalTokenCount = usage.TotalTokenCount
+        };
+    }
+
+    /// <inheritdoc/>
+    public override UsageMetric GetMetricUsageFromResult( StreamingChatMessageContent result )
+    {
+        var resultMetadata = result?.Metadata;
+
+        if ( resultMetadata == null || !resultMetadata.ContainsKey( "Usage" ) || resultMetadata["Usage"] == null )
+        {
+            return null;
         }
 
-        /// <summary>
-        /// Gets the name of the language model to use for the specified role.
-        /// </summary>
-        /// <param name="role">The requested role.</param>
-        /// <returns>The name of the model to use when processing the request.</returns>
-        private string GetModelName( ModelServiceRole role )
+        if ( resultMetadata["Usage"] is not OpenAI.Chat.ChatTokenUsage usage )
         {
-            return role switch
-            {
-                _ => "@preset/rock-default",
-            };
+            return null;
         }
 
-        /// <inheritdoc/>
-        public override void AddChatCompletion( ModelServiceRole role, IServiceCollection serviceCollection )
+        return new UsageMetric
         {
-            serviceCollection.AddOpenAIChatCompletion(
-                serviceId: GetServiceKeyForRole( role ),
-                modelId: GetModelName( role ),
-                endpoint: new Uri( "https://openrouter.ai/api/v1/" ),
-                apiKey: GetAttributeValue( AttributeKey.ApiKey ) );
-        }
+            InputTokenCount = usage.InputTokenCount,
+            OutputTokenCount = usage.OutputTokenCount,
+            TotalTokenCount = usage.TotalTokenCount
+        };
+    }
 
-        /// <inheritdoc/>
-        public override UsageMetric GetMetricUsageFromResult( ChatMessageContent result )
+    /// <inheritdoc/>
+    public override PromptExecutionSettings GetToolPromptExecutionSettingsForRole( AgentTool function )
+    {
+        return new OpenAIPromptExecutionSettings
         {
-            var resultMetadata = result?.Metadata;
+            ServiceId = GetServiceKeyForRole( function.Role ),
+            ModelId = GetModelName( function.Role ),
+            Temperature = function.Temperature,
+            MaxTokens = function.MaxTokens,
+        };
+    }
 
-            if ( resultMetadata == null || !resultMetadata.ContainsKey( "Usage" ) || resultMetadata["Usage"] == null )
-            {
-                return null;
-            }
-
-            if ( resultMetadata["Usage"] is not OpenAI.Chat.ChatTokenUsage usage  )
-            {
-                return null;
-            }
-
-            return new UsageMetric
-            {
-                InputTokenCount = usage.InputTokenCount,
-                OutputTokenCount = usage.OutputTokenCount,
-                TotalTokenCount = usage.TotalTokenCount
-            };
-        }
-
-        /// <inheritdoc/>
-        public override UsageMetric GetMetricUsageFromResult( StreamingChatMessageContent result )
+    /// <inheritdoc/>
+    public override PromptExecutionSettings GetChatCompletionPromptExecutionSettings()
+    {
+        return new OpenAIPromptExecutionSettings()
         {
-            var resultMetadata = result?.Metadata;
-
-            if ( resultMetadata == null || !resultMetadata.ContainsKey( "Usage" ) || resultMetadata["Usage"] == null )
-            {
-                return null;
-            }
-
-            if ( resultMetadata["Usage"] is not OpenAI.Chat.ChatTokenUsage usage  )
-            {
-                return null;
-            }
-
-            return new UsageMetric
-            {
-                InputTokenCount = usage.InputTokenCount,
-                OutputTokenCount = usage.OutputTokenCount,
-                TotalTokenCount = usage.TotalTokenCount
-            };
-        }
-
-        /// <inheritdoc/>
-        public override PromptExecutionSettings GetToolPromptExecutionSettingsForRole( AgentTool function )
-        {
-            return new OpenAIPromptExecutionSettings
-            {
-                ServiceId = GetServiceKeyForRole( function.Role ),
-                ModelId = GetModelName( function.Role ),
-                Temperature = function.Temperature,
-                MaxTokens = function.MaxTokens,
-            };
-        }
-
-        /// <inheritdoc/>
-        public override PromptExecutionSettings GetChatCompletionPromptExecutionSettings()
-        {
-            return new OpenAIPromptExecutionSettings()
-            {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-                ReasoningEffort = "low"
-            };
-        }
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+            ReasoningEffort = "low"
+        };
     }
 }

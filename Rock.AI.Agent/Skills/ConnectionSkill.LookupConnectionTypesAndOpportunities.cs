@@ -27,131 +27,130 @@ using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class ConnectionSkill
 {
-    internal sealed partial class ConnectionSkill
+    #region Tool(s)
+
+    [Description( "Retrieves all configured connection types and opportunities in Rock." )]
+    [AgentPurpose( "Retrieves a list of all of the connection types and their configuration. This includes Connection Opportunities and Activity Types." )]
+    [AgentPurpose( "This tool does not return any information about specific connection requests." )]
+    [AgentToolGuid( "21870C06-126F-0882-47E3-DBFC1846BD92" )]
+    public IAgentToolResult LookupConnectionTypesAndOpportunities()
     {
-        #region Tool(s)
+        var connectionTypes = LoadConnectionTypes();
 
-        [Description( "Retrieves all configured connection types and opportunities in Rock." )]
-        [AgentPurpose( "Retrieves a list of all of the connection types and their configuration. This includes Connection Opportunities and Activity Types." )]
-        [AgentPurpose( "This tool does not return any information about specific connection requests." )]
-        [AgentToolGuid( "21870C06-126F-0882-47E3-DBFC1846BD92" )]
-        public IAgentToolResult LookupConnectionTypesAndOpportunities()
+        return Success( connectionTypes )
+            .WithHistoryContent( connectionTypes
+                .Select( ct => new ConnectionTypeResult
+                {
+                    Id = ct.Id,
+                    Name = ct.Name,
+                    Opportunities = ct.Opportunities
+                        .Select( o => new ConnectionOpportunityResult
+                        {
+                            Id = o.Id,
+                            Name = o.Name,
+                        } )
+                        .ToList(),
+                    Statuses = ct.Statuses
+                        .Select( s => new KeyNameResult
+                        {
+                            Id = s.Id,
+                            Name = s.Name
+                        } )
+                        .ToList(),
+                }
+            ) );
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    /// <summary>
+    /// Load all the connection types, opportunities and statuses that the
+    /// current person has access to.
+    /// </summary>
+    /// <returns>A list of <see cref="ConnectionTypeResult"/> objects.</returns>
+    private List<ConnectionTypeResult> LoadConnectionTypes()
+    {
+        var connectionTypes = ConnectionTypeCache.All( AgentRequestContext.RockContext );
+
+        if ( !connectionTypes.Any() )
         {
-            var connectionTypes = LoadConnectionTypes();
-
-            return Success( connectionTypes )
-                .WithHistoryContent( connectionTypes
-                    .Select( ct => new ConnectionTypeResult
-                    {
-                        Id = ct.Id,
-                        Name = ct.Name,
-                        Opportunities = ct.Opportunities
-                            .Select( o => new ConnectionOpportunityResult
-                            {
-                                Id = o.Id,
-                                Name = o.Name,
-                            } )
-                            .ToList(),
-                        Statuses = ct.Statuses
-                            .Select( s => new KeyNameResult
-                            {
-                                Id = s.Id,
-                                Name = s.Name
-                            } )
-                            .ToList(),
-                    }
-                ) );
+            return [];
         }
 
-        #endregion
+        var currentPerson = AgentRequestContext.CurrentPerson;
 
-        #region Helper Methods
-
-        /// <summary>
-        /// Load all the connection types, opportunities and statuses that the
-        /// current person has access to.
-        /// </summary>
-        /// <returns>A list of <see cref="ConnectionTypeResult"/> objects.</returns>
-        private List<ConnectionTypeResult> LoadConnectionTypes()
-        {
-            var connectionTypes = ConnectionTypeCache.All( AgentRequestContext.RockContext );
-
-            if ( !connectionTypes.Any() )
+        var connectionTypeResults = connectionTypes
+            .Where( cr => cr.IsActive )
+            .Where( cr => cr.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+            .Select( cr => new ConnectionTypeResult
             {
-                return [];
+                Id = cr.Id,
+                Name = cr.Name,
+                Description = cr.Description,
+                AttributeValues = cr.GetAttributeValueResults( AgentRequestContext ).ToList(),
+            } )
+            .ToList();
+
+        // Add connection statuses. There is no cache for this so we have to query it.
+        var connectionStatuses = new ConnectionStatusService( AgentRequestContext.RockContext )
+            .Queryable()
+            .Where( s => s.IsActive )
+            .GroupBy( s => s.ConnectionTypeId )
+            .ToDictionary( g => g.Key, g => g.Select( s => new KeyNameResult( s.Id, s.Name ) ).ToList() );
+
+        foreach ( var connectionType in connectionTypeResults )
+        {
+            if ( connectionStatuses.TryGetValue( connectionType.Id, out var statuses ) )
+            {
+                connectionType.Statuses = statuses;
             }
+        }
 
-            var currentPerson = AgentRequestContext.CurrentPerson;
+        // Add connection opportunities. There is no cache for this so we have to query it.
+        var connectionOpportunities = new ConnectionOpportunityService( AgentRequestContext.RockContext )
+            .Queryable()
+            .AsNoTracking()
+            .Include( co => co.ConnectionOpportunityCampuses )
+            .Where( o => o.IsActive && o.ConnectionType.IsActive )
+            .ToList();
 
-            var connectionTypeResults = connectionTypes
-                .Where( cr => cr.IsActive )
-                .Where( cr => cr.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                .Select( cr => new ConnectionTypeResult
+        connectionOpportunities.LoadAttributes();
+
+        foreach ( var connectionType in connectionTypeResults )
+        {
+            connectionType.Opportunities = connectionOpportunities
+                .Where( co => co.ConnectionTypeId == connectionType.Id )
+                .Where( co => co.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .Select( co => new ConnectionOpportunityResult
                 {
-                    Id = cr.Id,
-                    Name = cr.Name,
-                    Description = cr.Description,
-                    AttributeValues = cr.GetAttributeValueResults( AgentRequestContext ).ToList(),
+                    Id = co.Id,
+                    Name = co.Name,
+                    Description = co.Description,
+                    PublicName = co.PublicName,
+                    Summary = co.Summary,
+                    PhotoId = co.PhotoId,
+                    Campuses = co.ConnectionOpportunityCampuses
+                        .Select( c => new CampusResult
+                        {
+                            Id = c.CampusId,
+                            Name = c.Campus.Name
+                        } )
+                        .ToList(),
+                    AttributeValues = co.GetAttributeValueResults( AgentRequestContext ).ToList(),
                 } )
                 .ToList();
-
-            // Add connection statuses. There is no cache for this so we have to query it.
-            var connectionStatuses = new ConnectionStatusService( AgentRequestContext.RockContext )
-                .Queryable()
-                .Where( s => s.IsActive )
-                .GroupBy( s => s.ConnectionTypeId )
-                .ToDictionary( g => g.Key, g => g.Select( s => new KeyNameResult( s.Id, s.Name ) ).ToList() );
-
-            foreach ( var connectionType in connectionTypeResults )
-            {
-                if ( connectionStatuses.TryGetValue( connectionType.Id, out var statuses ) )
-                {
-                    connectionType.Statuses = statuses;
-                }
-            }
-
-            // Add connection opportunities. There is no cache for this so we have to query it.
-            var connectionOpportunities = new ConnectionOpportunityService( AgentRequestContext.RockContext )
-                .Queryable()
-                .AsNoTracking()
-                .Include( co => co.ConnectionOpportunityCampuses )
-                .Where( o => o.IsActive && o.ConnectionType.IsActive )
-                .ToList();
-
-            connectionOpportunities.LoadAttributes();
-
-            foreach ( var connectionType in connectionTypeResults )
-            {
-                connectionType.Opportunities = connectionOpportunities
-                    .Where( co => co.ConnectionTypeId == connectionType.Id )
-                    .Where( co => co.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                    .Select( co => new ConnectionOpportunityResult
-                    {
-                        Id = co.Id,
-                        Name = co.Name,
-                        Description = co.Description,
-                        PublicName = co.PublicName,
-                        Summary = co.Summary,
-                        PhotoId = co.PhotoId,
-                        Campuses = co.ConnectionOpportunityCampuses
-                            .Select( c => new CampusResult
-                            {
-                                Id = c.CampusId,
-                                Name = c.Campus.Name
-                            } )
-                            .ToList(),
-                        AttributeValues = co.GetAttributeValueResults( AgentRequestContext ).ToList(),
-                    } )
-                    .ToList();
-            }
-
-            connectionTypeResults.ForEach( ct => ct.Sanitize( AgentRequestContext ) );
-
-            return connectionTypeResults;
         }
 
-        #endregion
+        connectionTypeResults.ForEach( ct => ct.Sanitize( AgentRequestContext ) );
+
+        return connectionTypeResults;
     }
+
+    #endregion
 }

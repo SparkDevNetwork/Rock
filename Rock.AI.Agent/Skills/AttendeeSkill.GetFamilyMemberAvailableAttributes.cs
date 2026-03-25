@@ -22,28 +22,27 @@ using Rock.Attribute;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal partial class AttendeeSkill
 {
-    internal partial class AttendeeSkill
+    #region Tool(s)
+
+    [Description( "Gets the available attributes that can be set when updating a family member." )]
+    [AgentPurpose( "Provides a list of attribute definitions for family members and any value format instructions." )]
+    [AgentToolGuid( "66b757c4-b2e5-419c-8289-fba2213750d4" )]
+    public IAgentToolResult GetFamilyMemberAvailableAttributes()
     {
-        #region Tool(s)
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        var editablePersonAttributeGuids = ConfigurationValues.GetReadOnlyValueOrDefault( ConfigurationKey.ViewablePersonAttributes, string.Empty ).SplitDelimitedValues().AsGuidList();
+        var availableAttributes = AttributeCache.GetMany( editablePersonAttributeGuids, AgentRequestContext.RockContext ).ToList();
+        var person = new Model.Person();
 
-        [Description( "Gets the available attributes that can be set when updating a family member." )]
-        [AgentPurpose( "Provides a list of attribute definitions for family members and any value format instructions." )]
-        [AgentToolGuid( "66b757c4-b2e5-419c-8289-fba2213750d4" )]
-        public IAgentToolResult GetFamilyMemberAvailableAttributes()
-        {
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
-            var editablePersonAttributeGuids = ConfigurationValues.GetReadOnlyValueOrDefault( ConfigurationKey.ViewablePersonAttributes, string.Empty ).SplitDelimitedValues().AsGuidList();
-            var availableAttributes = AttributeCache.GetMany( editablePersonAttributeGuids, AgentRequestContext.RockContext ).ToList();
-            var person = new Model.Person();
+        Helper.LoadAttributes( person, AgentRequestContext.RockContext, availableAttributes );
 
-            Helper.LoadAttributes( person, AgentRequestContext.RockContext, availableAttributes );
-
-            return Success( helper.GetAvailableAttributes( person ) );
-        }
-
-
-        #endregion
+        return Success( helper.GetAvailableAttributes( person ) );
     }
+
+
+    #endregion
 }

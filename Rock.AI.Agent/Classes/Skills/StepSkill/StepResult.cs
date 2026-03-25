@@ -43,7 +43,7 @@ internal class StepResult : EntityResultBase
     /// <summary>
     /// The date the step was ended.
     /// </summary>
-    public DateTime? EndDateTime {  get; set; }
+    public DateTime? EndDateTime { get; set; }
 
     /// <summary>
     /// The date and time the step was completed.

@@ -18,38 +18,37 @@ using System.ComponentModel;
 
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class NoteSkill
 {
-    internal sealed partial class NoteSkill
+    #region Tool(s)
+
+    [Description( "Gets the details of a single note." )]
+    [AgentToolGuid( "C5690ED4-5CB3-4299-9E75-1D4E6FF7D323" )]
+    public IAgentToolResult GetNote( string noteIdKey )
     {
-        #region Tool(s)
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        var note = helper.GetRequiredEntity<Model.Note>( noteIdKey );
 
-        [Description( "Gets the details of a single note." )]
-        [AgentToolGuid( "C5690ED4-5CB3-4299-9E75-1D4E6FF7D323" )]
-        public IAgentToolResult GetNote( string noteIdKey )
+        if ( helper.HasErrors )
         {
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
-            var note = helper.GetRequiredEntity<Model.Note>( noteIdKey );
-
-            if ( helper.HasErrors )
-            {
-                return helper.ErrorResult;
-            }
-
-            var currentPerson = AgentRequestContext.CurrentPerson;
-            if ( !note.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-            {
-                return Error( "You are not authorized to view this note." );
-            }
-
-            return Success( GetNoteResult( note, AgentRequestContext.RockContext ) )
-                .WithHistoryContent( new
-                {
-                    note.IdKey,
-                    Text = note.Text.Truncate( 200 ),
-                }, note.IdKey );
+            return helper.ErrorResult;
         }
 
-        #endregion
+        var currentPerson = AgentRequestContext.CurrentPerson;
+        if ( !note.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+        {
+            return Error( "You are not authorized to view this note." );
+        }
+
+        return Success( GetNoteResult( note, AgentRequestContext.RockContext ) )
+            .WithHistoryContent( new
+            {
+                note.IdKey,
+                Text = note.Text.Truncate( 200 ),
+            }, note.IdKey );
     }
+
+    #endregion
 }

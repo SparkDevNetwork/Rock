@@ -27,74 +27,73 @@ using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+/// <summary>
+/// This skill provides access to working with event calendars and event items.
+/// </summary>
+
+[Description( "This skill provides access to working with event calendars and event items." )]
+[AgentUsage( "This skill provides access to working with event calendars and event items." )]
+
+[CustomCheckboxListField( "Calendars",
+    Description = "The calendars that will be available to work with.",
+    ListSource = "SELECT [Guid] AS [Value], [Name] AS [Text] FROM [EventCalendar]",
+    IsRequired = false,
+    Key = ConfigurationKey.Calendars,
+    Order = 0 )]
+
+[AgentSkillGuid( "985a7a4b-a94d-47e8-a056-350aa54f796e" )]
+[EntityTypeGuid( "23fc8746-dc29-42ef-9846-0148784b7b8e" )]
+internal sealed partial class EventCalendarSkill : AgentSkillComponent
 {
-    /// <summary>
-    /// This skill provides access to working with event calendars and event items.
-    /// </summary>
+    #region Keys
 
-    [Description( "This skill provides access to working with event calendars and event items." )]
-    [AgentUsage( "This skill provides access to working with event calendars and event items." )]
-
-    [CustomCheckboxListField( "Calendars",
-        Description = "The calendars that will be available to work with.",
-        ListSource = "SELECT [Guid] AS [Value], [Name] AS [Text] FROM [EventCalendar]",
-        IsRequired = false,
-        Key = ConfigurationKey.Calendars,
-        Order = 0 )]
-
-    [AgentSkillGuid( "985a7a4b-a94d-47e8-a056-350aa54f796e" )]
-    [EntityTypeGuid( "23fc8746-dc29-42ef-9846-0148784b7b8e" )]
-    internal sealed partial class EventCalendarSkill : AgentSkillComponent
+    private static class ConfigurationKey
     {
-        #region Keys
-
-        private static class ConfigurationKey
-        {
-            public const string Calendars = "Calendars";
-        }
-
-        #endregion
-
-        #region Fields
-
-        /// <summary>
-        /// The logger for this instance.
-        /// </summary>
-        private readonly ILogger _logger;
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// The constructor for the Event Calendar Skill.
-        /// </summary>
-        /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public EventCalendarSkill( ILogger<EventCalendarSkill> logger )
-        {
-            _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
-        }
-
-        #endregion
-
-        #region Methods
-
-        private IEnumerable<EventCalendarCache> GetConfiguredCalendars()
-        {
-            var groupTypeGuids = ConfigurationValues.GetReadOnlyValueOrDefault( ConfigurationKey.Calendars, string.Empty )
-                .SplitDelimitedValues()
-                .AsGuidList();
-
-            if ( groupTypeGuids.Count == 0 )
-            {
-                return [];
-            }
-
-            return EventCalendarCache.GetMany( groupTypeGuids, AgentRequestContext.RockContext )
-                .Where( gt => gt.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) );
-        }
-
-        #endregion
+        public const string Calendars = "Calendars";
     }
+
+    #endregion
+
+    #region Fields
+
+    /// <summary>
+    /// The logger for this instance.
+    /// </summary>
+    private readonly ILogger _logger;
+
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// The constructor for the Event Calendar Skill.
+    /// </summary>
+    /// <param name="logger">Logger for diagnostics and error reporting.</param>
+    public EventCalendarSkill( ILogger<EventCalendarSkill> logger )
+    {
+        _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
+    }
+
+    #endregion
+
+    #region Methods
+
+    private IEnumerable<EventCalendarCache> GetConfiguredCalendars()
+    {
+        var groupTypeGuids = ConfigurationValues.GetReadOnlyValueOrDefault( ConfigurationKey.Calendars, string.Empty )
+            .SplitDelimitedValues()
+            .AsGuidList();
+
+        if ( groupTypeGuids.Count == 0 )
+        {
+            return [];
+        }
+
+        return EventCalendarCache.GetMany( groupTypeGuids, AgentRequestContext.RockContext )
+            .Where( gt => gt.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) );
+    }
+
+    #endregion
 }

@@ -21,39 +21,38 @@ using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Skills.WorkflowSkill;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class WorkflowSkill
 {
-    internal sealed partial class WorkflowSkill
+    #region Tool(s)
+
+    [Description( "Retrieves all workflow types configured for the agent." )]
+    [AgentPurpose( "Retrieves all workflow types configured for the agent." )]
+    [AgentToolGuid( "93d7c53f-5b2c-4d62-8274-89c21e387f88" )]
+    public IAgentToolResult LookupWorkflowTypes()
     {
-        #region Tool(s)
+        var workflowTypeResults = GetConfiguredWorkflowTypes()
+            .Select( c => new WorkflowTypeResult
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description,
+                CategoryName = c.Category?.Name
+            } )
+            .ToList();
 
-        [Description( "Retrieves all workflow types configured for the agent." )]
-        [AgentPurpose( "Retrieves all workflow types configured for the agent." )]
-        [AgentToolGuid( "93d7c53f-5b2c-4d62-8274-89c21e387f88" )]
-        public IAgentToolResult LookupWorkflowTypes()
-        {
-            var workflowTypeResults = GetConfiguredWorkflowTypes()
-                .Select( c => new WorkflowTypeResult
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Description = c.Description,
-                    CategoryName = c.Category?.Name
-                } )
-                .ToList();
+        var workflowTypeHistoryResults = workflowTypeResults
+            .Select( c => new WorkflowTypeResult
+            {
+                Id = c.Id,
+                Name = c.Name,
+            } )
+            .ToList();
 
-            var workflowTypeHistoryResults = workflowTypeResults
-                .Select( c => new WorkflowTypeResult
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                } )
-                .ToList();
-
-            return Success( workflowTypeResults )
-                .WithHistoryContent( workflowTypeHistoryResults );
-        }
-
-        #endregion
+        return Success( workflowTypeResults )
+            .WithHistoryContent( workflowTypeHistoryResults );
     }
+
+    #endregion
 }

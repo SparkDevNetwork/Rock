@@ -21,66 +21,65 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.Model;
 
-namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
+namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill;
+
+/// <summary>
+/// Represents a single connection request.
+/// </summary>
+internal class ConnectionRequestResult : EntityResultBase
 {
     /// <summary>
-    /// Represents a single connection request.
+    /// Gets or sets the connection opportunity that the connection request is associated with.
     /// </summary>
-    internal class ConnectionRequestResult : EntityResultBase
-    {
-        /// <summary>
-        /// Gets or sets the connection opportunity that the connection request is associated with.
-        /// </summary>
-        public ConnectionOpportunityResult ConnectionOpportunity { get; set; }
+    public ConnectionOpportunityResult ConnectionOpportunity { get; set; }
 
-        /// <summary>
-        /// Gets or sets the comments associated with the connection request.
-        /// </summary>
-        public string Comments { get; set; }
+    /// <summary>
+    /// Gets or sets the comments associated with the connection request.
+    /// </summary>
+    public string Comments { get; set; }
 
-        /// <summary>
-        /// Gets or sets the status of the connection request.
-        /// </summary>
-        public KeyNameResult ConnectionStatus { get; set; }
+    /// <summary>
+    /// Gets or sets the status of the connection request.
+    /// </summary>
+    public KeyNameResult ConnectionStatus { get; set; }
 
-        /// <summary>
-        /// Gets or sets the state of the connection request.
-        /// </summary>
-        public ConnectionState ConnectionState { get; set; }
+    /// <summary>
+    /// Gets or sets the state of the connection request.
+    /// </summary>
+    public ConnectionState ConnectionState { get; set; }
 
-        /// <summary>
-        /// Gets or sets the date that the connection request is scheduled for a follow-up.
-        /// </summary>
-        public DateTime? FollowupDate { get; set; }
+    /// <summary>
+    /// Gets or sets the date that the connection request is scheduled for a follow-up.
+    /// </summary>
+    public DateTime? FollowupDate { get; set; }
 
-        /// <summary>
-        /// Gets or sets the campus that the connection request is associated with.
-        /// </summary>
-        public CampusResult Campus { get; set; }
+    /// <summary>
+    /// Gets or sets the campus that the connection request is associated with.
+    /// </summary>
+    public CampusResult Campus { get; set; }
 
-        /// <summary>
-        /// Gets or sets the group that the connection request is assigned to.
-        /// </summary>
-        public GroupResult AssignedGroup { get; set; }
+    /// <summary>
+    /// Gets or sets the group that the connection request is assigned to.
+    /// </summary>
+    public GroupResult AssignedGroup { get; set; }
 
-        /// <summary>
-        /// Gets or sets the connector of the connection request.
-        /// </summary>
-        public PersonResult Connector { get; set; }
+    /// <summary>
+    /// Gets or sets the connector of the connection request.
+    /// </summary>
+    public PersonResult Connector { get; set; }
 
-        /// <summary>
-        /// Gets or sets the list of activities that have been performed on this connection request.
-        /// </summary>
-        public List<ConnectionRequestActivityResult> Activities { get; set; }
+    /// <summary>
+    /// Gets or sets the list of activities that have been performed on this connection request.
+    /// </summary>
+    public List<ConnectionRequestActivityResult> Activities { get; set; }
 
-        /// <summary>
-        /// Gets or sets the author of the note.
-        /// </summary>
-        public PersonResult Requester { get; set; }
+    /// <summary>
+    /// Gets or sets the author of the note.
+    /// </summary>
+    public PersonResult Requester { get; set; }
 
-        /// <summary>
-        /// The URL to the request.
-        /// </summary>
-        public string Url => $"/connectionrequest/{Id}";
-    }
+    /// <summary>
+    /// The URL to the request.
+    /// </summary>
+    public string Url => $"/connectionrequest/{Id}";
 }

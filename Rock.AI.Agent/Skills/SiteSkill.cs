@@ -21,38 +21,37 @@ using Microsoft.Extensions.Logging;
 
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+/// <summary>
+/// Provides data lookup and analytics functions focused on site activity in Rock RMS,
+/// particularly person-centric website analytics such as page visits, grouped by site.
+/// </summary>
+
+[Description( "This skill provides an overview of site details and engagement across websites, mobile apps, and TV apps." )]
+[AgentSkillGuid( "613D7110-6453-4BAB-892B-064222F8397C" )]
+[EntityTypeGuid( "7A63570D-6FC3-4573-BDF2-89CFF605D5AB" )]
+internal sealed partial class SiteSkill : AgentSkillComponent
 {
+    #region Fields
+
     /// <summary>
-    /// Provides data lookup and analytics functions focused on site activity in Rock RMS,
-    /// particularly person-centric website analytics such as page visits, grouped by site.
+    /// The logger for this instance.
     /// </summary>
+    private readonly ILogger _logger;
 
-    [Description( "This skill provides an overview of site details and engagement across websites, mobile apps, and TV apps." )]
-    [AgentSkillGuid( "613D7110-6453-4BAB-892B-064222F8397C" )]
-    [EntityTypeGuid( "7A63570D-6FC3-4573-BDF2-89CFF605D5AB" )]
-    internal sealed partial class SiteSkill : AgentSkillComponent
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SiteSkill"/> class.
+    /// </summary>
+    /// <param name="logger">Logger for diagnostics and error reporting.</param>
+    public SiteSkill( ILogger<SiteSkill> logger )
     {
-        #region Fields
-
-        /// <summary>
-        /// The logger for this instance.
-        /// </summary>
-        private readonly ILogger _logger;
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SiteSkill"/> class.
-        /// </summary>
-        /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public SiteSkill( ILogger<SiteSkill> logger )
-        {
-            _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
-        }
-
-        #endregion
+        _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
     }
+
+    #endregion
 }

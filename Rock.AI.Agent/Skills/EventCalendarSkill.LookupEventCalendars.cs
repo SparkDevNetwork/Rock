@@ -22,35 +22,34 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.Model;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class EventCalendarSkill
 {
-    internal sealed partial class EventCalendarSkill
+    #region Tool(s)
+
+    /// <summary>
+    /// Retrieves all configured calendars in Rock.
+    /// </summary>
+    [Description( "Retrieves all configured calendars in Rock." )]
+    [AgentPurpose( "Retrieves all configured calendars in Rock." )]
+    [AgentToolGuid( "dbc1ad8a-f41c-4bb7-89de-f9d795f017de" )]
+    public IAgentToolResult LookupEventCalendars()
     {
-        #region Tool(s)
+        var calendarResults = GetConfiguredCalendars()
+            .Select( c => new KeyNameResult( c.Id, c.Name ) )
+            .OrderBy( kn => kn.Name )
+            .ToList();
 
-        /// <summary>
-        /// Retrieves all configured calendars in Rock.
-        /// </summary>
-        [Description( "Retrieves all configured calendars in Rock." )]
-        [AgentPurpose( "Retrieves all configured calendars in Rock." )]
-        [AgentToolGuid( "dbc1ad8a-f41c-4bb7-89de-f9d795f017de" )]
-        public IAgentToolResult LookupEventCalendars()
+        var result = Success( calendarResults );
+
+        if ( calendarResults.Count > 50 )
         {
-            var calendarResults = GetConfiguredCalendars()
-                .Select( c => new KeyNameResult( c.Id, c.Name ) )
-                .OrderBy( kn => kn.Name )
-                .ToList();
-
-            var result = Success( calendarResults );
-
-            if ( calendarResults.Count > 50 )
-            {
-                result = result.WithoutHistoryContent();
-            }
-
-            return result;
+            result = result.WithoutHistoryContent();
         }
 
-        #endregion
+        return result;
     }
+
+    #endregion
 }

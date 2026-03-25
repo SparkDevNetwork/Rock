@@ -28,149 +28,149 @@ using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class PersonSkill
 {
-    internal sealed partial class PersonSkill
+    #region Tool(s)
+
+    [Description( "Lists media element views for a specific person." )]
+    [AgentPurpose( "Retrieves media views for a specific person, optionally filtered by date and/or site." )]
+    [AgentUsage( "The results are paginated (and the 'PageNumber' parameter is required.)" )]
+    [AgentToolGuid( "AB6CB80C-352A-F895-4233-09BA9DA69CCC" )]
+    public IAgentToolResult ListMediaViewsForPerson( string personIdKey, int pageNumber = 1, DateTime? startDate = null, DateTime? endDate = null )
     {
-        #region Tool(s)
-
-        [Description( "Lists media element views for a specific person." )]
-        [AgentPurpose( "Retrieves media views for a specific person, optionally filtered by date and/or site." )]
-        [AgentUsage( "The results are paginated (and the 'PageNumber' parameter is required.)" )]
-        [AgentToolGuid( "AB6CB80C-352A-F895-4233-09BA9DA69CCC" )]
-        public IAgentToolResult ListMediaViewsForPerson( string personIdKey, int pageNumber = 1, DateTime? startDate = null, DateTime? endDate = null )
+        // Validate person
+        var personId = IdHasher.Instance.GetId( personIdKey );
+        if ( !personId.HasValue || personId <= 0 )
         {
-            // Validate person
-            var personId = IdHasher.Instance.GetId( personIdKey );
-            if ( !personId.HasValue || personId <= 0 )
-            {
-                Error( "The personIdKey is not valid. Please provide a valid value." );
-            }
-
-            // Validate date range
-            if ( startDate.HasValue && endDate.HasValue && startDate > endDate )
-            {
-                Error( "Invalid date range. Start date cannot be after end date." );
-            }
-
-            // Defaults: past year → now
-            if ( !startDate.HasValue && !endDate.HasValue )
-            {
-                endDate = RockDateTime.Now;
-                startDate = endDate.Value.AddYears( -1 );
-            }
-            else if ( startDate.HasValue && !endDate.HasValue )
-            {
-                endDate = RockDateTime.Now;
-            }
-
-            // Paging
-            var basePageSize = 100;
-            var offset = ( pageNumber - 1 ) * basePageSize;
-            var take = basePageSize + 1; // N+1 to compute hasMore
-
-            // Run query
-            try
-            {
-                var parameters = new List<SqlParameter>
-                {
-                    new SqlParameter("@PersonId", personId),
-                    GetParameterValueOrDbNull("@StartDate", startDate),
-                    GetParameterValueOrDbNull("@EndDate", endDate),
-                    new SqlParameter("@PageSize",  take),    // request N+1
-                    new SqlParameter("@OffsetRows", offset), // offset uses base size
-                };
-
-                var rows = AgentRequestContext.RockContext.Database
-                    .SqlQuery<MediaViewResult>( _mediaViewsDataSql, parameters.ToArray() )
-                    .ToList();
-
-                var hasMore = rows.Count > basePageSize;
-                if ( hasMore )
-                {
-                    rows.RemoveAt( rows.Count - 1 ); // drop lookahead row
-                }
-
-                var meta = new Dictionary<string, object>
-                {
-                    { "personKey", personIdKey },
-                    { "startDate", startDate },
-                    { "endDate", endDate },
-                    { "pageNumber", pageNumber },
-                    { "pageSize", basePageSize },
-                    { "returnedRows", rows.Count },
-                    { "hasMore", hasMore }
-                };
-
-                if ( !rows.Any() )
-                {
-                    return NoData()
-                        .WithMetadata( meta );
-                }
-
-                // Do some quick clean-up of the media data
-                CleanMediaViews( rows );
-
-                return Success( rows )
-                    .WithMetadata( meta );
-            }
-            catch ( Exception ex )
-            {
-                _logger.LogError( ex, "ListMediaViewsForPerson failed for PersonId={PersonId}", personId );
-                return Error( "Failed to retrieve media views. " + ex.Message );
-            }
+            Error( "The personIdKey is not valid. Please provide a valid value." );
         }
 
-        #endregion
-
-        #region Helper Methods
-
-        /// <summary>
-        /// Cleans up the media views by determining the medium and adjusting the viewing location URL.
-        /// </summary>
-        /// <param name="mediaViews"></param>
-        private void CleanMediaViews( List<MediaViewResult> mediaViews )
+        // Validate date range
+        if ( startDate.HasValue && endDate.HasValue && startDate > endDate )
         {
-            foreach ( var media in mediaViews )
+            Error( "Invalid date range. Start date cannot be after end date." );
+        }
+
+        // Defaults: past year → now
+        if ( !startDate.HasValue && !endDate.HasValue )
+        {
+            endDate = RockDateTime.Now;
+            startDate = endDate.Value.AddYears( -1 );
+        }
+        else if ( startDate.HasValue && !endDate.HasValue )
+        {
+            endDate = RockDateTime.Now;
+        }
+
+        // Paging
+        var basePageSize = 100;
+        var offset = ( pageNumber - 1 ) * basePageSize;
+        var take = basePageSize + 1; // N+1 to compute hasMore
+
+        // Run query
+        try
+        {
+            var parameters = new List<SqlParameter>
             {
-                if ( media.ViewingLocationUrl.IsNullOrWhiteSpace() )
+                new SqlParameter("@PersonId", personId),
+                GetParameterValueOrDbNull("@StartDate", startDate),
+                GetParameterValueOrDbNull("@EndDate", endDate),
+                new SqlParameter("@PageSize",  take),    // request N+1
+                new SqlParameter("@OffsetRows", offset), // offset uses base size
+            };
+
+            var rows = AgentRequestContext.RockContext.Database
+                .SqlQuery<MediaViewResult>( _mediaViewsDataSql, parameters.ToArray() )
+                .ToList();
+
+            var hasMore = rows.Count > basePageSize;
+            if ( hasMore )
+            {
+                rows.RemoveAt( rows.Count - 1 ); // drop lookahead row
+            }
+
+            var meta = new Dictionary<string, object>
+            {
+                { "personKey", personIdKey },
+                { "startDate", startDate },
+                { "endDate", endDate },
+                { "pageNumber", pageNumber },
+                { "pageSize", basePageSize },
+                { "returnedRows", rows.Count },
+                { "hasMore", hasMore }
+            };
+
+            if ( !rows.Any() )
+            {
+                return NoData()
+                    .WithMetadata( meta );
+            }
+
+            // Do some quick clean-up of the media data
+            CleanMediaViews( rows );
+
+            return Success( rows )
+                .WithMetadata( meta );
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError( ex, "ListMediaViewsForPerson failed for PersonId={PersonId}", personId );
+            return Error( "Failed to retrieve media views. " + ex.Message );
+        }
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    /// <summary>
+    /// Cleans up the media views by determining the medium and adjusting the viewing location URL.
+    /// </summary>
+    /// <param name="mediaViews"></param>
+    private void CleanMediaViews( List<MediaViewResult> mediaViews )
+    {
+        foreach ( var media in mediaViews )
+        {
+            if ( media.ViewingLocationUrl.IsNullOrWhiteSpace() )
+            {
+                continue;
+            }
+
+            if ( media.ViewingLocationUrl.StartsWith( "http", StringComparison.OrdinalIgnoreCase ) )
+            {
+                // If the URL starts with http, we can assume it's a full URL.
+                media.Medium = "Web";
+            }
+            else
+            {
+                // Otherwise, we assume it's mobile (e71a7c63-f510-434b-945b-f30c1c18df9d?CategoryGuid=24ae4f53-1bb8-4637-ae0e-5db0b06856b3).
+                var urlParts = media.ViewingLocationUrl.Split( '?' );
+
+                if ( urlParts.Length != 2 )
                 {
                     continue;
                 }
 
-                if ( media.ViewingLocationUrl.StartsWith( "http", StringComparison.OrdinalIgnoreCase ) )
+                var page = PageCache.Get( urlParts[0].AsGuid() );
+
+                if ( page == null )
                 {
-                    // If the URL starts with http, we can assume it's a full URL.
-                    media.Medium = "Web";
+                    continue;
                 }
-                else
-                {
-                    // Otherwise, we assume it's mobile (e71a7c63-f510-434b-945b-f30c1c18df9d?CategoryGuid=24ae4f53-1bb8-4637-ae0e-5db0b06856b3).
-                    var urlParts = media.ViewingLocationUrl.Split( '?' );
 
-                    if ( urlParts.Length != 2 )
-                    {
-                        continue;
-                    }
-
-                    var page = PageCache.Get( urlParts[0].AsGuid() );
-
-                    if ( page == null )
-                    {
-                        continue;
-                    }
-
-                    media.ViewingLocationUrl = $"{page.Site} - {page.PageTitle}";
-                    media.Medium = "Mobile";
-                }
+                media.ViewingLocationUrl = $"{page.Site} - {page.PageTitle}";
+                media.Medium = "Mobile";
             }
         }
+    }
 
-        #endregion
+    #endregion
 
-        #region SQL
+    #region SQL
 
-        private const string _mediaViewsDataSql = @"
+    private const string _mediaViewsDataSql = @"
             SELECT 
                 me.[Id] AS [MediaElementId]
                 , i.[InteractionDateTime] AS [ViewDateTime]
@@ -202,6 +202,5 @@ namespace Rock.AI.Agent.Skills
             FETCH NEXT @PageSize ROWS ONLY
         ";
 
-        #endregion
-    }
+    #endregion
 }

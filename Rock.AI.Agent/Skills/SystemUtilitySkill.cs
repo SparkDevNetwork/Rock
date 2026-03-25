@@ -22,36 +22,35 @@ using Microsoft.Extensions.Logging;
 using Rock.AI.Agent.Annotations;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+[Description( "Provides common, non-domain-specific helper functions that can be used across multiple skills." )]
+[AgentPurpose( "Provides common, non-domain-specific helper functions that can be used across multiple skills." )]
+[AgentPurpose( "These include utilities for working with dates, times, and simple data conversions." )]
+[AgentUsage( "ALWAYS call either CalculateSlidingDateRange or DetermineDateRange for natural-language date/time prompts (e.g., \"past 3 years\", \"yesterday\", \"Q2\", \"this week\", specific dates)." )]
+[AgentSkillGuid( "3406D2DC-6718-45A2-99D3-1DAA32BF2EFD" )]
+[EntityTypeGuid( "35CD02D0-1FF7-4256-B495-FBBFBC9A2C9C" )]
+internal sealed partial class SystemUtilitySkill : AgentSkillComponent
 {
-    [Description( "Provides common, non-domain-specific helper functions that can be used across multiple skills." )]
-    [AgentPurpose( "Provides common, non-domain-specific helper functions that can be used across multiple skills." )]
-    [AgentPurpose( "These include utilities for working with dates, times, and simple data conversions." )]
-    [AgentUsage( "ALWAYS call either CalculateSlidingDateRange or DetermineDateRange for natural-language date/time prompts (e.g., \"past 3 years\", \"yesterday\", \"Q2\", \"this week\", specific dates)." )]
-    [AgentSkillGuid( "3406D2DC-6718-45A2-99D3-1DAA32BF2EFD" )]
-    [EntityTypeGuid( "35CD02D0-1FF7-4256-B495-FBBFBC9A2C9C" )]
-    internal sealed partial class SystemUtilitySkill : AgentSkillComponent
+    #region Fields
+
+    /// <summary>
+    /// The logger for this instance.
+    /// </summary>
+    private readonly ILogger _logger;
+
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SystemUtilitySkill"/> class.
+    /// </summary>
+    /// <param name="logger">Logger for diagnostics and error reporting.</param>
+    public SystemUtilitySkill( ILogger<SystemUtilitySkill> logger )
     {
-        #region Fields
-
-        /// <summary>
-        /// The logger for this instance.
-        /// </summary>
-        private readonly ILogger _logger;
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SystemUtilitySkill"/> class.
-        /// </summary>
-        /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public SystemUtilitySkill( ILogger<SystemUtilitySkill> logger )
-        {
-            _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
-        }
-
-        #endregion
+        _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
     }
+
+    #endregion
 }

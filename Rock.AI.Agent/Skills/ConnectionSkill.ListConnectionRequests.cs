@@ -25,94 +25,93 @@ using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class ConnectionSkill
 {
-    internal sealed partial class ConnectionSkill
+    #region Tool(s)
+
+    [Description( "Returns a list of connection requests that match the filters." )]
+    [AgentUsage( "Requests can be filtered by connection type, connection opportunity, requester or connector. Connectors are people who are assigned a request." )]
+    [AgentToolGuid( "DC03271E-2C54-D5AF-4F18-9CCC69F25202" )]
+    public IAgentToolResult ListConnectionRequests(
+        string connectionTypeIdKey = null,
+        string connectionOpportunityIdKey = null,
+        string requesterPersonIdKey = null,
+        string connectorPersonIdKey = null,
+        string cursor = null )
     {
-        #region Tool(s)
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        var currentPerson = AgentRequestContext.CurrentPerson;
 
-        [Description( "Returns a list of connection requests that match the filters." )]
-        [AgentUsage( "Requests can be filtered by connection type, connection opportunity, requester or connector. Connectors are people who are assigned a request." )]
-        [AgentToolGuid( "DC03271E-2C54-D5AF-4F18-9CCC69F25202" )]
-        public IAgentToolResult ListConnectionRequests(
-            string connectionTypeIdKey = null,
-            string connectionOpportunityIdKey = null,
-            string requesterPersonIdKey = null,
-            string connectorPersonIdKey = null,
-            string cursor = null )
+        var query = new ConnectionRequestService( AgentRequestContext.RockContext )
+            .Queryable()
+            .Where( cr => !cr.ConnectedDateTime.HasValue );
+
+        query = helper.WhereOptionalIdKey( query, cr => cr.PersonAlias.PersonId, requesterPersonIdKey );
+        query = helper.WhereOptionalIdKey( query, cr => cr.ConnectorPersonAlias.PersonId, connectorPersonIdKey );
+        query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionTypeId, connectionTypeIdKey );
+        query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionOpportunityId, connectionOpportunityIdKey );
+
+        var hasAnyFilters = !string.IsNullOrWhiteSpace( connectionTypeIdKey )
+            || !string.IsNullOrWhiteSpace( connectionOpportunityIdKey )
+            || !string.IsNullOrWhiteSpace( requesterPersonIdKey )
+            || !string.IsNullOrWhiteSpace( connectorPersonIdKey );
+
+        if ( !hasAnyFilters )
         {
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
-            var currentPerson = AgentRequestContext.CurrentPerson;
-
-            var query = new ConnectionRequestService( AgentRequestContext.RockContext )
-                .Queryable()
-                .Where( cr => !cr.ConnectedDateTime.HasValue );
-
-            query = helper.WhereOptionalIdKey( query, cr => cr.PersonAlias.PersonId, requesterPersonIdKey );
-            query = helper.WhereOptionalIdKey( query, cr => cr.ConnectorPersonAlias.PersonId, connectorPersonIdKey );
-            query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionTypeId, connectionTypeIdKey );
-            query = helper.WhereOptionalIdKey( query, cr => cr.ConnectionOpportunityId, connectionOpportunityIdKey );
-
-            var hasAnyFilters = !string.IsNullOrWhiteSpace( connectionTypeIdKey )
-                || !string.IsNullOrWhiteSpace( connectionOpportunityIdKey )
-                || !string.IsNullOrWhiteSpace( requesterPersonIdKey )
-                || !string.IsNullOrWhiteSpace( connectorPersonIdKey );
-
-            if ( !hasAnyFilters )
-            {
-                helper.AddError( "At least one filter parameter must be provided to limit the results returned." );
-            }
-
-            if ( helper.HasErrors )
-            {
-                return helper.ErrorResult;
-            }
-
-            var paginator = new CursorPaginator<ConnectionRequest>( currentPerson, qry => qry
-                .OrderByDescending( cr => cr.CreatedDateTime.HasValue )
-                .ThenByDescending( cr => cr.CreatedDateTime )
-                .ThenBy( cr => cr.Id ) );
-
-            var cursorPage = helper.GetCursorPaginatedItems( query, paginator, cursor );
-
-            cursorPage.Items.LoadAttributes( AgentRequestContext.RockContext );
-
-            var resultPage = cursorPage.WithItems( cursorPage.Items
-                .Select( cr => new ConnectionRequestResult
-                {
-                    Id = cr.Id,
-                    Requester = PersonResult.NameOnly( cr.PersonAlias ),
-                    ConnectionState = cr.ConnectionState,
-                    ConnectionStatus = new KeyNameResult
-                    {
-                        Id = cr.ConnectionStatus.Id,
-                        Name = cr.ConnectionStatus.Name
-                    },
-                    ConnectionOpportunity = new ConnectionOpportunityResult
-                    {
-                        Id = cr.ConnectionOpportunity.Id,
-                        Name = cr.ConnectionOpportunity.Name,
-                        ConnectionType = new ConnectionTypeResult
-                        {
-                            Id = cr.ConnectionOpportunity.ConnectionType.Id,
-                            Name = cr.ConnectionOpportunity.ConnectionType.Name
-                        }
-                    },
-                    CreatedDateTime = cr.CreatedDateTime,
-                    Connector = PersonResult.NameOnly( cr.ConnectorPersonAlias ),
-                    AttributeValues = cr.GetGridAttributeValueResults( AgentRequestContext ).ToList(),
-                } )
-                .ToList() );
-
-            var historyPage = cursorPage.WithItems( cursorPage.Items.Select( cr => new KeyNameResult
-            {
-                Id = cr.Id,
-                Name = cr.ToString()
-            } ) );
-
-            return helper.GetPaginatedResult( resultPage, historyPage );
+            helper.AddError( "At least one filter parameter must be provided to limit the results returned." );
         }
 
-        #endregion
+        if ( helper.HasErrors )
+        {
+            return helper.ErrorResult;
+        }
+
+        var paginator = new CursorPaginator<ConnectionRequest>( currentPerson, qry => qry
+            .OrderByDescending( cr => cr.CreatedDateTime.HasValue )
+            .ThenByDescending( cr => cr.CreatedDateTime )
+            .ThenBy( cr => cr.Id ) );
+
+        var cursorPage = helper.GetCursorPaginatedItems( query, paginator, cursor );
+
+        cursorPage.Items.LoadAttributes( AgentRequestContext.RockContext );
+
+        var resultPage = cursorPage.WithItems( cursorPage.Items
+            .Select( cr => new ConnectionRequestResult
+            {
+                Id = cr.Id,
+                Requester = PersonResult.NameOnly( cr.PersonAlias ),
+                ConnectionState = cr.ConnectionState,
+                ConnectionStatus = new KeyNameResult
+                {
+                    Id = cr.ConnectionStatus.Id,
+                    Name = cr.ConnectionStatus.Name
+                },
+                ConnectionOpportunity = new ConnectionOpportunityResult
+                {
+                    Id = cr.ConnectionOpportunity.Id,
+                    Name = cr.ConnectionOpportunity.Name,
+                    ConnectionType = new ConnectionTypeResult
+                    {
+                        Id = cr.ConnectionOpportunity.ConnectionType.Id,
+                        Name = cr.ConnectionOpportunity.ConnectionType.Name
+                    }
+                },
+                CreatedDateTime = cr.CreatedDateTime,
+                Connector = PersonResult.NameOnly( cr.ConnectorPersonAlias ),
+                AttributeValues = cr.GetGridAttributeValueResults( AgentRequestContext ).ToList(),
+            } )
+            .ToList() );
+
+        var historyPage = cursorPage.WithItems( cursorPage.Items.Select( cr => new KeyNameResult
+        {
+            Id = cr.Id,
+            Name = cr.ToString()
+        } ) );
+
+        return helper.GetPaginatedResult( resultPage, historyPage );
     }
+
+    #endregion
 }

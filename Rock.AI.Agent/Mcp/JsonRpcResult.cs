@@ -20,83 +20,82 @@ using System.Text.Json.Serialization;
 
 using Rock.AI.Agent.Mcp.Protocol;
 
-namespace Rock.AI.Agent.Mcp
+namespace Rock.AI.Agent.Mcp;
+
+/// <summary>
+/// Represents the result of a JSON-RPC request.
+/// </summary>
+internal class JsonRpcResult
 {
+    #region Properties
+
     /// <summary>
-    /// Represents the result of a JSON-RPC request.
+    /// The version of the JSON-RPC protocol being used.
     /// </summary>
-    internal class JsonRpcResult
+    [JsonPropertyName( "jsonrpc" )]
+    public string Version { get; } = "2.0";
+
+    /// <summary>
+    /// The identifier of the request this result corresponds to.
+    /// </summary>
+    public long Id { get; }
+
+    /// <summary>
+    /// The result of the request, if successful.
+    /// </summary>
+    public object Result { get; }
+
+    /// <summary>
+    /// The error information, if the request failed.
+    /// </summary>
+    public JsonRpcError Error { get; }
+
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// Creates an instance of <see cref="JsonRpcResult"/> with a
+    /// successful result.
+    /// </summary>
+    /// <param name="id">The identifier of the JSON-RPC request this result corresponds to.</param>
+    /// <param name="result">The result value of the JSON-RPC operation.</param>
+    internal JsonRpcResult( long id, object result )
     {
-        #region Properties
-
-        /// <summary>
-        /// The version of the JSON-RPC protocol being used.
-        /// </summary>
-        [JsonPropertyName( "jsonrpc" )]
-        public string Version { get; } = "2.0";
-
-        /// <summary>
-        /// The identifier of the request this result corresponds to.
-        /// </summary>
-        public long Id { get; }
-
-        /// <summary>
-        /// The result of the request, if successful.
-        /// </summary>
-        public object Result { get; }
-
-        /// <summary>
-        /// The error information, if the request failed.
-        /// </summary>
-        public JsonRpcError Error { get; }
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Creates an instance of <see cref="JsonRpcResult"/> with a
-        /// successful result.
-        /// </summary>
-        /// <param name="id">The identifier of the JSON-RPC request this result corresponds to.</param>
-        /// <param name="result">The result value of the JSON-RPC operation.</param>
-        internal JsonRpcResult( long id, object result )
-        {
-            Id = id;
-            Result = result;
-        }
-
-        /// <summary>
-        /// Creates an instance of <see cref="JsonRpcResult"/> with an error.
-        /// </summary>
-        /// <param name="id">The identifier of the JSON-RPC request this result corresponds to.</param>
-        /// <param name="errorCode">The code that identifies what type of error happened.</param>
-        /// <param name="errorMessage">A concise description of the error.</param>
-        internal JsonRpcResult( long id, int errorCode, string errorMessage )
-        {
-            Id = id;
-            Error = new JsonRpcError
-            {
-                Code = errorCode,
-                Message = errorMessage
-            };
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Writes the JSON-RPC result to a stream in JSON format.
-        /// </summary>
-        /// <param name="stream">The stream that the result should be written to.</param>
-        /// <param name="serializerOptions">The options to use when serializing the result.</param>
-        public void ToJson( Stream stream, JsonSerializerOptions serializerOptions )
-        {
-            JsonSerializer.Serialize( stream, this, serializerOptions );
-            stream.Flush();
-        }
-
-        #endregion
+        Id = id;
+        Result = result;
     }
+
+    /// <summary>
+    /// Creates an instance of <see cref="JsonRpcResult"/> with an error.
+    /// </summary>
+    /// <param name="id">The identifier of the JSON-RPC request this result corresponds to.</param>
+    /// <param name="errorCode">The code that identifies what type of error happened.</param>
+    /// <param name="errorMessage">A concise description of the error.</param>
+    internal JsonRpcResult( long id, int errorCode, string errorMessage )
+    {
+        Id = id;
+        Error = new JsonRpcError
+        {
+            Code = errorCode,
+            Message = errorMessage
+        };
+    }
+
+    #endregion
+
+    #region Methods
+
+    /// <summary>
+    /// Writes the JSON-RPC result to a stream in JSON format.
+    /// </summary>
+    /// <param name="stream">The stream that the result should be written to.</param>
+    /// <param name="serializerOptions">The options to use when serializing the result.</param>
+    public void ToJson( Stream stream, JsonSerializerOptions serializerOptions )
+    {
+        JsonSerializer.Serialize( stream, this, serializerOptions );
+        stream.Flush();
+    }
+
+    #endregion
 }

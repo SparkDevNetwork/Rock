@@ -23,136 +23,135 @@ using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class ReminderSkill
 {
-    internal sealed partial class ReminderSkill
+    #region Tool(s)
+
+    [Description( "Lists reminders that match the filters." )]
+    [AgentToolGuid( "AA2EA764-8CB6-48B1-815B-0FDCCDC742DE" )]
+    public IAgentToolResult ListReminders(
+        List<string> reminderTypeIdKeys = null,
+        string entityIdKey = null,
+        string assignedToPersonIdKey = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        bool? isComplete = null,
+        int pageNumber = 1 )
     {
-        #region Tool(s)
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
 
-        [Description( "Lists reminders that match the filters." )]
-        [AgentToolGuid( "AA2EA764-8CB6-48B1-815B-0FDCCDC742DE" )]
-        public IAgentToolResult ListReminders(
-            List<string> reminderTypeIdKeys = null,
-            string entityIdKey = null,
-            string assignedToPersonIdKey = null,
-            DateTime? startDate = null,
-            DateTime? endDate = null,
-            bool? isComplete = null,
-            int pageNumber = 1 )
+        var qry = new ReminderService( AgentRequestContext.RockContext )
+            .Queryable();
+
+        qry = helper.WhereOptionalPropertyBetween( qry, r => r.ReminderDate, startDate, endDate );
+        qry = helper.WhereOptionalIdKey( qry, r => r.PersonAlias.PersonId, assignedToPersonIdKey );
+        qry = helper.WhereOptionalProperty( qry, r => r.IsComplete, isComplete );
+
+        var selectedTypes = reminderTypeIdKeys
+            ?.Select( idKey => helper.GetRequiredEntity<ReminderType>( idKey, parameterExpression: nameof( reminderTypeIdKeys ) ) )
+            .ToList()
+            ?? [];
+        var selectedTypeIds = selectedTypes.Select( rt => rt.Id ).ToList();
+
+        if ( selectedTypeIds.Any() )
         {
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
+            qry = qry.Where( r => selectedTypeIds.Contains( r.ReminderTypeId ) );
+        }
 
-            var qry = new ReminderService( AgentRequestContext.RockContext )
-                .Queryable();
-
-            qry = helper.WhereOptionalPropertyBetween( qry, r => r.ReminderDate, startDate, endDate );
-            qry = helper.WhereOptionalIdKey( qry, r => r.PersonAlias.PersonId, assignedToPersonIdKey );
-            qry = helper.WhereOptionalProperty( qry, r => r.IsComplete, isComplete );
-
-            var selectedTypes = reminderTypeIdKeys
-                ?.Select( idKey => helper.GetRequiredEntity<ReminderType>( idKey, parameterExpression: nameof( reminderTypeIdKeys ) ) )
-                .ToList()
-                ?? [];
-            var selectedTypeIds = selectedTypes.Select( rt => rt.Id ).ToList();
-
-            if ( selectedTypeIds.Any() )
+        // Entity filter rules:
+        // - If entityIdKey is supplied AND no types were selected => ambiguous (don’t know entity type)
+        // - If entityIdKey is supplied AND selected types map to multiple EntityTypeIds => ambiguous
+        // - Otherwise resolve the entity under that single EntityTypeId
+        if ( entityIdKey.IsNotNullOrWhiteSpace() )
+        {
+            if ( !selectedTypes.Any() )
             {
-                qry = qry.Where( r => selectedTypeIds.Contains( r.ReminderTypeId ) );
+                return Error( "Filtering by entity requires at least one reminder type." );
             }
 
-            // Entity filter rules:
-            // - If entityIdKey is supplied AND no types were selected => ambiguous (don’t know entity type)
-            // - If entityIdKey is supplied AND selected types map to multiple EntityTypeIds => ambiguous
-            // - Otherwise resolve the entity under that single EntityTypeId
-            if ( entityIdKey.IsNotNullOrWhiteSpace() )
+            var distinctEntityTypeIds = selectedTypes.Select( t => t.EntityTypeId ).Distinct().ToList();
+            if ( distinctEntityTypeIds.Count != 1 )
             {
-                if ( !selectedTypes.Any() )
+                return Error( "Filtering by entity requires all selected reminder types to share the same entity type." );
+            }
+
+            var targetEntityTypeId = distinctEntityTypeIds[0];
+            var personAliasEntityType = EntityTypeCache.Get<PersonAlias>();
+
+            if ( targetEntityTypeId == personAliasEntityType.Id )
+            {
+                var person = helper.GetRequiredEntity<Model.Person>( entityIdKey, checkSecurity: false );
+
+                if ( person != null )
                 {
-                    return Error( "Filtering by entity requires at least one reminder type." );
+                    qry = qry.Where( r => r.EntityId == person.PrimaryAliasId.Value );
                 }
+            }
+            else
+            {
+                var entityType = EntityTypeCache.Get( targetEntityTypeId ).GetEntityType();
+                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, entityIdKey, AgentRequestContext.RockContext );
 
-                var distinctEntityTypeIds = selectedTypes.Select( t => t.EntityTypeId ).Distinct().ToList();
-                if ( distinctEntityTypeIds.Count != 1 )
+                if ( entity != null )
                 {
-                    return Error( "Filtering by entity requires all selected reminder types to share the same entity type." );
-                }
-
-                var targetEntityTypeId = distinctEntityTypeIds[0];
-                var personAliasEntityType = EntityTypeCache.Get<PersonAlias>();
-
-                if ( targetEntityTypeId == personAliasEntityType.Id )
-                {
-                    var person = helper.GetRequiredEntity<Model.Person>( entityIdKey, checkSecurity: false );
-
-                    if ( person != null )
-                    {
-                        qry = qry.Where( r => r.EntityId == person.PrimaryAliasId.Value );
-                    }
+                    qry = qry.Where( r => r.EntityId == entity.Id );
                 }
                 else
                 {
-                    var entityType = EntityTypeCache.Get( targetEntityTypeId ).GetEntityType();
-                    var entity = Rock.Reflection.GetIEntityForEntityType( entityType, entityIdKey, AgentRequestContext.RockContext );
-
-                    if ( entity != null )
-                    {
-                        qry = qry.Where( r => r.EntityId == entity.Id );
-                    }
-                    else
-                    {
-                        helper.AddError( "Invalid entity for the selected reminder type(s)." );
-                    }
+                    helper.AddError( "Invalid entity for the selected reminder type(s)." );
                 }
             }
+        }
 
-            // Deterministic order: earliest reminders first, then Id
-            var orderedQry = qry
-                .OrderBy( r => r.ReminderDate )
-                .ThenBy( r => r.Id );
+        // Deterministic order: earliest reminders first, then Id
+        var orderedQry = qry
+            .OrderBy( r => r.ReminderDate )
+            .ThenBy( r => r.Id );
 
-            var page = helper.GetPaginatedItems( orderedQry, pageNumber );
+        var page = helper.GetPaginatedItems( orderedQry, pageNumber );
 
-            // Helper to get a friendly entity name without blowing up.
-            string ResolveEntityName( Reminder r )
+        // Helper to get a friendly entity name without blowing up.
+        string ResolveEntityName( Reminder r )
+        {
+            try
             {
-                try
-                {
-                    var clrType = r.ReminderType?.EntityTypeId != null
-                        ? EntityTypeCache.Get( r.ReminderType.EntityTypeId, AgentRequestContext.RockContext )?.GetEntityType()
-                        : null;
+                var clrType = r.ReminderType?.EntityTypeId != null
+                    ? EntityTypeCache.Get( r.ReminderType.EntityTypeId, AgentRequestContext.RockContext )?.GetEntityType()
+                    : null;
 
-                    if ( clrType == null )
-                    {
-                        return "Entity";
-                    }
-
-                    var entity = Rock.Reflection.GetIEntityForEntityType( clrType, r.EntityId.ToString(), AgentRequestContext.RockContext );
-
-                    return entity?.ToString() ?? "Entity";
-                }
-                catch
+                if ( clrType == null )
                 {
                     return "Entity";
                 }
+
+                var entity = Rock.Reflection.GetIEntityForEntityType( clrType, r.EntityId.ToString(), AgentRequestContext.RockContext );
+
+                return entity?.ToString() ?? "Entity";
             }
-
-            // Project AFTER paging so we can get the entity name.
-            var items = page.Items
-                .Select( r => GetReminderResult( r, ResolveEntityName( r ) ) )
-                .ToList();
-
-            var projectedPage = page.WithItems( items );
-            var historyPage = page.WithItems( page.Items.Select( r => new
+            catch
             {
-                r.IdKey,
-                Date = r.ReminderDate.ToShortDateString(),
-                Note = ( r.Note ?? string.Empty ).Truncate( 120 )
-            } ) );
-
-            return Success( projectedPage )
-                .WithHistoryContent( historyPage );
+                return "Entity";
+            }
         }
 
-        #endregion
+        // Project AFTER paging so we can get the entity name.
+        var items = page.Items
+            .Select( r => GetReminderResult( r, ResolveEntityName( r ) ) )
+            .ToList();
+
+        var projectedPage = page.WithItems( items );
+        var historyPage = page.WithItems( page.Items.Select( r => new
+        {
+            r.IdKey,
+            Date = r.ReminderDate.ToShortDateString(),
+            Note = ( r.Note ?? string.Empty ).Truncate( 120 )
+        } ) );
+
+        return Success( projectedPage )
+            .WithHistoryContent( historyPage );
     }
+
+    #endregion
 }

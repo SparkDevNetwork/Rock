@@ -14,16 +14,15 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Classes.Skills.CommunicationSkill
+namespace Rock.AI.Agent.Classes.Skills.CommunicationSkill;
+
+/// <summary>
+/// The result of a send communication function.
+/// </summary>
+internal class SendCommunicationResult
 {
     /// <summary>
-    /// The result of a send communication function.
+    /// The idKey of the created communication.
     /// </summary>
-    internal class SendCommunicationResult
-    {
-        /// <summary>
-        /// The idKey of the created communication.
-        /// </summary>
-        public string CommunicationIdKey { get; set; }
-    }
+    public string CommunicationIdKey { get; set; }
 }

@@ -24,70 +24,69 @@ using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class NoteSkill
 {
-    internal sealed partial class NoteSkill
+    #region Tool(s)
+
+    [Description( "Provides a list of all note types available for use." )]
+    [AgentToolGuid( "51046397-D246-4296-A1C0-EC6BF0D01FAA" )]
+    public IAgentToolResult LookupNoteTypes()
     {
-        #region Tool(s)
+        var currentPerson = AgentRequestContext.CurrentPerson;
+        var noteTypes = GetNoteTypes( currentPerson );
 
-        [Description( "Provides a list of all note types available for use." )]
-        [AgentToolGuid( "51046397-D246-4296-A1C0-EC6BF0D01FAA" )]
-        public IAgentToolResult LookupNoteTypes()
+        if ( !noteTypes.Any() )
         {
-            var currentPerson = AgentRequestContext.CurrentPerson;
-            var noteTypes = GetNoteTypes( currentPerson );
-
-            if ( !noteTypes.Any() )
-            {
-                return NoData();
-            }
-
-            return Success( noteTypes )
-                .WithHistoryKey( "note-types" );
+            return NoData();
         }
 
-        #endregion
-
-        #region Helper Methods
-
-        /// <summary>
-        /// Retrieves the list of note types available to the current user.
-        /// </summary>
-        /// <param name="currentPerson">The current person.</param>
-        /// <returns>A list of <see cref="NoteTypeResult"/> objects representing the available note types.</returns>
-        private List<NoteTypeResult> GetNoteTypes( Rock.Model.Person currentPerson )
-        {
-            return NoteTypeCache.All( AgentRequestContext.RockContext )
-                .Where( nt => nt.UserSelectable )
-                .Where( nt => nt.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                .Select( noteType =>
-                {
-                    // Populate entity type information
-                    var noteTypeResult = new NoteTypeResult
-                    {
-                        Id = noteType.Id,
-                        Name = noteType.Name,
-                    };
-
-                    if ( noteType.EntityTypeId.HasValue )
-                    {
-                        var entityType = EntityTypeCache.Get( noteType.EntityTypeId.Value );
-
-                        if ( entityType != null )
-                        {
-                            noteTypeResult.EntityType = new KeyNameResult
-                            {
-                                Id = entityType.Id,
-                                Name = entityType.FriendlyName,
-                            };
-                        }
-                    }
-
-                    return noteTypeResult;
-                } )
-                .ToList();
-        }
-
-        #endregion
+        return Success( noteTypes )
+            .WithHistoryKey( "note-types" );
     }
+
+    #endregion
+
+    #region Helper Methods
+
+    /// <summary>
+    /// Retrieves the list of note types available to the current user.
+    /// </summary>
+    /// <param name="currentPerson">The current person.</param>
+    /// <returns>A list of <see cref="NoteTypeResult"/> objects representing the available note types.</returns>
+    private List<NoteTypeResult> GetNoteTypes( Rock.Model.Person currentPerson )
+    {
+        return NoteTypeCache.All( AgentRequestContext.RockContext )
+            .Where( nt => nt.UserSelectable )
+            .Where( nt => nt.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            .Select( noteType =>
+            {
+                // Populate entity type information
+                var noteTypeResult = new NoteTypeResult
+                {
+                    Id = noteType.Id,
+                    Name = noteType.Name,
+                };
+
+                if ( noteType.EntityTypeId.HasValue )
+                {
+                    var entityType = EntityTypeCache.Get( noteType.EntityTypeId.Value );
+
+                    if ( entityType != null )
+                    {
+                        noteTypeResult.EntityType = new KeyNameResult
+                        {
+                            Id = entityType.Id,
+                            Name = entityType.FriendlyName,
+                        };
+                    }
+                }
+
+                return noteTypeResult;
+            } )
+            .ToList();
+    }
+
+    #endregion
 }

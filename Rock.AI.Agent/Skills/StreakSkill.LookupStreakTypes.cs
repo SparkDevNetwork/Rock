@@ -24,40 +24,39 @@ using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class StreakSkill
 {
-    internal sealed partial class StreakSkill
+    #region Tool(s)
+
+    [Description( "Retrieves all configured streak types in Rock." )]
+    [AgentPurpose( "Retrieves all configured streak types in Rock." )]
+    [AgentToolGuid( "dbc1ad8a-f41c-4bb7-89de-f9d795f017de" )]
+    public IAgentToolResult LookupStreakTypes()
     {
-        #region Tool(s)
-
-        [Description( "Retrieves all configured streak types in Rock." )]
-        [AgentPurpose( "Retrieves all configured streak types in Rock." )]
-        [AgentToolGuid( "dbc1ad8a-f41c-4bb7-89de-f9d795f017de" )]
-        public IAgentToolResult LookupStreakTypes()
-        {
-            var streakTypeResults = StreakTypeCache.All( AgentRequestContext.RockContext )
-                .Where( st => st.IsActive
-                    && st.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
-                .Select( st => new StreakTypeResult
-                {
-                    Id = st.Id,
-                    Name = st.Name,
-                    Description = st.Description,
-                    OccurrenceFrequency = st.OccurrenceFrequency,
-                } )
-                .OrderBy( kn => kn.Name )
-                .ToList();
-
-            var result = Success( streakTypeResults );
-
-            if ( streakTypeResults.Count > 50 )
+        var streakTypeResults = StreakTypeCache.All( AgentRequestContext.RockContext )
+            .Where( st => st.IsActive
+                && st.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
+            .Select( st => new StreakTypeResult
             {
-                result = result.WithoutHistoryContent();
-            }
+                Id = st.Id,
+                Name = st.Name,
+                Description = st.Description,
+                OccurrenceFrequency = st.OccurrenceFrequency,
+            } )
+            .OrderBy( kn => kn.Name )
+            .ToList();
 
-            return result;
+        var result = Success( streakTypeResults );
+
+        if ( streakTypeResults.Count > 50 )
+        {
+            result = result.WithoutHistoryContent();
         }
 
-        #endregion
+        return result;
     }
+
+    #endregion
 }

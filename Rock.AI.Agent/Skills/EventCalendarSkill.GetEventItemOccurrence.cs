@@ -24,64 +24,63 @@ using Rock.AI.Agent.Classes.Skills.EventCalendarSkill;
 using Rock.Model;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class EventCalendarSkill
 {
-    internal sealed partial class EventCalendarSkill
+    #region Tool(s)
+
+    [Description( "Retrieves the details of a event item occurrence." )]
+    [AgentPurpose( "Retrieves the details of a event item occurrence." )]
+    [AgentToolGuid( "688fa8b0-100d-4eee-b10c-a77a743fe8da" )]
+    public IAgentToolResult GetEventItemOccurrence( string eventItemOccurrenceIdKey )
     {
-        #region Tool(s)
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        var calendarIds = GetConfiguredCalendars().Select( c => c.Id ).ToList();
 
-        [Description( "Retrieves the details of a event item occurrence." )]
-        [AgentPurpose( "Retrieves the details of a event item occurrence." )]
-        [AgentToolGuid( "688fa8b0-100d-4eee-b10c-a77a743fe8da" )]
-        public IAgentToolResult GetEventItemOccurrence( string eventItemOccurrenceIdKey )
+        var eventItemOccurrence = helper.GetRequiredEntity<EventItemOccurrence>( eventItemOccurrenceIdKey, checkSecurity: true );
+
+        if ( eventItemOccurrence != null && !calendarIds.Any( calendarId => eventItemOccurrence.EventItem.EventCalendarItems.Any( eci => eci.EventCalendarId == calendarId ) ) )
         {
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
-            var calendarIds = GetConfiguredCalendars().Select( c => c.Id ).ToList();
-
-            var eventItemOccurrence = helper.GetRequiredEntity<EventItemOccurrence>( eventItemOccurrenceIdKey, checkSecurity: true );
-
-            if ( eventItemOccurrence != null && !calendarIds.Any( calendarId => eventItemOccurrence.EventItem.EventCalendarItems.Any( eci => eci.EventCalendarId == calendarId ) ) )
-            {
-                helper.AddError( "That even item occurrence is not available." );
-            }
-
-            if ( helper.HasErrors )
-            {
-                return helper.ErrorResult;
-            }
-
-            var result = new EventItemOccurrenceResult
-            {
-                Id = eventItemOccurrence.Id,
-                EventItem = new EventItemResult
-                {
-                    Id = eventItemOccurrence.EventItemId,
-                    Name = eventItemOccurrence.EventItem.Name,
-                    ApprovedByPerson = PersonResult.NameOnly( eventItemOccurrence.EventItem.ApprovedByPersonAlias ),
-                    Audiences = eventItemOccurrence.EventItem.EventItemAudiences.Select( a => new KeyNameResult( a.DefinedValue.Id, a.DefinedValue.Value ) ).ToList(),
-                    Calendars = eventItemOccurrence.EventItem.EventCalendarItems.Select( a => new KeyNameResult( a.EventCalendar.Id, a.EventCalendar.Name ) ).ToList(),
-                    IsApproved = eventItemOccurrence.EventItem.IsApproved,
-                    Summary = eventItemOccurrence.EventItem.Summary,
-                },
-                Campus = eventItemOccurrence.CampusId.HasValue
-                    ? new CampusResult
-                    {
-                        Id = eventItemOccurrence.Campus.Id,
-                        Name = eventItemOccurrence.Campus.Name,
-                    }
-                    : null,
-                ContactEmail = eventItemOccurrence.ContactEmail,
-                ContactPerson = PersonResult.NameOnly( eventItemOccurrence.ContactPersonAlias ),
-                ContactPhoneNumber = eventItemOccurrence.ContactPhone,
-                LocationDescription = eventItemOccurrence.Location,
-                NextStartDateTime = eventItemOccurrence.NextStartDateTime,
-                ScheduleDescription = eventItemOccurrence.Schedule.Description,
-                AttributeValues = eventItemOccurrence.GetAttributeValueResults( AgentRequestContext ).ToList(),
-            };
-
-            return Success( result );
+            helper.AddError( "That even item occurrence is not available." );
         }
 
-        #endregion
+        if ( helper.HasErrors )
+        {
+            return helper.ErrorResult;
+        }
+
+        var result = new EventItemOccurrenceResult
+        {
+            Id = eventItemOccurrence.Id,
+            EventItem = new EventItemResult
+            {
+                Id = eventItemOccurrence.EventItemId,
+                Name = eventItemOccurrence.EventItem.Name,
+                ApprovedByPerson = PersonResult.NameOnly( eventItemOccurrence.EventItem.ApprovedByPersonAlias ),
+                Audiences = eventItemOccurrence.EventItem.EventItemAudiences.Select( a => new KeyNameResult( a.DefinedValue.Id, a.DefinedValue.Value ) ).ToList(),
+                Calendars = eventItemOccurrence.EventItem.EventCalendarItems.Select( a => new KeyNameResult( a.EventCalendar.Id, a.EventCalendar.Name ) ).ToList(),
+                IsApproved = eventItemOccurrence.EventItem.IsApproved,
+                Summary = eventItemOccurrence.EventItem.Summary,
+            },
+            Campus = eventItemOccurrence.CampusId.HasValue
+                ? new CampusResult
+                {
+                    Id = eventItemOccurrence.Campus.Id,
+                    Name = eventItemOccurrence.Campus.Name,
+                }
+                : null,
+            ContactEmail = eventItemOccurrence.ContactEmail,
+            ContactPerson = PersonResult.NameOnly( eventItemOccurrence.ContactPersonAlias ),
+            ContactPhoneNumber = eventItemOccurrence.ContactPhone,
+            LocationDescription = eventItemOccurrence.Location,
+            NextStartDateTime = eventItemOccurrence.NextStartDateTime,
+            ScheduleDescription = eventItemOccurrence.Schedule.Description,
+            AttributeValues = eventItemOccurrence.GetAttributeValueResults( AgentRequestContext ).ToList(),
+        };
+
+        return Success( result );
     }
+
+    #endregion
 }

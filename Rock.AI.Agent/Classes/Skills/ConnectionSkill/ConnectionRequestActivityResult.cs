@@ -17,26 +17,25 @@
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
+namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill;
+
+/// <summary>
+/// Represents a single connection request activity.
+/// </summary>
+internal class ConnectionRequestActivityResult : EntityResultBase
 {
     /// <summary>
-    /// Represents a single connection request activity.
+    /// Gets or sets the note text.
     /// </summary>
-    internal class ConnectionRequestActivityResult : EntityResultBase
-    {
-        /// <summary>
-        /// Gets or sets the note text.
-        /// </summary>
-        public string Note { get; set; }
+    public string Note { get; set; }
 
-        /// <summary>
-        /// Gets or sets the type of activity.
-        /// </summary>
-        public KeyNameResult ActivityType { get; set; }
+    /// <summary>
+    /// Gets or sets the type of activity.
+    /// </summary>
+    public KeyNameResult ActivityType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the author of the note.
-        /// </summary>
-        public PersonResult Connector { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets the author of the note.
+    /// </summary>
+    public PersonResult Connector { get; set; }
 }

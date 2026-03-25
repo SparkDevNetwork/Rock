@@ -16,17 +16,16 @@
 
 using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Skills.WorkflowSkill
+namespace Rock.AI.Agent.Classes.Skills.WorkflowSkill;
+
+/// <summary>
+/// Represents the result of launching a workflow, containing relevant
+/// information about the workflow's execution.
+/// </summary>
+internal class LaunchWorkflowResult : EntityResultBase
 {
     /// <summary>
-    /// Represents the result of launching a workflow, containing relevant
-    /// information about the workflow's execution.
+    /// The name of the workflow.
     /// </summary>
-    internal class LaunchWorkflowResult : EntityResultBase
-    {
-        /// <summary>
-        /// The name of the workflow.
-        /// </summary>
-        public string Name { get; set; }
-    }
+    public string Name { get; set; }
 }

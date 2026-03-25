@@ -21,65 +21,64 @@ using System.Linq;
 
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class NoteSkill
 {
-    internal sealed partial class NoteSkill
+    #region Tool(s)
+
+    [Description( "Lists notes that match the specified criteria." )]
+    [AgentToolGuid( "22B609E6-5D0A-4588-8BB9-456EF6F7D4A4" )]
+    public IAgentToolResult ListNotes(
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        string noteTypeIdKey = null,
+        string entityIdKey = null,
+        string entityTypeIdKey = null,
+        string createdByPersonIdKey = null,
+        bool? isAlert = null,
+        bool? isPrivateNote = null,
+        bool? isPinned = null,
+        string cursor = null )
     {
-        #region Tool(s)
+        var currentPerson = AgentRequestContext.CurrentPerson;
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        var noteService = new Rock.Model.NoteService( AgentRequestContext.RockContext );
 
-        [Description( "Lists notes that match the specified criteria." )]
-        [AgentToolGuid( "22B609E6-5D0A-4588-8BB9-456EF6F7D4A4" )]
-        public IAgentToolResult ListNotes(
-            DateTime? startDate = null,
-            DateTime? endDate = null,
-            string noteTypeIdKey = null,
-            string entityIdKey = null,
-            string entityTypeIdKey = null,
-            string createdByPersonIdKey = null,
-            bool? isAlert = null,
-            bool? isPrivateNote = null,
-            bool? isPinned = null,
-            string cursor = null )
+        // Base query + eager loads to avoid N+1 during projection
+        var qry = noteService.Queryable()
+            .AsNoTracking()
+            .Include( n => n.CreatedByPersonAlias.Person )
+            .Include( n => n.NoteType )
+            .Where( n => n.NoteType.UserSelectable );
+
+        qry = helper.WhereOptionalPropertyBetween( qry, n => n.CreatedDateTime, startDate, endDate );
+        qry = helper.WhereOptionalIdKey( qry, n => n.NoteTypeId, noteTypeIdKey );
+        qry = helper.WhereOptionalIdKey( qry, n => n.EntityId, entityIdKey );
+        qry = helper.WhereOptionalIdKey( qry, n => n.NoteType.EntityTypeId, entityTypeIdKey );
+        qry = helper.WhereOptionalIdKey( qry, n => n.CreatedByPersonAlias.PersonId, createdByPersonIdKey );
+        qry = helper.WhereOptionalProperty( qry, n => n.IsAlert, isAlert );
+        qry = helper.WhereOptionalProperty( qry, n => n.IsPrivateNote, isPrivateNote );
+        qry = helper.WhereOptionalProperty( qry, n => n.IsPinned, isPinned );
+
+        var paginator = new Data.CursorPaginator<Model.Note>( q =>
+            q.OrderByDescending( n => n.CreatedDateTime )
+            .ThenBy( n => n.Id ) );
+
+        var cursorPage = helper.GetCursorPaginatedItems( qry, paginator, cursor );
+
+        var resultPage = cursorPage.WithItems( cursorPage.Items
+                .Select( n => GetNoteResult( n, AgentRequestContext.RockContext ) )
+                .ToList() );
+
+        var historyPage = cursorPage.WithItems( cursorPage.Items.Select( n => new
         {
-            var currentPerson = AgentRequestContext.CurrentPerson;
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
-            var noteService = new Rock.Model.NoteService( AgentRequestContext.RockContext );
+            n.IdKey,
+            Name = n.Text.Truncate( 200 ),
+        } ).ToList() );
 
-            // Base query + eager loads to avoid N+1 during projection
-            var qry = noteService.Queryable()
-                .AsNoTracking()
-                .Include( n => n.CreatedByPersonAlias.Person )
-                .Include( n => n.NoteType )
-                .Where( n => n.NoteType.UserSelectable );
-
-            qry = helper.WhereOptionalPropertyBetween( qry, n => n.CreatedDateTime, startDate, endDate );
-            qry = helper.WhereOptionalIdKey( qry, n => n.NoteTypeId, noteTypeIdKey );
-            qry = helper.WhereOptionalIdKey( qry, n => n.EntityId, entityIdKey );
-            qry = helper.WhereOptionalIdKey( qry, n => n.NoteType.EntityTypeId, entityTypeIdKey );
-            qry = helper.WhereOptionalIdKey( qry, n => n.CreatedByPersonAlias.PersonId, createdByPersonIdKey );
-            qry = helper.WhereOptionalProperty( qry, n => n.IsAlert, isAlert );
-            qry = helper.WhereOptionalProperty( qry, n => n.IsPrivateNote, isPrivateNote );
-            qry = helper.WhereOptionalProperty( qry, n => n.IsPinned, isPinned );
-
-            var paginator = new Data.CursorPaginator<Model.Note>( q =>
-                q.OrderByDescending( n => n.CreatedDateTime )
-                .ThenBy( n => n.Id ) );
-
-            var cursorPage = helper.GetCursorPaginatedItems( qry, paginator, cursor );
-
-            var resultPage = cursorPage.WithItems( cursorPage.Items
-                    .Select( n => GetNoteResult( n, AgentRequestContext.RockContext ) )
-                    .ToList() );
-
-            var historyPage = cursorPage.WithItems( cursorPage.Items.Select( n => new
-            {
-                n.IdKey,
-                Name = n.Text.Truncate( 200 ),
-            } ).ToList() );
-
-            return helper.GetPaginatedResult( resultPage, historyPage );
-        }
-
-        #endregion
+        return helper.GetPaginatedResult( resultPage, historyPage );
     }
+
+    #endregion
 }

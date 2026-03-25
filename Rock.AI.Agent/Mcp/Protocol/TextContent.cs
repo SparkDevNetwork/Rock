@@ -14,21 +14,20 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Mcp.Protocol
+namespace Rock.AI.Agent.Mcp.Protocol;
+
+/// <summary>
+/// Represents the result of a tool call that returns text.
+/// </summary>
+internal class TextContent
 {
     /// <summary>
-    /// Represents the result of a tool call that returns text.
+    /// The type of unstructured tool result.
     /// </summary>
-    internal class TextContent
-    {
-        /// <summary>
-        /// The type of unstructured tool result.
-        /// </summary>
-        public string Type => "text";
+    public string Type => "text";
 
-        /// <summary>
-        /// The text content of the message.
-        /// </summary>
-        public string Text { get; set; }
-    }
+    /// <summary>
+    /// The text content of the message.
+    /// </summary>
+    public string Text { get; set; }
 }

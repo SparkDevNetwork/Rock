@@ -16,24 +16,23 @@
 
 using System.Text.Json.Serialization;
 
-namespace Rock.AI.Agent.Mcp.Protocol
+namespace Rock.AI.Agent.Mcp.Protocol;
+
+/// <summary>
+/// Represents a single capability that an MCP client or server can support.
+/// </summary>
+internal class Capability
 {
     /// <summary>
-    /// Represents a single capability that an MCP client or server can support.
+    /// The capability supports notification when the list of items represented
+    /// by the cability changes.
     /// </summary>
-    internal class Capability
-    {
-        /// <summary>
-        /// The capability supports notification when the list of items represented
-        /// by the cability changes.
-        /// </summary>
-        [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingDefault )]
-        public bool ListChanged { get; set; }
+    [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingDefault )]
+    public bool ListChanged { get; set; }
 
-        /// <summary>
-        /// Support for subscribing to individual items' changes (resources only)
-        /// </summary>
-        [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingDefault )]
-        public bool Subscribe { get; set; }
-    }
+    /// <summary>
+    /// Support for subscribing to individual items' changes (resources only)
+    /// </summary>
+    [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingDefault )]
+    public bool Subscribe { get; set; }
 }

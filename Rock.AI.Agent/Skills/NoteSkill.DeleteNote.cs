@@ -24,53 +24,52 @@ using Rock.Configuration;
 using Rock.Security;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class NoteSkill
 {
-    internal sealed partial class NoteSkill
+    #region Tool(s)
+
+    [Description( "Deletes a note from the system." )]
+    [AgentToolGuid( "DC4F7ABA-50F1-4ADD-A1E0-A9DAE8D51D2D" )]
+    [AgentGuardrail( "This action will permanently delete the specified note. Ensure that this action is intentional and that you have the correct note identifier before proceeding." )]
+    public IAgentToolResult DeleteNote( string noteIdKey )
     {
-        #region Tool(s)
-
-        [Description( "Deletes a note from the system." )]
-        [AgentToolGuid( "DC4F7ABA-50F1-4ADD-A1E0-A9DAE8D51D2D" )]
-        [AgentGuardrail( "This action will permanently delete the specified note. Ensure that this action is intentional and that you have the correct note identifier before proceeding." )]
-        public IAgentToolResult DeleteNote( string noteIdKey )
+        var currentPerson = AgentRequestContext.CurrentPerson;
+        if ( currentPerson == null )
         {
-            var currentPerson = AgentRequestContext.CurrentPerson;
-            if ( currentPerson == null )
-            {
-                return Error( "You must be logged in to update a note." );
-            }
-
-            using var rockContext = RockApp.Current.CreateRockContext();
-            var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
-            var noteService = new Rock.Model.NoteService( rockContext );
-            var existingNote = helper.GetRequiredEntity<Model.Note>( noteIdKey );
-
-            if ( helper.HasErrors )
-            {
-                return helper.ErrorResult;
-            }
-
-            if ( !existingNote.NoteType.IsAuthorized( Authorization.EDIT, currentPerson ) )
-            {
-                return Error( "You are not authorized to delete this note." );
-            }
-
-            noteService.Delete( existingNote );
-
-            try
-            {
-                rockContext.SaveChanges();
-            }
-            catch ( Exception ex )
-            {
-                _logger.LogError( ex, "An error occurred while deleting a note." );
-                return Error( "An error occurred while deleting the note." );
-            }
-
-            return Success( "The note has been deleted." );
+            return Error( "You must be logged in to update a note." );
         }
 
-        #endregion
+        using var rockContext = RockApp.Current.CreateRockContext();
+        var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
+        var noteService = new Rock.Model.NoteService( rockContext );
+        var existingNote = helper.GetRequiredEntity<Model.Note>( noteIdKey );
+
+        if ( helper.HasErrors )
+        {
+            return helper.ErrorResult;
+        }
+
+        if ( !existingNote.NoteType.IsAuthorized( Authorization.EDIT, currentPerson ) )
+        {
+            return Error( "You are not authorized to delete this note." );
+        }
+
+        noteService.Delete( existingNote );
+
+        try
+        {
+            rockContext.SaveChanges();
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError( ex, "An error occurred while deleting a note." );
+            return Error( "An error occurred while deleting the note." );
+        }
+
+        return Success( "The note has been deleted." );
     }
+
+    #endregion
 }

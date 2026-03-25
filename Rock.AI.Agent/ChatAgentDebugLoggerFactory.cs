@@ -18,85 +18,84 @@ using System.Collections.Generic;
 
 using Microsoft.Extensions.Logging;
 
-namespace Rock.AI.Agent
+namespace Rock.AI.Agent;
+
+/// <summary>
+/// A special logger factory that is used to capture debug logs for chat
+/// agents. The logs are then made available in the response data.
+/// </summary>
+internal class ChatAgentDebugLoggerFactory : ILoggerFactory
 {
+    #region Fields
+
     /// <summary>
-    /// A special logger factory that is used to capture debug logs for chat
-    /// agents. The logs are then made available in the response data.
+    /// The list of recorded log messages.
     /// </summary>
-    internal class ChatAgentDebugLoggerFactory : ILoggerFactory
+    private readonly List<ChatDebugLog> _logs = new List<ChatDebugLog>();
+
+    /// <summary>
+    /// The base logger factory that this factory wraps.
+    /// </summary>
+    private readonly ILoggerFactory _baseFactory;
+
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatAgentDebugLoggerFactory"/> class.
+    /// </summary>
+    /// <param name="loggerFactory">The base <see cref="ILoggerFactory"/> used to create loggers.</param>
+    public ChatAgentDebugLoggerFactory( ILoggerFactory loggerFactory )
     {
-        #region Fields
-
-        /// <summary>
-        /// The list of recorded log messages.
-        /// </summary>
-        private readonly List<ChatDebugLog> _logs = new List<ChatDebugLog>();
-
-        /// <summary>
-        /// The base logger factory that this factory wraps.
-        /// </summary>
-        private readonly ILoggerFactory _baseFactory;
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ChatAgentDebugLoggerFactory"/> class.
-        /// </summary>
-        /// <param name="loggerFactory">The base <see cref="ILoggerFactory"/> used to create loggers.</param>
-        public ChatAgentDebugLoggerFactory( ILoggerFactory loggerFactory )
-        {
-            _baseFactory = loggerFactory;
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <inheritdoc/>
-        public void AddProvider( ILoggerProvider provider )
-        {
-            _baseFactory.AddProvider( provider );
-        }
-
-        /// <inheritdoc/>
-        public ILogger CreateLogger( string categoryName )
-        {
-            return new ChatAgentDebugLogger( categoryName, _baseFactory.CreateLogger( categoryName ), this );
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            _baseFactory.Dispose();
-        }
-
-        /// <summary>
-        /// Adds a log message to the internal list of logs.
-        /// </summary>
-        /// <param name="message">The message that was logged.</param>
-        internal void AddLogMessage( ChatDebugLog message )
-        {
-            lock( _logs )
-            {
-                _logs.Add( message );
-            }
-        }
-
-        /// <summary>
-        /// Gets a snapshot of the currently logged messages.
-        /// </summary>
-        /// <returns>A list of logged messages.</returns>
-        internal List<ChatDebugLog> GetLogs()
-        {
-            lock( _logs )
-            {
-                return new List<ChatDebugLog>( _logs );
-            }
-        }
-
-        #endregion
+        _baseFactory = loggerFactory;
     }
+
+    #endregion
+
+    #region Methods
+
+    /// <inheritdoc/>
+    public void AddProvider( ILoggerProvider provider )
+    {
+        _baseFactory.AddProvider( provider );
+    }
+
+    /// <inheritdoc/>
+    public ILogger CreateLogger( string categoryName )
+    {
+        return new ChatAgentDebugLogger( categoryName, _baseFactory.CreateLogger( categoryName ), this );
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        _baseFactory.Dispose();
+    }
+
+    /// <summary>
+    /// Adds a log message to the internal list of logs.
+    /// </summary>
+    /// <param name="message">The message that was logged.</param>
+    internal void AddLogMessage( ChatDebugLog message )
+    {
+        lock ( _logs )
+        {
+            _logs.Add( message );
+        }
+    }
+
+    /// <summary>
+    /// Gets a snapshot of the currently logged messages.
+    /// </summary>
+    /// <returns>A list of logged messages.</returns>
+    internal List<ChatDebugLog> GetLogs()
+    {
+        lock ( _logs )
+        {
+            return new List<ChatDebugLog>( _logs );
+        }
+    }
+
+    #endregion
 }

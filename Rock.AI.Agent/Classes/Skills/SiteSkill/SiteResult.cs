@@ -14,36 +14,35 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Classes.Skills.SiteSkill
+namespace Rock.AI.Agent.Classes.Skills.SiteSkill;
+
+/// <summary>
+/// Lightweight result model for a Rock RMS Site (website, mobile app, or TV app).
+/// </summary>
+internal class SiteResult
 {
     /// <summary>
-    /// Lightweight result model for a Rock RMS Site (website, mobile app, or TV app).
+    /// Stable identifier for the site (used by functions; avoid showing to end users).
     /// </summary>
-    internal class SiteResult
-    {
-        /// <summary>
-        /// Stable identifier for the site (used by functions; avoid showing to end users).
-        /// </summary>
-        public string IdKey { get; set; }
+    public string IdKey { get; set; }
 
-        /// <summary>
-        /// Human-readable name of the site.
-        /// </summary>
-        public string Name { get; set; }
+    /// <summary>
+    /// Human-readable name of the site.
+    /// </summary>
+    public string Name { get; set; }
 
-        /// <summary>
-        /// Short description of the site’s purpose or audience.
-        /// </summary>
-        public string Description { get; set; }
+    /// <summary>
+    /// Short description of the site’s purpose or audience.
+    /// </summary>
+    public string Description { get; set; }
 
-        /// <summary>
-        /// Type label, e.g., <c>Website</c>, <c>MobileApp</c>, <c>TvApp</c>.
-        /// </summary>
-        public string SiteType { get; set; }
+    /// <summary>
+    /// Type label, e.g., <c>Website</c>, <c>MobileApp</c>, <c>TvApp</c>.
+    /// </summary>
+    public string SiteType { get; set; }
 
-        /// <summary>
-        /// Optional external URL for the site, if applicable (e.g., public website).
-        /// </summary>
-        public string ExternalUrl { get; set; }
-    }
+    /// <summary>
+    /// Optional external URL for the site, if applicable (e.g., public website).
+    /// </summary>
+    public string ExternalUrl { get; set; }
 }

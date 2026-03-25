@@ -16,23 +16,22 @@
 
 using System.Collections.Generic;
 
-namespace Rock.AI.Agent.Mcp.Protocol
+namespace Rock.AI.Agent.Mcp.Protocol;
+
+/// <summary>
+/// The server’s response to a tool call.
+/// </summary>
+internal class CallToolResult
 {
     /// <summary>
-    /// The server’s response to a tool call.
+    /// A list of content objects that represent the unstructured result
+    /// of the tool call.
     /// </summary>
-    internal class CallToolResult
-    {
-        /// <summary>
-        /// A list of content objects that represent the unstructured result
-        /// of the tool call.
-        /// </summary>
-        public IList<TextContent> Content { get; set; } = new List<TextContent>();
+    public IList<TextContent> Content { get; set; } = new List<TextContent>();
 
-        /// <summary>
-        /// An optional JSON object that represents the structured result
-        /// of the tool call.
-        /// </summary>
-        public object StructuredContent { get; set; }
-    }
+    /// <summary>
+    /// An optional JSON object that represents the structured result
+    /// of the tool call.
+    /// </summary>
+    public object StructuredContent { get; set; }
 }

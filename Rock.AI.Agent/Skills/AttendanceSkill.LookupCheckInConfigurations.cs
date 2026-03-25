@@ -22,35 +22,34 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class AttendanceSkill
 {
-    internal sealed partial class AttendanceSkill
+    #region Tool(s)
+
+    [Description( "Retrieves all configured check-in configurations in Rock." )]
+    [AgentPurpose( "Retrieves a list of all of the check-in configurations." )]
+    [AgentPurpose( "Check-in configurations are the high level container for all check-in related areas, groups and locations." )]
+    [AgentToolGuid( "c11e7eff-7ef8-4476-b713-74ee267648bb" )]
+    public IAgentToolResult LookupCheckInConfigurations()
     {
-        #region Tool(s)
+        var checkInConfigurationPurposeId = DefinedValueCache.Get( DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), AgentRequestContext.RockContext ).Id;
 
-        [Description( "Retrieves all configured check-in configurations in Rock." )]
-        [AgentPurpose( "Retrieves a list of all of the check-in configurations." )]
-        [AgentPurpose( "Check-in configurations are the high level container for all check-in related areas, groups and locations." )]
-        [AgentToolGuid( "c11e7eff-7ef8-4476-b713-74ee267648bb" )]
-        public IAgentToolResult LookupCheckInConfigurations()
-        {
-            var checkInConfigurationPurposeId = DefinedValueCache.Get( DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), AgentRequestContext.RockContext ).Id;
+        var checkInConfigurations = GroupTypeCache.All( AgentRequestContext.RockContext )
+            .Where( gt => gt.GroupTypePurposeValueId == checkInConfigurationPurposeId );
 
-            var checkInConfigurations = GroupTypeCache.All( AgentRequestContext.RockContext )
-                .Where( gt => gt.GroupTypePurposeValueId == checkInConfigurationPurposeId );
+        var checkInConfigurationResults = checkInConfigurations
+            .Select( c => new KeyNameResult
+            {
+                Id = c.Id,
+                Name = c.Name,
+            } )
+            .ToList();
 
-            var checkInConfigurationResults = checkInConfigurations
-                .Select( c => new KeyNameResult
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                } )
-                .ToList();
-
-            return Success( checkInConfigurationResults )
-                .WithHistoryContent( checkInConfigurationResults );
-        }
-
-        #endregion
+        return Success( checkInConfigurationResults )
+            .WithHistoryContent( checkInConfigurationResults );
     }
+
+    #endregion
 }

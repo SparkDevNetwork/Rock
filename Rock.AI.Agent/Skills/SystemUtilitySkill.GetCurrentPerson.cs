@@ -17,42 +17,38 @@
 using System.ComponentModel;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
-using Rock.Model;
 using Rock.SystemGuid;
-using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal partial class SystemUtilitySkill
 {
-    internal partial class SystemUtilitySkill
+    #region Tool
+
+    [Description( "Gets minimal information about the person currently logged in and interacting with the agent." )]
+    [AgentPurpose( "Gets minimal information about the user/person currently logged in." )]
+    [AgentToolGuid( "cb9f23f1-3d21-4451-80c3-4efbd18a7fbc" )]
+    public IAgentToolResult GetCurrentPerson()
     {
-        #region Tool
+        var currentPerson = AgentRequestContext.CurrentPerson;
 
-        [Description( "Gets minimal information about the person currently logged in and interacting with the agent." )]
-        [AgentPurpose( "Gets minimal information about the user/person currently logged in." )]
-        [AgentToolGuid( "cb9f23f1-3d21-4451-80c3-4efbd18a7fbc" )]
-        public IAgentToolResult GetCurrentPerson()
+        if ( currentPerson == null )
         {
-            var currentPerson = AgentRequestContext.CurrentPerson;
-
-            if ( currentPerson == null )
-            {
-                return Error( "There is no person currently logged in." );
-            }
-
-            var result = PersonResult.Basic( currentPerson );
-            var historyResult = PersonResult.NameOnly( currentPerson );
-
-            result.BirthDay = currentPerson.BirthDay;
-            result.BirthMonth = currentPerson.BirthMonth;
-            result.BirthYear = currentPerson.BirthYear;
-            result.Email = currentPerson.Email.IfEmpty( null );
-
-            return Success( result )
-                .WithHistoryContent( historyResult );
+            return Error( "There is no person currently logged in." );
         }
 
-        #endregion
+        var result = PersonResult.Basic( currentPerson );
+        var historyResult = PersonResult.NameOnly( currentPerson );
+
+        result.BirthDay = currentPerson.BirthDay;
+        result.BirthMonth = currentPerson.BirthMonth;
+        result.BirthYear = currentPerson.BirthYear;
+        result.Email = currentPerson.Email.IfEmpty( null );
+
+        return Success( result )
+            .WithHistoryContent( historyResult );
     }
+
+    #endregion
 }

@@ -22,50 +22,49 @@ using Rock.AI.Agent.Classes.Entity;
 using Rock.Model;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class ReminderSkill
 {
-    internal sealed partial class ReminderSkill
+    #region Tool(s)
+
+    [Description( "Lists all reminder types that are available." )]
+    [AgentToolGuid( "2452B308-F805-4DE6-83DE-1E340767A4EF" )]
+    public IAgentToolResult LookupReminderTypes()
     {
-        #region Tool(s)
+        var reminderTypeService = new ReminderTypeService( AgentRequestContext.RockContext );
 
-        [Description( "Lists all reminder types that are available." )]
-        [AgentToolGuid( "2452B308-F805-4DE6-83DE-1E340767A4EF" )]
-        public IAgentToolResult LookupReminderTypes()
-        {
-            var reminderTypeService = new ReminderTypeService( AgentRequestContext.RockContext );
-
-            var reminderTypes = reminderTypeService.Queryable()
-                .Where( rt => rt.IsActive )
-                .OrderByDescending( rt => rt.Order )
-                .Select( rt => new ReminderTypeResult
+        var reminderTypes = reminderTypeService.Queryable()
+            .Where( rt => rt.IsActive )
+            .OrderByDescending( rt => rt.Order )
+            .Select( rt => new ReminderTypeResult
+            {
+                Id = rt.Id,
+                Name = rt.Name,
+                EntityType = new KeyNameResult
                 {
-                    Id = rt.Id,
-                    Name = rt.Name,
-                    EntityType = new KeyNameResult
-                    {
-                        Id = rt.EntityTypeId,
-                        Name = rt.EntityType.Name,
-                    },
-                    Description = rt.Description,
-                    NotificationType = rt.NotificationType
-                } )
-                .ToList();
+                    Id = rt.EntityTypeId,
+                    Name = rt.EntityType.Name,
+                },
+                Description = rt.Description,
+                NotificationType = rt.NotificationType
+            } )
+            .ToList();
 
-            if ( !reminderTypes.Any() )
-            {
-                return NoData();
-            }
-
-            var trimmedForHistory = reminderTypes.Select( rt => new
-            {
-                rt.IdKey,
-                rt.Name,
-            } ).ToList();
-
-            return Success( reminderTypes )
-                .WithHistoryContent( trimmedForHistory, "reminder-types" );
+        if ( !reminderTypes.Any() )
+        {
+            return NoData();
         }
 
-        #endregion
+        var trimmedForHistory = reminderTypes.Select( rt => new
+        {
+            rt.IdKey,
+            rt.Name,
+        } ).ToList();
+
+        return Success( reminderTypes )
+            .WithHistoryContent( trimmedForHistory, "reminder-types" );
     }
+
+    #endregion
 }

@@ -16,21 +16,20 @@
 
 using System.Text.Json;
 
-namespace Rock.AI.Agent.Mcp.Protocol
+namespace Rock.AI.Agent.Mcp.Protocol;
+
+/// <summary>
+/// Used by the client to invoke a tool provided by the server.
+/// </summary>
+internal class CallToolParameters
 {
     /// <summary>
-    /// Used by the client to invoke a tool provided by the server.
+    /// The name of the tool to call.
     /// </summary>
-    internal class CallToolParameters
-    {
-        /// <summary>
-        /// The name of the tool to call.
-        /// </summary>
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        /// <summary>
-        /// The arguments to pass to the tool function.
-        /// </summary>
-        public JsonElement Arguments { get; set; }
-    }
+    /// <summary>
+    /// The arguments to pass to the tool function.
+    /// </summary>
+    public JsonElement Arguments { get; set; }
 }

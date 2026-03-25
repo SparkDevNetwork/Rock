@@ -25,76 +25,75 @@ using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class FinanceSkill
 {
-    internal sealed partial class FinanceSkill
+    #region Tool(s)
+
+    [Description( "Retrieves the details of a single benevolence request." )]
+    [AgentPurpose( "Retrieves the details of a single benevolence request." )]
+    [AgentToolGuid( "a318f309-f04f-49de-98cb-68de396cc35f" )]
+    public IAgentToolResult GetBenevolenceRequest( string benevolenceRequestIdKey )
     {
-        #region Tool(s)
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        var benevolenceTypeIds = GetConfiguredBenevolenceTypes().Select( bt => bt.Id ).ToList();
 
-        [Description( "Retrieves the details of a single benevolence request." )]
-        [AgentPurpose( "Retrieves the details of a single benevolence request." )]
-        [AgentToolGuid( "a318f309-f04f-49de-98cb-68de396cc35f" )]
-        public IAgentToolResult GetBenevolenceRequest( string benevolenceRequestIdKey )
+        var benevolenceRequest = helper.GetRequiredEntity<BenevolenceRequest>( benevolenceRequestIdKey, checkSecurity: true );
+
+        if ( benevolenceRequest != null && !benevolenceTypeIds.Contains( benevolenceRequest.BenevolenceTypeId ) )
         {
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
-            var benevolenceTypeIds = GetConfiguredBenevolenceTypes().Select( bt => bt.Id ).ToList();
-
-            var benevolenceRequest = helper.GetRequiredEntity<BenevolenceRequest>( benevolenceRequestIdKey, checkSecurity: true );
-
-            if ( benevolenceRequest != null && !benevolenceTypeIds.Contains( benevolenceRequest.BenevolenceTypeId ) )
-            {
-                helper.AddError( "That benevolence request is not available." );
-            }
-
-            if ( helper.HasErrors )
-            {
-                return helper.ErrorResult;
-            }
-
-            var result =  new BenevolenceRequestResult
-            {
-                Id = benevolenceRequest.Id,
-                Person = PersonResult.NameOnly( benevolenceRequest.RequestedByPersonAlias ),
-                FirstName = benevolenceRequest.FirstName,
-                LastName = benevolenceRequest.LastName,
-                RequestDateTime = benevolenceRequest.RequestDateTime,
-                AssignedToPerson = PersonResult.NameOnly( benevolenceRequest.CaseWorkerPersonAlias ),
-                RequestText = benevolenceRequest.RequestText.IfEmpty( null ),
-                ResultSummary = benevolenceRequest.ResultSummary.IfEmpty( null ),
-                RequestStatus = benevolenceRequest.RequestStatusValueId.HasValue
-                    ? new KeyNameResult
-                    {
-                        Id = benevolenceRequest.RequestStatusValueId,
-                        Name = benevolenceRequest.RequestStatusValue.Value,
-                    }
-                    : null,
-                NextSteps = benevolenceRequest.ProvidedNextSteps.IfEmpty( null ),
-                Documents = benevolenceRequest.Documents
-                    .OrderBy( bd => bd.Order )
-                    .Select( bd => new BenevolenceDocumentResult
-                    {
-                        FileName = bd.BinaryFile.FileName,
-                        DownloadUrl = AgentRequestContext.ResolveRockUrl( $"~/GetFile.ashx?Guid={bd.BinaryFile.Guid}" ),
-                    } )
-                    .ToList(),
-                Results = benevolenceRequest.BenevolenceResults
-                    .Select( br => new BenevolenceResultResult
-                    {
-                        Amount = br.Amount,
-                        Details = br.ResultSummary.IfEmpty( null ),
-                        ResultType = new KeyNameResult
-                        {
-                            Id = br.ResultTypeValueId,
-                            Name = DefinedValueCache.Get( br.ResultTypeValueId, AgentRequestContext.RockContext ).Value,
-                        }
-                    } )
-                    .ToList(),
-            };
-
-            return Success( result )
-                .WithInstructions( "If markdown is supported then render document links using inline link syntax, where the filename is the link text and the URL is the target. Otherwise hide the URL unless specifically asked for it." );
+            helper.AddError( "That benevolence request is not available." );
         }
 
-        #endregion
+        if ( helper.HasErrors )
+        {
+            return helper.ErrorResult;
+        }
+
+        var result = new BenevolenceRequestResult
+        {
+            Id = benevolenceRequest.Id,
+            Person = PersonResult.NameOnly( benevolenceRequest.RequestedByPersonAlias ),
+            FirstName = benevolenceRequest.FirstName,
+            LastName = benevolenceRequest.LastName,
+            RequestDateTime = benevolenceRequest.RequestDateTime,
+            AssignedToPerson = PersonResult.NameOnly( benevolenceRequest.CaseWorkerPersonAlias ),
+            RequestText = benevolenceRequest.RequestText.IfEmpty( null ),
+            ResultSummary = benevolenceRequest.ResultSummary.IfEmpty( null ),
+            RequestStatus = benevolenceRequest.RequestStatusValueId.HasValue
+                ? new KeyNameResult
+                {
+                    Id = benevolenceRequest.RequestStatusValueId,
+                    Name = benevolenceRequest.RequestStatusValue.Value,
+                }
+                : null,
+            NextSteps = benevolenceRequest.ProvidedNextSteps.IfEmpty( null ),
+            Documents = benevolenceRequest.Documents
+                .OrderBy( bd => bd.Order )
+                .Select( bd => new BenevolenceDocumentResult
+                {
+                    FileName = bd.BinaryFile.FileName,
+                    DownloadUrl = AgentRequestContext.ResolveRockUrl( $"~/GetFile.ashx?Guid={bd.BinaryFile.Guid}" ),
+                } )
+                .ToList(),
+            Results = benevolenceRequest.BenevolenceResults
+                .Select( br => new BenevolenceResultResult
+                {
+                    Amount = br.Amount,
+                    Details = br.ResultSummary.IfEmpty( null ),
+                    ResultType = new KeyNameResult
+                    {
+                        Id = br.ResultTypeValueId,
+                        Name = DefinedValueCache.Get( br.ResultTypeValueId, AgentRequestContext.RockContext ).Value,
+                    }
+                } )
+                .ToList(),
+        };
+
+        return Success( result )
+            .WithInstructions( "If markdown is supported then render document links using inline link syntax, where the filename is the link text and the URL is the target. Otherwise hide the URL unless specifically asked for it." );
     }
+
+    #endregion
 }

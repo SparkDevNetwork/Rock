@@ -22,149 +22,148 @@ using System.Threading.Tasks;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Utilities.CommunicationSkill.Mediums
+namespace Rock.AI.Agent.Utilities.CommunicationSkill.Mediums;
+
+internal class EmailMedium : IAgentCommunicationMedium
 {
-    internal class EmailMedium : IAgentCommunicationMedium
+    #region IAgentCommunicationMedium
+
+    /// <inheritdoc />
+    public async Task<DraftResult> DraftAsync( IChatAgent agent, DraftRequest request )
     {
-        #region IAgentCommunicationMedium
+        var prompt = DraftPromptBuilder.BuildEmailDraftPrompt( request );
 
-        /// <inheritdoc />
-        public async Task<DraftResult> DraftAsync( IChatAgent agent, DraftRequest request )
+        var promptResult = await agent.InvokePromptAsync( prompt, null );
+
+        var dto = promptResult.ResponseText.FromJsonOrNull<DraftDto>();
+        if ( dto == null || dto.Subject.IsNullOrWhiteSpace() || dto.Body.IsNullOrWhiteSpace() )
         {
-            var prompt = DraftPromptBuilder.BuildEmailDraftPrompt( request );
-
-            var promptResult = await agent.InvokePromptAsync( prompt, null );
-
-            var dto = promptResult.ResponseText.FromJsonOrNull<DraftDto>();
-            if ( dto == null || dto.Subject.IsNullOrWhiteSpace() || dto.Body.IsNullOrWhiteSpace() )
-            {
-                throw new InvalidOperationException( "Draft JSON invalid. Expect: { \"subject\", \"body\" }" );
-            }
-
-            return new DraftResult
-            {
-                Body = dto.Body,
-                Subject = dto.Subject,
-                Type = AgentCommunicationType.Email,
-                VerificationText = GetVerificationText( request.CurrentPerson, request.Recipients )
-            };
+            throw new InvalidOperationException( "Draft JSON invalid. Expect: { \"subject\", \"body\" }" );
         }
 
-        /// <inheritdoc />
-        public Model.Communication BuildCommunication( DraftRequest request, List<Rock.Model.Person> recipients, DraftResult content )
+        return new DraftResult
         {
-            return CreateOrUpdateCommunication( request, recipients, content );
-        }
+            Body = dto.Body,
+            Subject = dto.Subject,
+            Type = AgentCommunicationType.Email,
+            VerificationText = GetVerificationText( request.CurrentPerson, request.Recipients )
+        };
+    }
 
-        /// <inheritdoc />
-        public Model.Communication UpdateCommunication( DraftRequest request, List<Rock.Model.Person> recipients, Model.Communication comm, DraftResult content )
+    /// <inheritdoc />
+    public Model.Communication BuildCommunication( DraftRequest request, List<Rock.Model.Person> recipients, DraftResult content )
+    {
+        return CreateOrUpdateCommunication( request, recipients, content );
+    }
+
+    /// <inheritdoc />
+    public Model.Communication UpdateCommunication( DraftRequest request, List<Rock.Model.Person> recipients, Model.Communication comm, DraftResult content )
+    {
+
+        return CreateOrUpdateCommunication( request, recipients, content, comm );
+    }
+
+    /// <inheritdoc />
+    public List<string> ValidateRecipients( List<Rock.Model.Person> recipients )
+    {
+        var errors = new List<string>();
+
+        if ( recipients == null || recipients.Count == 0 )
         {
-            
-            return CreateOrUpdateCommunication( request, recipients, content, comm );
-        }
-
-        /// <inheritdoc />
-        public List<string> ValidateRecipients( List<Rock.Model.Person> recipients )
-        {
-            var errors = new List<string>();
-
-            if ( recipients == null || recipients.Count == 0 )
-            {
-                errors.Add( "No recipients were provided." );
-                return errors;
-            }
-
-            foreach ( var recipient in recipients )
-            {
-                if ( recipient == null )
-                {
-                    errors.Add( "A null recipient was encountered." );
-                    continue;
-                }
-
-                if ( recipient.Email.IsNullOrWhiteSpace() )
-                {
-                    errors.Add( $"Recipient {recipient.IdKey} does not have a valid email address." );
-                }
-            }
-
+            errors.Add( "No recipients were provided." );
             return errors;
         }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Creates or updates the communication entity from the draft content.
-        /// </summary>
-        /// <param name="request">The request associated with this communication.</param>
-        /// <param name="recipients">The recipients associated with this communication.</param>
-        /// <param name="content">The content of this communication.</param>
-        /// <param name="existingCommunication">The existing communication to update; creates a new one if null.</param>
-        /// <returns></returns>
-        private Rock.Model.Communication CreateOrUpdateCommunication( DraftRequest request, List<Rock.Model.Person> recipients, DraftResult content, Rock.Model.Communication existingCommunication = null )
+        foreach ( var recipient in recipients )
         {
-            var comm = existingCommunication;
-
-            if ( comm == null )
+            if ( recipient == null )
             {
-                comm = new Rock.Model.Communication();
+                errors.Add( "A null recipient was encountered." );
+                continue;
             }
 
-            var emailMediumEntityTypeId = EntityTypeCache.Get<Rock.Communication.Medium.Email>().Id;
-
-            comm.Status = CommunicationStatus.Transient;
-            comm.CommunicationType = CommunicationType.Email;
-            comm.SenderPersonAliasId = request.CurrentPerson.PrimaryAliasId;
-            comm.FromEmail = request.CurrentPerson.Email;
-            comm.Subject = content.Subject;
-            comm.Message = content.Body;
-
-            var commRecipients = new List<CommunicationRecipient>();
-            foreach ( var recipient in recipients )
+            if ( recipient.Email.IsNullOrWhiteSpace() )
             {
-                commRecipients.Add( new CommunicationRecipient
-                {
-                    PersonAliasId = recipient.PrimaryAliasId,
-                    MediumEntityTypeId = emailMediumEntityTypeId
-                } );
+                errors.Add( $"Recipient {recipient.IdKey} does not have a valid email address." );
             }
-            comm.Recipients = commRecipients;
-
-            return comm;
         }
 
-        /// <summary>
-        /// Returns a text representation of the email for verification purposes.
-        /// </summary>
-        /// <param name="currentPerson"></param>
-        /// <param name="recipients"></param>
-        /// <returns></returns>
-        public string GetVerificationText( Rock.Model.Person currentPerson, List<Rock.Model.Person> recipients )
-        {
-            var verificationText = new StringBuilder();
-
-            foreach ( var recipient in recipients )
-            {
-                var recipientAddr = string.IsNullOrWhiteSpace( recipient.Email ) ? "" : " (" + recipient.Email + ")";
-                
-                verificationText.AppendLine( "Recipient: " + recipient.FullName + recipientAddr );
-            }
-
-            verificationText.AppendLine();
-            verificationText.AppendLine( "From: " + currentPerson.FullName + " (" + currentPerson.Email + ")" );
-            verificationText.AppendLine();
-
-            // Body + Subject are returned in the actual payload, so just use placeholders here.  
-            verificationText.AppendLine( "Subject: [subject]" );
-            verificationText.AppendLine();
-            verificationText.AppendLine( "Body:" );
-            verificationText.AppendLine( "[body]" );
-
-            return verificationText.ToString();
-        }
-
-        #endregion
+        return errors;
     }
+
+    #endregion
+
+    #region Methods
+
+    /// <summary>
+    /// Creates or updates the communication entity from the draft content.
+    /// </summary>
+    /// <param name="request">The request associated with this communication.</param>
+    /// <param name="recipients">The recipients associated with this communication.</param>
+    /// <param name="content">The content of this communication.</param>
+    /// <param name="existingCommunication">The existing communication to update; creates a new one if null.</param>
+    /// <returns></returns>
+    private Rock.Model.Communication CreateOrUpdateCommunication( DraftRequest request, List<Rock.Model.Person> recipients, DraftResult content, Rock.Model.Communication existingCommunication = null )
+    {
+        var comm = existingCommunication;
+
+        if ( comm == null )
+        {
+            comm = new Rock.Model.Communication();
+        }
+
+        var emailMediumEntityTypeId = EntityTypeCache.Get<Rock.Communication.Medium.Email>().Id;
+
+        comm.Status = CommunicationStatus.Transient;
+        comm.CommunicationType = CommunicationType.Email;
+        comm.SenderPersonAliasId = request.CurrentPerson.PrimaryAliasId;
+        comm.FromEmail = request.CurrentPerson.Email;
+        comm.Subject = content.Subject;
+        comm.Message = content.Body;
+
+        var commRecipients = new List<CommunicationRecipient>();
+        foreach ( var recipient in recipients )
+        {
+            commRecipients.Add( new CommunicationRecipient
+            {
+                PersonAliasId = recipient.PrimaryAliasId,
+                MediumEntityTypeId = emailMediumEntityTypeId
+            } );
+        }
+        comm.Recipients = commRecipients;
+
+        return comm;
+    }
+
+    /// <summary>
+    /// Returns a text representation of the email for verification purposes.
+    /// </summary>
+    /// <param name="currentPerson"></param>
+    /// <param name="recipients"></param>
+    /// <returns></returns>
+    public string GetVerificationText( Rock.Model.Person currentPerson, List<Rock.Model.Person> recipients )
+    {
+        var verificationText = new StringBuilder();
+
+        foreach ( var recipient in recipients )
+        {
+            var recipientAddr = string.IsNullOrWhiteSpace( recipient.Email ) ? "" : " (" + recipient.Email + ")";
+
+            verificationText.AppendLine( "Recipient: " + recipient.FullName + recipientAddr );
+        }
+
+        verificationText.AppendLine();
+        verificationText.AppendLine( "From: " + currentPerson.FullName + " (" + currentPerson.Email + ")" );
+        verificationText.AppendLine();
+
+        // Body + Subject are returned in the actual payload, so just use placeholders here.  
+        verificationText.AppendLine( "Subject: [subject]" );
+        verificationText.AppendLine();
+        verificationText.AppendLine( "Body:" );
+        verificationText.AppendLine( "[body]" );
+
+        return verificationText.ToString();
+    }
+
+    #endregion
 }

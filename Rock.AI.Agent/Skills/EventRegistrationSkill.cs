@@ -22,39 +22,38 @@ using Microsoft.Extensions.Logging;
 using Rock.AI.Agent.Annotations;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+/// <summary>
+/// This skill provides access to working with event registrations.
+/// </summary>
+
+[Description( "This skill provides access to working with event registrations" )]
+[AgentUsage( "This skill provides access to working with event registrations" )]
+
+[AgentSkillGuid( "127a9726-5922-47e6-ae2d-a3901f60367b" )]
+[EntityTypeGuid( "07712e0b-efa9-4775-a74c-75f6c58d5210" )]
+internal sealed partial class EventRegistrationSkill : AgentSkillComponent
 {
+    #region Fields
+
     /// <summary>
-    /// This skill provides access to working with event registrations.
+    /// The logger for this instance.
     /// </summary>
+    private readonly ILogger _logger;
 
-    [Description( "This skill provides access to working with event registrations" )]
-    [AgentUsage( "This skill provides access to working with event registrations" )]
+    #endregion
 
-    [AgentSkillGuid( "127a9726-5922-47e6-ae2d-a3901f60367b" )]
-    [EntityTypeGuid( "07712e0b-efa9-4775-a74c-75f6c58d5210" )]
-    internal sealed partial class EventRegistrationSkill : AgentSkillComponent
+    #region Constructors
+
+    /// <summary>
+    /// The constructor for the Event Registration Skill.
+    /// </summary>
+    /// <param name="logger">Logger for diagnostics and error reporting.</param>
+    public EventRegistrationSkill( ILogger<EventCalendarSkill> logger )
     {
-        #region Fields
-
-        /// <summary>
-        /// The logger for this instance.
-        /// </summary>
-        private readonly ILogger _logger;
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// The constructor for the Event Registration Skill.
-        /// </summary>
-        /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public EventRegistrationSkill( ILogger<EventCalendarSkill> logger )
-        {
-            _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
-        }
-
-        #endregion
+        _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
     }
+
+    #endregion
 }

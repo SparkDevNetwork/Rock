@@ -16,40 +16,39 @@
 
 using System.Text.Json;
 
-namespace Rock.AI.Agent.Mcp.Protocol
+namespace Rock.AI.Agent.Mcp.Protocol;
+
+/// <summary>
+/// Represents a tool that can be used by the MCP client to perform
+/// specific actions.
+/// </summary>
+internal class Tool
 {
     /// <summary>
-    /// Represents a tool that can be used by the MCP client to perform
-    /// specific actions.
+    /// Intended for programmatic or logical use, but used as a display
+    /// name in past specs or fallback (if title isn’t present).
     /// </summary>
-    internal class Tool
-    {
-        /// <summary>
-        /// Intended for programmatic or logical use, but used as a display
-        /// name in past specs or fallback (if title isn’t present).
-        /// </summary>
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        /// <summary>
-        /// Intended for UI and end-user contexts - optimized to be
-        /// human-readable and easily understood.
-        /// </summary>
-        public string Title { get; set; }
+    /// <summary>
+    /// Intended for UI and end-user contexts - optimized to be
+    /// human-readable and easily understood.
+    /// </summary>
+    public string Title { get; set; }
 
-        /// <summary>
-        /// A human-readable description of the tool. This is used as a hint
-        /// to the language model as well.
-        /// </summary>
-        public string Description { get; set; }
+    /// <summary>
+    /// A human-readable description of the tool. This is used as a hint
+    /// to the language model as well.
+    /// </summary>
+    public string Description { get; set; }
 
-        /// <summary>
-        /// JSON Schema object defining the expected parameters for the tool.
-        /// </summary>
-        public JsonElement InputSchema { get; set; }
+    /// <summary>
+    /// JSON Schema object defining the expected parameters for the tool.
+    /// </summary>
+    public JsonElement InputSchema { get; set; }
 
-        /// <summary>
-        /// Annotations that provide additional context about the tool.
-        /// </summary>
-        public ToolAnnotations Annotations { get; set; }
-    }
+    /// <summary>
+    /// Annotations that provide additional context about the tool.
+    /// </summary>
+    public ToolAnnotations Annotations { get; set; }
 }

@@ -18,74 +18,73 @@ using System;
 
 using Microsoft.Extensions.Logging;
 
-namespace Rock.AI.Agent
+namespace Rock.AI.Agent;
+
+/// <summary>
+/// A specialized logger that captures debug logs and then passed them along
+/// to the base logger for normal logging operation.
+/// </summary>
+internal class ChatAgentDebugLogger : ILogger
 {
+    #region Fields
+
     /// <summary>
-    /// A specialized logger that captures debug logs and then passed them along
-    /// to the base logger for normal logging operation.
+    /// The category name for this logger.
     /// </summary>
-    internal class ChatAgentDebugLogger : ILogger
+    private readonly string _category;
+
+    /// <summary>
+    /// The base logger that will handle the actual logging.
+    /// </summary>
+    private readonly ILogger _logger;
+
+    /// <summary>
+    /// The factory that created this logger, used to capture debug logs.
+    /// </summary>
+    private readonly ChatAgentDebugLoggerFactory _factory;
+
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatAgentDebugLogger"/> class.
+    /// </summary>
+    /// <param name="category">The category name for this logger.</param>
+    /// <param name="logger">The base logger that will handle the actual logging.</param>
+    /// <param name="factory">The factory that created this logger, used to capture debug logs.</param>
+    public ChatAgentDebugLogger( string category, ILogger logger, ChatAgentDebugLoggerFactory factory )
     {
-        #region Fields
-
-        /// <summary>
-        /// The category name for this logger.
-        /// </summary>
-        private readonly string _category;
-
-        /// <summary>
-        /// The base logger that will handle the actual logging.
-        /// </summary>
-        private readonly ILogger _logger;
-
-        /// <summary>
-        /// The factory that created this logger, used to capture debug logs.
-        /// </summary>
-        private readonly ChatAgentDebugLoggerFactory _factory;
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ChatAgentDebugLogger"/> class.
-        /// </summary>
-        /// <param name="category">The category name for this logger.</param>
-        /// <param name="logger">The base logger that will handle the actual logging.</param>
-        /// <param name="factory">The factory that created this logger, used to capture debug logs.</param>
-        public ChatAgentDebugLogger( string category, ILogger logger, ChatAgentDebugLoggerFactory factory )
-        {
-            _category = category;
-            _logger = logger;
-            _factory = factory;
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <inheritdoc/>
-        public IDisposable BeginScope<TState>( TState state )
-        {
-            return _logger.BeginScope( state );
-        }
-
-        /// <inheritdoc/>
-        public bool IsEnabled( LogLevel logLevel )
-        {
-            // Always return true to ensure all logs are captured. The base
-            // logger will handle its own filtering based on log level.
-            return true;
-        }
-
-        /// <inheritdoc/>
-        public void Log<TState>( LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter )
-        {
-            _logger.Log( logLevel, eventId, state, exception, formatter );
-
-            _factory.AddLogMessage( new ChatDebugLog( _category, logLevel, formatter( state, exception ) ) );
-        }
-
-        #endregion
+        _category = category;
+        _logger = logger;
+        _factory = factory;
     }
+
+    #endregion
+
+    #region Methods
+
+    /// <inheritdoc/>
+    public IDisposable BeginScope<TState>( TState state )
+    {
+        return _logger.BeginScope( state );
+    }
+
+    /// <inheritdoc/>
+    public bool IsEnabled( LogLevel logLevel )
+    {
+        // Always return true to ensure all logs are captured. The base
+        // logger will handle its own filtering based on log level.
+        return true;
+    }
+
+    /// <inheritdoc/>
+    public void Log<TState>( LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter )
+    {
+        _logger.Log( logLevel, eventId, state, exception, formatter );
+
+        _factory.AddLogMessage( new ChatDebugLog( _category, logLevel, formatter( state, exception ) ) );
+    }
+
+    #endregion
 }

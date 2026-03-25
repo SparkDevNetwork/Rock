@@ -14,21 +14,20 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Mcp.Protocol
+namespace Rock.AI.Agent.Mcp.Protocol;
+
+/// <summary>
+/// Represents an error that occurred during a JSON-RPC request.
+/// </summary>
+internal class JsonRpcError
 {
     /// <summary>
-    /// Represents an error that occurred during a JSON-RPC request.
+    /// The error code that indicates the type of error that occurred.
     /// </summary>
-    internal class JsonRpcError
-    {
-        /// <summary>
-        /// The error code that indicates the type of error that occurred.
-        /// </summary>
-        public int Code { get; set; }
+    public int Code { get; set; }
 
-        /// <summary>
-        /// The error message that provides details about the error.
-        /// </summary>
-        public string Message { get; set; }
-    }
+    /// <summary>
+    /// The error message that provides details about the error.
+    /// </summary>
+    public string Message { get; set; }
 }

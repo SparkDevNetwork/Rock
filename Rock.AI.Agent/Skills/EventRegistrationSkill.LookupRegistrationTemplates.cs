@@ -23,40 +23,39 @@ using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class EventRegistrationSkill
 {
-    internal sealed partial class EventRegistrationSkill
+    #region Tool(s)
+
+    [Description( "Retrieves all registration templates in Rock." )]
+    [AgentPurpose( "Retrieves all registration templates in Rock." )]
+    [AgentToolGuid( "ec52ca7b-7dd0-4947-9bf2-1930b3731acf" )]
+    public IAgentToolResult LookupRegistrationTemplates()
     {
-        #region Tool(s)
-
-        [Description( "Retrieves all registration templates in Rock." )]
-        [AgentPurpose( "Retrieves all registration templates in Rock." )]
-        [AgentToolGuid( "ec52ca7b-7dd0-4947-9bf2-1930b3731acf" )]
-        public IAgentToolResult LookupRegistrationTemplates()
-        {
-            var templateResults = new RegistrationTemplateService( AgentRequestContext.RockContext )
-                .Queryable()
-                .Where( rt => rt.IsActive )
-                .ToList()
-                .Where( rt => rt.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
-                .Select( rt => new RegistrationTemplateResult
-                {
-                    Id = rt.Id,
-                    Name = rt.Name,
-                } )
-                .OrderBy( kn => kn.Name )
-                .ToList();
-
-            var result = Success( templateResults );
-
-            if ( templateResults.Count > 50 )
+        var templateResults = new RegistrationTemplateService( AgentRequestContext.RockContext )
+            .Queryable()
+            .Where( rt => rt.IsActive )
+            .ToList()
+            .Where( rt => rt.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
+            .Select( rt => new RegistrationTemplateResult
             {
-                result = result.WithoutHistoryContent();
-            }
+                Id = rt.Id,
+                Name = rt.Name,
+            } )
+            .OrderBy( kn => kn.Name )
+            .ToList();
 
-            return result;
+        var result = Success( templateResults );
+
+        if ( templateResults.Count > 50 )
+        {
+            result = result.WithoutHistoryContent();
         }
 
-        #endregion
+        return result;
     }
+
+    #endregion
 }

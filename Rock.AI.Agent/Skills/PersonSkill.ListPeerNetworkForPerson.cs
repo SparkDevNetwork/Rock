@@ -23,50 +23,49 @@ using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Utility;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class PersonSkill
 {
-    internal sealed partial class PersonSkill
+    #region Tool(s)
+
+    [Description( "Lists people in the provided person's peer network." )]
+    [AgentToolGuid( "39244A1E-57BF-476B-AF88-65EBC205F25D" )]
+    public IAgentToolResult ListPeerNetworkForPerson( string personIdKey )
     {
-        #region Tool(s)
+        var rockContext = AgentRequestContext.RockContext;
 
-        [Description( "Lists people in the provided person's peer network." )]
-        [AgentToolGuid( "39244A1E-57BF-476B-AF88-65EBC205F25D" )]
-        public IAgentToolResult ListPeerNetworkForPerson( string personIdKey )
-        {
-            var rockContext = AgentRequestContext.RockContext;
+        var peerNetworkService = rockContext.Set<PeerNetwork>();
+        var personId = IdHasher.Instance.GetId( personIdKey );
 
-            var peerNetworkService = rockContext.Set<PeerNetwork>();
-            var personId = IdHasher.Instance.GetId( personIdKey );
-
-            var results = peerNetworkService
-                .Where( pn => pn.SourcePersonId == personId )
-                .Join(
-                    rockContext.Set<Rock.Model.Person>(),
-                    pn => pn.TargetPersonId,
-                    tp => tp.Id,
-                    ( pn, tp ) => new { pn, tp }
-                )
-                .GroupBy( x => new { x.tp.NickName, x.tp.LastName, x.tp.Id } )
-                .Select( g => new
-                {
-                    TargetName = g.Key.NickName + " " + g.Key.LastName,
-                    TargetPersonId = g.Key.Id,
-                    RelationshipScore = ( int ) Math.Round( g.Sum( x => x.pn.RelationshipScore ), 0 ),
-                    PointDifference = g.Sum( x => x.pn.RelationshipScore ) - g.Sum( x => x.pn.RelationshipScoreLastUpdateValue )
-                } )
-                .OrderByDescending( x => x.RelationshipScore )
-                .ThenBy( x => x.TargetName.Split( ' ' )[1] ) // LastName
-                .ThenBy( x => x.TargetName.Split( ' ' )[0] ) // NickName
-                .ToList();
-
-            if ( !results.Any() )
+        var results = peerNetworkService
+            .Where( pn => pn.SourcePersonId == personId )
+            .Join(
+                rockContext.Set<Rock.Model.Person>(),
+                pn => pn.TargetPersonId,
+                tp => tp.Id,
+                ( pn, tp ) => new { pn, tp }
+            )
+            .GroupBy( x => new { x.tp.NickName, x.tp.LastName, x.tp.Id } )
+            .Select( g => new
             {
-                return NoData();
-            }
+                TargetName = g.Key.NickName + " " + g.Key.LastName,
+                TargetPersonId = g.Key.Id,
+                RelationshipScore = ( int ) Math.Round( g.Sum( x => x.pn.RelationshipScore ), 0 ),
+                PointDifference = g.Sum( x => x.pn.RelationshipScore ) - g.Sum( x => x.pn.RelationshipScoreLastUpdateValue )
+            } )
+            .OrderByDescending( x => x.RelationshipScore )
+            .ThenBy( x => x.TargetName.Split( ' ' )[1] ) // LastName
+            .ThenBy( x => x.TargetName.Split( ' ' )[0] ) // NickName
+            .ToList();
 
-            return Success( results );
+        if ( !results.Any() )
+        {
+            return NoData();
         }
 
-        #endregion
+        return Success( results );
     }
+
+    #endregion
 }

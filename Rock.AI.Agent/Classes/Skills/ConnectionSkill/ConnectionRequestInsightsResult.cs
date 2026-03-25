@@ -18,31 +18,30 @@ using System.Collections.Generic;
 
 using Rock.AI.Agent.Classes.Common;
 
-namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
+namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill;
+
+/// <summary>
+/// The insights result object for Connection Requests.
+/// </summary>
+internal class ConnectionRequestInsightsResult
 {
     /// <summary>
-    /// The insights result object for Connection Requests.
+    /// The number of active requests.
     /// </summary>
-    internal class ConnectionRequestInsightsResult
-    {
-        /// <summary>
-        /// The number of active requests.
-        /// </summary>
-        public int ActiveCount { get; set; }
+    public int ActiveCount { get; set; }
 
-        /// <summary>
-        /// The number of unassigned connection requests.
-        /// </summary>
-        public int UnassignedCount { get; set; }
+    /// <summary>
+    /// The number of unassigned connection requests.
+    /// </summary>
+    public int UnassignedCount { get; set; }
 
-        /// <summary>
-        /// The counts by connection status.
-        /// </summary>
-        public List<SummaryGroupResult> CountByStatus { get; set; }
+    /// <summary>
+    /// The counts by connection status.
+    /// </summary>
+    public List<SummaryGroupResult> CountByStatus { get; set; }
 
-        /// <summary>
-        /// The top connectors for the requested connection requests.
-        /// </summary>
-        public List<InsightsConnectorResult> TopConnectors { get; set; }
-    }
+    /// <summary>
+    /// The top connectors for the requested connection requests.
+    /// </summary>
+    public List<InsightsConnectorResult> TopConnectors { get; set; }
 }

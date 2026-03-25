@@ -24,96 +24,95 @@ using Rock.AI.Agent.Classes.Skills.PersonSkill;
 using Rock.Model;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal partial class AttendanceSkill
 {
-    internal partial class AttendanceSkill
+    #region Tool(s)
+
+    [Description( "Lists attendance records that match the filters." )]
+    [AgentPurpose( "Retrieves the attendance records that match the filters." )]
+    [AgentToolGuid( "9b4ddaba-06eb-40d4-9ceb-19c83c30dcd3" )]
+    public IAgentToolResult ListAttendanceForPerson(
+        string personIdKey = null,
+
+        string groupTypeIdKey = null,
+        string groupIdKey = null,
+        string locationIdKey = null,
+        string scheduleIdKey = null,
+        string campusIdKey = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+
+        int pageNumber = 1 )
     {
-        #region Tool(s)
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        var qry = new AttendanceService( AgentRequestContext.RockContext )
+            .Queryable()
+            .Where( a => a.DidAttend == true );
 
-        [Description( "Lists attendance records that match the filters." )]
-        [AgentPurpose( "Retrieves the attendance records that match the filters." )]
-        [AgentToolGuid( "9b4ddaba-06eb-40d4-9ceb-19c83c30dcd3" )]
-        public IAgentToolResult ListAttendanceForPerson(
-            string personIdKey = null,
+        qry = helper.WhereRequiredIdKey( qry, a => a.PersonAlias.PersonId, personIdKey );
+        qry = helper.WhereOptionalIdKey( qry, a => a.Occurrence.Group.GroupTypeId, groupTypeIdKey );
+        qry = helper.WhereOptionalIdKey( qry, a => a.Occurrence.GroupId, groupIdKey );
+        qry = helper.WhereOptionalIdKey( qry, a => a.Occurrence.LocationId, locationIdKey );
+        qry = helper.WhereOptionalIdKey( qry, a => a.Occurrence.ScheduleId, scheduleIdKey );
+        qry = helper.WhereOptionalIdKey( qry, a => a.CampusId, campusIdKey );
+        qry = helper.WhereOptionalPropertyBetween( qry, a => a.StartDateTime, startDate, endDate );
 
-            string groupTypeIdKey = null,
-            string groupIdKey = null,
-            string locationIdKey = null,
-            string scheduleIdKey = null,
-            string campusIdKey = null,
-            DateTime? startDate = null,
-            DateTime? endDate = null,
+        helper.RequireAtLeastOneFilter( [
+            personIdKey,
+            groupTypeIdKey,
+            groupIdKey,
+            locationIdKey,
+            scheduleIdKey,
+            campusIdKey,
+            startDate,
+            endDate
+        ] );
 
-            int pageNumber = 1 )
+        if ( helper.HasErrors )
         {
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
-            var qry = new AttendanceService( AgentRequestContext.RockContext )
-                .Queryable()
-                .Where( a => a.DidAttend == true );
-
-            qry = helper.WhereRequiredIdKey( qry, a => a.PersonAlias.PersonId, personIdKey );
-            qry = helper.WhereOptionalIdKey( qry, a => a.Occurrence.Group.GroupTypeId, groupTypeIdKey );
-            qry = helper.WhereOptionalIdKey( qry, a => a.Occurrence.GroupId, groupIdKey );
-            qry = helper.WhereOptionalIdKey( qry, a => a.Occurrence.LocationId, locationIdKey );
-            qry = helper.WhereOptionalIdKey( qry, a => a.Occurrence.ScheduleId, scheduleIdKey );
-            qry = helper.WhereOptionalIdKey( qry, a => a.CampusId, campusIdKey );
-            qry = helper.WhereOptionalPropertyBetween( qry, a => a.StartDateTime, startDate, endDate );
-
-            helper.RequireAtLeastOneFilter( [
-                personIdKey,
-                groupTypeIdKey,
-                groupIdKey,
-                locationIdKey,
-                scheduleIdKey,
-                campusIdKey,
-                startDate,
-                endDate
-            ] );
-
-            if ( helper.HasErrors )
-            {
-                return helper.ErrorResult;
-            }
-
-            var orderedQry = qry
-                .Select( a => new AttendanceResult
-                {
-                    Id = a.Id,
-                    GroupType = a.Occurrence.Group.GroupType != null ? new KeyNameResult
-                    {
-                        Id = a.Occurrence.Group.GroupType.Id,
-                        Name = a.Occurrence.Group.GroupType.Name
-                    } : null,
-                    Group = a.Occurrence.Group != null ? new KeyNameResult
-                    {
-                        Id = a.Occurrence.Group.Id,
-                        Name = a.Occurrence.Group.Name
-                    } : null,
-                    Location = a.Occurrence.Location != null ? new KeyNameResult
-                    {
-                        Id = a.Occurrence.Location.Id,
-                        Name = a.Occurrence.Location.Name
-                    } : null,
-                    Schedule = a.Occurrence.Schedule != null ? new KeyNameResult
-                    {
-                        Id = a.Occurrence.Schedule.Id,
-                        Name = a.Occurrence.Schedule.Name
-                    } : null,
-                    Campus = a.Campus != null ? new KeyNameResult
-                    {
-                        Id = a.Campus.Id,
-                        Name = a.Campus.Name
-                    } : null,
-                    StartDateTime = a.StartDateTime,
-                } )
-                .OrderByDescending( a => a.StartDateTime )
-                .ThenBy( a => a.Id );
-
-            var page = helper.GetPaginatedItems( orderedQry, pageNumber );
-
-            return helper.GetPaginatedResult( page );
+            return helper.ErrorResult;
         }
 
-        #endregion
+        var orderedQry = qry
+            .Select( a => new AttendanceResult
+            {
+                Id = a.Id,
+                GroupType = a.Occurrence.Group.GroupType != null ? new KeyNameResult
+                {
+                    Id = a.Occurrence.Group.GroupType.Id,
+                    Name = a.Occurrence.Group.GroupType.Name
+                } : null,
+                Group = a.Occurrence.Group != null ? new KeyNameResult
+                {
+                    Id = a.Occurrence.Group.Id,
+                    Name = a.Occurrence.Group.Name
+                } : null,
+                Location = a.Occurrence.Location != null ? new KeyNameResult
+                {
+                    Id = a.Occurrence.Location.Id,
+                    Name = a.Occurrence.Location.Name
+                } : null,
+                Schedule = a.Occurrence.Schedule != null ? new KeyNameResult
+                {
+                    Id = a.Occurrence.Schedule.Id,
+                    Name = a.Occurrence.Schedule.Name
+                } : null,
+                Campus = a.Campus != null ? new KeyNameResult
+                {
+                    Id = a.Campus.Id,
+                    Name = a.Campus.Name
+                } : null,
+                StartDateTime = a.StartDateTime,
+            } )
+            .OrderByDescending( a => a.StartDateTime )
+            .ThenBy( a => a.Id );
+
+        var page = helper.GetPaginatedItems( orderedQry, pageNumber );
+
+        return helper.GetPaginatedResult( page );
     }
+
+    #endregion
 }

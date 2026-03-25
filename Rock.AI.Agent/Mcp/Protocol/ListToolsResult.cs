@@ -16,22 +16,21 @@
 
 using System.Collections.Generic;
 
-namespace Rock.AI.Agent.Mcp.Protocol
+namespace Rock.AI.Agent.Mcp.Protocol;
+
+/// <summary>
+/// The server’s response to a tools/list request from the client.
+/// </summary>
+internal class ListToolsResult
 {
     /// <summary>
-    /// The server’s response to a tools/list request from the client.
+    /// The list of tools available on the server.
     /// </summary>
-    internal class ListToolsResult
-    {
-        /// <summary>
-        /// The list of tools available on the server.
-        /// </summary>
-        public List<Tool> Tools { get; set; }
+    public List<Tool> Tools { get; set; }
 
-        /// <summary>
-        /// An opaque token representing the pagination position after the last
-        /// returned result. If present, there may be more results available.
-        /// </summary>
-        public string NextCursor { get; set; }
-    }
+    /// <summary>
+    /// An opaque token representing the pagination position after the last
+    /// returned result. If present, there may be more results available.
+    /// </summary>
+    public string NextCursor { get; set; }
 }

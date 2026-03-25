@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Utilities.CommunicationSkill
+namespace Rock.AI.Agent.Utilities.CommunicationSkill;
+
+public sealed class DraftDto
 {
-    public sealed class DraftDto
-    {
-        public string Subject { get; set; }
-        public string Body { get; set; }
-    }
+    public string Subject { get; set; }
+
+    public string Body { get; set; }
 }

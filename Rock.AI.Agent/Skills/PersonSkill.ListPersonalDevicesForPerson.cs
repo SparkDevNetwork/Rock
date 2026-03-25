@@ -24,74 +24,73 @@ using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Utility;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class PersonSkill
 {
-    internal sealed partial class PersonSkill
+    #region Tool(s)
+
+    [Description( "Lists personal devices for the provided person." )]
+    [AgentToolGuid( "29B7A989-59C4-4956-9C45-1D1297D3E673" )]
+    public IAgentToolResult ListPersonalDevicesForPerson( string personIdKey )
     {
-        #region Tool(s)
+        var personId = IdHasher.Instance.GetId( personIdKey );
 
-        [Description( "Lists personal devices for the provided person." )]
-        [AgentToolGuid( "29B7A989-59C4-4956-9C45-1D1297D3E673" )]
-        public IAgentToolResult ListPersonalDevicesForPerson( string personIdKey )
+        if ( !personId.HasValue )
         {
-            var personId = IdHasher.Instance.GetId( personIdKey );
-
-            if ( !personId.HasValue )
-            {
-                return Error( "The personIdKey is required." )
-                    .WithInstructions( "You can call SearchPerson to find the corresponding key." );
-            }
-
-            var person = new PersonService( AgentRequestContext.RockContext ).Get( personId.Value );
-
-            if ( person == null )
-            {
-                return Error( "No person could be found with the provided personIdKey." );
-            }
-
-            var personalDeviceService = new PersonalDeviceService( AgentRequestContext.RockContext );
-
-            var devices = personalDeviceService.Queryable()
-                .AsNoTracking()
-                .Where( pd => pd.PersonAliasId == person.PrimaryAliasId );
-
-            if ( !devices.Any() )
-            {
-                return NoData();
-            }
-
-            var results = devices
-                .AsEnumerable()
-                .Select( pd => new PersonalDeviceResult
-                {
-                    Id = pd.Id,
-                    CreatedDateTime = pd.CreatedDateTime,
-                    Name = pd.Name,
-                    IsBeaconMonitoringEnabled = pd.IsBeaconMonitoringEnabled,
-                    LastSeenDateTime = pd.LastSeenDateTime,
-                    Manufacturer = pd.Manufacturer,
-                    Model = pd.Model,
-                    NotificationsEnabled = pd.NotificationsEnabled,
-                    LocationPermissionStatusValue = pd.LocationPermissionStatus,
-                    IsPreciseLocationEnabled = pd.IsPreciseLocationEnabled,
-                    LocationPermissionDisabledDateTime = pd.LocationPermissionDisabledDateTime,
-                    PersonalDeviceTypeValueId = pd.PersonalDeviceTypeValueId,
-                    PlatformValueId = pd.PlatformValueId
-                } )
-                .ToList();
-
-            var historyContent = results.Select(
-                d => new KeyNameResult
-                {
-                    IdKey = d.IdKey,
-                    Name = d.Name
-                }
-            );
-
-            return Success( results )
-                .WithHistoryContent( historyContent, $"{personIdKey}-devices" );
+            return Error( "The personIdKey is required." )
+                .WithInstructions( "You can call SearchPerson to find the corresponding key." );
         }
 
-        #endregion
+        var person = new PersonService( AgentRequestContext.RockContext ).Get( personId.Value );
+
+        if ( person == null )
+        {
+            return Error( "No person could be found with the provided personIdKey." );
+        }
+
+        var personalDeviceService = new PersonalDeviceService( AgentRequestContext.RockContext );
+
+        var devices = personalDeviceService.Queryable()
+            .AsNoTracking()
+            .Where( pd => pd.PersonAliasId == person.PrimaryAliasId );
+
+        if ( !devices.Any() )
+        {
+            return NoData();
+        }
+
+        var results = devices
+            .AsEnumerable()
+            .Select( pd => new PersonalDeviceResult
+            {
+                Id = pd.Id,
+                CreatedDateTime = pd.CreatedDateTime,
+                Name = pd.Name,
+                IsBeaconMonitoringEnabled = pd.IsBeaconMonitoringEnabled,
+                LastSeenDateTime = pd.LastSeenDateTime,
+                Manufacturer = pd.Manufacturer,
+                Model = pd.Model,
+                NotificationsEnabled = pd.NotificationsEnabled,
+                LocationPermissionStatusValue = pd.LocationPermissionStatus,
+                IsPreciseLocationEnabled = pd.IsPreciseLocationEnabled,
+                LocationPermissionDisabledDateTime = pd.LocationPermissionDisabledDateTime,
+                PersonalDeviceTypeValueId = pd.PersonalDeviceTypeValueId,
+                PlatformValueId = pd.PlatformValueId
+            } )
+            .ToList();
+
+        var historyContent = results.Select(
+            d => new KeyNameResult
+            {
+                IdKey = d.IdKey,
+                Name = d.Name
+            }
+        );
+
+        return Success( results )
+            .WithHistoryContent( historyContent, $"{personIdKey}-devices" );
     }
+
+    #endregion
 }

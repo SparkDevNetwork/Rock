@@ -18,46 +18,45 @@ using System.Collections.Generic;
 
 using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
+namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill;
+
+/// <summary>
+/// Represents a single connection opportunity.
+/// </summary>
+internal class ConnectionOpportunityResult : EntityResultBase
 {
     /// <summary>
-    /// Represents a single connection opportunity.
+    /// The name of the connection type.
     /// </summary>
-    internal class ConnectionOpportunityResult : EntityResultBase
-    {
-        /// <summary>
-        /// The name of the connection type.
-        /// </summary>
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        /// <summary>
-        /// The description of the connection type.
-        /// </summary>
-        public string Description { get; set; }
+    /// <summary>
+    /// The description of the connection type.
+    /// </summary>
+    public string Description { get; set; }
 
-        /// <summary>
-        /// A short summary of the connection opportunity.
-        /// </summary>
-        public string Summary { get; set; }
+    /// <summary>
+    /// A short summary of the connection opportunity.
+    /// </summary>
+    public string Summary { get; set; }
 
-        /// <summary>
-        /// The public name of the connection opportunity.
-        /// </summary>
-        public string PublicName { get; set; }
+    /// <summary>
+    /// The public name of the connection opportunity.
+    /// </summary>
+    public string PublicName { get; set; }
 
-        /// <summary>
-        /// The photo identifier of the connection opportunity.
-        /// </summary>
-        public int? PhotoId { get; set; }
+    /// <summary>
+    /// The photo identifier of the connection opportunity.
+    /// </summary>
+    public int? PhotoId { get; set; }
 
-        /// <summary>
-        /// List of campuses that the connection opportunity is associated with.
-        /// </summary>
-        public List<CampusResult> Campuses { get; set; }
+    /// <summary>
+    /// List of campuses that the connection opportunity is associated with.
+    /// </summary>
+    public List<CampusResult> Campuses { get; set; }
 
-        /// <summary>
-        /// The connection type that the opportunity belongs to.
-        /// </summary>
-        public ConnectionTypeResult ConnectionType { get; set; }
-    }
+    /// <summary>
+    /// The connection type that the opportunity belongs to.
+    /// </summary>
+    public ConnectionTypeResult ConnectionType { get; set; }
 }

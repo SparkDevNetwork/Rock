@@ -23,45 +23,44 @@ using Rock.SystemGuid;
 
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class SiteSkill
 {
-    internal sealed partial class SiteSkill
+    #region Tool(s)
+
+    [Description( "Retrieves all configured websites in Rock." )]
+    [AgentToolGuid( "6234BB68-99B8-4B7C-884D-0D760B1F081C" )]
+    public IAgentToolResult LookupSites()
     {
-        #region Tool(s)
+        var sites = SiteCache.All( AgentRequestContext.RockContext )
+            .Where( s => s.IsActive || AgentRequestContext.AudienceType == AudienceType.Internal );
 
-        [Description( "Retrieves all configured websites in Rock." )]
-        [AgentToolGuid( "6234BB68-99B8-4B7C-884D-0D760B1F081C" )]
-        public IAgentToolResult LookupSites()
+        var siteList = sites.Select( s => new SiteResult
         {
-            var sites = SiteCache.All( AgentRequestContext.RockContext )
-                .Where( s => s.IsActive || AgentRequestContext.AudienceType == AudienceType.Internal );
+            IdKey = s.IdKey,
+            Name = s.Name,
+            Description = s.Description,
+            SiteType = s.SiteType.ConvertToString( true ),
+            ExternalUrl = s.ExternalUrl
+        } ).ToList();
 
-            var siteList = sites.Select( s => new SiteResult
-            {
-                IdKey = s.IdKey,
-                Name = s.Name,
-                Description = s.Description,
-                SiteType = s.SiteType.ConvertToString( true ),
-                ExternalUrl = s.ExternalUrl
-            } ).ToList();
-
-            if ( !siteList.Any() )
-            {
-                return NoData();
-            }
-
-            // Store only essential properties in session context to keep it lean.
-            var trimmedForHistory = siteList.Select( site => new
-            {
-                site.IdKey,
-                site.Name,
-                site.SiteType,
-            } );
-
-            return Success( siteList )
-                .WithHistoryContent( trimmedForHistory, "site-list" );
+        if ( !siteList.Any() )
+        {
+            return NoData();
         }
 
-        #endregion
+        // Store only essential properties in session context to keep it lean.
+        var trimmedForHistory = siteList.Select( site => new
+        {
+            site.IdKey,
+            site.Name,
+            site.SiteType,
+        } );
+
+        return Success( siteList )
+            .WithHistoryContent( trimmedForHistory, "site-list" );
     }
+
+    #endregion
 }

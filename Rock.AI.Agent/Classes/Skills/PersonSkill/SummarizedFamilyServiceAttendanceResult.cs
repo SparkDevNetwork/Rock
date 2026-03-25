@@ -17,54 +17,53 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rock.AI.Agent.Classes.Skills.PersonSkill
+namespace Rock.AI.Agent.Classes.Skills.PersonSkill;
+
+/// <summary>
+/// Represents a summarized view of family service attendance.
+/// </summary>
+/// <remarks>
+/// This class contains details about family attendance, including check-ins, summaries, and attendance statistics.
+/// </remarks>
+internal class SummarizedFamilyServiceAttendanceResult
 {
     /// <summary>
-    /// Represents a summarized view of family service attendance.
+    /// Gets or sets the Sunday date for the attendance summary.
     /// </summary>
-    /// <remarks>
-    /// This class contains details about family attendance, including check-ins, summaries, and attendance statistics.
-    /// </remarks>
-    internal class SummarizedFamilyServiceAttendanceResult
-    {
-        /// <summary>
-        /// Gets or sets the Sunday date for the attendance summary.
-        /// </summary>
-        /// <value>
-        /// The Sunday date for the attendance summary.
-        /// </value>
-        public DateTime? SundayDate { get; set; }
+    /// <value>
+    /// The Sunday date for the attendance summary.
+    /// </value>
+    public DateTime? SundayDate { get; set; }
 
-        /// <summary>
-        /// Gets or sets the list of family member check-ins.
-        /// </summary>
-        /// <value>
-        /// The list of family member check-ins.
-        /// </value>
-        public List<FamilyMemberCheckInResult> CheckIns { get; set; }
+    /// <summary>
+    /// Gets or sets the list of family member check-ins.
+    /// </summary>
+    /// <value>
+    /// The list of family member check-ins.
+    /// </value>
+    public List<FamilyMemberCheckInResult> CheckIns { get; set; }
 
-        /// <summary>
-        /// Gets or sets the check-in summary for the family.
-        /// </summary>
-        /// <value>
-        /// The check-in summary for the family.
-        /// </value>
-        public List<CheckInSummaryMonthResult> CheckInSummary { get; set; }
+    /// <summary>
+    /// Gets or sets the check-in summary for the family.
+    /// </summary>
+    /// <value>
+    /// The check-in summary for the family.
+    /// </value>
+    public List<CheckInSummaryMonthResult> CheckInSummary { get; set; }
 
-        /// <summary>
-        /// Gets or sets the date of the first-time check-in.
-        /// </summary>
-        /// <value>
-        /// The date of the first-time check-in, or <c>null</c> if not applicable.
-        /// </value>
-        public DateTime? FirstTimeCheckIn { get; set; }
+    /// <summary>
+    /// Gets or sets the date of the first-time check-in.
+    /// </summary>
+    /// <value>
+    /// The date of the first-time check-in, or <c>null</c> if not applicable.
+    /// </value>
+    public DateTime? FirstTimeCheckIn { get; set; }
 
-        /// <summary>
-        /// Gets or sets the number of weeks attended in the last 16 weeks.
-        /// </summary>
-        /// <value>
-        /// The number of weeks attended in the last 16 weeks.
-        /// </value>
-        public int WeeksAttendedLast16Weeks { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets the number of weeks attended in the last 16 weeks.
+    /// </summary>
+    /// <value>
+    /// The number of weeks attended in the last 16 weeks.
+    /// </value>
+    public int WeeksAttendedLast16Weeks { get; set; }
 }

@@ -17,34 +17,33 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace Rock.AI.Agent.Classes.Skills.PersonSkill
+namespace Rock.AI.Agent.Classes.Skills.PersonSkill;
+
+/// <summary>
+/// Lightweight result model for a person's page-visit aggregate.
+/// </summary>
+internal class PageVisitResult
 {
+    [JsonIgnore]
+    internal int SiteId { get; set; }
+
     /// <summary>
-    /// Lightweight result model for a person's page-visit aggregate.
+    /// Internal numeric identifier of the site containing the page.
     /// </summary>
-    internal class PageVisitResult
-    {
-        [JsonIgnore]
-        internal int SiteId { get; set; }
+    public string SiteIdKey { get; set; }
 
-        /// <summary>
-        /// Internal numeric identifier of the site containing the page.
-        /// </summary>
-        public string SiteIdKey { get; set; }
+    /// <summary>
+    /// Display name of the page.
+    /// </summary>
+    public string PageName { get; set; }
 
-        /// <summary>
-        /// Display name of the page.
-        /// </summary>
-        public string PageName { get; set; }
+    /// <summary>
+    /// Total number of visits counted in the selected range.
+    /// </summary>
+    public int VisitCount { get; set; }
 
-        /// <summary>
-        /// Total number of visits counted in the selected range.
-        /// </summary>
-        public int VisitCount { get; set; }
-
-        /// <summary>
-        /// Timestamp of the most recent visit, or <c>null</c> if none found.
-        /// </summary>
-        public DateTime? LastVisit { get; set; }
-    }
+    /// <summary>
+    /// Timestamp of the most recent visit, or <c>null</c> if none found.
+    /// </summary>
+    public DateTime? LastVisit { get; set; }
 }

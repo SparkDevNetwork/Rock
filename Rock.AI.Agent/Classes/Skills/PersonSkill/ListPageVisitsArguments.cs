@@ -17,38 +17,37 @@
 using System;
 using System.ComponentModel;
 
-namespace Rock.AI.Agent.Classes.Skills.PersonSkill
+namespace Rock.AI.Agent.Classes.Skills.PersonSkill;
+
+/// <summary>
+/// Arguments for listing a person's page visits.
+/// </summary>
+internal class ListPageVisitsArguments
 {
     /// <summary>
-    /// Arguments for listing a person's page visits.
+    /// Optional earliest date to include (inclusive). Set to <c>null</c> to leave the start unbounded.
     /// </summary>
-    internal class ListPageVisitsArguments
-    {
-        /// <summary>
-        /// Optional earliest date to include (inclusive). Set to <c>null</c> to leave the start unbounded.
-        /// </summary>
-        public DateTime? StartDate { get; set; }
+    public DateTime? StartDate { get; set; }
 
-        /// <summary>
-        /// Optional latest date to include (inclusive). Set to <c>null</c> to leave the end unbounded.
-        /// </summary>
-        public DateTime? EndDate { get; set; }
+    /// <summary>
+    /// Optional latest date to include (inclusive). Set to <c>null</c> to leave the end unbounded.
+    /// </summary>
+    public DateTime? EndDate { get; set; }
 
-        /// <summary>
-        /// Optional site filter. The ID Key of the site to analyze.
-        /// </summary>
-        [Description( "Optional. The ID Key of site to analyze." )]
-        public string SiteKey { get; set; }
+    /// <summary>
+    /// Optional site filter. The ID Key of the site to analyze.
+    /// </summary>
+    [Description( "Optional. The ID Key of site to analyze." )]
+    public string SiteKey { get; set; }
 
-        /// <summary>
-        /// Required. The stable key identifying the person whose visits are being requested.
-        /// </summary>
-        public string PersonKey { get; set; }
+    /// <summary>
+    /// Required. The stable key identifying the person whose visits are being requested.
+    /// </summary>
+    public string PersonKey { get; set; }
 
-        /// <summary>
-        /// The 1-based page number to return. Defaults to <c>1</c>.
-        /// </summary>
-        [Description( "Optional. The page number to return, starting at 1. Defaults to 1." )]
-        public int PageNumber { get; set; } = 1;
-    }
+    /// <summary>
+    /// The 1-based page number to return. Defaults to <c>1</c>.
+    /// </summary>
+    [Description( "Optional. The page number to return, starting at 1. Defaults to 1." )]
+    public int PageNumber { get; set; } = 1;
 }

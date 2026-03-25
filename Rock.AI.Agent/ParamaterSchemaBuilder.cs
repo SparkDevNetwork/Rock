@@ -21,147 +21,146 @@ using Microsoft.SemanticKernel;
 
 using Rock.Enums.AI.Agent;
 
-namespace Rock.AI.Agent
+namespace Rock.AI.Agent;
+
+/// <summary>
+/// Provides functionality to build metadata for kernel parameters,
+/// including JSON Schema representations and other configuration details.
+/// </summary>
+internal class ParamaterSchemaBuilder
 {
+    #region Fields
+
     /// <summary>
-    /// Provides functionality to build metadata for kernel parameters,
-    /// including JSON Schema representations and other configuration details.
+    /// The text that will be appended to the instructions for a collection.
+    /// This helps the LLM understand that multiple value sshould be passed
+    /// in a single call instead of making multiple calls.
     /// </summary>
-    internal class ParamaterSchemaBuilder
+    internal const string CollectionInstructions = " CRITICAL: If multiple values are to be used, then they must all be passed in a single function call. Never call this function twice because of multiple values.";
+
+    #endregion
+
+    #region Methods
+
+    /// <summary>
+    /// Gets the JSON Schema representation of the data type and allowed
+    /// values. This is used to create the KernelParameterMetadata.
+    /// </summary>
+    /// <param name="parameter">The parameter to be built up into a Semantic Kernel object.</param>
+    /// <returns>An instance of <see cref="KernelJsonSchema"/>.</returns>
+    private KernelJsonSchema GetSchemaJson( ParameterSchema parameter )
     {
-        #region Fields
+        var json = new JsonObject();
+        JsonObject typeDefinition;
+        var type = GetDataTypeName( parameter );
+        var format = GetDataFormatName( parameter );
+        JsonArray enumValues = null;
 
-        /// <summary>
-        /// The text that will be appended to the instructions for a collection.
-        /// This helps the LLM understand that multiple value sshould be passed
-        /// in a single call instead of making multiple calls.
-        /// </summary>
-        internal const string CollectionInstructions = " CRITICAL: If multiple values are to be used, then they must all be passed in a single function call. Never call this function twice because of multiple values.";
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Gets the JSON Schema representation of the data type and allowed
-        /// values. This is used to create the KernelParameterMetadata.
-        /// </summary>
-        /// <param name="parameter">The parameter to be built up into a Semantic Kernel object.</param>
-        /// <returns>An instance of <see cref="KernelJsonSchema"/>.</returns>
-        private KernelJsonSchema GetSchemaJson( ParameterSchema parameter )
+        if ( parameter.AllowedValues != null && parameter.AllowedValues.Count > 0 )
         {
-            var json = new JsonObject();
-            JsonObject typeDefinition;
-            var type = GetDataTypeName( parameter );
-            var format = GetDataFormatName( parameter );
-            JsonArray enumValues = null;
+            enumValues = new JsonArray();
 
-            if ( parameter.AllowedValues != null && parameter.AllowedValues.Count > 0 )
+            foreach ( var allowedValue in parameter.AllowedValues )
             {
-                enumValues = new JsonArray();
-
-                foreach ( var allowedValue in parameter.AllowedValues )
-                {
-                    enumValues.Add( allowedValue );
-                }
-            }
-
-            if ( parameter.IsCollection )
-            {
-                typeDefinition = new JsonObject();
-
-                json["type"] = "array";
-                json["items"] = typeDefinition;
-
-                if ( parameter.Instructions.IsNotNullOrWhiteSpace() )
-                {
-                    json["description"] = parameter.Instructions + CollectionInstructions;
-                }
-            }
-            else
-            {
-                typeDefinition = json;
-
-                if ( parameter.Instructions.IsNotNullOrWhiteSpace() )
-                {
-                    json["description"] = parameter.Instructions;
-                }
-            }
-
-            typeDefinition["type"] = type;
-
-            if ( enumValues != null )
-            {
-                typeDefinition["enum"] = enumValues;
-            }
-
-            if ( format != null )
-            {
-                typeDefinition["format"] = format;
-            }
-
-            return KernelJsonSchema.Parse( JsonSerializer.SerializeToElement( json ).GetRawText() );
-        }
-
-        /// <summary>
-        /// Gets the JSON Schema data type name that corresponds to the specified
-        /// <see cref="DataType"/>.
-        /// </summary>
-        /// <param name="parameter">The parameter to be built up into a Semantic Kernel object.</param>
-        /// <returns>The JSON schema type name to use for the data type.</returns>
-        private string GetDataTypeName( ParameterSchema parameter )
-        {
-            switch ( parameter.DataType )
-            {
-                case ParameterSchemaDataType.Number:
-                    return "number";
-
-                case ParameterSchemaDataType.Boolean:
-                    return "boolean";
-
-                default:
-                    return "string";
+                enumValues.Add( allowedValue );
             }
         }
 
-        /// <summary>
-        /// Gets the JSON Schema data format name that corresponds to the specified
-        /// <see cref="DataType"/>.
-        /// </summary>
-        /// <param name="parameter">The parameter to be built up into a Semantic Kernel object.</param>
-        /// <returns>The JSON schema format name to use for the data type.</returns>
-        private string GetDataFormatName( ParameterSchema parameter )
+        if ( parameter.IsCollection )
         {
-            switch ( parameter.DataType )
+            typeDefinition = new JsonObject();
+
+            json["type"] = "array";
+            json["items"] = typeDefinition;
+
+            if ( parameter.Instructions.IsNotNullOrWhiteSpace() )
             {
-                case ParameterSchemaDataType.Date:
-                    return "date";
+                json["description"] = parameter.Instructions + CollectionInstructions;
+            }
+        }
+        else
+        {
+            typeDefinition = json;
 
-                case ParameterSchemaDataType.DateTime:
-                    return "date-time";
-
-                default:
-                    return null;
+            if ( parameter.Instructions.IsNotNullOrWhiteSpace() )
+            {
+                json["description"] = parameter.Instructions;
             }
         }
 
-        /// <summary>
-        /// Builds the JSON Schema data type name that corresponds to the specified
-        /// parameter configuration values.
-        /// </summary>
-        /// <param name="parameter">The parameter to be built up into a Semantic Kernel object.</param>
-        /// <returns>An instance of <see cref="KernelParameterMetadata"/> that represents this parameter schema.</returns>
-        public KernelParameterMetadata BuildKernelParameterMetadata( ParameterSchema parameter )
+        typeDefinition["type"] = type;
+
+        if ( enumValues != null )
         {
-            return new KernelParameterMetadata( parameter.Name )
-            {
-                Description = parameter.Instructions,
-                IsRequired = parameter.IsRequired,
-                Schema = GetSchemaJson( parameter ),
-                DefaultValue = parameter.DefaultValue,
-            };
+            typeDefinition["enum"] = enumValues;
         }
 
-        #endregion
+        if ( format != null )
+        {
+            typeDefinition["format"] = format;
+        }
+
+        return KernelJsonSchema.Parse( JsonSerializer.SerializeToElement( json ).GetRawText() );
     }
+
+    /// <summary>
+    /// Gets the JSON Schema data type name that corresponds to the specified
+    /// <see cref="DataType"/>.
+    /// </summary>
+    /// <param name="parameter">The parameter to be built up into a Semantic Kernel object.</param>
+    /// <returns>The JSON schema type name to use for the data type.</returns>
+    private string GetDataTypeName( ParameterSchema parameter )
+    {
+        switch ( parameter.DataType )
+        {
+            case ParameterSchemaDataType.Number:
+                return "number";
+
+            case ParameterSchemaDataType.Boolean:
+                return "boolean";
+
+            default:
+                return "string";
+        }
+    }
+
+    /// <summary>
+    /// Gets the JSON Schema data format name that corresponds to the specified
+    /// <see cref="DataType"/>.
+    /// </summary>
+    /// <param name="parameter">The parameter to be built up into a Semantic Kernel object.</param>
+    /// <returns>The JSON schema format name to use for the data type.</returns>
+    private string GetDataFormatName( ParameterSchema parameter )
+    {
+        switch ( parameter.DataType )
+        {
+            case ParameterSchemaDataType.Date:
+                return "date";
+
+            case ParameterSchemaDataType.DateTime:
+                return "date-time";
+
+            default:
+                return null;
+        }
+    }
+
+    /// <summary>
+    /// Builds the JSON Schema data type name that corresponds to the specified
+    /// parameter configuration values.
+    /// </summary>
+    /// <param name="parameter">The parameter to be built up into a Semantic Kernel object.</param>
+    /// <returns>An instance of <see cref="KernelParameterMetadata"/> that represents this parameter schema.</returns>
+    public KernelParameterMetadata BuildKernelParameterMetadata( ParameterSchema parameter )
+    {
+        return new KernelParameterMetadata( parameter.Name )
+        {
+            Description = parameter.Instructions,
+            IsRequired = parameter.IsRequired,
+            Schema = GetSchemaJson( parameter ),
+            DefaultValue = parameter.DefaultValue,
+        };
+    }
+
+    #endregion
 }

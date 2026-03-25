@@ -22,34 +22,33 @@ using Microsoft.Extensions.Logging;
 using Rock.AI.Agent.Annotations;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+[Description( "This skill provides access to attendance related data." )]
+[AgentUsage( "The term 'room' is synonymous with 'location' for attendance data." )]
+[AgentSkillGuid( "79beff06-9ae4-402e-a29a-9f2d0c53a592" )]
+[EntityTypeGuid( "7b6a564f-49bf-4005-9173-97d97e3da02c" )]
+internal sealed partial class AttendanceSkill : AgentSkillComponent
 {
-    [Description( "This skill provides access to attendance related data." )]
-    [AgentUsage( "The term 'room' is synonymous with 'location' for attendance data." )]
-    [AgentSkillGuid( "79beff06-9ae4-402e-a29a-9f2d0c53a592" )]
-    [EntityTypeGuid( "7b6a564f-49bf-4005-9173-97d97e3da02c" )]
-    internal sealed partial class AttendanceSkill : AgentSkillComponent
+    #region Fields
+
+    /// <summary>
+    /// The logger for this instance.
+    /// </summary>
+    private readonly ILogger _logger;
+
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// The constructor for the Attendance Skill.
+    /// </summary>
+    /// <param name="logger">Logger for diagnostics and error reporting.</param>
+    public AttendanceSkill( ILogger<AttendanceSkill> logger )
     {
-        #region Fields
-
-        /// <summary>
-        /// The logger for this instance.
-        /// </summary>
-        private readonly ILogger _logger;
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// The constructor for the Attendance Skill.
-        /// </summary>
-        /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public AttendanceSkill( ILogger<AttendanceSkill> logger )
-        {
-            _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
-        }
-
-        #endregion
+        _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
     }
+
+    #endregion
 }

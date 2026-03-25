@@ -14,38 +14,37 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Classes.Skills.PersonSkill
+namespace Rock.AI.Agent.Classes.Skills.PersonSkill;
+
+/// <summary>
+/// Represents the summary of check-in data for a specific month.
+/// </summary>
+/// <remarks>
+/// This class contains details about the month, year, and the completion percentage of check-ins for that period.
+/// </remarks>
+internal class CheckInSummaryMonthResult
 {
     /// <summary>
-    /// Represents the summary of check-in data for a specific month.
+    /// Gets or sets the name of the month.
     /// </summary>
-    /// <remarks>
-    /// This class contains details about the month, year, and the completion percentage of check-ins for that period.
-    /// </remarks>
-    internal class CheckInSummaryMonthResult
-    {
-        /// <summary>
-        /// Gets or sets the name of the month.
-        /// </summary>
-        /// <value>
-        /// The name of the month.
-        /// </value>
-        public int Month { get; set; }
+    /// <value>
+    /// The name of the month.
+    /// </value>
+    public int Month { get; set; }
 
-        /// <summary>
-        /// Gets or sets the year of the check-in summary.
-        /// </summary>
-        /// <value>
-        /// The year of the check-in summary.
-        /// </value>
-        public int Year { get; set; }
+    /// <summary>
+    /// Gets or sets the year of the check-in summary.
+    /// </summary>
+    /// <value>
+    /// The year of the check-in summary.
+    /// </value>
+    public int Year { get; set; }
 
-        /// <summary>
-        /// Gets or sets the completion percentage of check-ins for the month.
-        /// </summary>
-        /// <value>
-        /// The completion percentage of check-ins for the month.
-        /// </value>
-        public decimal CompletionPercentage { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets the completion percentage of check-ins for the month.
+    /// </summary>
+    /// <value>
+    /// The completion percentage of check-ins for the month.
+    /// </value>
+    public decimal CompletionPercentage { get; set; }
 }

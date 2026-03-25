@@ -19,41 +19,40 @@ using System;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Skills.PersonSkill
+namespace Rock.AI.Agent.Classes.Skills.PersonSkill;
+
+/// <summary>
+/// A single attendance record for a person.
+/// </summary>
+internal class AttendanceResult : EntityResultBase
 {
     /// <summary>
-    /// A single attendance record for a person.
+    /// The type of group that was attended.
     /// </summary>
-    internal class AttendanceResult : EntityResultBase
-    {
-        /// <summary>
-        /// The type of group that was attended.
-        /// </summary>
-        public KeyNameResult GroupType { get; set; }
+    public KeyNameResult GroupType { get; set; }
 
-        /// <summary>
-        /// The group that was attended.
-        /// </summary>
-        public KeyNameResult Group { get; set; }
+    /// <summary>
+    /// The group that was attended.
+    /// </summary>
+    public KeyNameResult Group { get; set; }
 
-        /// <summary>
-        /// The location that they were physically in.
-        /// </summary>
-        public KeyNameResult Location { get; set; }
+    /// <summary>
+    /// The location that they were physically in.
+    /// </summary>
+    public KeyNameResult Location { get; set; }
 
-        /// <summary>
-        /// The schedule that was attended.
-        /// </summary>
-        public KeyNameResult Schedule { get; set; }
+    /// <summary>
+    /// The schedule that was attended.
+    /// </summary>
+    public KeyNameResult Schedule { get; set; }
 
-        /// <summary>
-        /// The campus that was attended.
-        /// </summary>
-        public KeyNameResult Campus { get; set; }
+    /// <summary>
+    /// The campus that was attended.
+    /// </summary>
+    public KeyNameResult Campus { get; set; }
 
-        /// <summary>
-        /// The date and time the attendance record is for.
-        /// </summary>
-        public DateTime? StartDateTime { get; set; }
-    }
+    /// <summary>
+    /// The date and time the attendance record is for.
+    /// </summary>
+    public DateTime? StartDateTime { get; set; }
 }

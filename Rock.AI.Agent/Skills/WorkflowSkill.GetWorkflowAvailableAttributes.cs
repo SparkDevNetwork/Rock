@@ -20,57 +20,56 @@ using System.Linq;
 using Rock.AI.Agent.Annotations;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal partial class WorkflowSkill
 {
-    internal partial class WorkflowSkill
+    #region Tool(s)
+
+    [Description( "Gets the available attributes that can be set when adding or updating a workflow." )]
+    [AgentPurpose( "Provides a list of attribute definitions for Workflows and any value format instructions." )]
+    [AgentToolGuid( "b7736059-2d51-4e6f-80ef-7f1d2dbc9757" )]
+    public IAgentToolResult GetWorkflowAvailableAttributes(
+        string workflowIdKey = null,
+        string workflowTypeIdKey = null )
     {
-        #region Tool(s)
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        Model.Workflow workflow;
 
-        [Description( "Gets the available attributes that can be set when adding or updating a workflow." )]
-        [AgentPurpose( "Provides a list of attribute definitions for Workflows and any value format instructions." )]
-        [AgentToolGuid( "b7736059-2d51-4e6f-80ef-7f1d2dbc9757" )]
-        public IAgentToolResult GetWorkflowAvailableAttributes(
-            string workflowIdKey = null,
-            string workflowTypeIdKey = null )
+        if ( workflowIdKey.IsNotNullOrWhiteSpace() )
         {
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
-            Model.Workflow workflow;
+            workflow = helper.GetRequiredEntity<Model.Workflow>( workflowIdKey, checkSecurity: true );
 
-            if ( workflowIdKey.IsNotNullOrWhiteSpace() )
+            if ( workflow == null )
             {
-                workflow = helper.GetRequiredEntity<Model.Workflow>( workflowIdKey, checkSecurity: true );
-
-                if ( workflow == null )
-                {
-                    return helper.ErrorResult;
-                }
+                return helper.ErrorResult;
             }
-            else
+        }
+        else
+        {
+            var workflowType = helper.GetRequiredEntity<Model.WorkflowType>( workflowTypeIdKey, checkSecurity: true );
+
+            if ( workflowType == null )
             {
-                var workflowType = helper.GetRequiredEntity<Model.WorkflowType>( workflowTypeIdKey, checkSecurity: true );
-
-                if ( workflowType == null )
-                {
-                    return helper.ErrorResult
-                        .WithInstructions( $"Call the {nameof( LookupWorkflowTypes )} function to determine available workflow types." );
-                }
-                else if ( !GetConfiguredWorkflowTypes().Any( t => t.Id == workflowType.Id ) )
-                {
-                    return helper.ErrorResult
-                        .WithInstructions( $"The specified workflow type is not configured for use with this skill. Call the {nameof( LookupWorkflowTypes )} function to determine available workflow types." );
-                }
-
-                workflow = new Model.Workflow
-                {
-                    WorkflowTypeId = workflowType.Id,
-                };
+                return helper.ErrorResult
+                    .WithInstructions( $"Call the {nameof( LookupWorkflowTypes )} function to determine available workflow types." );
+            }
+            else if ( !GetConfiguredWorkflowTypes().Any( t => t.Id == workflowType.Id ) )
+            {
+                return helper.ErrorResult
+                    .WithInstructions( $"The specified workflow type is not configured for use with this skill. Call the {nameof( LookupWorkflowTypes )} function to determine available workflow types." );
             }
 
-            workflow.LoadAttributes( AgentRequestContext.RockContext );
-
-            return Success( helper.GetAvailableAttributes( workflow ) );
+            workflow = new Model.Workflow
+            {
+                WorkflowTypeId = workflowType.Id,
+            };
         }
 
-        #endregion
+        workflow.LoadAttributes( AgentRequestContext.RockContext );
+
+        return Success( helper.GetAvailableAttributes( workflow ) );
     }
+
+    #endregion
 }

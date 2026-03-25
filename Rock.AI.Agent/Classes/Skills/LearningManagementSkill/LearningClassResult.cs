@@ -21,7 +21,7 @@ namespace Rock.AI.Agent.Classes.Skills.LearningManagementSkill;
 /// <summary>
 /// A single learning class record.
 /// </summary>
-internal class LearningClassResult: EntityResultBase
+internal class LearningClassResult : EntityResultBase
 {
     /// <summary>
     /// The name of the class.

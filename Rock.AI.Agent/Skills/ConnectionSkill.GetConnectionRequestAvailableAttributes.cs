@@ -20,54 +20,53 @@ using Rock.AI.Agent.Annotations;
 using Rock.Model;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal partial class ConnectionSkill
 {
-    internal partial class ConnectionSkill
+    #region Tool(s)
+
+    [Description( "Gets the available attributes that can be set when adding or updating a connection request." )]
+    [AgentPurpose( "Provides a list of attribute definitions for Connection Requests and any value format instructions." )]
+    [AgentToolGuid( "c660989a-ba62-42f8-8eed-49c0bf7e8bf6" )]
+    public IAgentToolResult GetConnectionRequestAvailableAttributes(
+        string connectionRequestIdKey = null,
+        string connectionOpportunityIdKey = null )
     {
-        #region Tool(s)
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        ConnectionRequest connectionRequest;
 
-        [Description( "Gets the available attributes that can be set when adding or updating a connection request." )]
-        [AgentPurpose( "Provides a list of attribute definitions for Connection Requests and any value format instructions." )]
-        [AgentToolGuid( "c660989a-ba62-42f8-8eed-49c0bf7e8bf6" )]
-        public IAgentToolResult GetConnectionRequestAvailableAttributes(
-            string connectionRequestIdKey = null,
-            string connectionOpportunityIdKey = null )
+        if ( connectionRequestIdKey.IsNotNullOrWhiteSpace() )
         {
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
-            ConnectionRequest connectionRequest;
+            connectionRequest = helper.GetRequiredEntity<ConnectionRequest>( connectionRequestIdKey, checkSecurity: true );
 
-            if ( connectionRequestIdKey.IsNotNullOrWhiteSpace() )
+            if ( connectionRequest == null )
             {
-                connectionRequest = helper.GetRequiredEntity<ConnectionRequest>( connectionRequestIdKey, checkSecurity: true );
-
-                if ( connectionRequest == null )
-                {
-                    return helper.ErrorResult;
-                }
+                return helper.ErrorResult;
             }
-            else
+        }
+        else
+        {
+            var opportunity = helper.GetRequiredEntity<ConnectionOpportunity>( connectionOpportunityIdKey, checkSecurity: true );
+
+            if ( opportunity == null )
             {
-                var opportunity = helper.GetRequiredEntity<ConnectionOpportunity>( connectionOpportunityIdKey, checkSecurity: true );
-
-                if ( opportunity == null )
-                {
-                    return helper.ErrorResult
-                        .WithInstructions( $"Call the {nameof( LookupConnectionTypesAndOpportunities )} function to determine available opportunities." );
-                }
-
-                connectionRequest = new ConnectionRequest
-                {
-                    ConnectionOpportunityId = opportunity.Id,
-                    ConnectionTypeId = opportunity.ConnectionTypeId,
-                };
+                return helper.ErrorResult
+                    .WithInstructions( $"Call the {nameof( LookupConnectionTypesAndOpportunities )} function to determine available opportunities." );
             }
 
-            connectionRequest.LoadAttributes( AgentRequestContext.RockContext );
-
-            return Success( helper.GetAvailableAttributes( connectionRequest ) );
+            connectionRequest = new ConnectionRequest
+            {
+                ConnectionOpportunityId = opportunity.Id,
+                ConnectionTypeId = opportunity.ConnectionTypeId,
+            };
         }
 
+        connectionRequest.LoadAttributes( AgentRequestContext.RockContext );
 
-        #endregion
+        return Success( helper.GetAvailableAttributes( connectionRequest ) );
     }
+
+
+    #endregion
 }

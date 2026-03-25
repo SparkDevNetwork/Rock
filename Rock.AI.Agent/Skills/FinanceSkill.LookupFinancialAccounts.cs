@@ -23,103 +23,102 @@ using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal partial class FinanceSkill
 {
-    internal partial class FinanceSkill
+    #region Tool(s)
+
+    [Description( "Lists all active financial accounts configured in the system." )]
+    [AgentToolGuid( "4DBAE64C-A7B9-4826-90C0-8DE4AA598FFF" )]
+    public IAgentToolResult LookupFinancialAccounts()
     {
-        #region Tool(s)
+        // Load all top-level active accounts.
+        var topLevelAccounts = FinancialAccountCache
+            .All( AgentRequestContext.RockContext )
+            .Where( a => a.IsActive && a.ParentAccountId == null );
 
-        [Description( "Lists all active financial accounts configured in the system." )]
-        [AgentToolGuid( "4DBAE64C-A7B9-4826-90C0-8DE4AA598FFF" )]
-        public IAgentToolResult LookupFinancialAccounts()
+        // Build hierarchical tree.
+        var parentAccountResults = new List<FinancialAccountResult>();
+
+        foreach ( var acct in topLevelAccounts )
         {
-            // Load all top-level active accounts.
-            var topLevelAccounts = FinancialAccountCache
-                .All( AgentRequestContext.RockContext )
-                .Where( a => a.IsActive && a.ParentAccountId == null );
-
-            // Build hierarchical tree.
-            var parentAccountResults = new List<FinancialAccountResult>();
-
-            foreach ( var acct in topLevelAccounts )
+            var result = new FinancialAccountResult
             {
-                var result = new FinancialAccountResult
+                Id = acct.Id,
+                IsTaxDeductible = acct.IsTaxDeductible,
+                Name = acct.PublicName,
+                PublicDescription = acct.PublicDescription,
+                Campus = acct.CampusId.HasValue ? new CampusResult
                 {
-                    Id = acct.Id,
-                    IsTaxDeductible = acct.IsTaxDeductible,
-                    Name = acct.PublicName,
-                    PublicDescription = acct.PublicDescription,
-                    Campus = acct.CampusId.HasValue ? new CampusResult
-                    {
-                        Id = acct.CampusId.Value,
-                        Name = acct.Campus.Name
-                    } : null
-                };
+                    Id = acct.CampusId.Value,
+                    Name = acct.Campus.Name
+                } : null
+            };
 
-                result.Children = new List<FinancialAccountResult>();
-                var childAccts = acct.GetDescendentFinancialAccounts()
-                    .Where( childAcct => childAcct.IsActive );
+            result.Children = new List<FinancialAccountResult>();
+            var childAccts = acct.GetDescendentFinancialAccounts()
+                .Where( childAcct => childAcct.IsActive );
 
-                foreach ( var childAcct in childAccts )
+            foreach ( var childAcct in childAccts )
+            {
+                if ( result.Children.Any( c => c.Id == childAcct.Id ) )
                 {
-                    if ( result.Children.Any( c => c.Id == childAcct.Id ) )
-                    {
-                        continue;
-                    }
-
-                    result.Children.Add( new FinancialAccountResult
-                    {
-                        Id = childAcct.Id,
-                        IsTaxDeductible = childAcct.IsTaxDeductible,
-                        Name = childAcct.PublicName,
-                        PublicDescription = childAcct.PublicDescription,
-                        ParentAccountIdKey = IdHasher.Instance.GetHash( childAcct.ParentAccountId ?? 0 ),
-                        Campus = childAcct.CampusId.HasValue ? new CampusResult
-                        {
-                            Id = childAcct.CampusId.Value,
-                            Name = childAcct.Campus.Name
-                        } : null
-                    } );
+                    continue;
                 }
 
-                parentAccountResults.Add( result );
+                result.Children.Add( new FinancialAccountResult
+                {
+                    Id = childAcct.Id,
+                    IsTaxDeductible = childAcct.IsTaxDeductible,
+                    Name = childAcct.PublicName,
+                    PublicDescription = childAcct.PublicDescription,
+                    ParentAccountIdKey = IdHasher.Instance.GetHash( childAcct.ParentAccountId ?? 0 ),
+                    Campus = childAcct.CampusId.HasValue ? new CampusResult
+                    {
+                        Id = childAcct.CampusId.Value,
+                        Name = childAcct.Campus.Name
+                    } : null
+                } );
             }
 
-            // Flatten the tree for history (a single list of all accounts + children).
-            if ( !parentAccountResults.Any() )
+            parentAccountResults.Add( result );
+        }
+
+        // Flatten the tree for history (a single list of all accounts + children).
+        if ( !parentAccountResults.Any() )
+        {
+            return NoData();
+        }
+
+        var trimmedForHistory = new List<object>();
+
+        foreach ( var parent in parentAccountResults )
+        {
+            trimmedForHistory.Add( new
             {
-                return NoData();
-            }
+                parent.IdKey,
+                parent.Name,
+                parent.IsTaxDeductible,
+                parent.PublicDescription,
+            } );
 
-            var trimmedForHistory = new List<object>();
-
-            foreach ( var parent in parentAccountResults )
+            foreach ( var child in parent.Children )
             {
                 trimmedForHistory.Add( new
                 {
-                    parent.IdKey,
-                    parent.Name,
-                    parent.IsTaxDeductible,
-                    parent.PublicDescription,
+                    child.IdKey,
+                    child.Name,
+                    child.IsTaxDeductible,
+                    child.PublicDescription,
+                    child.ParentAccountIdKey
                 } );
-
-                foreach ( var child in parent.Children )
-                {
-                    trimmedForHistory.Add( new
-                    {
-                        child.IdKey,
-                        child.Name,
-                        child.IsTaxDeductible,
-                        child.PublicDescription,
-                        child.ParentAccountIdKey
-                    } );
-                }
             }
-
-            return Success( parentAccountResults )
-                .WithHistoryContent( trimmedForHistory, "financial-accounts" );
         }
 
-        #endregion
+        return Success( parentAccountResults )
+            .WithHistoryContent( trimmedForHistory, "financial-accounts" );
     }
+
+    #endregion
 }

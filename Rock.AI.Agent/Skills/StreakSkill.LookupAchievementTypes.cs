@@ -23,33 +23,32 @@ using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class StreakSkill
 {
-    internal sealed partial class StreakSkill
+    #region Tool(s)
+
+    [Description( "Retrieves all configured achievement types in Rock." )]
+    [AgentPurpose( "Retrieves all configured achievement types in Rock." )]
+    [AgentToolGuid( "f6c9300e-a770-4f92-827b-abc01ed21c8b" )]
+    public IAgentToolResult LookupAchievementTypes()
     {
-        #region Tool(s)
+        var achievementTypeResults = AchievementTypeCache.All( AgentRequestContext.RockContext )
+            .Where( at => at.IsActive )
+            .Select( at => new KeyNameResult( at.Id, at.Name ) )
+            .OrderBy( at => at.Name )
+            .ToList();
 
-        [Description( "Retrieves all configured achievement types in Rock." )]
-        [AgentPurpose( "Retrieves all configured achievement types in Rock." )]
-        [AgentToolGuid( "f6c9300e-a770-4f92-827b-abc01ed21c8b" )]
-        public IAgentToolResult LookupAchievementTypes()
+        var result = Success( achievementTypeResults );
+
+        if ( achievementTypeResults.Count > 50 )
         {
-            var achievementTypeResults = AchievementTypeCache.All( AgentRequestContext.RockContext )
-                .Where( at => at.IsActive )
-                .Select( at => new KeyNameResult( at.Id, at.Name ) )
-                .OrderBy( at => at.Name )
-                .ToList();
-
-            var result = Success( achievementTypeResults );
-
-            if ( achievementTypeResults.Count > 50 )
-            {
-                result = result.WithoutHistoryContent();
-            }
-
-            return result;
+            result = result.WithoutHistoryContent();
         }
 
-        #endregion
+        return result;
     }
+
+    #endregion
 }

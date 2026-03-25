@@ -21,37 +21,36 @@ using Microsoft.Extensions.Logging;
 
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+/// <summary>
+/// This skill provides access to streaks and achievement related data.
+/// </summary>
+
+[Description( "This skill provides access to streaks and achievement related data." )]
+[AgentSkillGuid( "7224d53b-7846-4e72-a454-e8877eef3edf" )]
+[EntityTypeGuid( "ae0913f4-94f4-4afe-bcfc-e94bd39c24f0" )]
+internal sealed partial class StreakSkill : AgentSkillComponent
 {
+    #region Fields
+
     /// <summary>
-    /// This skill provides access to streaks and achievement related data.
+    /// The logger for this instance.
     /// </summary>
+    private readonly ILogger _logger;
 
-    [Description( "This skill provides access to streaks and achievement related data." )]
-    [AgentSkillGuid( "7224d53b-7846-4e72-a454-e8877eef3edf" )]
-    [EntityTypeGuid( "ae0913f4-94f4-4afe-bcfc-e94bd39c24f0" )]
-    internal sealed partial class StreakSkill : AgentSkillComponent
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// The constructor for the Streak Skill.
+    /// </summary>
+    /// <param name="logger">Logger for diagnostics and error reporting.</param>
+    public StreakSkill( ILogger<StreakSkill> logger )
     {
-        #region Fields
-
-        /// <summary>
-        /// The logger for this instance.
-        /// </summary>
-        private readonly ILogger _logger;
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// The constructor for the Streak Skill.
-        /// </summary>
-        /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public StreakSkill( ILogger<StreakSkill> logger )
-        {
-            _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
-        }
-
-        #endregion
+        _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
     }
+
+    #endregion
 }

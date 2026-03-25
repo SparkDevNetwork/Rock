@@ -14,26 +14,25 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Mcp.Protocol
+namespace Rock.AI.Agent.Mcp.Protocol;
+
+/// <summary>
+/// Represents the information of a client or server.
+/// </summary>
+internal class Implementation
 {
     /// <summary>
-    /// Represents the information of a client or server.
+    /// The short name that identifies the device.
     /// </summary>
-    internal class Implementation
-    {
-        /// <summary>
-        /// The short name that identifies the device.
-        /// </summary>
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        /// <summary>
-        /// A friendly name that identifies the device.
-        /// </summary>
-        public string Title { get; set; }
+    /// <summary>
+    /// A friendly name that identifies the device.
+    /// </summary>
+    public string Title { get; set; }
 
-        /// <summary>
-        /// The version number of the device.
-        /// </summary>
-        public string Version { get; set; }
-    }
+    /// <summary>
+    /// The version number of the device.
+    /// </summary>
+    public string Version { get; set; }
 }

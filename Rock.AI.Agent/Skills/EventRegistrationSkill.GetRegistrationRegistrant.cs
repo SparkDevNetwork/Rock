@@ -23,53 +23,52 @@ using Rock.AI.Agent.Classes.Skills.EventRegistrationSkill;
 using Rock.Model;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class EventRegistrationSkill
 {
-    internal sealed partial class EventRegistrationSkill
+    #region Tool(s)
+
+    [Description( "Retrieves the details of a event registration registrant." )]
+    [AgentPurpose( "Retrieves the details of a event registration registrant." )]
+    [AgentToolGuid( "ecca3bad-e440-4743-a20f-4013350e3520" )]
+    public IAgentToolResult GetRegistrationRegistrant( string registrationRegistrantIdKey )
     {
-        #region Tool(s)
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
 
-        [Description( "Retrieves the details of a event registration registrant." )]
-        [AgentPurpose( "Retrieves the details of a event registration registrant." )]
-        [AgentToolGuid( "ecca3bad-e440-4743-a20f-4013350e3520" )]
-        public IAgentToolResult GetRegistrationRegistrant( string registrationRegistrantIdKey )
+        var registrationRegistrant = helper.GetRequiredEntity<RegistrationRegistrant>( registrationRegistrantIdKey, checkSecurity: true );
+
+        if ( helper.HasErrors )
         {
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
-
-            var registrationRegistrant = helper.GetRequiredEntity<RegistrationRegistrant>( registrationRegistrantIdKey, checkSecurity: true );
-
-            if ( helper.HasErrors )
-            {
-                return helper.ErrorResult;
-            }
-
-            registrationRegistrant.LoadAttributes( AgentRequestContext.RockContext );
-
-            var result = new RegistrationRegistrantResult
-            {
-                Id = registrationRegistrant.Id,
-                Person = PersonResult.NameOnly( registrationRegistrant.PersonAlias ),
-                RegistrationInstance = new RegistrationInstanceResult
-                {
-                    Id = registrationRegistrant.Registration.RegistrationInstance.Id,
-                    Name = registrationRegistrant.Registration.RegistrationInstance.Name,
-                },
-                RegisteredDateTime = registrationRegistrant.CreatedDateTime,
-                BaseRegistrationCost = registrationRegistrant.Cost,
-                IsOnWaitList = registrationRegistrant.OnWaitList,
-                RegisteredBy = registrationRegistrant.Registration.PersonAlias != null
-                    ? PersonResult.NameOnly( registrationRegistrant.Registration.PersonAlias )
-                    : new PersonResult
-                    {
-                        FirstName = registrationRegistrant.Registration.FirstName,
-                        LastName = registrationRegistrant.Registration.LastName,
-                    },
-                AttributeValues = registrationRegistrant.GetAttributeValueResults( AgentRequestContext ).ToList(),
-            };
-
-            return Success( result );
+            return helper.ErrorResult;
         }
 
-        #endregion
+        registrationRegistrant.LoadAttributes( AgentRequestContext.RockContext );
+
+        var result = new RegistrationRegistrantResult
+        {
+            Id = registrationRegistrant.Id,
+            Person = PersonResult.NameOnly( registrationRegistrant.PersonAlias ),
+            RegistrationInstance = new RegistrationInstanceResult
+            {
+                Id = registrationRegistrant.Registration.RegistrationInstance.Id,
+                Name = registrationRegistrant.Registration.RegistrationInstance.Name,
+            },
+            RegisteredDateTime = registrationRegistrant.CreatedDateTime,
+            BaseRegistrationCost = registrationRegistrant.Cost,
+            IsOnWaitList = registrationRegistrant.OnWaitList,
+            RegisteredBy = registrationRegistrant.Registration.PersonAlias != null
+                ? PersonResult.NameOnly( registrationRegistrant.Registration.PersonAlias )
+                : new PersonResult
+                {
+                    FirstName = registrationRegistrant.Registration.FirstName,
+                    LastName = registrationRegistrant.Registration.LastName,
+                },
+            AttributeValues = registrationRegistrant.GetAttributeValueResults( AgentRequestContext ).ToList(),
+        };
+
+        return Success( result );
     }
+
+    #endregion
 }

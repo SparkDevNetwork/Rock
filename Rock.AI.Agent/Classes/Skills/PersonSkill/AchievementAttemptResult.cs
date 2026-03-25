@@ -19,46 +19,45 @@ using System;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Skills.PersonSkill
+namespace Rock.AI.Agent.Classes.Skills.PersonSkill;
+
+/// <summary>
+/// Represents a single achievement attempt record.
+/// </summary>
+internal class AchievementAttemptResult : EntityResultBase
 {
     /// <summary>
-    /// Represents a single achievement attempt record.
+    /// The type of achievement that was attempted.
     /// </summary>
-    internal class AchievementAttemptResult : EntityResultBase
-    {
-        /// <summary>
-        /// The type of achievement that was attempted.
-        /// </summary>
-        public KeyNameResult AchievementType { get; set; }
+    public KeyNameResult AchievementType { get; set; }
 
-        /// <summary>
-        /// The person that is working on or has achieved the achievement.
-        /// </summary>
-        public PersonResult Person { get; set; }
+    /// <summary>
+    /// The person that is working on or has achieved the achievement.
+    /// </summary>
+    public PersonResult Person { get; set; }
 
-        /// <summary>
-        /// The date and time the attempt was started.
-        /// </summary>
-        public DateTime? AttemptStartDateTime { get; set; }
+    /// <summary>
+    /// The date and time the attempt was started.
+    /// </summary>
+    public DateTime? AttemptStartDateTime { get; set; }
 
-        /// <summary>
-        /// The date and time the attempt was last updated.
-        /// </summary>
-        public DateTime? AttemptEndDateTime { get; set; }
+    /// <summary>
+    /// The date and time the attempt was last updated.
+    /// </summary>
+    public DateTime? AttemptEndDateTime { get; set; }
 
-        /// <summary>
-        /// The progress on a scale of 0 - 100.
-        /// </summary>
-        public double? Progress { get; set; }
+    /// <summary>
+    /// The progress on a scale of 0 - 100.
+    /// </summary>
+    public double? Progress { get; set; }
 
-        /// <summary>
-        /// If closed, the achievement attempt will not be updated again.
-        /// </summary>
-        public bool? IsClosed { get; set; }
+    /// <summary>
+    /// If closed, the achievement attempt will not be updated again.
+    /// </summary>
+    public bool? IsClosed { get; set; }
 
-        /// <summary>
-        /// Determines if the achievement attempt was successful.
-        /// </summary>
-        public bool? IsSuccessful { get; set; }
-    }
+    /// <summary>
+    /// Determines if the achievement attempt was successful.
+    /// </summary>
+    public bool? IsSuccessful { get; set; }
 }

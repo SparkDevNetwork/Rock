@@ -22,32 +22,31 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.Model;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class FinanceSkill
 {
-    internal sealed partial class FinanceSkill
+    #region Tool(s)
+
+    [Description( "Retrieves all configured benevolence types in Rock." )]
+    [AgentPurpose( "Retrieves all configured benevolence types in Rock." )]
+    [AgentToolGuid( "a7a059f6-08a2-4032-a91d-a787d1857752" )]
+    public IAgentToolResult LookupBenevolenceTypes()
     {
-        #region Tool(s)
+        var benevolenceTypeResults = GetConfiguredBenevolenceTypes()
+            .Select( bt => new KeyNameResult( bt.Id, bt.Name ) )
+            .OrderBy( kn => kn.Name )
+            .ToList();
 
-        [Description( "Retrieves all configured benevolence types in Rock." )]
-        [AgentPurpose( "Retrieves all configured benevolence types in Rock." )]
-        [AgentToolGuid( "a7a059f6-08a2-4032-a91d-a787d1857752" )]
-        public IAgentToolResult LookupBenevolenceTypes()
+        var result = Success( benevolenceTypeResults );
+
+        if ( benevolenceTypeResults.Count > 50 )
         {
-            var benevolenceTypeResults = GetConfiguredBenevolenceTypes()
-                .Select( bt => new KeyNameResult( bt.Id, bt.Name ) )
-                .OrderBy( kn => kn.Name )
-                .ToList();
-
-            var result = Success( benevolenceTypeResults );
-
-            if ( benevolenceTypeResults.Count > 50 )
-            {
-                result = result.WithoutHistoryContent();
-            }
-
-            return result;
+            result = result.WithoutHistoryContent();
         }
 
-        #endregion
+        return result;
     }
+
+    #endregion
 }

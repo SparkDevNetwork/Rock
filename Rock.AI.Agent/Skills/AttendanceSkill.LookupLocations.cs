@@ -24,67 +24,66 @@ using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class AttendanceSkill
 {
-    internal sealed partial class AttendanceSkill
+    #region Tool(s)
+
+    [Description( "Retrieves all configured areas for a check-in configuration in Rock." )]
+    [AgentPurpose( "Retrieves a list of all locations that are configured for use with the check-in configuration." )]
+    [AgentToolGuid( "136ad9f3-89c6-40ea-9f3e-f44f54e31e79" )]
+    public IAgentToolResult LookupLocations( string checkInConfigurationIdKey )
     {
-        #region Tool(s)
-
-        [Description( "Retrieves all configured areas for a check-in configuration in Rock." )]
-        [AgentPurpose( "Retrieves a list of all locations that are configured for use with the check-in configuration." )]
-        [AgentToolGuid( "136ad9f3-89c6-40ea-9f3e-f44f54e31e79" )]
-        public IAgentToolResult LookupLocations( string checkInConfigurationIdKey )
+        if ( checkInConfigurationIdKey.IsNullOrWhiteSpace() )
         {
-            if ( checkInConfigurationIdKey.IsNullOrWhiteSpace() )
-            {
-                return Error( "A check-in configuration id key is required." )
-                    .WithInstructions( $"Call {nameof( LookupCheckInConfigurations )} for a list of possible values." );
-            }
-
-            var checkInConfigurationPurposeId = DefinedValueCache.Get( SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), AgentRequestContext.RockContext ).Id;
-            var checkInConfigurationId = IdHasher.Instance.GetId( checkInConfigurationIdKey );
-            var checkInConfiguration = checkInConfigurationId.HasValue
-                ? GroupTypeCache.Get( checkInConfigurationId.Value, AgentRequestContext.RockContext )
-                : null;
-
-            if ( checkInConfiguration == null || checkInConfiguration.GroupTypePurposeValueId != checkInConfigurationPurposeId )
-            {
-                return Error( "The provided check-in configuration id key is not valid." )
-                    .WithInstructions( $"Call {nameof( LookupCheckInConfigurations )} for a list of possible values." );
-            }
-
-            var groupLocationService = new GroupLocationService( AgentRequestContext.RockContext );
-
-            var locationResults = checkInConfiguration.GetDescendentGroupTypes()
-                .Select( a => a.Id )
-                .Chunk( 500 )
-                .SelectMany( ids =>
-                {
-                    return groupLocationService.Queryable()
-                        .Where( gl => ids.Contains( gl.Group.GroupTypeId )
-                            && gl.Group.IsActive
-                            && gl.Group.GroupType.TakesAttendance
-                            && gl.Location.IsActive )
-                        .Select( gl => new KeyNameResult
-                        {
-                            Id = gl.LocationId,
-                            Name = gl.Location.Name,
-                        } );
-                } )
-                .DistinctBy( kn => kn.Id )
-                .OrderBy( kn => kn.Name )
-                .ToList();
-
-            var result = Success( locationResults );
-
-            if ( locationResults.Count > 50 )
-            {
-                result = result.WithoutHistoryContent();
-            }
-
-            return result;
+            return Error( "A check-in configuration id key is required." )
+                .WithInstructions( $"Call {nameof( LookupCheckInConfigurations )} for a list of possible values." );
         }
 
-        #endregion
+        var checkInConfigurationPurposeId = DefinedValueCache.Get( SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), AgentRequestContext.RockContext ).Id;
+        var checkInConfigurationId = IdHasher.Instance.GetId( checkInConfigurationIdKey );
+        var checkInConfiguration = checkInConfigurationId.HasValue
+            ? GroupTypeCache.Get( checkInConfigurationId.Value, AgentRequestContext.RockContext )
+            : null;
+
+        if ( checkInConfiguration == null || checkInConfiguration.GroupTypePurposeValueId != checkInConfigurationPurposeId )
+        {
+            return Error( "The provided check-in configuration id key is not valid." )
+                .WithInstructions( $"Call {nameof( LookupCheckInConfigurations )} for a list of possible values." );
+        }
+
+        var groupLocationService = new GroupLocationService( AgentRequestContext.RockContext );
+
+        var locationResults = checkInConfiguration.GetDescendentGroupTypes()
+            .Select( a => a.Id )
+            .Chunk( 500 )
+            .SelectMany( ids =>
+            {
+                return groupLocationService.Queryable()
+                    .Where( gl => ids.Contains( gl.Group.GroupTypeId )
+                        && gl.Group.IsActive
+                        && gl.Group.GroupType.TakesAttendance
+                        && gl.Location.IsActive )
+                    .Select( gl => new KeyNameResult
+                    {
+                        Id = gl.LocationId,
+                        Name = gl.Location.Name,
+                    } );
+            } )
+            .DistinctBy( kn => kn.Id )
+            .OrderBy( kn => kn.Name )
+            .ToList();
+
+        var result = Success( locationResults );
+
+        if ( locationResults.Count > 50 )
+        {
+            result = result.WithoutHistoryContent();
+        }
+
+        return result;
     }
+
+    #endregion
 }

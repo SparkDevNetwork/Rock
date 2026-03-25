@@ -14,18 +14,17 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Mcp.Protocol
+namespace Rock.AI.Agent.Mcp.Protocol;
+
+/// <summary>
+/// Sent from the client to request a list of tools the server has.
+/// </summary>
+internal class ListToolsParameters
 {
     /// <summary>
-    /// Sent from the client to request a list of tools the server has.
+    /// An opaque token representing the current pagination position. If
+    /// provided, the server should return results starting after this
+    /// cursor.
     /// </summary>
-    internal class ListToolsParameters
-    {
-        /// <summary>
-        /// An opaque token representing the current pagination position. If
-        /// provided, the server should return results starting after this
-        /// cursor.
-        /// </summary>
-        public string Cursor { get; set; }
-    }
+    public string Cursor { get; set; }
 }

@@ -22,53 +22,52 @@ using Rock.AI.Agent.Classes.Skills.EventRegistrationSkill;
 using Rock.Model;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class EventRegistrationSkill
 {
-    internal sealed partial class EventRegistrationSkill
+    #region Tool(s)
+
+    [Description( "Retrieves the details of a event registration instance." )]
+    [AgentPurpose( "Retrieves the details of a event registration instance" )]
+    [AgentToolGuid( "fd59ad44-cc8a-4e38-93bc-80f0de0d4758" )]
+    public IAgentToolResult GetRegistrationInstance( string registrationInstanceIdKey )
     {
-        #region Tool(s)
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
 
-        [Description( "Retrieves the details of a event registration instance." )]
-        [AgentPurpose( "Retrieves the details of a event registration instance" )]
-        [AgentToolGuid( "fd59ad44-cc8a-4e38-93bc-80f0de0d4758" )]
-        public IAgentToolResult GetRegistrationInstance( string registrationInstanceIdKey )
+        var registrationInstance = helper.GetRequiredEntity<RegistrationInstance>( registrationInstanceIdKey, checkSecurity: true );
+
+        if ( helper.HasErrors )
         {
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
-
-            var registrationInstance = helper.GetRequiredEntity<RegistrationInstance>( registrationInstanceIdKey, checkSecurity: true );
-
-            if ( helper.HasErrors )
-            {
-                return helper.ErrorResult;
-            }
-
-            var result = new RegistrationInstanceResult
-            {
-                Id = registrationInstance.Id,
-                Name = registrationInstance.Name,
-                RegistrationTemplate = new RegistrationTemplateResult
-                {
-                    Id = registrationInstance.RegistrationTemplate.Id,
-                    Name = registrationInstance.RegistrationTemplate.Name,
-                },
-                StartDateTime = registrationInstance.StartDateTime,
-                EndDateTime = registrationInstance.EndDateTime,
-                ContactEmail = registrationInstance.ContactEmail,
-                ContactPerson = PersonResult.NameOnly( registrationInstance.ContactPersonAlias ),
-                ContactPhoneNumber = registrationInstance.ContactPhone,
-                MaximumAttendees = registrationInstance.MaxAttendees,
-                PaymentAccount = registrationInstance.Account != null
-                    ? new FinancialAccountResult
-                    {
-                        Id = registrationInstance.Account.Id,
-                        Name = registrationInstance.Account.Name,
-                    }
-                    : null,
-            };
-
-            return Success( result );
+            return helper.ErrorResult;
         }
 
-        #endregion
+        var result = new RegistrationInstanceResult
+        {
+            Id = registrationInstance.Id,
+            Name = registrationInstance.Name,
+            RegistrationTemplate = new RegistrationTemplateResult
+            {
+                Id = registrationInstance.RegistrationTemplate.Id,
+                Name = registrationInstance.RegistrationTemplate.Name,
+            },
+            StartDateTime = registrationInstance.StartDateTime,
+            EndDateTime = registrationInstance.EndDateTime,
+            ContactEmail = registrationInstance.ContactEmail,
+            ContactPerson = PersonResult.NameOnly( registrationInstance.ContactPersonAlias ),
+            ContactPhoneNumber = registrationInstance.ContactPhone,
+            MaximumAttendees = registrationInstance.MaxAttendees,
+            PaymentAccount = registrationInstance.Account != null
+                ? new FinancialAccountResult
+                {
+                    Id = registrationInstance.Account.Id,
+                    Name = registrationInstance.Account.Name,
+                }
+                : null,
+        };
+
+        return Success( result );
     }
+
+    #endregion
 }

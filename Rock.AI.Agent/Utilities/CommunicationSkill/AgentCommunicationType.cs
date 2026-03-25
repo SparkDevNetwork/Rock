@@ -14,15 +14,14 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Utilities.CommunicationSkill
+namespace Rock.AI.Agent.Utilities.CommunicationSkill;
+
+/// <summary>
+/// A list of the supported communication types for the agent (used for drafting + sending).
+/// </summary>
+internal enum AgentCommunicationType
 {
-    /// <summary>
-    /// A list of the supported communication types for the agent (used for drafting + sending).
-    /// </summary>
-    internal enum AgentCommunicationType
-    {
-        Email,
-        Sms,
-        Push
-    }
+    Email,
+    Sms,
+    Push
 }

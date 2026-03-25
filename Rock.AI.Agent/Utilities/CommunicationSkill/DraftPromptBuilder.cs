@@ -14,27 +14,27 @@
 // limitations under the License.
 // </copyright>
 
-namespace Rock.AI.Agent.Utilities.CommunicationSkill
+namespace Rock.AI.Agent.Utilities.CommunicationSkill;
+
+internal static class DraftPromptBuilder
 {
-    internal static class DraftPromptBuilder
+    public static string BuildEmailDraftPrompt(
+        DraftRequest request )
     {
-        public static string BuildEmailDraftPrompt(
-            DraftRequest request )
+
+        string recipientsSection = "### Recipients\r\n";
+        foreach ( var recipient in request.Recipients )
         {
+            recipientsSection += $"- {recipient.FullName} ({recipient.Email})\r\n";
+        }
 
-            string recipientsSection = "### Recipients\r\n";
-            foreach ( var recipient in request.Recipients )
-            {
-                recipientsSection += $"- {recipient.FullName} ({recipient.Email})\r\n";
-            }
+        string emailSignatureSection = string.Empty;
+        if ( request.EmailClosingPhrase.IsNotNullOrWhiteSpace() )
+        {
+            emailSignatureSection = $"- Finish the email with the following phrase: {request.EmailClosingPhrase}\r\n";
+        }
 
-            string emailSignatureSection = string.Empty;
-            if( request.EmailClosingPhrase.IsNotNullOrWhiteSpace() )
-            {
-                emailSignatureSection = $"- Finish the email with the following phrase: {request.EmailClosingPhrase}\r\n";
-            }
-
-            return $@"You are an assistant that drafts professional, well-structured emails.
+        return $@"You are an assistant that drafts professional, well-structured emails.
 {recipientsSection}
 
 ### Context
@@ -60,18 +60,18 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
     ""subject"": ""string"",
     ""body"": ""string""
 }}";
+    }
+
+    public static string BuildPushDraftPrompt(
+       DraftRequest request )
+    {
+        string recipientsSection = "### Recipients\r\n";
+        foreach ( var recipient in request.Recipients )
+        {
+            recipientsSection += $"- {recipient.FullName}\r\n";
         }
 
-        public static string BuildPushDraftPrompt(
-           DraftRequest request )
-        {
-            string recipientsSection = "### Recipients\r\n";
-            foreach ( var recipient in request.Recipients )
-            {
-                recipientsSection += $"- {recipient.FullName}\r\n";
-            }
-
-            return
+        return
 $@"You are an assistant that drafts concise, engaging push notifications.
 {recipientsSection}
 
@@ -96,18 +96,18 @@ $@"You are an assistant that drafts concise, engaging push notifications.
       ""subject"": ""string"",
       ""body"": ""string""
     }}";
+    }
+
+    public static string BuildSmsDraftPrompt(
+DraftRequest request, string fromNumber )
+    {
+        string recipientsSection = "### Recipients\r\n";
+        foreach ( var recipient in request.Recipients )
+        {
+            recipientsSection += $"- {recipient.FullName}\r\n";
         }
 
-        public static string BuildSmsDraftPrompt(
-   DraftRequest request, string fromNumber )
-        {
-            string recipientsSection = "### Recipients\r\n";
-            foreach ( var recipient in request.Recipients )
-            {
-                recipientsSection += $"- {recipient.FullName}\r\n";
-            }
-
-            return
+        return
 $@"You are an assistant that drafts concise, engaging SMS messages.
 {recipientsSection}
 
@@ -131,6 +131,5 @@ $@"You are an assistant that drafts concise, engaging SMS messages.
     ""subject"": ""string"",
     ""body"": ""string""
 }}";
-        }
     }
 }

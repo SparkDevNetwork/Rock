@@ -22,40 +22,39 @@ using Microsoft.Extensions.Logging;
 using Rock.Data;
 using Rock.Net;
 
-namespace Rock.AI.Agent
+namespace Rock.AI.Agent;
+
+/// <summary>
+/// Provides functionality to build instances of <see cref="IChatAgent"/>.
+/// </summary>
+internal class ChatAgentBuilder : IChatAgentBuilder
 {
+    private readonly IServiceProvider _serviceProvider;
+
     /// <summary>
-    /// Provides functionality to build instances of <see cref="IChatAgent"/>.
+    /// Initializes a new instance of the <see cref="ChatAgentBuilder"/> class.
     /// </summary>
-    internal class ChatAgentBuilder : IChatAgentBuilder
+    /// <param name="serviceProvider">The service provider used to resolve dependencies for the chat agent.</param>
+    public ChatAgentBuilder( IServiceProvider serviceProvider )
     {
-        private readonly IServiceProvider _serviceProvider;
+        _serviceProvider = serviceProvider;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ChatAgentBuilder"/> class.
-        /// </summary>
-        /// <param name="serviceProvider">The service provider used to resolve dependencies for the chat agent.</param>
-        public ChatAgentBuilder( IServiceProvider serviceProvider )
+    /// <inheritdoc/>
+    public IChatAgent Build( int agentId, ChatAgentOptions options )
+    {
+        var rockContext = _serviceProvider.GetRequiredService<RockContext>();
+        var requestContextAccessor = _serviceProvider.GetRequiredService<IRockRequestContextAccessor>();
+        var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
+        var rockContextFactory = _serviceProvider.GetRequiredService<IRockContextFactory>();
+
+        if ( options.IsDebugEnabled )
         {
-            _serviceProvider = serviceProvider;
+            loggerFactory = new ChatAgentDebugLoggerFactory( loggerFactory );
         }
 
-        /// <inheritdoc/>
-        public IChatAgent Build( int agentId, ChatAgentOptions options )
-        {
-            var rockContext = _serviceProvider.GetRequiredService<RockContext>();
-            var requestContextAccessor = _serviceProvider.GetRequiredService<IRockRequestContextAccessor>();
-            var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
-            var rockContextFactory = _serviceProvider.GetRequiredService<IRockContextFactory>();
+        var factory = new ChatAgentFactory( agentId, _serviceProvider, rockContext, requestContextAccessor, loggerFactory, rockContextFactory, options );
 
-            if ( options.IsDebugEnabled )
-            {
-                loggerFactory = new ChatAgentDebugLoggerFactory( loggerFactory );
-            }
-
-            var factory = new ChatAgentFactory( agentId, _serviceProvider, rockContext, requestContextAccessor, loggerFactory, rockContextFactory, options  );
-
-            return factory.Build();
-        }
+        return factory.Build();
     }
 }

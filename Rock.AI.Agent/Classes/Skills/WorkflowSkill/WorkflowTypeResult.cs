@@ -16,26 +16,25 @@
 
 using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Skills.WorkflowSkill
+namespace Rock.AI.Agent.Classes.Skills.WorkflowSkill;
+
+/// <summary>
+/// Represents a single workflow type in the system.
+/// </summary>
+internal class WorkflowTypeResult : EntityResultBase
 {
     /// <summary>
-    /// Represents a single workflow type in the system.
+    /// The name of the workflow type.
     /// </summary>
-    internal class WorkflowTypeResult : EntityResultBase
-    {
-        /// <summary>
-        /// The name of the workflow type.
-        /// </summary>
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        /// <summary>
-        /// The description configured on the workflow type.
-        /// </summary>
-        public string Description { get; set; }
+    /// <summary>
+    /// The description configured on the workflow type.
+    /// </summary>
+    public string Description { get; set; }
 
-        /// <summary>
-        /// The name of the category that this workflow type belongs to.
-        /// </summary>
-        public string CategoryName { get; set; }
-    }
+    /// <summary>
+    /// The name of the category that this workflow type belongs to.
+    /// </summary>
+    public string CategoryName { get; set; }
 }

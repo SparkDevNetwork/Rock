@@ -29,7 +29,7 @@ namespace Rock.AI.Agent.Skills;
 /// </summary>
 
 [Description( "This skill provides access to step related data." )]
-[AgentUsage( "Steps and Programs are a way to guide users through a series of requirements, such as becoming a church member.")]
+[AgentUsage( "Steps and Programs are a way to guide users through a series of requirements, such as becoming a church member." )]
 [AgentSkillGuid( "644caff4-73ef-43a3-9864-1b08614036c0" )]
 [EntityTypeGuid( "4490b637-10f7-4912-8008-af6a061587c1" )]
 internal sealed partial class StepSkill : AgentSkillComponent

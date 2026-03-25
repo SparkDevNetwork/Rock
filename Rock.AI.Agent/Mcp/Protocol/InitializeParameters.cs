@@ -16,27 +16,26 @@
 
 using System.Collections.Generic;
 
-namespace Rock.AI.Agent.Mcp.Protocol
+namespace Rock.AI.Agent.Mcp.Protocol;
+
+/// <summary>
+/// Represents a request from an MCP client to initialize the connection
+/// with the server.
+/// </summary>
+internal class InitializeParameters
 {
     /// <summary>
-    /// Represents a request from an MCP client to initialize the connection
-    /// with the server.
+    /// The supported capabilities of the client.
     /// </summary>
-    internal class InitializeParameters
-    {
-        /// <summary>
-        /// The supported capabilities of the client.
-        /// </summary>
-        public Dictionary<string, Capability> Capabilities { get; set; }
+    public Dictionary<string, Capability> Capabilities { get; set; }
 
-        /// <summary>
-        /// The information that describes the client making the request.
-        /// </summary>
-        public Implementation ClientInfo { get; set; }
+    /// <summary>
+    /// The information that describes the client making the request.
+    /// </summary>
+    public Implementation ClientInfo { get; set; }
 
-        /// <summary>
-        /// The latest protocol version that the client supports.
-        /// </summary>
-        public string ProtocolVersion { get; set; }
-    }
+    /// <summary>
+    /// The latest protocol version that the client supports.
+    /// </summary>
+    public string ProtocolVersion { get; set; }
 }

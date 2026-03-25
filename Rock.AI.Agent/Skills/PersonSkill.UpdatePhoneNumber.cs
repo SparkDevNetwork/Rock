@@ -25,70 +25,69 @@ using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class PersonSkill
 {
-    internal sealed partial class PersonSkill
+    #region Tool(s)
+
+    [Description( "Updates a person's phone number." )]
+    [AgentUsage( "The phoneTypeValueIdKey must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the appropriate IdKey." )]
+    [AgentToolGuid( "89A9F9C5-87F2-9197-46DA-5C96D0BDA628" )]
+    public IAgentToolResult UpdatePhoneNumber(
+        string personIdKey,
+        string phoneNumber,
+        string phoneTypeValueIdKey = null,
+        bool isMessagingEnabled = false,
+        bool isUnlisted = false
+    )
     {
-        #region Tool(s)
+        var phoneTypeValueId = IdHasher.Instance.GetId( phoneTypeValueIdKey );
+        var phoneTypeValue = DefinedValueCache.Get( phoneTypeValueId ?? 0 );
 
-        [Description( "Updates a person's phone number." )]
-        [AgentUsage( "The phoneTypeValueIdKey must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the appropriate IdKey." )]
-        [AgentToolGuid( "89A9F9C5-87F2-9197-46DA-5C96D0BDA628" )]
-        public IAgentToolResult UpdatePhoneNumber(
-            string personIdKey,
-            string phoneNumber,
-            string phoneTypeValueIdKey = null,
-            bool isMessagingEnabled = false,
-            bool isUnlisted = false
-        )
+        // Check for valid phone type
+        if ( !phoneTypeValueId.HasValue || phoneTypeValue == null )
         {
-            var phoneTypeValueId = IdHasher.Instance.GetId( phoneTypeValueIdKey );
-            var phoneTypeValue = DefinedValueCache.Get( phoneTypeValueId ?? 0 );
+            var phoneTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_PHONE_TYPE ).DefinedValues
+                .Select( dv => new KeyNameResult { Id = dv.Id, Name = dv.Value } )
+                .ToList();
 
-            // Check for valid phone type
-            if ( !phoneTypeValueId.HasValue || phoneTypeValue == null )
-            {
-                var phoneTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_PHONE_TYPE ).DefinedValues
-                    .Select( dv => new KeyNameResult { Id = dv.Id, Name = dv.Value } )
-                    .ToList();
-
-                return Error( "Lookups Required" )
-                    .WithContent( phoneTypes )
-                    .WithHistoryContent( phoneTypes )
-                    .WithInstructions( "Use the following phone types to determine the proper IdKey for the tool." );
-            }
-            
-            using var rockContext = RockApp.Current.CreateRockContext();
-
-            // Load the person to ensure they exist
-            var personService = new PersonService( rockContext );
-            var person = personService.Get( IdHasher.Instance.GetId( personIdKey ) ?? 0 );
-
-            if ( person == null )
-            {
-                return Error( "No person could be found with the provided personIdKey." );
-            }
-
-            // Save the phone number
-            var personPhoneService = new PhoneNumberService( rockContext );
-            var personPhone = personPhoneService.Queryable().Where( ph => ph.PersonId == person.Id && ph.NumberTypeValueId == phoneTypeValueId ).FirstOrDefault();
-
-            if ( personPhone == null )
-            {
-                personPhone.PersonId = person.Id;
-                personPhone.NumberTypeValueId = phoneTypeValueId;
-                personPhoneService.Add( personPhone );
-            }
-
-            personPhone.Number = phoneNumber;
-            personPhone.IsUnlisted = isUnlisted;
-            personPhone.IsMessagingEnabled = isMessagingEnabled;
-
-            rockContext.SaveChanges();
-
-            return Success( $"The phone number for {person.FullName} has been updated to {personPhone.NumberFormatted} with messaging set to {isMessagingEnabled} and unlisted set to {isUnlisted}." );
+            return Error( "Lookups Required" )
+                .WithContent( phoneTypes )
+                .WithHistoryContent( phoneTypes )
+                .WithInstructions( "Use the following phone types to determine the proper IdKey for the tool." );
         }
 
-        #endregion
+        using var rockContext = RockApp.Current.CreateRockContext();
+
+        // Load the person to ensure they exist
+        var personService = new PersonService( rockContext );
+        var person = personService.Get( IdHasher.Instance.GetId( personIdKey ) ?? 0 );
+
+        if ( person == null )
+        {
+            return Error( "No person could be found with the provided personIdKey." );
+        }
+
+        // Save the phone number
+        var personPhoneService = new PhoneNumberService( rockContext );
+        var personPhone = personPhoneService.Queryable().Where( ph => ph.PersonId == person.Id && ph.NumberTypeValueId == phoneTypeValueId ).FirstOrDefault();
+
+        if ( personPhone == null )
+        {
+            personPhone.PersonId = person.Id;
+            personPhone.NumberTypeValueId = phoneTypeValueId;
+            personPhoneService.Add( personPhone );
+        }
+
+        personPhone.Number = phoneNumber;
+        personPhone.IsUnlisted = isUnlisted;
+        personPhone.IsMessagingEnabled = isMessagingEnabled;
+
+        rockContext.SaveChanges();
+
+        return Success( $"The phone number for {person.FullName} has been updated to {personPhone.NumberFormatted} with messaging set to {isMessagingEnabled} and unlisted set to {isUnlisted}." );
     }
+
+    #endregion
 }

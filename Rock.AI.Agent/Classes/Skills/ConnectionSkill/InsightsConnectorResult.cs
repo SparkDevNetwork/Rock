@@ -16,21 +16,20 @@
 
 using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
+namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill;
+
+/// <summary>
+/// Insight details about a single connector.
+/// </summary>
+internal class InsightsConnectorResult
 {
     /// <summary>
-    /// Insight details about a single connector.
+    /// The person that is the connector for this result.
     /// </summary>
-    internal class InsightsConnectorResult
-    {
-        /// <summary>
-        /// The person that is the connector for this result.
-        /// </summary>
-        public PersonResult Connector { get; set; }
+    public PersonResult Connector { get; set; }
 
-        /// <summary>
-        /// The number of active connection requests assigned to this connector.
-        /// </summary>
-        public int ActiveCount { get; set; }
-    }
+    /// <summary>
+    /// The number of active connection requests assigned to this connector.
+    /// </summary>
+    public int ActiveCount { get; set; }
 }

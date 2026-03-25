@@ -16,32 +16,31 @@
 
 using System.Collections.Generic;
 
-namespace Rock.AI.Agent.Mcp.Protocol
+namespace Rock.AI.Agent.Mcp.Protocol;
+
+/// <summary>
+/// Represents the result from an MCP server when initializing a connection.
+/// </summary>
+internal class InitializeResult
 {
     /// <summary>
-    /// Represents the result from an MCP server when initializing a connection.
+    /// The capabilities of the MCP server.
     /// </summary>
-    internal class InitializeResult
-    {
-        /// <summary>
-        /// The capabilities of the MCP server.
-        /// </summary>
-        public Dictionary<string, Capability> Capabilities { get; set; }
+    public Dictionary<string, Capability> Capabilities { get; set; }
 
-        /// <summary>
-        /// The information about the server that is responding to the request.
-        /// </summary>
-        public Implementation ServerInfo { get; set; }
+    /// <summary>
+    /// The information about the server that is responding to the request.
+    /// </summary>
+    public Implementation ServerInfo { get; set; }
 
-        /// <summary>
-        /// The instructions for the client to understand how to interact with
-        /// the server. These are typically passed to the language model.
-        /// </summary>
-        public string Instructions { get; set; }
+    /// <summary>
+    /// The instructions for the client to understand how to interact with
+    /// the server. These are typically passed to the language model.
+    /// </summary>
+    public string Instructions { get; set; }
 
-        /// <summary>
-        /// The version of the Model Context Protocol that the server wants to use.
-        /// </summary>
-        public string ProtocolVersion { get; set; }
-    }
+    /// <summary>
+    /// The version of the Model Context Protocol that the server wants to use.
+    /// </summary>
+    public string ProtocolVersion { get; set; }
 }

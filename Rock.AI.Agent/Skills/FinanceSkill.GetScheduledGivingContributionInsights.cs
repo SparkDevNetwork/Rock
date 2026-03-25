@@ -25,88 +25,87 @@ using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class FinanceSkill
 {
-    internal sealed partial class FinanceSkill
+    #region Tool(s)
+
+    [Description( "Retrieves a list of scheduled giving contributions." )]
+    [AgentPurpose( "Retrieves a list of scheduled giving contributions." )]
+    [AgentUsage( "Any argument ending with 'ValueIdKey' must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the chosen IdKey." )]
+    [AgentUsage( "The startDate and endDate parameters refer to the next scheduled payment date." )]
+    [AgentToolGuid( "8d789711-32f2-474f-b89b-fa8d3b718fad" )]
+    public IAgentToolResult GetScheduledGivingContributionInsights(
+        string personIdKey = null,
+        string campusIdKey = null,
+        List<string> accountIdKeys = null,
+        string paymentMethodTypeValueIdKey = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null )
     {
-        #region Tool(s)
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        var contributionTransactionValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid(), AgentRequestContext.RockContext ).Id;
+        var qry = new FinancialScheduledTransactionService( AgentRequestContext.RockContext )
+            .Queryable()
+            .Where( fst => fst.TransactionTypeValueId == contributionTransactionValueId
+                && fst.IsActive );
 
-        [Description( "Retrieves a list of scheduled giving contributions." )]
-        [AgentPurpose( "Retrieves a list of scheduled giving contributions." )]
-        [AgentUsage( "Any argument ending with 'ValueIdKey' must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the chosen IdKey." )]
-        [AgentUsage( "The startDate and endDate parameters refer to the next scheduled payment date." )]
-        [AgentToolGuid( "8d789711-32f2-474f-b89b-fa8d3b718fad" )]
-        public IAgentToolResult GetScheduledGivingContributionInsights(
-            string personIdKey = null,
-            string campusIdKey = null,
-            List<string> accountIdKeys = null,
-            string paymentMethodTypeValueIdKey = null,
-            DateTime? startDate = null,
-            DateTime? endDate = null )
+        qry = WherePersonOrGivingGroup( qry, helper, personIdKey );
+
+        qry = helper.WhereOptionalIdKey( qry, fst => fst.FinancialPaymentDetail.CurrencyTypeValueId, paymentMethodTypeValueIdKey );
+        qry = helper.WhereOptionalPropertyBetween( qry, fst => fst.NextPaymentDate, startDate, endDate );
+
+        if ( !TryGetMatchingAccountIds( AgentRequestContext, accountIdKeys, campusIdKey, out var accountIds ) )
         {
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
-            var contributionTransactionValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid(), AgentRequestContext.RockContext ).Id;
-            var qry = new FinancialScheduledTransactionService( AgentRequestContext.RockContext )
-                .Queryable()
-                .Where( fst => fst.TransactionTypeValueId == contributionTransactionValueId
-                    && fst.IsActive );
-
-            qry = WherePersonOrGivingGroup( qry, helper, personIdKey );
-
-            qry = helper.WhereOptionalIdKey( qry, fst => fst.FinancialPaymentDetail.CurrencyTypeValueId, paymentMethodTypeValueIdKey );
-            qry = helper.WhereOptionalPropertyBetween( qry, fst => fst.NextPaymentDate, startDate, endDate );
-
-            if ( !TryGetMatchingAccountIds( AgentRequestContext, accountIdKeys, campusIdKey, out var accountIds ) )
-            {
-                return AgentToolResult.NoData()
-                    .WithInstructions( "No active financial accounts matched the supplied accountIdKeys and/or campusIdKey." );
-            }
-
-            var hasAccountFilter = accountIds.Any();
-
-            // Project per-transaction, with detail amount filtered by provided account ids if any.
-            var txAgg = qry
-                .Select( fst => new FinancialInsightsAggregateRow
-                {
-                    Id = fst.Id,
-                    CurrencyTypeId = fst.FinancialPaymentDetail.CurrencyTypeValueId,
-                    CurrencyType = fst.FinancialPaymentDetail.CurrencyTypeValue != null
-                        ? fst.FinancialPaymentDetail.CurrencyTypeValue.Value
-                        : "Unknown",
-                    Frequency = fst.TransactionFrequencyValue.Value,
-                    AmountFiltered = hasAccountFilter
-                        ? fst.ScheduledTransactionDetails
-                            .Where( d => accountIds.Contains( d.AccountId ) )
-                            .Sum( d => ( decimal? ) d.Amount ) ?? 0m
-                        : fst.ScheduledTransactionDetails
-                            .Sum( d => ( decimal? ) d.Amount ) ?? 0m,
-                } )
-                .ToList();
-
-            // Fund (account) rollup detail level honoring multi-account filter if provided.
-            var detailProj = qry
-                .SelectMany( t => t.ScheduledTransactionDetails.Select( d => new FinancialInsightsDetailRow
-                {
-                    TransactionId = t.Id,
-                    AccountId = ( int? ) d.AccountId,
-                    AccountName = d.Account != null ? d.Account.Name : "Unknown",
-                    Amount = ( decimal? ) d.Amount ?? 0m
-                } ) )
-                .Where( x => x.AccountId != null && ( !hasAccountFilter || accountIds.Contains( x.AccountId.Value ) ) );
-
-            var insightsResult = GetTransactionInsights( txAgg, detailProj, accountIds );
-
-            var result = Success( insightsResult )
-                .WithInstructions( "Percents are scaled between 0 and 100." );
-
-            if ( !helper.HasErrors && personIdKey.IsNotNullOrWhiteSpace() )
-            {
-                result = result.WithInstructions( "Note: These insights may include transactions made by other people in the same giving group as the specified person. This is typically the same family, but not always." );
-            }
-
-            return result;
+            return AgentToolResult.NoData()
+                .WithInstructions( "No active financial accounts matched the supplied accountIdKeys and/or campusIdKey." );
         }
 
-        #endregion
+        var hasAccountFilter = accountIds.Any();
+
+        // Project per-transaction, with detail amount filtered by provided account ids if any.
+        var txAgg = qry
+            .Select( fst => new FinancialInsightsAggregateRow
+            {
+                Id = fst.Id,
+                CurrencyTypeId = fst.FinancialPaymentDetail.CurrencyTypeValueId,
+                CurrencyType = fst.FinancialPaymentDetail.CurrencyTypeValue != null
+                    ? fst.FinancialPaymentDetail.CurrencyTypeValue.Value
+                    : "Unknown",
+                Frequency = fst.TransactionFrequencyValue.Value,
+                AmountFiltered = hasAccountFilter
+                    ? fst.ScheduledTransactionDetails
+                        .Where( d => accountIds.Contains( d.AccountId ) )
+                        .Sum( d => ( decimal? ) d.Amount ) ?? 0m
+                    : fst.ScheduledTransactionDetails
+                        .Sum( d => ( decimal? ) d.Amount ) ?? 0m,
+            } )
+            .ToList();
+
+        // Fund (account) rollup detail level honoring multi-account filter if provided.
+        var detailProj = qry
+            .SelectMany( t => t.ScheduledTransactionDetails.Select( d => new FinancialInsightsDetailRow
+            {
+                TransactionId = t.Id,
+                AccountId = ( int? ) d.AccountId,
+                AccountName = d.Account != null ? d.Account.Name : "Unknown",
+                Amount = ( decimal? ) d.Amount ?? 0m
+            } ) )
+            .Where( x => x.AccountId != null && ( !hasAccountFilter || accountIds.Contains( x.AccountId.Value ) ) );
+
+        var insightsResult = GetTransactionInsights( txAgg, detailProj, accountIds );
+
+        var result = Success( insightsResult )
+            .WithInstructions( "Percents are scaled between 0 and 100." );
+
+        if ( !helper.HasErrors && personIdKey.IsNotNullOrWhiteSpace() )
+        {
+            result = result.WithInstructions( "Note: These insights may include transactions made by other people in the same giving group as the specified person. This is typically the same family, but not always." );
+        }
+
+        return result;
     }
+
+    #endregion
 }

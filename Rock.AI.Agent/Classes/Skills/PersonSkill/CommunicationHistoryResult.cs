@@ -21,47 +21,46 @@ using Rock.AI.Agent.Classes.Entity;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace Rock.AI.Agent.Classes.Skills.PersonSkill
+namespace Rock.AI.Agent.Classes.Skills.PersonSkill;
+
+/// <summary>
+/// Represents a single communication that was created for a person.
+/// </summary>
+internal class CommunicationHistoryResult : EntityResultBase
 {
     /// <summary>
-    /// Represents a single communication that was created for a person.
+    /// The name of the communication.
     /// </summary>
-    internal class CommunicationHistoryResult : EntityResultBase
-    {
-        /// <summary>
-        /// The name of the communication.
-        /// </summary>
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        /// <summary>
-        /// The medium entity type identifier that was used to send the communication.
-        /// </summary>
-        [JsonIgnore]
-        public int? MediumEntityTypeId { get; set; }
+    /// <summary>
+    /// The medium entity type identifier that was used to send the communication.
+    /// </summary>
+    [JsonIgnore]
+    public int? MediumEntityTypeId { get; set; }
 
-        /// <summary>
-        /// The name of the medium used to send the communication.
-        /// </summary>
-        public string Medium => MediumEntityTypeId.HasValue ? EntityTypeCache.Get( MediumEntityTypeId.Value )?.FriendlyName : null;
+    /// <summary>
+    /// The name of the medium used to send the communication.
+    /// </summary>
+    public string Medium => MediumEntityTypeId.HasValue ? EntityTypeCache.Get( MediumEntityTypeId.Value )?.FriendlyName : null;
 
-        /// <summary>
-        /// The date the communication was sent.
-        /// </summary>
-        public DateTime? SentDateTime { get; set; }
+    /// <summary>
+    /// The date the communication was sent.
+    /// </summary>
+    public DateTime? SentDateTime { get; set; }
 
-        /// <summary>
-        /// The person that sent the communication.
-        /// </summary>
-        public PersonResult Sender { get; set; }
+    /// <summary>
+    /// The person that sent the communication.
+    /// </summary>
+    public PersonResult Sender { get; set; }
 
-        /// <summary>
-        /// The status of the communication.
-        /// </summary>
-        public CommunicationRecipientStatus? Status { get; set; }
+    /// <summary>
+    /// The status of the communication.
+    /// </summary>
+    public CommunicationRecipientStatus? Status { get; set; }
 
-        /// <summary>
-        /// A descriptive reason for the communication status, if applicable.
-        /// </summary>
-        public string StatusMessage { get; set; }
-    }
+    /// <summary>
+    /// A descriptive reason for the communication status, if applicable.
+    /// </summary>
+    public string StatusMessage { get; set; }
 }

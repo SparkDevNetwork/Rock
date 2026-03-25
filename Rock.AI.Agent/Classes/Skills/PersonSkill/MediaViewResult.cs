@@ -15,71 +15,68 @@
 // </copyright>
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Rock.AI.Agent.Classes.Skills.PersonSkill
+namespace Rock.AI.Agent.Classes.Skills.PersonSkill;
+
+/// <summary>
+/// Lightweight result model for a person's page-visit aggregate.
+/// </summary>
+internal class MediaViewResult
 {
     /// <summary>
-    /// Lightweight result model for a person's page-visit aggregate.
+    /// The identifier of the media view record.
     /// </summary>
-    [ExcludeFromCodeCoverage]
-    internal class MediaViewResult
-    {
-        /// <summary>
-        /// The identifier of the media view record.
-        /// </summary>
-        [JsonIgnore]
-        public int MediaElementId { get; set; }
+    [JsonIgnore]
+    public int MediaElementId { get; set; }
 
-        /// <summary>
-        /// The opaque identifier for the media view record (Id Key).
-        /// </summary>
-        public string MediaElementIdKey => MediaElementId.AsIdKey();
+    /// <summary>
+    /// The opaque identifier for the media view record (Id Key).
+    /// </summary>
+    public string MediaElementIdKey => MediaElementId.AsIdKey();
 
-        /// <summary>
-        /// The date and time when the view data was viewed.
-        /// </summary>
-        public DateTime ViewDateTime { get; set; }
+    /// <summary>
+    /// The date and time when the view data was viewed.
+    /// </summary>
+    public DateTime ViewDateTime { get; set; }
 
-        /// <summary>
-        /// Display digital medium the watch was made on (web,mobile).
-        /// </summary>
-        public string Medium { get; set; }
+    /// <summary>
+    /// Display digital medium the watch was made on (web,mobile).
+    /// </summary>
+    public string Medium { get; set; }
 
-        /// <summary>
-        /// The percent of he video that was watched.
-        /// </summary>
-        public int? PercentWatched { get; set; }
+    /// <summary>
+    /// The percent of he video that was watched.
+    /// </summary>
+    public int? PercentWatched { get; set; }
 
-        /// <summary>
-        /// The length of the media in seconds.
-        /// </summary>
-        public int? MediaLengthInSeconds { get; set; }
+    /// <summary>
+    /// The length of the media in seconds.
+    /// </summary>
+    public int? MediaLengthInSeconds { get; set; }
 
-        /// <summary>
-        /// The duration of the media that was watched in seconds. This is null if the media was not watched.
-        /// </summary>
-        public int? DurationWatchedInSeconds { get; set; }
+    /// <summary>
+    /// The duration of the media that was watched in seconds. This is null if the media was not watched.
+    /// </summary>
+    public int? DurationWatchedInSeconds { get; set; }
 
-        /// <summary>
-        /// The name of the media that was viewed, such as "Sunday Service - 2023-10-01".
-        /// </summary>
-        public string MediaElementName { get; set; }
+    /// <summary>
+    /// The name of the media that was viewed, such as "Sunday Service - 2023-10-01".
+    /// </summary>
+    public string MediaElementName { get; set; }
 
-        /// <summary>
-        /// The folder name of the media element.
-        /// </summary>
-        public string MediaFolderName { get; set; }
+    /// <summary>
+    /// The folder name of the media element.
+    /// </summary>
+    public string MediaFolderName { get; set; }
 
-        /// <summary>
-        /// The account name for the media element.
-        /// </summary>
-        public string MediaAccountName { get; set; }
+    /// <summary>
+    /// The account name for the media element.
+    /// </summary>
+    public string MediaAccountName { get; set; }
 
-        /// <summary>
-        /// The URL where the media can be viewed, such as "https://example.com/media/12345".
-        /// </summary>
-        public string ViewingLocationUrl { get; set; }
-    }
+    /// <summary>
+    /// The URL where the media can be viewed, such as "https://example.com/media/12345".
+    /// </summary>
+    public string ViewingLocationUrl { get; set; }
 }

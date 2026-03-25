@@ -25,102 +25,101 @@ using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
 
-namespace Rock.AI.Agent.Skills
+namespace Rock.AI.Agent.Skills;
+
+internal sealed partial class EventRegistrationSkill
 {
-    internal sealed partial class EventRegistrationSkill
+    #region Tool(s)
+
+    [Description( "Retrieves a list of registration instances." )]
+    [AgentPurpose( "Retrieves a list of registration instances." )]
+    [AgentUsage( "The startDate and endDate parameters filter instances that open within the window, close within the window, or exist during the entire window." )]
+    [AgentToolGuid( "8a4a5cf4-a213-427f-a0c1-4e4d9082148c" )]
+    public IAgentToolResult ListRegistrationInstances(
+        string registrationTemplateIdKey = null,
+        string partialName = null,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        string cursor = null )
     {
-        #region Tool(s)
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        var currentPerson = AgentRequestContext.CurrentPerson;
 
-        [Description( "Retrieves a list of registration instances." )]
-        [AgentPurpose( "Retrieves a list of registration instances." )]
-        [AgentUsage( "The startDate and endDate parameters filter instances that open within the window, close within the window, or exist during the entire window.")]
-        [AgentToolGuid( "8a4a5cf4-a213-427f-a0c1-4e4d9082148c" )]
-        public IAgentToolResult ListRegistrationInstances(
-            string registrationTemplateIdKey = null,
-            string partialName = null,
-            DateTime? startDate = null,
-            DateTime? endDate = null,
-            string cursor = null )
+        var query = new RegistrationInstanceService( AgentRequestContext.RockContext )
+            .Queryable()
+            .Include( ri => ri.RegistrationTemplate )
+            .Where( ri => ri.IsActive
+                && ri.RegistrationTemplate.IsActive
+                && ri.StartDateTime.HasValue );
+
+        query = helper.WhereOptionalIdKey( query, ri => ri.RegistrationTemplateId, registrationTemplateIdKey );
+
+        if ( startDate.HasValue || endDate.HasValue )
         {
-            var helper = new AgentToolHelper( AgentRequestContext, _logger );
-            var currentPerson = AgentRequestContext.CurrentPerson;
-
-            var query = new RegistrationInstanceService( AgentRequestContext.RockContext )
-                .Queryable()
-                .Include( ri => ri.RegistrationTemplate )
-                .Where( ri => ri.IsActive
-                    && ri.RegistrationTemplate.IsActive
-                    && ri.StartDateTime.HasValue );
-
-            query = helper.WhereOptionalIdKey( query, ri => ri.RegistrationTemplateId, registrationTemplateIdKey );
-
-            if ( startDate.HasValue || endDate.HasValue )
+            if ( startDate.HasValue && endDate.HasValue )
             {
-                if ( startDate.HasValue && endDate.HasValue )
-                {
-                    query = query.Where( ri => ( ri.StartDateTime.Value >= startDate.Value && ri.StartDateTime.Value <= endDate.Value )
-                        || ( ri.EndDateTime.HasValue && ri.EndDateTime.Value >= startDate.Value && ri.EndDateTime.Value <= endDate.Value )
-                        || ( ri.StartDateTime.HasValue && !ri.EndDateTime.HasValue && ri.StartDateTime.Value < startDate.Value )
-                        || ( ri.StartDateTime.HasValue && ri.EndDateTime.HasValue && ri.StartDateTime.Value < startDate.Value && ri.EndDateTime.Value > endDate.Value ) );
-                }
-                else if ( startDate.HasValue )
-                {
-                    query = query.Where( ri => ri.StartDateTime.Value >= startDate.Value
-                        || ( !ri.EndDateTime.HasValue && ri.StartDateTime.Value < startDate.Value )
-                        || ( ri.EndDateTime.HasValue && ri.StartDateTime.Value < startDate.Value && ri.EndDateTime.Value >= startDate.Value ) );
-                }
-                else if ( endDate.HasValue )
-                {
-                    query = query.Where( ri => ri.StartDateTime.Value <= endDate.Value );
-                }
+                query = query.Where( ri => ( ri.StartDateTime.Value >= startDate.Value && ri.StartDateTime.Value <= endDate.Value )
+                    || ( ri.EndDateTime.HasValue && ri.EndDateTime.Value >= startDate.Value && ri.EndDateTime.Value <= endDate.Value )
+                    || ( ri.StartDateTime.HasValue && !ri.EndDateTime.HasValue && ri.StartDateTime.Value < startDate.Value )
+                    || ( ri.StartDateTime.HasValue && ri.EndDateTime.HasValue && ri.StartDateTime.Value < startDate.Value && ri.EndDateTime.Value > endDate.Value ) );
             }
-            else
+            else if ( startDate.HasValue )
             {
-                helper.AddError( $"At least one of {nameof( startDate )} or {nameof( endDate )} must be provided." );
+                query = query.Where( ri => ri.StartDateTime.Value >= startDate.Value
+                    || ( !ri.EndDateTime.HasValue && ri.StartDateTime.Value < startDate.Value )
+                    || ( ri.EndDateTime.HasValue && ri.StartDateTime.Value < startDate.Value && ri.EndDateTime.Value >= startDate.Value ) );
             }
-
-            if ( partialName.IsNotNullOrWhiteSpace() )
+            else if ( endDate.HasValue )
             {
-                query = query.Where( ri => ri.Name.Contains( partialName ) );
+                query = query.Where( ri => ri.StartDateTime.Value <= endDate.Value );
             }
-
-            if ( helper.HasErrors )
-            {
-                return helper.ErrorResult;
-            }
-
-            var paginator = new CursorPaginator<RegistrationInstance>( currentPerson, qry => qry
-                .OrderByDescending( ri => ri.StartDateTime )
-                .ThenBy( ri => ri.Id ) );
-
-            var cursorPage = helper.GetCursorPaginatedItems( query, paginator, cursor );
-
-            var resultPage = cursorPage.WithItems( cursorPage.Items
-                .Select( ri => new RegistrationInstanceResult
-                {
-                    Id = ri.Id,
-                    Name = ri.Name,
-                    RegistrationTemplate = new RegistrationTemplateResult
-                    {
-                        Id = ri.RegistrationTemplate.Id,
-                        Name = ri.RegistrationTemplate.Name,
-                    },
-                    StartDateTime = ri.StartDateTime,
-                    EndDateTime = ri.EndDateTime,
-                } )
-                .ToList() );
-
-            var historyResultPage = cursorPage.WithItems( resultPage.Items
-                .Select( ri => new RegistrationInstanceResult
-                {
-                    Id = ri.Id,
-                    Name = ri.Name,
-                } )
-                .ToList() );
-
-            return helper.GetPaginatedResult( resultPage, historyResultPage );
+        }
+        else
+        {
+            helper.AddError( $"At least one of {nameof( startDate )} or {nameof( endDate )} must be provided." );
         }
 
-        #endregion
+        if ( partialName.IsNotNullOrWhiteSpace() )
+        {
+            query = query.Where( ri => ri.Name.Contains( partialName ) );
+        }
+
+        if ( helper.HasErrors )
+        {
+            return helper.ErrorResult;
+        }
+
+        var paginator = new CursorPaginator<RegistrationInstance>( currentPerson, qry => qry
+            .OrderByDescending( ri => ri.StartDateTime )
+            .ThenBy( ri => ri.Id ) );
+
+        var cursorPage = helper.GetCursorPaginatedItems( query, paginator, cursor );
+
+        var resultPage = cursorPage.WithItems( cursorPage.Items
+            .Select( ri => new RegistrationInstanceResult
+            {
+                Id = ri.Id,
+                Name = ri.Name,
+                RegistrationTemplate = new RegistrationTemplateResult
+                {
+                    Id = ri.RegistrationTemplate.Id,
+                    Name = ri.RegistrationTemplate.Name,
+                },
+                StartDateTime = ri.StartDateTime,
+                EndDateTime = ri.EndDateTime,
+            } )
+            .ToList() );
+
+        var historyResultPage = cursorPage.WithItems( resultPage.Items
+            .Select( ri => new RegistrationInstanceResult
+            {
+                Id = ri.Id,
+                Name = ri.Name,
+            } )
+            .ToList() );
+
+        return helper.GetPaginatedResult( resultPage, historyResultPage );
     }
+
+    #endregion
 }
