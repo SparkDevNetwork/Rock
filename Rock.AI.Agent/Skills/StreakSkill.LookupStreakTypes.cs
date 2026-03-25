@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.ComponentModel;
 using System.Linq;
 
@@ -30,9 +30,6 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Retrieves all configured streak types in Rock.
-        /// </summary>
         [Description( "Retrieves all configured streak types in Rock." )]
         [AgentPurpose( "Retrieves all configured streak types in Rock." )]
         [AgentToolGuid( "dbc1ad8a-f41c-4bb7-89de-f9d795f017de" )]

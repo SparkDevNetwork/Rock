@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -15,12 +31,9 @@ using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills
 {
-    /// <summary>
-    /// Provides functionality to manage prayer.
-    /// </summary>
+    [Description( "This skill provides functionality to manage prayer." )]
     [AgentSkillGuid( "0EF2BBFD-52D9-441B-9BE5-F4C5D2B42ED0" )]
     [EntityTypeGuid( "6033D65E-C782-45BA-9A74-23F9B9353A27" )]
-    [Description( "This skill provides functionality to manage prayer." )]
     internal sealed partial class PrayerSkill : AgentSkillComponent
     {
         #region Fields

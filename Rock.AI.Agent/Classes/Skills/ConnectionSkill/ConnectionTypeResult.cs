@@ -21,6 +21,9 @@ using Rock.AI.Agent.Classes.Entity;
 
 namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
 {
+    /// <summary>
+    /// Represents a single connection type.
+    /// </summary>
     internal class ConnectionTypeResult : EntityResultBase
     {
         /// <summary>

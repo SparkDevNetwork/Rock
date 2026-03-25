@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
@@ -21,7 +20,7 @@ using Rock.AI.Agent.Classes.Entity;
 namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
 {
     /// <summary>
-    /// POCO result for a note.
+    /// Represents a single connection request activity.
     /// </summary>
     internal class ConnectionRequestActivityResult : EntityResultBase
     {

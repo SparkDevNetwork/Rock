@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +20,10 @@ using Rock.AI.Agent.Mcp;
 
 namespace Rock.AI.Agent
 {
+    /// <summary>
+    /// Called automatically by Rock during startup to allow this plugin to
+    /// register services with the dependency injection system.
+    /// </summary>
     internal class ConfigureAgentServices : Plugin.IConfigureServices
     {
         /// <inheritdoc/>

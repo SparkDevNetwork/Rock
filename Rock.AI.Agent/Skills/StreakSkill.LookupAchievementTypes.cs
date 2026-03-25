@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.ComponentModel;
 using System.Linq;
 
@@ -29,9 +29,6 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Retrieves all configured achievement types in Rock.
-        /// </summary>
         [Description( "Retrieves all configured achievement types in Rock." )]
         [AgentPurpose( "Retrieves all configured achievement types in Rock." )]
         [AgentToolGuid( "f6c9300e-a770-4f92-827b-abc01ed21c8b" )]

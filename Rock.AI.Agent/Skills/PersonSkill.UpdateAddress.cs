@@ -18,7 +18,6 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes;
 using Rock.AI.Agent.Classes.Common;
 using Rock.Configuration;
 using Rock.Data;

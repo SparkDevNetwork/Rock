@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
 using System;
 using System.Collections.Generic;
@@ -26,13 +25,10 @@ using System.Linq.Dynamic.Core;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
-using OpenXmlPowerTools;
-
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.Core.Geography.Classes;
-using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.SystemKey;

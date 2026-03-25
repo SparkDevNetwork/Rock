@@ -13,16 +13,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 
 using Rock.AI.Agent.Classes.Entity;
 
 namespace Rock.AI.Agent.Classes.Skills.FinanceSkill;
 
+/// <summary>
+/// A record that represents a scheduled financial transaction.
+/// </summary>
 internal class FinancialScheduledTransactionResult : FinancialTransactionResult
 {
+    /// <summary>
+    /// The next payment date if there is one.
+    /// </summary>
     public DateTime? NextPaymentDate { get; set; }
 
+    /// <summary>
+    /// A string that describes the frequency of the transaction.
+    /// </summary>
     public string Frequency { get; set; }
 }

@@ -13,14 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Skills.WorkflowSkill;
 using Rock.SystemGuid;
-using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills
 {
@@ -28,9 +27,6 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Retrieves all workflow types configured for the agent. 
-        /// </summary>
         [Description( "Retrieves all workflow types configured for the agent." )]
         [AgentPurpose( "Retrieves all workflow types configured for the agent." )]
         [AgentToolGuid( "93d7c53f-5b2c-4d62-8274-89c21e387f88" )]

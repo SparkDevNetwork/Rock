@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.SqlClient;
@@ -7,7 +23,6 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.PersonSkill;
 using Rock.SystemGuid;
 using Rock.Utility;
@@ -19,16 +34,6 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Retrieves website analytics (page visits) for a specific person, optionally filtered by date and/or site.
-        /// Results are grouped by site and include visited pages with visit counts.
-        /// </summary>
-        /// <param name="arguments">Query parameters including person id, optional site id, and optional start/end dates.</param>
-        /// <remarks>
-        /// Requires <see cref="LookupSites"/> to have been called previously to populate
-        /// session context <c>"site-list"</c> for guardrail enforcement.
-        /// Defaults the date range to [now - 1 year, now] if neither start nor end are provided.
-        /// </remarks>
         [Description( "Lists page visits for a specific person." )]
         [AgentPurpose( "Retrieves page visits for a specific person, optionally filtered by date and/or site." )]
         [AgentPurpose( "Results include the site type (web, mobile, tv), visited pages and visit counts." )]
@@ -39,7 +44,12 @@ namespace Rock.AI.Agent.Skills
         [AgentToolExample( "has Alisha Marble visted the giving page in the past 30 days" )]
         [AgentToolExample( "has Pete been active on our platform?" )]
         [AgentToolGuid( "EFDBC338-CC1C-46D2-A7F6-7AE5081147AE" )]
-        public IAgentToolResult SummarizePageVisitsForPerson( string personIdKey, DateTime? startDate = null, DateTime? endDate = null, string siteIdKey = "", int pageNumber = 1 )
+        public IAgentToolResult GetPageVisitSummaryForPerson(
+            string personIdKey,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            string siteIdKey = "",
+            int pageNumber = 1 )
         {
             var errors = new List<string>();
 

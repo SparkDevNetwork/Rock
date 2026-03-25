@@ -13,12 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 namespace Rock.AI.Agent.Classes.Skills.FinanceSkill;
 
+/// <summary>
+/// Represents a single document attached to a benevolence request.
+/// </summary>
 internal class BenevolenceDocumentResult
 {
+    /// <summary>
+    /// The name of the file.
+    /// </summary>
     public string FileName { get; set; }
 
+    /// <summary>
+    /// The URL that can be used to download the file.
+    /// </summary>
     public string DownloadUrl { get; set; }
 }

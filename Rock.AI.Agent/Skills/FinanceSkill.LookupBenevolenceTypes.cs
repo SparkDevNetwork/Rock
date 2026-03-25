@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.ComponentModel;
 using System.Linq;
 
@@ -28,9 +28,6 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Retrieves all configured benevolence types in Rock.
-        /// </summary>
         [Description( "Retrieves all configured benevolence types in Rock." )]
         [AgentPurpose( "Retrieves all configured benevolence types in Rock." )]
         [AgentToolGuid( "a7a059f6-08a2-4032-a91d-a787d1857752" )]

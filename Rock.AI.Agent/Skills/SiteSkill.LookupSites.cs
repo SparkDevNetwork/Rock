@@ -1,7 +1,22 @@
-﻿using System.ComponentModel;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System.ComponentModel;
 using System.Linq;
 
-using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.SiteSkill;
 using Rock.Enums.AI.Agent;
 using Rock.SystemGuid;
@@ -14,11 +29,6 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Retrieves all websites (sites) configured in Rock.
-        /// Also persists a trimmed list (Id, Name, SiteType) into the agent’s session context
-        /// under the key <c>"site-list"</c> so that subsequent calls can reference it.
-        /// </summary>
         [Description( "Retrieves all configured websites in Rock." )]
         [AgentToolGuid( "6234BB68-99B8-4B7C-884D-0D760B1F081C" )]
         public IAgentToolResult LookupSites()

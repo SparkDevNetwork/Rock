@@ -20,17 +20,38 @@ using Rock.AI.Agent.Classes.Entity;
 
 namespace Rock.AI.Agent.Classes.Skills.FinanceSkill;
 
+/// <summary>
+/// Represents a single pledge of giving to a specific account.
+/// </summary>
 internal class FinancialPledgeResult : EntityResultBase
 {
+    /// <summary>
+    /// The person that made the pledge.
+    /// </summary>
     public PersonResult Person { get; set; }
 
+    /// <summary>
+    /// The start date of the pledge.
+    /// </summary>
     public DateTime? StartDate { get; set; }
 
+    /// <summary>
+    /// The end date of the pledge.
+    /// </summary>
     public DateTime? EndDate { get; set; }
 
+    /// <summary>
+    /// The account the pledge is for.
+    /// </summary>
     public FinancialAccountResult FinancialAccount { get; set; }
 
+    /// <summary>
+    /// The total amount of money pledged to be given.
+    /// </summary>
     public decimal? TotalAmount { get; set; }
 
+    /// <summary>
+    /// The frequency of the expected payments (e.g. weekly, monthly, etc.).
+    /// </summary>
     public string PaymentSchedule { get; set; }
 }

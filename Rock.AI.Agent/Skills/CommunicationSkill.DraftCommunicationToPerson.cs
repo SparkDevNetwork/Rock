@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -23,17 +39,7 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Drafts a communication (email/SMS/push) for a specified recipient.
-        /// </summary>
-        /// <param name="recipientIdKey">The idKey of the recipient.</param>
-        /// <param name="communicationType">SMS, Push or Email.</param>
-        /// <param name="subjectHint">The hint of the subject.</param>
-        /// <param name="referenceData">The relevant data for crafting the communication.</param>
-        /// <param name="draftGuidance">Guidance for when composing the draft.</param>
-        /// <param name="tone">The tone of the message.</param>
-        /// <param name="existingDraftIdKey">The draft to update in place.</param>
-        /// <returns></returns>
+        [Description( "Draft a communication (email/SMS/push) for a specified recipient." )]
         [AgentPurpose( "Creates a new draft (email/SMS/push) for the specified recipient, or updates an existing draft if one is provided. Drafts are saved as communications and can later be sent." )]
         [AgentUsage( "The recipient is always provided by IdKey only. Never ask the user for email addresses or phone numbers." )]
         [AgentUsage( "The function automatically resolves the recipient's actual contact details from the IdKey." )]

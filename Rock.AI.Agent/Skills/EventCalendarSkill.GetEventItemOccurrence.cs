@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.ComponentModel;
 using System.Linq;
 
@@ -23,7 +23,6 @@ using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.EventCalendarSkill;
 using Rock.Model;
 using Rock.SystemGuid;
-using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills
 {

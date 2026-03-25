@@ -13,8 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-using System;
+
 using System.ComponentModel;
 using System.Linq;
 
@@ -32,8 +31,7 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        [Description( "Returns a list of connection requests for the user." )]
-        [AgentPurpose( "Retrieves a list of connection requests." )]
+        [Description( "Returns a list of connection requests that match the filters." )]
         [AgentUsage( "Requests can be filtered by connection type, connection opportunity, requester or connector. Connectors are people who are assigned a request." )]
         [AgentToolGuid( "DC03271E-2C54-D5AF-4F18-9CCC69F25202" )]
         public IAgentToolResult ListConnectionRequests(

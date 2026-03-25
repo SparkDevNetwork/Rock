@@ -1,5 +1,20 @@
-﻿using System.ComponentModel;
-using System.Data.Entity;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Classes.Common;
@@ -13,11 +28,7 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Looks up all active reminder types.
-        /// </summary>
-        /// <returns>A <see cref="RockToolResult"/> containing the list of reminder types or an error message.</returns>
-        [Description( "Looks up reminder types." )]
+        [Description( "Lists all reminder types that are available." )]
         [AgentToolGuid( "2452B308-F805-4DE6-83DE-1E340767A4EF" )]
         public IAgentToolResult LookupReminderTypes()
         {

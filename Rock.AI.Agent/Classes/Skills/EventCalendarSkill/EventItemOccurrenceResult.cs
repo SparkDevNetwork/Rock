@@ -20,21 +20,50 @@ using Rock.AI.Agent.Classes.Entity;
 
 namespace Rock.AI.Agent.Classes.Skills.EventCalendarSkill;
 
+/// <summary>
+/// Represents a single Event Item Occurrence.
+/// </summary>
 internal class EventItemOccurrenceResult : EntityResultBase
 {
+    /// <summary>
+    /// The event item that this occurrence is associated with.
+    /// </summary>
     public EventItemResult EventItem { get; set; }
 
+    /// <summary>
+    /// The next start date and time of this occurrence if it is a repeating
+    /// schedule.
+    /// </summary>
     public DateTime? NextStartDateTime { get; set; }
 
+    /// <summary>
+    /// The campus this occurrence is tied to.
+    /// </summary>
     public CampusResult Campus { get; set; }
 
+    /// <summary>
+    /// The contact person for this event item occurrence.
+    /// </summary>
     public PersonResult ContactPerson { get; set; }
 
+    /// <summary>
+    /// The description of where this event item occurrence is happening.
+    /// </summary>
     public string LocationDescription { get; set; }
 
+    /// <summary>
+    /// The contact phone number for this event item occurrence.
+    /// </summary>
     public string ContactPhoneNumber { get; set; }
 
+    /// <summary>
+    /// The contact email address for this event item occurrence.
+    /// </summary>
     public string ContactEmail { get; set; }
 
+    /// <summary>
+    /// The description of the schedule for this event item occurrence. This
+    /// may describe either a single date or a recurring schedule.
+    /// </summary>
     public string ScheduleDescription { get; set; }
 }

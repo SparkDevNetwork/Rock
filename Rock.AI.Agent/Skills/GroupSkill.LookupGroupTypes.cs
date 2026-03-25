@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
 using System.ComponentModel;
 using System.Linq;
@@ -21,9 +20,7 @@ using System.Linq;
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.Model;
-using Rock.Security;
 using Rock.SystemGuid;
-using Rock.Web.Cache;
 
 using GroupTypeResult = Rock.AI.Agent.Classes.Skills.GroupSkill.GroupTypeResult;
 

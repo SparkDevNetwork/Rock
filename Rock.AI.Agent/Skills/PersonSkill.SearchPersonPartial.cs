@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -7,7 +23,6 @@ using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.Model;
-using Rock.Net;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -18,20 +33,16 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Searches for a person using a partial name.
-        /// </summary>
-        /// <param name="searchPattern"></param>
-        /// <param name="maxResults"></param>
-        /// <param name="campusIdKey"></param>
-        /// <returns></returns>
         [AgentPurpose( "Searches for matching people by a partial first name or last name." )]
         [AgentUsage( "Use this for partial name searches including searches for only last names." )]
         [AgentToolExample( "t decker would search the database for people who's first name starts with t and last name starts with decker." )]
         [AgentToolReturnDescription( "A collection of summaries about the matched people. These are not full profiles. Call `GetPersonProfile` passing the personIdKey to get a person's full profile." )]
         [Description( "Does a name search based on a partial search (e.g. 't dec')." )]
         [AgentToolGuid( "873AFC46-1872-999F-4E6C-94409654F6BC" )]
-        public IAgentToolResult SearchPersonPartial( string searchPattern, int maxResults = 20, string campusIdKey = null )
+        public IAgentToolResult SearchPersonPartial(
+            string searchPattern,
+            int maxResults = 20,
+            string campusIdKey = null )
         {
             if ( searchPattern == null || searchPattern.IsNullOrWhiteSpace() )
             {

@@ -1,8 +1,24 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
+using System.ComponentModel;
 
 using Microsoft.Extensions.Logging;
 
-using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.CommunicationSkill;
 using Rock.Configuration;
 using Rock.Model;
@@ -15,11 +31,7 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Sends a previously drafted communication.
-        /// </summary>
-        /// <param name="communicationIdKey"></param>
-        /// <returns></returns>
+        [Description( "Sends a previously drafted communication." )]
         [AgentToolGuid( "2BB35960-77C6-4EAD-9645-F0ACB0EF132B" )]
         public IAgentToolResult SendCommunication( string communicationIdKey )
         {

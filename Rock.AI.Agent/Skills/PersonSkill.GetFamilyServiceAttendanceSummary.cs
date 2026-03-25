@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -19,11 +35,12 @@ namespace Rock.AI.Agent.Skills
     internal sealed partial class PersonSkill
     {
         #region Tool(s)
+
         [Description( "Provide attendance information for members of the selected person." )]
         [AgentToolGuid( "544F23D7-6D28-41EA-BD43-249C976BEBA0" )]
         [AgentPurpose( "Fetches service attendance for a person's family." )]
         [AgentToolReturnDescription( "Returns the family's last recorded Sunday date and the list of family check-ins from that service week. Also includes the family's: monthly completion, first-time check-in, and the number of weeks attended out of the last 16." )]
-        public IAgentToolResult SummarizeFamilyServiceAttendance( string personIdKey )
+        public IAgentToolResult GetFamilyServiceAttendanceSummary( string personIdKey )
         {
             using var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );

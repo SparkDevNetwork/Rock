@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
 namespace Rock.AI.Agent.Classes.Skills.CommunicationSkill
 {
     /// <summary>
-    /// The result of a send communication kernel function.
+    /// The result of a send communication function.
     /// </summary>
     internal class SendCommunicationResult
     {

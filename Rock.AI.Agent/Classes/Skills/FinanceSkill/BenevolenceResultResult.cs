@@ -13,16 +13,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using Rock.AI.Agent.Classes.Common;
 
 namespace Rock.AI.Agent.Classes.Skills.FinanceSkill;
 
+/// <summary>
+/// Represents the details of a benevolence result.
+/// </summary>
 internal class BenevolenceResultResult
 {
+    /// <summary>
+    /// The type of result.
+    /// </summary>
     public KeyNameResult ResultType { get; set; }
 
+    /// <summary>
+    /// The detailed description of the result.
+    /// </summary>
     public string Details { get; set; }
 
+    /// <summary>
+    /// The amount of money, if any, that was given.
+    /// </summary>
     public decimal? Amount { get; set; }
 }

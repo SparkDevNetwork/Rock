@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 
-using System.Windows.Documents;
-
 using Rock.AI.Agent.Classes.Entity;
 
 namespace Rock.AI.Agent.Classes.Skills.MetricSkill;

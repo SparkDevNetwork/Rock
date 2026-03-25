@@ -13,14 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
 using System;
 using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.StepSkill;
 using Rock.Model;
 using Rock.Security;
@@ -33,8 +31,8 @@ internal partial class StepSkill
 {
     #region Tool(s)
 
-    [Description( "List steps that are in progress or completed." )]
-    [AgentPurpose( "List steps that are in progress or completed." )]
+    [Description( "List steps that match the filters." )]
+    [AgentPurpose( "List steps that math the filters." )]
     [AgentToolGuid( "c2226aa4-6efb-4199-ad9f-9d471502b67f" )]
     public IAgentToolResult ListSteps(
         string personIdKey = null,

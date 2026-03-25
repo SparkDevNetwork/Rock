@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
 using System;
 using System.ComponentModel;
@@ -34,7 +33,7 @@ internal partial class StepSkill
 {
     #region Tool(s)
 
-    [Description( "Lists completed step programs." )]
+    [Description( "Lists completed step programs that match the filters." )]
     [AgentPurpose( "Retrieves the completed step programs." )]
     [AgentToolGuid( "6cc0233d-3897-4f9a-9fea-e530094d40d3" )]
     public IAgentToolResult ListStepProgramCompletions(

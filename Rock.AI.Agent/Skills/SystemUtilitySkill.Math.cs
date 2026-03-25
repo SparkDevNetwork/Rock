@@ -1,9 +1,24 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-using Rock.AI.Agent.Classes.Common;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills
@@ -11,6 +26,7 @@ namespace Rock.AI.Agent.Skills
     internal sealed partial class SystemUtilitySkill
     {
         #region Tool(s)
+
         [Description( "Sums a list of numbers." )]
         [AgentToolGuid( "0EED94C4-7546-4EE4-BCA8-4EA855E92736" )]
         public IAgentToolResult Sum( List<double> numbers )

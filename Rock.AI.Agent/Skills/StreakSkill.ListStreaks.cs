@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
 using System.ComponentModel;
 using System.Linq;
 
@@ -16,7 +32,7 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        [Description( "Lists streak records." )]
+        [Description( "Lists streak records that match the filters." )]
         [AgentPurpose( "Retrieves the streaks." )]
         [AgentUsage( "startDate and endDate refer to the date range of when the current streak started." )]
         [AgentToolGuid( "b02e509f-e674-41f1-8e7c-051ea7ef6946" )]

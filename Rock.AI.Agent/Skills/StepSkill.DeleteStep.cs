@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.ComponentModel;
 
@@ -30,11 +30,6 @@ internal sealed partial class StepSkill
 {
     #region Tool(s)
 
-    /// <summary>
-    /// "Deletes a step from the system.
-    /// </summary>
-    /// <param name="stepIdKey">The encoded identifier of the step to delete.</param>
-    /// <returns>The tool result.</returns>
     [Description( "Deletes a step from the system." )]
     [AgentToolGuid( "d62573f6-03da-4a1f-b550-cb0e1ec6a211" )]
     [AgentGuardrail( "This action will permanently delete the specified step. Ensure that this action is intentional and that you have the correct step identifier before proceeding." )]

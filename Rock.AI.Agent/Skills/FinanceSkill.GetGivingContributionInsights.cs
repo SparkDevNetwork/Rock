@@ -1,17 +1,28 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
-using Microsoft.Identity.Client;
-
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.FinanceSkill;
-using Rock.Data;
 using Rock.Model;
-using Rock.Reporting.DataFilter;
 using Rock.SystemGuid;
-using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills
@@ -20,17 +31,7 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Produces an analytic summary of giving financial transactions
-        /// matching the supplied filters.
-        /// </summary>
-        /// <param name="personIdKey">Encoded person identifier.</param>
-        /// <param name="campusIdKey">Encoded campus identifier.</param>
-        /// <param name="accountIdKeys">Encoded account identifiers.</param>
-        /// <param name="paymentMethodTypeValueIdKey">Encoded payment method identifier,</param>
-        /// <param name="startDate">The start date to limit results to.</param>
-        /// <param name="endDate">The end date to limit results to.</param>
-        /// <returns>Analytics wrapped in <see cref="FinancialTransactionInsightsResult"/>.</returns>
+        [Description( "Gets the opinionated insights for financial transactions of type 'Event Contribution' that match the filters." )]
         [AgentToolGuid( "8AE2C3D2-6965-47E2-AC82-0D422A1EF2FC" )]
         [AgentUsage( "Any argument ending with 'ValueIdKey' must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the chosen IdKey." )]
         [AgentUsage( "Only provide a personIdKey if the request is about a specific person. Do not assume that the current person should be used." )]

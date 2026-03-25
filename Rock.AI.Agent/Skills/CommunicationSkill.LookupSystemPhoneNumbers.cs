@@ -1,10 +1,25 @@
-﻿using System.Collections.Generic;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
-using Rock.Configuration;
-using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;
@@ -16,11 +31,7 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Looks up system phone numbers, optionally filtering to only SMS-enabled numbers.
-        /// </summary>
-        /// <param name="smsEnabled"></param>
-        /// <returns></returns>
+        [Description( "Looks up system phone numbers." )]
         [AgentToolGuid( "FD3F160F-ABCA-4A18-B69F-0E21D61B6874" )]
         public IAgentToolResult LookupSystemPhoneNumbers( bool? smsEnabled = null )
         {

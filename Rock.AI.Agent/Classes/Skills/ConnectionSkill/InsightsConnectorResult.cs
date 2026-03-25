@@ -33,5 +33,4 @@ namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
         /// </summary>
         public int ActiveCount { get; set; }
     }
-
 }

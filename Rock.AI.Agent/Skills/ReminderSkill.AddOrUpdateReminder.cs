@@ -1,10 +1,23 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
 using System.ComponentModel;
 
-using Microsoft.Extensions.Logging;
-
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Common;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
@@ -17,20 +30,6 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Adds a new or updates an existing reminder.
-        /// </summary>
-        /// <param name="entityIdKey">The key of the entity to associate with the reminder.</param>
-        /// <param name="reminderTypeIdKey">The key of the reminder type.</param>
-        /// <param name="note">The note for the reminder.</param>
-        /// <param name="date">The date of the reminder.</param>
-        /// <param name="repeatEveryXDays">The number of days between repeats (optional).</param>
-        /// <param name="repeatAmount">The number of times to repeat (optional).</param>
-        /// <returns>A <see cref="RockToolResult"/> indicating the success or failure of the operation.</returns>
-        /// <remarks>
-        /// The user must be logged in to add a reminder. If <paramref name="repeatEveryXDays"/> is provided without <paramref name="repeatAmount"/>,
-        /// the reminder will repeat indefinitely every X days.
-        /// </remarks>
         [Description( "Adds a new or updates an existing reminder." )]
         [AgentToolGuid( "AF90FA26-9A98-45EF-877C-6CF0EDE7035E" )]
         [AgentUsage( "Provide a repeatEveryXDays value with no repeatAmount to repeat indefinitely every X days. Provide both to repeat a specific number of times." )]

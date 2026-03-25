@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -17,17 +33,16 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Searches for persons by full name, returning a list of matching persons with their details.
-        /// </summary>
-        /// <returns></returns>
         [Description( "Does a full name sounds like search for the person." )]
         [AgentPurpose( "Searches for matching people by name. This will search by exact match as well as 'Sounds Like'." )]
         [AgentUsage( "Suffixes should be provide in the format of Sr., Jr., III, IV." )]
         [AgentUsage( "Only use this function if a full name is provided." )]
         [AgentToolReturnDescription( "A collection of summaries about the matched people. These are not full profiles. Call `GetPersonProfile` passing the personIdKey to get a person's full profile. " )]
         [AgentToolGuid( "03093B11-A02D-F794-4A5E-9AEA2C6EF63E" )]
-        public IAgentToolResult SearchPerson( string fullName, int maxResults = 20, string campusIdKey = null )
+        public IAgentToolResult SearchPerson(
+            string fullName,
+            int maxResults = 20,
+            string campusIdKey = null )
         {
             if ( fullName == null || fullName.IsNullOrWhiteSpace() )
             {

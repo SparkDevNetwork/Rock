@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -33,9 +33,6 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Retrieves all configured connection types and opportunities in Rock. 
-        /// </summary>
         [Description( "Retrieves all configured connection types and opportunities in Rock." )]
         [AgentPurpose( "Retrieves a list of all of the connection types and their configuration. This includes Connection Opportunities and Activity Types." )]
         [AgentPurpose( "This tool does not return any information about specific connection requests." )]

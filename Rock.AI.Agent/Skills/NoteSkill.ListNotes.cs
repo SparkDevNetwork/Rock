@@ -1,15 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using Rock.AI.Agent.Classes.Common;
-using Rock.AI.Agent.Classes.Entity;
-using Rock.Attribute;
-using Rock.Configuration;
 using Rock.SystemGuid;
-using Rock.Utility;
-using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills
 {
@@ -17,20 +27,7 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Lists notes based on the specified filters.
-        /// </summary>
-        /// <param name="startDate">The start date for filtering notes (optional).</param>
-        /// <param name="endDate">The end date for filtering notes (optional).</param>
-        /// <param name="noteTypeIdKey">The identifier key of the note type to filter by (optional).</param>
-        /// <param name="entityIdKey">The identifier key of the entity to filter by (optional).</param>
-        /// <param name="entityTypeIdKey">The identifier key of the entity type to filter by (optional).</param>
-        /// <param name="createdByPersonIdKey">The identifier key of the person who created the notes (optional).</param>
-        /// <param name="isAlert">The alert status to filter by (optional).</param>
-        /// <param name="isPrivateNote">The private status to filter by (optional).</param>
-        /// <param name="isPinned">The pinned status to filter by (optional).</param>
-        /// <param name="pageNumber">The page number for pagination (optional).</param>
-        /// <returns>A <see cref="RockToolResult"/> containing the list of notes or an error message.</returns>
+        [Description( "Lists notes that match the specified criteria." )]
         [AgentToolGuid( "22B609E6-5D0A-4588-8BB9-456EF6F7D4A4" )]
         public IAgentToolResult ListNotes(
             DateTime? startDate = null,

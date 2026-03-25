@@ -1,7 +1,22 @@
-﻿using System.ComponentModel;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System.ComponentModel;
 
 using Rock.AI.Agent.Annotations;
-using Rock.AI.Agent.Classes.Common;
 using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -13,16 +28,6 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Adds or updates a note in the system.
-        /// </summary>
-        /// <param name="noteTypeIdKey">The identifier key of the note type.</param>
-        /// <param name="entityIdKey">The identifier key of the entity to associate with the note.</param>
-        /// <param name="note">The text of the note.</param>
-        /// <param name="isAlert">Indicates whether the note is an alert.</param>
-        /// <param name="isPrivateNote">Indicates whether the note is private.</param>
-        /// <param name="isPinned">Indicates whether the note is pinned.</param>
-        /// <returns>A <see cref="RockToolResult"/> indicating the success or failure of the operation.</returns>
         [Description( "Add a new note to an entity or updates an existing note." )]
         [AgentUsage( "noteTypeIdKey and entityIdKey are required when adding, but can't be changed when updating." )]
         [AgentToolPrerequisite( "Call the LookupNoteTypes function to determine available note types. Select one that matches the note sentiment." )]

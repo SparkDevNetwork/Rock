@@ -1,9 +1,25 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 using Rock.AI.Agent.Classes.Common;
-using Rock.AI.Agent.Classes.Entity;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
@@ -14,22 +30,7 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Lists the event registration payment transactions for the specified filters.
-        /// </summary>
-        /// <remarks>
-        /// When <paramref name="accountIdKeys"/> and/or <paramref name="campusIdKey"/> are provided, only
-        /// transactions that contribute (>0) to the resolved set of accounts are returned, and the per-row
-        /// TotalAmount/Accounts reflect only those contributing details (same behavior as summarize).
-        /// </remarks>
-        /// <param name="personIdKey">Encoded person identifier.</param>
-        /// <param name="campusIdKey">Encoded campus identifier.</param>
-        /// <param name="accountIdKeys">Encoded account identifiers.</param>
-        /// <param name="paymentMethodTypeValueIdKey">Encoded payment method identifier,</param>
-        /// <param name="startDate">The start date to limit results to.</param>
-        /// <param name="endDate">The end date to limit results to.</param>
-        /// <param name="pageNumber">1-based page number.</param>
-        /// <returns>Collection of <see cref="FinancialTransactionResult"/> records.</returns>
+        [Description( "Lists transactions of type 'Event Registration' that match the provided filters." )]
         [AgentToolGuid( "90732068-5e8d-48cf-8cd8-8eb05c5a27fb" )]
         public IAgentToolResult ListEventRegistrationPayments(
             string personIdKey = null,
@@ -40,6 +41,11 @@ namespace Rock.AI.Agent.Skills
             DateTime? endDate = null,
             int pageNumber = 1 )
         {
+            // When accountIdKeys and/or campusIdKey are provided, only transactions
+            // that contribute (>0) to the resolved set of accounts are returned,
+            // and the per-row TotalAmount/Accounts reflect only those contributing
+            // details (same behavior as summarize).
+
             // Require at least one filter, or punt to summarize tool.
             if ( personIdKey.IsNullOrWhiteSpace()
                 && campusIdKey.IsNullOrWhiteSpace()

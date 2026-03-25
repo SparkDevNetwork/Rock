@@ -1,4 +1,20 @@
-﻿using System.ComponentModel;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
@@ -14,11 +30,6 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Retrieves a list of personal devices associated with a specific person.
-        /// </summary>
-        /// <param name="personIdKey">The person.</param>
-        /// <returns></returns>
         [Description( "Lists personal devices for the provided person." )]
         [AgentToolGuid( "29B7A989-59C4-4956-9C45-1D1297D3E673" )]
         public IAgentToolResult ListPersonalDevicesForPerson( string personIdKey )

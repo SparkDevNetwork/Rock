@@ -13,11 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
@@ -26,9 +24,8 @@ using Rock.Model;
 namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
 {
     /// <summary>
-    /// POCO result for a note.
+    /// Represents a single connection request.
     /// </summary>
-    [ExcludeFromCodeCoverage]
     internal class ConnectionRequestResult : EntityResultBase
     {
         /// <summary>

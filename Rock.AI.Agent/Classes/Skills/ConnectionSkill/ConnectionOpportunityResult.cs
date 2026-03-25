@@ -20,6 +20,9 @@ using Rock.AI.Agent.Classes.Entity;
 
 namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
 {
+    /// <summary>
+    /// Represents a single connection opportunity.
+    /// </summary>
     internal class ConnectionOpportunityResult : EntityResultBase
     {
         /// <summary>

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.ComponentModel;
 using System.Linq;
 
@@ -28,9 +28,6 @@ namespace Rock.AI.Agent.Skills
     {
         #region Tool(s)
 
-        /// <summary>
-        /// Retrieves all configured check-in configurations in Rock. 
-        /// </summary>
         [Description( "Retrieves all configured check-in configurations in Rock." )]
         [AgentPurpose( "Retrieves a list of all of the check-in configurations." )]
         [AgentPurpose( "Check-in configurations are the high level container for all check-in related areas, groups and locations." )]
