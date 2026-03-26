@@ -95,7 +95,7 @@
                     </template>
                     <InlineCheckBox v-model="shouldRecalculateRequestDueAndDueSoonDates"
                                     label="Recalculate Due Dates for Existing Requests"
-                                    help="Updates the Due Date and Due Soon Date for all existing connection requests in this Connection Type based on the Due Date Calculation Mode." />
+                                    help="Updates the Due Date and Due Soon Date for all existing Connection Requests in this Connection Type based on the Due Date Calculation Mode." />
                 </ConditionalWell>
             </ContentStack>
         </ContentSection>
