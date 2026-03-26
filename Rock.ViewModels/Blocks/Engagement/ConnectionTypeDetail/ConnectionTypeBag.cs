@@ -109,6 +109,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
         public bool RequiresPlacementGroupToConnect { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether all Connection Request due dates and due soon dates under this connection type should be recalculated during post save.
+        /// </summary>
+        public bool ShouldRecalculateRequestDueAndDueSoonDates { get; set; }
+
+        /// <summary>
         /// Gets or sets the connection type attributes.
         /// </summary>
         public List<PublicEditableAttributeBag> ConnectionTypeAttributes { get; set; }

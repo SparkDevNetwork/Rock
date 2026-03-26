@@ -17,10 +17,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Data;
+using Rock.Lava;
 using Rock.Model.Connection.ConnectionType.DTO;
 using Rock.Web.Cache;
 
@@ -28,8 +31,23 @@ namespace Rock.Model
 {
     public partial class ConnectionType
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether all <see cref="ConnectionRequest"/> due dates
+        /// and due soon dates under this connection type should be recalculated during post save.
+        /// This property is not persisted to the database and is only used during the save process.
+        /// </summary>
+        [NotMapped]
+        [HideFromReporting]
+        [LavaHidden]
+        [RockInternal( "19.0" )]
+        internal bool ShouldRecalculateRequestDueAndDueSoonDates { get; set; }
+
+        #endregion
+
         #region Methods
-        
+
         /// <summary>
         /// Gets the additional settings for this Connection Type.
         /// </summary>

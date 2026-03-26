@@ -233,6 +233,16 @@
             required: true
         },
 
+        defaultStatusDueDateOffsetInDays: {
+            type: Number as PropType<number | null | undefined>,
+            required: true
+        },
+
+        defaultStatusDueSoonOffsetInDays: {
+            type: Number as PropType<number | null | undefined>,
+            required: true
+        },
+
         /**
          * Indicates whether Future Follow-Up is enabled in the ConnectionType settings,
          * which controls whether the Future Follow-Up Duration field is shown for each status.
@@ -543,8 +553,8 @@
             isDefault: false,
             isNoteRequiredOnCompletion: false,
             autoInactivateState: false,
-            requestStatusDueDateOffsetInDays: 0,
-            requestStatusDueSoonOffsetInDays: 0,
+            requestStatusDueDateOffsetInDays: props.defaultStatusDueDateOffsetInDays ?? 0,
+            requestStatusDueSoonOffsetInDays: props.defaultStatusDueSoonOffsetInDays ?? 0,
             autoFutureFollowUpPauseInDays: null,
             automations: []
         };
@@ -657,6 +667,13 @@
                 dataView: a.dataView ? { ...a.dataView } : null
             }))
         };
+
+        if (!theStatus.value.requestStatusDueDateOffsetInDays || theStatus.value.requestStatusDueDateOffsetInDays === 0) {
+            theStatus.value.requestStatusDueDateOffsetInDays = props.defaultStatusDueDateOffsetInDays;
+        }
+        if (!theStatus.value.requestStatusDueSoonOffsetInDays || theStatus.value.requestStatusDueSoonOffsetInDays === 0) {
+            theStatus.value.requestStatusDueSoonOffsetInDays = props.defaultStatusDueSoonOffsetInDays;
+        }
 
         showAutomationForm.value = false;
         theAutomation.value = null;

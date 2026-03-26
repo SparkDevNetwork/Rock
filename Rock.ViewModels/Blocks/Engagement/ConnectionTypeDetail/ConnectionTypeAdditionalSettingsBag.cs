@@ -50,5 +50,25 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
         /// Gets or sets the AI summary cache duration in minutes.
         /// </summary>
         public int? AISummaryCacheDurationMinutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default value for Connection Opportunity Request Due Date Offset In Days.
+        /// </summary>
+        public int? DefaultOpportunityDueDateOffsetInDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default value for Connection Opportunity Request Due Soon Offset In Days.
+        /// </summary>
+        public int? DefaultOpportunityDueSoonOffsetInDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default value for Request Status Due Date Offset In Days.
+        /// </summary>
+        public int? DefaultStatusDueDateOffsetInDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default value for Request Status Due Soon Offset In Days.
+        /// </summary>
+        public int? DefaultStatusDueSoonOffsetInDays { get; set; }
     }
 }

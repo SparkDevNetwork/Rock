@@ -207,13 +207,36 @@ namespace Rock.Blocks.Engagement
                 */
                 if ( bag.DueDateCalculationMode == DueDateCalculationMode.DurationPerStatus )
                 {
-                    var invalidDueDurationStatusNames = statuses
-                        .Where( s =>
-                            !s.RequestStatusDueDateOffsetInDays.HasValue ||
-                            s.RequestStatusDueDateOffsetInDays.Value <= 0 )
-                        .Select( s => s.Name.Trim() )
-                        .Distinct()
-                        .ToList();
+                    var connectionTypeAdditionalSettings = connectionType.GetConnectionTypeAdditionalSettings();
+                    var defaultStatusDueDateOffsetInDays = connectionTypeAdditionalSettings?.DefaultStatusDueDateOffsetInDays;
+                    var defaultStatusDueSoonOffsetInDays = connectionTypeAdditionalSettings?.DefaultStatusDueSoonOffsetInDays;
+                    var invalidDueDurationStatusNames = new List<string>();
+                    var invalidDueSoonStatusNames = new List<string>();
+
+                    foreach ( var status in statuses )
+                    {
+                        if ( !status.RequestStatusDueDateOffsetInDays.HasValue || status.RequestStatusDueDateOffsetInDays <= 0 )
+                        {
+                            status.RequestStatusDueDateOffsetInDays = defaultStatusDueDateOffsetInDays;
+                        }
+                        if ( !status.RequestStatusDueSoonOffsetInDays.HasValue || status.RequestStatusDueSoonOffsetInDays <= 0 )
+                        {
+                            status.RequestStatusDueSoonOffsetInDays = defaultStatusDueSoonOffsetInDays;
+                        }
+
+                        if ( !status.RequestStatusDueDateOffsetInDays.HasValue || status.RequestStatusDueDateOffsetInDays <= 0 )
+                        {
+                            invalidDueDurationStatusNames.Add( status.Name.Trim() );
+                        }
+
+                        if ( !status.RequestStatusDueSoonOffsetInDays.HasValue ||
+                            status.RequestStatusDueSoonOffsetInDays.Value <= 0 ||
+                            ( status.RequestStatusDueDateOffsetInDays.HasValue &&
+                            status.RequestStatusDueSoonOffsetInDays.Value > status.RequestStatusDueDateOffsetInDays.Value ) )
+                        {
+                            invalidDueSoonStatusNames.Add( status.Name.Trim() );
+                        }
+                    }
 
                     if ( invalidDueDurationStatusNames.Any() )
                     {
@@ -221,16 +244,6 @@ namespace Rock.Blocks.Engagement
                         errorMessage = $"A Status Due Duration is required for the following {label}: {string.Join( ", ", invalidDueDurationStatusNames )}.";
                         return false;
                     }
-
-                    var invalidDueSoonStatusNames = statuses
-                        .Where( s =>
-                            !s.RequestStatusDueSoonOffsetInDays.HasValue ||
-                            s.RequestStatusDueSoonOffsetInDays.Value <= 0 ||
-                            ( s.RequestStatusDueDateOffsetInDays.HasValue &&
-                             s.RequestStatusDueSoonOffsetInDays.Value > s.RequestStatusDueDateOffsetInDays.Value ) )
-                        .Select( s => s.Name.Trim() )
-                        .Distinct()
-                        .ToList();
 
                     if ( invalidDueSoonStatusNames.Any() )
                     {
@@ -501,6 +514,9 @@ namespace Rock.Blocks.Engagement
             box.IfValidProperty( nameof( box.Bag.RequiresPlacementGroupToConnect ),
                 () => entity.RequiresPlacementGroupToConnect = box.Bag.RequiresPlacementGroupToConnect );
 
+            box.IfValidProperty( nameof( box.Bag.ShouldRecalculateRequestDueAndDueSoonDates ),
+                () => entity.ShouldRecalculateRequestDueAndDueSoonDates = box.Bag.ShouldRecalculateRequestDueAndDueSoonDates );
+
             box.IfValidProperty( nameof( box.Bag.AdditionalSettings ), () =>
             {
                 var settings = box.Bag.AdditionalSettings ?? new ConnectionTypeAdditionalSettingsBag();
@@ -526,7 +542,11 @@ namespace Rock.Blocks.Engagement
                     },
                     AIInsightsPrompt = settings.AIInsightsPrompt,
                     AISummaryTrigger = settings.AISummaryTrigger,
-                    AISummaryCacheDurationMinutes = settings.AISummaryCacheDurationMinutes
+                    AISummaryCacheDurationMinutes = settings.AISummaryCacheDurationMinutes,
+                    DefaultOpportunityDueDateOffsetInDays = settings.DefaultOpportunityDueDateOffsetInDays,
+                    DefaultOpportunityDueSoonOffsetInDays = settings.DefaultOpportunityDueSoonOffsetInDays,
+                    DefaultStatusDueDateOffsetInDays = settings.DefaultStatusDueDateOffsetInDays,
+                    DefaultStatusDueSoonOffsetInDays = settings.DefaultStatusDueSoonOffsetInDays
                 } );
             } );
 
@@ -990,7 +1010,11 @@ namespace Rock.Blocks.Engagement
                 },
                 AIInsightsPrompt = additionalSettings.AIInsightsPrompt,
                 AISummaryTrigger = additionalSettings.AISummaryTrigger ?? AISummaryTriggerMode.Manual,
-                AISummaryCacheDurationMinutes = additionalSettings.AISummaryCacheDurationMinutes ?? 5
+                AISummaryCacheDurationMinutes = additionalSettings.AISummaryCacheDurationMinutes ?? 5,
+                DefaultOpportunityDueDateOffsetInDays = additionalSettings.DefaultOpportunityDueDateOffsetInDays,
+                DefaultOpportunityDueSoonOffsetInDays = additionalSettings.DefaultOpportunityDueSoonOffsetInDays,
+                DefaultStatusDueDateOffsetInDays = additionalSettings.DefaultStatusDueDateOffsetInDays,
+                DefaultStatusDueSoonOffsetInDays = additionalSettings.DefaultStatusDueSoonOffsetInDays,
             };
         }
 
@@ -1403,9 +1427,21 @@ namespace Rock.Blocks.Engagement
 
             RockContext.WrapTransaction( () =>
             {
+                // ShouldRecalculateRequestDueAndDueSoonDates is [NotMapped], so EF won't
+                // detect it as a change. If it's the only thing that changed, the entity
+                // stays Unchanged and the save hook never fires — force it to Modified.
+                if ( entity.ShouldRecalculateRequestDueAndDueSoonDates
+                    && RockContext.Entry( entity ).State == System.Data.Entity.EntityState.Unchanged )
+                {
+                    RockContext.Entry( entity ).State = System.Data.Entity.EntityState.Modified;
+                }
+
                 // Save the connection type first to ensure it has an Id ( if it's a new connection type )
                 // before saving the related entities.
-                RockContext.SaveChanges();
+                if ( isNew )
+                {
+                    RockContext.SaveChanges();
+                }
 
                 // Activity Types
                 box.IfValidProperty( nameof( box.Bag.ActivityTypes ), () =>

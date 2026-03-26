@@ -16,8 +16,10 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
+using Rock.Enums.Connection;
 
 namespace Rock.Model
 {
@@ -29,6 +31,24 @@ namespace Rock.Model
         /// <seealso cref="Rock.Data.EntitySaveHook{TEntity}" />
         internal class SaveHook : EntitySaveHook<ConnectionType>
         {
+            /// <summary>
+            /// Captured during <see cref="PreSave"/> so it is still available in
+            /// <see cref="PostSave"/> after EF resets the entity state post-commit.
+            /// </summary>
+            private bool _shouldRecalculateRequestDueAndDueSoonDates;
+
+            /// <summary>
+            /// Called before the save operation is executed.
+            /// </summary>
+            protected override void PreSave()
+            {
+                // Capture [NotMapped] flags now; their values are not guaranteed
+                // to survive the EF commit that happens before PostSave runs.
+                _shouldRecalculateRequestDueAndDueSoonDates = this.Entity.ShouldRecalculateRequestDueAndDueSoonDates;
+
+                base.PreSave();
+            }
+
             /// <summary>
             /// Called after the save operation has been executed
             /// </summary>
@@ -55,6 +75,105 @@ namespace Rock.Model
                     foreach ( var attr in existingAttributes )
                     {
                         attributeService.Delete( attr );
+                        rockContext.SaveChanges();
+                    }
+                }
+                else if ( this.State == EntityContextState.Modified )
+                {
+                    var originalDueDateCalculationMode = this.Entry.OriginalValues[nameof( ConnectionType.DueDateCalculationMode )].ToStringSafe().ConvertToEnum<DueDateCalculationMode>( DueDateCalculationMode.FixedDaysFromStartTypeLevel );
+
+                    if ( originalDueDateCalculationMode != DueDateCalculationMode.FixedDaysFromStartOpportunityLevel && this.Entity.DueDateCalculationMode == DueDateCalculationMode.FixedDaysFromStartOpportunityLevel )
+                    {
+                        var rockContext = ( RockContext ) this.RockContext;
+                        var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+                        var connectionTypeAdditionalSettings = this.Entity.GetConnectionTypeAdditionalSettings();
+
+                        var defaultOpportunityDueDateOffsetInDays = connectionTypeAdditionalSettings?.DefaultOpportunityDueDateOffsetInDays;
+                        var defaultOpportunityDueSoonOffsetInDays = connectionTypeAdditionalSettings?.DefaultOpportunityDueSoonOffsetInDays;
+
+                        var connectionOpportunitiesToUpdate = connectionOpportunityService.Queryable()
+                            .Where( o => o.ConnectionTypeId == this.Entity.Id &&
+                                ( ( o.RequestDueDateOffsetInDays == null || o.RequestDueDateOffsetInDays <= 0 ) ||
+                                  ( o.RequestDueSoonOffsetInDays == null || o.RequestDueSoonOffsetInDays <= 0 ) ) )
+                            .ToList();
+
+
+                        foreach ( var opportunity in connectionOpportunitiesToUpdate )
+                        {
+                            if ( !opportunity.RequestDueDateOffsetInDays.HasValue || opportunity.RequestDueDateOffsetInDays.Value <= 0 )
+                            {
+                                opportunity.RequestDueDateOffsetInDays = defaultOpportunityDueDateOffsetInDays;
+                            }
+                            if ( !opportunity.RequestDueSoonOffsetInDays.HasValue || opportunity.RequestDueSoonOffsetInDays.Value <= 0 )
+                            {
+                                opportunity.RequestDueSoonOffsetInDays = defaultOpportunityDueSoonOffsetInDays;
+                            }
+                        }
+
+                        rockContext.SaveChanges();
+                    }
+
+                    if ( _shouldRecalculateRequestDueAndDueSoonDates )
+                    {
+                        var rockContext = ( RockContext ) this.RockContext;
+                        var connectionRequestService = new ConnectionRequestService( rockContext );
+
+                        var connectionRequests = connectionRequestService.Queryable()
+                            .Where( c => c.ConnectionTypeId == this.Entity.Id )
+                            .ToList();
+
+                        var dueCalculationMode = this.Entity.DueDateCalculationMode;
+
+                        // Keyed by status/opportunity Id; values are (dueDateOffset, dueSoonOffset).
+                        Dictionary<int, (int? DueDateOffset, int? DueSoonOffset)> statusDueDateOffsets = null;
+                        Dictionary<int, (int? DueDateOffset, int? DueSoonOffset)> opportunityDueDateOffsets = null;
+
+                        if ( dueCalculationMode == DueDateCalculationMode.DurationPerStatus )
+                        {
+                            statusDueDateOffsets = new ConnectionStatusService( rockContext ).Queryable()
+                                .Where( s => s.ConnectionTypeId == this.Entity.Id )
+                                .Select( s => new
+                                {
+                                    s.Id,
+                                    s.RequestStatusDueDateOffsetInDays,
+                                    s.RequestStatusDueSoonOffsetInDays
+                                } )
+                                .ToDictionary( s => s.Id, s => ( ( int? ) s.RequestStatusDueDateOffsetInDays, ( int? ) s.RequestStatusDueSoonOffsetInDays ) );
+                        }
+                        else if ( dueCalculationMode == DueDateCalculationMode.FixedDaysFromStartOpportunityLevel )
+                        {
+                            opportunityDueDateOffsets = new ConnectionOpportunityService( rockContext ).Queryable()
+                                .Where( o => o.ConnectionTypeId == this.Entity.Id )
+                                .Select( o => new
+                                {
+                                    o.Id,
+                                    o.RequestDueDateOffsetInDays,
+                                    o.RequestDueSoonOffsetInDays
+                                } )
+                                .ToDictionary( o => o.Id, o => ( ( int? ) o.RequestDueDateOffsetInDays, ( int? ) o.RequestDueSoonOffsetInDays ) );
+                        }
+
+                        foreach ( var connectionRequest in connectionRequests )
+                        {
+                            var createdDateTime = connectionRequest.CreatedDateTime ?? RockDateTime.Now;
+
+                            if ( dueCalculationMode == DueDateCalculationMode.DurationPerStatus )
+                            {
+                                connectionRequest.DueDate = createdDateTime.AddDays( statusDueDateOffsets[connectionRequest.ConnectionStatusId].DueDateOffset ?? 7 );
+                                connectionRequest.DueSoonDate = createdDateTime.AddDays( statusDueDateOffsets[connectionRequest.ConnectionStatusId].DueSoonOffset ?? 7 );
+                            }
+                            else if ( dueCalculationMode == DueDateCalculationMode.FixedDaysFromStartOpportunityLevel )
+                            {
+                                connectionRequest.DueDate = createdDateTime.AddDays( opportunityDueDateOffsets[connectionRequest.ConnectionOpportunityId].DueDateOffset ?? 7 );
+                                connectionRequest.DueSoonDate = createdDateTime.AddDays( opportunityDueDateOffsets[connectionRequest.ConnectionOpportunityId].DueSoonOffset ?? 7 );
+                            }
+                            else
+                            {
+                                connectionRequest.DueDate = createdDateTime.AddDays( this.Entity.RequestDueDateOffsetInDays ?? 7 );
+                                connectionRequest.DueSoonDate = createdDateTime.AddDays( this.Entity.RequestDueSoonOffsetInDays ?? 5 );
+                            }
+                        }
+
                         rockContext.SaveChanges();
                     }
                 }

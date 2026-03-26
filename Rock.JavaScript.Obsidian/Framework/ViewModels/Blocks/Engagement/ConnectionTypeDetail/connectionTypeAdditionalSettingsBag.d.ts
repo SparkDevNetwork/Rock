@@ -41,4 +41,16 @@ export type ConnectionTypeAdditionalSettingsBag = {
 
     /** Gets or sets the communication settings. */
     communicationSettings?: ConnectionTypeCommunicationSettingsBag | null;
+
+    /** Gets or sets the default value for Connection Opportunity Request Due Date Offset In Days. */
+    defaultOpportunityDueDateOffsetInDays?: number | null;
+
+    /** Gets or sets the default value for Connection Opportunity Request Due Soon Offset In Days. */
+    defaultOpportunityDueSoonOffsetInDays?: number | null;
+
+    /** Gets or sets the default value for Request Status Due Date Offset In Days. */
+    defaultStatusDueDateOffsetInDays?: number | null;
+
+    /** Gets or sets the default value for Request Status Due Soon Offset In Days. */
+    defaultStatusDueSoonOffsetInDays?: number | null;
 };
