@@ -37,7 +37,7 @@ public class LavaToolExecutorTests
     }
 
     [TestMethod]
-    public void AddParametersToMergeFields_MissingParameter_IsAddedAsNull()
+    public void AddParametersToMergeFields_MissingStringParameter_IsAddedAsNull()
     {
         var mergeFields = new Dictionary<string, object>();
         var parameters = new List<ParameterSchema>
@@ -53,6 +53,203 @@ public class LavaToolExecutorTests
         LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
 
         Assert.IsNull( mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_MissingNumberParameter_IsAddedAsNull()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.Number,
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.IsNull( mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_MissingBooleanParameter_IsAddedAsNull()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.Boolean,
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.IsNull( mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_MissingDateParameter_IsAddedAsNull()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.Date,
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.IsNull( mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_MissingDateTimeParameter_IsAddedAsNull()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.DateTime,
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.IsNull( mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_MissingStringCollectionParameter_IsAddedAsNull()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.String,
+                IsCollection = true,
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.IsNull( mergeFields["MissingParameter"] );
+    }
+
+
+    [TestMethod]
+    public void AddParametersToMergeFields_DefaultStringParameter_IsAddedAsString()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.String,
+                DefaultValue = "Default Value"
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.AreEqual( "Default Value", mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_DefaultNumberParameter_IsAddedAsNumber()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.Number,
+                DefaultValue = "42"
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.AreEqual( 42d, mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_DefaultBooleanParameter_IsAddedAsBoolean()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.Boolean,
+                DefaultValue = "True"
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.IsTrue( ( bool? ) mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_DefaultDateParameter_IsAddedAsDateTime()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.Date,
+                DefaultValue = "2025-07-30"
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.AreEqual( new DateTime( 2025, 7, 30 ), mergeFields["MissingParameter"] );
+    }
+
+    [TestMethod]
+    public void AddParametersToMergeFields_DefaultDateTimeParameter_IsAddedAsDateTime()
+    {
+        var mergeFields = new Dictionary<string, object>();
+        var parameters = new List<ParameterSchema>
+        {
+            new ParameterSchema
+            {
+                Name = "MissingParameter",
+                DataType = ParameterSchemaDataType.DateTime,
+                DefaultValue = "2025-07-30T18:23:12"
+            }
+        };
+        var args = new KernelArguments();
+
+        LavaToolExecutor.AddParametersToMergeFields( mergeFields, parameters, args );
+
+        Assert.AreEqual( new DateTime( 2025, 7, 30, 18, 23, 12 ), mergeFields["MissingParameter"] );
     }
 
     [TestMethod]
@@ -305,13 +502,21 @@ public class LavaToolExecutorTests
     }
 
     [TestMethod]
-    public void ConvertValueToType_InvalidDateAsDate_ReturnsString()
+    public void ConvertValueToType_ValidDateWithTimeAsDate_ReturnsDateOnly()
     {
-        var expectedValue = "today";
+        var expectedValue = new DateTime( 2025, 7, 30 );
 
-        var result = LavaToolExecutor.ConvertValueToType( "today", ParameterSchemaDataType.Date );
+        var result = LavaToolExecutor.ConvertValueToType( "2025-07-30T18:30:00", ParameterSchemaDataType.Date );
 
         Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_InvalidDateAsDate_ReturnsNull()
+    {
+        var result = LavaToolExecutor.ConvertValueToType( "today", ParameterSchemaDataType.Date );
+
+        Assert.IsNull( result );
     }
 
     [TestMethod]
@@ -333,13 +538,11 @@ public class LavaToolExecutorTests
     }
 
     [TestMethod]
-    public void ConvertValueToType_InvalidDateAsDateTime_ReturnsString()
+    public void ConvertValueToType_InvalidDateAsDateTime_ReturnsNull()
     {
-        var expectedValue = "today at noon";
-
         var result = LavaToolExecutor.ConvertValueToType( "today at noon", ParameterSchemaDataType.DateTime );
 
-        Assert.AreEqual( expectedValue, result );
+        Assert.IsNull( result );
     }
 
     [TestMethod]

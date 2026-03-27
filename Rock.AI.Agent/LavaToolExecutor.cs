@@ -125,7 +125,18 @@ internal class LavaToolExecutor
         {
             if ( !args.ContainsKey( parameter.Name ) )
             {
-                mergeFields.Add( parameter.Name, null );
+                if ( parameter.IsCollection )
+                {
+                    mergeFields.Add( parameter.Name, null );
+                }
+                else if ( parameter.DefaultValue.IsNotNullOrWhiteSpace() )
+                {
+                    mergeFields.Add( parameter.Name, ConvertValueToType( parameter.DefaultValue, parameter.DataType ) );
+                }
+                else
+                {
+                    mergeFields.Add( parameter.Name, null );
+                }
 
                 continue;
             }
@@ -200,11 +211,13 @@ internal class LavaToolExecutor
 
             if ( DateTime.TryParse( value.ToString(), out var dateTime ) )
             {
-                return dateTime;
+                return dataType == ParameterSchemaDataType.Date
+                    ? dateTime.Date
+                    : dateTime;
             }
             else
             {
-                return value?.ToString();
+                return null;
             }
         }
         else
