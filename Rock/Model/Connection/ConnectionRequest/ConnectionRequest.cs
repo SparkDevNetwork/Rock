@@ -222,12 +222,6 @@ namespace Rock.Model
         public DateTime? DueSoonDate { get; set; }
 
         /// <summary>
-        /// Text entered when a celebration action occurs on this request.
-        /// </summary>
-        [DataMember]
-        public string CelebrationText { get; set; }
-
-        /// <summary>
         /// The date and time when this request was marked as connected.
         /// </summary>
         [DataMember]

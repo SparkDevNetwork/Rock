@@ -310,7 +310,7 @@ namespace Rock.Blocks.Engagement
 
                 options.SelectedConnector = connectorListItemBag;
                 this.PersonPreferences.SetValue( PreferenceKey.SelectedConnector, connectorPerson.PrimaryAliasGuid.ToString() );
-                this.PersonPreferences.SetValue( PreferenceKey.SelectedGroupByMode, "connectorGrouping" ); // TODO - Confirm this is desired behavior
+                this.PersonPreferences.SetValue( PreferenceKey.SelectedGroupByMode, "connectorGrouping" );
                 this.PersonPreferences.Save();
             }
 
@@ -372,8 +372,6 @@ namespace Rock.Blocks.Engagement
                 .Where( w => w.TriggerType == ConnectionWorkflowTriggerType.Manual && ( w.WorkflowType.IsActive ?? true ) ) // Mirroring Webforms by setting IsActive to true by default.
                 .ToList()
             );
-
-            // TODO - test performance.
 
             foreach ( var manualWorkflow in manualWorkflows )
             {
@@ -1704,7 +1702,6 @@ namespace Rock.Blocks.Engagement
 
                 userCanEditConnectionRequest = connectionRequests.All( cr =>
                 {
-                    // TODO - test if this is causing performance issues.
                     if ( cr.ConnectorPersonAlias != null && cr.ConnectorPersonAlias.PersonId == RequestContext.CurrentPerson.Id )
                     {
                         return true;
@@ -1839,10 +1836,25 @@ namespace Rock.Blocks.Engagement
         /// </summary>
         /// <param name="connectionRequest">The Connection Request to build the grid row for. Must have related entities eager-loaded, including PersonAlias, ConnectorPersonAlias, ConnectionOpportunity, ConnectionStatus, Campus, AssignedGroup, and ConnectionRequestActivities.</param>
         /// <returns>A dictionary representing the grid row data for the Connection Request, keyed by field name.</returns>
+        /// <summary>
+        /// Gets the celebration text for the given Connection Request by fetching the first
+        /// Celebration Note associated with it. Returns null if no such note exists.
+        /// </summary>
+        /// <param name="connectionRequestId">The Id of the Connection Request.</param>
+        /// <returns>The text of the first Celebration Note, or null if none exists.</returns>
+        private string GetCelebrationText( int connectionRequestId )
+        {
+            var celebrationNoteTypeId = NoteTypeCache.Get( Rock.SystemGuid.NoteType.CELEBRATION_NOTE.AsGuid() ).Id;
+
+            return new NoteService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( n => n.NoteTypeId == celebrationNoteTypeId && n.EntityId == connectionRequestId )
+                .Select( n => n.Text )
+                .FirstOrDefault();
+        }
+
         private Dictionary<string, object> GetConnectionRequestGridRow( ConnectionRequest connectionRequest )
         {
-            // TODO - Add server side filters
-
             var dueStatus = GetDueStatus( connectionRequest.DueDate, connectionRequest.DueSoonDate, connectionRequest.ConnectionState, connectionRequest.ConnectedDateTime );
             var connectorItem = new ListItemBag();
 
@@ -1872,6 +1884,8 @@ namespace Rock.Blocks.Engagement
                 .AsNoTracking()
                 .Where( r => !r.IsComplete && r.ReminderDate < RockDateTime.Now && r.PersonAlias.PersonId == RequestContext.CurrentPerson.Id && r.EntityId == connectionRequest.Id )
                 .Count();
+
+            var celebrationText = GetCelebrationText( connectionRequest.Id );
 
             var requesterPerson = new PersonFieldBag
             {
@@ -1928,7 +1942,7 @@ namespace Rock.Blocks.Engagement
                 DueStatus = dueStatus,
                 FollowUpDate = connectionRequest.FollowupDate,
                 ConnectionState = connectionRequest.ConnectionState,
-                CelebrationText = connectionRequest.CelebrationText,
+                CelebrationText = celebrationText,
                 ReminderCount = reminderCount,
                 HasPlacementGroup = connectionRequest.AssignedGroup != null,
                 HasRequiredGroupRequirements = connectionRequest.AssignedGroup?.GroupRequirements?.Any( r => r.MustMeetRequirementToAddMember ) ?? false
@@ -2156,7 +2170,6 @@ namespace Rock.Blocks.Engagement
         {
             connectionRequest.LoadAttributes();
 
-            // TODO - This is doing more work than we need it to by loading the entire entity. We should create a projection that only pulls the data we need for the details view.
             var detailsBag = new ConnectionRequestDetailsBag
             {
                 ConnectionRequestIdKey = connectionRequest.IdKey,
@@ -2182,7 +2195,7 @@ namespace Rock.Blocks.Engagement
                 DueStatus = GetDueStatus(connectionRequest.DueDate, connectionRequest.DueSoonDate, connectionRequest.ConnectionState, connectionRequest.ConnectedDateTime ),
                 Comments = connectionRequest.Comments,
                 ConnectionTypeSource = connectionRequest.ConnectionTypeSource?.Name,
-                CelebrationText = connectionRequest.CelebrationText,
+                CelebrationText = GetCelebrationText( connectionRequest.Id ),
                 ActionItems = new List<ListItemBag>(),
                 Attributes = connectionRequest.GetPublicAttributesForView( RequestContext.CurrentPerson ),
                 AttributeValues = connectionRequest.GetPublicAttributeValuesForView( RequestContext.CurrentPerson ),
@@ -2913,9 +2926,10 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                 sb.AppendLine( $"Was Completed On Time: {connectionRequest.WasCompletedOnTime}" );
             }
 
-            if ( !connectionRequest.CelebrationText.IsNullOrWhiteSpace() )
+            var celebrationText = GetCelebrationText( connectionRequest.Id );
+            if ( !celebrationText.IsNullOrWhiteSpace() )
             {
-                sb.AppendLine( $"Celebration: {connectionRequest.CelebrationText}" );
+                sb.AppendLine( $"Celebration: {celebrationText}" );
             }
 
             if ( !connectionRequest.Comments.IsNullOrWhiteSpace() )
@@ -2972,11 +2986,14 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                 return ActionOk();
             }
 
+            var celebrationNoteTypeId = NoteTypeCache.Get( Rock.SystemGuid.NoteType.CELEBRATION_NOTE.AsGuid() ).Id;
+
             var sqlParams = new List<SqlParameter>
             {
                 new SqlParameter( "@ConnectionTypeId", connectionType.Id ),
                 new SqlParameter( "@CurrentPersonId", RequestContext.CurrentPerson.Id ),
-                new SqlParameter( "@Now", RockDateTime.Now )
+                new SqlParameter( "@Now", RockDateTime.Now ),
+                new SqlParameter( "@CelebrationNoteTypeId", celebrationNoteTypeId )
             };
 
             var sql = new System.Text.StringBuilder( @"
@@ -3007,7 +3024,7 @@ SELECT
     cr.[DueDate]                                    AS [DueDate],
     cr.[DueSoonDate]                                AS [DueSoonDate],
     cr.[ConnectedDateTime]                          AS [ConnectedDateTime],
-    cr.[CelebrationText]                            AS [CelebrationText],
+    cel_note.[Text]                                 AS [CelebrationText],
     cr.[PersonAliasId]                              AS [PersonAliasId],
     rpa.[Guid]                                      AS [RequesterPersonAliasGuid],
     rp.[Id]                                         AS [RequesterPersonId],
@@ -3082,6 +3099,12 @@ LEFT JOIN (
     GROUP BY rem.[EntityId]
 ) rem_agg
     ON rem_agg.[EntityId] = cr.[PersonAliasId]
+OUTER APPLY (
+    SELECT TOP 1 [Text]
+    FROM [Note]
+    WHERE [NoteTypeId] = @CelebrationNoteTypeId
+      AND [EntityId] = cr.[Id]
+) cel_note
 WHERE 1 = 1" );
 
             // Campus context filter.
@@ -4128,7 +4151,6 @@ WHERE 1 = 1" );
         [BlockAction]
         public BlockActionResult LaunchWorkflowForRequests( LaunchWorkflowBag bag, string connectionTypeIdKey = null )
         {
-            // TODO - is connection type needed here?
             ConnectionTypeCache connectionType = GetConnectionTypeCacheFromPageParameters( connectionTypeIdKey );
             if ( connectionType == null )
             {
@@ -4388,9 +4410,11 @@ WHERE 1 = 1" );
         }
 
         /// <summary>
-        /// Inserts or updates the celebration text on a single Connection Request.
-        /// Returns updated grid data to refresh the celebration text column
-        /// without a full page reload.
+        /// Inserts or updates the Celebration Note on a single Connection Request.
+        /// If a Celebration Note already exists for the request and the text has changed,
+        /// the note text and created-by person are updated. If the text is unchanged, no
+        /// write is performed. Returns updated grid data to refresh the celebration text
+        /// column without a full page reload.
         /// </summary>
         /// <param name="bag">A bag containing the Connection Request IdKey and the celebration text to save.</param>
         /// <param name="connectionTypeIdKey">An optional Connection Type IdKey used to resolve the Connection Type, in addition to the standard page parameter resolution.</param>
@@ -4411,15 +4435,43 @@ WHERE 1 = 1" );
                 return actionError;
             }
 
-            connectionRequest.CelebrationText = bag.CelebrationText;
+            var celebrationNoteTypeId = NoteTypeCache.Get( Rock.SystemGuid.NoteType.CELEBRATION_NOTE.AsGuid() ).Id;
+            var noteService = new NoteService( RockContext );
+
+            var existingNote = noteService.Queryable()
+                .Where( n => n.NoteTypeId == celebrationNoteTypeId && n.EntityId == connectionRequest.Id )
+                .FirstOrDefault();
+
+            if ( existingNote != null )
+            {
+                // Only write if the text actually changed.
+                if ( existingNote.Text != bag.CelebrationText )
+                {
+                    existingNote.Text = bag.CelebrationText;
+                    existingNote.CreatedByPersonAliasId = RequestContext.CurrentPerson.PrimaryAliasId;
+                    RockContext.SaveChanges();
+                }
+            }
+            else
+            {
+                var newNote = new Note
+                {
+                    NoteTypeId = celebrationNoteTypeId,
+                    EntityId = connectionRequest.Id,
+                    Text = bag.CelebrationText,
+                    CreatedByPersonAliasId = RequestContext.CurrentPerson.PrimaryAliasId
+                };
+
+                noteService.Add( newNote );
+                RockContext.SaveChanges();
+            }
 
             var gridUpdateBag = new ConnectionListGridUpdateBag
             {
                 IdKey = connectionRequest.IdKey,
-                CelebrationText = connectionRequest.CelebrationText
+                CelebrationText = bag.CelebrationText
             };
 
-            RockContext.SaveChanges();
             return ActionOk( gridUpdateBag );
         }
 
@@ -4521,7 +4573,6 @@ WHERE 1 = 1" );
             ConnectionTypeCache connectionType = GetConnectionTypeCacheFromPageParameters();
             if ( connectionType == null )
             {
-                // TODO - determine if we throw an exception
                 return ActionOk();
             }
 
@@ -4579,15 +4630,17 @@ WHERE 1 = 1" );
                 return null;
             }
 
-            // TODO - Do we need to check if the user is authorized to make these requests?
+            var isAuthorized = CampaignConnectionHelper.GetConnectorCampusIds( selectedCampaignConnectionItem, RequestContext.CurrentPerson ).Any();
+            if ( !isAuthorized )
+            {
+                return ActionBadRequest( "You are not authorized to assign requests from this campaign." );
+            }
 
-            // Serves no purpose.
             int numberOfRequestsRemaining;
 
             // Updates any existing requests that do not have a connector and creates new requests via the campaign.
             CampaignConnectionHelper.AddConnectionRequestsForPerson( selectedCampaignConnectionItem, RequestContext.CurrentPerson, bag.NumberOfRequests, out numberOfRequestsRemaining );
 
-            // TODO - may need to add logic to recalculate pending people.
             return ActionOk( );
         }
 
@@ -4774,8 +4827,6 @@ WHERE 1 = 1" );
             note.Text = bag.NoteText;
 
             RockContext.SaveChanges();
-
-            // TODO - Can a Connection Request Note be editted by someone who is not the creator?
 
             var activityEntryBag = new ActivityEntryBag
             {
@@ -5833,7 +5884,7 @@ WHERE 1 = 1" );
             /// <summary>Gets or sets the date and time the request was connected (completed), or null when still open.</summary>
             public DateTime? ConnectedDateTime { get; set; }
 
-            /// <summary>Gets or sets the celebration text for the request.</summary>
+            /// <summary>Gets or sets the celebration text sourced from the first Celebration Note on the request.</summary>
             public string CelebrationText { get; set; }
 
             /// <summary>Gets or sets the PersonAlias Id of the requester.</summary>

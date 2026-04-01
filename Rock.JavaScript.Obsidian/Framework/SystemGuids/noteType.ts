@@ -25,6 +25,8 @@
 export const NoteType = {
     /** Generic prayer comment note type */
     BenevolenceRequestNote: "CC49BF39-8D3E-4512-B8F4-853FE49CDBC7",
+    /** The note type to use for connection celebrations. */
+    CelebrationNote: "A480E95A-F941-473E-B200-50D2658C9417",
     /** The note type to use for connection request notes. */
     ConnectionRequestNote: "9F1BD01D-44E8-427A-8D8A-AD4D3C380775",
     /** The content channel item structured content user value */

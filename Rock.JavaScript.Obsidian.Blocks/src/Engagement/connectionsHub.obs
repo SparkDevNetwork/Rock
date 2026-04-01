@@ -1820,13 +1820,7 @@
 
             if (!errorMessage) {
                 isChangeStateModalVisible.value = false;
-
-                // TODO - check if this should be switched to > 0
-                if (requestDetailsForModal.value.length > 1) {
-                    // clear selected keys
-                    // TODO - Come back to this after the clear keys bug is fixed.
-                    clearAllSelections();
-                }
+                clearAllSelections();
             }
             else {
                 modalErrorMessage.value = errorMessage;
@@ -2181,8 +2175,7 @@
                 isFlyoutOpen.value = false;
             }
 
-
-            // TODO -display error
+            flyoutErrorMessage.value = result.errorMessage ?? "An error occurred while updating the Connection Request Status.";
         }
         finally {
             isFlyoutSaving.value = false;
@@ -2270,8 +2263,6 @@
                     }
                 }
 
-                // TODO - Determine if we need to make this work for bulk updates. The only case that this would matter is if the selected request
-                // was included in the bulk update and then after the bulk update concludes, the user attempts to select the request again.
                 if (!!dockedPanelDetailsBox.value?.entity && dockedPanelDetailsBox.value.entity.connectionRequestIdKey === resultBag.idKey) {
                     dockedPanelDetailsBox.value.entity.connectionState = resultBag.connectionState;
                     dockedPanelDetailsBox.value.entity.followUpDate = resultBag.followUpDate;
@@ -2358,7 +2349,6 @@
 
             gridData.value!.rows = gridData.value?.rows?.filter(r => !idKeySet.has(r.idKey as string));
 
-            // TODO - Find a better aproach to clearing the selected request
             if (isDockedPanelVisible.value && connectionRequestIdKeys.length === 1 && dockedPanelDetailsBox.value?.entity?.connectionRequestIdKey === connectionRequestIdKeys[0]) {
                 selectedRequestKeyForDockedPanel.value = null;
                 isDockedPanelVisible.value = false;
@@ -2689,7 +2679,6 @@
             const result = await invokeBlockAction("AssignConnectionRequestsFromCampaign", { bag });
 
             if (result.isSuccess) {
-                // TODO - this may be updated to insert updated/inserted values into the exisithing grid data rather than reloading.
                 loadGridData();
                 isAddFromCampaignModalVisible.value = false;
                 return;

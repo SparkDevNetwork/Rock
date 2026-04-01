@@ -520,11 +520,11 @@ namespace Rock.Blocks.Engagement
                 var additionalSettings = connectionType.GetConnectionTypeAdditionalSettings();
                 if ( !requestDueDateOffsetInDays.HasValue || requestDueDateOffsetInDays.Value <= 0 )
                 {
-                    requestDueDateOffsetInDays = additionalSettings.DefaultOpportunityDueDateOffsetInDays;
+                    requestDueDateOffsetInDays = additionalSettings?.DefaultOpportunityDueDateOffsetInDays;
                 }
                 if ( !requestDueSoonOffsetInDays.HasValue || requestDueSoonOffsetInDays.Value <= 0)
                 {
-                    requestDueSoonOffsetInDays = additionalSettings.DefaultOpportunityDueSoonOffsetInDays;
+                    requestDueSoonOffsetInDays = additionalSettings?.DefaultOpportunityDueSoonOffsetInDays;
                 }
             }
 

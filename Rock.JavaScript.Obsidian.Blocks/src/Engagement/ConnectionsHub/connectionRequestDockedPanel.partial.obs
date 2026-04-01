@@ -56,6 +56,7 @@
                         <div class="d-flex gap-sm">
                             <i v-if="!isFullWidth" class="ti ti-layout-sidebar-right-expand cursor-pointer" @click="setFullWidth(true)"></i>
                             <i v-else class="ti ti-layout-sidebar-right-collapse cursor-pointer" @click="setFullWidth(false)"></i>
+                            <i ref="copyRequestLinkRef" class="ti ti-link cursor-pointer" title="Copy Request Link" @click="copyRequestLink"></i>
                             <i class="ti ti-x cursor-pointer" @click="closeDockedPanel"></i>
                         </div>
                     </div>
@@ -72,10 +73,10 @@
                                     <div class="text-interface-medium text-sm">{{ requestDetails.requesterPerson.gender }} | {{ requestDetails.requesterPerson.maritalStatus }}</div>
                                 </div>
                             </div>
-                            <div>
+                            <div v-if="options?.badgeGuids && options.badgeGuids.length > 0">
                                 <BadgeList :entityTypeGuid="EntityType.Person"
                                            :entityKey="requestDetails.requesterPerson.idKey ?? ''"
-                                           :badgeTypeGuids="options?.badgeGuids ?? []"
+                                           :badgeTypeGuids="options.badgeGuids"
                                            class="align-items-center justify-content-center flex-wrap" />
                             </div>
                             <div class="d-flex py-spacing-lg gap-xs">
@@ -358,6 +359,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
     import { AISummaryTriggerMode } from "@Obsidian/Enums/Connection/aiSummaryTriggerMode";
+    import { showTooltip, tooltip } from "@Obsidian/Utility/tooltip";
 
     const props = defineProps({
         modelValue: {
@@ -448,6 +450,7 @@
 
     const isLoading = ref(true);
     const isInEditMode = ref<boolean>(false);
+    const copyRequestLinkRef = ref<HTMLElement | null>(null);
 
     const viewErrorMessage = ref<string>("");
     const editErrorMessage = ref<string>("");
@@ -545,6 +548,24 @@
         if (hasNext.value) {
             emit("navigate", nextKey.value);
         }
+    }
+
+    function copyRequestLink(): void {
+        if (!props.detailsBox?.entity?.connectionRequestIdKey) {
+            return;
+        }
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("Request", props.detailsBox?.entity?.connectionRequestIdKey);
+        navigator.clipboard.writeText(url.toString()).then(() => {
+            if (!copyRequestLinkRef.value) {
+                return;
+            }
+            copyRequestLinkRef.value.setAttribute("data-original-title", "Copied");
+            showTooltip(copyRequestLinkRef.value);
+
+            copyRequestLinkRef.value.setAttribute("data-original-title", "Copy Request Link");
+        });
     }
 
     function closeDockedPanel(): void {
@@ -653,16 +674,6 @@
         isAISummaryLoading.value = false;
     }
 
-    // watch(isFullWidth, () => {
-    //     if (isFullWidth.value) {
-    //         previousDockedPanelWidth = dockedPanelWidth.value;
-    //         dockedPanelWidth.value = "100%";
-    //     }
-    //     else {
-    //         dockedPanelWidth.value = previousDockedPanelWidth;
-    //     }
-    // });
-
     function resetDockedPanel(): void {
         requestDetails.value = undefined;
         options.value = undefined;
@@ -688,6 +699,12 @@
 
     watch(() => props.currentKey, () => {
         resetDockedPanel();
+    });
+
+    watch(copyRequestLinkRef, () => {
+        if (copyRequestLinkRef.value) {
+            tooltip(copyRequestLinkRef.value);
+        }
     });
 
     watch(() => props.detailsBox, () => {

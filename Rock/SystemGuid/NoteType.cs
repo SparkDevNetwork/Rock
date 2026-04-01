@@ -90,5 +90,10 @@ namespace Rock.SystemGuid
         /// The note type to use for connection request notes.
         /// </summary>
         public const string CONNECTION_REQUEST_NOTE = "9F1BD01D-44E8-427A-8D8A-AD4D3C380775";
+
+        /// <summary>
+        /// The note type to use for connection celebrations.
+        /// </summary>
+        public const string CELEBRATION_NOTE = "A480E95A-F941-473E-B200-50D2658C9417";
     }
 }
