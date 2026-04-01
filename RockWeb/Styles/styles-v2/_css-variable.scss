@@ -92,44 +92,44 @@
     --tint-white-percentage: 50%;
     --shade-black-percentage: 15%;
 
-    --color-critical-tint:  color-mix(in srgb, var(--base-critical) 50%, transparent var(--tint-white-percentage));
-    --color-critical-soft:  color-mix(in srgb, var(--base-critical) 7%, transparent var(--tint-white-percentage));
+    --color-critical-tint:  color-mix(in srgb, var(--base-critical) 50%, var(--color-interface-softest));
+    --color-critical-soft:  color-mix(in srgb, var(--base-critical) 7%, var(--color-interface-softest));
     --color-critical-shade: color-mix(in srgb, var(--base-critical) 100%, #000 var(--shade-black-percentage));
 
-    --color-danger-tint:    color-mix(in srgb, var(--base-danger) 50%, transparent var(--tint-white-percentage));
-    --color-danger-soft:    color-mix(in srgb, var(--base-danger) 7%, transparent var(--tint-white-percentage));
+    --color-danger-tint:    color-mix(in srgb, var(--base-danger) 50%, var(--color-interface-softest));
+    --color-danger-soft:    color-mix(in srgb, var(--base-danger) 7%, var(--color-interface-softest));
     --color-danger-shade:   color-mix(in srgb, var(--base-danger) 100%, #000 var(--shade-black-percentage));
 
-    --color-info-tint:      color-mix(in srgb, var(--base-info) 50%, transparent var(--tint-white-percentage));
-    --color-info-soft:      color-mix(in srgb, var(--base-info) 7%, transparent var(--tint-white-percentage));
+    --color-info-tint:      color-mix(in srgb, var(--base-info) 50%, var(--color-interface-softest));
+    --color-info-soft:      color-mix(in srgb, var(--base-info) 7%, var(--color-interface-softest));
     --color-info-shade:     color-mix(in srgb, var(--base-info) 100%, #000 var(--shade-black-percentage));
 
-    --color-success-tint:   color-mix(in srgb, var(--base-success) 50%, transparent var(--tint-white-percentage));
-    --color-success-soft:   color-mix(in srgb, var(--base-success) 7%, transparent var(--tint-white-percentage));
+    --color-success-tint:   color-mix(in srgb, var(--base-success) 50%, var(--color-interface-softest));
+    --color-success-soft:   color-mix(in srgb, var(--base-success) 7%, var(--color-interface-softest));
     --color-success-shade:  color-mix(in srgb, var(--base-success) 100%, #000 var(--shade-black-percentage));
 
-    --color-warning-tint:   color-mix(in srgb, var(--base-warning) 50%, transparent var(--tint-white-percentage));
-    --color-warning-soft:   color-mix(in srgb, var(--base-warning) 7%, transparent var(--tint-white-percentage));
+    --color-warning-tint:   color-mix(in srgb, var(--base-warning) 50%, var(--color-interface-softest));
+    --color-warning-soft:   color-mix(in srgb, var(--base-warning) 7%, var(--color-interface-softest));
     --color-warning-shade:  color-mix(in srgb, var(--base-warning) 100%, #000 var(--shade-black-percentage));
 
-    --color-primary-tint:   color-mix(in srgb, var(--base-primary) 50%, transparent var(--tint-white-percentage));
-    --color-primary-soft:   color-mix(in srgb, var(--base-primary) 7%, transparent var(--tint-white-percentage));
+    --color-primary-tint:   color-mix(in srgb, var(--base-primary) 50%, var(--color-interface-softest));
+    --color-primary-soft:   color-mix(in srgb, var(--base-primary) 7%, var(--color-interface-softest));
     --color-primary-shade:  color-mix(in srgb, var(--base-primary) 100%, #000 var(--shade-black-percentage));
 
-    --color-link-tint:      color-mix(in srgb, var(--base-link) 50%, transparent var(--tint-white-percentage));
+    --color-link-tint:      color-mix(in srgb, var(--base-link) 50%, var(--color-interface-softest));
     --color-link-shade:     color-mix(in srgb, var(--base-link) 100%, #000 var(--shade-black-percentage));
 
-    --color-secondary-tint:  color-mix(in srgb, var(--base-secondary) 50%, transparent var(--tint-white-percentage));
-    --color-secondary-soft:  color-mix(in srgb, var(--base-secondary) 7%, transparent var(--tint-white-percentage));
+    --color-secondary-tint:  color-mix(in srgb, var(--base-secondary) 50%, var(--color-interface-softest));
+    --color-secondary-soft:  color-mix(in srgb, var(--base-secondary) 7%, var(--color-interface-softest));
     --color-secondary-shade: color-mix(in srgb, var(--base-secondary) 100%, #000 var(--shade-black-percentage));
 
     // GENDER COLORS
-    --color-gender-male-tint:   color-mix(in srgb, var(--base-gender-male) 50%, transparent var(--tint-white-percentage));
-    --color-gender-male-soft:   color-mix(in srgb, var(--base-gender-male) 7%, transparent var(--tint-white-percentage));
+    --color-gender-male-tint:   color-mix(in srgb, var(--base-gender-male) 50%, var(--color-interface-softest));
+    --color-gender-male-soft:   color-mix(in srgb, var(--base-gender-male) 7%, var(--color-interface-softest));
     --color-gender-male-shade:  color-mix(in srgb, var(--base-gender-male) 100%, #000 var(--shade-black-percentage));
 
-    --color-gender-female-tint:   color-mix(in srgb, var(--base-gender-female) 50%, transparent var(--tint-white-percentage));
-    --color-gender-female-soft:   color-mix(in srgb, var(--base-gender-female) 7%, transparent var(--tint-white-percentage));
+    --color-gender-female-tint:   color-mix(in srgb, var(--base-gender-female) 50%, var(--color-interface-softest));
+    --color-gender-female-soft:   color-mix(in srgb, var(--base-gender-female) 7%, var(--color-interface-softest));
     --color-gender-female-shade:  color-mix(in srgb, var(--base-gender-female) 100%, #000 var(--shade-black-percentage));
   }
 
