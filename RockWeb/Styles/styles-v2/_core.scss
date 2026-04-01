@@ -144,7 +144,6 @@
 @import 'rock-components/sankey';
 @import 'rock-components/quick-filter.scss';
 @import 'rock-components/button-groups-extensions.scss';
-@import 'rock-components/panels-extensions.scss';
 @import 'rock-components/badges-extensions.scss';
 @import 'rock-components/buttons-extensions.scss';
 @import 'rock-components/forms-extensions.scss';
@@ -156,6 +155,7 @@
 
 
 /* ===================== BLOCK =================== */
+@import 'blocks/blocks-ai';
 @import 'blocks/blocks-administration';             // Fully Format. There are Some hard coded value.
 @import 'blocks/blocks-core';                       // Fully Format. There are Some hard coded value.
 @import 'blocks/blocks-groups';                     // Fully Format. There are Some hard coded value.

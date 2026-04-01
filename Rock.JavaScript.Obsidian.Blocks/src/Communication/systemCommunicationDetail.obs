@@ -136,6 +136,7 @@
                                     v-model="body"
                                     :disabled="options.isReadOnly || isSaving"
                                     :editorHeight="500"
+                                    label="Message Body"
                                     mode="lava"
                                     rules="required" />
 

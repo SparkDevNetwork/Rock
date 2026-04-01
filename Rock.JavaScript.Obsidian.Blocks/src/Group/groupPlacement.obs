@@ -117,13 +117,15 @@
                     </template>
 
                     <template v-if="Object.keys(sourceAttributesForFilter).length > 0 || registrantFeeItemsForFilter.length > 0" #drawer>
-                        <AttributeValuesContainer v-model="pendingSourceAttributeValuesForFilter" :attributes="sourceAttributesForFilter" isEditMode :numberOfColumns="1" />
-                        <DropDownList v-model="pendingRegistrantFeeItemValuesForFilter"
-                                      v-if="placementConfigurationSettings.areFeesDisplayed"
-                                      label="Fees"
-                                      :items="registrantFeeItemsForFilter ?? []"
-                                      :enhanceForLongLists="true"
-                                      :multiple="true" />
+                        <div class="filter-container">
+                            <AttributeValuesContainer v-model="pendingSourceAttributeValuesForFilter" :attributes="sourceAttributesForFilter" isEditMode :numberOfColumns="1" />
+                            <DropDownList v-model="pendingRegistrantFeeItemValuesForFilter"
+                                          v-if="placementConfigurationSettings.areFeesDisplayed"
+                                          label="Fees"
+                                          :items="registrantFeeItemsForFilter ?? []"
+                                          :enhanceForLongLists="true"
+                                          :multiple="true" />
+                        </div>
                         <RockButton :btnType="BtnType.Action"
                                     :btnSize="BtnSize.ExtraSmall"
                                     @click="applyPeopleFilter"
@@ -229,29 +231,30 @@
                     </template>
 
                     <template #drawer v-if="Object.keys(destinationGroupAttributesForFilter).length > 0 || Object.keys(destinationGroupMemberAttributesForFilter).length > 0">
-
-                        <AttributeValuesContainer v-model="pendingDestinationGroupAttributeValuesForFilter"
-                                                  :attributes="destinationGroupAttributesForFilter"
-                                                  isEditMode
-                                                  :numberOfColumns="3"
-                                                  columnBreakpoint="lg"
-                                                  :showCategoryLabel="false" />
-                        <div class="w-100 mb-2">
-                            <RockLabel v-if="Object.keys(destinationGroupMemberAttributesForFilter).length > 0"
-                                       @click="toggleIsGroupMemberFilterDisplayed"
-                                       class="group-member-filter-toggle">
-                                Group Member Filters <i :class="groupMemberFilterIcon"></i>
-                            </RockLabel>
-                            <TransitionVerticalCollapse>
-                                <div v-show="isGroupMemberFilterDisplayed">
-                                    <AttributeValuesContainer v-model="pendingDestinationGroupMemberAttributeValuesForFilter"
-                                                              :attributes="destinationGroupMemberAttributesForFilter"
-                                                              isEditMode
-                                                              :numberOfColumns="3"
-                                                              columnBreakpoint="lg"
-                                                              :showCategoryLabel="false" />
-                                </div>
-                            </TransitionVerticalCollapse>
+                        <div class="filter-container">
+                            <AttributeValuesContainer v-model="pendingDestinationGroupAttributeValuesForFilter"
+                                                      :attributes="destinationGroupAttributesForFilter"
+                                                      isEditMode
+                                                      :numberOfColumns="3"
+                                                      columnBreakpoint="lg"
+                                                      :showCategoryLabel="false" />
+                            <div class="w-100 mb-2">
+                                <RockLabel v-if="Object.keys(destinationGroupMemberAttributesForFilter).length > 0"
+                                           @click="toggleIsGroupMemberFilterDisplayed"
+                                           class="group-member-filter-toggle">
+                                    Group Member Filters <i :class="groupMemberFilterIcon"></i>
+                                </RockLabel>
+                                <TransitionVerticalCollapse>
+                                    <div v-show="isGroupMemberFilterDisplayed">
+                                        <AttributeValuesContainer v-model="pendingDestinationGroupMemberAttributeValuesForFilter"
+                                                                  :attributes="destinationGroupMemberAttributesForFilter"
+                                                                  isEditMode
+                                                                  :numberOfColumns="3"
+                                                                  columnBreakpoint="lg"
+                                                                  :showCategoryLabel="false" />
+                                    </div>
+                                </TransitionVerticalCollapse>
+                            </div>
                         </div>
                         <RockButton :btnType="BtnType.Action"
                                     :btnSize="BtnSize.ExtraSmall"
@@ -514,6 +517,13 @@
 
 :deep(.is-drag-over) {
     display: none;
+}
+
+.filter-container {
+    max-height: 400px;
+    overflow: hidden;
+    overflow-y: auto;
+    padding-right: var(--spacing-xsmall);
 }
 </style>
 

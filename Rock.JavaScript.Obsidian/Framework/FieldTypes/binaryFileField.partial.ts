@@ -20,7 +20,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     BinaryFileType = "binaryFileType",
     BinaryFileOptions = "binaryFileOptions"
 }

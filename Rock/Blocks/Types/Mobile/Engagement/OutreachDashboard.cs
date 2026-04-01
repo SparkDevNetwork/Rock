@@ -301,7 +301,8 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 PersonProfileUrl = MobileHelper.BuildPublicApplicationRootUrl( GetCurrentPerson().PhotoUrl ),
                 NumberOfTouchpointsGeneratedPerDay = ( int ) Math.Round( count ),
                 TouchpointCountCompletedDayOfWeek = weeklyCompletedTouchpoint,
-                LookbackPeriodInDays = GetAttributeValue( AttributeKeys.CompletionLookbackPeriod ).AsInteger()
+                LookbackPeriodInDays = GetAttributeValue( AttributeKeys.CompletionLookbackPeriod ).AsInteger(),
+                OutreachTouchpointGenerationEnabled = person.OutreachTouchpointGenerationEnabled
             };
 
             return ActionOk( data );

@@ -56,7 +56,8 @@
                                 <div class="col-md-6">
                                     <DatePicker v-model="followUpDate"
                                                 label="Follow-Up Date"
-                                                rules="required" />
+                                                rules="required"
+                                                :disallowPastDateSelection="true" />
                                 </div>
                             </div>
                         </template>
@@ -149,32 +150,13 @@
                     </div>
                 </ContentStack>
             </ContentSection>
-            <ContentSection v-if="hasConnectionTypeRequestAttributes || hasConnectionOpportunityRequestAttributes"
-                            title="Attributes"
-                            icon="ti ti-binary-tree-2"
-                            disableCollapse>
-                <ContentStack>
-                    <div class="row" v-if="hasConnectionTypeRequestAttributes">
-                        <div class="col-md-6">
-                            <AttributeValuesContainer v-model="connectionRequestAttributeValues"
-                                                      :attributes="props.options!.connectionTypeRequestAttributes!"
-                                                      isEditMode
-                                                      :numberOfColumns="1"
-                                                      :showCategoryLabel="false" />
-                        </div>
-                    </div>
-
-                    <div class="row" v-if="hasConnectionOpportunityRequestAttributes">
-                        <div class="col-md-6">
-                            <AttributeValuesContainer v-model="connectionRequestAttributeValues"
-                                                      :attributes="props.connectionOpportunityDetails!.connectionOpportunityRequestAttributes!"
-                                                      isEditMode
-                                                      :numberOfColumns="1"
-                                                      :showCategoryLabel="false" />
-                        </div>
-                    </div>
-                </ContentStack>
-            </ContentSection>
+            <AttributeValuesContainer v-model="connectionRequestAttributeValues"
+                                      :attributes="combinedRequestAttributes"
+                                      isEditMode
+                                      :numberOfColumns="1"
+                                      displayAsContentSection
+                                      globalCategoryNameOverride="General Attributes"
+                                      isContentSectionCollapseDisabled />
         </ContentSectionContainer>
     </Modal>
 </template>
@@ -345,9 +327,16 @@
 
     const connectionStatusText = computed<string>(() => connectionStatusItems.value.find(s => s.value === connectionStatusGuid.value)?.text ?? "");
 
-    const hasConnectionTypeRequestAttributes = computed<boolean>(() => Object.keys(props.options?.connectionTypeRequestAttributes ?? {}).length > 0);
+    /**
+     * Merges connection type and connection opportunity request attributes into a single object
+     * so they can be rendered and saved together in one AttributeValuesContainer.
+     */
+    const combinedRequestAttributes = computed(() => ({
+        ...(props.options?.connectionTypeRequestAttributes ?? {}),
+        ...(props.connectionOpportunityDetails?.connectionOpportunityRequestAttributes ?? {})
+    }));
 
-    const hasConnectionOpportunityRequestAttributes = computed<boolean>(() => Object.keys(props.connectionOpportunityDetails?.connectionOpportunityRequestAttributes ?? {}).length > 0);
+    const hasCombinedRequestAttributes = computed<boolean>(() => Object.keys(combinedRequestAttributes.value).length > 0);
 
     function onSave(): void {
         const newValue: ValidPropertiesBox<ConnectionRequestBag> = {
@@ -429,6 +418,7 @@
     watch(isVisible, () => {
         if (!isVisible.value) {
             emit("close");
+            followUpDate.value = "";
         }
     });
 

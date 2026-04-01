@@ -11,7 +11,7 @@
                 {{ errorMessage }}
             </NotificationBox>
 
-            <ContentSectionContainer>
+            <ContentSectionContainer :sidebar="false">
                 <ContentSection light
                                 disableCollapse>
                     <ContentStack>
@@ -22,14 +22,15 @@
                                               rules="required" />
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-md-6">
-                                <DropDownList v-model="connectorPersonAliasGuid"
-                                              label="Connector"
-                                              :items="connectorItems"
-                                              enhanceForLongLists />
+                                <DropDownList v-model="requestSourceGuid"
+                                              :items="props.options?.requestSourceItems ?? []"
+                                              label="Request Source" />
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <RadioButtonList v-model="connectionState"
@@ -43,11 +44,34 @@
                                     <div class="col-md-6">
                                         <DatePicker v-model="followUpDate"
                                                     label="Follow-Up Date"
-                                                    rules="required" />
+                                                    rules="required"
+                                                    :disallowPastDateSelection="true" />
                                     </div>
                                 </div>
                             </template>
                         </ConditionalWell>
+                    </ContentStack>
+                </ContentSection>
+                <ContentSection title="Request Details"
+                                icon="ti ti-list-details">
+                    <ContentStack>
+                        <div class="row" v-if="options?.campuses?.length && options.campuses.length > 0">
+                            <div class="col-md-6">
+                                <DropDownList v-model="campusGuid"
+                                              label="Campus"
+                                              :items="options.campuses"
+                                              :disabled="arePlacementGroupsAndCampusFieldsDisabled" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <DropDownList v-model="connectorPersonAliasGuid"
+                                              label="Connector"
+                                              :items="connectorItems"
+                                              enhanceForLongLists />
+                            </div>
+                        </div>
 
                         <div class="row">
                             <div class="col-md-6">
@@ -66,15 +90,6 @@
                             </template>
                         </ConditionalWell>
 
-                        <div class="row" v-if="options?.campuses?.length && options.campuses.length > 0">
-                            <div class="col-md-6">
-                                <DropDownList v-model="campusGuid"
-                                              label="Campus"
-                                              :items="options.campuses"
-                                              :disabled="arePlacementGroupsAndCampusFieldsDisabled" />
-                            </div>
-                        </div>
-
                         <div class="row" v-if="options?.areGroupPlacementsEnabled">
                             <div class="col-md-6">
                                 <DropDownList v-model="placementGroupGuid"
@@ -84,7 +99,6 @@
                                               enhanceForLongLists />
                             </div>
                         </div>
-
                         <ConditionalWell v-if="placementGroupGuid && hasGroupProperties">
                             <template #default>
                                 <div class="row" v-if="selectedPlacementGroupDetails?.groupMemberRoles && selectedPlacementGroupDetails.groupMemberRoles.length > 1">
@@ -107,29 +121,21 @@
                                 </div>
                                 <div class="row" v-if="selectedPlacementGroupDetails?.groupMemberAttributes">
                                     <div class="col-md-6">
-                                        <!-- TODO - Cannot disable attribute values container -->
                                         <AttributeValuesContainer v-model="placementGroupMemberAttributeValues"
                                                                   :attributes="selectedPlacementGroupDetails.groupMemberAttributes"
                                                                   :numberOfColumns="1"
-                                                                  isEditMode
+                                                                  :isEditMode="!arePlacementGroupsAndCampusFieldsDisabled"
                                                                   :showCategoryLabel="false" />
-
                                     </div>
                                 </div>
                             </template>
                         </ConditionalWell>
+
                         <div class="row">
                             <div class="col-md-12">
                                 <TextBox v-model="comments"
                                          label="Comments"
                                          textMode="multiline" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <DropDownList v-model="requestSourceGuid"
-                                              :items="props.options?.requestSourceItems ?? []"
-                                              label="Request Source" />
                             </div>
                         </div>
                     </ContentStack>
@@ -147,11 +153,6 @@
 </template>
 
 <style scoped>
-.disabled {
-    cursor: default;
-    color: var(--color-interface-medium);
-}
-
 .person-details {
     white-space: nowrap;
 }

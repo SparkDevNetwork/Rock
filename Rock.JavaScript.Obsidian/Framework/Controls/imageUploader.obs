@@ -35,19 +35,30 @@
             </div>
         </template>
     </RockFormField>
+    <Modal v-model="showModal" title="Crop Image" @close="onCropClose">
+        <div :style="{ maxWidth: cropBoxSize + 'px', maxHeight: cropBoxSize + 'px', margin: 'auto', aspectRatio: '1' }">
+            <img :src="croppingImageUrl ?? ''" ref="imgRef" style="display:block; max-width:100%;" />
+        </div>
+        <template #customButtons>
+            <RockButton type="button" btnType="primary" @click.prevent="onCropClick">Crop</RockButton>
+        </template>
+    </Modal>
 </template>
 
 <script setup lang="ts">
-    import { Guid } from "@Obsidian/Types";
     import { computed, PropType, ref, watch } from "vue";
+    import Modal from "./modal.obs";
     import NotificationBox from "./notificationBox.obs";
+    import RockButton from "./rockButton.obs";
+    import RockFormField from "./rockFormField.obs";
+    import Cropper from "@Obsidian/Libs/cropper";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { Guid } from "@Obsidian/Types";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { resizeImageFileProcessor } from "@Obsidian/Utility/file";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { uploadBinaryFile } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import RockFormField from "./rockFormField.obs";
-    import { toGuidOrNull } from "@Obsidian/Utility/guid";
-    import { isPromise } from "@Obsidian/Utility/promiseUtils";
-    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
 
     const props = defineProps({
         /**
@@ -116,34 +127,131 @@
         fileProcessor: {
             type: Function as PropType<(file: File) => (File | Promise<File>)>,
             required: false
-        }
+        },
+
+        enableCrop: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Min pixel height of the cropped image to be uploaded. Set to 0 (default) to remove limit */
+        minimumHeight: {
+            type: Number,
+            default: 0
+        },
+
+        /** Min pixel width of the cropped image to be uploaded. Set to 0 (default) to remove limit */
+        minimumWidth: {
+            type: Number,
+            default: 0
+        },
+
+        /** Max pixel height of the cropped image to be uploaded. Set to 0 (default) to remove limit */
+        targetHeight: {
+            type: Number,
+            default: 0
+        },
+
+        /** Max pixel width of the cropped image to be uploaded. Set to 0 (default) to remove limit */
+        targetWidth: {
+            type: Number,
+            default: 0
+        },
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | null | undefined): void;
         (e: "imageUploaded"): void;
         (e: "imageRemoved"): void;
+        (e: "cropped", /** The local URL of cropped image */value: string): void;
     }>();
 
-    const internalValue = ref(props.modelValue);
-
+    let cropper: Cropper | undefined | null;
     const securityGrantToken = useSecurityGrantToken();
+    const cropBoxSize = 480;
+
+    // #region Values
+
+    const internalValue = ref<ListItemBag | null | undefined>(props.modelValue);
+    const imgRef = ref<HTMLImageElement | null>(null);
+    const showModal = ref<boolean>(false);
+    const croppingImageUrl = ref<string | null>(null);
+    const croppedImageUrl = ref<string | null>(null);
+    const croppingImageFileName = ref<string>("");
+    const originalImageWidth = ref<number>(0);
+    const originalImageHeight = ref<number>(0);
 
     // Variables related to the progress of uploading a new file.
-    const isUploading = ref(false);
-    const uploadProgressText = ref("");
-    const uploadErrorMessage = ref("");
+    const isUploading = ref<boolean>(false);
+    const uploadProgressText = ref<string>("");
+    const uploadErrorMessage = ref<string>("");
 
     // Element references used to interact directly with the DOM.
     const fileInputElement = ref<HTMLInputElement | null>(null);
     const dropZoneElement = ref<HTMLElement | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const willResize = computed<boolean>(() => {
+        return props.targetWidth > 0 || props.targetHeight > 0;
+    });
+
+    const imageResizer = computed(() => {
+        if (!willResize.value) {
+            return null;
+        }
+
+        const shouldUseMinWidth = props.minimumWidth > props.targetWidth;
+        const shouldUseMinHeight = props.minimumHeight > props.targetHeight;
+
+        if (shouldUseMinWidth && !shouldUseMinHeight) {
+            return resizeImageFileProcessor({
+                minWidth: props.minimumWidth,
+                maxWidth: props.minimumWidth
+            });
+        }
+
+        if (shouldUseMinHeight && !shouldUseMinWidth) {
+            return resizeImageFileProcessor({
+                minHeight: props.minimumHeight,
+                maxHeight: props.minimumHeight
+            });
+        }
+
+        if (shouldUseMinHeight && shouldUseMinWidth) {
+            // Calculate which minimum dimension is more restrictive based on the target aspect ratio compared to the minimum aspect ratio.
+            const targetAspectRatio = (props.targetWidth > 0 && props.targetHeight > 0) ? props.targetWidth / props.targetHeight : 1;
+
+            const minimumAspectRatio = props.minimumWidth > 0 && props.minimumHeight > 0 ? props.minimumWidth / props.minimumHeight : 1;
+
+            const isWidthMoreRestrictive = targetAspectRatio >= minimumAspectRatio;
+            const isHeightMoreRestrictive = targetAspectRatio <= minimumAspectRatio;
+
+            return resizeImageFileProcessor({
+                minHeight: props.minimumHeight,
+                minWidth: props.minimumWidth,
+
+                maxHeight: isHeightMoreRestrictive ? props.minimumHeight : undefined,
+                maxWidth: isWidthMoreRestrictive ? props.minimumWidth : undefined
+            });
+        }
+
+        return resizeImageFileProcessor({
+            minHeight: props.targetHeight || undefined,
+            minWidth: props.targetWidth || undefined,
+            maxHeight: props.targetHeight || undefined,
+            maxWidth: props.targetWidth || undefined
+        });
+    });
 
     const fileGuid = computed<Guid | null>(() => {
         return toGuidOrNull(internalValue.value?.value);
     });
 
     /** The URL used to download the file. */
-    const fileUrl = computed((): string | null => {
+    const fileUrl = computed<string | null>(() => {
         if (fileGuid.value) {
             return `/GetFile.ashx?guid=${fileGuid.value}`;
         }
@@ -155,7 +263,7 @@
     });
 
     /** The CSS styles to use for the thumbnail wrapper element. */
-    const thumbnailWrapperStyle = computed((): Record<string, string> => {
+    const thumbnailWrapperStyle = computed<Record<string, string>>(() => {
         return {
             width: `${props.thumbnailWidth}px`,
             height: `${props.thumbnailHeight}px`
@@ -163,7 +271,7 @@
     });
 
     /** The CSS styles to use for the thumbnail element. */
-    const thumbnailStyle = computed((): Record<string, string> => {
+    const thumbnailStyle = computed<Record<string, string>>(() => {
         let imageUrl = props.noPictureUrl;
 
         if (fileGuid.value) {
@@ -181,14 +289,231 @@
     });
 
     /** True if the delete button should be visible. */
-    const isDeleteVisible = computed((): boolean => {
+    const isDeleteVisible = computed<boolean>(() => {
         return props.showDeleteButton
             && !props.disabled
             && (!!fileGuid.value || internalValue.value?.value?.startsWith("/") === true);
     });
 
+    const effectiveIsCropEnabled = computed<boolean>(() => {
+        return props.enableCrop || (props.targetHeight > 0 && props.targetWidth > 0);
+    });
+
+    const cropBoxAspectRatio = computed<number>(() => {
+        if (props.targetHeight > 0 && props.targetWidth > 0) {
+            return props.targetWidth / props.targetHeight;
+        }
+
+        return 0;
+    });
+
+    const cropBoxScaleFactor = computed<number>(() => {
+        return cropBoxSize / Math.max(originalImageWidth.value, originalImageHeight.value, 1);
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function clearError(): void {
+        uploadErrorMessage.value = "";
+    }
+
+    function resetFileState(): void {
+        originalImageWidth.value = 0;
+        originalImageHeight.value = 0;
+        clearError();
+    }
+
+    async function prepareCrop(file: File): Promise<void> {
+        try {
+            const { width, height } = await getImageDimensions(file);
+
+            if (!willResize.value && (props.minimumWidth > 0 || props.minimumHeight > 0)) {
+                const isMinHeightMet = props.minimumHeight <= 0 || props.minimumHeight <= height;
+                const isMinWidthMet = props.minimumWidth <= 0 || props.minimumWidth <= width;
+
+                if (!isMinHeightMet || !isMinWidthMet) {
+                    if (props.minimumWidth > 0 && props.minimumHeight > 0) {
+                        throw new Error(`The image does not meet the minimum dimensions of ${props.minimumWidth}x${props.minimumHeight} pixels`);
+                    }
+
+                    if (props.minimumHeight > 0) {
+                        throw new Error(`The image does not meet the minimum height of ${props.minimumHeight} pixels`);
+                    }
+
+                    if (props.minimumWidth > 0) {
+                        throw new Error(`The image does not meet the minimum width of ${props.minimumWidth} pixels`);
+                    }
+                }
+            }
+
+            originalImageWidth.value = width;
+            originalImageHeight.value = height;
+        }
+        catch (e) {
+            resetFileSelection();
+            handleError(e);
+            return;
+        }
+
+        await showFileCropper(file);
+    }
+
+    async function handleSelectedFile(file: File): Promise<void> {
+        resetFileState();
+
+        if (!isValidImageFile(file)) {
+            resetFileSelection();
+            handleError("File type not allowed");
+            return;
+        }
+
+        if (effectiveIsCropEnabled.value) {
+            await prepareCrop(file);
+            return;
+        }
+
+        await uploadFile(file);
+    }
+
+    function handleDragOver(event: DragEvent): void {
+        if (!isUploading.value && event.dataTransfer) {
+            event.stopPropagation();
+            event.preventDefault();
+
+            const file = event.dataTransfer.items?.[0];
+
+            if (file && file.type.startsWith("image/")) {
+                event.dataTransfer.dropEffect = "copy";
+            }
+            else {
+                event.dataTransfer.dropEffect = "none";
+            }
+        }
+    }
+
+    async function handleDrop(event: DragEvent): Promise<void> {
+        if (!isUploading.value && event.dataTransfer) {
+            event.stopPropagation();
+            event.preventDefault();
+
+            const file = event.dataTransfer.files?.[0];
+            if (file) {
+                await handleSelectedFile(file);
+            }
+        }
+    }
+
+    function setupDropZone(element: HTMLElement): void {
+        element.addEventListener("dragover", handleDragOver);
+        element.addEventListener("drop", handleDrop);
+    }
+
+    async function processFile(file: File): Promise<File> {
+        // Resize
+        if (imageResizer.value) {
+            file = await imageResizer.value(file);
+        }
+
+        // Custom processor
+        if (props.fileProcessor) {
+            file = await props.fileProcessor(file);
+        }
+
+        // Min size validation
+        if (minDimensionValidator.value) {
+            file = await minDimensionValidator.value(file);
+        }
+
+        return file;
+    }
+
+    const minDimensionValidator = computed(() => {
+        if (props.minimumWidth > 0 || props.minimumHeight > 0) {
+            return validateMinDimensions;
+        }
+    });
+
+    async function validateMinDimensions(file: File): Promise<File> {
+        const { width, height } = await getImageDimensions(file);
+
+        const isMinHeightMet = props.minimumHeight <= 0 || props.minimumHeight <= height;
+        const isMinWidthMet = props.minimumWidth <= 0 || props.minimumWidth <= width;
+
+        if (!isMinHeightMet || !isMinWidthMet) {
+            if (props.minimumWidth > 0 && props.minimumHeight > 0) {
+                throw new Error(`The image does not meet the minimum dimensions of ${props.minimumWidth}x${props.minimumHeight} pixels`);
+            }
+
+            if (props.minimumHeight > 0) {
+                throw new Error(`The image does not meet the minimum height of ${props.minimumHeight} pixels`);
+            }
+
+            if (props.minimumWidth > 0) {
+                throw new Error(`The image does not meet the minimum width of ${props.minimumWidth} pixels`);
+            }
+        }
+
+        return file;
+    }
+
     /**
-     * Upload the specified file into Rock with the current settings.
+     * Starts the crop flow.
+     *
+     * Flow:
+     * 1. Set croppingImageUrl
+     * 2. Open modal
+     * 3. imgRef watcher initializes Cropper
+     */
+    async function showFileCropper(file: File): Promise<void> {
+        const url = await getUrlForFile(file);
+
+        if (!url) {
+            resetFileSelection();
+            handleError("Error processing the file. File type may not be supported.");
+            return;
+        }
+
+        croppingImageUrl.value = url;
+        croppingImageFileName.value = file.name;
+
+        // Setting this to `true` will open the cropper modal,
+        // adding the imgRef element to the DOM
+        // and triggering the imgRef watcher which initializes the cropper.
+        showModal.value = true;
+    }
+
+    /** Get URL for file */
+    async function getUrlForFile(file: File): Promise<string> {
+        return new Promise((res) => {
+            if (URL) {
+                res(URL.createObjectURL(file));
+            }
+            else if (FileReader) {
+                let reader = new FileReader();
+                reader.onload = () => res(reader.result?.toString() ?? "");
+                reader.onerror = () => res("");
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    function handleError(e: unknown): void {
+        if (typeof e === "string") {
+            uploadErrorMessage.value = e;
+        }
+        else if (e instanceof Error) {
+            uploadErrorMessage.value = e.message;
+        }
+        else {
+            uploadErrorMessage.value = "An unknown error occurred.";
+        }
+    }
+
+    /**
+     * Handles full upload lifecycle:
+     * process => upload => update state
      *
      * @param file The file to be uploaded.
      */
@@ -196,25 +521,16 @@
         // Update the UI to reflect that we are currently uploading.
         isUploading.value = true;
         uploadProgressText.value = "0%";
-        uploadErrorMessage.value = "";
+        clearError();
 
         try {
-            if (props.fileProcessor) {
-                const newFile = props.fileProcessor(file);
-
-                if (isPromise(newFile)) {
-                    file = await newFile;
-                }
-                else {
-                    file = newFile;
-                }
-            }
+            file = await processFile(file);
 
             // Perform the actual file upload using the helper function.
             const result = await uploadBinaryFile(file, props.binaryFileTypeGuid || BinaryFiletype.Default, {
                 baseUrl: props.uploadUrl,
                 isTemporary: props.uploadAsTemporary,
-                progress: (progress, total, percent) => {
+                progress: (_progress, _total, percent) => {
                     uploadProgressText.value = `${percent}%`;
                 },
                 securityGrantToken: securityGrantToken.value
@@ -225,7 +541,8 @@
         }
         catch (e) {
             // Show any error message we got.
-            uploadErrorMessage.value = String(e);
+            resetFileSelection();
+            handleError(e);
         }
         finally {
             // Clear the uploading progress whether success or failure.
@@ -234,12 +551,83 @@
     }
 
     /**
+     * Returns the image dimensions or an error message if unable to retrieve them.
+     *
+     * @param file The image file for which to get the dimensions.
+     * @returns An object containing the width and height of the image, or a string error message if the dimensions could not be retrieved.
+     */
+    async function getImageDimensions(file: File): Promise<{ width: number; height: number; }> {
+        return new Promise<{ width: number; height: number; }>((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                const { width, height } = img;
+                resolve({ width, height });
+                return;
+            };
+
+            img.onerror = () => {
+                URL.revokeObjectURL(url);
+                reject("Failed to get image dimensions");
+            };
+
+            // Load the image.
+            img.src = url;
+        });
+    }
+
+    function isValidImageFile(file: File): boolean {
+        return file.type.toLowerCase().startsWith("image/");
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /** Cancel cropping */
+    function onCropClose(): void {
+        resetFileSelection();
+    }
+
+    /** Crop the image according to specifications from the cropper and then upload the cropped image */
+    function onCropClick(): void {
+        if (!cropper) {
+            resetFileSelection();
+            handleError("Cropper is not initialized.");
+            return;
+        }
+
+        const { width, height } = cropper.getData(true);
+        const canvas = cropper.getCroppedCanvas({ width, height });
+
+        canvas.toBlob(async (blob) => {
+            if (blob) {
+                const url = URL.createObjectURL(blob);
+                croppedImageUrl.value = url;
+                emit("cropped", croppedImageUrl.value);
+                showModal.value = false;
+                const file = new File([blob], croppingImageFileName.value, { type: blob.type });
+                await uploadFile(file);
+
+                URL.revokeObjectURL(url);
+                resetCropState();
+            }
+        });
+    }
+
+    /**
      * Event handler for when the individual clicks to manually select a file
      * to be uploaded into Rock.
      */
     function onSelectFileClick(): void {
         if (!isUploading.value) {
-            fileInputElement.value?.click();
+            if (fileInputElement.value) {
+                // Clear the file input to allow the same file to be selected again if needed.
+                fileInputElement.value.value = "";
+                fileInputElement.value.click();
+            }
         }
     }
 
@@ -249,24 +637,43 @@
     function onRemoveFileClick(): void {
         internalValue.value = null;
         emit("imageRemoved");
+        resetFileSelection();
+    }
 
+    function resetFileSelection(): void {
+        internalValue.value = null;
+
+        // Clear file input so same file can be reselected.
         if (fileInputElement.value) {
-            // Clear the last file(s) from the underlying input.
             fileInputElement.value.value = "";
         }
+
+        resetCropState();
+
+        // Reset dimensions.
+        originalImageWidth.value = 0;
+        originalImageHeight.value = 0;
+    }
+
+    function resetCropState(): void {
+        croppedImageUrl.value = "";
+        croppingImageUrl.value = null;
+        croppingImageFileName.value = "";
     }
 
     /**
      * Event handler for when the file input has a new file selected. This
      * is triggered for manual selection only, not drag and drop.
      */
-    function onFileChange(): void {
+    async function onFileChange(): Promise<void> {
         if (isUploading.value) {
             return;
         }
 
-        if (fileInputElement.value && fileInputElement.value.files && fileInputElement.value.files.length > 0) {
-            uploadFile(fileInputElement.value.files[0]);
+        const file = fileInputElement.value?.files?.[0];
+
+        if (file) {
+            await handleSelectedFile(file);
         }
     }
 
@@ -281,44 +688,19 @@
         }
 
         internalValue.value = null;
-
-        if (fileInputElement.value) {
-            // Clear the last file(s) from the underlying input.
-            fileInputElement.value.value = "";
-        }
+        resetFileSelection();
     }
 
-    // Watch for the drop zone element to become available. Once we have it
-    // register for the drag and drop events to support dropping a file onto
-    // the file uploader component.
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    /**
+     * When the drop zone is mounted, register drag and drop handlers.
+     */
     watch(dropZoneElement, () => {
         if (dropZoneElement.value) {
-            // Register the dragover event so we can indicate that we will
-            // accept a file dropped on us.
-            dropZoneElement.value.addEventListener("dragover", event => {
-                if (!isUploading.value && event.dataTransfer) {
-                    event.stopPropagation();
-                    event.preventDefault();
-
-                    if (event.dataTransfer.items.length === 1 && event.dataTransfer.items[0].kind === "file") {
-                        event.dataTransfer.dropEffect = "copy";
-                    }
-                    else {
-                        event.dataTransfer.dropEffect = "none";
-                    }
-                }
-            });
-
-            // Register the drop event so we can begin the upload for the
-            // file that was dropped on us.
-            dropZoneElement.value.addEventListener("drop", event => {
-                if (!isUploading.value && event.dataTransfer && event.dataTransfer.files.length > 0) {
-                    event.stopPropagation();
-                    event.preventDefault();
-
-                    uploadFile(event.dataTransfer.files[0]);
-                }
-            });
+            setupDropZone(dropZoneElement.value);
         }
     });
 
@@ -336,4 +718,50 @@
     watch(internalValue, () => {
         emit("update:modelValue", internalValue.value ?? undefined);
     });
+
+    /**
+     * The minimum width that the image can be cropped.
+     *
+     * This value is scaled to meet the size of the cropper image preview.
+     */
+    const cropBoxMinWidth = computed<number | undefined>(() => {
+        if (props.minimumWidth > 0 && !willResize.value) {
+            return cropBoxScaleFactor.value * props.minimumWidth;
+        }
+    });
+
+    /**
+     * The minimum height that the image can be cropped.
+     *
+     * This value is scaled to meet the size of the cropper image preview.
+     */
+    const cropBoxMinHeight = computed<number | undefined>(() => {
+        if (props.minimumHeight > 0 && !willResize.value) {
+            return cropBoxScaleFactor.value * props.minimumHeight;
+        }
+    });
+
+    /**
+     * When the image is rendered in the modal, initialize Cropper.
+     * This completes the crop setup started in showFileCropper().
+     */
+    watch(imgRef, () => {
+        if (imgRef.value) {
+            cropper = new Cropper(imgRef.value, {
+                aspectRatio: cropBoxAspectRatio.value,
+                viewMode: 1, // Restrict the crop box to not exceed the size of the canvas.
+                autoCrop: cropBoxAspectRatio.value !== 0, // Enable auto crop if there is a specific aspect ratio, otherwise allow the user to choose whether to crop or not.
+                autoCropArea: 1, // Set the automatic cropping area to the maximum (100%) of the image.
+                minCropBoxWidth: cropBoxMinWidth.value,
+                minCropBoxHeight: cropBoxMinHeight.value,
+            });
+        }
+        else {
+            // Reset Image Cropper
+            cropper?.destroy();
+            cropper = null;
+        }
+    });
+
+    // #endregion Watchers
 </script>

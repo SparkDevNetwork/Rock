@@ -60,16 +60,6 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public Guid? CampusGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the due date assignment option (e.g., keep current, clear, assign specific date).
-        /// </summary>
-        public string DueDateOption { get; set; }
-
-        /// <summary>
-        /// Gets or sets the due date to assign after the transfer, when a specific date is selected.
-        /// </summary>
-        public DateTimeOffset? DueDate { get; set; }
-
-        /// <summary>
         /// Gets or sets an optional note to record with the transfer activity.
         /// </summary>
         public string Note { get; set; }

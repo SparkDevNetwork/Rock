@@ -19,7 +19,7 @@ import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./binaryFileField.partial";
+import { ConfigurationKey } from "./binaryFileField.partial";
 import { safeParseJson } from "@Obsidian/Utility/stringUtils";
 
 export const EditComponent = defineComponent({
@@ -33,7 +33,7 @@ export const EditComponent = defineComponent({
 
     setup(props, { emit }) {
         const binaryFileOptions = computed((): ListItemBag[] => {
-            return safeParseJson<ListItemBag[]>(props.configurationValues[ConfigurationValueKey.BinaryFileOptions] || "[]") ?? [];
+            return safeParseJson<ListItemBag[]>(props.configurationValues[ConfigurationKey.BinaryFileOptions] || "[]") ?? [];
         });
 
         const internalValue = computed({
@@ -84,10 +84,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.BinaryFileType] = JSON.stringify(binaryFileType.value ?? "");
+            newValue[ConfigurationKey.BinaryFileType] = JSON.stringify(binaryFileType.value ?? "");
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.BinaryFileType] !== (props.modelValue[ConfigurationValueKey.BinaryFileType]);
+            const anyValueChanged = newValue[ConfigurationKey.BinaryFileType] !== (props.modelValue[ConfigurationKey.BinaryFileType]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -115,13 +115,13 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            binaryFileType.value = JSON.parse(props.modelValue[ConfigurationValueKey.BinaryFileType] || "{}");
+            binaryFileType.value = JSON.parse(props.modelValue[ConfigurationKey.BinaryFileType] || "{}");
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(binaryFileType, () => maybeUpdateConfiguration(ConfigurationValueKey.BinaryFileType, JSON.stringify(binaryFileType.value ?? "")));
+        watch(binaryFileType, () => maybeUpdateConfiguration(ConfigurationKey.BinaryFileType, JSON.stringify(binaryFileType.value ?? "")));
 
         return {
             binaryFileType,

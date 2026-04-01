@@ -1061,8 +1061,8 @@ namespace Rock.Model
         /// <summary>
         /// Gets the indicator label HTML.
         /// </summary>
-        /// <param name="viewModel">The connection request view model.
-        /// <param name="template">The Lava template to use to generate the HTML.
+        /// <param name="viewModel">The connection request view model.</param>
+        /// <param name="template">The Lava template to use to generate the HTML.</param>
         /// <returns>The indicator label HTML.</returns>
         /// <remarks>
         ///     <para>

@@ -1,35 +1,39 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="px-spacing-md pb-spacing-lg d-flex flex-column gap-md">
-        <div v-if="connectionRequestBreadcrumbs.length > 0"
-             class="w-100 d-flex gap-tiny flex-wrap text-small">
-            <template v-for="(breadcrumb, index) in connectionRequestBreadcrumbs">
-                <span class="cursor-pointer request-breadcrumb" @click="emit('navigateToBreadcrumb', index)">
-                    {{ breadcrumb.text }}
-                </span>
-                <span v-if="index !== connectionRequestBreadcrumbs.length - 1">
-                    <i class="ti ti-chevron-right"></i>
-                </span>
-            </template>
-        </div>
         <div v-if="options?.isAISummaryVisible" class="border border-info-soft rounded p-spacing-sm bg-interface-softer d-flex flex-column gap-xs">
-            <div class="d-flex gap-xs align-items-center text-info">
-                <i class="ti ti-sparkles font-size-h4"></i>
-                <div class="text-semibold text-small">AI Summary</div>
+            <div class="d-flex justify-content-between align-items-center text-info">
+                <div class="d-flex gap-xs align-items-center">
+                    <i class="ti ti-sparkles font-size-h4"></i>
+                    <div class="text-semibold text-small">AI Summary</div>
+                </div>
+                <template v-if="isAISummaryLoading">
+                    <i class="ti ti-reload ti-spin font-size-h4"></i>
+                </template>
+                <template v-else-if="isNullOrWhiteSpace(aiSummary) && isNullOrWhiteSpace(aiSummaryError)">
+                    <i class="ti ti-chevron-down font-size-h4 cursor-pointer" @click="emit('fetchAISummary', false)"></i>
+                </template>
+                <template v-else>
+                    <i class="ti ti-reload font-size-h4 cursor-pointer" @click="emit('fetchAISummary', true)"></i>
+                </template>
             </div>
-            <template v-if="!isAiSummaryLoading">
-                <NotificationBox v-if="!isNullOrWhiteSpace(aiSummaryError)"
-                                 alertType="danger"
-                                 style="margin-bottom: 0;">
-                    {{ aiSummaryError }}
-                </NotificationBox>
-                <div class="text-small text-interface-medium">{{ aiSummary }}</div>
-            </template>
-            <div v-else>
-                <div class="skeleton skeleton-text"></div>
-                <div class="skeleton skeleton-text"></div>
-                <div class="skeleton skeleton-text"></div>
-            </div>
+            <transition name="slide">
+                <div v-show="isAISummaryLoading || !isNullOrWhiteSpace(aiSummaryError) || !isNullOrWhiteSpace(aiSummary)">
+                    <template v-if="!isAISummaryLoading">
+                        <NotificationBox v-if="!isNullOrWhiteSpace(aiSummaryError)"
+                                         alertType="danger"
+                                         style="margin-bottom: 0;">
+                            {{ aiSummaryError }}
+                        </NotificationBox>
+                        <div class="text-small text-interface-medium">{{ aiSummary }}</div>
+                    </template>
+                    <div v-else>
+                        <div class="skeleton skeleton-text mt-spacing-xs"></div>
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text"></div>
+                    </div>
+                </div>
+            </transition>
         </div>
 
         <div v-if="!isNullOrWhiteSpace(options?.lavaHeadingTemplate)" v-html="options?.lavaHeadingTemplate"></div>
@@ -228,10 +232,11 @@
                 <div class="d-flex flex-column gap-md">
                     <div class="d-flex flex-column gap-xs">
                         <RockLabel class="text-interface-medium text-regular">Group</RockLabel>
-                        <HighlightLabel v-if="requestDetails?.placementGroup"
+                        <HighlightLabel v-if="requestDetails?.placementGroup?.groupId"
                                         :iconCssClass="isNullOrWhiteSpace(requestDetails?.placementGroup?.iconCssClass) ? 'ti ti-users' : requestDetails?.placementGroup?.iconCssClass!"
                                         labelType="custom"
-                                        customClass="label label-info w-fit">
+                                        customClass="label label-info w-fit cursor-pointer"
+                                        @click="emit('navigateToGroup', requestDetails.placementGroup.groupId ?? '')">
                             {{ placementGroupName }}
                         </HighlightLabel>
                         <HighlightLabel v-else
@@ -377,11 +382,6 @@
 </template>
 
 <style scoped>
-.disabled {
-    cursor: default;
-    color: var(--color-interface-medium);
-}
-
 .person-details {
     white-space: nowrap;
 }
@@ -457,11 +457,6 @@
     height: fit-content;
 }
 
-.request-breadcrumb:hover {
-    color: var(--color-link);
-    text-decoration: underline;
-}
-
 /* Skeleton adjustments */
 .skeleton {
     background: var(--color-interface-soft);
@@ -521,11 +516,6 @@
             required: true
         },
 
-        connectionRequestBreadcrumbs: {
-            type: Array as PropType<ListItemBag[]>,
-            required: true
-        },
-
         aiSummary: {
             type: String as PropType<string>,
             required: true
@@ -536,7 +526,7 @@
             required: true
         },
 
-        isAiSummaryLoading: {
+        isAISummaryLoading: {
             type: Boolean as PropType<boolean>,
             default: true
         },
@@ -568,13 +558,14 @@
     });
 
     const emit = defineEmits<{
+        (e: "fetchAISummary", overrideCache: boolean): void;
         (e: "editActivity", value: ActivityEntryBag): void;
         (e: "onCelebrationClick"): void;
         (e: "onReminderClick"): void;
         (e: "onReassignConnector", value: string): void;
         (e: "launchWorkflow", value: LaunchWorkflowBag): void;
         (e: "navigateToAdditionalRequest", value: string): void;
-        (e: "navigateToBreadcrumb", value: number): void;
+        (e: "navigateToGroup", value: string): void;
     }>();
 
     const invokeBlockAction = useInvokeBlockAction();

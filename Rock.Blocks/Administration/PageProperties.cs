@@ -337,7 +337,13 @@ namespace Rock.Blocks.Administration
             }
             
             var pageReference = new PageReference( entity.Id );
-            var pageUrl = entity.Site?.DefaultDomainUri + pageReference.BuildUrl().TrimStart('/');
+
+            var baseUrl = entity.Site?.DefaultDomainUri is Uri u
+                 && !u.Host.Equals( "localhost", StringComparison.OrdinalIgnoreCase )
+                    ? u.ToString()
+                    : "/";
+
+            var pageUrl = baseUrl + pageReference.BuildUrl().TrimStart('/');
 
             var intents = new List<ListItemBag>();
 

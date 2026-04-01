@@ -106,7 +106,7 @@
                     </RockButton>
                 </div>
                 <div class="border-left border-info pl-spacing-md d-flex align-items-center gap-md">
-                    <RockButton class="activity-btn" @click="showAddActivityModal" :disabled="!canEditConnectionRequests">
+                    <RockButton class="activity-btn" @click="showAddActivityModal()" :disabled="!canEditConnectionRequests">
                         <i class="ti ti-activity"></i>
                         <span class="activity-btn-label">Add Activity</span>
                     </RockButton>
@@ -140,7 +140,9 @@
                   :forceVirtualRowsOnLight="true"
                   class="grid-hover"
                   @selectedKeysChanged="state => onSelectedKeysChanged(group.key, state)"
-                  @selectItem="onSelectItem">
+                  @selectItem="onSelectItem"
+                  @onLoad="state => onGridLoad(group.key, state)"
+                  @onUnload="state => onGridUnload(group.key, state)">
                 <SelectColumn />
 
                 <PersonColumn name="requestDetails"
@@ -444,7 +446,7 @@
                                @save="onAddRequest"
                                @close="resetNewConnectionRequest"
                                @fetchConnectionOpportunityDetails="fetchConnectionOpportunityDetails"
-                               @fetchConnectorOptions="fetchConnectorOptions"
+                               @fetchConnectorOptions="fetchConnectorOptionsForAdd"
                                @fetchPlacementGroupItems="fetchPlacementGroupItems"
                                @fetchPlacementGroupDetails="fetchPlacementGroupDetails" />
 
@@ -523,7 +525,6 @@
                    @close="onModalErrorMessageDismissed"
                    @upsertActivity="upsertActivity" />
     <ChangeStatusModal v-model:visible="isChangeStatusModalVisible"
-                       :connectionStatuses="box.options?.connectionStatuses ?? []"
                        :connectionStatusItems="connectionStatusItems"
                        :isSequentialMode="box.options?.isSequentialStatusMode ?? false"
                        :isSaving="isModalSaving"
@@ -568,7 +569,7 @@
                                   :orderedKeys="orderedRequestKeys ?? []"
                                   :detailsBox="dockedPanelDetailsBox"
                                   :dockedPanelCloseOnOutsideClick="dockedPanelCloseOnOutsideClick"
-                                  :isInSingleRequestMode="isInSingleRequestMode"
+                                  :navigationUrls="box.navigationUrls ?? {}"
                                   @navigate="updateSelectedRequestKey"
                                   @navigateToBreadcrumb="navigateToBreadcrumb"
                                   @navigateToAdditionalRequest="navigateToAdditionalRequest"
@@ -576,7 +577,7 @@
                                   :isSaving="isDockedPanelSaving"
                                   @editRequest="onEditRequest"
                                   @transferRequest="onTransferClick"
-                                  @addActivity="showAddActivityModal"
+                                  @addActivity="showAddActivityModal(dockedPanelDetailsBox)"
                                   @onCelebrationClick="box => showCelebrationModal(null, box)"
                                   @onReminderClick="box => showReminderModal(null, box)"
                                   @onSMSClick="showSMSModal(true)"
@@ -585,13 +586,14 @@
                                   @onRequestStateChanged="updateRequestStates"
                                   @onStatusButtonClick="onStatusClickFromDockedPanel"
                                   @launchWorkflow="launchWorkflowForRequests"
-                                  @deleteRequest="showDeleteRequestModal()" />
+                                  @deleteRequest="showDeleteRequestModal(null, dockedPanelDetailsBox)" />
 
     <TransferConnectionRequestModal v-model="isTransferModalVisible"
                                     :isLoading="areTransferDetailsLoading"
                                     :transferDetails="transferRequestDetails"
                                     :isSaving="isModalSaving"
                                     :errorMessage="modalErrorMessage"
+                                    @fetchConnectorOptions="fetchConnectorOptionsForTransfer"
                                     @dismissErrorMessage="onModalErrorMessageDismissed"
                                     @close="onModalErrorMessageDismissed"
                                     @transfer="transferRequest" />
@@ -713,7 +715,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { computed, reactive, ref, watch } from "vue";
+    import { computed, reactive, ref, watch, nextTick } from "vue";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
     import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns } from "@Obsidian/Controls/grid";
@@ -872,6 +874,7 @@
 
     // Grouped Grid Configuration
     const selectedKeys = ref<Record<string, string[]>>({});
+    const selectedKeysOnUnmount = ref<Record<string, string[]>>({});
     const groupedGridPanel = ref();
     const rawQuickFilter = ref("");
     const debouncedQuickFilter = ref(rawQuickFilter.value);
@@ -919,7 +922,6 @@
         statusFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterStatusConnectionTypIdKey))),
         dueFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterDueConnectionTypIdKey))),
     });
-    // TODO - consider computing this and filtering by opportunity selection.
     const allPossibleConnectors = ref(box.options?.allPossibleConnectors ?? []);
     // SMS and Email modal state
     const communicationRecipients = ref<CommunicationRecipientBag[] | null | undefined>();
@@ -946,8 +948,6 @@
     const dockedPanelCloseOnOutsideClick = ref<boolean>(true);
     // Breadcrumbs are used when a user navigates to an "additional request"
     const connectionRequestBreadcrumbs = ref<ListItemBag[]>([]);
-    // TODO - This ref will be used for opening a request when passed in through a query string param.
-    const isInSingleRequestMode = ref<boolean>(false);
 
     // #region Computed Values
 
@@ -1484,6 +1484,30 @@
         selectedKeys.value[key] = [...state.selectedKeys];
     }
 
+    /**
+     * Updates the grid state's selected keys to equal the selected keys before the grid unmounted.
+     * @param key the grid's grouping key
+     * @param state the grid state
+     */
+    function onGridLoad(key: string | null | undefined, state: IGridState): void {
+        if (!key || !selectedKeysOnUnmount.value[key]) {
+            return;
+        }
+        state.selectedKeys = [...state.selectedKeys, ...selectedKeysOnUnmount.value[key]];
+    }
+
+    /**
+     * Saves the grid's selected keys before the grid unmounts.
+     * @param key the grid's grouping key
+     * @param state the grid state
+     */
+    function onGridUnload(key: string | null | undefined, state: IGridState): void {
+        if (!key) {
+            return;
+        }
+        selectedKeysOnUnmount.value[key] = [...state.selectedKeys];
+    }
+
     function setSingleRequestDetail(row: Record<string, unknown> | null, dockedPanelBox: ConnectionRequestDetailBox | null): void {
         let requestDetailsBag;
 
@@ -1611,9 +1635,9 @@
         showSecurity(EntityType.ConnectionRequest, key);
     }
 
-    function showDeleteRequestModal(row: Record<string, unknown> | null = null): void {
+    function showDeleteRequestModal(row: Record<string, unknown> | null = null, detailBox: ConnectionRequestDetailBox | null = null): void {
         openDropdownIndex.value = null;
-        prepareRequestDetailsForModal(row, dockedPanelDetailsBox.value);
+        prepareRequestDetailsForModal(row, detailBox);
         isDeleteRequestModalVisible.value = true;
     }
 
@@ -1632,8 +1656,8 @@
         isChangeStateModalVisible.value = true;
     }
 
-    function showAddActivityModal(): void {
-        prepareRequestDetailsForModal(null, dockedPanelDetailsBox.value);
+    function showAddActivityModal(detailBox: ConnectionRequestDetailBox | null = null): void {
+        prepareRequestDetailsForModal(null, detailBox);
         isActivityModalVisible.value = true;
     }
 
@@ -1749,14 +1773,23 @@
         }
     }
 
+    async function fetchConnectorOptionsForAdd(connectionOpportunityGuid: string, campusGuid: string): Promise<void> {
+        const connectorOptions = await fetchConnectorOptions(connectionOpportunityGuid, campusGuid);
+        connectionOpportunityDetails.value.connectorOptions = connectorOptions;
+    }
+
+    async function fetchConnectorOptionsForTransfer(connectionOpportunityGuid: string, campusGuid: string): Promise<void> {
+        if (!transferRequestDetails.value) {
+            return;
+        }
+
+        const connectorOptions = await fetchConnectorOptions(connectionOpportunityGuid, campusGuid);
+        transferRequestDetails.value.connectorItems = connectorOptions?.connectors;
+    }
+
     // #region Block Actions
 
     async function loadGridData(): Promise<void> {
-        // TODO - Single Request View
-        // if (!isNullOrWhiteSpace(box?.options?.connectionRequestIdKey)) {
-        //     return;
-        // }
-
         gridData.value = undefined;
         areRequestsLoading.value = true;
         const result = await invokeBlockAction<GridDataBag>("GetGridData");
@@ -1769,10 +1802,6 @@
         }
         areRequestsLoading.value = false;
     }
-
-    // async function loadConnectionRequest(): Promise<void> {
-
-    // }
 
     async function refreshUserEditPermissions(): Promise<void> {
         const result = await invokeBlockAction<boolean>("RefreshUserEditPermissions", {
@@ -2032,10 +2061,8 @@
 
     function clearAllSelections(): void {
         groupedGridPanel.value.clearSelectedKeys();
-        // gridRefs.value.forEach(grid => {
-        //     console.log("clearning for grid: ", grid);
-        //     grid.clearSelectedKeys();
-        // });
+        selectedKeys.value = {};
+        selectedKeysOnUnmount.value = {};
     }
 
     async function getSmsConfiguration(selectedKeys: string[], connectionTypeIdKey: string | null | undefined): Promise<HttpResult<GetSmsConfigurationResponseBag>> {
@@ -2089,6 +2116,7 @@
                 row.dueStatus = updateBag.dueStatus;
                 row.dueDate = updateBag.dueDate;
                 row.dueSoonDate = updateBag.dueSoonDate;
+                row.followUpDate = updateBag.followUpDate;
                 row.completedDateTime = updateBag.completedDateTime;
             }
 
@@ -2123,12 +2151,15 @@
                 if (rowIndex !== -1 && gridData.value?.rows) {
                     const row = gridData.value.rows[rowIndex];
 
+                    row.stateGrouping = result.data.stateGrouping;
                     row.statusGrouping = result.data.statusGrouping;
+                    row.connectionState = result.data.connectionState;
                     row.connectionStatus = result.data.connectionStatusBag;
                     row.dueStatusGrouping = result.data.dueStatusGrouping;
                     row.dueStatus = result.data.dueStatus;
                     row.dueDate = result.data.dueDate;
                     row.dueSoonDate = result.data.dueSoonDate;
+                    row.followUpDate = result.data.followUpDate;
                     row.completedDateTime = result.data.completedDateTime;
 
                     // If this row stopped meeting server filters then splice it.
@@ -2142,6 +2173,8 @@
                     dockedPanelDetailsBox.value.entity.dueStatus = result.data.dueStatus;
                     dockedPanelDetailsBox.value.entity.dueDate = result.data.dueDate;
                     dockedPanelDetailsBox.value.entity.completedDateTime = result.data.completedDateTime;
+                    dockedPanelDetailsBox.value.entity.connectionState = result.data.connectionState;
+                    dockedPanelDetailsBox.value.entity.followUpDate = result.data.followUpDate;
                     refreshActivityEntries(dockedPanelDetailsBox.value.entity.connectionRequestIdKey);
                 }
 
@@ -2171,11 +2204,10 @@
 
             const { meeting, notMeeting } = requestDetailsForModal.value.reduce(
                 (acc, request) => {
-                    if (isPlacementGroupRequired && !request.hasPlacementGroup) {
-                        acc.notMeeting.push(request);
-                    }
+                    const failsPlacementGroup = isPlacementGroupRequired && !request.hasPlacementGroup;
+                    const failsRequirements = notMeetingIdKeys.includes(request.idKey ?? "");
 
-                    if (notMeetingIdKeys.includes(request.idKey ?? "")) {
+                    if (failsPlacementGroup || failsRequirements) {
                         acc.notMeeting.push(request);
                     }
                     else {
@@ -2444,15 +2476,16 @@
         }
     }
 
-    async function fetchConnectorOptions(connectionOpportunityGuid: string, campusGuid: string): Promise<void> {
+    async function fetchConnectorOptions(connectionOpportunityGuid: string, campusGuid: string): Promise<ConnectorOptionsBag | undefined> {
         const result = await invokeBlockAction<ConnectorOptionsBag>("FetchConnectorOptions", {
             connectionOpportunityGuid: connectionOpportunityGuid,
             campus: campusGuid
         });
 
         if (result.isSuccess && result.data) {
-            connectionOpportunityDetails.value.connectorOptions = result.data;
+            return result.data;
         }
+        return;
     }
 
     async function fetchPlacementGroupItems(connectionOpportunityGuid: string, campusGuid: string): Promise<void> {
@@ -2630,11 +2663,8 @@
                 dockedPanelDetailsBox.value?.entity?.connectorPerson === result.data[0].connectorDetails?.value;
                 refreshActivityEntries(connectionRequestIdKeys[0]);
             }
-            else {
-                // clear selected keys
-                clearAllSelections();
-            }
 
+            clearAllSelections();
             isAssignRequestModalVisible.value = false;
             return;
         }
@@ -2730,7 +2760,6 @@
             dockedPanelDetailsBox.value.entity.activityEntries = result.data;
         }
         else {
-            console.log("SettingError: ", result.errorMessage);
             connectionRequestDockedPanelRef.value?.setErrorMessage("activity", result.errorMessage ?? "An error occurred while getting the Connection Request activity entries.");
         }
     }
@@ -2861,10 +2890,9 @@
     loadContextValues();
     loadGridData();
 
-    // TODO - Load a single request at full width.
-    // if (!isNullOrWhiteSpace(box.options?.connectionRequestIdKey)) {
-    //     loadConnectionRequest();
-    // }
+    if (!isNullOrWhiteSpace(box.options?.connectionRequestIdKey)) {
+        onSelectItem(box.options!.connectionRequestIdKey!);
+    }
 
     onConfigurationValuesChanged(useReloadBlock());
 </script>

@@ -3,6 +3,7 @@
                       :exampleCode="exampleCode">
         <DockedPanel v-model="isOpen"
                      v-model:width="width"
+                     :mode="mode"
                      :canResize="canResize"
                      :minWidth="minWidth"
                      :maxWidth="maxWidth">
@@ -129,32 +130,27 @@
         <RockButton @click="isOpen = !isOpen">Toggle Docked Panel</RockButton>
 
         <template #settings>
-            <div class="settings">
-                <div class="row">
-                    <div class="col-sm-3">
-                        <Switch v-model="canResize"
-                                label="Can Resize?"
-                                help="When enabled, the user can resize the docked panel by dragging the resize handle." />
-                    </div>
-                    <div class="col-sm-3">
-                        <TextBox v-model="width"
-                                 label="Width"
-                                 help="The width of the docked panel when opened. Must be a valid CSS length value. Clear to use the default width." />
-                    </div>
-                </div>
+            <div class="automatic-layout">
+                <Switch v-model="canResize"
+                        label="Can Resize?"
+                        help="When enabled, the user can resize the docked panel by dragging the resize handle." />
 
-                <div class="row">
-                    <div class="col-sm-3">
-                        <TextBox v-model="minWidth"
-                                 label="Min Width"
-                                 help="The minimum width of the docked panel when opened. Must be a valid CSS length value. Clear to use the default minimum width." />
-                    </div>
-                    <div class="col-sm-3">
-                        <TextBox v-model="maxWidth"
-                                 label="Max Width"
-                                 help="The maximum width of the docked panel when opened. Must be a valid CSS length value. Clear to use the default maximum width." />
-                    </div>
-                </div>
+                <DropDownList v-model="mode"
+                              label="Mode"
+                              help="In 'float' mode, the panel will overlay existing content. In 'push' mode, the panel will push existing content to make room for itself."
+                              :items="modeItems" />
+
+                <TextBox v-model="width"
+                         label="Width"
+                         help="The width of the docked panel when opened. Must be a valid CSS length value. Clear to use the default width." />
+
+                <TextBox v-model="minWidth"
+                         label="Min Width"
+                         help="The minimum width of the docked panel when opened. Must be a valid CSS length value. Clear to use the default minimum width." />
+
+                <TextBox v-model="maxWidth"
+                         label="Max Width"
+                         help="The maximum width of the docked panel when opened. Must be a valid CSS length value. Clear to use the default maximum width." />
             </div>
         </template>
     </GalleryAndResult>
@@ -168,28 +164,36 @@
 </style>
 
 <script setup lang="ts">
-    import { ref } from "vue";
+    import { computed, ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DockedPanel from "@Obsidian/Controls/Internal/dockedPanel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const isOpen = ref<boolean>(false);
+    const mode = ref<"float" | "push">("float");
     const width = ref<string>("400px");
     const minWidth = ref<string>("250px");
     const maxWidth = ref<string>("100%");
     const canResize = ref<boolean>(false);
 
+    const modeItems: ListItemBag[] = [
+        { text: "Float", value: "float" },
+        { text: "Push", value: "push" }
+    ];
+
     const importCode = getSfcControlImportPath("dockedPanel");
-    const exampleCode = `
-<!--
+    const exampleCode = computed((): string => {
+        return `<!--
     The DockedPanel provides layout only.
     No padding, margins, or visual styling are applied automatically.
     Consumers are responsible for styling header, body, and footer content.
 -->
-<DockedPanel v-model="isOpen" canResize width="400px" minWidth="250px" maxWidth="100%">
+<DockedPanel v-model="isOpen" mode="${mode.value}" ${canResize.value ? "canResize " : ""}width="${width.value}" minWidth="${minWidth.value}" maxWidth="${maxWidth.value}">
     <template #header>
         <div style="padding: 16px; border-bottom: 1px solid #e0e0e0;">
             <h3 style="margin: 0;">DockedPanel Title</h3>
@@ -213,6 +217,7 @@
             </RockButton>
         </div>
     </template>
-</DockedPanel>`.trim();
+</DockedPanel>`;
+    });
 
 </script>

@@ -65,14 +65,37 @@
                                  :items="enumToListItemBag(DueDateCalculationModeDescription)"
                                  help="Choose how due dates are calculated for connection requests:<br>• Type Level: Uses a fixed number of days from the request start date defined at the connection type.<br>• Opportunity Level: Uses a fixed number of days from the request start date defined per connection opportunity.<br>• Duration per Status: Calculates the due date based on how long a request can remain in its current status, updating as the request moves between statuses." />
 
-                <ConditionalWell v-if="dueDateCalculationMode === DueDateCalculationMode.FixedDaysFromStartTypeLevel">
-                    <NumberBox label="Request Due Duration (In Days)" v-model="requestDueDateOffsetInDays"
-                               inputClasses="input-width-md" :rules="dueDurationRules"
-                               help="Defines how many days a request can remain open before it is considered due." />
+                <ConditionalWell>
+                    <template v-if="dueDateCalculationMode === DueDateCalculationMode.FixedDaysFromStartTypeLevel">
+                        <NumberBox label="Request Due Duration (In Days)" v-model="requestDueDateOffsetInDays"
+                                   inputClasses="input-width-md" :rules="dueDurationRules"
+                                   help="Defines how many days a request can remain open before it is considered due." />
 
-                    <NumberBox label="Due Soon Window (In Days)" v-model="requestDueSoonOffsetInDays"
-                               inputClasses="input-width-md" :rules="dueSoonWindowRules"
-                               help="Defines the number of days before the due date during which a request is considered due soon." />
+                        <NumberBox label="Due Soon Window (In Days)" v-model="requestDueSoonOffsetInDays"
+                                   inputClasses="input-width-md" :rules="dueSoonWindowRules"
+                                   help="Defines the number of days before the due date during which a request is considered due soon." />
+                    </template>
+                    <template v-else-if="dueDateCalculationMode === DueDateCalculationMode.FixedDaysFromStartOpportunityLevel">
+                        <NumberBox label="Default Request Due Duration (In Days)" v-model="defaultOpportunityDueDateOffsetInDays"
+                                   inputClasses="input-width-md" :rules="dueDurationRules"
+                                   help="Sets the default number of days a request can remain in an opportunity before it is considered due. This value is only applied if the opportunity does not already have a due duration configured." />
+
+                        <NumberBox label="Default Opportunity Due Soon Window (In Days)" v-model="defaultOpportunityDueSoonOffsetInDays"
+                                   inputClasses="input-width-md" :rules="defaultOpportunityDueSoonWindowRules"
+                                   help="Sets the default number of days before the due date during which a request is considered due soon. This value is only applied if the opportunity does not already have a due soon window configured." />
+                    </template>
+                    <template v-else-if="dueDateCalculationMode === DueDateCalculationMode.DurationPerStatus">
+                        <NumberBox label="Default Status Due Duration (In Days)" v-model="defaultStatusDueDateOffsetInDays"
+                                   inputClasses="input-width-md" :rules="dueDurationRules"
+                                   help="Sets the default number of days a request can remain in a status before it is considered due. This value is only applied if the status does not already have a due duration configured." />
+
+                        <NumberBox label="Default Status Due Soon Window (In Days)" v-model="defaultStatusDueSoonOffsetInDays"
+                                   inputClasses="input-width-md" :rules="defaultStatusDueSoonWindowRules"
+                                   help="Sets the default number of days before the due date during which a request is considered due soon. This value is only applied if the status does not already have a due soon window configured." />
+                    </template>
+                    <InlineCheckBox v-model="shouldRecalculateRequestDueAndDueSoonDates"
+                                    label="Recalculate Due Dates for Existing Requests"
+                                    help="Updates the Due Date and Due Soon Date for all existing Connection Requests in this Connection Type based on the Due Date Calculation Mode." />
                 </ConditionalWell>
             </ContentStack>
         </ContentSection>
@@ -95,7 +118,12 @@
         </ContentSection>
 
         <ContentSection title="Statuses" icon="ti ti-select" :order="6">
-            <StatusesSection v-model:statuses="statuses" :workflows="workflows" :dueDateCalculationMode="dueDateCalculationMode" :isFutureFollowupEnabled="enableFutureFollowup" />
+            <StatusesSection v-model:statuses="statuses"
+                             :workflows="workflows"
+                             :dueDateCalculationMode="dueDateCalculationMode"
+                             :defaultStatusDueDateOffsetInDays="defaultStatusDueDateOffsetInDays"
+                             :defaultStatusDueSoonOffsetInDays="defaultStatusDueSoonOffsetInDays"
+                             :isFutureFollowupEnabled="enableFutureFollowup" />
         </ContentSection>
 
         <ContentSection title="Sources" icon="ti ti-inbox" :order="7">
@@ -191,6 +219,7 @@
     const dueDateCalculationMode = propertyRef(props.modelValue.bag?.dueDateCalculationMode ?? DueDateCalculationMode.FixedDaysFromStartTypeLevel, "DueDateCalculationMode");
     const requestDueDateOffsetInDays = propertyRef(props.modelValue.bag?.requestDueDateOffsetInDays ?? 0, "RequestDueDateOffsetInDays");
     const requestDueSoonOffsetInDays = propertyRef(props.modelValue.bag?.requestDueSoonOffsetInDays ?? 0, "RequestDueSoonOffsetInDays");
+    const shouldRecalculateRequestDueAndDueSoonDates = propertyRef(props.modelValue.bag?.shouldRecalculateRequestDueAndDueSoonDates ?? false, "ShouldRecalculateRequestDueAndDueSoonDates");
     const connectionTypeAttributes = propertyRef(props.modelValue.bag?.connectionTypeAttributes ?? [], "ConnectionTypeAttributes");
     const connectionRequestAttributes = propertyRef(props.modelValue.bag?.connectionRequestAttributes ?? [], "ConnectionRequestAttributes");
     const connectionOpportunityAttributes = propertyRef(props.modelValue.bag?.connectionOpportunityAttributes ?? [], "ConnectionOpportunityAttributes");
@@ -204,7 +233,8 @@
     // objects returned by propertyRef().
     const propRefs = [description, isActive, name, iconCssClass, enabledViews, enabledFeatures, enableFutureFollowup, isSequentialStatusEnforced, connectionRequestDetailPage,
         requiresPlacementGroupToConnect, enableFullActivityList, enableRequestSecurity, dueDateCalculationMode, requestDueDateOffsetInDays, requestDueSoonOffsetInDays,
-        connectionTypeAttributes, connectionRequestAttributes, connectionOpportunityAttributes, activityTypes, statuses, sources, workflows, additionalSettings];
+        shouldRecalculateRequestDueAndDueSoonDates, connectionTypeAttributes, connectionRequestAttributes, connectionOpportunityAttributes, activityTypes, statuses, sources,
+        workflows, additionalSettings];
 
     // #endregion
 
@@ -368,11 +398,11 @@
     /*
         2/5/2026 - MSE
 
-        The "Due Soon Window" field must also validate against the "Due Duration" field.
+        Each "Due Soon Window" field must also validate against its corresponding "Due Duration" field.
         However, validation only re-runs when that field’s own modelValue changes.
 
-        This computed property exists to force re-validation of the "Due Soon Window"
-        in the case where the "Due Duration" value changes.
+        These computed properties exist to force re-validation of each "Due Soon Window"
+        in the case where its paired "Due Duration" value changes.
 
         This ensures a validation error appears when:
         - Due Duration is reduced below the current Due Soon Window value, or
@@ -382,12 +412,55 @@
         which field was changed to cause the validation failure.
     */
     const dueSoonWindowRules = computed((): (ValidationRuleFunction | string)[] => {
-        void requestDueDateOffsetInDays.value;
-        return ["required", validateDueSoonWindow];
+        return ["required", validateDueSoonWindow(requestDueDateOffsetInDays.value)];
+    });
+
+    const defaultOpportunityDueSoonWindowRules = computed((): (ValidationRuleFunction | string)[] => {
+        return ["required", validateDueSoonWindow(defaultOpportunityDueDateOffsetInDays.value)];
+    });
+
+    const defaultStatusDueSoonWindowRules = computed((): (ValidationRuleFunction | string)[] => {
+        return ["required", validateDueSoonWindow(defaultStatusDueDateOffsetInDays.value)];
     });
 
     const dueDurationRules = computed((): (ValidationRuleFunction | string)[] => {
         return ["required", validateDueDuration];
+    });
+
+    const defaultOpportunityDueDateOffsetInDays = computed({
+        get(): number | null | undefined {
+            return additionalSettings.value.defaultOpportunityDueDateOffsetInDays;
+        },
+        set(value: number | null | undefined) {
+            additionalSettings.value.defaultOpportunityDueDateOffsetInDays = value;
+        }
+    });
+
+    const defaultOpportunityDueSoonOffsetInDays = computed({
+        get(): number | null | undefined {
+            return additionalSettings.value.defaultOpportunityDueSoonOffsetInDays;
+        },
+        set(value: number | null | undefined) {
+            additionalSettings.value.defaultOpportunityDueSoonOffsetInDays = value;
+        }
+    });
+
+    const defaultStatusDueDateOffsetInDays = computed({
+        get(): number | null | undefined {
+            return additionalSettings.value.defaultStatusDueDateOffsetInDays;
+        },
+        set(value: number | null | undefined) {
+            additionalSettings.value.defaultStatusDueDateOffsetInDays = value;
+        }
+    });
+
+    const defaultStatusDueSoonOffsetInDays = computed({
+        get(): number | null | undefined {
+            return additionalSettings.value.defaultStatusDueSoonOffsetInDays;
+        },
+        set(value: number | null | undefined) {
+            additionalSettings.value.defaultStatusDueSoonOffsetInDays = value;
+        }
     });
 
     /**
@@ -454,17 +527,18 @@
     };
 
     /**
-     * Validates the Due Soon Window field.
-     * The value is required, must be greater than 0, and cannot exceed the
-     * Due Duration value.
+     * Returns a validation rule function for a Due Soon Window field.
+     * The value must be greater than 0 and cannot exceed the provided due duration.
+     *
+     * @param dueDateOffsetInDays The paired due duration value to validate against.
      */
-    const validateDueSoonWindow: ValidationRuleFunction = (value): ValidationResult => {
+    const validateDueSoonWindow = (dueDateOffsetInDays: number | null | undefined): ValidationRuleFunction => (value): ValidationResult => {
         if (typeof value !== "number" && typeof value !== "string") {
             return "Invalid value provided.";
         }
 
         const dueSoonWindow = toNumber(value);
-        const dueDuration = toNumber(requestDueDateOffsetInDays.value);
+        const dueDuration = toNumber(dueDateOffsetInDays);
 
         // Required & positive
         if (dueSoonWindow <= 0) {
@@ -473,7 +547,7 @@
 
         // Must not exceed Due Duration
         if (dueDuration > 0 && dueSoonWindow > dueDuration) {
-            return "This value must be less than the Request Due Duration.";
+            return "This value must be less than the Due Duration.";
         }
 
         return true;
@@ -506,6 +580,7 @@
         updateRefValue(dueDateCalculationMode, props.modelValue.bag?.dueDateCalculationMode ?? DueDateCalculationMode.FixedDaysFromStartTypeLevel);
         updateRefValue(requestDueDateOffsetInDays, props.modelValue.bag?.requestDueDateOffsetInDays ?? 0);
         updateRefValue(requestDueSoonOffsetInDays, props.modelValue.bag?.requestDueSoonOffsetInDays ?? 0);
+        updateRefValue(shouldRecalculateRequestDueAndDueSoonDates, props.modelValue.bag?.shouldRecalculateRequestDueAndDueSoonDates ?? false);
         updateRefValue(connectionTypeAttributes, props.modelValue.bag?.connectionTypeAttributes ?? []);
         updateRefValue(connectionRequestAttributes, props.modelValue.bag?.connectionRequestAttributes ?? []);
         updateRefValue(connectionOpportunityAttributes, props.modelValue.bag?.connectionOpportunityAttributes ?? []);
@@ -539,6 +614,7 @@
         setPropertiesBoxValue(newValue, "dueDateCalculationMode", dueDateCalculationMode.value);
         setPropertiesBoxValue(newValue, "requestDueDateOffsetInDays", requestDueDateOffsetInDays.value);
         setPropertiesBoxValue(newValue, "requestDueSoonOffsetInDays", requestDueSoonOffsetInDays.value);
+        setPropertiesBoxValue(newValue, "shouldRecalculateRequestDueAndDueSoonDates", shouldRecalculateRequestDueAndDueSoonDates.value);
         setPropertiesBoxValue(newValue, "connectionTypeAttributes", connectionTypeAttributes.value);
         setPropertiesBoxValue(newValue, "connectionRequestAttributes", connectionRequestAttributes.value);
         setPropertiesBoxValue(newValue, "connectionOpportunityAttributes", connectionOpportunityAttributes.value);

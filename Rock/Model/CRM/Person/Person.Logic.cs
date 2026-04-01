@@ -518,7 +518,7 @@ namespace Rock.Model
         /// <returns></returns>
         public string FormatAge( bool condensed = false )
         {
-            if (BirthDate > DateTime.Now)
+            if (BirthDate > RockDateTime.Now)
             {
                 return string.Empty;
             }

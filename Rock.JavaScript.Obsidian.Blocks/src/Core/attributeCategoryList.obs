@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <NotificationBox v-if="!isEntityTypeFiltered && !isNotificationDismissed" :alertType="AlertType.Info" :dismissible="true" @dismiss="isNotificationDismissed = true">
-        <strong>Note:</strong> Select an entity type using the grid filters to enable category reordering.
+        <strong>Note:</strong> Select an entity type using the grid filter to enable category reordering.
     </NotificationBox>
 
     <Grid :definition="config.gridDefinition ?? undefined"
@@ -69,11 +69,11 @@
 
     <GridSettingsModal v-model="gridSettings"
                        v-model:visible="isGridSettingsVisible"
-                       :excludedEntityTypeGuids="excludedEntityTypeGuids" />
+                       :entityTypeGuids="availableEntityTypeGuids" />
 </template>
 
 <script setup lang="ts">
-    import { reactive, ref, watch } from "vue";
+    import { onMounted, reactive, ref, watch } from "vue";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
     import Grid, { TextColumn, DeleteColumn, ReorderColumn, textValueFilter } from "@Obsidian/Controls/grid";
@@ -134,6 +134,9 @@
     /** `true` if the grid is currently filtered by an entity type. */
     const isEntityTypeFiltered = ref(!!gridSettings.value.entityType);
 
+    /** The distinct entity type GUIDs from all attribute categories, for the filter picker. */
+    const availableEntityTypeGuids = ref<string[]>([]);
+
     // #endregion
 
     // #region Functions
@@ -150,6 +153,18 @@
         }
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Loads the distinct entity type GUIDs from all attribute categories
+     * (unfiltered) to populate the grid settings entity type picker.
+     */
+    async function loadAvailableEntityTypeGuids(): Promise<void> {
+        const result = await invokeBlockAction<string[]>("GetAvailableEntityTypeGuids");
+
+        if (result.isSuccess && result.data) {
+            availableEntityTypeGuids.value = result.data;
         }
     }
 
@@ -225,6 +240,8 @@
                     gridData.rows?.splice(index, 1);
                 }
             }
+
+            loadAvailableEntityTypeGuids();
         }
         else {
             await alert(result.errorMessage ?? "Unknown error while trying to delete category.");
@@ -267,6 +284,7 @@
 
         if (result.isSuccess) {
             gridDataSource.value = loadGridData();
+            loadAvailableEntityTypeGuids();
             isModalOpen.value = false;
         }
         else {
@@ -310,4 +328,8 @@
     // #endregion
 
     gridDataSource.value = loadGridData();
+
+    onMounted(() => {
+        loadAvailableEntityTypeGuids();
+    });
 </script>

@@ -125,15 +125,30 @@ namespace Rock.Blocks.Core
                 .ToList();
         }
 
+        /// <summary>
+        /// Gets the base queryable for all attribute categories with valid entity types.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <returns>An unfiltered queryable of attribute categories.</returns>
+        /// <remarks>
+        /// Excludes categories associated with the Block and ServiceJob entity types.
+        /// </remarks>
+        private IQueryable<Category> GetBaseQueryable( RockContext rockContext )
+        {
+            var attributeEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
+            var validEntityTypeIds = GetValidEntityTypeIds( rockContext );
+
+            return new CategoryService( rockContext ).Queryable()
+                .Where( c =>
+                    c.EntityTypeId == attributeEntityTypeId &&
+                    c.EntityTypeQualifierColumn == "EntityTypeId" &&
+                    ( c.EntityTypeQualifierValue == null || validEntityTypeIds.Contains( c.EntityTypeQualifierValue ) ) );
+        }
+
         /// <inheritdoc/>
         protected override IQueryable<Category> GetListQueryable( RockContext rockContext )
         {
-            var attributeEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
-
-            var queryable = new CategoryService( rockContext ).Queryable()
-                .Where( c =>
-                    c.EntityTypeId == attributeEntityTypeId &&
-                    c.EntityTypeQualifierColumn == "EntityTypeId" );
+            var queryable = GetBaseQueryable( rockContext );
 
             // Apply the entity type filter from person preferences.
             var filterGuid = FilterEntityTypeGuid;
@@ -153,16 +168,6 @@ namespace Rock.Blocks.Core
                         queryable = queryable.Where( c => c.EntityTypeQualifierValue == entityTypeId );
                     }
                 }
-            }
-            else
-            {
-                // When no filter is applied, only include categories for valid
-                // registered entity types (excluding Block and ServiceJob).
-                var validEntityTypeIds = GetValidEntityTypeIds( rockContext );
-
-                queryable = queryable.Where( c =>
-                    c.EntityTypeQualifierValue == null ||
-                    validEntityTypeIds.Contains( c.EntityTypeQualifierValue ) );
             }
 
             return queryable;
@@ -191,7 +196,8 @@ namespace Rock.Blocks.Core
                 .AddTextField( "idKey", c => c.IdKey )
                 .AddTextField( "name", c => c.Name )
                 .AddTextField( "entityTypeName", c => GetEntityTypeName( c.EntityTypeQualifierValue ) )
-                .AddTextField( "iconCssClass", c => c.IconCssClass );
+                .AddTextField( "iconCssClass", c => c.IconCssClass )
+                .AddField( "isSystem", c => c.IsSystem );
         }
 
         /// <summary>
@@ -218,6 +224,32 @@ namespace Rock.Blocks.Core
             }
 
             return "None (Global Attributes)";
+        }
+
+        /// <summary>
+        /// Gets the entity type GUID string for an entity type qualifier value.
+        /// Returns the empty GUID for global attribute categories (null qualifier value).
+        /// </summary>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value (entity type ID as string).</param>
+        /// <returns>The GUID of the entity type as a string, or the empty GUID.</returns>
+        private string GetEntityTypeGuid( string entityTypeQualifierValue )
+        {
+            if ( entityTypeQualifierValue.IsNullOrWhiteSpace() )
+            {
+                return Guid.Empty.ToString();
+            }
+
+            var entityTypeId = entityTypeQualifierValue.AsIntegerOrNull();
+            if ( entityTypeId.HasValue && entityTypeId.Value > 0 )
+            {
+                var entityType = EntityTypeCache.Get( entityTypeId.Value );
+                if ( entityType != null )
+                {
+                    return entityType.Guid.ToString();
+                }
+            }
+
+            return Guid.Empty.ToString();
         }
 
         /// <summary>
@@ -404,6 +436,26 @@ namespace Rock.Blocks.Core
             RockContext.SaveChanges();
 
             return ActionOk();
+        }
+
+        /// <summary>
+        /// Gets the distinct entity type GUIDs from all attribute categories,
+        /// regardless of the current entity type filter. This is used to populate
+        /// the entity type picker in the grid settings modal.
+        /// </summary>
+        /// <returns>A block action result containing the list of entity type GUIDs.</returns>
+        [BlockAction]
+        public BlockActionResult GetAvailableEntityTypeGuids()
+        {
+            var guids = GetBaseQueryable( RockContext )
+                .Select( c => c.EntityTypeQualifierValue )
+                .Distinct()
+                .ToList()
+                .Select( v => GetEntityTypeGuid( v ) )
+                .Distinct()
+                .ToList();
+
+            return ActionOk( guids );
         }
 
         /// <summary>

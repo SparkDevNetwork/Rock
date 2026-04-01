@@ -70,12 +70,14 @@ namespace Rock.Blocks.Communication
             var currentPerson = GetCurrentPerson();
 
             var isNew = systemCommunication == null;
-            if ( isNew )
-            {
-                systemCommunication = new SystemCommunication();
-            }
 
-            var bag = GetBag( systemCommunication );
+            var bag = isNew
+                ? new SystemCommunicationBag
+                {
+                    IsActive = true,
+                    IsCssInliningEnabled = false
+                }
+                : GetBag( systemCommunication );
 
             var pushTransport = MediumContainer.GetActiveMediumComponentsWithActiveTransports()
                 .FirstOrDefault( m => m.TypeGuid == SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() )?.Transport;
@@ -114,7 +116,7 @@ namespace Rock.Blocks.Communication
             var bag = new SystemCommunicationBag
             {
                 Title = systemCommunication.Title,
-                IsActive = systemCommunication.IsActive ?? true,
+                IsActive = systemCommunication.IsActive ?? false,
                 Category = systemCommunication.Category.ToListItemBag(),
                 FromName = systemCommunication.FromName,
                 From = systemCommunication.From,
@@ -378,7 +380,7 @@ namespace Rock.Blocks.Communication
             {
                 pushData.MobilePageQueryString = bag.PushMobilePageQueryString;
 
-                var newMobilePageGuid = bag.PushMobilePage?.Page?.Value.AsGuid();
+                var newMobilePageGuid = bag.PushMobilePage?.Page?.Value?.AsGuidOrNull();
                 if ( newMobilePageGuid.HasValue )
                 {
                     var newMobilePage = PageCache.Get( newMobilePageGuid.Value );

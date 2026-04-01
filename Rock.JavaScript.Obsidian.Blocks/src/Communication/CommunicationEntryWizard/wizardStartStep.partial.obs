@@ -62,7 +62,7 @@
                                     <div class="col-sm-5">
                                         <div class="communication-list-group-container">
                                             <div class="communication-list-container">
-                                                <div v-if="communicationId && individualRecipientPersonAliasGuids?.length"
+                                                <div v-if="communicationId && individualRecipientPersonAliasIdKeys?.length"
                                                      class="form-group">
                                                     <RockLabel>Communication List</RockLabel>
                                                     <div class="control-wrapper">
@@ -93,7 +93,7 @@
                                     </div>
                                 </div>
 
-                                <div v-if="selectedCommunicationListGuidOrManualOrEmptyString !== manualRecipientList && personalizationSegmentItems.length"
+                                <div v-if="selectedCommunicationListGuidOrManualOrEmptyString !== manualRecipientList && selectedCommunicationListGuidOrManualOrEmptyString && personalizationSegmentItems.length"
                                      class="row">
                                     <div class="col-sm-5">
                                         <ConditionalWell class="segments-section">
@@ -363,8 +363,8 @@
             required: true
         },
 
-        individualRecipientPersonAliasGuids: {
-            type: Object as PropType<Guid[] | null | undefined>,
+        individualRecipientPersonAliasIdKeys: {
+            type: Object as PropType<string[] | null | undefined>,
             required: true
         },
 
@@ -482,7 +482,7 @@
         (e: "update:communicationType", value: CommunicationType): void;
         (e: "update:excludeDuplicateRecipientAddress", value: boolean): void;
         (e: "update:futureSendDateTime", value: string | null | undefined): void;
-        (e: "update:individualRecipientPersonAliasGuids", value: string[] | null | undefined): void;
+        (e: "update:individualRecipientPersonAliasIdKeys", value: string[] | null | undefined): void;
         (e: "update:isBulkCommunication", value: boolean): void;
         (e: "update:personalizationSegments", value: ListItemBag[] | null | undefined): void;
         (e: "update:recipients", value: CommunicationEntryWizardRecipientBag[]): void;
@@ -518,14 +518,14 @@
     const internalCommunicationType = useVModelPassthrough(props, "communicationType", emit);
     const internalExcludeDuplicateRecipientAddress = useVModelPassthrough(props, "excludeDuplicateRecipientAddress", emit);
     const internalFutureSendDateTime = useVModelPassthrough(props, "futureSendDateTime", emit);
-    const internalIndividualRecipientPersonAliasGuids = useVModelPassthrough(props, "individualRecipientPersonAliasGuids", emit);
+    const internalIndividualRecipientPersonAliasIdKeys = useVModelPassthrough(props, "individualRecipientPersonAliasIdKeys", emit);
     const internalIsBulkCommunication = useVModelPassthrough(props, "isBulkCommunication", emit);
     const internalRecipients = useVModelPassthrough(props, "recipients", emit);
     const internalPersonalizationSegments = useVModelPassthrough(props, "personalizationSegments", emit);
     const internalSegmentCriteria = useVModelPassthrough(props, "segmentCriteria", emit);
     const selectedSendTimePreference = ref<SendTimePreference>(internalFutureSendDateTime.value ? "later" : "now");
     const selectedCommunicationListGuidOrManualOrEmptyString = ref<string>(
-        !isNullish(internalIndividualRecipientPersonAliasGuids.value) || (!isNullish(props.communicationId) && isNullish(props.communicationListGroupGuid))
+        !isNullish(internalIndividualRecipientPersonAliasIdKeys.value) || (!isNullish(props.communicationId) && isNullish(props.communicationListGroupGuid))
             ? manualRecipientList
             : (props.communicationListGroupGuid ?? "")
     );
@@ -710,20 +710,19 @@
 
     function onListGroupGuidUpdated(): void {
         if (selectedCommunicationListGuidOrManualOrEmptyString.value === manualRecipientList) {
-            internalIndividualRecipientPersonAliasGuids.value = [];
+            internalIndividualRecipientPersonAliasIdKeys.value = [];
             internalPersonalizationSegments.value = [];
             emit("update:communicationListGroupGuid", null);
         }
         else {
-            internalIndividualRecipientPersonAliasGuids.value = null;
+            internalIndividualRecipientPersonAliasIdKeys.value = null;
             emit("update:communicationListGroupGuid", toGuidOrNull(selectedCommunicationListGuidOrManualOrEmptyString.value));
         }
     }
 
     function onRecipientsUpdated(): void {
-        internalIndividualRecipientPersonAliasGuids.value = internalRecipients.value.map(r => r.personAliasGuid);
+        internalIndividualRecipientPersonAliasIdKeys.value = internalRecipients.value.filter(r => !isNullish(r.personAliasIdKey)).map(r => r.personAliasIdKey!);
         emit("recipientListModified");
-
     }
 
     // #endregion Event Handlers
@@ -733,7 +732,7 @@
     watch(() => props.communicationListGroupGuid, value => {
         value = value ?? "";
 
-        if (isNullish(internalIndividualRecipientPersonAliasGuids.value) && selectedCommunicationListGuidOrManualOrEmptyString.value !== value) {
+        if (isNullish(internalIndividualRecipientPersonAliasIdKeys.value) && selectedCommunicationListGuidOrManualOrEmptyString.value !== value) {
             selectedCommunicationListGuidOrManualOrEmptyString.value = value;
         }
     });

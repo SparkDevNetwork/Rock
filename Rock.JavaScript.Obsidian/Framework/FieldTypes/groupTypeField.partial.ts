@@ -19,7 +19,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     GroupTypePurposeValueGuid = "groupTypePurposeValueGuid",
     GroupTypePurposes = "groupTypePurposes",
     Values = "values"
@@ -45,7 +45,7 @@ export class GroupTypeField extends FieldTypeBase {
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+            const values = JSON.parse(configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
             const selectedValues = values.filter(o => o.value === value);
             return selectedValues.map(o => o.text).join(", ");
         }

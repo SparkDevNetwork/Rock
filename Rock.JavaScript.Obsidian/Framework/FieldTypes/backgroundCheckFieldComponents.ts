@@ -22,7 +22,7 @@ import TextBox from "@Obsidian/Controls/textBox.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader.obs";
 import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./backgroundCheckField.partial";
+import { ConfigurationKey } from "./backgroundCheckField.partial";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
 
 export const EditComponent = defineComponent({
@@ -169,10 +169,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.BinaryFileType] = JSON.stringify(binaryFileType.value ?? "");
+            newValue[ConfigurationKey.BinaryFileType] = JSON.stringify(binaryFileType.value ?? "");
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.BinaryFileType] !== (props.modelValue[ConfigurationValueKey.BinaryFileType] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.BinaryFileType] !== (props.modelValue[ConfigurationKey.BinaryFileType] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -200,12 +200,12 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            binaryFileType.value = JSON.parse(props.modelValue[ConfigurationValueKey.BinaryFileType] || "{}");
+            binaryFileType.value = JSON.parse(props.modelValue[ConfigurationKey.BinaryFileType] || "{}");
         }, {
             immediate: true
         });
 
-        watch(binaryFileType, val => maybeUpdateConfiguration(ConfigurationValueKey.BinaryFileType, JSON.stringify(val ?? "")));
+        watch(binaryFileType, val => maybeUpdateConfiguration(ConfigurationKey.BinaryFileType, JSON.stringify(val ?? "")));
 
         return {
             binaryFileType

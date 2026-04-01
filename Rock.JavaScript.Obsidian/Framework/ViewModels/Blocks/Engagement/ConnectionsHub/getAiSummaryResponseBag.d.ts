@@ -22,7 +22,7 @@
 //
 
 /** The response bag for the GetAiSummary block action. */
-export type GetAiSummaryResponseBag = {
+export type GetAISummaryResponseBag = {
     /** Gets or sets the AI-generated summary of the connection request. */
     summary?: string | null;
 };

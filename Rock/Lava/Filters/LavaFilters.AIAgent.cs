@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 using Rock.AI.Agent;
@@ -48,11 +49,40 @@ namespace Rock.Lava
             {
                 if ( payloadOrMessage != null )
                 {
-                    toolResult = AI.Agent.AgentToolResult.Success( payloadOrMessage );
+                    if ( payloadOrMessage is string payloadString )
+                    {
+                        toolResult = AI.Agent.AgentToolResult.Success( payloadString );
+                    }
+                    else if ( payloadOrMessage is IDictionary dictionaryPayload )
+                    {
+                        if ( dictionaryPayload.Count > 0 )
+                        {
+                            toolResult = AI.Agent.AgentToolResult.Success( dictionaryPayload );
+                        }
+                        else
+                        {
+                            toolResult = AI.Agent.AgentToolResult.NoData();
+                        }
+                    }
+                    else if ( payloadOrMessage is IEnumerable enumerablePayload )
+                    {
+                        if ( enumerablePayload.Cast<object>().Any() )
+                        {
+                            toolResult = AI.Agent.AgentToolResult.Success( enumerablePayload );
+                        }
+                        else
+                        {
+                            toolResult = AI.Agent.AgentToolResult.NoData();
+                        }
+                    }
+                    else
+                    {
+                        toolResult = AI.Agent.AgentToolResult.Success( payloadOrMessage );
+                    }
                 }
                 else
                 {
-                    toolResult = AI.Agent.AgentToolResult.Success();
+                    toolResult = AI.Agent.AgentToolResult.NoData();
                 }
             }
             else if ( inputString.Equals( "Error", StringComparison.OrdinalIgnoreCase ) )

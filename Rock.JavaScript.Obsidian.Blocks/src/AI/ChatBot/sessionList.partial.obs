@@ -1,0 +1,50 @@
+<template>
+    <div class="sessions-container" ref="sessionsContainer">
+        <div v-for="session in sessions"
+             :key="session.id"
+             class="session"
+             :class="{ 'active': session.id === sessionId }"
+             @click="onSelectSession(session.id)">
+            <div class="session-name">{{ session.name || "Unnamed Session" }}</div>
+            <div v-if="sessions.length > 1"
+                 class="session-delete"
+                 @click.stop="onDeleteSession(session)">
+                <i class="ti ti-x"></i>
+            </div>
+            <div class="session-date">
+                {{ RockDateTime.parseISO(session.lastMessageDateTime!)?.localDateTime.toASPString("g") }}
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { ChatSessionBag } from "./types";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    defineProps({
+        sessions: {
+            type: Array as PropType<ChatSessionBag[]>,
+            required: true
+        },
+
+        sessionId: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "selectSession", sessionId: number): void;
+        (e: "deleteSession", session: ChatSessionBag): void;
+    }>();
+
+    function onSelectSession(sessionId: number): void {
+        emit("selectSession", sessionId);
+    }
+
+    function onDeleteSession(session: ChatSessionBag): void {
+        emit("deleteSession", session);
+    }
+</script>

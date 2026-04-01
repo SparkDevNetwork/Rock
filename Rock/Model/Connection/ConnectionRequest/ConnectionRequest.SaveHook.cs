@@ -169,11 +169,22 @@ namespace Rock.Model
                                 History.EvaluateChange( HistoryChangeList, "ConnectionStatus", origConnectionStatus, connectionStatus );
                                 PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestStatusModify, History.HistoryChangeType.Record, connectionOpportunity.Name );
 
+                                var newConnectionStatus = new ConnectionStatusService( RockContext ).Get( this.Entity.ConnectionStatusId );
+
+                                if ( newConnectionStatus.AutoInactivateState && this.Entity.ConnectionState != ConnectionState.Inactive )
+                                {
+                                    this.Entity.ConnectionState = ConnectionState.Inactive;
+                                }
+
+                                if ( connectionTypeCache.EnableFutureFollowup && newConnectionStatus.AutoFutureFollowUpPauseInDays.HasValue && newConnectionStatus.AutoFutureFollowUpPauseInDays.Value > 0 )
+                                {
+                                    this.Entity.ConnectionState = ConnectionState.FutureFollowUp;
+                                    this.Entity.FollowupDate = currentDateTime.AddDays( newConnectionStatus.AutoFutureFollowUpPauseInDays.Value );
+                                }
+
                                 // If the connection type is configured to calculate due dates based on status then we need to update the connection request due dates based on the new status.
                                 if ( connectionTypeCache.DueDateCalculationMode == DueDateCalculationMode.DurationPerStatus )
                                 {
-                                    var newConnectionStatus = new ConnectionStatusService( RockContext ).Get( this.Entity.ConnectionStatusId );
-
                                     dueOffsetDays = newConnectionStatus.RequestStatusDueDateOffsetInDays ?? 0;
                                     dueSoonOffsetDays = newConnectionStatus.RequestStatusDueSoonOffsetInDays ?? 0;
 
@@ -270,12 +281,6 @@ namespace Rock.Model
                 if ( Entity.ConnectionStatus == null )
                 {
                     Entity.ConnectionStatus = new ConnectionStatusService( rockContext ).Get( Entity.ConnectionStatusId );
-                }
-
-                if ( Entity.ConnectionStatus != null && Entity.ConnectionStatus.AutoInactivateState && Entity.ConnectionState != ConnectionState.Inactive )
-                {
-                    Entity.ConnectionState = ConnectionState.Inactive;
-                    rockContext.SaveChanges();
                 }
 
                 switch ( State )

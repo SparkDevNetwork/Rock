@@ -49,5 +49,9 @@ export type ConnectionActivityTypeBag = {
     /** Gets or sets the person note creation behavior. */
     personNoteCreationBehavior?: PersonNoteCreationBehavior | null;
 
+    /**
+     * The note type that will be used when adding activity notes to
+     * requests of this type.
+     */
     personNoteType?: ListItemBag | null;
 };

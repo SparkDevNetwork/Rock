@@ -76,8 +76,8 @@ export type CommunicationEntryWizardCommunicationBag = {
     /** Gets or sets the future send date time. */
     futureSendDateTime?: string | null;
 
-    /** Gets or sets the individual recipient person alias unique identifiers. */
-    individualRecipientPersonAliasGuids?: Guid[] | null;
+    /** Gets or sets the individual recipient person alias identifier keys. */
+    individualRecipientPersonAliasIdKeys?: string[] | null;
 
     /** Gets or sets whether this is a bulk communication. */
     isBulkCommunication: boolean;

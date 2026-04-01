@@ -22,7 +22,7 @@ import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
 import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { DefinedType } from "@Obsidian/SystemGuids/definedType";
-import { ConfigurationValueKey } from "./locationListField.partial";
+import { ConfigurationKey } from "./locationListField.partial";
 import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 import { asListItemBagOrNull } from "@Obsidian/Utility/listItemBag";
 import { Guid } from "@Obsidian/Types";
@@ -60,11 +60,11 @@ export const EditComponent = defineComponent({
         });
 
         watch(() => props.configurationValues, () => {
-            locationTypeGuid.value = toGuidOrNull(asListItemBagOrNull(props.configurationValues[ConfigurationValueKey.LocationType])?.value);
-            parentGuid.value = toGuidOrNull(asListItemBagOrNull(props.configurationValues[ConfigurationValueKey.ParentLocation])?.value);
-            allowAdd.value = asBoolean(props.configurationValues[ConfigurationValueKey.AllowAddingNewLocations]);
-            showCityState.value = asBoolean(props.configurationValues[ConfigurationValueKey.ShowCityState]);
-            addressRequired.value = asBoolean(props.configurationValues[ConfigurationValueKey.AddressRequired]);
+            locationTypeGuid.value = toGuidOrNull(asListItemBagOrNull(props.configurationValues[ConfigurationKey.LocationType])?.value);
+            parentGuid.value = toGuidOrNull(asListItemBagOrNull(props.configurationValues[ConfigurationKey.ParentLocation])?.value);
+            allowAdd.value = asBoolean(props.configurationValues[ConfigurationKey.AllowAddingNewLocations]);
+            showCityState.value = asBoolean(props.configurationValues[ConfigurationKey.ShowCityState]);
+            addressRequired.value = asBoolean(props.configurationValues[ConfigurationKey.AddressRequired]);
         }, { immediate: true });
 
         return {
@@ -129,18 +129,18 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.LocationType] = locationType.value ? JSON.stringify(locationType.value) : "";
-            newValue[ConfigurationValueKey.ParentLocation] = parentLocation.value ? JSON.stringify(parentLocation.value) : "";
-            newValue[ConfigurationValueKey.AllowAddingNewLocations] = asTrueOrFalseString(allowAdding.value);
-            newValue[ConfigurationValueKey.ShowCityState] = asTrueOrFalseString(showCityState.value);
-            newValue[ConfigurationValueKey.AddressRequired] = asTrueOrFalseString(addressRequired.value);
+            newValue[ConfigurationKey.LocationType] = locationType.value ? JSON.stringify(locationType.value) : "";
+            newValue[ConfigurationKey.ParentLocation] = parentLocation.value ? JSON.stringify(parentLocation.value) : "";
+            newValue[ConfigurationKey.AllowAddingNewLocations] = asTrueOrFalseString(allowAdding.value);
+            newValue[ConfigurationKey.ShowCityState] = asTrueOrFalseString(showCityState.value);
+            newValue[ConfigurationKey.AddressRequired] = asTrueOrFalseString(addressRequired.value);
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.LocationType] !== props.modelValue[ConfigurationValueKey.LocationType]
-                || newValue[ConfigurationValueKey.ParentLocation] !== (props.modelValue[ConfigurationValueKey.ParentLocation])
-                || newValue[ConfigurationValueKey.AllowAddingNewLocations] !== (props.modelValue[ConfigurationValueKey.AllowAddingNewLocations])
-                || newValue[ConfigurationValueKey.ShowCityState] !== (props.modelValue[ConfigurationValueKey.ShowCityState])
-                || newValue[ConfigurationValueKey.AddressRequired] !== (props.modelValue[ConfigurationValueKey.AddressRequired]);
+            const anyValueChanged = newValue[ConfigurationKey.LocationType] !== props.modelValue[ConfigurationKey.LocationType]
+                || newValue[ConfigurationKey.ParentLocation] !== (props.modelValue[ConfigurationKey.ParentLocation])
+                || newValue[ConfigurationKey.AllowAddingNewLocations] !== (props.modelValue[ConfigurationKey.AllowAddingNewLocations])
+                || newValue[ConfigurationKey.ShowCityState] !== (props.modelValue[ConfigurationKey.ShowCityState])
+                || newValue[ConfigurationKey.AddressRequired] !== (props.modelValue[ConfigurationKey.AddressRequired]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -166,11 +166,11 @@ export const ConfigurationComponent = defineComponent({
 
         // Watch for changes coming in from the parent component and update our data to match the new information.
         watch(() => props.modelValue, () => {
-            locationType.value = asListItemBagOrNull(props.modelValue[ConfigurationValueKey.LocationType]);
-            parentLocation.value = asListItemBagOrNull(props.modelValue[ConfigurationValueKey.ParentLocation]);
-            allowAdding.value = asBoolean(props.modelValue[ConfigurationValueKey.AllowAddingNewLocations]);
-            showCityState.value = asBoolean(props.modelValue[ConfigurationValueKey.ShowCityState]);
-            addressRequired.value = asBoolean(props.modelValue[ConfigurationValueKey.AddressRequired]);
+            locationType.value = asListItemBagOrNull(props.modelValue[ConfigurationKey.LocationType]);
+            parentLocation.value = asListItemBagOrNull(props.modelValue[ConfigurationKey.ParentLocation]);
+            allowAdding.value = asBoolean(props.modelValue[ConfigurationKey.AllowAddingNewLocations]);
+            showCityState.value = asBoolean(props.modelValue[ConfigurationKey.ShowCityState]);
+            addressRequired.value = asBoolean(props.modelValue[ConfigurationKey.AddressRequired]);
         }, {
             immediate: true
         });
@@ -184,11 +184,11 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(locationType, () => maybeUpdateConfiguration(ConfigurationValueKey.LocationType, JSON.stringify(locationType.value)));
-        watch(parentLocation, () => maybeUpdateConfiguration(ConfigurationValueKey.ParentLocation, JSON.stringify(parentLocation.value)));
-        watch(allowAdding, () => maybeUpdateConfiguration(ConfigurationValueKey.AllowAddingNewLocations, asTrueOrFalseString(allowAdding.value)));
-        watch(showCityState, () => maybeUpdateConfiguration(ConfigurationValueKey.ShowCityState, asTrueOrFalseString(showCityState.value)));
-        watch(addressRequired, () => maybeUpdateConfiguration(ConfigurationValueKey.AddressRequired, asTrueOrFalseString(addressRequired.value)));
+        watch(locationType, () => maybeUpdateConfiguration(ConfigurationKey.LocationType, JSON.stringify(locationType.value)));
+        watch(parentLocation, () => maybeUpdateConfiguration(ConfigurationKey.ParentLocation, JSON.stringify(parentLocation.value)));
+        watch(allowAdding, () => maybeUpdateConfiguration(ConfigurationKey.AllowAddingNewLocations, asTrueOrFalseString(allowAdding.value)));
+        watch(showCityState, () => maybeUpdateConfiguration(ConfigurationKey.ShowCityState, asTrueOrFalseString(showCityState.value)));
+        watch(addressRequired, () => maybeUpdateConfiguration(ConfigurationKey.AddressRequired, asTrueOrFalseString(addressRequired.value)));
 
         return {
             locationTypeGuid,

@@ -38,7 +38,7 @@
                   itemTerm="Recipient"
                   class="recipient-manager-grid"
                   :disablePreferences="true"
-                  :keyField="getStringKey<CommunicationEntryWizardRecipientBag>('personAliasGuid')"
+                  :keyField="getStringKey<CommunicationEntryWizardRecipientBag>('personAliasIdKey')"
                   rowClass="recipient-modal-row">
 
                 <Column :name="getRecipientKey('name')" :field="getRecipientKey('name')" title="Name" :filter="textValueFilter">
@@ -136,7 +136,6 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
-    import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { CommunicationEntryWizardRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardRecipientBag";
     import { FieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/fieldDefinitionBag";
@@ -392,14 +391,14 @@
 
     //#region Event Handlers
 
-    function onRemoveRecipientClicked(personAliasGuid: Guid): void {
-        if (!personAliasGuid) {
+    function onRemoveRecipientClicked(personAliasIdKey: string): void {
+        if (!personAliasIdKey) {
             return;
         }
 
         const updatedPendingItems = [...pendingItems.value];
 
-        const index = updatedPendingItems.findIndex(i => i.personAliasGuid === personAliasGuid);
+        const index = updatedPendingItems.findIndex(i => i.personAliasIdKey === personAliasIdKey);
         if (index !== -1) {
             updatedPendingItems.splice(index, 1);
             pendingItems.value = updatedPendingItems;
@@ -419,7 +418,7 @@
         }
 
         const updatedPendingItems = [...pendingItems.value];
-        const index = updatedPendingItems.findIndex(i => i.personAliasGuid === result.data?.personAliasGuid);
+        const index = updatedPendingItems.findIndex(i => i.personAliasIdKey === result.data?.personAliasIdKey);
         if (index === -1) {
             updatedPendingItems.push(result.data);
             pendingItems.value = updatedPendingItems;

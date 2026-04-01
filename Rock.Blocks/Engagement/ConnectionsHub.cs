@@ -266,6 +266,11 @@ namespace Rock.Blocks.Engagement
             options.Title = connectionType.Name + " Requests";
             options.IconCssClass = connectionType.IconCssClass;
 
+            if ( PageParameter( PageParameterKey.Request ).IsNotNullOrWhiteSpace() )
+            {
+                options.ConnectionRequestIdKey = new ConnectionRequestService( RockContext ).Get( PageParameter( PageParameterKey.Request ), !PageCache.Layout.Site.DisablePredictableIds )?.IdKey ?? string.Empty;
+            }
+
             var connectionTypeIdKey = IdHasher.Instance.GetHash( connectionType.Id );
             SetDefaultPreferences( connectionTypeIdKey );
 
@@ -527,7 +532,7 @@ namespace Rock.Blocks.Engagement
                     photoUrl = Rock.Model.Person.GetPersonNoPictureUrl( new Rock.Model.Person() );
                 }
 
-                return new GroupingFieldBag
+                var unassignedBag = new GroupingFieldBag
                 {
                     Key = "unassigned",
                     Type = type,
@@ -536,11 +541,15 @@ namespace Rock.Blocks.Engagement
                     Order = order,
                     TextColorCssClass = textColorCssClass
                 };
+
+                return unassignedBag;
             }
 
-            return new GroupingFieldBag
+            var groupingKey = IdHasher.Instance.GetHash( id.Value );
+
+            var assignedBag = new GroupingFieldBag
             {
-                Key = IdHasher.Instance.GetHash( id.Value ),
+                Key = groupingKey,
                 Type = type,
                 Label = label,
                 IconCssClass = iconCssClass,
@@ -548,6 +557,8 @@ namespace Rock.Blocks.Engagement
                 Order = order,
                 TextColorCssClass = textColorCssClass
             };
+
+            return assignedBag;
         }
 
         /// <summary>
@@ -930,13 +941,13 @@ namespace Rock.Blocks.Engagement
             // Always set the assigned status, for both new and preexisting members.
             groupMember.GroupMemberStatus = connectionRequest.AssignedGroupMemberStatus.Value;
 
-            var requirementsToCheck = connectionRequest.AssignedGroup.GroupRequirements.Where( gr => gr.MustMeetRequirementToAddMember ).ToList();
+            var requirementsToCheck = connectionRequest.AssignedGroup.GetGroupRequirements( RockContext ).Where( gr => gr.MustMeetRequirementToAddMember ).ToList();
             var manualRequirements = requirementsToCheck.Where( gr => gr.GroupRequirementType.RequirementCheckType == RequirementCheckType.Manual );
             var nonManualRequirements = requirementsToCheck.Where( gr => gr.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual );
 
             var meetsAllNonManualRequirements = nonManualRequirements.All( gr =>
             {
-                var status = gr.PersonMeetsGroupRequirement( RockContext, connectionRequest.PersonAlias.PersonId, connectionRequest.AssignedGroup.Id, connectionRequest.AssignedGroupMemberRoleId );
+                var status = gr.PersonMeetsGroupRequirement( RockContext, connectionRequest.PersonAlias.PersonId, connectionRequest.AssignedGroupId.Value, connectionRequest.AssignedGroupMemberRoleId );
                 return status.MeetsGroupRequirement == MeetsGroupRequirement.Meets
                     || status.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning
                     || status.MeetsGroupRequirement == MeetsGroupRequirement.NotApplicable;
@@ -958,6 +969,15 @@ namespace Rock.Blocks.Engagement
 
                 if ( !isMet && manualRequirement.MustMeetRequirementToAddMember )
                 {
+                    // Check if there is already an existing record of the person meeting the manual requirement.
+                    var existingGroupRequirementStatus = manualRequirement.PersonMeetsGroupRequirement( RockContext, connectionRequest.PersonAlias.PersonId, connectionRequest.AssignedGroupId.Value, connectionRequest.AssignedGroupMemberRoleId );
+                    if ( existingGroupRequirementStatus.MeetsGroupRequirement == MeetsGroupRequirement.Meets
+                        || existingGroupRequirementStatus.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning
+                        || existingGroupRequirementStatus.MeetsGroupRequirement == MeetsGroupRequirement.NotApplicable )
+                    {
+                        continue;
+                    }
+
                     error = ActionBadRequest( "Group Requirements have not been met. Please verify all of the requirements." );
                     return false;
                 }
@@ -1132,7 +1152,7 @@ namespace Rock.Blocks.Engagement
         /// <param name="currentConnector">The optional currently assigned connector to ensure is present in the list.</param>
         /// <param name="addUnassignedConnector">If <c>true</c>, prepends an "Unassigned" option to the list.</param>
         /// <returns>A list of <see cref="ConnectorItemBag"/> representing the available connectors, including photo URLs.</returns>
-        private List<ConnectorItemBag> GetConnectorItems( ConnectionOpportunity connectionOpportunity, int? campusId, Rock.Model.PersonAlias currentConnector = null, bool addUnassignedConnector = false )
+        private List<ConnectorItemBag> GetConnectorItems( int connectionOpportunityId, int? campusId, Rock.Model.PersonAlias currentConnector = null, bool addUnassignedConnector = false )
         {
             Guid? selectedCampusGuid = null;
             if ( campusId.HasValue )
@@ -1140,66 +1160,67 @@ namespace Rock.Blocks.Engagement
                 selectedCampusGuid = CampusCache.Get( campusId.Value )?.Guid;
             }
 
-            var connectors = connectionOpportunity.ConnectionOpportunityConnectorGroups
-                .SelectMany( g => g.ConnectorGroup.Members.Select( m => new { Member = m, g.Campus } ) )
-                .GroupBy( x => x.Member.Person.PrimaryAlias.Guid )
+            // Apply campus filtering at the database level. A null campus on the connector group
+            // means the connector is available to all campuses and is always included.
+            var connectorGroupQuery = new ConnectionOpportunityConnectorGroupService( RockContext ).Queryable()
+                .Where( g => g.ConnectionOpportunityId == connectionOpportunityId );
+
+            if ( selectedCampusGuid.HasValue )
+            {
+                connectorGroupQuery = connectorGroupQuery
+                    .Where( g => g.Campus == null || g.Campus.Guid == selectedCampusGuid.Value );
+            }
+
+            // Project one flat row per group member so the database returns a single result set.
+            var memberRows = connectorGroupQuery
+                .SelectMany( g => g.ConnectorGroup.Members
+                    .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
+                    .Select( m => new
+                    {
+                        m.Person,
+                        CampusGuid = ( Guid? ) g.Campus.Guid
+                    } ) )
+                .ToList();
+
+            // Ensure the current logged-in person appears in the list even if outside the campus filter.
+            var currentPerson = RequestContext.CurrentPerson;
+            if ( currentPerson?.PrimaryAlias != null && !memberRows.Any( r => r.Person.PrimaryAliasGuid == currentPerson.PrimaryAlias.Guid ) )
+            {
+                memberRows.Add( new { Person = currentPerson, CampusGuid = ( Guid? ) null } );
+            }
+
+            // Ensure the currently assigned connector appears in the list even if outside the campus filter.
+            if ( currentConnector?.Person != null && !memberRows.Any( r => r.Person.PrimaryAliasGuid == currentConnector.Person.PrimaryAlias?.Guid ) )
+            {
+                memberRows.Add( new { Person = currentConnector.Person, CampusGuid = ( Guid? ) null } );
+            }
+
+            // Group by person to deduplicate connectors    who belong to multiple connector groups,
+            // and to aggregate the campuses each connector is assigned to.
+            var connectors = memberRows
+                .GroupBy( r => r.Person.PrimaryAliasGuid )
+                .OrderBy( g => g.First().Person.LastName )
+                .ThenBy( g => g.First().Person.FirstName )
                 .Select( g => new ConnectorItemBag
                 {
                     ListItemBag = new ListItemBag
                     {
                         Value = g.Key.ToString(),
-                        Text = g.First().Member.Person.FullName
+                        Text = g.First().Person.FullName
                     },
-                    PhotoUrl = g.First().Member.Person.PhotoUrl,
-                    IsAvailableToAllCampuses = g.Any( x => x.Campus == null ),
-                    CampusGuids = g.Where( x => x.Campus != null )
-                                 .Select( x => x.Campus.Guid )
-                                 .Distinct()
-                                 .ToList()
+                    PhotoUrl = g.First().Person.PhotoUrl,
+                    IsAvailableToAllCampuses = g.Any( r => !r.CampusGuid.HasValue ),
+                    CampusGuids = g.Where( r => r.CampusGuid.HasValue )
+                                  .Select( r => r.CampusGuid.Value )
+                                  .Distinct()
+                                  .ToList()
                 } )
-                .Where( c => !selectedCampusGuid.HasValue ||
-                    c.IsAvailableToAllCampuses ||
-                    c.CampusGuids.Any( g => g == selectedCampusGuid ) )
                 .ToList();
 
-            var currentPerson = RequestContext.CurrentPerson;
-            var currentPersonAliasGuid = currentPerson.PrimaryAlias?.Guid;
-            if ( currentPersonAliasGuid.HasValue && !connectors.Any( c => c.ListItemBag.Value == currentPersonAliasGuid.Value.ToString() ) )
-            {
-                connectors.Add( new ConnectorItemBag
-                {
-                    ListItemBag = new ListItemBag
-                    {
-                        Text = currentPerson.FullName,
-                        Value = currentPersonAliasGuid.Value.ToString()
-                    },
-                    PhotoUrl = currentPerson.PhotoUrl,
-                    IsAvailableToAllCampuses = true
-                } );
-            }
-
-            // Adds the current connector to the connector items if the current connector does not exist in the list.
-            if ( currentConnector != null && !connectors.Any( c => c.ListItemBag.Value == currentConnector.Guid.ToString() ) )
-            {
-                connectors.Add( new ConnectorItemBag
-                {
-                    ListItemBag = new ListItemBag
-                    {
-                        Text = currentConnector.Person.FullName,
-                        Value = currentConnector.Guid.ToString()
-                    },
-                    PhotoUrl = currentConnector.Person.PhotoUrl,
-                    IsAvailableToAllCampuses = true
-                } );
-            }
-
-            // Order by Connector Name before adding Unassigned to the end of the list.
-            connectors.OrderBy( c => c.ListItemBag.Text );
-
-            // Add Unassigned Connector
+            // Add Unassigned Connector to the beggining of the list.
             if ( addUnassignedConnector )
             {
-                connectors.Add( new ConnectorItemBag
+                connectors.Insert( 0, new ConnectorItemBag
                 {
                     ListItemBag = new ListItemBag
                     {
@@ -1223,7 +1244,7 @@ namespace Rock.Blocks.Engagement
         /// <returns>A <see cref="ConnectorOptionsBag"/> containing the connector list and default connector GUID.</returns>
         private ConnectorOptionsBag GetConnectorOptionsBag( ConnectionOpportunity connectionOpportunity, int? campusId )
         {
-            var connectors = GetConnectorItems( connectionOpportunity, campusId ).Select( c => c.ListItemBag ).ToList();
+            var connectors = GetConnectorItems( connectionOpportunity.Id, campusId ).Select( c => c.ListItemBag ).ToList();
 
             string defaultConnectorPersonAliasGuid = string.Empty;
 
@@ -1792,7 +1813,8 @@ namespace Rock.Blocks.Engagement
                 .Queryable()
                 .Include( r => r.PersonAlias.Person )
                 .Include( r => r.ConnectorPersonAlias.Person )
-                .Include( r => r.ConnectionOpportunity )
+                .Include( r => r.ConnectionOpportunity.ConnectionOpportunityCampuses )
+                .Include( r => r.ConnectionTypeSource )
                 .Include( r => r.ConnectionStatus )
                 .Include( r => r.Campus )
                 .Include( r => r.AssignedGroup )
@@ -1848,7 +1870,7 @@ namespace Rock.Blocks.Engagement
             var reminderCount = new ReminderService( RockContext ).Queryable()
                 .Include( r => r.PersonAlias )
                 .AsNoTracking()
-                .Where( r => !r.IsComplete && r.ReminderDate < RockDateTime.Now && r.PersonAlias.PersonId == RequestContext.CurrentPerson.Id )
+                .Where( r => !r.IsComplete && r.ReminderDate < RockDateTime.Now && r.PersonAlias.PersonId == RequestContext.CurrentPerson.Id && r.EntityId == connectionRequest.Id )
                 .Count();
 
             var requesterPerson = new PersonFieldBag
@@ -1981,8 +2003,8 @@ namespace Rock.Blocks.Engagement
                 RequestSourceItems = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionTypeSources.ToListItemBagList()
             };
 
-            optionsBag.ConnectorItems = GetConnectorItems( connectionRequest.ConnectionOpportunity, connectionRequest.CampusId, connectionRequest.ConnectorPersonAlias, true );
-            optionsBag.ConnectorItemsForEdit = GetConnectorItems( connectionRequest.ConnectionOpportunity, null, connectionRequest.ConnectorPersonAlias, false );
+            optionsBag.ConnectorItems = GetConnectorItems( connectionRequest.ConnectionOpportunityId, connectionRequest.CampusId, connectionRequest.ConnectorPersonAlias, true );
+            optionsBag.ConnectorItemsForEdit = GetConnectorItems( connectionRequest.ConnectionOpportunityId, null, connectionRequest.ConnectorPersonAlias, false );
 
             var tempNote = new Note
             {
@@ -2022,8 +2044,11 @@ namespace Rock.Blocks.Engagement
             var delimitedBadgeGuids = GetAttributeValue( AttributeKey.Badges );
             optionsBag.BadgeGuids = delimitedBadgeGuids.SplitDelimitedValues().AsGuidList();
 
+            var connectionTypeAdditionalSettings = connectionRequest.ConnectionOpportunity.ConnectionType.GetConnectionTypeAdditionalSettings();
+
             optionsBag.IsAISummaryVisible = new AIProviderService( RockContext ).GetActiveProvider() != null
-                && ( connectionRequest.ConnectionOpportunity.ConnectionType.GetConnectionTypeAdditionalSettings()?.AIInsightsPrompt.IsNotNullOrWhiteSpace() == true );
+                && ( connectionTypeAdditionalSettings?.AIInsightsPrompt.IsNotNullOrWhiteSpace() == true );
+            optionsBag.AISummaryTrigger = connectionTypeAdditionalSettings?.AISummaryTrigger ?? AISummaryTriggerMode.Manual;
 
             List<ConnectionState> ignoredConnectionStates = new List<ConnectionState>();
 
@@ -2038,15 +2063,26 @@ namespace Rock.Blocks.Engagement
 
             if ( optionsBag.AreGroupPlacementsEnabled )
             {
-                var configsByGroupTypeId = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroupConfigs
+                var groupConfigs = new ConnectionOpportunityGroupConfigService( RockContext )
+                    .Queryable()
+                    .Include( c => c.GroupMemberRole )
+                    .Where( c => c.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId )
+                    .ToList();
+
+                var opportunityGroups = new ConnectionOpportunityGroupService( RockContext )
+                    .Queryable()
+                    .Include( g => g.Group.Campus )
+                    .Where( g => g.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId )
+                    .ToList();
+
+                var configsByGroupTypeId = groupConfigs
                     .GroupBy( c => c.GroupTypeId )
                     .ToDictionary(
                         grp => grp.Key,
                         grp => grp.Select( c => new { Role = c.GroupMemberRole, Status = c.GroupMemberStatus } ).ToList()
                     );
 
-                //.Where( g => !campusId.HasValue || !g.CampusId.HasValue || g.CampusId.Value == campusId.Value ) TODO - Consider whether the docked panel should be aware of campus context ... this could be problematic if we tried to convert to a control.
-                optionsBag.PlacementGroups = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups.Where( g => configsByGroupTypeId.ContainsKey( g.Group.GroupTypeId ) )
+                optionsBag.PlacementGroups = opportunityGroups.Where( g => configsByGroupTypeId.ContainsKey( g.Group.GroupTypeId ) )
                     .Select( g =>
                     {
                         var configs = configsByGroupTypeId[g.Group.GroupTypeId];
@@ -2172,6 +2208,7 @@ namespace Rock.Blocks.Engagement
                 {
                     ListItemBag = placementGroup.ToListItemBag(),
                     IconCssClass = placementGroup.GroupType.IconCssClass ?? "ti ti-users",
+                    GroupId = placementGroup.Id.ToString()
                 };
 
                 var groupMember = placementGroup.Members.FirstOrDefault( m => m.PersonId == connectionRequest.PersonAlias.PersonId );
@@ -2239,17 +2276,17 @@ namespace Rock.Blocks.Engagement
                 }
             }
 
-            var connectionWorkflows = connectionRequest.ConnectionOpportunity.ConnectionWorkflows.Union( connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionWorkflows );
-            var manualWorkflows = connectionWorkflows
-                .Where( w =>
-                    w.TriggerType == ConnectionWorkflowTriggerType.Manual &&
-                    w.WorkflowType != null &&
-                    ( w.ManualTriggerFilterConnectionStatusId == null || w.ManualTriggerFilterConnectionStatusId == connectionRequest.ConnectionStatusId ) )
-                .Distinct();
+            var manualConnectionWorkflows = new ConnectionWorkflowService( RockContext ).Queryable()
+                .Include( w => w.WorkflowType.Category )
+                .Where( w => w.TriggerType == ConnectionWorkflowTriggerType.Manual
+                    && w.WorkflowTypeId != null
+                    && ( w.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId || w.ConnectionTypeId == connectionRequest.ConnectionTypeId )
+                    && ( w.ManualTriggerFilterConnectionStatus == null || w.ManualTriggerFilterConnectionStatusId == connectionRequest.ConnectionStatusId ) )
+                .ToList();
 
             var workflowTypeOrder = connectionRequest.ConnectionOpportunity.GetAdditionalSettingsOrNull<List<int>>( "WorkflowTypeOrder" ) ?? new List<int>();
 
-            var orderedManualWorkflows = manualWorkflows
+            var orderedManualWorkflows = manualConnectionWorkflows
                 .OrderBy( w =>
                 {
                     var index = workflowTypeOrder.IndexOf( w.WorkflowTypeId ?? -1 );
@@ -2439,7 +2476,8 @@ namespace Rock.Blocks.Engagement
             var connectionRequestActivityService = new ConnectionRequestActivityService( RockContext );
             var connectionRequestActivities = connectionRequestActivityService.Queryable()
                 .AsNoTracking()
-                .Include( a => a.CreatedByPersonAlias )
+                .Include( a => a.CreatedByPersonAlias.Person )
+                .Include( a => a.ConnectorPersonAlias )
                 .Include( a => a.ConnectionActivityType )
                 .Where( a => a.ConnectionRequestId == connectionRequest.Id )
                 .ToList();
@@ -2831,12 +2869,22 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
             sb.AppendLine( $"Status: {connectionRequest.ConnectionStatus?.Name}" );
             sb.AppendLine( $"State: {connectionRequest.ConnectionState.GetDisplayName()}" );
 
-            var dueStatus = GetDueStatus(connectionRequest.DueDate, connectionRequest.DueSoonDate, connectionRequest.ConnectionState, connectionRequest.ConnectedDateTime );
+            var dueStatus = GetDueStatus( connectionRequest.DueDate, connectionRequest.DueSoonDate, connectionRequest.ConnectionState, connectionRequest.ConnectedDateTime );
             sb.AppendLine( $"Due Status: {dueStatus.GetDisplayName()}" );
 
             if ( connectionRequest.CreatedDateTime.HasValue )
             {
                 sb.AppendLine( $"Created Date: {connectionRequest.CreatedDateTime}" );
+            }
+
+            if ( connectionRequest.Campus != null )
+            {
+                sb.AppendLine( $"Campus: {connectionRequest.Campus.Name}" );
+            }
+
+            if ( connectionRequest.ConnectionOpportunity.ConnectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.GroupPlacement ) && connectionRequest.AssignedGroup != null )
+            {
+                sb.AppendLine( $"Placement Group: {connectionRequest.AssignedGroup.Name}" );
             }
 
             if ( connectionRequest.DueDate.HasValue )
@@ -2877,7 +2925,8 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
 
             var activities = connectionRequest.ConnectionRequestActivities
                 .Where( a => a.CreatedByPersonAliasId.HasValue )
-                .OrderBy( a => a.CreatedDateTime )
+                .OrderByDescending( a => a.CreatedDateTime )
+                .Take( 5 )
                 .ToList();
 
             if ( activities.Any() )
@@ -2896,6 +2945,12 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
 
         #region Block Actions
 
+        /// <summary>
+        /// Returns the grid data for the Connections Hub using a plain SQL query for improved
+        /// performance. A pre-aggregated derived table replaces the correlated per-row subqueries
+        /// for activity counts that EF6 emits, reducing total query cost significantly for large
+        /// data sets.
+        /// </summary>
         [BlockAction]
         public BlockActionResult GetGridData()
         {
@@ -2917,236 +2972,412 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                 return ActionOk();
             }
 
-            var reminderQry = new ReminderService( RockContext ).Queryable()
-                .Include( r => r.PersonAlias )
-                .AsNoTracking()
-                .Where( r => !r.IsComplete && r.ReminderDate < RockDateTime.Now && r.PersonAlias.PersonId == RequestContext.CurrentPerson.Id );
+            var sqlParams = new List<SqlParameter>
+            {
+                new SqlParameter( "@ConnectionTypeId", connectionType.Id ),
+                new SqlParameter( "@CurrentPersonId", RequestContext.CurrentPerson.Id ),
+                new SqlParameter( "@Now", RockDateTime.Now )
+            };
 
-            var connectionRequestsQry = new ConnectionRequestService( RockContext ).Queryable()
-                .AsNoTracking()
-                .Where( cr => cr.ConnectionOpportunity.ConnectionTypeId == connectionType.Id
-                    && cr.ConnectionOpportunity.IsActive
-                    && cr.ConnectionStatus.IsActive )
-                .Select( a => new ConnectionRow
-                {
-                    ConnectionRequestId = a.Id,
-                    ConnectionRequest = a,
-                    ConnectorGroupingProjection = new GroupingProjection
-                    {
-                        Id = a.ConnectorPersonAliasId,
-                        Label = string.Empty,
-                        Order = ( int? ) null
-                    },
-                    OpportunityGroupingProjection = new GroupingProjection
-                    {
-                        Id = a.ConnectionOpportunityId,
-                        Label = a.ConnectionOpportunity.Name,
-                        Order = a.ConnectionOpportunity.Order
-                    },
-                    CampusGroupingProjection = new GroupingProjection
-                    {
-                        Id = a.CampusId,
-                        Label = a.Campus != null ? a.Campus.Name : string.Empty,
-                        Order = a.Campus != null ? a.Campus.Order : ( int? ) null
-                    },
-                    ConnectorPersonProjection = new PersonProjection
-                    {
-                        NickName = a.ConnectorPersonAlias.Person.NickName,
-                        LastName = a.ConnectorPersonAlias.Person.LastName,
-                        PhotoId = a.ConnectorPersonAlias.Person.PhotoId,
-                        Age = a.ConnectorPersonAlias.Person.Age,
-                        Gender = a.ConnectorPersonAlias.Person.Gender,
-                        RecordTypeValueId = a.ConnectorPersonAlias.Person.RecordTypeValueId,
-                        AgeClassification = a.ConnectorPersonAlias.Person.AgeClassification,
-                        ConnectionStatusValueId = a.ConnectorPersonAlias.Person.ConnectionStatusValueId,
-                        Id = a.ConnectorPersonAlias.Person.Id,
-                    },
-                    ConnectorPersonAliasGuid = a.ConnectorPersonAlias != null ? a.ConnectorPersonAlias.Guid : ( Guid? ) null,
-                    StatusGroupingProjection = new GroupingProjection
-                    {
-                        Id = a.ConnectionStatusId,
-                        Label = a.ConnectionStatus != null ? a.ConnectionStatus.Name : string.Empty,
-                        Order = a.ConnectionStatus != null ? a.ConnectionStatus.Order : ( int? ) null
-                    },
-                    ConnectionOpportunityId = a.ConnectionOpportunityId,
-                    ConnectionOpportunityGuid = a.ConnectionOpportunity.Guid,
-                    ConnectionOpportunity = a.ConnectionOpportunity.Name,
-                    ConnectionOpportunityIcon = a.ConnectionOpportunity.IconCssClass,
-                    ConnectionTypeSource = a.ConnectionTypeSource != null ? a.ConnectionTypeSource.Name : string.Empty,
-                    CampusId = a.CampusId,
-                    Campus = a.Campus != null ? a.Campus.Name : string.Empty,
-                    CampusGuid = a.Campus != null ? a.Campus.Guid : ( Guid? ) null,
-                    Group = a.AssignedGroup != null ? a.AssignedGroup.Name : string.Empty,
-                    ConnectionStatusProjection = new ConnectionStatusProjection
-                    {
-                        Guid = a.ConnectionStatus.Guid,
-                        Name = a.ConnectionStatus.Name, // TODO - Test what happens when a Connection Status is deleted.
-                        Order = a.ConnectionStatus.Order,
-                        HighlightColor = a.ConnectionStatus.HighlightColor,
-                        IsNoteRequiredOnCompletion = a.ConnectionStatus.IsNoteRequiredOnCompletion,
-                        IsDefaultStatus = a.ConnectionStatus.IsDefault
-                    },
-                    ConnectionState = a.ConnectionState,
-                    LastActivityDateTime = a.ConnectionRequestActivities.Select( cra => cra.CreatedDateTime )
-                        .OrderByDescending( d => d )
-                        .FirstOrDefault(),
-                    ActivityCount = a.ConnectionRequestActivities.Count(),
-                    FollowUpDate = a.FollowupDate,
-                    CreatedDateTime = a.CreatedDateTime,
-                    DueDate = a.DueDate,
-                    DueSoonDate = a.DueSoonDate,
-                    CompletedDateTime = a.ConnectedDateTime,
-                    CelebrationText = a.CelebrationText,
-                    PersonProjection = new PersonProjection
-                    {
-                        NickName = a.PersonAlias.Person.NickName,
-                        LastName = a.PersonAlias.Person.LastName,
-                        PhotoId = a.PersonAlias.Person.PhotoId,
-                        Age = a.PersonAlias.Person.Age,
-                        Gender = a.PersonAlias.Person.Gender,
-                        RecordTypeValueId = a.PersonAlias.Person.RecordTypeValueId,
-                        AgeClassification = a.PersonAlias.Person.AgeClassification,
-                        ConnectionStatusValueId = a.PersonAlias.Person.ConnectionStatusValueId,
-                        Id = a.PersonAlias.Person.Id,
-                    },
-                    RequesterPersonAliasGuid = a.PersonAlias.Guid,
-                    ReminderCount = reminderQry.Count( r => r.EntityId == a.PersonAliasId ),
-                    HasPlacementGroup = a.AssignedGroupId != null,
-                    HasRequiredGroupRequirements = a.AssignedGroup != null
-                        //&& a.AssignedGroup.GroupRequirements != null
-                        && a.AssignedGroup.GroupRequirements.Any( r => r.MustMeetRequirementToAddMember ) // TODO - Does this significantly affect performance?
-                } );
+            var sql = new System.Text.StringBuilder( @"
+SELECT
+    cr.[Id]                                         AS [Id],
+    co.[Id]                                         AS [ConnectionOpportunityId],
+    co.[Guid]                                       AS [ConnectionOpportunityGuid],
+    co.[Name]                                       AS [ConnectionOpportunityName],
+    co.[IconCssClass]                               AS [ConnectionOpportunityIconCssClass],
+    co.[Order]                                      AS [ConnectionOpportunityOrder],
+    cts.[Name]                                      AS [ConnectionTypeSourceName],
+    cr.[CampusId]                                   AS [CampusId],
+    cam.[Name]                                      AS [CampusName],
+    cam.[Guid]                                      AS [CampusGuid],
+    cam.[Order]                                     AS [CampusOrder],
+    cr.[AssignedGroupId]                            AS [AssignedGroupId],
+    ag.[Name]                                       AS [AssignedGroupName],
+    cs.[Id]                                         AS [ConnectionStatusId],
+    cs.[Guid]                                       AS [ConnectionStatusGuid],
+    cs.[Name]                                       AS [ConnectionStatusName],
+    cs.[Order]                                      AS [ConnectionStatusOrder],
+    cs.[HighlightColor]                             AS [ConnectionStatusHighlightColor],
+    cs.[IsNoteRequiredOnCompletion]                 AS [ConnectionStatusIsNoteRequiredOnCompletion],
+    cs.[IsDefault]                                  AS [ConnectionStatusIsDefault],
+    cr.[ConnectionState]                            AS [ConnectionState],
+    cr.[FollowupDate]                               AS [FollowUpDate],
+    cr.[CreatedDateTime]                            AS [CreatedDateTime],
+    cr.[DueDate]                                    AS [DueDate],
+    cr.[DueSoonDate]                                AS [DueSoonDate],
+    cr.[ConnectedDateTime]                          AS [ConnectedDateTime],
+    cr.[CelebrationText]                            AS [CelebrationText],
+    cr.[PersonAliasId]                              AS [PersonAliasId],
+    rpa.[Guid]                                      AS [RequesterPersonAliasGuid],
+    rp.[Id]                                         AS [RequesterPersonId],
+    rp.[NickName]                                   AS [RequesterNickName],
+    rp.[LastName]                                   AS [RequesterLastName],
+    rp.[PhotoId]                                    AS [RequesterPhotoId],
+    rp.[Age]                                        AS [RequesterAge],
+    rp.[Gender]                                     AS [RequesterGender],
+    rp.[RecordTypeValueId]                          AS [RequesterRecordTypeValueId],
+    rp.[AgeClassification]                          AS [RequesterAgeClassification],
+    rp.[ConnectionStatusValueId]                    AS [RequesterConnectionStatusValueId],
+    cr.[ConnectorPersonAliasId]                     AS [ConnectorPersonAliasId],
+    cpa.[Guid]                                      AS [ConnectorPersonAliasGuid],
+    cp.[Id]                                         AS [ConnectorPersonId],
+    cp.[NickName]                                   AS [ConnectorNickName],
+    cp.[LastName]                                   AS [ConnectorLastName],
+    cp.[PhotoId]                                    AS [ConnectorPhotoId],
+    cp.[Age]                                        AS [ConnectorAge],
+    cp.[Gender]                                     AS [ConnectorGender],
+    cp.[RecordTypeValueId]                          AS [ConnectorRecordTypeValueId],
+    cp.[AgeClassification]                          AS [ConnectorAgeClassification],
+    cp.[ConnectionStatusValueId]                    AS [ConnectorConnectionStatusValueId],
+    COALESCE(cra_agg.[ActivityCount], 0)            AS [ActivityCount],
+    cra_agg.[LastActivityDateTime]                  AS [LastActivityDateTime],
+    COALESCE(rem_agg.[ReminderCount], 0)            AS [ReminderCount],
+    CAST(CASE WHEN grp_req.[GroupId] IS NOT NULL THEN 1 ELSE 0 END AS BIT)
+                                                    AS [HasRequiredGroupRequirements]
+FROM [ConnectionRequest] cr
+INNER JOIN [ConnectionOpportunity] co
+    ON co.[Id] = cr.[ConnectionOpportunityId]
+    AND co.[IsActive] = 1
+    AND co.[ConnectionTypeId] = @ConnectionTypeId
+INNER JOIN [ConnectionStatus] cs
+    ON cs.[Id] = cr.[ConnectionStatusId]
+    AND cs.[IsActive] = 1
+LEFT JOIN [Campus] cam
+    ON cam.[Id] = cr.[CampusId]
+LEFT JOIN [ConnectionTypeSource] cts
+    ON cts.[Id] = cr.[ConnectionTypeSourceId]
+LEFT JOIN [Group] ag
+    ON ag.[Id] = cr.[AssignedGroupId]
+LEFT JOIN (
+    SELECT DISTINCT [GroupId]
+    FROM [GroupRequirement]
+    WHERE [MustMeetRequirementToAddMember] = 1
+      AND [GroupId] IS NOT NULL
+) grp_req
+    ON grp_req.[GroupId] = cr.[AssignedGroupId]
+LEFT JOIN [PersonAlias] cpa
+    ON cpa.[Id] = cr.[ConnectorPersonAliasId]
+LEFT JOIN [Person] cp
+    ON cp.[Id] = cpa.[PersonId]
+INNER JOIN [PersonAlias] rpa
+    ON rpa.[Id] = cr.[PersonAliasId]
+INNER JOIN [Person] rp
+    ON rp.[Id] = rpa.[PersonId]
+LEFT JOIN (
+    SELECT [ConnectionRequestId],
+           COUNT(1)               AS [ActivityCount],
+           MAX([CreatedDateTime]) AS [LastActivityDateTime]
+    FROM [ConnectionRequestActivity]
+    GROUP BY [ConnectionRequestId]
+) cra_agg
+    ON cra_agg.[ConnectionRequestId] = cr.[Id]
+LEFT JOIN (
+    SELECT rem.[EntityId], COUNT(1) AS [ReminderCount]
+    FROM [Reminder] rem
+    INNER JOIN [PersonAlias] rem_pa ON rem_pa.[Id] = rem.[PersonAliasId]
+    WHERE rem.[IsComplete] = 0
+      AND rem.[ReminderDate] < @Now
+      AND rem_pa.[PersonId] = @CurrentPersonId
+    GROUP BY rem.[EntityId]
+) rem_agg
+    ON rem_agg.[EntityId] = cr.[PersonAliasId]
+WHERE 1 = 1" );
 
+            // Campus context filter.
             var campusContext = RequestContext.GetContextEntity<Campus>();
             if ( campusContext != null )
             {
-                connectionRequestsQry = connectionRequestsQry.Where( c => c.CampusId == campusContext.Id );
+                sql.Append( "\n  AND cr.[CampusId] = @CampusId" );
+                sqlParams.Add( new SqlParameter( "@CampusId", campusContext.Id ) );
             }
 
+            // Opportunity and state filters come from person preferences keyed by connection type.
             var connectionTypeIdKey = IdHasher.Instance.GetHash( connectionType.Id );
 
+            // Connection Opportunity Filter
             var connectionOpportunityFilter = GetConnectionOpportunityFilter( connectionTypeIdKey );
             if ( connectionOpportunityFilter.HasValue )
             {
-                connectionRequestsQry = connectionRequestsQry.Where( c => c.ConnectionOpportunityGuid == connectionOpportunityFilter.Value );
+                sql.Append( "\n  AND co.[Guid] = @OpportunityGuid" );
+                sqlParams.Add( new SqlParameter( "@OpportunityGuid", connectionOpportunityFilter.Value ) );
             }
 
+            // Connection State Filter
             var stateFilter = GetStateFilter( connectionTypeIdKey );
             if ( stateFilter.Count > 0 )
             {
-                connectionRequestsQry = connectionRequestsQry.Where( c => stateFilter.Contains( c.ConnectionState ) );
+                var statePlaceholders = stateFilter
+                    .Select( ( _, i ) => $"@state{i}" )
+                    .ToList();
+
+                sql.Append( $"\n  AND cr.[ConnectionState] IN ({string.Join( ", ", statePlaceholders )})" );
+
+                for ( var i = 0; i < stateFilter.Count; i++ )
+                {
+                    sqlParams.Add( new SqlParameter( $"@state{i}", ( int ) stateFilter[i] ) );
+                }
             }
 
-            // If there is a page parameter for a selected connector and the Selected Connector person preference has a value then filter by connector.
+            // Connector filter
             if ( PageParameter( PageParameterKey.Connector ).IsNotNullOrWhiteSpace() && SelectedConnector.HasValue )
             {
-                connectionRequestsQry = connectionRequestsQry.Where( c => c.ConnectorPersonAliasGuid == SelectedConnector.Value );
+                sql.Append( "\n  AND cpa.[Guid] = @ConnectorGuid" );
+                sqlParams.Add( new SqlParameter( "@ConnectorGuid", SelectedConnector.Value ) );
             }
             else if ( AreOnlyMyRequestsVisible )
             {
-                connectionRequestsQry = connectionRequestsQry.Where( c => c.ConnectorPersonProjection.Id == RequestContext.CurrentPerson.Id );
+                // @CurrentPersonId is already in sqlParams for the reminder subquery.
+                sql.Append( "\n  AND cp.[Id] = @CurrentPersonId" );
             }
 
-            var connectionRequests = connectionRequestsQry.ToList();
+            var sqlRows = RockContext.Database
+                .SqlQuery<ConnectionRequestSqlRow>( sql.ToString(), sqlParams.ToArray() )
+                .ToList();
 
-            foreach ( var request in connectionRequests )
-            {   
-                request.ConnectionStatus = new ConnectionStatusBag
+            var connectionRequests = new List<ConnectionRow>( sqlRows.Count );
+
+            var photoUrlByPersonId = new Dictionary<int, string>();
+            var connectorByPersonId = new Dictionary<int, (ListItemBag Item, string FullName, string PhotoUrl)>();
+            var connectorGroupingByPersonAliasId = new Dictionary<int, GroupingFieldBag>();
+            var opportunityGroupingById = new Dictionary<int, GroupingFieldBag>();
+            var campusGroupingById = new Dictionary<int, GroupingFieldBag>();
+            var statusGroupingById = new Dictionary<int, GroupingFieldBag>();
+            var dueStatusGroupingByValue = new Dictionary<DueStatus, GroupingFieldBag>();
+            var stateGroupingByValue = new Dictionary<ConnectionState, GroupingFieldBag>();
+
+            var unassignedConnectorItem = new ListItemBag { Value = "unassigned", Text = "Unassigned" };
+            var unassignedConnectorGrouping = GetGroupingFieldBag( null, "person", string.Empty, null, null, string.Empty );
+            var noCampusGrouping = GetGroupingFieldBag( null, "text", string.Empty, null );
+
+            foreach ( var row in sqlRows )
+            {
+                var connectionState = ( ConnectionState ) row.ConnectionState;
+
+                var request = new ConnectionRow
                 {
-                    Guid = request.ConnectionStatusProjection.Guid,
-                    Name = request.ConnectionStatusProjection.Name,
-                    Order = request.ConnectionStatusProjection.Order,
-                    HighlightColor = request.ConnectionStatusProjection.HighlightColor,
-                    IsNoteRequiredOnCompletion = request.ConnectionStatusProjection.IsNoteRequiredOnCompletion,
-                    IsDefaultStatus = request.ConnectionStatusProjection.IsDefaultStatus
+                    ConnectionRequestId = row.Id,
+                    ConnectionOpportunityId = row.ConnectionOpportunityId,
+                    ConnectionOpportunityGuid = row.ConnectionOpportunityGuid,
+                    ConnectionOpportunity = row.ConnectionOpportunityName,
+                    ConnectionOpportunityIcon = row.ConnectionOpportunityIconCssClass,
+                    ConnectionTypeSource = row.ConnectionTypeSourceName ?? string.Empty,
+                    CampusId = row.CampusId,
+                    Campus = row.CampusName ?? string.Empty,
+                    CampusGuid = row.CampusGuid,
+                    AssignedGroupId = row.AssignedGroupId,
+                    Group = row.AssignedGroupName ?? string.Empty,
+                    ConnectionState = connectionState,
+                    FollowUpDate = row.FollowUpDate,
+                    CreatedDateTime = row.CreatedDateTime,
+                    DueDate = row.DueDate,
+                    DueSoonDate = row.DueSoonDate,
+                    CompletedDateTime = row.ConnectedDateTime,
+                    CelebrationText = row.CelebrationText,
+                    PersonAliasId = row.PersonAliasId,
+                    RequesterPersonAliasGuid = row.RequesterPersonAliasGuid,
+                    ActivityCount = row.ActivityCount,
+                    LastActivityDateTime = row.LastActivityDateTime,
+                    ConnectorPersonAliasGuid = row.ConnectorPersonAliasGuid,
+                    HasPlacementGroup = row.AssignedGroupId.HasValue,
+                    HasRequiredGroupRequirements = false,
+                    ReminderCount = row.ReminderCount,
+                    ConnectionStatus = new ConnectionStatusBag
+                    {
+                        Guid = row.ConnectionStatusGuid,
+                        Name = row.ConnectionStatusName,
+                        Order = row.ConnectionStatusOrder,
+                        HighlightColor = row.ConnectionStatusHighlightColor,
+                        IsNoteRequiredOnCompletion = row.ConnectionStatusIsNoteRequiredOnCompletion,
+                        IsDefaultStatus = row.ConnectionStatusIsDefault
+                    }
                 };
+
+                var requesterIdKey = IdHasher.Instance.GetHash( row.RequesterPersonId );
 
                 request.Person = new PersonFieldBag
                 {
-                    IdKey = IdHasher.Instance.GetHash( request.PersonProjection.Id.Value ),
-                    NickName = request.PersonProjection.NickName,
-                    LastName = request.PersonProjection.LastName
+                    IdKey = requesterIdKey,
+                    NickName = row.RequesterNickName,
+                    LastName = row.RequesterLastName
                 };
 
-                var initials = $"{request.Person.NickName.Truncate( 1, false )}{request.Person.LastName.Truncate( 1, false )}";
-                request.Person.PhotoUrl = Rock.Model.Person.GetPersonPhotoUrl(
-                    initials,
-                    request.PersonProjection.PhotoId,
-                    request.PersonProjection.Age,
-                    request.PersonProjection.Gender ?? Gender.Unknown,
-                    request.PersonProjection.RecordTypeValueId,
-                    request.PersonProjection.AgeClassification
-                );
-
-                if ( request.PersonProjection.ConnectionStatusValueId.HasValue )
+                if ( !photoUrlByPersonId.TryGetValue( row.RequesterPersonId, out var requesterPhotoUrl ) )
                 {
-                    var connectionStatusValue = DefinedValueCache.Get( request.PersonProjection.ConnectionStatusValueId.Value );
+                    var initials = $"{row.RequesterNickName.Truncate( 1, false )}{row.RequesterLastName.Truncate( 1, false )}";
+                    requesterPhotoUrl = Rock.Model.Person.GetPersonPhotoUrl(
+                        initials,
+                        row.RequesterPhotoId,
+                        row.RequesterAge,
+                        row.RequesterGender.HasValue ? ( Gender ) row.RequesterGender.Value : Gender.Unknown,
+                        row.RequesterRecordTypeValueId,
+                        row.RequesterAgeClassification.HasValue ? ( AgeClassification ) row.RequesterAgeClassification.Value : ( AgeClassification? ) null
+                    );
+                    photoUrlByPersonId[row.RequesterPersonId] = requesterPhotoUrl;
+                }
+
+                request.Person.PhotoUrl = requesterPhotoUrl;
+
+                if ( row.RequesterConnectionStatusValueId.HasValue )
+                {
+                    var connectionStatusValue = DefinedValueCache.Get( row.RequesterConnectionStatusValueId.Value );
                     if ( connectionStatusValue != null )
                     {
                         request.Person.ConnectionStatus = connectionStatusValue.Value;
                     }
                 }
 
-                ListItemBag connectorItem = new ListItemBag();
-                string connectorFullName = string.Empty;
-                string photoUrl = string.Empty;
+                ListItemBag connectorItem;
+                string connectorFullName;
+                string connectorPhotoUrl;
 
-
-                if ( request.ConnectorPersonProjection.Id.HasValue )
+                if ( row.ConnectorPersonId.HasValue )
                 {
-                    // TODO - Missing suffix. Is this needed (i.e. AddPersonField())?
-                    var fullName = Rock.Model.Person.FormatFullName( request.ConnectorPersonProjection.NickName, request.ConnectorPersonProjection.LastName, null );
+                    if ( !connectorByPersonId.TryGetValue( row.ConnectorPersonId.Value, out var connectorData ) )
+                    {
+                        var fullName = Rock.Model.Person.FormatFullName( row.ConnectorNickName, row.ConnectorLastName, null );
+                        var connectorIdKey = IdHasher.Instance.GetHash( row.ConnectorPersonId.Value );
+                        var connectorInitials = $"{row.ConnectorNickName.Truncate( 1, false )}{row.ConnectorLastName.Truncate( 1, false )}";
+                        var connectorPhoto = Rock.Model.Person.GetPersonPhotoUrl(
+                            connectorInitials,
+                            row.ConnectorPhotoId,
+                            row.ConnectorAge,
+                            row.ConnectorGender.HasValue ? ( Gender ) row.ConnectorGender.Value : Gender.Unknown,
+                            row.ConnectorRecordTypeValueId,
+                            row.ConnectorAgeClassification.HasValue ? ( AgeClassification ) row.ConnectorAgeClassification.Value : ( AgeClassification? ) null
+                        );
 
-                    connectorItem.Value = IdHasher.Instance.GetHash( request.ConnectorPersonProjection.Id.Value );
-                    connectorItem.Text = fullName;
-                    connectorFullName = fullName;
+                        connectorData = (
+                            Item: new ListItemBag { Value = connectorIdKey, Text = fullName },
+                            FullName: fullName,
+                            PhotoUrl: connectorPhoto
+                        );
+                        connectorByPersonId[row.ConnectorPersonId.Value] = connectorData;
+                    }
 
-
-                    var connectorInitials = $"{request.ConnectorPersonProjection.NickName.Truncate( 1, false )}{request.ConnectorPersonProjection.LastName.Truncate( 1, false )}";
-                    photoUrl = Rock.Model.Person.GetPersonPhotoUrl(
-                        connectorInitials,
-                        request.ConnectorPersonProjection.PhotoId,
-                        request.ConnectorPersonProjection.Age,
-                        request.ConnectorPersonProjection.Gender ?? Gender.Unknown,
-                        request.ConnectorPersonProjection.RecordTypeValueId,
-                        request.ConnectorPersonProjection.AgeClassification
-                    );
+                    connectorItem = connectorData.Item;
+                    connectorFullName = connectorData.FullName;
+                    connectorPhotoUrl = connectorData.PhotoUrl;
                 }
                 else
                 {
-                    connectorItem.Value = "unassigned";
-                    connectorItem.Text = "Unassigned";
+                    connectorItem = unassignedConnectorItem;
+                    connectorFullName = string.Empty;
+                    connectorPhotoUrl = string.Empty;
                 }
 
-                var dueStatus = GetDueStatus( request.DueDate, request.DueSoonDate, request.ConnectionState, request.CompletedDateTime );
+                request.HasRequiredGroupRequirements = row.HasRequiredGroupRequirements;
+
+                var dueStatus = GetDueStatus( row.DueDate, row.DueSoonDate, connectionState, row.ConnectedDateTime );
                 request.DueStatus = dueStatus;
                 request.ConnectorDetails = connectorItem;
 
-                request.ConnectorGrouping = GetGroupingFieldBag( request.ConnectorGroupingProjection.Id, "person", connectorFullName, null, null, photoUrl );
-                request.OpportunityGrouping = GetGroupingFieldBag( request.OpportunityGroupingProjection.Id, "text", request.OpportunityGroupingProjection.Label, request.OpportunityGroupingProjection.Order, request.ConnectionOpportunityIcon );
-                request.CampusGrouping = GetGroupingFieldBag( request.CampusGroupingProjection.Id, "text", request.CampusGroupingProjection.Label, request.CampusGroupingProjection.Order );
-                request.StatusGrouping = GetGroupingFieldBag( request.StatusGroupingProjection.Id, "text", request.StatusGroupingProjection.Label, request.StatusGroupingProjection.Order );
-                request.DueStatusGrouping = GetGroupingFieldBag( ( int ) dueStatus, "text", dueStatus.GetDisplayName(), dueStatus.GetOrder(), "ti ti-calendar", null, GetDueStatusTextColorCssClass( dueStatus ) );
-
-                request.StateGrouping = new GroupingFieldBag
+                if ( row.ConnectorPersonId.HasValue )
                 {
-                    Key = request.ConnectionState.ToString(),
-                    Type = "text",
-                    Label = request.ConnectionState.GetDisplayName(),
-                    IconCssClass = GetStateIconCssClass( request.ConnectionState ),
-                    Order = ( int ) request.ConnectionState
-                };
+                    if ( !connectorGroupingByPersonAliasId.TryGetValue( row.ConnectorPersonAliasId.Value, out var connectorGrouping ) )
+                    {
+                        connectorGrouping = GetGroupingFieldBag( row.ConnectorPersonAliasId, "person", connectorFullName, null, null, connectorPhotoUrl );
+                        connectorGroupingByPersonAliasId[row.ConnectorPersonAliasId.Value] = connectorGrouping;
+                    }
+
+                    request.ConnectorGrouping = connectorGrouping;
+                }
+                else
+                {
+                    request.ConnectorGrouping = unassignedConnectorGrouping;
+                }
+
+                if ( !opportunityGroupingById.TryGetValue( row.ConnectionOpportunityId, out var opportunityGrouping ) )
+                {
+                    opportunityGrouping = GetGroupingFieldBag( row.ConnectionOpportunityId, "text", row.ConnectionOpportunityName, row.ConnectionOpportunityOrder, row.ConnectionOpportunityIconCssClass );
+                    opportunityGroupingById[row.ConnectionOpportunityId] = opportunityGrouping;
+                }
+
+                request.OpportunityGrouping = opportunityGrouping;
+
+                if ( row.CampusId.HasValue )
+                {
+                    if ( !campusGroupingById.TryGetValue( row.CampusId.Value, out var campusGrouping ) )
+                    {
+                        campusGrouping = GetGroupingFieldBag( row.CampusId, "text", row.CampusName ?? string.Empty, row.CampusOrder );
+                        campusGroupingById[row.CampusId.Value] = campusGrouping;
+                    }
+
+                    request.CampusGrouping = campusGrouping;
+                }
+                else
+                {
+                    request.CampusGrouping = noCampusGrouping;
+                }
+
+                if ( !statusGroupingById.TryGetValue( row.ConnectionStatusId, out var statusGrouping ) )
+                {
+                    statusGrouping = GetGroupingFieldBag( row.ConnectionStatusId, "text", row.ConnectionStatusName, row.ConnectionStatusOrder );
+                    statusGroupingById[row.ConnectionStatusId] = statusGrouping;
+                }
+
+                request.StatusGrouping = statusGrouping;
+
+                if ( !dueStatusGroupingByValue.TryGetValue( dueStatus, out var dueStatusGrouping ) )
+                {
+                    dueStatusGrouping = GetGroupingFieldBag( ( int ) dueStatus, "text", dueStatus.GetDisplayName(), dueStatus.GetOrder(), "ti ti-calendar", null, GetDueStatusTextColorCssClass( dueStatus ) );
+                    dueStatusGroupingByValue[dueStatus] = dueStatusGrouping;
+                }
+
+                request.DueStatusGrouping = dueStatusGrouping;
+
+                if ( !stateGroupingByValue.TryGetValue( connectionState, out var stateGrouping ) )
+                {
+                    stateGrouping = new GroupingFieldBag
+                    {
+                        Key = connectionState.ToString(),
+                        Type = "text",
+                        Label = connectionState.GetDisplayName(),
+                        IconCssClass = GetStateIconCssClass( connectionState ),
+                        Order = ( int ) connectionState
+                    };
+                    stateGroupingByValue[connectionState] = stateGrouping;
+                }
+
+                request.StateGrouping = stateGrouping;
+
+                connectionRequests.Add( request );
             }
 
-            // Load attribute values for the grid-selected attributes.
-            GridAttributeLoader.LoadFor( connectionRequests, a => a.ConnectionRequest, GetGridAttributes(), RockContext );
+            // Load attribute values for any grid-configured attributes. When the attribute
+            // list is empty this is a no-op. When attributes are present we fetch only the
+            // raw ConnectionRequest entities needed for Attribute Value hydration rather than
+            // re-running the full projection query.
+            var gridAttributes = GetGridAttributes();
+            if ( gridAttributes.Count > 0 )
+            {
+                var connectionRequestIds = connectionRequests
+                    .Select( r => r.ConnectionRequestId )
+                    .ToList();
+
+                var connectionRequestEntities = new ConnectionRequestService( RockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( cr => connectionRequestIds.Contains( cr.Id ) )
+                    .ToDictionary( cr => cr.Id );
+
+                foreach ( var request in connectionRequests )
+                {
+                    if ( connectionRequestEntities.TryGetValue( request.ConnectionRequestId, out var entity ) )
+                    {
+                        request.ConnectionRequest = entity;
+                    }
+                }
+            }
+
+            GridAttributeLoader.LoadFor( connectionRequests, a => a.ConnectionRequest, gridAttributes, RockContext );
 
             var gridDataBag = GetGridBuilder().Build( connectionRequests );
             return ActionOk( gridDataBag );
         }
 
         /// <summary>
-        /// Gets a boolean value indicating whether the current user can edit the Connection Requests. 
+        /// Gets a boolean value indicating whether the current user can edit the Connection Requests.
         /// </summary>
         /// <param name="connectionTypeIdKey">The Connection Type IdKey</param>
         /// <returns>true if the user can edit</returns>
@@ -3659,6 +3890,7 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                     DueStatus = dueStatus,
                     DueDate = request.DueDate,
                     DueSoonDate = request.DueSoonDate,
+                    FollowUpDate = request.FollowupDate,
                     CompletedDateTime = request.ConnectedDateTime
                 } );
             }
@@ -3868,7 +4100,7 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                 gridUpdateBags.Add( new ConnectionListGridUpdateBag
                 {
                     IdKey = request.IdKey,
-                    LastActivityDateTime = DateTime.Now,
+                    LastActivityDateTime = RockDateTime.Now,
                     ActivityCount = request.ConnectionRequestActivities?.Count ?? 1
                 } );
             }
@@ -4125,6 +4357,14 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
             var gridUpdateBag = new ConnectionListGridUpdateBag
             {
                 IdKey = connectionRequest.IdKey,
+                StateGrouping = new GroupingFieldBag
+                {
+                    Key = connectionRequest.ConnectionState.ToString(),
+                    Type = "text",
+                    Label = connectionRequest.ConnectionState.GetDisplayName(),
+                    IconCssClass = GetStateIconCssClass( connectionRequest.ConnectionState ),
+                    Order = ( int ) connectionRequest.ConnectionState
+                },
                 StatusGrouping = GetGroupingFieldBag( connectionRequestStatus.Id, "text", connectionRequestStatus.Name, connectionRequestStatus.Order ),
                 ConnectionStatusBag = new ConnectionStatusBag
                 {
@@ -4135,10 +4375,12 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                     IsNoteRequiredOnCompletion = connectionRequestStatus.IsNoteRequiredOnCompletion,
                     IsDefaultStatus = connectionRequestStatus.IsDefault
                 },
+                ConnectionState = connectionRequest.ConnectionState,
                 DueStatusGrouping = GetGroupingFieldBag( ( int ) dueStatus, "text", dueStatus.GetDisplayName(), dueStatus.GetOrder(), "ti ti-calendar", null, GetDueStatusTextColorCssClass( dueStatus ) ),
                 DueStatus = dueStatus,
                 DueDate = connectionRequest.DueDate,
                 DueSoonDate = connectionRequest.DueSoonDate,
+                FollowUpDate = connectionRequest.FollowupDate,
                 CompletedDateTime = connectionRequest.ConnectedDateTime
             };
 
@@ -4361,7 +4603,14 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
         public BlockActionResult GetConnectionRequestDetails( string connectionRequestIdKey )
         {
             var connectionRequestService = new ConnectionRequestService( RockContext );
-            var connectionRequest = connectionRequestService.Get( connectionRequestIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            var connectionRequestQry = connectionRequestService.GetQueryableByKey( connectionRequestIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            var connectionRequest = connectionRequestQry.Include( r => r.ConnectionOpportunity.ConnectionType.ConnectionTypeSources )
+                .Include( r => r.ConnectionOpportunity.ConnectionOpportunityCampuses.Select( c => c.Campus ) )
+                .Include( r => r.ConnectionOpportunity.ConnectionType.ConnectionActivityTypes )
+                .Include( r => r.ConnectionStatus )
+                .FirstOrDefault();
+
             if ( connectionRequest == null )
             {
                 return ActionBadRequest( $"{Rock.Model.ConnectionRequest.FriendlyTypeName} not found." );
@@ -4372,14 +4621,13 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                 return ActionBadRequest( "You are not authorized to view this Connection Request." );
             }
 
-            // TODO - I probably need to add several include statements.
             var box = GetConnectionRequestDetailBox( connectionRequest ); 
 
             return ActionOk( box );
         }
 
         [BlockAction]
-        public async Task<BlockActionResult> GetAiSummary( string connectionRequestIdKey )
+        public async Task<BlockActionResult> GetAISummary( string connectionRequestIdKey, bool overrideCache )
         {
             var connectionRequestService = new ConnectionRequestService( RockContext );
             var connectionRequest = connectionRequestService.Get( connectionRequestIdKey, !PageCache.Layout.Site.DisablePredictableIds );
@@ -4394,17 +4642,47 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                 return ActionBadRequest( "You are not authorized to view this Connection Request." );
             }
 
+            // Retrieve additional settings once so they can be used for both the prompt and cache duration.
+            var additionalSettings = connectionRequest.ConnectionOpportunity?.ConnectionType?.GetConnectionTypeAdditionalSettings();
+            var cacheDurationMinutes = additionalSettings?.AISummaryCacheDurationMinutes;
+            var cacheKey = $"ConnectionRequestAISummary:{connectionRequest.Id}";
+
+            // Return the cached summary if one exists and caching is configured and the user is not overriding the cache.
+            if ( cacheDurationMinutes > 0 && !overrideCache )
+            {
+                var cachedSummary = RockCache.Get( cacheKey ) as string;
+                if ( cachedSummary != null )
+                {
+                    return ActionOk( new GetAISummaryResponseBag { Summary = cachedSummary } );
+                }
+            }
+
             var aiProvider = new AIProviderService( RockContext ).GetActiveProvider();
             if ( aiProvider == null )
             {
                 return ActionBadRequest( "No active AI provider is configured." );
             }
 
-            var prompt = connectionRequest.ConnectionOpportunity.ConnectionType.GetConnectionTypeAdditionalSettings()?.AIInsightsPrompt;
+            var prompt = additionalSettings?.AIInsightsPrompt;
             if ( prompt.IsNullOrWhiteSpace() )
             {
                 return ActionBadRequest( "An AI Insights Prompt must be defined on the Connection Type." );
             }
+
+            var connectionRequestId = connectionRequest.Id;
+
+            // Re-fetch the connection request with all navigation properties
+            // needed to build a rich JSON context for the AI prompt.
+            connectionRequest = connectionRequestService.Queryable()
+                .Include( r => r.PersonAlias.Person )
+                .Include( r => r.ConnectorPersonAlias.Person )
+                .Include( r => r.ConnectionOpportunity.ConnectionType )
+                .Include( r => r.ConnectionStatus )
+                .Include( r => r.Campus )
+                .Include( r => r.AssignedGroup )
+                .Include( r => r.ConnectionRequestActivities.Select( a => a.ConnectionActivityType ) )
+                .Include( r => r.ConnectionRequestActivities.Select( a => a.CreatedByPersonAlias.Person ) )
+                .FirstOrDefault( r => r.Id == connectionRequestId );
 
             var aiProviderComponent = aiProvider.GetAIComponent();
             var promptWithContext = AttachAIPromptContext( prompt, connectionRequest );
@@ -4424,7 +4702,14 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
             var response = await aiProviderComponent.GetChatCompletions( aiProvider, completionsRequest );
             var summary = response.Choices?.FirstOrDefault()?.Text ?? string.Empty;
 
-            return ActionOk( new GetAiSummaryResponseBag { Summary = summary } );
+            // Cache the generated summary for the configured duration so subsequent requests
+            // can be served without consuming additional AI credits.
+            if ( cacheDurationMinutes > 0 )
+            {
+                RockCache.AddOrUpdate( cacheKey, null, summary, RockDateTime.Now.AddMinutes( cacheDurationMinutes.Value ) );
+            }
+
+            return ActionOk( new GetAISummaryResponseBag { Summary = summary } );
         }
 
         /// <summary>
@@ -4667,7 +4952,6 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                 CurrentConnectionOpportunityGuid = connectionRequest.ConnectionOpportunity.Guid,
                 CurrentCampusGuid = connectionRequest.Campus?.Guid,
                 CurrentConnectionStatusGuid = connectionRequest.ConnectionStatus.Guid,
-                CurrentDueDate = connectionRequest.DueDate?.ToRockDateTimeOffset(),
                 Campuses = campuses,
                 Statuses = connectionType.OrderedStatuses.ToListItemBagList(),
                 ConnectionOpportunities = new List<ConnectionOpportunityBag>(),
@@ -4677,40 +4961,6 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
             foreach( var opportunity in connectionOpportunities )
             {
                 opportunity.LoadAttributes();
-
-                var connectorItems = opportunity.ConnectionOpportunityConnectorGroups
-                    .SelectMany( cg => cg.ConnectorGroup.Members )
-                    .Select( gm => gm.Person )
-                    .Distinct()
-                    .Select( p => new ListItemBag
-                    {
-                        Text = p.FullName,
-                        Value = p.PrimaryAlias.Guid.ToString()
-                    } )
-                    .ToList();
-
-                // If the current connector (from the request) isn't in the connector list, add it.
-                if ( connectionRequest.ConnectorPersonAlias != null && !connectorItems.Any( c => c.Value == connectionRequest.ConnectorPersonAlias.Guid.ToString() ) )
-                {
-                    connectorItems.Add( new ListItemBag
-                    {
-                        Text = connectionRequest.ConnectorPersonAlias.Person.FullName,
-                        Value = connectionRequest.ConnectorPersonAlias.Guid.ToString()
-                    } );
-                }
-
-                // If the connector list does not include the current person, add them.
-                if ( !connectorItems.Any( c => c.Value == RequestContext.CurrentPerson.PrimaryAliasGuid.ToString() ) )
-                {
-                    var person = RequestContext.CurrentPerson;
-
-                    connectorItems.Add(  new ListItemBag
-                    {
-                        Text = person.FullName,
-                        Value = person.PrimaryAliasGuid.ToString()
-                    } );
-                }
-
                 bool? otherEntityAuthorized = null;
 
                 var opportunityBag = new ConnectionOpportunityBag
@@ -4720,7 +4970,6 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                     Campuses = opportunity.ConnectionOpportunityCampuses.Where( c => c.Campus != null && c.Campus.IsActive == true )
                         .Select( c => c.Campus )
                         .ToListItemBagList(),
-                    PotentialConnectors = connectorItems,
                     PhotoUrl = ConnectionOpportunity.GetPhotoUrl( opportunity.PhotoId ),
                     IconCssClass = opportunity.IconCssClass,
                     Description = opportunity.Description,
@@ -4866,16 +5115,6 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                 }
 
                 connectionRequest.ConnectorPersonAliasId = newConnectorId.Value;
-            }
-
-            // TODO - This conflicts with other due date logic, especially the logic in the save hook.
-            if ( bag.DueDateOption == "none" )
-            {
-                connectionRequest.DueDate = null;
-            }
-            else if ( bag.DueDateOption == "select" )
-            {
-                connectionRequest.DueDate = bag.DueDate?.DateTime;
             }
 
             var activityTransferGuid = Rock.SystemGuid.ConnectionActivityType.TRANSFERRED.AsGuid();
@@ -5430,14 +5669,6 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
 
             public ConnectionRequest ConnectionRequest { get; set; }
 
-            public GroupingProjection ConnectorGroupingProjection { get; set; }
-
-            public GroupingProjection OpportunityGroupingProjection { get; set; }
-
-            public GroupingProjection CampusGroupingProjection { get; set; }
-
-            public GroupingProjection StatusGroupingProjection { get; set; }
-
             public GroupingFieldBag ConnectorGrouping { get; set; }
 
             public GroupingFieldBag OpportunityGrouping { get; set; }
@@ -5450,15 +5681,13 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
 
             public GroupingFieldBag DueStatusGrouping { get; set; }
 
-            public PersonProjection ConnectorPersonProjection { get; set; }
-
             public ListItemBag ConnectorDetails { get; set; }
-
-            public PersonProjection PersonProjection { get; set; }
 
             public PersonFieldBag Person { get; set; }
 
             public Guid RequesterPersonAliasGuid { get; set; }
+
+            public int PersonAliasId { get; set; }
 
             public Guid? ConnectorPersonAliasGuid { get; set; }
 
@@ -5478,11 +5707,9 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
 
             public Guid? CampusGuid { get; set; }
 
-            //public int? GroupId { get; set; }
+            public int? AssignedGroupId { get; set; }
 
             public string Group { get; set; }
-
-            public ConnectionStatusProjection ConnectionStatusProjection { get; set; }
 
             public ConnectionStatusBag ConnectionStatus { get; set; }
 
@@ -5520,44 +5747,178 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
             public bool HasRequiredGroupRequirements { get; set; }
         }
 
-        public class GroupingProjection
+
+        /// <summary>
+        /// A flat data transfer object that receives results from the raw SQL query in
+        /// <see cref="GetOtherGridData"/>. Property names must exactly match the column
+        /// aliases returned by the query so that EF6 can map them automatically.
+        /// </summary>
+        public class ConnectionRequestSqlRow
         {
-            public int? Id { get; set; }
+            /// <summary>Gets or sets the ConnectionRequest Id.</summary>
+            public int Id { get; set; }
 
-            public string Label { get; set; }
+            /// <summary>Gets or sets the ConnectionOpportunity Id.</summary>
+            public int ConnectionOpportunityId { get; set; }
 
-            public int? Order { get; set; }
-        }
+            /// <summary>Gets or sets the ConnectionOpportunity Guid.</summary>
+            public Guid ConnectionOpportunityGuid { get; set; }
 
-        public class ConnectionStatusProjection
-        {
-            public Guid Guid { get; set; }
-            public string Name { get; set; }
-            public int Order { get; set; }
-            public string HighlightColor { get; set; }
-            public bool IsNoteRequiredOnCompletion { get; set; }
-            public bool IsDefaultStatus { get; set; }
-        }
+            /// <summary>Gets or sets the ConnectionOpportunity display name.</summary>
+            public string ConnectionOpportunityName { get; set; }
 
-        public class PersonProjection
-        {
-            public string NickName { get; set; }
+            /// <summary>Gets or sets the CSS class for the ConnectionOpportunity icon.</summary>
+            public string ConnectionOpportunityIconCssClass { get; set; }
 
-            public string LastName { get; set; }
+            /// <summary>Gets or sets the sort order of the ConnectionOpportunity.</summary>
+            public int ConnectionOpportunityOrder { get; set; }
 
-            public int? PhotoId { get; set; }
+            /// <summary>Gets or sets the name of the ConnectionTypeSource, or null when unset.</summary>
+            public string ConnectionTypeSourceName { get; set; }
 
-            public int? Age { get; set; }
+            /// <summary>Gets or sets the Campus Id, or null when none is assigned.</summary>
+            public int? CampusId { get; set; }
 
-            public Gender? Gender { get; set; }
+            /// <summary>Gets or sets the Campus name, or null when none is assigned.</summary>
+            public string CampusName { get; set; }
 
-            public int? RecordTypeValueId { get; set; }
+            /// <summary>Gets or sets the Campus Guid, or null when none is assigned.</summary>
+            public Guid? CampusGuid { get; set; }
 
-            public AgeClassification? AgeClassification { get; set; }
+            /// <summary>Gets or sets the sort order of the Campus, or null when none is assigned.</summary>
+            public int? CampusOrder { get; set; }
 
-            public int? ConnectionStatusValueId { get; set; }
+            /// <summary>Gets or sets the AssignedGroup Id, or null when none is assigned.</summary>
+            public int? AssignedGroupId { get; set; }
 
-            public int? Id { get; set; }
+            /// <summary>Gets or sets the AssignedGroup name, or null when none is assigned.</summary>
+            public string AssignedGroupName { get; set; }
+
+            /// <summary>Gets or sets the ConnectionStatus Id.</summary>
+            public int ConnectionStatusId { get; set; }
+
+            /// <summary>Gets or sets the ConnectionStatus Guid.</summary>
+            public Guid ConnectionStatusGuid { get; set; }
+
+            /// <summary>Gets or sets the ConnectionStatus display name.</summary>
+            public string ConnectionStatusName { get; set; }
+
+            /// <summary>Gets or sets the sort order of the ConnectionStatus.</summary>
+            public int ConnectionStatusOrder { get; set; }
+
+            /// <summary>Gets or sets the highlight color of the ConnectionStatus.</summary>
+            public string ConnectionStatusHighlightColor { get; set; }
+
+            /// <summary>Gets or sets whether a note is required when completing requests in this status.</summary>
+            public bool ConnectionStatusIsNoteRequiredOnCompletion { get; set; }
+
+            /// <summary>Gets or sets whether this is the default ConnectionStatus.</summary>
+            public bool ConnectionStatusIsDefault { get; set; }
+
+            /// <summary>Gets or sets the ConnectionState as its raw integer value for reliable SqlQuery mapping.</summary>
+            public int ConnectionState { get; set; }
+
+            /// <summary>Gets or sets the follow-up date, or null when none is set.</summary>
+            public DateTime? FollowUpDate { get; set; }
+
+            /// <summary>Gets or sets the date and time the request was created.</summary>
+            public DateTime? CreatedDateTime { get; set; }
+
+            /// <summary>Gets or sets the due date, or null when none is set.</summary>
+            public DateTime? DueDate { get; set; }
+
+            /// <summary>Gets or sets the "due soon" threshold date, or null when none is set.</summary>
+            public DateTime? DueSoonDate { get; set; }
+
+            /// <summary>Gets or sets the date and time the request was connected (completed), or null when still open.</summary>
+            public DateTime? ConnectedDateTime { get; set; }
+
+            /// <summary>Gets or sets the celebration text for the request.</summary>
+            public string CelebrationText { get; set; }
+
+            /// <summary>Gets or sets the PersonAlias Id of the requester.</summary>
+            public int PersonAliasId { get; set; }
+
+            /// <summary>Gets or sets the Guid of the requester's PersonAlias.</summary>
+            public Guid RequesterPersonAliasGuid { get; set; }
+
+            /// <summary>Gets or sets the Person Id of the requester.</summary>
+            public int RequesterPersonId { get; set; }
+
+            /// <summary>Gets or sets the requester's nick name.</summary>
+            public string RequesterNickName { get; set; }
+
+            /// <summary>Gets or sets the requester's last name.</summary>
+            public string RequesterLastName { get; set; }
+
+            /// <summary>Gets or sets the requester's photo binary file Id, or null when none is set.</summary>
+            public int? RequesterPhotoId { get; set; }
+
+            /// <summary>Gets or sets the requester's calculated age, or null when unknown.</summary>
+            public int? RequesterAge { get; set; }
+
+            /// <summary>Gets or sets the requester's Gender as its raw integer value, or null when unknown.</summary>
+            public int? RequesterGender { get; set; }
+
+            /// <summary>Gets or sets the requester's RecordType DefinedValue Id, or null when unknown.</summary>
+            public int? RequesterRecordTypeValueId { get; set; }
+
+            /// <summary>Gets or sets the requester's AgeClassification as its raw integer value, or null when unknown.</summary>
+            public int? RequesterAgeClassification { get; set; }
+
+            /// <summary>Gets or sets the requester's ConnectionStatus DefinedValue Id, or null when unknown.</summary>
+            public int? RequesterConnectionStatusValueId { get; set; }
+
+            /// <summary>Gets or sets the PersonAlias Id of the connector, or null when unassigned.</summary>
+            public int? ConnectorPersonAliasId { get; set; }
+
+            /// <summary>Gets or sets the Guid of the connector's PersonAlias, or null when unassigned.</summary>
+            public Guid? ConnectorPersonAliasGuid { get; set; }
+
+            /// <summary>Gets or sets the Person Id of the connector, or null when unassigned.</summary>
+            public int? ConnectorPersonId { get; set; }
+
+            /// <summary>Gets or sets the connector's nick name, or null when unassigned.</summary>
+            public string ConnectorNickName { get; set; }
+
+            /// <summary>Gets or sets the connector's last name, or null when unassigned.</summary>
+            public string ConnectorLastName { get; set; }
+
+            /// <summary>Gets or sets the connector's photo binary file Id, or null when unassigned or no photo.</summary>
+            public int? ConnectorPhotoId { get; set; }
+
+            /// <summary>Gets or sets the connector's calculated age, or null when unassigned or unknown.</summary>
+            public int? ConnectorAge { get; set; }
+
+            /// <summary>Gets or sets the connector's Gender as its raw integer value, or null when unassigned.</summary>
+            public int? ConnectorGender { get; set; }
+
+            /// <summary>Gets or sets the connector's RecordType DefinedValue Id, or null when unassigned or unknown.</summary>
+            public int? ConnectorRecordTypeValueId { get; set; }
+
+            /// <summary>Gets or sets the connector's AgeClassification as its raw integer value, or null when unassigned.</summary>
+            public int? ConnectorAgeClassification { get; set; }
+
+            /// <summary>Gets or sets the connector's ConnectionStatus DefinedValue Id, or null when unassigned or unknown.</summary>
+            public int? ConnectorConnectionStatusValueId { get; set; }
+
+            /// <summary>Gets or sets the total number of activities on this request; 0 when none exist.</summary>
+            public int ActivityCount { get; set; }
+
+            /// <summary>Gets or sets the date and time of the most recent activity, or null when there are none.</summary>
+            public DateTime? LastActivityDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the number of incomplete, past-due reminders the current user has on the
+            /// requester's PersonAlias; 0 when there are none.
+            /// </summary>
+            public int ReminderCount { get; set; }
+
+            /// <summary>
+            /// Gets or sets whether the assigned placement group has at least one mandatory group
+            /// requirement. False when there is no placement group or no mandatory requirements exist.
+            /// </summary>
+            public bool HasRequiredGroupRequirements { get; set; }
         }
 
         public class HistoryRow

@@ -36,16 +36,113 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Push Notification Send" )]
 
-    [WorkflowTextOrAttribute( "Recipient", "Attribute Value", "An attribute that contains the person should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
+    [WorkflowTextOrAttribute( "Recipient",
+        "Attribute Value",
+        "An attribute that contains the person should be sent to. <span class='tip tip-lava'></span>",
+        true,
+        "",
+        "",
+        1,
+        AttributeKey.To,
         new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
-    [WorkflowTextOrAttribute( "Title", "Attribute Value", "The title or an attribute that contains the title that should be sent.", false, "", "", 2, "Title", new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowAttribute( "Sound", "The choice of sound or an attribute that contains the choice of sound that should be sent.", false, "True", "", 2, "Sound", new string[] { "Rock.Field.Types.BooleanFieldType" } )]
-    [WorkflowTextOrAttribute( "Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>", true, "", "", 3, "Message",
+
+    [WorkflowTextOrAttribute( "Title",
+        "Attribute Value",
+        "The title or an attribute that contains the title that should be sent.",
+        false,
+        "",
+        "",
+        2,
+        AttributeKey.Title,
         new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowTextOrAttribute( "Url", "Attribute Value", "The URL or an attribute that contains the URL that the notification should link to.", false, "", "", 4, "Url", new string[] { "Rock.Field.Types.TextFieldType" } )]
+
+    [WorkflowAttribute( "Sound",
+        "The choice of sound or an attribute that contains the choice of sound that should be sent.",
+        false,
+        "True",
+        "",
+        2,
+        AttributeKey.Sound,
+        new string[] { "Rock.Field.Types.BooleanFieldType" } )]
+
+    [WorkflowTextOrAttribute( "Message",
+        "Attribute Value",
+        "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>",
+        true,
+        "",
+        "",
+        3,
+        AttributeKey.Message,
+        new string[] { "Rock.Field.Types.TextFieldType" } )]
+
+    [SiteField( "Application",
+        Key = AttributeKey.MobileApplication,
+        Description = "Select the mobile application that the push notification should open. Leave blank to send to a non-Rock Mobile app, use an external URL, or send to all applications.",
+        Order = 4,
+        IsRequired = false,
+        MobileSitesOnly = true )]
+
+    [LinkedPage( "Mobile Page",
+        Key = AttributeKey.MobilePage,
+        Description = "Select the page within the mobile application to open when the notification is tapped. Leave blank to open the app without a specific page, or when using an external URL.",
+        IsRequired = false,
+        Order = 5 )]
+
+    [WorkflowTextOrAttribute( "URL",
+        "Attribute Value",
+        "Enter a URL (or select an attribute containing a URL) to open when the notification is tapped. Leave blank when using Application or Mobile Page. <span class='tip tip-lava'></span>",
+        false,
+        "",
+        "",
+        6,
+        AttributeKey.Url,
+        new string[] { "Rock.Field.Types.TextFieldType" } )]
+
     [Rock.SystemGuid.EntityTypeGuid( "22CAA82F-7AE2-430C-AE88-FA7401981F60")]
     public class SendPushNotification : ActionComponent
     {
+        private static class AttributeKey
+        {
+            public const string MobileApplication = "MobileApplication";
+            public const string MobilePage = "MobilePage";
+            public const string Url = "Url";
+            public const string Sound = "Sound";
+            public const string Title = "Title";
+            public const string Message = "Message";
+            public const string To = "To";
+        }
+
+        /// <summary>
+        /// Gets the active device registration identifiers for the provided person alias.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="siteId">The optional site identifier used to scope Rock Mobile devices.</param>
+        /// <returns>A list of active device registration identifiers.</returns>
+        private static List<string> GetDeviceRegistrationIds( RockContext rockContext, int? personAliasId, int? siteId )
+        {
+            if ( !personAliasId.HasValue )
+            {
+                return new List<string>();
+            }
+
+            var deviceQuery = new PersonalDeviceService( rockContext ).Queryable()
+                .Where( p => p.PersonAliasId.HasValue
+                    && p.PersonAliasId.Value == personAliasId.Value
+                    && p.IsActive
+                    && p.NotificationsEnabled
+                    && !string.IsNullOrEmpty( p.DeviceRegistrationId ) );
+
+            if ( siteId.HasValue )
+            {
+                deviceQuery = deviceQuery.Where( p => p.SiteId == siteId.Value );
+            }
+
+            return deviceQuery
+                .Select( p => p.DeviceRegistrationId )
+                .ToList();
+        }
+
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -60,46 +157,75 @@ namespace Rock.Workflow.Action
 
             var mergeFields = GetMergeFields( action );
             var recipients = new List<RockPushMessageRecipient>();
+            var personAliasService = new PersonAliasService( rockContext );
 
-            string toValue = GetAttributeValue( action, "To" );
-            Guid guid = toValue.AsGuid();
+            var siteId = GetAttributeValue( action, AttributeKey.MobileApplication ).AsIntegerOrNull();
+            var mobilePageValue = GetAttributeValue( action, AttributeKey.MobilePage );
+            var mobilePageGuid = mobilePageValue.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).FirstOrDefault().AsGuidOrNull();
+            var mobilePage = mobilePageGuid.HasValue ? PageCache.Get( mobilePageGuid.Value ) : null;
+            var url = GetAttributeValue( action, AttributeKey.Url );
+            var urlGuid = url.AsGuid();
+            if ( !urlGuid.IsEmpty() )
+            {
+                var attribute = AttributeCache.Get( urlGuid, rockContext );
+                if ( attribute != null )
+                {
+                    var urlAttributeValue = action.GetWorkflowAttributeValue( urlGuid );
+                    if ( !string.IsNullOrWhiteSpace( urlAttributeValue ) )
+                    {
+                        if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" )
+                        {
+                            url = urlAttributeValue;
+                        }
+                    }
+                }
+            }
+
+            var resolvedPage = ResolveMobilePage( mobilePage, url );
+            var resolvedSiteId = ResolveMobileApplication( siteId, resolvedPage );
+
+            if ( resolvedPage?.SiteId != null && resolvedPage?.SiteId != resolvedSiteId )
+            {
+                errorMessages.Add( "The selected Mobile Page must belong to the selected Application." );
+                return false;
+            }
+
+            var toValue = GetAttributeValue( action, AttributeKey.To );
+            var guid = toValue.AsGuid();
             if ( !guid.IsEmpty() )
             {
                 var attribute = AttributeCache.Get( guid, rockContext );
                 if ( attribute != null )
                 {
-                    string toAttributeValue = action.GetWorkflowAttributeValue( guid );
+                    var toAttributeValue = action.GetWorkflowAttributeValue( guid );
                     if ( !string.IsNullOrWhiteSpace( toAttributeValue ) )
                     {
                         switch ( attribute.FieldType.Class )
                         {
                             case "Rock.Field.Types.PersonFieldType":
                                 {
-                                    Guid personAliasGuid = toAttributeValue.AsGuid();
+                                    var personAliasGuid = toAttributeValue.AsGuid();
                                     if ( !personAliasGuid.IsEmpty() )
                                     {
-                                        var personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid );
-                                        List<string> devices = new PersonalDeviceService( rockContext ).Queryable()
-                                            .Where( a => a.PersonAliasId.HasValue && a.PersonAliasId == personAlias.Id && a.IsActive && a.NotificationsEnabled )
-                                            .Select( a => a.DeviceRegistrationId )
-                                            .Distinct()
-                                            .ToList();
+                                        var personAlias = personAliasService.Get( personAliasGuid );
+                                        var person = personAliasService.GetPerson( personAliasGuid );
 
-                                        string deviceIds = String.Join( ",", devices );
-
-                                        if ( devices.Count == 0 )
+                                        if ( person == null )
                                         {
-                                            action.AddLogEntry( "Invalid Recipient: Person does not have devices that support notifications", true );
+                                            action.AddLogEntry( "Invalid Recipient: Person was not found", true );
                                         }
                                         else
                                         {
-
-                                            var person = new PersonAliasService( rockContext ).GetPerson( personAliasGuid );
-                                            var recipient = new RockPushMessageRecipient( person, deviceIds, new Dictionary<string, object>( mergeFields ) );
-                                            recipients.Add( recipient );
-                                            if ( person != null )
+                                            var deviceIds = GetDeviceRegistrationIds( rockContext, personAlias?.Id, resolvedSiteId );
+                                            if ( deviceIds.Any() )
                                             {
+                                                var recipient = new RockPushMessageRecipient( person, string.Join( ",", deviceIds ), new Dictionary<string, object>( mergeFields ) );
+                                                recipients.Add( recipient );
                                                 recipient.MergeFields.Add( recipient.PersonMergeFieldKey, person );
+                                            }
+                                            else
+                                            {
+                                                action.AddLogEntry( "Invalid Recipient: Person does not have devices that support notifications", true );
                                             }
                                         }
                                     }
@@ -109,8 +235,8 @@ namespace Rock.Workflow.Action
                             case "Rock.Field.Types.GroupFieldType":
                             case "Rock.Field.Types.SecurityRoleFieldType":
                                 {
-                                    int? groupId = toAttributeValue.AsIntegerOrNull();
-                                    Guid? groupGuid = toAttributeValue.AsGuidOrNull();
+                                    var groupId = toAttributeValue.AsIntegerOrNull();
+                                    var groupGuid = toAttributeValue.AsGuidOrNull();
                                     IQueryable<GroupMember> qry = null;
 
                                     // Handle situations where the attribute value is the ID
@@ -135,19 +261,15 @@ namespace Rock.Workflow.Action
                                             .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                                             .Select( m => m.Person ) )
                                         {
-                                            List<string> devices = new PersonalDeviceService( rockContext ).Queryable()
-                                                .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId == person.PrimaryAliasId && p.IsActive && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
-                                                .Select( p => p.DeviceRegistrationId )
-                                                .Distinct()
-                                                .ToList();
-
-                                            string deviceIds = String.Join( ",", devices );
-
-                                            if ( deviceIds.IsNotNullOrWhiteSpace() )
+                                            if ( person != null )
                                             {
-                                                var recipient = new RockPushMessageRecipient( person, deviceIds, new Dictionary<string, object> (mergeFields) );
-                                                recipients.Add( recipient );
-                                                recipient.MergeFields.Add( recipient.PersonMergeFieldKey, person );
+                                                var deviceIds = GetDeviceRegistrationIds( rockContext, person.PrimaryAliasId, resolvedSiteId );
+                                                if ( deviceIds.Any() )
+                                                {
+                                                    var recipient = new RockPushMessageRecipient( person, string.Join( ",", deviceIds ), new Dictionary<string, object>( mergeFields ) );
+                                                    recipients.Add( recipient );
+                                                    recipient.MergeFields.Add( recipient.PersonMergeFieldKey, person );
+                                                }
                                             }
                                         }
                                     }
@@ -165,14 +287,14 @@ namespace Rock.Workflow.Action
                 }
             }
 
-            string message = GetAttributeValue( action, "Message" );
-            Guid messageGuid = message.AsGuid();
+            var message = GetAttributeValue( action, AttributeKey.Message );
+            var messageGuid = message.AsGuid();
             if ( !messageGuid.IsEmpty() )
             {
                 var attribute = AttributeCache.Get( messageGuid, rockContext );
                 if ( attribute != null )
                 {
-                    string messageAttributeValue = action.GetWorkflowAttributeValue( messageGuid );
+                    var messageAttributeValue = action.GetWorkflowAttributeValue( messageGuid );
                     if ( !string.IsNullOrWhiteSpace( messageAttributeValue ) )
                     {
                         if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" )
@@ -183,14 +305,14 @@ namespace Rock.Workflow.Action
                 }
             }
 
-            string title = GetAttributeValue( action, "Title" );
-            Guid titleGuid = title.AsGuid();
+            var title = GetAttributeValue( action, AttributeKey.Title );
+            var titleGuid = title.AsGuid();
             if ( !titleGuid.IsEmpty() )
             {
                 var attribute = AttributeCache.Get( titleGuid, rockContext );
                 if ( attribute != null )
                 {
-                    string titleAttributeValue = action.GetWorkflowAttributeValue( titleGuid );
+                    var titleAttributeValue = action.GetWorkflowAttributeValue( titleGuid );
                     if ( !string.IsNullOrWhiteSpace( titleAttributeValue ) )
                     {
                         if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" )
@@ -201,14 +323,14 @@ namespace Rock.Workflow.Action
                 }
             }
 
-            string sound = GetAttributeValue( action, "Sound" );
-            Guid soundGuid = sound.AsGuid();
+            var sound = GetAttributeValue( action, AttributeKey.Sound );
+            var soundGuid = sound.AsGuid();
             if ( !soundGuid.IsEmpty() )
             {
                 var attribute = AttributeCache.Get( soundGuid, rockContext );
                 if ( attribute != null )
                 {
-                    string soundAttributeValue = action.GetWorkflowAttributeValue( soundGuid );
+                    var soundAttributeValue = action.GetWorkflowAttributeValue( soundGuid );
                     if ( !string.IsNullOrWhiteSpace( soundAttributeValue ) )
                     {
                         if ( attribute.FieldType.Class == "Rock.Field.Types.BooleanFieldType" )
@@ -220,24 +342,6 @@ namespace Rock.Workflow.Action
             }
             sound = sound.AsBoolean() ? "default" : "";
 
-            string url = GetAttributeValue( action, "Url" );
-            Guid urlGuid = url.AsGuid();
-            if ( !urlGuid.IsEmpty() )
-            {
-                var attribute = AttributeCache.Get( urlGuid, rockContext );
-                if ( attribute != null )
-                {
-                    string urlAttributeValue = action.GetWorkflowAttributeValue( urlGuid );
-                    if ( !string.IsNullOrWhiteSpace( urlAttributeValue ) )
-                    {
-                        if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" )
-                        {
-                            url = urlAttributeValue;
-                        }
-                    }
-                }
-            }
-
             if ( recipients.Any() && !string.IsNullOrWhiteSpace( message ) )
             {
                 var pushMessage = new RockPushMessage();
@@ -245,23 +349,20 @@ namespace Rock.Workflow.Action
                 pushMessage.Title = title;
                 pushMessage.Message = message;
                 pushMessage.Sound = sound;
-                pushMessage.OpenAction = url.IsNotNullOrWhiteSpace() ? Utility.PushOpenAction.LinkToUrl : Utility.PushOpenAction.NoAction;
-                pushMessage.Data = new PushData
-                {
-                    Url = url
-                };
+                pushMessage.Data = new PushData();
 
-                // Check if the URL is a mobile app style URL, which is "<guid>[?key=value]".
-                if ( url.Length >= 36 && Guid.TryParse( url.Substring( 0, 36 ), out var pageGuid ) )
+                if ( resolvedSiteId.HasValue )
                 {
-                    var pageId = PageCache.Get( pageGuid )?.Id;
+                    pushMessage.OpenAction = Utility.PushOpenAction.LinkToMobilePage;
+                    pushMessage.Data.MobileApplicationId = resolvedSiteId.Value;
+                    pushMessage.Data.MobilePageId = resolvedPage?.Id;
 
-                    if ( pageId.HasValue )
+                    // Support legacy mobile-style URLs to populate query string values.
+                    if ( url.Length >= 38 && Guid.TryParse( url.Substring( 0, 36 ), out var pageGuid ) && url[36] == '?' )
                     {
-                        pushMessage.Data.MobilePageId = pageId.Value;
+                        var pageId = PageCache.GetId( pageGuid );
 
-                        // Check if there are any query string values.
-                        if ( url.Length >= 38 && url[36] == '?' )
+                        if ( pageId.HasValue && pageId.Value == resolvedPage?.Id )
                         {
                             var queryString = url.Substring( 37 ).ParseQueryString();
 
@@ -272,15 +373,70 @@ namespace Rock.Workflow.Action
                                 pushMessage.Data.MobilePageQueryString.AddOrReplace( key, queryString[key].ToString() );
                             }
                         }
-
-                        pushMessage.OpenAction = Utility.PushOpenAction.LinkToMobilePage;
                     }
+                }
+                else if ( url.IsNotNullOrWhiteSpace() )
+                {
+                    pushMessage.OpenAction = Utility.PushOpenAction.LinkToUrl;
+                    pushMessage.Data.Url = url;
                 }
 
                 pushMessage.Send( out errorMessages );
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Resolves the site identifier for a mobile application based on the specified site or page context.
+        /// </summary>
+        /// <param name="siteId">An optional site identifier to use as the primary source. If specified, this value is returned.</param>
+        /// <param name="resolvedPage">A page context from which to derive the site identifier if <paramref name="siteId"/> is not specified. If
+        /// not null, the site's identifier associated with this page is used.</param>
+        /// <returns>The resolved site identifier if available; otherwise, null if neither <paramref name="siteId"/> nor
+        /// <paramref name="resolvedPage"/> provides a value.</returns>
+        private static int? ResolveMobileApplication( int? siteId, PageCache resolvedPage )
+        {
+            if ( siteId.HasValue )
+            {
+                // Use the selected site first.
+                return siteId.Value;
+            }
+
+            if ( resolvedPage != null )
+            {
+                // Otherwise, derive the site from the resolved page.
+                return resolvedPage.SiteId;
+            }
+
+            // No specific app selected.
+            return null;
+        }
+
+        /// <summary>
+        /// Resolves the appropriate mobile page to use based on the provided page cache or a page identifier in the URL.
+        /// </summary>
+        /// <remarks>If a mobile page is provided, it is returned directly. If not, and the URL contains a
+        /// valid GUID at the start, the corresponding page is retrieved. Otherwise, the method returns null.</remarks>
+        /// <param name="mobilePage">The preselected mobile page to use, or null to attempt resolution from the URL.</param>
+        /// <param name="url">The URL that may contain a page identifier as a GUID in its first 36 characters. Can be null.</param>
+        /// <returns>A PageCache instance representing the resolved mobile page, or null if no suitable page is found.</returns>
+        private static PageCache ResolveMobilePage( PageCache mobilePage, string url )
+        {
+            if ( mobilePage != null )
+            {
+                // Use selected page first.
+                return mobilePage;
+            }
+
+            if ( url != null && url.Length >= 36 && Guid.TryParse( url.Substring( 0, 36 ), out var pageGuid ) )
+            {
+                // Otherwise, use the page derived from the URL.
+                return PageCache.Get( pageGuid );
+            }
+
+            // No specific page selected.
+            return null;
         }
     }
 }

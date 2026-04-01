@@ -2204,6 +2204,7 @@ namespace Rock.Utility
             PersonPreviousNameService personPreviousNameService = new PersonPreviousNameService( rockContext );
             ConnectionRequestService connectionRequestService = new ConnectionRequestService( rockContext );
             ConnectionRequestActivityService connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
+            FollowingService followingService = new FollowingService( rockContext );
 
             // delete the batch data
             List<int> imageIds = new List<int>();
@@ -2257,9 +2258,12 @@ namespace Rock.Utility
                         }
 
                         // delete communication
-                        foreach ( var communication in communicationService.Queryable().Where( c => c.SenderPersonAliasId == person.PrimaryAlias.Id ) )
+                        if ( person.PrimaryAlias != null )
                         {
-                            communicationService.Delete( communication );
+                            foreach ( var communication in communicationService.Queryable().Where( c => c.SenderPersonAliasId == person.PrimaryAlias.Id ) )
+                            {
+                                communicationService.Delete( communication );
+                            }
                         }
 
                         // delete person viewed records
@@ -2269,7 +2273,7 @@ namespace Rock.Utility
                         }
 
                         // delete notes created by them or on their record.
-                        foreach ( var note in noteService.Queryable().Where( n => n.CreatedByPersonAlias.PersonId == person.Id
+                        foreach ( var note in noteService.Queryable().Where( n => ( n.CreatedByPersonAlias != null && n.CreatedByPersonAlias.PersonId == person.Id )
                            || ( n.NoteType.EntityTypeId == _personEntityTypeId && n.EntityId == person.Id ) ) )
                         {
                             noteService.Delete( note );
@@ -2299,10 +2303,16 @@ namespace Rock.Utility
                         }
 
                         // delete any connection requests tied to them
-                        foreach ( var request in connectionRequestService.Queryable().Where( r => r.PersonAlias.PersonId == person.Id || r.ConnectorPersonAlias.PersonId == person.Id ) )
+                        foreach ( var request in connectionRequestService.Queryable().Where( r => ( r.PersonAlias != null && r.PersonAlias.PersonId == person.Id ) || ( r.ConnectorPersonAlias != null && r.ConnectorPersonAlias.PersonId == person.Id ) ) )
                         {
                             connectionRequestActivityService.DeleteRange( request.ConnectionRequestActivities );
                             connectionRequestService.Delete( request );
+                        }
+
+                        // delete any following records tied to them
+                        foreach ( var following in followingService.Queryable().Where( f => f.PersonAlias != null && f.PersonAlias.PersonId == person.Id ) )
+                        {
+                            followingService.Delete( following );
                         }
 
                         // Save these changes so the CanDelete passes the check...
@@ -2456,6 +2466,30 @@ namespace Rock.Utility
                                             attributeService.Delete( attribute );
                                         }
                                     }
+                                }
+                            }
+
+                            /*
+                                3/24/2026 - MSE
+
+                                Delete registration-level attributes tied to this template.
+                                AddRegistrationTemplates creates attributes qualified by
+                                RegistrationTemplateId, but these were not being removed
+                                during the delete phase. On reload, SaveAttributeEdits
+                                attempted to insert a new attribute with the same Guid,
+                                causing a unique index violation on dbo.Attribute.
+
+                                Reason: Prevent duplicate Guid errors when reloading sample data.
+                            */
+                            var registrationEntityTypeId = EntityTypeCache.GetId<Registration>();
+                            if ( registrationEntityTypeId.HasValue )
+                            {
+                                var registrationAttributes = attributeService
+                                    .GetByEntityTypeQualifier( registrationEntityTypeId.Value, "RegistrationTemplateId", registrationTemplate.Id.ToString(), true );
+
+                                foreach ( var attr in registrationAttributes.ToList() )
+                                {
+                                    attributeService.Delete( attr );
                                 }
                             }
 

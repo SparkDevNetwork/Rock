@@ -28,6 +28,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Connection;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -207,6 +208,21 @@ namespace RockWeb.Blocks.Connection
         </div>
     </div>
 {% endfor %}";
+
+            public const string IndicatorLabelTemplate = @"
+<div class='board-card-pills'>
+    {% if IndicatorOptions.IsAssignedToYou %}
+    <span class='label label-info' data-toggle='tooltip' data-original-title='Assigned To You' data-html='true'><i class='ti ti-user-circle'></i></span>
+    {% elseif IndicatorOptions.IsUnassigned %}
+    <span class='label label-default' data-toggle='tooltip' data-original-title='Unassigned' data-html='true'><i class='ti ti-user-off'></i></span>
+    {% endif %}
+    {% if IndicatorOptions.IsOverdue %}
+    <span class='label label-danger' data-toggle='tooltip' data-original-title='{{ IndicatorOptions.OverdueHtml }}' data-html='true'><i class='ti ti-exclamation-circle'></i></span>
+    {% elseif IndicatorOptions.IsDueSoon %}
+    <span class='label label-warning' data-toggle='tooltip' data-original-title='{{ IndicatorOptions.DueSoonHtml }}' data-html='true'><i class='ti ti-calendar-due'></i></span>
+    {% endif %}
+</div>
+";
         }
 
         #endregion Lava
@@ -649,10 +665,12 @@ namespace RockWeb.Blocks.Connection
                     ConnectionRequest connectionRequest = null;
 
                     int connectionRequestId = hfConnectionRequestId.ValueAsInt();
+                    var isAddMode = false;
 
                     // if adding a new connection request
                     if ( connectionRequestId.Equals( 0 ) )
                     {
+                        isAddMode = true;
                         connectionRequest = new ConnectionRequest();
                         connectionRequest.ConnectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
                         connectionRequest.ConnectionTypeId = new ConnectionOpportunityService( rockContext ).Get( connectionRequest.ConnectionOpportunityId ).ConnectionTypeId;
@@ -694,7 +712,38 @@ namespace RockWeb.Blocks.Connection
                         connectionRequest.ConnectionState = ConnectionState.Active;
                     }
 
-                    connectionRequest.ConnectionStatusId = rblStatus.SelectedValueAsId().Value;
+                    var connectionStatusId = rblStatus.SelectedValueAsInt() ?? 0;
+                    var connectionType = ConnectionTypeCache.Get( connectionRequest.ConnectionTypeId );
+                    var isSequentialAddMode = isAddMode && connectionType.IsSequentialStatusEnforced;
+
+                    if ( isSequentialAddMode || connectionStatusId == 0 )
+                    {
+                        var allStatuses = connectionType.OrderedStatuses;
+
+                        if ( isSequentialAddMode )
+                        {
+                            // If sequential, default is the first active status (ignoring [IsDefault] flag).
+                            connectionStatusId = allStatuses
+                                .FirstOrDefault( s => s.IsActive )
+                                ?.Id ?? 0;
+                        }
+                        else
+                        {
+                            // If not sequential, default is the first active [IsDefault] status.
+                            connectionStatusId = allStatuses
+                                .FirstOrDefault( s => s.IsActive && s.IsDefault )
+                                ?.Id ?? 0;
+                        }
+
+                        if ( connectionStatusId == 0 )
+                        {
+                            cvConnectionRequest.IsValid = false;
+                            cvConnectionRequest.ErrorMessage = "Unable to determine Connection Status.";
+                            return;
+                        }
+                    }
+
+                    connectionRequest.ConnectionStatusId = connectionStatusId;
 
                     if ( oldState != ConnectionState.Connected )
                     {
@@ -943,9 +992,13 @@ namespace RockWeb.Blocks.Connection
                     // Filter opportunities to only those associated with the current request's campus
                     var currentCampusId = connectionRequest.CampusId;
                     var associatedCampusOpportunities = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities
-                        .Where( 
-                            o => o.IsActive && 
-                            o.ConnectionOpportunityCampuses.Any( c => currentCampusId.HasValue && c.CampusId == currentCampusId.Value ) )
+                        .Where(
+                            o => o.IsActive
+                            && (
+                                !currentCampusId.HasValue
+                                || o.ConnectionOpportunityCampuses.Any( c => currentCampusId.HasValue && c.CampusId == currentCampusId.Value )
+                            )
+                        )
                         .OrderBy( o => o.Order )
                         .ThenBy( o => o.Name );
 
@@ -961,7 +1014,8 @@ namespace RockWeb.Blocks.Connection
 
                     rbTransferCurrentConnector.Text = string.Format( "Current Connector: {0}", connectionRequest.ConnectorPersonAlias != null ? connectionRequest.ConnectorPersonAlias.ToString() : "No Connector" );
                     ddlTransferOpportunity.SetValue( connectionRequest.ConnectionOpportunityId );
-                    ddlTransferOpportunity_SelectedIndexChanged( null, null );
+
+                    RebindTransferOpportunityConnector( connectionRequest.ConnectionOpportunity, true, rockContext );
                 }
             }
         }
@@ -976,10 +1030,6 @@ namespace RockWeb.Blocks.Connection
             var rockContext = new RockContext();
             var connectionOpportunityID = ddlTransferOpportunity.SelectedValue.AsIntegerOrNull();
             var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( connectionOpportunityID.Value );
-            if ( connectionOpportunity != null )
-            {
-                rbTransferDefaultConnector.Text = "Default Connector for " + connectionOpportunity.Name;
-            }
 
             RebindTransferOpportunityConnector( connectionOpportunity, true, rockContext );
         }
@@ -1774,6 +1824,8 @@ namespace RockWeb.Blocks.Connection
             ddlTransferOpportunityConnector.Items.Clear();
             ddlTransferOpportunityConnector.Items.Add( new ListItem() );
 
+            rbTransferDefaultConnector.Text = "Default Connector for " + connectionOpportunity.Name;
+
             var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( hfConnectionRequestId.ValueAsInt() );
             if ( connectionOpportunity != null )
             {
@@ -2237,6 +2289,28 @@ namespace RockWeb.Blocks.Connection
 
             lComments.Text = connectionRequest != null && connectionRequest.Comments != null ? connectionRequest.Comments.ConvertMarkdownToHtml() : string.Empty;
             lRequestDate.Text = connectionRequest != null && connectionRequest.CreatedDateTime.HasValue ? connectionRequest.CreatedDateTime.Value.ToShortDateString() : string.Empty;
+
+            if ( !connectionRequest.DueDate.HasValue )
+            {
+                lDueDate.Visible = false;
+            }
+            else
+            {
+                // We're setting the bare minimum on this model to display due date details.
+                var connectionRequestViewModel = new ConnectionRequestViewModel
+                {
+                    ConnectionState = connectionRequest.ConnectionState,
+                    DueDate = connectionRequest.DueDate,
+                    DueSoonDate = connectionRequest.DueSoonDate
+                };
+
+                var textClass = connectionRequestViewModel.IsDueSoon ? "text-warning" : string.Empty;
+
+                lDueDate.Text = connectionRequestViewModel.IsOverdue
+                    ? $"<span class='text-danger'>{connectionRequestViewModel.DueDate.Value:d} ({connectionRequestViewModel.OverdueDaysText} Overdue)</span>"
+                    : $"<span class='{textClass}'>{connectionRequestViewModel.DueDate.Value:d} ({connectionRequestViewModel.DueInDaysText})</span>";
+            }
+
             if ( connectionRequest != null && connectionRequest.AssignedGroup != null )
             {
                 var qryParams = new Dictionary<string, string>();
@@ -2312,7 +2386,7 @@ namespace RockWeb.Blocks.Connection
                         .Distinct();
 
                     var workflowTypeOrder = connectionRequest.ConnectionOpportunity.GetAdditionalSettingsOrNull<List<int>>( "WorkflowTypeOrder" ) ?? new List<int>();
-                    
+
                     var orderedManualWorkflows = manualWorkflows
                         .OrderBy( w =>
                         {
@@ -2353,6 +2427,18 @@ namespace RockWeb.Blocks.Connection
                 lHeading.Text = GetAttributeValue( AttributeKeys.LavaHeadingTemplate ).ResolveMergeFields( mergeFields );
                 lBadgeBar.Text = GetAttributeValue( AttributeKeys.LavaBadgeBar ).ResolveMergeFields( mergeFields );
 
+                // We're setting the bare minimum on this model to display status indicators.
+                var connectionRequestViewModel = new ConnectionRequestViewModel
+                {
+                    ConnectionState = connectionRequest.ConnectionState,
+                    DueDate = connectionRequest.DueDate,
+                    DueSoonDate = connectionRequest.DueSoonDate,
+                    IsAssignedToYou = connectionRequest.ConnectorPersonAliasId.GetValueOrDefault() == CurrentPersonAliasId,
+                    IsUnassigned = !connectionRequest.ConnectorPersonAliasId.HasValue
+                };
+
+                lRequestViewModeStatusIndicators.Text = ConnectionRequestService.GetIndicatorLabelHtml( connectionRequestViewModel, Lava.IndicatorLabelTemplate );
+
                 var activityLavaTemplate = GetAttributeValue( AttributeKeys.ActivityLavaTemplate ).ResolveMergeFields( mergeFields );
                 var activityWebViewMode = !string.IsNullOrEmpty( activityLavaTemplate );
                 if ( activityWebViewMode )
@@ -2380,6 +2466,12 @@ namespace RockWeb.Blocks.Connection
                 lblWorkflows.Visible = false;
                 lbConnect.Enabled = false;
             }
+
+            var connectionType = ConnectionTypeCache.Get( connectionRequest.ConnectionTypeId );
+            var isGroupPlacementEnabled = connectionType?.EnabledFeatures.HasFlag( EnabledFeatureFlags.GroupPlacement ) == true;
+
+            lPlacementGroup.Visible = isGroupPlacementEnabled;
+            phGroupMemberAttributesView.Visible = isGroupPlacementEnabled;
         }
 
         private void EnableActivityWebViewMode( string activityLavaTemplate )
@@ -2443,25 +2535,60 @@ namespace RockWeb.Blocks.Connection
             tbComments.Text = connectionRequest.Comments;
 
             // Status
+            var isAddMode = connectionRequest.Id == 0;
+            var connectionType = ConnectionTypeCache.Get( connectionRequest.ConnectionTypeId );
+            var isSequentialStatusEnforced = connectionType.IsSequentialStatusEnforced;
+
             rblStatus.Items.Clear();
 
-            var allStatuses = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy( a => a.Order ).ThenByDescending( a => a.IsDefault ).ThenBy( a => a.Name );
+            var allStatuses = connectionType.OrderedStatuses;
+            var currentStatusId = connectionRequest?.ConnectionStatusId;
 
             foreach ( var status in allStatuses )
             {
                 // Add Status to selection list only if marked as active or currently selected.
-                if ( status.IsActive
-                     || status.Id == connectionRequest.ConnectionStatusId )
+                var isCurrentStatus = currentStatusId.HasValue && status.Id == currentStatusId.Value;
+
+                if ( status.IsActive || isCurrentStatus )
                 {
-                    rblStatus.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
+                    // In non-sequential status mode, all active statuses should be enabled.
+                    // In sequential mode, only the current status and the one immediately following should be enabled.
+                    var isEnabled = !isSequentialStatusEnforced
+                        || isCurrentStatus
+                        || ConnectionType.IsNextSequentialActiveStatus(
+                            connectionType.Id,
+                            currentStatusId ?? 0,
+                            status.Id
+                        );
+
+                    var statusListItem = new ListItem( status.Name, status.Id.ToString().ToUpper(), isEnabled );
+
+                    rblStatus.Items.Add( statusListItem );
                 }
             }
 
             rblStatus.SelectedValue = connectionRequest.ConnectionStatusId.ToString();
 
+            if ( isAddMode && isSequentialStatusEnforced )
+            {
+                // If sequential, default is the first active status (ignoring [IsDefault] flag).
+                var defaultStatus = allStatuses.FirstOrDefault( s => s.IsActive );
+                lRequestModalAddModeSequentialStatus.Text = defaultStatus?.Name;
+                pnlRequestModalAddModeSequentialStatus.Visible = true;
+
+                // Go ahead and set this even though we're hiding it (in case some legacy code depends on it being set).
+                rblStatus.SelectedValue = defaultStatus?.Id.ToString();
+                rblStatus.Visible = false;
+            }
+            else
+            {
+                rblStatus.Visible = true;
+                pnlRequestModalAddModeSequentialStatus.Visible = false;
+            }
+
             // Campus
-            var campusIds = connectionRequest.ConnectionOpportunity.ConnectionOpportunityCampuses.Select(c => c.CampusId).ToList();
-            var campuses = CampusCache.All(false).Where(c => campusIds.Contains(c.Id) && (c.IsActive ?? false)).ToList();
+            var campusIds = connectionRequest.ConnectionOpportunity.ConnectionOpportunityCampuses.Select( c => c.CampusId ).ToList();
+            var campuses = CampusCache.All( false ).Where( c => campusIds.Contains( c.Id ) && ( c.IsActive ?? false ) ).ToList();
             cpCampus.Campuses = campuses;
             cpCampus.SelectedCampusId = connectionRequest.CampusId;
 
@@ -2612,6 +2739,16 @@ namespace RockWeb.Blocks.Connection
             }
 
             RebindGroupRole( connectionRequest, rockContext );
+
+            var connectionType = ConnectionTypeCache.Get( connectionRequest.ConnectionTypeId );
+            var isGroupPlacementEnabled = connectionType?.EnabledFeatures.HasFlag( EnabledFeatureFlags.GroupPlacement ) == true;
+
+            ddlPlacementGroup.Visible = isGroupPlacementEnabled;
+            if ( !isGroupPlacementEnabled )
+            {
+                ddlPlacementGroupRole.Visible = false;
+                ddlPlacementGroupStatus.Visible = false;
+            }
         }
 
         private void RebindGroupRole( ConnectionRequest connectionRequest, RockContext rockContext )

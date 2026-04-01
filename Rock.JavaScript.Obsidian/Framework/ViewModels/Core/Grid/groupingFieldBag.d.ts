@@ -21,18 +21,38 @@
 // </copyright>
 //
 
+/**
+ * Represents a grouping of data in a grid. This is used by a few special
+ * blocks that show grouped data in multiple grids.
+ */
 export type GroupingFieldBag = {
+    /** The icon that should be displayed for this data group. */
     iconCssClass?: string | null;
 
+    /** The unique key that identifies this data group. */
     key?: string | null;
 
+    /** The label that should be displayed for this data group. */
     label?: string | null;
 
+    /**
+     * The order that this group should be displayed in, if no manual
+     * ordering has been applied.
+     */
     order?: number | null;
 
+    /**
+     * A URL to display a small photo icon that represents the grouped
+     * data.
+     */
     photoUrl?: string | null;
 
+    /** Additional CSS classes that will be applied to the text component. */
     textColorCssClass?: string | null;
 
+    /**
+     * Identifies the type of grouping operation that was used to create
+     * this group.
+     */
     type?: string | null;
 };

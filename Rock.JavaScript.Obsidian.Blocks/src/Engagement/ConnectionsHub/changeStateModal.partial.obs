@@ -15,10 +15,10 @@
             </NotificationBox>
             <div v-if="connectionState === ConnectionState.FutureFollowUp" class="row">
                 <div class="col-md-3">
-                    <!-- TODO: Follow-Up Date cannot exceed Due Date -->
                     <DatePicker v-model="followUpDate"
                                 label="Follow-Up Date"
-                                rules="required" />
+                                rules="required"
+                                :disallowPastDateSelection="true" />
                 </div>
             </div>
             <div v-else class="mb-spacing-sm">

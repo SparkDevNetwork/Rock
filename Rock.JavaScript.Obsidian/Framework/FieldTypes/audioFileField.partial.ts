@@ -22,7 +22,7 @@ import { FieldTypeBase } from "./fieldType";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     BinaryFileType = "binaryFileType",
     MimeType = "mimeType",
     FilePath = "filePath"
@@ -67,8 +67,8 @@ export class AudioFileFieldType extends FieldTypeBase {
         }
 
         const binaryFile = JSON.parse(value) as ListItemBag;
-        const filePath = configurationValues[ConfigurationValueKey.FilePath];
-        const mimeType = configurationValues[ConfigurationValueKey.MimeType];
+        const filePath = configurationValues[ConfigurationKey.FilePath];
+        const mimeType = configurationValues[ConfigurationKey.MimeType];
 
         const html = `
 <audio
@@ -96,7 +96,7 @@ export class AudioFileFieldType extends FieldTypeBase {
         }
 
         const binaryFile = JSON.parse(value) as ListItemBag;
-        const filePath = configurationValues[ConfigurationValueKey.FilePath];
+        const filePath = configurationValues[ConfigurationKey.FilePath];
 
         const condensedValue = `<a href="${filePath}?guid=${binaryFile.value}">${this.encodeXml(binaryFile.text ?? "")}</a>`;
         return `${escapeHtml(condensedValue)}`;

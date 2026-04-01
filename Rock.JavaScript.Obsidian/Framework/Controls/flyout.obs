@@ -98,7 +98,7 @@
         const anchorRect = props.anchorEl.getBoundingClientRect();
         const flyoutRect = flyoutEl.value.getBoundingClientRect();
         const viewportHeight = window.innerHeight;
-        const viewportWidth = window.innerWidth;
+        const viewportWidth = document.documentElement.clientWidth;
 
         const spaceBelow = viewportHeight - anchorRect.bottom;
         const spaceAbove = anchorRect.top;

@@ -213,11 +213,12 @@ namespace Rock.Blocks.Types.Mobile.Cms
             };
         }
 
-    }
 
-    public class VoiceAgentInitialData
-    {
-        public string EphemeralKey { get; set; }
-        public List<string> McpUrl { get; set; }
+        private class VoiceAgentInitialData
+        {
+            public string EphemeralKey { get; set; }
+
+            public List<string> McpUrl { get; set; }
+        }
     }
 }

@@ -60,11 +60,6 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public Guid CurrentConnectionStatusGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the current due date of this request.
-        /// </summary>
-        public DateTimeOffset? CurrentDueDate { get; set; }
-
-        /// <summary>
         /// Gets or sets the list of connection opportunities available as transfer targets.
         /// </summary>
         public List<ConnectionOpportunityBag> ConnectionOpportunities { get; set; }
@@ -78,6 +73,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the list of connection statuses available for selection during the transfer.
         /// </summary>
         public List<ListItemBag> Statuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Connector Items for the selected Opportunity
+        /// </summary>
+        public List<ListItemBag> ConnectorItems { get; set; }
 
         /// <summary>
         /// Gets or sets the public attribute definitions for the connection request, used to display attribute fields during transfer.

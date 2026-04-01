@@ -21,16 +21,42 @@
 // </copyright>
 //
 
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
 /** Represents an individual exception log entry in the exception hierarchy. */
 export type ExceptionLogItemBag = {
     /** Gets or sets the exception message. */
     description?: string | null;
+
+    /** Gets or sets the formatted date/time when this exception occurred. */
+    exceptionDate?: string | null;
 
     /** Gets or sets the exception class name (e.g., "System.Web.HttpException"). */
     exceptionType?: string | null;
 
     /** Gets or sets the identifier of this exception log entry. */
     id: number;
+
+    /** Gets or sets the internal name of the page where this exception occurred. */
+    pageName?: string | null;
+
+    /** Gets or sets the URL of the page where this exception occurred. */
+    pageUrl?: string | null;
+
+    /** Gets or sets the full name of the person who triggered this exception. */
+    personFullName?: string | null;
+
+    /**
+     * Gets or sets the IdKey of the person who triggered this exception,
+     * used for linking to the person's profile page.
+     */
+    personIdKey?: string | null;
+
+    /** Gets or sets the parsed query string items as key-value pairs. */
+    queryStringItems?: ListItemBag[] | null;
+
+    /** Gets or sets the name of the site where this exception occurred. */
+    siteName?: string | null;
 
     /** Gets or sets the source application or object that threw the exception. */
     source?: string | null;

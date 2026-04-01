@@ -20,7 +20,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     MediaPickerLabel = "mediaPickerLabel",
     LimitToAccount = "limitToAccount",
     LimitToFolder = "limitToFolder",
@@ -52,7 +52,7 @@ export class MediaElementFieldType extends FieldTypeBase {
         let html = "";
 
         if (value) {
-            const thumbnailUrl = configurationValues[ConfigurationValueKey.ThumbnailUrl] ?? "";
+            const thumbnailUrl = configurationValues[ConfigurationKey.ThumbnailUrl] ?? "";
             html = `<img src='${thumbnailUrl}' alt='${value}' class='img-responsive grid-img' />`;
 
             if (isEscaped) {

@@ -11,7 +11,7 @@
                              v-model:communicationType="communicationType"
                              v-model:excludeDuplicateRecipientAddress="excludeDuplicateRecipientAddress"
                              v-model:futureSendDateTime="futureSendDateTime"
-                             v-model:individualRecipientPersonAliasGuids="individualRecipientPersonAliasGuids"
+                             v-model:individualRecipientPersonAliasIdKeys="individualRecipientPersonAliasIdKeys"
                              v-model:isBulkCommunication="isBulkCommunication"
                              v-model:personalizationSegments="personalizationSegments"
                              v-model:recipients="recipients"
@@ -399,7 +399,7 @@
     const fromEmail = ref<string>(config.communication?.fromEmail ?? "");
     const fromName = ref<string>(config.communication?.fromName ?? "");
     const futureSendDateTime = ref<string | null | undefined>(config.communication?.futureSendDateTime);
-    const individualRecipientPersonAliasGuids = ref<Guid[] | null | undefined>(config.communication?.individualRecipientPersonAliasGuids);
+    const individualRecipientPersonAliasIdKeys = ref<string[] | null | undefined>(config.communication?.individualRecipientPersonAliasIdKeys);
     const isBulkCommunication = ref<boolean>(config.communication?.isBulkCommunication ?? false);
     const message = ref<string>(config.communication?.message ?? "");
     const personalizationSegments = ref<ListItemBag[] | null | undefined>(config.communication?.personalizationSegments);
@@ -763,7 +763,7 @@
             enabledLavaCommands: enabledLavaCommands.value,
             excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value,
             futureSendDateTime: futureSendDateTime.value,
-            individualRecipientPersonAliasGuids: individualRecipientPersonAliasGuids.value,
+            individualRecipientPersonAliasIdKeys: individualRecipientPersonAliasIdKeys.value,
             isBulkCommunication: isBulkCommunication.value,
             personalizationSegments: personalizationSegments.value,
             segmentCriteria: segmentCriteria.value,
@@ -815,7 +815,7 @@
         enabledLavaCommands.value = bag.enabledLavaCommands;
         excludeDuplicateRecipientAddress.value = bag.excludeDuplicateRecipientAddress ?? false;
         futureSendDateTime.value = bag.futureSendDateTime;
-        individualRecipientPersonAliasGuids.value = bag.individualRecipientPersonAliasGuids;
+        individualRecipientPersonAliasIdKeys.value = bag.individualRecipientPersonAliasIdKeys;
         isBulkCommunication.value = bag.isBulkCommunication ?? false;
         personalizationSegments.value = bag.personalizationSegments ?? [];
         segmentCriteria.value = bag.segmentCriteria ?? SegmentCriteria.All;

@@ -98,7 +98,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail
         /// <summary>
         /// Indicates whether or not the activity is due within a week.
         /// </summary>
-        public bool IsDueSoon => DueDate.HasValue && DueDate >= DateTime.Now && DueDate.Value <= DateTime.Now.AddDays( 7 );
+        public bool IsDueSoon { get; set; }
 
         /// <summary>
         /// Indicates whether or not the grade is a passing grade.

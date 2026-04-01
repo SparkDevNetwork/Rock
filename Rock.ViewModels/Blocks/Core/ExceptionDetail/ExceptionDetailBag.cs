@@ -17,8 +17,6 @@
 
 using System.Collections.Generic;
 
-using Rock.ViewModels.Utility;
-
 namespace Rock.ViewModels.Blocks.Core.ExceptionDetail
 {
     /// <summary>
@@ -27,46 +25,9 @@ namespace Rock.ViewModels.Blocks.Core.ExceptionDetail
     public class ExceptionDetailBag
     {
         /// <summary>
-        /// Gets or sets the formatted date/time when the base exception occurred.
+        /// Gets or sets the root (outermost) exception's display data.
         /// </summary>
-        public string ExceptionDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the truncated description of the base exception.
-        /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the site where the exception occurred.
-        /// </summary>
-        public string SiteName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the internal name of the page where the exception occurred.
-        /// </summary>
-        public string PageName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the URL of the page where the exception occurred.
-        /// </summary>
-        public string PageUrl { get; set; }
-
-        /// <summary>
-        /// Gets or sets the parsed query string items as key-value pairs.
-        /// The Text property contains the key and Value contains the value.
-        /// </summary>
-        public List<ListItemBag> QueryStringItems { get; set; }
-
-        /// <summary>
-        /// Gets or sets the full name of the person who triggered the exception.
-        /// </summary>
-        public string PersonFullName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the IdKey of the person who triggered the exception,
-        /// used for linking to the person's profile page.
-        /// </summary>
-        public string PersonIdKey { get; set; }
+        public ExceptionLogItemBag RootException { get; set; }
 
         /// <summary>
         /// Gets or sets the raw HTML content of the cookies at the time of the exception.
@@ -79,8 +40,8 @@ namespace Rock.ViewModels.Blocks.Core.ExceptionDetail
         public string ServerVariables { get; set; }
 
         /// <summary>
-        /// Gets or sets the ordered list of exception log items in the exception hierarchy.
+        /// Gets or sets the ordered list of inner (non-root) exception log items.
         /// </summary>
-        public List<ExceptionLogItemBag> ExceptionItems { get; set; }
+        public List<ExceptionLogItemBag> InnerExceptions { get; set; }
     }
 }

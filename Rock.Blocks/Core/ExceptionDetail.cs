@@ -101,7 +101,6 @@ namespace Rock.Blocks.Core
             if ( exceptionGuid.HasValue )
             {
                 return exceptionService.Queryable()
-                    .AsNoTracking()
                     .Where( e => e.Guid == exceptionGuid.Value )
                     .Select( e => e.Id )
                     .FirstOrDefault();
@@ -119,87 +118,101 @@ namespace Rock.Blocks.Core
         {
             var exceptionService = new ExceptionLogService( RockContext );
 
-            // Navigate up to the outermost (root) exception.
-            var baseException = GetOutermostException( exceptionService, exceptionId );
+            // Walk up to the outermost (root) exception.
+            var rootId = GetOutermostExceptionId( exceptionService, exceptionId );
 
-            if ( baseException == null )
+            if ( rootId == 0 )
             {
                 return null;
             }
 
-            var summaryException = exceptionService.Queryable()
+            // Collect all exception IDs in the hierarchy using lightweight projections.
+            var hierarchyIds = CollectHierarchyIds( exceptionService, rootId ).ToList();
+
+            // Load all exceptions with navigation properties in a single query.
+            var exceptions = exceptionService.Queryable()
                 .AsNoTracking()
                 .Include( e => e.Site )
                 .Include( e => e.Page )
                 .Include( e => e.CreatedByPersonAlias.Person )
-                .FirstOrDefault( e => e.Id == baseException.Id );
+                .Where( e => hierarchyIds.Contains( e.Id ) )
+                .OrderBy( e => e.Id )
+                .ToList();
 
-            if ( summaryException == null )
+            var rootException = exceptions.FirstOrDefault( e => e.Id == rootId );
+
+            if ( rootException == null )
             {
                 return null;
             }
 
-            // Build the query string items as structured key-value pairs.
-            var queryStringItems = ParseQueryString( summaryException.QueryString );
-
-            // Get the full exception hierarchy.
-            var hierarchyLogs = GetExceptionHierarchy( exceptionService, summaryException );
-
-            var exceptionItems = hierarchyLogs
-                .OrderBy( e => e.Id )
-                .Select( e => new ExceptionLogItemBag
-                {
-                    Id = e.Id,
-                    ExceptionType = e.ExceptionType,
-                    Source = e.Source,
-                    Description = e.Description,
-                    StackTrace = e.StackTrace
-                } )
-                .ToList();
-
             return new ExceptionDetailBag
             {
-                ExceptionDate = summaryException.CreatedDateTime.HasValue
-                    ? string.Format( "{0:g}", summaryException.CreatedDateTime.Value )
-                    : string.Empty,
-                Description = summaryException.Description.Truncate( 255 ),
-                SiteName = summaryException.Site?.Name,
-                PageName = summaryException.Page != null
-                    ? summaryException.Page.InternalName
-                    : summaryException.PageUrl,
-                PageUrl = summaryException.PageUrl,
-                QueryStringItems = queryStringItems,
-                PersonFullName = summaryException.CreatedByPersonAlias?.Person?.FullName,
-                PersonIdKey = summaryException.CreatedByPersonAlias?.Person?.IdKey,
-                Cookies = summaryException.Cookies,
-                ServerVariables = summaryException.ServerVariables,
-                ExceptionItems = exceptionItems
+                RootException = BuildExceptionLogItemBag( rootException ),
+                Cookies = rootException.Cookies.SanitizeHtml( strict: false ),
+                ServerVariables = rootException.ServerVariables.SanitizeHtml( strict: false ),
+                InnerExceptions = exceptions
+                    .Where( e => e.Id != rootId )
+                    .Select( e => BuildExceptionLogItemBag( e ) )
+                    .ToList()
             };
         }
 
         /// <summary>
-        /// Navigates up the parent chain to find the outermost (root-level) exception.
+        /// Builds an <see cref="ExceptionLogItemBag"/> from an <see cref="ExceptionLog"/>
+        /// entity with all display fields populated.
+        /// </summary>
+        /// <param name="exception">The exception log entity (with navigation properties loaded).</param>
+        /// <returns>The populated item bag.</returns>
+        private ExceptionLogItemBag BuildExceptionLogItemBag( ExceptionLog exception )
+        {
+            return new ExceptionLogItemBag
+            {
+                Id = exception.Id,
+                ExceptionDate = exception.CreatedDateTime.HasValue
+                    ? string.Format( "{0:g}", exception.CreatedDateTime.Value )
+                    : string.Empty,
+                ExceptionType = exception.ExceptionType,
+                Source = exception.Source,
+                Description = exception.Description,
+                StackTrace = exception.StackTrace,
+                SiteName = exception.Site?.Name,
+                PageName = exception.Page != null
+                    ? exception.Page.InternalName
+                    : exception.PageUrl,
+                PageUrl = exception.PageUrl,
+                QueryStringItems = ParseQueryString( exception.QueryString ),
+                PersonFullName = exception.CreatedByPersonAlias?.Person?.FullName,
+                PersonIdKey = exception.CreatedByPersonAlias?.Person?.IdKey
+            };
+        }
+
+        /// <summary>
+        /// Navigates up the parent chain to find the outermost (root-level) exception ID
+        /// using lightweight projections that only select Id and ParentId.
         /// </summary>
         /// <param name="exceptionService">The exception log service.</param>
         /// <param name="exceptionId">The starting exception identifier.</param>
-        /// <returns>The outermost exception, or null if not found.</returns>
-        private ExceptionLog GetOutermostException( ExceptionLogService exceptionService, int exceptionId )
+        /// <returns>The outermost exception ID, or 0 if not found.</returns>
+        private int GetOutermostExceptionId( ExceptionLogService exceptionService, int exceptionId )
         {
-            var exception = exceptionService.Queryable()
-                .AsNoTracking()
-                .FirstOrDefault( e => e.Id == exceptionId );
+            var current = exceptionService.Queryable()
+                .Where( e => e.Id == exceptionId )
+                .Select( e => new { e.Id, e.ParentId } )
+                .FirstOrDefault();
 
-            if ( exception == null )
+            if ( current == null )
             {
-                return null;
+                return 0;
             }
 
             // Walk up the parent chain until we reach the root.
-            while ( exception.ParentId.HasValue )
+            while ( current.ParentId.HasValue )
             {
                 var parent = exceptionService.Queryable()
-                    .AsNoTracking()
-                    .FirstOrDefault( e => e.Id == exception.ParentId.Value );
+                    .Where( e => e.Id == current.ParentId.Value )
+                    .Select( e => new { e.Id, e.ParentId } )
+                    .FirstOrDefault();
 
                 // If the parent cannot be found, the current exception is the effective root.
                 if ( parent == null )
@@ -207,61 +220,51 @@ namespace Rock.Blocks.Core
                     break;
                 }
 
-                exception = parent;
+                current = parent;
             }
 
-            return exception;
+            return current.Id;
         }
 
         /// <summary>
-        /// Gets the full exception hierarchy starting from the root exception,
-        /// including parent chain and all inner (child) exceptions recursively.
+        /// Collects all exception IDs in the hierarchy starting from the root,
+        /// using lightweight projections that only select Id and HasInnerException.
         /// </summary>
         /// <param name="exceptionService">The exception log service.</param>
-        /// <param name="rootException">The root-level exception.</param>
-        /// <returns>A distinct list of all exception logs in the hierarchy.</returns>
-        private List<ExceptionLog> GetExceptionHierarchy( ExceptionLogService exceptionService, ExceptionLog rootException )
+        /// <param name="rootId">The root exception identifier.</param>
+        /// <returns>A set of all exception IDs in the hierarchy.</returns>
+        private HashSet<int> CollectHierarchyIds( ExceptionLogService exceptionService, int rootId )
         {
-            var exceptionList = new List<ExceptionLog>();
-            var visitedIds = new HashSet<int>();
+            var visitedIds = new HashSet<int> { rootId };
+            CollectChildIds( exceptionService, rootId, visitedIds );
 
-            // Add the root exception.
-            exceptionList.Add( rootException );
-            visitedIds.Add( rootException.Id );
-
-            // Recursively collect all child (inner) exceptions.
-            CollectChildExceptions( exceptionService, rootException.Id, exceptionList, visitedIds );
-
-            return exceptionList;
+            return visitedIds;
         }
 
         /// <summary>
-        /// Recursively collects child exceptions for the specified parent.
+        /// Recursively collects child exception IDs for the specified parent
+        /// using lightweight projections.
         /// </summary>
         /// <param name="exceptionService">The exception log service.</param>
         /// <param name="parentId">The parent exception identifier.</param>
-        /// <param name="exceptionList">The list to collect exceptions into.</param>
         /// <param name="visitedIds">Set of already-visited IDs to prevent cycles.</param>
-        private void CollectChildExceptions( ExceptionLogService exceptionService, int parentId, List<ExceptionLog> exceptionList, HashSet<int> visitedIds )
+        private void CollectChildIds( ExceptionLogService exceptionService, int parentId, HashSet<int> visitedIds )
         {
             var children = exceptionService
                 .GetByParentId( parentId )
-                .AsNoTracking()
+                .Select( e => new { e.Id, e.HasInnerException } )
                 .ToList();
 
             foreach ( var child in children )
             {
-                if ( visitedIds.Contains( child.Id ) )
+                if ( !visitedIds.Add( child.Id ) )
                 {
                     continue;
                 }
 
-                exceptionList.Add( child );
-                visitedIds.Add( child.Id );
-
                 if ( child.HasInnerException == true )
                 {
-                    CollectChildExceptions( exceptionService, child.Id, exceptionList, visitedIds );
+                    CollectChildIds( exceptionService, child.Id, visitedIds );
                 }
             }
         }

@@ -137,6 +137,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public bool IsAISummaryVisible { get; set; }
 
         /// <summary>
+        /// Gets or sets the trigger mode that determines when an AI summary should be generated and displayed for a connection request.
+        /// </summary>
+        public AISummaryTriggerMode AISummaryTrigger { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean value indicating whether the logged in user can edit a connection request note.
         /// </summary>
         public bool CanEditConnectionRequestNote { get; set;  }

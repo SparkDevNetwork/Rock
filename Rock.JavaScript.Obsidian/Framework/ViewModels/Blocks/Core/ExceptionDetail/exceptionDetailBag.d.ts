@@ -22,46 +22,18 @@
 //
 
 import { ExceptionLogItemBag } from "@Obsidian/ViewModels/Blocks/Core/ExceptionDetail/exceptionLogItemBag";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The bag containing the data for the Exception Detail block. */
 export type ExceptionDetailBag = {
     /** Gets or sets the raw HTML content of the cookies at the time of the exception. */
     cookies?: string | null;
 
-    /** Gets or sets the truncated description of the base exception. */
-    description?: string | null;
+    /** Gets or sets the ordered list of inner (non-root) exception log items. */
+    innerExceptions?: ExceptionLogItemBag[] | null;
 
-    /** Gets or sets the formatted date/time when the base exception occurred. */
-    exceptionDate?: string | null;
-
-    /** Gets or sets the ordered list of exception log items in the exception hierarchy. */
-    exceptionItems?: ExceptionLogItemBag[] | null;
-
-    /** Gets or sets the internal name of the page where the exception occurred. */
-    pageName?: string | null;
-
-    /** Gets or sets the URL of the page where the exception occurred. */
-    pageUrl?: string | null;
-
-    /** Gets or sets the full name of the person who triggered the exception. */
-    personFullName?: string | null;
-
-    /**
-     * Gets or sets the IdKey of the person who triggered the exception,
-     * used for linking to the person's profile page.
-     */
-    personIdKey?: string | null;
-
-    /**
-     * Gets or sets the parsed query string items as key-value pairs.
-     * The Text property contains the key and Value contains the value.
-     */
-    queryStringItems?: ListItemBag[] | null;
+    /** Gets or sets the root (outermost) exception's display data. */
+    rootException?: ExceptionLogItemBag | null;
 
     /** Gets or sets the raw HTML content of the server variables at the time of the exception. */
     serverVariables?: string | null;
-
-    /** Gets or sets the name of the site where the exception occurred. */
-    siteName?: string | null;
 };

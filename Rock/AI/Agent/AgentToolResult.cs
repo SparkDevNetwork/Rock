@@ -349,7 +349,7 @@ namespace Rock.AI.Agent
         /// <param name="payload">The payload to set as the content.</param>
         private static void SetContent( AgentToolResult result, object payload )
         {
-            if ( IsEnumerablePayload( payload ) )
+            if ( IsArrayTypePayload( payload ) )
             {
                 result.Results = ( IEnumerable ) payload;
             }
@@ -364,13 +364,22 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="payload">The payload to check.</param>
         /// <returns><c>true</c> if the payload implements <see cref="IEnumerable"/> and is not a <see cref="string"/>; otherwise <c>false</c>.</returns>
-        private static bool IsEnumerablePayload( object payload )
+        private static bool IsArrayTypePayload( object payload )
         {
             if ( payload == null )
             {
                 return false;
             }
-            if ( payload is string ) { return false; }
+
+            if ( payload is string )
+            {
+                return false;
+            }
+
+            if ( payload is IDictionary )
+            {
+                return false;
+            }
 
             return payload is IEnumerable;
         }

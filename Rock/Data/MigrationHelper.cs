@@ -1763,18 +1763,150 @@ END" );
 
         #endregion
 
-        #region Category Methods
+        #region BinaryFile Methods
 
         /// <summary>
-        /// Updates the category or adds if it doesn't already exist (based on Guid) and marks it as IsSystem
+        /// Adds a new binary file or updates an existing one for database storage using the specified parameters.
+        /// NOTE: If performing an update, only the fileName, mimeType, description and image data will be updated.
         /// </summary>
-        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="iconCssClass">The icon CSS class.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="guid">The unique identifier.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="parentCategoryGuid">The parent category unique identifier.</param>
+        /// <param name="binaryFileTypeGuid">The guid of the binary file type.</param>
+        /// <param name="base64ImageData">The base64-encoded string representing the file's binary content.</param>
+        /// <param name="fileName">The name of the file to be stored. Will be sanitized to ensure it is a valid file name.</param>
+        /// <param name="mimeType">The MIME type of the file, such as 'image/png',  'application/pdf', 'image/svg+xml', etc.</param>
+        /// <param name="description">An optional description for the binary file.</param>
+        /// <param name="guid">The assigned well-known guid for the binary file. If a file with this GUID exists, it will be updated; otherwise, a
+        /// new file will be created.</param>
+        /// <exception cref="ArgumentNullException">Thrown if binaryFileTypeGuid, base64ImageData, or guid is null or whitespace.</exception>
+        public void AddOrUpdateBinaryFileForDatabaseStorage( string binaryFileTypeGuid, string base64ImageData, string fileName, string mimeType, string description, string guid )
+        {
+            if ( string.IsNullOrWhiteSpace( binaryFileTypeGuid ) )
+            {
+                throw new ArgumentNullException( nameof( binaryFileTypeGuid ) );
+            }
+
+            if ( string.IsNullOrWhiteSpace( base64ImageData ) )
+            {
+                throw new ArgumentNullException( nameof( base64ImageData ) );
+            }
+
+            if ( string.IsNullOrWhiteSpace( guid ) )
+            {
+                throw new ArgumentNullException( nameof( guid ) );
+            }
+
+            description = description.Replace( "'", "''" );
+
+            fileName = fileName.MakeValidFileName().Replace( "'", "''" );
+
+            Migration.Sql( $@"
+DECLARE
+    @BinaryFileTypeId [int] = (SELECT [Id] FROM [BinaryFileType] WHERE ([Guid] = '{binaryFileTypeGuid}'))
+    , @DatabaseStorageEntityTypeId [int] = (SELECT [Id] FROM [EntityType] WHERE ([Guid] = '{SystemGuid.EntityType.STORAGE_PROVIDER_DATABASE}'))
+    , @Now [datetime] = (SELECT GETDATE())
+    , @Base64ImageData [nvarchar] (max) = '{base64ImageData}'
+    , @BinaryImageData varbinary (max)
+    , @BinaryFileId [int]
+    ;
+
+IF @BinaryFileTypeId IS NULL OR @DatabaseStorageEntityTypeId IS NULL
+    RETURN;  -- or THROW/RAISERROR
+
+IF (LEN(@Base64ImageData) > 0)
+    SET @BinaryImageData = (SELECT CAST(N'' as xml).value('xs:base64Binary(sql:variable(""@Base64ImageData""))', 'varbinary(max)'));
+
+IF NOT EXISTS (SELECT * FROM [BinaryFile] WHERE [Guid] = '{guid}' )
+BEGIN
+
+    INSERT INTO [BinaryFile]
+        (
+            [IsTemporary]
+            , [IsSystem]
+            , [BinaryFileTypeId]
+            , [FileName]
+            , [MimeType]
+            , [Description]
+            , [StorageEntityTypeId]
+            , [Guid]
+            , [CreatedDateTime]
+            , [ModifiedDateTime]
+            , [ContentLastModified]
+            , [StorageEntitySettings]
+            , [Path]
+        )
+        VALUES
+        (
+            0
+            , 1
+            , @BinaryFileTypeId
+            , '{fileName}'
+            , '{mimeType}'
+            , '{description}'
+            , @DatabaseStorageEntityTypeId
+            , '{guid}'
+            , @Now
+            , @Now
+            , @Now
+            , '{{}}'
+            , '~/GetImage.ashx?guid=' + (SELECT CONVERT([nvarchar] (50), '{guid}'))
+        );
+	SET @BinaryFileId = SCOPE_IDENTITY()
+
+    INSERT INTO [BinaryFileData] 
+    (
+        [Id]
+        , [Content]
+        , [Guid]
+        , [CreatedDateTime]
+        , [ModifiedDateTime]
+    )
+    VALUES
+    (
+        @BinaryFileId
+        , @BinaryImageData
+        , NEWID()
+        , @Now
+        , @Now
+    );
+END
+ELSE
+BEGIN
+    -- Get the existing BinaryFile Id
+    SELECT @BinaryFileId = bf.[Id]
+    FROM [BinaryFile] bf
+    WHERE bf.[Guid] = '{guid}';
+
+    -- Update only the allowed columns in BinaryFile
+    UPDATE [BinaryFile]
+    SET [FileName] = '{fileName}',
+        [MimeType] = '{mimeType}',
+        [Description] = '{description}',
+        [ModifiedDateTime] = @Now,
+        [ContentLastModified] = @Now
+    WHERE [Id] = @BinaryFileId;
+
+    -- Update only the allowed column in BinaryFileData
+    UPDATE dbo.[BinaryFileData]
+    SET [Content] = @BinaryImageData,
+        [ModifiedDateTime] = @Now
+    WHERE [Id] = @BinaryFileId;
+END
+" );
+        }
+
+        #endregion BinaryFile Methods
+
+            #region Category Methods
+
+            /// <summary>
+            /// Updates the category or adds if it doesn't already exist (based on Guid) and marks it as IsSystem
+            /// </summary>
+            /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+            /// <param name="name">The name.</param>
+            /// <param name="iconCssClass">The icon CSS class.</param>
+            /// <param name="description">The description.</param>
+            /// <param name="guid">The unique identifier.</param>
+            /// <param name="order">The order.</param>
+            /// <param name="parentCategoryGuid">The parent category unique identifier.</param>
         public void UpdateCategory( string entityTypeGuid, string name, string iconCssClass, string description, string guid, int order = 0, string parentCategoryGuid = "" )
         {
             StringBuilder sql = new StringBuilder();

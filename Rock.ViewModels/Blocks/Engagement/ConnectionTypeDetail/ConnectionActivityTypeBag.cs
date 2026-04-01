@@ -47,6 +47,10 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
         /// </summary>
         public PersonNoteCreationBehavior? PersonNoteCreationBehavior { get; set; }
 
+        /// <summary>
+        /// The note type that will be used when adding activity notes to
+        /// requests of this type.
+        /// </summary>
         public ListItemBag PersonNoteType { get; set; }
     }
 }

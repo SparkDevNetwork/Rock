@@ -21,7 +21,7 @@ import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { binaryComparisonTypes, containsComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     Values = "values",
     EnhancedSelection = "enhancedselection",
     RepeatColumns = "repeatColumns",
@@ -47,7 +47,7 @@ export class ReminderTypesFieldType extends FieldTypeBase {
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+            const values = JSON.parse(configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
             const userValues = value.split(",");
             const selectedValues = values.filter(o => userValues.includes(o.value ?? ""));
 

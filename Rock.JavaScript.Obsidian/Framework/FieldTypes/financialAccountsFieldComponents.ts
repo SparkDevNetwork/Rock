@@ -3,7 +3,7 @@ import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./financialAccountField.partial";
+import { ConfigurationKey } from "./financialAccountField.partial";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 
 export const EditComponent = defineComponent({
@@ -18,10 +18,10 @@ export const EditComponent = defineComponent({
     setup(props, { emit }) {
         const internalValue = ref({} as ListItemBag);
 
-        const displayPublicName = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.DisplayPublicName]));
-        const displayChildItemCounts = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.DisplayChildItemCounts]));
-        const displayActiveItemsOnly = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.DisplayActiveItemsOnly]));
-        const enhancedForLongLists = computed((): boolean => asBoolean(props.configurationValues[ConfigurationValueKey.EnhancedForLongLists]));
+        const displayPublicName = computed((): boolean => asBoolean(props.configurationValues[ConfigurationKey.DisplayPublicName]));
+        const displayChildItemCounts = computed((): boolean => asBoolean(props.configurationValues[ConfigurationKey.DisplayChildItemCounts]));
+        const displayActiveItemsOnly = computed((): boolean => asBoolean(props.configurationValues[ConfigurationKey.DisplayActiveItemsOnly]));
+        const enhancedForLongLists = computed((): boolean => asBoolean(props.configurationValues[ConfigurationKey.EnhancedForLongLists]));
 
         watch(() => props.modelValue, () => {
             internalValue.value = JSON.parse(props.modelValue || "{}");
@@ -77,16 +77,16 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.DisplayPublicName] = asTrueFalseOrNull(displayPublicName.value) ?? "True";
-            newValue[ConfigurationValueKey.DisplayChildItemCounts] = asTrueFalseOrNull(displayChildItemCounts.value) ?? "False";
-            newValue[ConfigurationValueKey.DisplayActiveItemsOnly] = asTrueFalseOrNull(displayActiveItemsOnly.value) ?? "False";
-            newValue[ConfigurationValueKey.EnhancedForLongLists] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "True";
+            newValue[ConfigurationKey.DisplayPublicName] = asTrueFalseOrNull(displayPublicName.value) ?? "True";
+            newValue[ConfigurationKey.DisplayChildItemCounts] = asTrueFalseOrNull(displayChildItemCounts.value) ?? "False";
+            newValue[ConfigurationKey.DisplayActiveItemsOnly] = asTrueFalseOrNull(displayActiveItemsOnly.value) ?? "False";
+            newValue[ConfigurationKey.EnhancedForLongLists] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "True";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.DisplayPublicName] !== (props.modelValue[ConfigurationValueKey.DisplayPublicName] ?? "True")
-                || newValue[ConfigurationValueKey.DisplayChildItemCounts] !== (props.modelValue[ConfigurationValueKey.DisplayChildItemCounts] ?? "False")
-                || newValue[ConfigurationValueKey.DisplayActiveItemsOnly] !== (props.modelValue[ConfigurationValueKey.DisplayActiveItemsOnly] ?? "False")
-                || newValue[ConfigurationValueKey.EnhancedForLongLists] !== (props.modelValue[ConfigurationValueKey.EnhancedForLongLists] ?? "True");
+            const anyValueChanged = newValue[ConfigurationKey.DisplayPublicName] !== (props.modelValue[ConfigurationKey.DisplayPublicName] ?? "True")
+                || newValue[ConfigurationKey.DisplayChildItemCounts] !== (props.modelValue[ConfigurationKey.DisplayChildItemCounts] ?? "False")
+                || newValue[ConfigurationKey.DisplayActiveItemsOnly] !== (props.modelValue[ConfigurationKey.DisplayActiveItemsOnly] ?? "False")
+                || newValue[ConfigurationKey.EnhancedForLongLists] !== (props.modelValue[ConfigurationKey.EnhancedForLongLists] ?? "True");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -113,10 +113,10 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            displayPublicName.value = asBoolean(props.modelValue[ConfigurationValueKey.DisplayPublicName]);
-            displayChildItemCounts.value = asBoolean(props.modelValue[ConfigurationValueKey.DisplayChildItemCounts]);
-            displayActiveItemsOnly.value = asBoolean(props.modelValue[ConfigurationValueKey.DisplayActiveItemsOnly]);
-            enhanceForLongLists.value = asBoolean(props.modelValue[ConfigurationValueKey.EnhancedForLongLists]);
+            displayPublicName.value = asBoolean(props.modelValue[ConfigurationKey.DisplayPublicName]);
+            displayChildItemCounts.value = asBoolean(props.modelValue[ConfigurationKey.DisplayChildItemCounts]);
+            displayActiveItemsOnly.value = asBoolean(props.modelValue[ConfigurationKey.DisplayActiveItemsOnly]);
+            enhanceForLongLists.value = asBoolean(props.modelValue[ConfigurationKey.EnhancedForLongLists]);
         }, {
             immediate: true
         });
@@ -130,10 +130,10 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(displayPublicName, () => maybeUpdateConfiguration(ConfigurationValueKey.DisplayPublicName, asTrueFalseOrNull(displayPublicName.value) ?? "True"));
-        watch(displayChildItemCounts, () => maybeUpdateConfiguration(ConfigurationValueKey.DisplayChildItemCounts, asTrueFalseOrNull(displayChildItemCounts.value) ?? "False"));
-        watch(displayActiveItemsOnly, () => maybeUpdateConfiguration(ConfigurationValueKey.DisplayActiveItemsOnly, asTrueFalseOrNull(displayActiveItemsOnly.value) ?? "False"));
-        watch(enhanceForLongLists, () => maybeUpdateConfiguration(ConfigurationValueKey.EnhancedForLongLists, asTrueFalseOrNull(enhanceForLongLists.value) ?? "True"));
+        watch(displayPublicName, () => maybeUpdateConfiguration(ConfigurationKey.DisplayPublicName, asTrueFalseOrNull(displayPublicName.value) ?? "True"));
+        watch(displayChildItemCounts, () => maybeUpdateConfiguration(ConfigurationKey.DisplayChildItemCounts, asTrueFalseOrNull(displayChildItemCounts.value) ?? "False"));
+        watch(displayActiveItemsOnly, () => maybeUpdateConfiguration(ConfigurationKey.DisplayActiveItemsOnly, asTrueFalseOrNull(displayActiveItemsOnly.value) ?? "False"));
+        watch(enhanceForLongLists, () => maybeUpdateConfiguration(ConfigurationKey.EnhancedForLongLists, asTrueFalseOrNull(enhanceForLongLists.value) ?? "True"));
 
         return {
             displayPublicName,

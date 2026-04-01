@@ -241,7 +241,7 @@ namespace Rock.Model
         /// If the template is not configured for future validity (or has no validity duration), returns an empty query.
         /// </returns>
         /// <exception cref="ArgumentNullException">
-        /// Thrown when <paramref name="person"/> or <paramref name="documentTemplate"/> is <c>null</c>.
+        /// Thrown when <paramref name="documentTemplate"/> is <c>null</c>.
         /// </exception>
         public IQueryable<SignatureDocument> GetValidSignatureDocument( int personId, SignatureDocumentTemplate documentTemplate )
         {       

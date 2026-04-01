@@ -22,7 +22,24 @@ namespace Rock.Attribute
     /// </summary>
     public class SiteFieldAttribute : FieldAttribute
     {
+        private const string MOBILE_SITES_ONLY = "mobileSitesOnly";
         private const string SHORTENING_SITES_ONLY = "shorteningSitesOnly";
+
+        /// <summary>
+        /// Gets or sets a value indicating whether only mobile sites should be displayed.
+        /// </summary>
+        public bool MobileSitesOnly
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( MOBILE_SITES_ONLY ).AsBoolean();
+            }
+            set
+            {
+                var configurationValue = new Field.ConfigurationValue( value.ToString() );
+                FieldConfigurationValues.AddOrReplace( MOBILE_SITES_ONLY, configurationValue );
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether only sites that are enabled for shortening should be displayed.
@@ -50,11 +67,13 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
+        /// <param name="mobileSitesOnly">if set to <c>true</c> only mobile sites are shown.</param>
         /// <param name="shorteningSitesOnly">if set to <c>true</c> [shortening sites only].</param>
-        public SiteFieldAttribute( string name = "Site", string description = "", bool required = true, string defaultSiteId = "", string category = "", int order = 0, string key = null, bool shorteningSitesOnly = false )
+        public SiteFieldAttribute( string name = "Site", string description = "", bool required = true, string defaultSiteId = "", string category = "", int order = 0, string key = null, bool shorteningSitesOnly = false, bool mobileSitesOnly = false )
             : base( name, description, required, defaultSiteId, category, order, key, typeof( Rock.Field.Types.SiteFieldType ).FullName )
         {
             ShorteningSitesOnly = shorteningSitesOnly;
+            MobileSitesOnly = mobileSitesOnly;
         }
     }
 }

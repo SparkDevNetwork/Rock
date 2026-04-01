@@ -21,7 +21,7 @@ import { FieldTypeBase } from "./fieldType";
 /**
  * The configuration value keys used by the configuraiton and edit controls.
  */
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     /** The location type */
     LocationType = "LocationType",
 

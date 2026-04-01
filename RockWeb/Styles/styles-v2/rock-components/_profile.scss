@@ -623,7 +623,7 @@ background: currentColor;
   z-index: 1020;
 
   @media (min-width: $screen-medium) {
-    top: 80px;
+    top: var(--sticky-element-offset, 0);
 
     &.outline {
       top: 0;

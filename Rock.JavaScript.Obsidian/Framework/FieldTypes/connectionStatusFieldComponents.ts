@@ -18,7 +18,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import { ConfigurationPropertyKey, ConfigurationValueKey } from "./connectionStatusField.partial";
+import { ConfigurationPropertyKey, ConfigurationKey } from "./connectionStatusField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
@@ -38,14 +38,14 @@ export const EditComponent = defineComponent({
 
         // If a filter has been selected then there is no need to group the options since they all belong to the same group.
         const grouped = computed((): boolean => {
-            const connectionType = JSON.parse(props.configurationValues[ConfigurationValueKey.ConnectionTypeFilter] || "{}") as ListItemBag;
+            const connectionType = JSON.parse(props.configurationValues[ConfigurationKey.ConnectionTypeFilter] || "{}") as ListItemBag;
             return isNullOrWhiteSpace(connectionType.value);
         });
 
         // The ConnectionStatuses to choose from.
         const options = computed((): ListItemBag[] => {
-            let clientValues = JSON.parse(props.configurationValues[ConfigurationValueKey.ClientValues] || "[]") as ListItemBag[];
-            const connectionType = JSON.parse(props.configurationValues[ConfigurationValueKey.ConnectionTypeFilter] || "{}") as ListItemBag;
+            let clientValues = JSON.parse(props.configurationValues[ConfigurationKey.ClientValues] || "[]") as ListItemBag[];
+            const connectionType = JSON.parse(props.configurationValues[ConfigurationKey.ConnectionTypeFilter] || "{}") as ListItemBag;
 
             if (connectionType.value) {
                 clientValues = clientValues.filter(c => c.category === connectionType.text);
@@ -115,13 +115,13 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.ConnectionTypeFilter] = JSON.stringify(connectionType) ?? "";
-            newValue[ConfigurationValueKey.IncludeInactive] = asTrueOrFalseString(includeInactive.value);
-            newValue[ConfigurationValueKey.ClientValues] = props.modelValue[ConfigurationValueKey.ClientValues];
+            newValue[ConfigurationKey.ConnectionTypeFilter] = JSON.stringify(connectionType) ?? "";
+            newValue[ConfigurationKey.IncludeInactive] = asTrueOrFalseString(includeInactive.value);
+            newValue[ConfigurationKey.ClientValues] = props.modelValue[ConfigurationKey.ClientValues];
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.ConnectionTypeFilter] !== (props.modelValue[ConfigurationValueKey.ConnectionTypeFilter])
-                || newValue[ConfigurationValueKey.IncludeInactive] !== (props.modelValue[ConfigurationValueKey.IncludeInactive]);
+            const anyValueChanged = newValue[ConfigurationKey.ConnectionTypeFilter] !== (props.modelValue[ConfigurationKey.ConnectionTypeFilter])
+                || newValue[ConfigurationKey.IncludeInactive] !== (props.modelValue[ConfigurationKey.IncludeInactive]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -148,9 +148,9 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            const connectionType = JSON.parse(props.modelValue[ConfigurationValueKey.ConnectionTypeFilter] || "{}") as ListItemBag;
+            const connectionType = JSON.parse(props.modelValue[ConfigurationKey.ConnectionTypeFilter] || "{}") as ListItemBag;
             connectionTypeValue.value = connectionType.value ?? "";
-            includeInactive.value = asBoolean(props.modelValue[ConfigurationValueKey.IncludeInactive]);
+            includeInactive.value = asBoolean(props.modelValue[ConfigurationKey.IncludeInactive]);
         }, {
             immediate: true
         });
@@ -164,8 +164,8 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(connectionTypeValue, () => maybeUpdateConfiguration(ConfigurationValueKey.ConnectionTypeFilter, connectionTypeValue.value));
-        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationValueKey.IncludeInactive, asTrueOrFalseString(connectionTypeValue.value)));
+        watch(connectionTypeValue, () => maybeUpdateConfiguration(ConfigurationKey.ConnectionTypeFilter, connectionTypeValue.value));
+        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationKey.IncludeInactive, asTrueOrFalseString(connectionTypeValue.value)));
 
         return {
             connectionTypeValue,

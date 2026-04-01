@@ -18,7 +18,7 @@ import { defineComponent, ref, watch, computed } from "vue";
 import { getFieldEditorProps } from "./utils";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./reportField.partial";
+import { ConfigurationKey } from "./reportField.partial";
 import { updateRefValue } from "@Obsidian/Utility/component";
 
 export const EditComponent = defineComponent({
@@ -36,7 +36,7 @@ export const EditComponent = defineComponent({
 
         // The options to choose from.
         const options = computed((): ListItemBag[] =>
-            JSON.parse(props.configurationValues[ConfigurationValueKey.ClientValues] || "[]") as ListItemBag[]
+            JSON.parse(props.configurationValues[ConfigurationKey.ClientValues] || "[]") as ListItemBag[]
         );
 
         // Watch for changes from the parent component and update the text editor.

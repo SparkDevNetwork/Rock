@@ -64,6 +64,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public string GroupMemberIdKey { get; set; }
 
         /// <summary>
+        /// The Id for the Placement Group. TODO - Convert this to IdKey when Group Detail supports it.
+        /// </summary>
+        public string GroupId { get; set; }
+
+        /// <summary>
         /// Gets or sets the list of group member requirements and their current fulfillment state for this placement group.
         /// </summary>
         public List<GroupMemberRequirementBag> GroupMemberRequirements { get; set; }

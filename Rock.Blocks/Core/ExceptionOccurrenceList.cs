@@ -148,11 +148,8 @@ namespace Rock.Blocks.Core
 
             if ( templateException != null )
             {
-                var shortDescription = templateException.Description?.Truncate( ExceptionLogService.DescriptionGroupingPrefixLength );
-
                 options.ExceptionType = templateException.ExceptionType;
-                options.Description = shortDescription;
-                options.HeaderText = string.Format( "({0}) {1}", templateException.ExceptionType, shortDescription ?? string.Empty );
+                options.Description = templateException.Description;
             }
 
             // Populate site items for the filter dropdown.
@@ -288,7 +285,7 @@ namespace Rock.Blocks.Core
                 .AddTextField( "fullName", a => a.CreatedByPersonAlias != null && a.CreatedByPersonAlias.Person != null
                     ? a.CreatedByPersonAlias.Person.LastName + ", " + a.CreatedByPersonAlias.Person.NickName
                     : "" )
-                .AddTextField( "description", a => a.Description );
+                .AddTextField( "description", a => a.Description?.Truncate( 255 ) );
         }
 
         #endregion Methods

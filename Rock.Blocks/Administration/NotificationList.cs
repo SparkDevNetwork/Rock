@@ -36,6 +36,7 @@ namespace Rock.Blocks.Administration
     [Rock.SystemGuid.EntityTypeGuid( "A0ABC8AA-ECD7-4D2B-91D6-19FD66E26DE7" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "584046A5-7374-4AB4-B5CF-032825B1E847" )]
     [Rock.SystemGuid.BlockTypeGuid( "9C0FD17D-677D-4A37-A61F-54C370954E83" )]
+    [InitialBlockHeight( 0 )]
     public class NotificationList : RockBlockType
     {
         #region Methods

@@ -1,83 +1,56 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Block title="Exception Detail">
-        <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning">
-            {{ config.errorMessage }}
-        </NotificationBox>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning">
+        {{ config.errorMessage }}
+    </NotificationBox>
 
-        <ContentSectionContainer v-else-if="config.bag" :sidebar="false">
-            <ContentSection light disableCollapse>
-                <h5 class="text-danger m-0">{{ headerText }}</h5>
+    <template v-else-if="config.bag">
+        <Panel title="Main Exception" type="block">
+            <template #headerActions>
+                <HighlightLabel labelType="default">Exception Id: {{ config.bag.rootException?.id }}</HighlightLabel>
+            </template>
 
-                <dl class="mb-0">
-                    <dt>Exception Date</dt>
-                    <dd>{{ config.bag.exceptionDate }}</dd>
+            <ContentSectionContainer :sidebar="false">
+                <ExceptionItem v-if="config.bag.rootException"
+                               :exception="config.bag.rootException"
+                               isRootException />
 
-                    <dt>Description</dt>
-                    <dd>{{ config.bag.description }}</dd>
+                <ContentSection v-if="config.bag.cookies"
+                                title="Cookies"
+                                icon="ti ti-device-laptop"
+                                :isCollapsed="true">
+                    <div v-html="config.bag.cookies"></div>
+                </ContentSection>
 
-                    <template v-if="config.bag.siteName">
-                        <dt>Site</dt>
-                        <dd>{{ config.bag.siteName }}</dd>
-                    </template>
+                <ContentSection v-if="config.bag.serverVariables"
+                                title="Server Variables"
+                                icon="ti ti-server-2"
+                                :isCollapsed="true">
+                    <div v-html="config.bag.serverVariables"></div>
+                </ContentSection>
+            </ContentSectionContainer>
+        </Panel>
 
-                    <template v-if="config.bag.pageName || config.bag.pageUrl">
-                        <dt>Page</dt>
-                        <dd>
-                            <a v-if="config.bag.pageUrl" :href="config.bag.pageUrl" target="_blank">
-                                {{ config.bag.pageName || config.bag.pageUrl }}
-                            </a>
-                            <span v-else>{{ config.bag.pageName }}</span>
-                        </dd>
-                    </template>
-
-                    <template v-if="config.bag.queryStringItems && config.bag.queryStringItems.length">
-                        <dt>Query String</dt>
-                        <dd>
-                            <div v-for="(item, index) in config.bag.queryStringItems" :key="index">
-                                <i class="ti ti-point-filled text-xs mr-2 ml-1"></i>{{ item.text }}: {{ item.value }}
-                            </div>
-                        </dd>
-                    </template>
-
-                    <template v-if="config.bag.personFullName">
-                        <dt>User</dt>
-                        <dd>
-                            <a v-if="config.bag.personIdKey" :href="personProfileUrl">
-                                {{ config.bag.personFullName }}
-                            </a>
-                            <span v-else>{{ config.bag.personFullName }}</span>
-                        </dd>
-                    </template>
-                </dl>
-            </ContentSection>
-
-            <ContentSection v-if="config.bag.cookies"
-                            title="Cookies"
-                            icon="ti ti-device-laptop"
-                            :isCollapsed="true">
-                <div v-html="config.bag.cookies"></div>
-            </ContentSection>
-
-            <ContentSection v-if="config.bag.serverVariables"
-                            title="Server Variables"
-                            icon="ti ti-server-2"
-                            :isCollapsed="true">
-                <div v-html="config.bag.serverVariables"></div>
-            </ContentSection>
-
-            <ExceptionItem v-for="item in config.bag.exceptionItems"
-                           :key="item.id"
-                           :exception="item" />
-        </ContentSectionContainer>
-    </Block>
+        <Panel v-if="config.bag.innerExceptions && config.bag.innerExceptions.length"
+               v-model="isInnerExceptionsPanelOpen"
+               title="Inner Exceptions"
+               type="block"
+               :hasCollapse="true">
+            <ContentSectionContainer :sidebar="false">
+                <ExceptionItem v-for="item in config.bag.innerExceptions"
+                               :key="item.id"
+                               :exception="item" />
+            </ContentSectionContainer>
+        </Panel>
+    </template>
 </template>
 
 <script setup lang="ts">
-    import { computed } from "vue";
-    import Block from "@Obsidian/Templates/block";
+    import { ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ExceptionItem from "./ExceptionDetail/exceptionItem.partial.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
@@ -88,26 +61,10 @@
 
     const config = useConfigurationValues<CustomBlockBox<ExceptionDetailBag, ExceptionDetailOptionsBag>>();
 
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
     onConfigurationValuesChanged(useReloadBlock());
 
-    // #region Computed Values
-
-    /** The header text combining the exception date and description. */
-    const headerText = computed((): string => {
-        const date = config.bag?.exceptionDate ?? "";
-        const description = config.bag?.description ?? "";
-
-        return `(${date}) ${description}`.trim();
-    });
-
-    /** The URL to the person's profile page. */
-    const personProfileUrl = computed((): string => {
-        if (config.bag?.personIdKey) {
-            return `/Person/${config.bag.personIdKey}`;
-        }
-
-        return "#";
-    });
-
-    // #endregion Computed Values
+    const isInnerExceptionsPanelOpen = ref(true);
 </script>

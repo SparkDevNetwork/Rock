@@ -23,7 +23,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     Values = "values",
     RepeatColumns = "repeatColumns",
     RepeatDirection = "repeatDirection",
@@ -59,7 +59,7 @@ export class MultiSelectFieldType extends FieldTypeBase {
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+            const values = JSON.parse(configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
             const userValues = value.split(",");
             const selectedValues = values.filter(v => userValues.includes(v.value ?? ""));
 
@@ -93,7 +93,7 @@ export class MultiSelectFieldType extends FieldTypeBase {
 
         try {
             const rawValues = value.value.split(",");
-            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+            const values = JSON.parse(configurationValues?.[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
             const selectedValues = values.filter(v => rawValues.includes(v.value ?? ""));
 
             if (selectedValues.length >= 1) {

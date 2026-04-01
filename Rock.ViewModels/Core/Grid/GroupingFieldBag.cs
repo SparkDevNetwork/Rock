@@ -18,22 +18,47 @@
 namespace Rock.ViewModels.Core.Grid
 {
     /// <summary>
-    ///
+    /// Represents a grouping of data in a grid. This is used by a few special
+    /// blocks that show grouped data in multiple grids.
     /// </summary>
     public class GroupingFieldBag
     {
+        /// <summary>
+        /// The unique key that identifies this data group.
+        /// </summary>
         public string Key { get; set; }
 
+        /// <summary>
+        /// Identifies the type of grouping operation that was used to create
+        /// this group.
+        /// </summary>
         public string Type { get; set; } // TODO - Consider enum
 
+        /// <summary>
+        /// The label that should be displayed for this data group.
+        /// </summary>
         public string Label { get; set; }
 
+        /// <summary>
+        /// The icon that should be displayed for this data group.
+        /// </summary>
         public string IconCssClass { get; set; }
 
+        /// <summary>
+        /// Additional CSS classes that will be applied to the text component.
+        /// </summary>
         public string TextColorCssClass { get; set; }
 
+        /// <summary>
+        /// A URL to display a small photo icon that represents the grouped
+        /// data.
+        /// </summary>
         public string PhotoUrl { get; set; }
 
+        /// <summary>
+        /// The order that this group should be displayed in, if no manual
+        /// ordering has been applied.
+        /// </summary>
         public int? Order { get; set; }
     }
 }

@@ -2,11 +2,16 @@
     <teleport :to="teleportTarget">
         <div v-if="isRendered"
              class="docked-panel-container styled-scroll"
-             data-position="right">
+             :style="containerStyles"
+             data-position="right"
+             :data-mode="props.mode">
 
             <transition name="docked-panel-slide"
-                        appear
-                        @after-leave="onAfterLeave">
+                        :appear="animateTransition"
+                        @beforeEnter="onBeforeEnter"
+                        @beforeLeave="onBeforeLeave"
+                        @afterEnter="onAfterEnter"
+                        @afterLeave="onAfterLeave">
                 <div v-show="internalValue"
                      ref="dockedPanelRef"
                      class="docked-panel"
@@ -35,114 +40,11 @@
     </teleport>
 </template>
 
-<style scoped>
-.docked-panel-container {
-    /*
-     * Use the same z-index as dropdowns so the docked panel is on top of all dropdowns
-     * from the main window, but underneath dropdowns inside the docked panel.
-     */
-    --z-docked-panel: 1050;
-
-    position: fixed;
-    inset: 0;
-    z-index: var(--z-docked-panel);
-
-    /* Container is layout only */
-    pointer-events: none;
-}
-
-.docked-panel-resize-handle {
-    --resize-handle-width: 5px;
-
-    position: absolute;
-    top: var(--top-header-height);
-    bottom: 0;
-
-    width: var(--resize-handle-width);
-    height: 100%;
-    cursor: col-resize;
-    pointer-events: auto;
-    touch-action: none;
-    background: var(--color-interface-strong);
-    opacity: 0;
-    transition: opacity 150ms ease;
-}
-
-.docked-panel-container[data-position="right"] .docked-panel-resize-handle {
-    right: min(min(calc(v-bind(maxWidth)), max(calc(v-bind(minWidth)), calc(v-bind(width)))),
-            calc(100% - var(--resize-handle-width)));
-    left: auto;
-}
-
-.docked-panel-resize-handle:hover {
-    opacity: .3;
-}
-
-.docked-panel {
-    position: absolute;
-    top: var(--top-header-height);
-    bottom: 0;
-
-    width: v-bind(width);
-    min-width: v-bind(minWidth);
-    max-width: v-bind(maxWidth);
-
-    display: flex;
-    flex-direction: column;
-
-    border: 1px solid var(--color-interface-soft);
-    background: var(--color-interface-softest);
-    box-shadow: var(--popup-box-shadow);
-    overflow: hidden;
-
-    /* Drawer is the only interactive surface */
-    pointer-events: auto;
-
-    /* Add width transition so setting the width programmatically animates smoothly (like when maximizing to fullscreen). */
-    transition: width 150ms ease;
-}
-
-.docked-panel.dragging {
-    /* Disable transitions while dragging, otherwise the drag feels sluggish. */
-    transition: none;
-}
-
-.docked-panel-container[data-position="right"] .docked-panel {
-    right: 0;
-    border-radius: var(--rounded-large) 0 0 var(--rounded-large);
-}
-
-.docked-panel-header,
-.docked-panel-footer {
-    flex: 0 0 auto;
-}
-
-.docked-panel-body {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: auto;
-}
-
-.docked-panel-slide-enter-active,
-.docked-panel-slide-leave-active {
-    transition: transform 250ms ease;
-}
-
-.docked-panel-container[data-position="right"] .docked-panel-slide-enter-from,
-.docked-panel-container[data-position="right"] .docked-panel-slide-leave-to {
-    transform: translateX(100%);
-}
-
-.docked-panel-slide-enter-to,
-.docked-panel-slide-leave-from {
-    transform: translateX(0);
-}
-</style>
-
 <script setup lang="ts">
     import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { isHTMLElement } from "@Obsidian/Utility/dom";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         /**
@@ -179,7 +81,17 @@
         closeOnOutsideClick: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        /**
+         * The mode the panel will operate in when visible. In "float" mode, the
+         * panel will overlay existing content. In "push" mode, the panel will
+         * push existing content to make room for itself.
+         */
+        mode: {
+            type: String as PropType<"float" | "push">,
+            default: "float"
+        },
     });
 
     const emit = defineEmits<{
@@ -191,18 +103,91 @@
     // #region Values
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const internalWidth = useVModelPassthrough(props, "width", emit);
     const isRendered = ref(false);
+    const panelId = newGuid();
 
     const fullscreenElement = ref<Element | null>(null);
-    const teleportTarget = computed(() => fullscreenElement.value ?? document.body);
 
     const dockedPanelRef = ref<HTMLElement | null>(null);
     const dockedPanelResizeHandleRef = ref<HTMLElement | null>(null);
     const startX = ref(0);
     const startWidth = ref(0);
     const isResizing = ref(false);
+    const animateTransition = ref(!props.modelValue);
 
     // #endregion Values
+
+    // #region Computed Values
+
+    const containerStyles = computed((): Record<string, string> => {
+        return {
+            "--docked-panel-width": internalWidth.value,
+            "--docked-panel-minWidth": props.minWidth,
+            "--docked-panel-maxWidth": props.mode === "push" ? "100%" : props.maxWidth,
+        };
+    });
+
+    const teleportTarget = computed((): Element => {
+        if (fullscreenElement.value) {
+            return fullscreenElement.value;
+        }
+
+        if (props.mode === "float" && document.querySelector("#content-wrapper")) {
+            return document.querySelector("#content-wrapper")!;
+        }
+
+        return document.body;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function parseWidthSpecifier(value: string): number {
+        if (value.endsWith("%")) {
+            const percent = parseFloat(value) / 100;
+            return window.innerWidth * percent;
+        }
+        else {
+            return parseInt(value);
+        }
+    }
+
+    function updateDockedPanelPushId(): void {
+        // If another docked panel is already open in push mode, then we can
+        // just abort now.
+        if (document.body.dataset.dockedPanelPushId && document.body.dataset.dockedPanelPushId !== panelId) {
+            return;
+        }
+
+        if (internalValue.value && props.mode === "push") {
+            document.body.dataset.dockedPanelPushId = panelId;
+        }
+        else {
+            if (props.mode !== "push") {
+                document.body.style.removeProperty("--docked-panel-push-width");
+                delete document.body.dataset.dockedPanelMode;
+                delete document.body.dataset.dockedPanelPushId;
+            }
+
+            // Otherwise, if we are still in push mode it means we are going to hide
+            // the panel. In that case, we don't need to do any clean up yet, it
+            // will be done after the animation completes.
+        }
+    }
+
+    /**
+     * Simple helper function to determine if this docked panel is the one that
+     * should be controlling the body classes and attributes.
+     *
+     * @returns true if this docked panel should control the body, false otherwise.
+     */
+    function isMyPushPanel(): boolean {
+        return document.body.dataset.dockedPanelPushId === panelId;
+    }
+
+    // #endregion
 
     // #region Event Handlers
 
@@ -230,7 +215,10 @@
         const delta = startX.value - e.clientX;
         const nextWidth = startWidth.value + delta;
 
-        emit("update:width", `${Math.round(nextWidth)}px`);
+        const minWidth = parseWidthSpecifier(props.minWidth);
+        const maxWidth = parseWidthSpecifier(props.maxWidth);
+
+        internalWidth.value = `${Math.min(Math.max(nextWidth, minWidth), maxWidth)}px`;
     }
 
     function onResizeEnd(): void {
@@ -241,19 +229,78 @@
     }
 
     function onDocumentPointerDown(e: PointerEvent): void {
-        if (isHTMLElement(e.target)
-            && props.closeOnOutsideClick
-            && internalValue.value
-            && dockedPanelRef.value
-            && !dockedPanelRef.value.contains(e.target)
-            && !dockedPanelResizeHandleRef.value?.contains(e.target)) {
-            internalValue.value = false;
+        const panel = dockedPanelRef.value;
+        const resizeHandle = dockedPanelResizeHandleRef.value;
+        const target = e.target;
+
+        if (!isHTMLElement(target)
+            || !props.closeOnOutsideClick
+            || !internalValue.value
+            || !panel
+            || panel.contains(target)
+            || resizeHandle?.contains(target)) {
+            return;
+        }
+
+        const panelContainer = panel.parentElement;
+        let targetBodyChild: HTMLElement | null = target;
+
+        // Walk up the DOM until we find the direct child of <body>
+        // that contains the clicked element.
+        while (targetBodyChild && targetBodyChild.parentElement !== document.body) {
+            targetBodyChild = targetBodyChild.parentElement;
+        }
+
+        // If the click happened inside a different top-level body child that is
+        // absolutely or fixed positioned, treat it as a floating/portaled UI
+        // element (such as a dropdown or date picker) and do not close the panel.
+        if (targetBodyChild && targetBodyChild !== panelContainer) {
+            const targetContainerPosition = window.getComputedStyle(targetBodyChild).position;
+
+            if (targetContainerPosition === "absolute" || targetContainerPosition === "fixed") {
+                return;
+            }
+        }
+
+        internalValue.value = false;
+    }
+
+    function onBeforeEnter(): void {
+        if (isMyPushPanel()) {
+            document.body.classList.add("docked-panel-slide-enter-active");
+            document.body.style.setProperty("--docked-panel-push-width", internalWidth.value);
+
+            document.body.dataset.dockedPanelMode = props.mode;
+        }
+    }
+
+    function onBeforeLeave(): void {
+        if (isMyPushPanel()) {
+            document.body.classList.add("docked-panel-slide-leave-active");
+            document.body.style.removeProperty("--docked-panel-push-width");
+        }
+    }
+
+    function onAfterEnter(): void {
+        if (isMyPushPanel()) {
+            document.body.classList.remove("docked-panel-slide-enter-active");
         }
     }
 
     function onAfterLeave(): void {
         // Stop rendering after close animation completes
         isRendered.value = false;
+
+        // If we open again, animate the transition.
+        animateTransition.value = true;
+
+        if (isMyPushPanel()) {
+            // Remove the body attributes and classes.
+            document.body.classList.remove("docked-panel-slide-leave-active");
+
+            delete document.body.dataset.dockedPanelMode;
+            delete document.body.dataset.dockedPanelPushId;
+        }
     }
 
     function onFullscreenChange(): void {
@@ -265,6 +312,8 @@
     // #region Watchers
 
     watch(internalValue, (open) => {
+        updateDockedPanelPushId();
+
         // Ensure the docked panel is rendered before opening
         if (open) {
             isRendered.value = true;
@@ -272,6 +321,25 @@
         }
         else {
             document.removeEventListener("pointerdown", onDocumentPointerDown);
+        }
+    }, { immediate: true });
+
+    watch(() => props.mode, () => {
+        updateDockedPanelPushId();
+
+        if (internalValue.value && isMyPushPanel()) {
+            if (props.mode === "push") {
+                document.body.dataset.dockedPanelMode = props.mode;
+            }
+            else {
+                delete document.body.dataset.dockedPanelMode;
+            }
+        }
+    }, { immediate: true });
+
+    watch(internalWidth, () => {
+        if (internalValue.value && isMyPushPanel()) {
+            document.body.style.setProperty("--docked-panel-push-width", internalWidth.value);
         }
     }, { immediate: true });
 
@@ -284,6 +352,12 @@
     });
 
     onBeforeUnmount(() => {
+        if (isMyPushPanel()) {
+            document.body.style.removeProperty("--docked-panel-push-width");
+            delete document.body.dataset.dockedPanelMode;
+            delete document.body.dataset.dockedPanelPushId;
+        }
+
         document.removeEventListener("pointermove", onResizeMove);
         document.removeEventListener("pointerup", onResizeEnd);
         document.removeEventListener("pointerdown", onDocumentPointerDown);

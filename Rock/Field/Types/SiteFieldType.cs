@@ -41,24 +41,36 @@ namespace Rock.Field.Types
     {
         #region Configuration
 
-        private const string SHORTENING_SITES_ONLY = "shorteningSitesOnly";
-        private const string VALUES_PUBLIC_KEY = "values";
+        private static class ConfigurationKey
+        {
+            public const string MobileSitesOnly = "mobileSitesOnly";
+            public const string ShorteningSitesOnly = "shorteningSitesOnly";
+            public const string Values = "values";
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
-            var shorteningSitesOnly = publicConfigurationValues.GetValueOrNull( SHORTENING_SITES_ONLY ).AsBoolean();
+            var mobileSitesOnly = publicConfigurationValues.GetValueOrNull( ConfigurationKey.MobileSitesOnly ).AsBoolean();
+            var shorteningSitesOnly = publicConfigurationValues.GetValueOrNull( ConfigurationKey.ShorteningSitesOnly ).AsBoolean();
 
             var sites = SiteCache.All();
+
+            if ( mobileSitesOnly )
+            {
+                sites = sites.Where( s => s.SiteType == SiteType.Mobile )
+                    .ToList();
+            }
+
             if ( shorteningSitesOnly )
             {
                 sites = sites.Where( s => s.EnabledForShortening )
                     .ToList();
             }
 
-            publicConfigurationValues[VALUES_PUBLIC_KEY] = sites
+            publicConfigurationValues[ConfigurationKey.Values] = sites
                 .OrderBy( a => a.Name )
                 .ToListItemBagList()
                 .ToCamelCaseJson( false, true );
@@ -70,7 +82,7 @@ namespace Rock.Field.Types
         public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
             var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
-            privateConfigurationValues.Remove( VALUES_PUBLIC_KEY );
+            privateConfigurationValues.Remove( ConfigurationKey.Values );
             return privateConfigurationValues;
         }
 
@@ -99,9 +111,9 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            string formattedValue = string.Empty;
+            var formattedValue = string.Empty;
 
-            if ( int.TryParse( privateValue, out int id ) )
+            if ( int.TryParse( privateValue, out var id ) )
             {
                 using ( var rockContext = new RockContext() )
                 {
@@ -142,7 +154,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public IEntity GetEntity( string value, RockContext rockContext )
         {
-            int? id = value.AsIntegerOrNull();
+            var id = value.AsIntegerOrNull();
             if ( id.HasValue )
             {
                 rockContext = rockContext ?? new RockContext();
@@ -203,7 +215,8 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             var configKeys = base.ConfigurationKeys();
-            configKeys.Add( SHORTENING_SITES_ONLY );
+            configKeys.Add( ConfigurationKey.MobileSitesOnly );
+            configKeys.Add( ConfigurationKey.ShorteningSitesOnly );
             return configKeys;
         }
 
@@ -215,13 +228,21 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
+            // Mobile Sites Only
+            var mobileSitesOnlyCheckBox = new RockCheckBox();
+            controls.Add( mobileSitesOnlyCheckBox );
+            mobileSitesOnlyCheckBox.AutoPostBack = true;
+            mobileSitesOnlyCheckBox.CheckedChanged += OnQualifierUpdated;
+            mobileSitesOnlyCheckBox.Label = "Mobile Sites Only";
+            mobileSitesOnlyCheckBox.Help = "Should only mobile sites be displayed?";
+
             // Shortening Sites Only
-            var cb = new RockCheckBox();
-            controls.Add( cb );
-            cb.AutoPostBack = true;
-            cb.CheckedChanged += OnQualifierUpdated;
-            cb.Label = "Shortening Enabled Sites Only";
-            cb.Help = "Should only sites that are enabled for shortening be displayed.";
+            var shorteningSitesOnlyCheckBox = new RockCheckBox();
+            controls.Add( shorteningSitesOnlyCheckBox );
+            shorteningSitesOnlyCheckBox.AutoPostBack = true;
+            shorteningSitesOnlyCheckBox.CheckedChanged += OnQualifierUpdated;
+            shorteningSitesOnlyCheckBox.Label = "Shortening Enabled Sites Only";
+            shorteningSitesOnlyCheckBox.Help = "Should only sites that are enabled for shortening be displayed?";
 
             return controls;
         }
@@ -233,14 +254,20 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( SHORTENING_SITES_ONLY, new ConfigurationValue( "Shortening Enabled Sites Only", "Should only sites that are enabled for shortening be displayed.", "" ) );
+            var configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( ConfigurationKey.MobileSitesOnly, new ConfigurationValue( "Mobile Sites Only", "Should only mobile sites be displayed?", "" ) );
+            configurationValues.Add( ConfigurationKey.ShorteningSitesOnly, new ConfigurationValue( "Shortening Enabled Sites Only", "Should only sites that are enabled for shortening be displayed?", "" ) );
 
             if ( controls != null )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is RockCheckBox )
+                if ( controls.Count > 0 && controls[0] is RockCheckBox mobileSitesOnlyCheckBox )
                 {
-                    configurationValues[SHORTENING_SITES_ONLY].Value = ( ( RockCheckBox ) controls[0] ).Checked.ToString();
+                    configurationValues[ConfigurationKey.MobileSitesOnly].Value = mobileSitesOnlyCheckBox.Checked.ToString();
+                }
+
+                if ( controls.Count > 1 && controls[1] is RockCheckBox shorteningSitesOnlyCheckBox )
+                {
+                    configurationValues[ConfigurationKey.ShorteningSitesOnly].Value = shorteningSitesOnlyCheckBox.Checked.ToString();
                 }
             }
 
@@ -256,9 +283,14 @@ namespace Rock.Field.Types
         {
             if ( controls != null && configurationValues != null )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is RockCheckBox && configurationValues.ContainsKey( SHORTENING_SITES_ONLY ) )
+                if ( controls.Count > 0 && controls[0] is RockCheckBox mobileSitesOnlyCheckBox && configurationValues.ContainsKey( ConfigurationKey.MobileSitesOnly ) )
                 {
-                    ( ( RockCheckBox ) controls[0] ).Checked = configurationValues[SHORTENING_SITES_ONLY].Value.AsBoolean();
+                    mobileSitesOnlyCheckBox.Checked = configurationValues[ConfigurationKey.MobileSitesOnly].Value.AsBoolean();
+                }
+
+                if ( controls.Count > 1 && controls[1] is RockCheckBox shorteningSitesOnlyCheckBox && configurationValues.ContainsKey( ConfigurationKey.ShorteningSitesOnly ) )
+                {
+                    shorteningSitesOnlyCheckBox.Checked = configurationValues[ConfigurationKey.ShorteningSitesOnly].Value.AsBoolean();
                 }
             }
         }
@@ -291,16 +323,27 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            SiteService siteService = new SiteService( new RockContext() );
+            var siteService = new SiteService( new RockContext() );
             var siteQry = siteService.Queryable();
 
-            bool shorteningSitesOnly = false;
+            var shorteningSitesOnly = false;
+            var mobileSitesOnly = false;
             if ( configurationValues != null )
             {
-                if ( configurationValues.ContainsKey( SHORTENING_SITES_ONLY ) )
+                if ( configurationValues.ContainsKey( ConfigurationKey.MobileSitesOnly ) )
                 {
-                    shorteningSitesOnly = configurationValues[SHORTENING_SITES_ONLY].Value.AsBoolean();
+                    mobileSitesOnly = configurationValues[ConfigurationKey.MobileSitesOnly].Value.AsBoolean();
                 }
+
+                if ( configurationValues.ContainsKey( ConfigurationKey.ShorteningSitesOnly ) )
+                {
+                    shorteningSitesOnly = configurationValues[ConfigurationKey.ShorteningSitesOnly].Value.AsBoolean();
+                }
+            }
+
+            if ( mobileSitesOnly )
+            {
+                siteQry = siteQry.Where( s => s.SiteType == SiteType.Mobile );
             }
 
             if ( shorteningSitesOnly )
@@ -331,9 +374,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            List<string> values = new List<string>();
+            var values = new List<string>();
 
-            DropDownList dropDownList = control as DropDownList;
+            var dropDownList = control as DropDownList;
 
             if ( dropDownList != null )
             {
@@ -360,7 +403,7 @@ namespace Rock.Field.Types
         {
             if ( value != null )
             {
-                DropDownList dropDownList = control as DropDownList;
+                var dropDownList = control as DropDownList;
                 dropDownList.SetValue( value );
             }
         }

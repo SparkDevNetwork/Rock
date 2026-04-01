@@ -8,6 +8,7 @@
 // @import "../../../Styles/style-v2/icons/tabler-icon.css";
 :root {
   --panel-body-padding: 16px; // This is for communication block use by EmailEditor.css
+  --sticky-element-offset: 0px;
 }
 
 @-ms-viewport {
@@ -175,6 +176,7 @@ body.navbar-side-open {
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow: auto;
 
   .main-content {
     flex: 1;

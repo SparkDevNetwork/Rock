@@ -213,7 +213,11 @@ namespace Rock.Communication.Transport
                                 recipient.MergeFields.TryAdd( mergeField.Key, mergeField.Value );
                             }
 
-                            var to = recipient.To.SplitDelimitedValues( "," ).Where( s => s.IsNotNullOrWhiteSpace() ).ToList();
+                            List<string> to;
+                            using ( var recipientRockContext = new RockContext() )
+                            {
+                                to = GetDeviceRegistrationIds( recipientRockContext, recipient, pushMessage.Data?.MobileApplicationId );
+                            }
 
                             PushMessage( to, pushMessage, recipient.MergeFields );
                         }
@@ -228,7 +232,15 @@ namespace Rock.Communication.Transport
                 {
                     try
                     {
-                        PushMessage( recipients.SelectMany( r => r.To.SplitDelimitedValues( "," ).Where( s => s.IsNotNullOrWhiteSpace() ).ToList() ).ToList(), pushMessage, mergeFields );
+                        List<string> to;
+                        using ( var recipientRockContext = new RockContext() )
+                        {
+                            to = recipients
+                                .SelectMany( r => GetDeviceRegistrationIds( recipientRockContext, r, pushMessage.Data?.MobileApplicationId ) )
+                                .ToList();
+                        }
+
+                        PushMessage( to, pushMessage, mergeFields );
                     }
                     catch ( Exception ex )
                     {
@@ -502,6 +514,44 @@ namespace Rock.Communication.Transport
                     DeactivateNotRegisteredDevices( msg.Tokens.ToList(), response );
                 }
             } );
+        }
+
+        /// <summary>
+        /// Gets the device registration identifiers for the direct push recipient.
+        /// Honors an explicitly populated recipient.To value for backwards compatibility,
+        /// otherwise resolves devices by person and optional site.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <param name="recipient">The recipient.</param>
+        /// <param name="siteId">The site identifier used to scope device selection.</param>
+        /// <returns>A list of device registration identifiers.</returns>
+        private static List<string> GetDeviceRegistrationIds( RockContext rockContext, RockMessageRecipient recipient, int? siteId )
+        {
+            var explicitDeviceIds = ( recipient.To ?? string.Empty )
+                .SplitDelimitedValues( "," )
+                .Where( s => s.IsNotNullOrWhiteSpace() )
+                .ToList();
+
+            if ( explicitDeviceIds.Any() )
+            {
+                return explicitDeviceIds;
+            }
+
+            if ( recipient.PersonId.HasValue )
+            {
+                return new PersonalDeviceService( rockContext ).Queryable()
+                    .Where( p => p.PersonAliasId.HasValue
+                        && p.PersonAlias.PersonId == recipient.PersonId.Value
+                        && p.IsActive
+                        && p.NotificationsEnabled
+                        && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
+                    .Where( p => !siteId.HasValue || siteId.Value == p.SiteId )
+                    .Select( p => p.DeviceRegistrationId )
+                    .Distinct()
+                    .ToList();
+            }
+
+            return new List<string>();
         }
 
         /// <summary>
@@ -823,7 +873,13 @@ namespace Rock.Communication.Transport
                                 recipient.MergeFields.TryAdd( mergeField.Key, mergeField.Value );
                             }
 
-                            PushMessageLegacy( sender, recipient.To.SplitDelimitedValues( "," ).ToList(), pushMessage, recipient.MergeFields );
+                            List<string> to;
+                            using ( var recipientRockContext = new RockContext() )
+                            {
+                                to = GetDeviceRegistrationIds( recipientRockContext, recipient, pushMessage.Data?.MobileApplicationId );
+                            }
+
+                            PushMessageLegacy( sender, to, pushMessage, recipient.MergeFields );
                         }
                         catch ( Exception ex )
                         {
@@ -836,7 +892,15 @@ namespace Rock.Communication.Transport
                 {
                     try
                     {
-                        PushMessageLegacy( sender, recipients.SelectMany( r => r.To.SplitDelimitedValues( "," ).ToList() ).ToList(), pushMessage, mergeFields );
+                        List<string> to;
+                        using ( var recipientRockContext = new RockContext() )
+                        {
+                            to = recipients
+                                .SelectMany( r => GetDeviceRegistrationIds( recipientRockContext, r, pushMessage.Data?.MobileApplicationId ) )
+                                .ToList();
+                        }
+
+                        PushMessageLegacy( sender, to, pushMessage, mergeFields );
                     }
                     catch ( Exception ex )
                     {

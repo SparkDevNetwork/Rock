@@ -125,7 +125,7 @@
 // ========================== ADMIN FOOTER ==========================
 #cms-admin-footer {
   position:     fixed;
-  right:        0;
+  right:        var(--docked-panel-push-width, 0);
   bottom:       0;
   z-index:      $zindex-modal - 1;
   width:        100%;

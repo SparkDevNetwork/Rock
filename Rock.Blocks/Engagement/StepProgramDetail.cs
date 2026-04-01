@@ -355,6 +355,7 @@ namespace Rock.Blocks.Engagement
             } ).ToList();
 
             bag.WorkflowTriggers = entity.StepWorkflowTriggers
+                .Where( wt => wt.StepTypeId == null )
                 .OrderBy( c => c.TypeName ).ThenBy( c => c.TriggerType.ConvertToString() )
                 .Select( wt => new StepProgramWorkflowTriggerBag()
                 {
@@ -633,7 +634,6 @@ namespace Rock.Blocks.Engagement
                 workflowTrigger.TriggerType = stateTrigger.WorkflowTrigger.Value.ConvertToEnum<StepWorkflowTrigger.WorkflowTriggerCondition>();
                 workflowTrigger.TypeQualifier = qualifierSettings.ToSelectionString();
                 workflowTrigger.WorkflowName = stateTrigger.WorkflowType.Text;
-                workflowTrigger.StepTypeId = null;
             }
         }
 

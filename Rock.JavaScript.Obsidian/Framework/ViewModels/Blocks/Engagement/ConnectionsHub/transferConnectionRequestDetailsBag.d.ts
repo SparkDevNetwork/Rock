@@ -40,6 +40,9 @@ export type TransferConnectionRequestDetailsBag = {
     /** Gets or sets the encrypted identifier key of the connection request being transferred. */
     connectionRequestIdKey?: string | null;
 
+    /** Gets or sets the Connector Items for the selected Opportunity */
+    connectorItems?: ListItemBag[] | null;
+
     /** Gets or sets the GUID of the campus currently assigned to this request. */
     currentCampusGuid?: Guid | null;
 
@@ -54,9 +57,6 @@ export type TransferConnectionRequestDetailsBag = {
 
     /** Gets or sets the GUID of the current connector's person alias. */
     currentConnectorPersonAliasGuid?: Guid | null;
-
-    /** Gets or sets the current due date of this request. */
-    currentDueDate?: string | null;
 
     /** Gets or sets the list of connection statuses available for selection during the transfer. */
     statuses?: ListItemBag[] | null;

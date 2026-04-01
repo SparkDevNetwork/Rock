@@ -51,7 +51,6 @@
     import { BulkRequestViewBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/bulkRequestViewBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ViewOptions } from "./types.partial";
-    import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
     import { ConnectionRequestUpdateBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestUpdateBag";
 
     const props = defineProps({
@@ -62,11 +61,6 @@
 
         isSequentialMode: {
             type: Boolean as PropType<boolean>,
-            required: true
-        },
-
-        connectionStatuses: {
-            type: Array as PropType<ConnectionStatusBag[]>,
             required: true
         },
 
@@ -108,12 +102,7 @@
     const status = ref();
     const note = ref();
 
-    const isNoteRequired = computed(() => {
-        if (props.isSequentialMode) {
-            return props.requestDetails.some(s => s.connectionStatus?.isNoteRequiredOnCompletion) ? "required" : "";
-        }
-        return props.connectionStatuses.find(a => a.guid === status.value)?.isNoteRequiredOnCompletion ? "required" : "";
-    });
+    const isNoteRequired = computed(() => props.requestDetails.some(s => s.connectionStatus?.isNoteRequiredOnCompletion) ? "required" : "");
 
     const title = computed(() => props.isSequentialMode ? "Advance to Next Status" : "Change Status");
 

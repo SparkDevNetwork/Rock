@@ -186,7 +186,7 @@ namespace Rock.Model
             if ( toDateTime.HasValue )
             {
                 var toDate = toDateTime.Value.Date;
-                qry = qry.Where( a => a.OccurrenceDate < ( toDate ) );
+                qry = qry.Where( a => a.OccurrenceDate <= ( toDate ) );
             }
 
             // Location Filter
@@ -224,7 +224,20 @@ namespace Rock.Model
                 .ToList();
 
             var startDate = fromDateTime ?? RockDateTime.Today.AddMonths( -2 );
-            var endDate = toDateTime ?? RockDateTime.Today.AddDays( 1 );
+
+            /*
+                 3/26/2026 - NA
+
+                 Adjust endDate handling for GetICalOccurrences to ensure full-day inclusion when a date-only value is provided. 
+                 Date-only inputs default to midnight, which excludes later occurrences on that day. To correct this, we extend 
+                 the end boundary by one day, but only when an explicit end date is provided. This also addresses the
+                 groupSchedule.WeeklyDayOfWeek case for a similar problem below.
+
+                 Reason: Prevents end-date occurrences from being unintentionally excluded. (issue #6749)
+            */
+            var endDate = toDateTime.HasValue
+                ? toDateTime.Value.AddDays( 1 )
+                : RockDateTime.Today.AddDays( 1 );
 
             if ( !string.IsNullOrWhiteSpace( groupSchedule.iCalendarContent ) )
             {

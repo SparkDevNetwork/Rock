@@ -19,7 +19,7 @@ import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { toNumber } from "@Obsidian/Utility/numberUtils";
-import { ConfigurationValueKey } from "./dateField.partial";
+import { ConfigurationKey } from "./dateField.partial";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
 import DatePicker from "@Obsidian/Controls/datePicker.obs";
@@ -67,19 +67,19 @@ export const EditComponent = defineComponent({
         },
 
         isDatePartsPicker(): boolean {
-            const config = this.configurationValues[ConfigurationValueKey.DatePickerControlType];
+            const config = this.configurationValues[ConfigurationKey.DatePickerControlType];
             return config?.toLowerCase() === "date parts picker";
         },
 
         configAttributes(): Record<string, number | boolean> {
             const attributes: Record<string, number | boolean> = {};
 
-            const displayCurrentConfig = this.configurationValues[ConfigurationValueKey.DisplayCurrentOption];
+            const displayCurrentConfig = this.configurationValues[ConfigurationKey.DisplayCurrentOption];
             const displayCurrent = asBoolean(displayCurrentConfig);
             attributes.displayCurrentOption = displayCurrent;
             attributes.isCurrentDateOffset = displayCurrent;
 
-            const futureYearConfig = this.configurationValues[ConfigurationValueKey.FutureYearCount];
+            const futureYearConfig = this.configurationValues[ConfigurationKey.FutureYearCount];
             const futureYears = toNumber(futureYearConfig);
 
             if (futureYears !== null) {
@@ -174,7 +174,7 @@ export const FilterComponent = defineComponent({
 
         // Get the configuration values and force the DisplayCurrentOption to True.
         const configurationValues = ref({ ...props.configurationValues });
-        configurationValues.value[ConfigurationValueKey.DisplayCurrentOption] = "True";
+        configurationValues.value[ConfigurationKey.DisplayCurrentOption] = "True";
 
         /** True if the comparison type is of type Between. */
         const isComparisonTypeBetween = computed((): boolean => props.comparisonType === ComparisonType.Between);
@@ -182,7 +182,7 @@ export const FilterComponent = defineComponent({
         // Watch for changes in the configuration values and update our own list.
         watch(() => props.configurationValues, () => {
             configurationValues.value = { ...props.configurationValues };
-            configurationValues.value[ConfigurationValueKey.DisplayCurrentOption] = "True";
+            configurationValues.value[ConfigurationKey.DisplayCurrentOption] = "True";
         });
         // Watch for changes from the standard DatePicker.
         watch(dateValue, () => {
@@ -225,11 +225,11 @@ export const FilterComponent = defineComponent({
 });
 
 const defaults = {
-    [ConfigurationValueKey.Format]: "",
-    [ConfigurationValueKey.DisplayDiff]: "False",
-    [ConfigurationValueKey.DisplayCurrentOption]: "False",
-    [ConfigurationValueKey.DatePickerControlType]: "Date Picker",
-    [ConfigurationValueKey.FutureYearCount]: ""
+    [ConfigurationKey.Format]: "",
+    [ConfigurationKey.DisplayDiff]: "False",
+    [ConfigurationKey.DisplayCurrentOption]: "False",
+    [ConfigurationKey.DatePickerControlType]: "Date Picker",
+    [ConfigurationKey.FutureYearCount]: ""
 };
 
 export const ConfigurationComponent = defineComponent({
@@ -276,18 +276,18 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.Format] = format.value ?? defaults[ConfigurationValueKey.Format];
-            newValue[ConfigurationValueKey.DisplayDiff] = asTrueFalseOrNull(displayDiff.value) ?? defaults[ConfigurationValueKey.DisplayDiff];
-            newValue[ConfigurationValueKey.DisplayCurrentOption] = asTrueFalseOrNull(displayCurrentOption.value) ?? defaults[ConfigurationValueKey.DisplayCurrentOption];
-            newValue[ConfigurationValueKey.DatePickerControlType] = pickerControlType.value ?? defaults[ConfigurationValueKey.DatePickerControlType];
-            newValue[ConfigurationValueKey.FutureYearCount] = futureYears.value?.toString() ?? defaults[ConfigurationValueKey.FutureYearCount];
+            newValue[ConfigurationKey.Format] = format.value ?? defaults[ConfigurationKey.Format];
+            newValue[ConfigurationKey.DisplayDiff] = asTrueFalseOrNull(displayDiff.value) ?? defaults[ConfigurationKey.DisplayDiff];
+            newValue[ConfigurationKey.DisplayCurrentOption] = asTrueFalseOrNull(displayCurrentOption.value) ?? defaults[ConfigurationKey.DisplayCurrentOption];
+            newValue[ConfigurationKey.DatePickerControlType] = pickerControlType.value ?? defaults[ConfigurationKey.DatePickerControlType];
+            newValue[ConfigurationKey.FutureYearCount] = futureYears.value?.toString() ?? defaults[ConfigurationKey.FutureYearCount];
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.Format] !== (props.modelValue[ConfigurationValueKey.Format] ?? defaults[ConfigurationValueKey.Format])
-                || newValue[ConfigurationValueKey.DisplayDiff] !== (props.modelValue[ConfigurationValueKey.DisplayDiff] ?? defaults[ConfigurationValueKey.DisplayDiff])
-                || newValue[ConfigurationValueKey.DisplayCurrentOption] !== (props.modelValue[ConfigurationValueKey.DisplayCurrentOption] ?? defaults[ConfigurationValueKey.DisplayCurrentOption])
-                || newValue[ConfigurationValueKey.DatePickerControlType] !== (props.modelValue[ConfigurationValueKey.DatePickerControlType] ?? defaults[ConfigurationValueKey.DatePickerControlType])
-                || newValue[ConfigurationValueKey.FutureYearCount] !== (props.modelValue[ConfigurationValueKey.FutureYearCount] ?? defaults[ConfigurationValueKey.FutureYearCount]);
+            const anyValueChanged = newValue[ConfigurationKey.Format] !== (props.modelValue[ConfigurationKey.Format] ?? defaults[ConfigurationKey.Format])
+                || newValue[ConfigurationKey.DisplayDiff] !== (props.modelValue[ConfigurationKey.DisplayDiff] ?? defaults[ConfigurationKey.DisplayDiff])
+                || newValue[ConfigurationKey.DisplayCurrentOption] !== (props.modelValue[ConfigurationKey.DisplayCurrentOption] ?? defaults[ConfigurationKey.DisplayCurrentOption])
+                || newValue[ConfigurationKey.DatePickerControlType] !== (props.modelValue[ConfigurationKey.DatePickerControlType] ?? defaults[ConfigurationKey.DatePickerControlType])
+                || newValue[ConfigurationKey.FutureYearCount] !== (props.modelValue[ConfigurationKey.FutureYearCount] ?? defaults[ConfigurationKey.FutureYearCount]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -314,11 +314,11 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            format.value = props.modelValue[ConfigurationValueKey.Format] ?? "";
-            displayDiff.value = asBoolean(props.modelValue[ConfigurationValueKey.DisplayDiff]);
-            displayCurrentOption.value = asBoolean(props.modelValue[ConfigurationValueKey.DisplayCurrentOption]);
-            pickerControlType.value = props.modelValue[ConfigurationValueKey.DatePickerControlType] ?? "Date Picker";
-            futureYears.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.FutureYearCount]);
+            format.value = props.modelValue[ConfigurationKey.Format] ?? "";
+            displayDiff.value = asBoolean(props.modelValue[ConfigurationKey.DisplayDiff]);
+            displayCurrentOption.value = asBoolean(props.modelValue[ConfigurationKey.DisplayCurrentOption]);
+            pickerControlType.value = props.modelValue[ConfigurationKey.DatePickerControlType] ?? "Date Picker";
+            futureYears.value = toNumberOrNull(props.modelValue[ConfigurationKey.FutureYearCount]);
         }, {
             immediate: true
         });
@@ -334,11 +334,11 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(format, (val) => maybeUpdateConfiguration(ConfigurationValueKey.Format, val ?? defaults[ConfigurationValueKey.Format]));
-        watch(displayDiff, (val) => maybeUpdateConfiguration(ConfigurationValueKey.DisplayDiff, asTrueFalseOrNull(val) ?? defaults[ConfigurationValueKey.DisplayDiff]));
-        watch(displayCurrentOption, (val) => maybeUpdateConfiguration(ConfigurationValueKey.DisplayCurrentOption, asTrueFalseOrNull(val) ?? defaults[ConfigurationValueKey.DisplayCurrentOption]));
-        watch(pickerControlType, (val) => maybeUpdateConfiguration(ConfigurationValueKey.DatePickerControlType, val || defaults[ConfigurationValueKey.DatePickerControlType]));
-        watch(futureYears, (val) => maybeUpdateConfiguration(ConfigurationValueKey.FutureYearCount, val?.toString() ?? defaults[ConfigurationValueKey.FutureYearCount]));
+        watch(format, (val) => maybeUpdateConfiguration(ConfigurationKey.Format, val ?? defaults[ConfigurationKey.Format]));
+        watch(displayDiff, (val) => maybeUpdateConfiguration(ConfigurationKey.DisplayDiff, asTrueFalseOrNull(val) ?? defaults[ConfigurationKey.DisplayDiff]));
+        watch(displayCurrentOption, (val) => maybeUpdateConfiguration(ConfigurationKey.DisplayCurrentOption, asTrueFalseOrNull(val) ?? defaults[ConfigurationKey.DisplayCurrentOption]));
+        watch(pickerControlType, (val) => maybeUpdateConfiguration(ConfigurationKey.DatePickerControlType, val || defaults[ConfigurationKey.DatePickerControlType]));
+        watch(futureYears, (val) => maybeUpdateConfiguration(ConfigurationKey.FutureYearCount, val?.toString() ?? defaults[ConfigurationKey.FutureYearCount]));
 
         return {
             format,

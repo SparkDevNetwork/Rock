@@ -21,7 +21,7 @@ import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { escapeHtml, truncate } from "@Obsidian/Utility/stringUtils";
 
-const enum ConfigurationValueKey  {
+const enum ConfigurationKey {
     HtmlValue = "htmlvalue"
 }
 
@@ -44,7 +44,7 @@ export class MarkdownFieldType extends FieldTypeBase {
     }
 
     public override getHtmlValue(_value: string, configurationValues: Record<string, string>, isEscaped?: boolean): string {
-        return isEscaped ? escapeHtml(configurationValues[ConfigurationValueKey.HtmlValue]) : configurationValues[ConfigurationValueKey.HtmlValue];
+        return isEscaped ? escapeHtml(configurationValues[ConfigurationKey.HtmlValue]) : configurationValues[ConfigurationKey.HtmlValue];
     }
 
     public override getCondensedTextValue(value: string, configurationValues: Record<string, string>): string {

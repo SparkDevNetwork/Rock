@@ -32,9 +32,13 @@ export const enum PreferenceKey {
     FilterDueConnectionTypIdKey = "FilterDue_ConnectionTypeIdKey_{0}",
 }
 
+export const enum NavigationUrlKey {
+    PersonProfilePage = "PersonProfilePage",
+    GroupDetailPage = "GroupDetailPage",
+}
+
 export type ViewOptions = {
     sortBy?: string | null,
-    // isAssignedToMe: boolean,
     gridDataToShow?: string[] | null,
     isRequestSourceShown: boolean,
     stateFilter?: string[] | null,

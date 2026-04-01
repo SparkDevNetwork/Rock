@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { AISummaryTriggerMode } from "@Obsidian/Enums/Connection/aiSummaryTriggerMode";
 import { Guid } from "@Obsidian/Types";
 import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionActivityTypeBag";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
@@ -30,6 +31,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Represents the configuration options used to render the connection request detail panel. */
 export type ConnectionRequestDetailOptionsBag = {
+    /** Gets or sets the trigger mode that determines when an AI summary should be generated and displayed for a connection request. */
+    aiSummaryTrigger: AISummaryTriggerMode;
+
     /** Gets or sets a value indicating whether celebrations are enabled for connection requests. */
     areCelebrationsEnabled: boolean;
 

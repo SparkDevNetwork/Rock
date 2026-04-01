@@ -107,6 +107,9 @@ export type ConnectionTypeBag = {
     /** Gets or sets a value indicating whether this connection type requires a placement group to connect. */
     requiresPlacementGroupToConnect: boolean;
 
+    /** Gets or sets a value indicating whether all Connection Request due dates and due soon dates under this connection type should be recalculated during post save. */
+    shouldRecalculateRequestDueAndDueSoonDates: boolean;
+
     /** Gets or sets the connection type sources. */
     sources?: ConnectionTypeSourceBag[] | null;
 

@@ -33,15 +33,9 @@ namespace Rock.ViewModels.Blocks.Core.ExceptionOccurrenceList
         public string ExceptionType { get; set; }
 
         /// <summary>
-        /// Gets or sets the truncated description from the template exception.
+        /// Gets or sets the full description from the template exception.
         /// </summary>
         public string Description { get; set; }
-
-        /// <summary>
-        /// Gets or sets the formatted header text that combines the exception
-        /// type and truncated description (e.g., "(System.Web.HttpException) The file...").
-        /// </summary>
-        public string HeaderText { get; set; }
 
         /// <summary>
         /// Gets or sets the list of available sites for the filter dropdown.

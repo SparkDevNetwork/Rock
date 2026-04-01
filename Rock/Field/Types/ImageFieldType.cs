@@ -44,38 +44,60 @@ namespace Rock.Field.Types
 
         #region Configuration
 
+        private static class ConfigurationKey
+        {
+            // FYI: Add new configuration keys here. They should be camelCase for consistency.
+            public const string FormatAsLink = FORMAT_AS_LINK;
+            public const string ImageTagTemplate = IMG_TAG_TEMPLATE;
+            public const string ImageUrl = IMAGE_URL;
+            public const string BinaryFileType = "binaryFileType";
+            public const string EnableCrop = "enableCrop";
+            public const string TargetWidth = "targetWidth";
+            public const string TargetHeight = "targetHeight";
+            public const string MinimumWidth = "minimumWidth";
+            public const string MinimumHeight = "minimumHeight";
+        }
+
+        #region New configuration keys should be added to ConfigurationKey above.
+
         /// <summary>
         /// if true, wrap the image with a an href to the full size image
         /// </summary>
         protected const string FORMAT_AS_LINK = "formatAsLink";
 
         /// <summary>
-        /// The img tag template
+        /// The img tag template0
         /// </summary>
         protected const string IMG_TAG_TEMPLATE = "img_tag_template";
-
-        /// <summary>
-        /// The default image tag template
-        /// </summary>
-        protected const string DefaultImageTagTemplate = "<img src='{{ ImageUrl }}' class='img-responsive' />";
 
         /// <summary>
         /// The image URL generated from the image guid.
         /// </summary>
         protected const string IMAGE_URL = "imageUrl";
 
+        #endregion
+
+        #region Configuration Value Defaults
+
+        /// <summary>
+        /// The default image tag template
+        /// </summary>
+        protected const string DefaultImageTagTemplate = "<img src='{{ ImageUrl }}' class='img-responsive' />";
+
+        #endregion
+
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
         {
             var publicValues = new Dictionary<string, string>( base.GetPublicConfigurationValues( privateConfigurationValues, usage, value ) );
 
-            var imageTagTemplate = publicValues.GetValueOrNull( IMG_TAG_TEMPLATE );
+            var imageTagTemplate = publicValues.GetValueOrNull( ConfigurationKey.ImageTagTemplate );
             if ( imageTagTemplate.IsNullOrWhiteSpace() )
             {
-                publicValues.AddOrReplace( IMG_TAG_TEMPLATE, DefaultImageTagTemplate );
+                publicValues.AddOrReplace( ConfigurationKey.ImageTagTemplate, DefaultImageTagTemplate );
             }
 
-            publicValues[IMAGE_URL] = FileUrlHelper.GetImageUrl( value.AsGuid() );
+            publicValues[ConfigurationKey.ImageUrl] = FileUrlHelper.GetImageUrl( value.AsGuid() );
 
             return publicValues;
         }
@@ -85,7 +107,7 @@ namespace Rock.Field.Types
         {
             var privateValues = new Dictionary<string, string>( base.GetPrivateConfigurationValues( publicConfigurationValues ) );
 
-            privateValues.Remove( IMAGE_URL );
+            privateValues.Remove( ConfigurationKey.ImageUrl );
 
             return privateValues;
         }
@@ -193,8 +215,8 @@ namespace Rock.Field.Types
             }
 
             var imageUrl = FileUrlHelper.GetImageUrl( imageGuid );
-            var imageTagTemplate = privateConfigurationValues.GetValueOrNull( IMG_TAG_TEMPLATE ).ToStringOrDefault( DefaultImageTagTemplate );
-            var formatAsLink = privateConfigurationValues.GetValueOrNull( FORMAT_AS_LINK ).AsBoolean();
+            var imageTagTemplate = privateConfigurationValues.GetValueOrNull( ConfigurationKey.ImageTagTemplate ).ToStringOrDefault( DefaultImageTagTemplate );
+            var formatAsLink = privateConfigurationValues.GetValueOrNull( ConfigurationKey.FormatAsLink ).AsBoolean();
             var mergeFields = new Dictionary<string, object>()
             {
                 ["ImageUrl"] = imageUrl + queryParms,
@@ -221,12 +243,12 @@ namespace Rock.Field.Types
         {
             var oldWidth = oldPrivateConfigurationValues.GetValueOrNull( "width" ) ?? string.Empty;
             var oldHeight = oldPrivateConfigurationValues.GetValueOrNull( "height" ) ?? string.Empty;
-            var oldImgTagTemplate = oldPrivateConfigurationValues.GetValueOrNull( IMG_TAG_TEMPLATE ) ?? string.Empty;
-            var oldFormatAsLink = oldPrivateConfigurationValues.GetValueOrNull( FORMAT_AS_LINK ) ?? string.Empty;
+            var oldImgTagTemplate = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ImageTagTemplate ) ?? string.Empty;
+            var oldFormatAsLink = oldPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.FormatAsLink ) ?? string.Empty;
             var newWidth = newPrivateConfigurationValues.GetValueOrNull( "width" ) ?? string.Empty;
             var newHeight = newPrivateConfigurationValues.GetValueOrNull( "height" ) ?? string.Empty;
-            var newImgTagTemplate = newPrivateConfigurationValues.GetValueOrNull( IMG_TAG_TEMPLATE ) ?? string.Empty;
-            var newFormatAsLink = newPrivateConfigurationValues.GetValueOrNull( FORMAT_AS_LINK ) ?? string.Empty;
+            var newImgTagTemplate = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.ImageTagTemplate ) ?? string.Empty;
+            var newFormatAsLink = newPrivateConfigurationValues.GetValueOrNull( ConfigurationKey.FormatAsLink ) ?? string.Empty;
 
             if ( oldWidth != newWidth )
             {
@@ -284,8 +306,13 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             var configKeys = base.ConfigurationKeys();
-            configKeys.Add( FORMAT_AS_LINK );
-            configKeys.Add( IMG_TAG_TEMPLATE );
+            configKeys.Add( ConfigurationKey.FormatAsLink );
+            configKeys.Add( ConfigurationKey.ImageTagTemplate );
+            configKeys.Add( ConfigurationKey.EnableCrop );
+            configKeys.Add( ConfigurationKey.TargetWidth );
+            configKeys.Add( ConfigurationKey.TargetHeight );
+            configKeys.Add( ConfigurationKey.MinimumWidth );
+            configKeys.Add( ConfigurationKey.MinimumHeight );
             return configKeys;
         }
 
@@ -309,6 +336,31 @@ namespace Rock.Field.Types
             codeEditorImageTabTemplate.EditorMode = CodeEditorMode.Lava;
             controls.Add( codeEditorImageTabTemplate );
 
+            var cbCropEnabled = new RockCheckBox();
+            cbCropEnabled.Label = "Enable Crop";
+            cbCropEnabled.Help = "Enable this to allow cropping of the image when uploading.<br/>Only supported by blocks using Obsidian.";
+            controls.Add( cbCropEnabled );
+
+            var nbTargetWidth = new NumberBox();
+            nbTargetWidth.Label = "Target Width";
+            nbTargetWidth.Help = "The width that the image will be resized to when uploading.<br/>Only supported by blocks using Obsidian.";
+            controls.Add( nbTargetWidth );
+
+            var nbTargetHeight = new NumberBox();
+            nbTargetHeight.Label = "Target Height";
+            nbTargetHeight.Help = "The height that the image will be resized to when uploading.<br/>Only supported by blocks using Obsidian.";
+            controls.Add( nbTargetHeight );
+
+            var nbMinimumWidth = new NumberBox();
+            nbMinimumWidth.Label = "Minimum Width";
+            nbMinimumWidth.Help = "The minimum width required for the image to be uploaded.<br/>Only supported by blocks using Obsidian.";
+            controls.Add( nbMinimumWidth );
+
+            var nbMinimumHeight = new NumberBox();
+            nbMinimumHeight.Label = "Minimum Height";
+            nbMinimumHeight.Help = "The minimum height required for the image to be uploaded.<br/>Only supported by blocks using Obsidian.";
+            controls.Add( nbMinimumHeight );
+
             return controls;
         }
 
@@ -320,21 +372,49 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = base.ConfigurationValues( controls );
-            configurationValues.Add( FORMAT_AS_LINK, new ConfigurationValue( "Format Image as Link", "Enable this to navigate to a full size image when the image is clicked", string.Empty ) );
-            configurationValues.Add( IMG_TAG_TEMPLATE, new ConfigurationValue( "Image Tag Template", "The Lava template to use when rendering as an html img tag", DefaultImageTagTemplate ) );
+            configurationValues.Add( ConfigurationKey.FormatAsLink, new ConfigurationValue( "Format Image as Link", "Enable this to navigate to a full size image when the image is clicked", string.Empty ) );
+            configurationValues.Add( ConfigurationKey.ImageTagTemplate, new ConfigurationValue( "Image Tag Template", "The Lava template to use when rendering as an html img tag", DefaultImageTagTemplate ) );
+            configurationValues.Add( ConfigurationKey.EnableCrop, new ConfigurationValue( "Enable Crop", "Enable this to allow cropping of the image when uploading.<br/>Only supported by blocks using Obsidian.", string.Empty ) );
+            configurationValues.Add( ConfigurationKey.TargetWidth, new ConfigurationValue( "Target Width", "The width that the image will be resized to when uploading.<br/>Only supported by blocks using Obsidian.", string.Empty ) );
+            configurationValues.Add( ConfigurationKey.TargetHeight, new ConfigurationValue( "Target Height", "The height that the image will be resized to when uploading.<br/>Only supported by blocks using Obsidian.", string.Empty ) );
+            configurationValues.Add( ConfigurationKey.MinimumWidth, new ConfigurationValue( "Minimum Width", "The minimum width required for the image to be uploaded.<br/>Only supported by blocks using Obsidian.", string.Empty ) );
+            configurationValues.Add( ConfigurationKey.MinimumHeight, new ConfigurationValue( "Minimum Height", "The minimum height required for the image to be uploaded.<br/>Only supported by blocks using Obsidian.", string.Empty ) );
 
-            if ( controls != null && controls.Count > 2 )
+            if ( controls != null )
             {
-                var cbFormatAsLink = controls[1] as RockCheckBox;
-                if ( cbFormatAsLink != null )
+                if ( controls.ElementAtOrDefault( 1 ) is RockCheckBox cbFormatAsLink )
                 {
-                    configurationValues[FORMAT_AS_LINK].Value = cbFormatAsLink.Checked.ToTrueFalse();
+                    configurationValues[ConfigurationKey.FormatAsLink].Value = cbFormatAsLink.Checked.ToTrueFalse();
                 }
 
-                var codeEditorImageTabTemplate = controls[2] as CodeEditor;
-                if ( codeEditorImageTabTemplate != null )
+                if ( controls.ElementAtOrDefault( 2 ) is CodeEditor codeEditorImageTabTemplate )
                 {
-                    configurationValues[IMG_TAG_TEMPLATE].Value = codeEditorImageTabTemplate.Text;
+                    configurationValues[ConfigurationKey.ImageTagTemplate].Value = codeEditorImageTabTemplate.Text;
+                }
+
+                if ( controls.ElementAtOrDefault( 3 ) is RockCheckBox cbEnableCrop )
+                {
+                    configurationValues[ConfigurationKey.EnableCrop].Value = cbEnableCrop.Checked.ToTrueFalse();
+                }
+
+                if ( controls.ElementAtOrDefault( 4 ) is NumberBox nbTargetWidth )
+                {
+                    configurationValues[ConfigurationKey.TargetWidth].Value = nbTargetWidth.Text;
+                }
+
+                if ( controls.ElementAtOrDefault( 5 ) is NumberBox nbTargetHeight )
+                {
+                    configurationValues[ConfigurationKey.TargetHeight].Value = nbTargetHeight.Text;
+                }
+
+                if ( controls.ElementAtOrDefault( 6 ) is NumberBox nbMinimumWidth )
+                {
+                    configurationValues[ConfigurationKey.MinimumWidth].Value = nbMinimumWidth.Text;
+                }
+
+                if ( controls.ElementAtOrDefault( 7 ) is NumberBox nbMinimumHeight )
+                {
+                    configurationValues[ConfigurationKey.MinimumHeight].Value = nbMinimumHeight.Text;
                 }
             }
 
@@ -350,22 +430,55 @@ namespace Rock.Field.Types
         {
             base.SetConfigurationValues( controls, configurationValues );
 
-            if ( controls != null && controls.Count > 2 && configurationValues != null )
+            if ( controls != null && configurationValues != null )
             {
-                var cbFormatAsLink = controls[1] as RockCheckBox;
-                if ( cbFormatAsLink != null && configurationValues.ContainsKey( FORMAT_AS_LINK ) )
+                if ( controls.ElementAtOrDefault( 1 ) is RockCheckBox cbFormatAsLink
+                     && configurationValues.TryGetValue( ConfigurationKey.FormatAsLink, out var formatAsLink ) )
                 {
-                    cbFormatAsLink.Checked = configurationValues[FORMAT_AS_LINK].Value.AsBooleanOrNull() ?? false;
+                    cbFormatAsLink.Checked = formatAsLink.Value.AsBooleanOrNull() ?? false;
                 }
 
-                var codeEditorImageTabTemplate = controls[2] as CodeEditor;
-                if ( codeEditorImageTabTemplate != null && configurationValues.ContainsKey( IMG_TAG_TEMPLATE ) )
+                if ( controls.ElementAtOrDefault( 2 ) is CodeEditor codeEditorImageTabTemplate
+                     && configurationValues.TryGetValue( ConfigurationKey.ImageTagTemplate, out var imageTagTemplate ) )
                 {
-                    codeEditorImageTabTemplate.Text = configurationValues[IMG_TAG_TEMPLATE].Value;
-                    if ( codeEditorImageTabTemplate.Text.IsNullOrWhiteSpace() )
+                    if ( imageTagTemplate.Value.IsNotNullOrWhiteSpace() )
+                    {
+                        codeEditorImageTabTemplate.Text = imageTagTemplate.Value;
+                    }
+                    else
                     {
                         codeEditorImageTabTemplate.Text = DefaultImageTagTemplate;
                     }
+                }
+
+                if ( controls.ElementAtOrDefault( 3 ) is RockCheckBox cbEnableCrop
+                     && configurationValues.TryGetValue( ConfigurationKey.EnableCrop, out var enableCrop ) )
+                {
+                    cbEnableCrop.Checked = enableCrop.Value.AsBooleanOrNull() ?? false;
+                }
+
+                if ( controls.ElementAtOrDefault( 4 ) is NumberBox nbTargetWidth
+                     && configurationValues.TryGetValue( ConfigurationKey.TargetWidth, out var targetWidth ) )
+                {
+                    nbTargetWidth.Text = targetWidth.Value;
+                }
+
+                if ( controls.ElementAtOrDefault( 5 ) is NumberBox nbTargetHeight
+                     && configurationValues.TryGetValue( ConfigurationKey.TargetHeight, out var targetHeight ) )
+                {
+                    nbTargetHeight.Text = targetHeight.Value;
+                }
+
+                if ( controls.ElementAtOrDefault( 6 ) is NumberBox nbMinimumWidth
+                     && configurationValues.TryGetValue( ConfigurationKey.MinimumWidth, out var minimumWidth ) )
+                {
+                    nbMinimumWidth.Text = minimumWidth.Value;
+                }
+
+                if ( controls.ElementAtOrDefault( 7 ) is NumberBox nbMinimumHeight
+                     && configurationValues.TryGetValue( ConfigurationKey.MinimumHeight, out var minimumHeight ) )
+                {
+                    nbMinimumHeight.Text = minimumHeight.Value;
                 }
             }
         }
@@ -396,9 +509,15 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var control = new Web.UI.Controls.ImageUploader { ID = id };
-            if ( configurationValues != null && configurationValues.ContainsKey( "binaryFileType" ) )
+            if ( configurationValues != null )
             {
-                control.BinaryFileTypeGuid = configurationValues["binaryFileType"].Value.AsGuid();
+                if ( configurationValues.TryGetValue( ConfigurationKey.BinaryFileType, out var binaryFileType ) )
+                {
+                    control.BinaryFileTypeGuid = binaryFileType.Value.AsGuid();
+                }
+
+                // The WebForms control does not support cropping, target dimensions, and minimum dimensions.
+                // Those are only supported by the Obsidian control.
             }
 
             return control;

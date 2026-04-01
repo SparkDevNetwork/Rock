@@ -31,6 +31,9 @@ export type PlacementGroupDetailsBag = {
     /** Gets or sets the Campus Guid of the Placement Group. */
     campusGuid?: Guid | null;
 
+    /** The Id for the Placement Group. TODO - Convert this to IdKey when Group Detail supports it. */
+    groupId?: string | null;
+
     /** Gets or sets the group member attributes for the selected placement group. */
     groupMemberAttributes?: Record<string, PublicAttributeBag> | null;
 

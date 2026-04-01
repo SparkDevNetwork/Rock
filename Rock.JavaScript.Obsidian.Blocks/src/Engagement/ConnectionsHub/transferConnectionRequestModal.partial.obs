@@ -61,24 +61,10 @@
                     <div class="col-md-6">
                         <ConditionalWell v-if="selectedConnectorOption === 'select'">
                             <DropDownList v-model="selectedConnector"
-                                          :items="selectedOpportunityDetails?.potentialConnectors ?? []"
+                                          :items="transferDetails?.connectorItems ?? []"
                                           label="Select Connector"
-                                          :showBlankItem="false" />
-                        </ConditionalWell>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <RadioButtonList v-model="selectedDueDateOption"
-                                         :items="radioDueDateItems"
-                                         label="Due Date" />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <ConditionalWell v-if="selectedDueDateOption === 'select'">
-                            <DatePicker v-model="selectedDueDate"
-                                        label="Select Due Date" />
+                                          :showBlankItem="false"
+                                          :enhanceForLongLists="true" />
                         </ConditionalWell>
                     </div>
                 </div>
@@ -91,7 +77,7 @@
                 </div>
             </template>
             <template v-else>
-                <ContentSectionContainer :sidebar="!!transferDetails?.connectionOpportunities && transferDetails.connectionOpportunities.length > 3">
+                <ContentSectionContainer :sidebar="false">
                     <ContentSection light
                                     overflowText="Show Filters">
                         <ContentStack>
@@ -201,6 +187,7 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: boolean): void;
+        (e: "fetchConnectorOptions", connectionOpportunityGuid: string, campusGuid: string): void;
         (e: "transfer", value: TransferConnectionRequestBag): void;
         (e: "close"): void;
         (e: "dismissErrorMessage"): void;
@@ -214,8 +201,6 @@
     const selectedCampus = ref();
     const selectedConnectorOption = ref<string>("default");
     const selectedConnector = ref();
-    const selectedDueDateOption = ref<string>("current");
-    const selectedDueDate = ref();
     const note = ref<string>("");
 
     // Filters
@@ -247,21 +232,6 @@
         },
         {
             text: "No Connector",
-            value: "none"
-        }
-    ]);
-
-    const radioDueDateItems = computed(() => <ListItemBag[]>[
-        {
-            text: `Current Due Date: ${RockDateTime.parseISO(props.transferDetails?.currentDueDate ?? "")?.toLocaleString(DateTimeFormat.DateMedium)}`,
-            value: "current"
-        },
-        {
-            text: "Select Due Date",
-            value: "select"
-        },
-        {
-            text: "No Due Date",
             value: "none"
         }
     ]);
@@ -344,8 +314,6 @@
             statusGuid: selectedStatus.value,
             connectorOption: selectedConnectorOption.value,
             connectorPersonAliasGuid: selectedConnector.value,
-            dueDateOption: selectedDueDateOption.value,
-            dueDate: selectedDueDate.value,
             note: note.value
         };
 
@@ -359,7 +327,6 @@
     function resetModal(): void {
         warningMessage.value = undefined;
         selectedConnectorOption.value = "default";
-        selectedDueDateOption.value = "current";
         note.value = "";
 
         isInSearchMode.value = false;
@@ -367,6 +334,14 @@
         selectedCampusFilter.value = undefined;
         selectedAttributeValueFilters.value = undefined;
     }
+
+    watch([selectedOpportunity, selectedCampus], () => {
+        let campus = props.transferDetails?.currentCampusGuid;
+        if (selectedOpportunityDetails.value?.showCampusOnTransfer) {
+            campus = selectedCampus.value;
+        }
+        emit("fetchConnectorOptions", selectedOpportunity.value ?? "", campus ?? "");
+    });
 
     watch(isVisible, (visible) => {
         if (!visible) {
@@ -380,7 +355,6 @@
         selectedStatus.value = props.transferDetails?.currentConnectionStatusGuid;
         selectedCampus.value = props.transferDetails?.currentCampusGuid;
         selectedConnector.value = props.transferDetails?.currentConnectorPersonAliasGuid;
-        selectedDueDate.value = props.transferDetails?.currentDueDate;
     });
 
 </script>

@@ -79,30 +79,6 @@ namespace Rock.Rest.v2.Models
         }
 
         /// <summary>
-        /// Creates a new item in the database.
-        /// </summary>
-        /// <param name="value">The item to be created.</param>
-        /// <returns>An object that contains the new identifier values.</returns>
-        [HttpPost]
-        [Route( "" )]
-        [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ProducesResponse( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]
-        [ProducesResponse( HttpStatusCode.BadRequest )]
-        [ProducesResponse( HttpStatusCode.NotFound )]
-        [ProducesResponse( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "8bb61c8b-4db9-5dc1-ad74-bac74224d556" )]
-        public IActionResult PostItem( [FromBody] Rock.Model.Person value )
-        {
-            var helper = new CrudEndpointHelper<Rock.Model.Person, Rock.Model.PersonService>( this );
-
-            helper.IsSecurityIgnored = true;
-
-            return helper.Create( value );
-        }
-
-        /// <summary>
         /// Performs a full update of the item. All property values must be
         /// specified.
         /// </summary>

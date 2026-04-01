@@ -18,7 +18,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import EntityPicker from "@Obsidian/Controls/entityPicker.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
-import { ConfigurationValueKey } from "./entityField.partial";
+import { ConfigurationKey } from "./entityField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const EditComponent = defineComponent({
@@ -37,13 +37,13 @@ export const EditComponent = defineComponent({
 
         // EntityControlHelpTextFormat configuration value, used to format help text on the picker.
         const helpTextFormat = computed((): string => {
-            const helpTextFormat = props.configurationValues[ConfigurationValueKey.EntityControlHelpTextFormat];
+            const helpTextFormat = props.configurationValues[ConfigurationKey.EntityControlHelpTextFormat];
             return helpTextFormat;
         });
 
         // Watch for changes from the parent component and update the client UI.
         watch(() => props.modelValue, () => {
-            const entityFieldValue =  JSON.parse(props.modelValue || "{}") as EntityFieldValue;
+            const entityFieldValue = JSON.parse(props.modelValue || "{}") as EntityFieldValue;
             entityType.value = entityFieldValue.entityType;
             internalValue.value = entityFieldValue.value ?? "";
         }, {
@@ -100,10 +100,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.EntityControlHelpTextFormat] = helpTextFormat.value ?? "";
+            newValue[ConfigurationKey.EntityControlHelpTextFormat] = helpTextFormat.value ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.EntityControlHelpTextFormat] !== props.modelValue[ConfigurationValueKey.EntityControlHelpTextFormat];
+            const anyValueChanged = newValue[ConfigurationKey.EntityControlHelpTextFormat] !== props.modelValue[ConfigurationKey.EntityControlHelpTextFormat];
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -130,13 +130,13 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            helpTextFormat.value = props.modelValue[ConfigurationValueKey.EntityControlHelpTextFormat];
+            helpTextFormat.value = props.modelValue[ConfigurationKey.EntityControlHelpTextFormat];
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(helpTextFormat, () => maybeUpdateConfiguration(ConfigurationValueKey.EntityControlHelpTextFormat, helpTextFormat.value ?? ""));
+        watch(helpTextFormat, () => maybeUpdateConfiguration(ConfigurationKey.EntityControlHelpTextFormat, helpTextFormat.value ?? ""));
 
         return {
             helpTextFormat

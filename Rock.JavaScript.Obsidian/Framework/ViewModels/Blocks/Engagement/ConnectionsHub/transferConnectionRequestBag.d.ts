@@ -37,12 +37,6 @@ export type TransferConnectionRequestBag = {
     /** Gets or sets the GUID of the person alias to assign as the connector after the transfer, when a specific connector is selected. */
     connectorPersonAliasGuid?: Guid | null;
 
-    /** Gets or sets the due date to assign after the transfer, when a specific date is selected. */
-    dueDate?: string | null;
-
-    /** Gets or sets the due date assignment option (e.g., keep current, clear, assign specific date). */
-    dueDateOption?: string | null;
-
     /** Gets or sets the GUID of the connection opportunity to transfer this request to. */
     newConnectionOpportunityGuid: Guid;
 

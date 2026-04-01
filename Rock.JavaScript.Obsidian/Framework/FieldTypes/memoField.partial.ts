@@ -23,7 +23,7 @@ import { getStandardFilterComponent } from "./utils";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     NumberOfRows = "numberofrows",
     AllowHtml = "allowhtml",
     MaxCharacters = "maxcharacters",

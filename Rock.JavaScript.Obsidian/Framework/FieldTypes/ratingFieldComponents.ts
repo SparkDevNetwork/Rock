@@ -19,7 +19,7 @@ import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import Rating from "@Obsidian/Controls/rating.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
-import { ConfigurationValueKey, RatingValue } from "./ratingField.partial";
+import { ConfigurationKey, RatingValue } from "./ratingField.partial";
 
 export const EditComponent = defineComponent({
     name: "RatingField.Edit",
@@ -39,7 +39,7 @@ export const EditComponent = defineComponent({
 
     computed: {
         maxRating(): number {
-            const maxRatingConfig = this.configurationValues[ConfigurationValueKey.MaxRating];
+            const maxRatingConfig = this.configurationValues[ConfigurationKey.MaxRating];
 
             return toNumberOrNull(maxRatingConfig) || 5;
         },
@@ -114,10 +114,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.MaxRating] = maxRating.value?.toString() ?? "";
+            newValue[ConfigurationKey.MaxRating] = maxRating.value?.toString() ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.MaxRating] !== (props.modelValue[ConfigurationValueKey.MaxRating] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.MaxRating] !== (props.modelValue[ConfigurationKey.MaxRating] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -144,7 +144,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            maxRating.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.MaxRating]);
+            maxRating.value = toNumberOrNull(props.modelValue[ConfigurationKey.MaxRating]);
         }, {
             immediate: true
         });
@@ -160,7 +160,7 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(maxRating, () => maybeUpdateConfiguration(ConfigurationValueKey.MaxRating, maxRating.value?.toString() ?? ""));
+        watch(maxRating, () => maybeUpdateConfiguration(ConfigurationKey.MaxRating, maxRating.value?.toString() ?? ""));
 
         return {
             maxRating

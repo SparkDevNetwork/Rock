@@ -40,11 +40,6 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public Guid Guid { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of connectors available for assignment within this opportunity.
-        /// </summary>
-        public List<ListItemBag> PotentialConnectors { get; set; }
-
-        /// <summary>
         /// Gets or sets the URL of the photo associated with this connection opportunity.
         /// </summary>
         public string PhotoUrl { get; set; }

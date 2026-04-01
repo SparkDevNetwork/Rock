@@ -47,9 +47,6 @@ export type ConnectionOpportunityBag = {
     /** Gets or sets the URL of the photo associated with this connection opportunity. */
     photoUrl?: string | null;
 
-    /** Gets or sets the list of connectors available for assignment within this opportunity. */
-    potentialConnectors?: ListItemBag[] | null;
-
     /** Gets or sets a value indicating whether the campus selector should be shown during a transfer to this opportunity. */
     showCampusOnTransfer: boolean;
 

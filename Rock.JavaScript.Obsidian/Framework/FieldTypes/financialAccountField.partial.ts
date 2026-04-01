@@ -36,7 +36,7 @@ import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     DisplayPublicName = "displaypublicname",
     DisplayChildItemCounts = "displaychilditemcounts",
     DisplayActiveItemsOnly = "displayactiveitemsonly",

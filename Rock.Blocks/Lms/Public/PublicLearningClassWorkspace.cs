@@ -306,7 +306,7 @@ namespace Rock.Blocks.Lms
                 var isActivityAvailable =
                     activity.IsStudentCompleted ||
                     activityBag.AvailabilityCriteria == AvailabilityCriteria.AlwaysAvailable ||
-                    ( activityBag.AvailableDateCalculated.HasValue && activityBag.AvailableDateCalculated.Value <= DateTime.Now ) ||
+                    ( activityBag.AvailableDateCalculated.HasValue && activityBag.AvailableDateCalculated.Value <= RockDateTime.Now ) ||
                     ( isPreviousMethodCalculation && isPreviousActivityCompleted );
 
                 var availableDate =
@@ -328,7 +328,8 @@ namespace Rock.Blocks.Lms
                     AvailableDate = availableDate,
                     BinaryFile = binaryFile,
                     CompletedDate = activity.CompletedDateTime?.ToRockDateTimeOffset(),
-                    DueDate = activity.DueDate,
+                    DueDate = activity.DueDate?.ToRockDateTimeOffset(),
+                    IsDueSoon = activity.DueDate.HasValue && activity.DueDate.Value >= RockDateTime.Now && activity.DueDate.Value <= RockDateTime.Now.AddDays( 7 ),
                     FacilitatorComment = activity.FacilitatorComment,
                     GradedByPersonAlias = activity.GradedByPersonAlias.ToListItemBag(),
                     GradeColor = grade?.HighlightColor,

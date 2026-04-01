@@ -25,7 +25,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Exception Occurrence List block. */
 export type ExceptionOccurrenceListOptionsBag = {
-    /** Gets or sets the truncated description from the template exception. */
+    /** Gets or sets the full description from the template exception. */
     description?: string | null;
 
     /**
@@ -33,12 +33,6 @@ export type ExceptionOccurrenceListOptionsBag = {
      * (e.g., "System.Web.HttpException").
      */
     exceptionType?: string | null;
-
-    /**
-     * Gets or sets the formatted header text that combines the exception
-     * type and truncated description (e.g., "(System.Web.HttpException) The file...").
-     */
-    headerText?: string | null;
 
     /** Gets or sets the list of available sites for the filter dropdown. */
     siteItems?: ListItemBag[] | null;

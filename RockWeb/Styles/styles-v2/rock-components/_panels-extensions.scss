@@ -782,3 +782,132 @@
 }
 
 // ===================== END PANEL WATERFALL =====================
+
+// ===================== DOCKED PANEL =====================
+
+/* Note:
+ * The CSS variables --docked-panel-width, --docked-panel-minWidth, and --docked-panel-maxWidth are
+ * set programmatically by the DockedPanel component.
+ */
+
+.docked-panel-container {
+  /*
+   * Use the same z-index as dropdowns so the docked panel is on top of all dropdowns
+   * from the main window, but underneath dropdowns inside the docked panel.
+   */
+  --z-docked-panel: 1050;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-docked-panel);
+  /* Container is layout only */
+  pointer-events: none;
+
+  &[data-mode="float"] {
+    right: var(--docked-panel-push-width, 0);
+  }
+}
+
+.docked-panel-resize-handle {
+  --resize-handle-width: 5px;
+  position: absolute;
+  top: var(--top-header-height);
+  bottom: 0;
+  width: var(--resize-handle-width);
+  height: 100%;
+  cursor: col-resize;
+  pointer-events: auto;
+  touch-action: none;
+  background: var(--color-interface-strong);
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.docked-panel-container[data-position="right"] .docked-panel-resize-handle {
+  right: min(min(calc(var(--docked-panel-maxWidth)), max(calc(var(--docked-panel-minWidth)), calc(var(--docked-panel-width)))), calc(100% - var(--resize-handle-width)));
+  left: auto;
+}
+
+.docked-panel-resize-handle:hover {
+  opacity: .3;
+}
+
+.docked-panel {
+  position: absolute;
+  top: var(--top-header-height);
+  bottom: 0;
+  width: var(--docked-panel-width);
+  min-width: var(--docked-panel-minWidth);
+  max-width: var(--docked-panel-maxWidth);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-interface-soft);
+  background: var(--color-interface-softest);
+  box-shadow: var(--popup-box-shadow);
+  overflow: hidden;
+  /* Drawer is the only interactive surface */
+  pointer-events: auto;
+  /* Add width transition so setting the width programmatically animates smoothly (like when maximizing to fullscreen). */
+  transition: width 150ms ease;
+}
+
+.docked-panel.dragging {
+  /* Disable transitions while dragging, otherwise the drag feels sluggish. */
+  transition: none;
+}
+
+.docked-panel-container[data-position="right"] .docked-panel {
+  right: 0;
+  border-radius: var(--rounded-large) 0 0 var(--rounded-large);
+}
+
+.docked-panel-header,
+.docked-panel-footer {
+  flex: 0 0 auto;
+}
+
+.docked-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.docked-panel-slide-enter-active,
+.docked-panel-slide-leave-active {
+  transition: transform 250ms ease;
+}
+
+.docked-panel-container[data-position="right"] .docked-panel-slide-enter-from,
+.docked-panel-container[data-position="right"] .docked-panel-slide-leave-to {
+  transform: translateX(100%);
+}
+
+.docked-panel-slide-enter-to,
+.docked-panel-slide-leave-from {
+  transform: translateX(0);
+}
+
+body[data-docked-panel-mode="push"] {
+  padding-right: var(--docked-panel-push-width, 0);
+
+  &.docked-panel-slide-enter-active,
+  &.docked-panel-slide-leave-active {
+    transition: margin-right 250ms ease;
+
+    .navbar-fixed-top {
+      transition: right 250ms ease;
+    }
+  }
+
+  .navbar-fixed-top {
+    right: var(--docked-panel-push-width, 0);
+  }
+
+  .docked-panel-container[data-mode="push"] .docked-panel {
+    top: 0;
+    border-radius: 0;
+    border-width: 0 0 0 1px;
+    box-shadow: none;
+  }
+}
+
+// ===================== END DOCKED PANEL =====================

@@ -20,7 +20,7 @@ import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
-import { ConfigurationValueKey } from "./categoryField.partial";
+import { ConfigurationKey } from "./categoryField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { Guid } from "@Obsidian/Types";
 import { toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -47,7 +47,7 @@ export const EditComponent = defineComponent({
         });
 
         const entityTypeGuid = computed<Guid | null>(() => {
-            const entityType = JSON.parse(props.configurationValues[ConfigurationValueKey.EntityTypeName] ?? "{}") as ListItemBag;
+            const entityType = JSON.parse(props.configurationValues[ConfigurationKey.EntityTypeName] ?? "{}") as ListItemBag;
             return toGuidOrNull(entityType?.value);
         });
 
@@ -96,14 +96,14 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.EntityTypeName] = JSON.stringify(entityType.value ?? "");
-            newValue[ConfigurationValueKey.QualifierColumn] = qualifierColumn.value ?? "";
-            newValue[ConfigurationValueKey.QualifierValue] = qualifierValue.value ?? "";
+            newValue[ConfigurationKey.EntityTypeName] = JSON.stringify(entityType.value ?? "");
+            newValue[ConfigurationKey.QualifierColumn] = qualifierColumn.value ?? "";
+            newValue[ConfigurationKey.QualifierValue] = qualifierValue.value ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.EntityTypeName] !== (props.modelValue[ConfigurationValueKey.EntityTypeName] ?? "")
-                || newValue[ConfigurationValueKey.QualifierColumn] !== (props.modelValue[ConfigurationValueKey.QualifierColumn] ?? "")
-                || newValue[ConfigurationValueKey.QualifierValue] !== (props.modelValue[ConfigurationValueKey.QualifierValue] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.EntityTypeName] !== (props.modelValue[ConfigurationKey.EntityTypeName] ?? "")
+                || newValue[ConfigurationKey.QualifierColumn] !== (props.modelValue[ConfigurationKey.QualifierColumn] ?? "")
+                || newValue[ConfigurationKey.QualifierValue] !== (props.modelValue[ConfigurationKey.QualifierValue] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -131,16 +131,16 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            entityType.value = JSON.parse(props.modelValue[ConfigurationValueKey.EntityTypeName] || "{}");
-            qualifierColumn.value = props.modelValue[ConfigurationValueKey.QualifierColumn] || "";
-            qualifierValue.value = props.modelValue[ConfigurationValueKey.QualifierValue] || "";
+            entityType.value = JSON.parse(props.modelValue[ConfigurationKey.EntityTypeName] || "{}");
+            qualifierColumn.value = props.modelValue[ConfigurationKey.QualifierColumn] || "";
+            qualifierValue.value = props.modelValue[ConfigurationKey.QualifierValue] || "";
         }, {
             immediate: true
         });
 
-        watch(entityType, val => maybeUpdateConfiguration(ConfigurationValueKey.EntityTypeName, JSON.stringify(val ?? "")));
-        watch(qualifierColumn, val => maybeUpdateConfiguration(ConfigurationValueKey.QualifierColumn, val ?? ""));
-        watch(qualifierValue, val => maybeUpdateConfiguration(ConfigurationValueKey.QualifierValue, val ?? ""));
+        watch(entityType, val => maybeUpdateConfiguration(ConfigurationKey.EntityTypeName, JSON.stringify(val ?? "")));
+        watch(qualifierColumn, val => maybeUpdateConfiguration(ConfigurationKey.QualifierColumn, val ?? ""));
+        watch(qualifierValue, val => maybeUpdateConfiguration(ConfigurationKey.QualifierValue, val ?? ""));
 
         return {
             qualifierColumn,

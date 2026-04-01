@@ -283,7 +283,7 @@ namespace Rock.Blocks.Engagement
                 .AddField( "allowMultiple", a => a.StepType.AllowMultiple )
                 .AddField( "startedCount", a => a.StartedCount )
                 .AddField( "completedCount", a => a.CompletedCount )
-                .AddField( "isSecurityDisabled", _ => !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isSecurityDisabled", a => !a.StepType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddField( "isSystem", a => a.StepType.IsSystem )
                 .AddAttributeFieldsFrom( a => a.StepType, _gridAttributes.Value );
         }
@@ -388,6 +388,11 @@ namespace Rock.Blocks.Engagement
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to delete {StepType.FriendlyTypeName}." );
+            }
+
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( $"You cannot delete a system {StepType.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

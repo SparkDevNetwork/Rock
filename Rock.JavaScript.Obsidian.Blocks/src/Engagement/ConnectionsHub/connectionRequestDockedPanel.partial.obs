@@ -30,7 +30,26 @@
                 </div>
                 <div v-else class="pt-spacing-xs bg-interface-softer">
                     <div class="d-flex justify-content-between px-spacing-sm">
-                        <div class="d-flex gap-sm">
+                        <div v-if="connectionRequestBreadcrumbs.length > 0"
+                             class="w-100 d-flex align-items-center gap-tiny flex-wrap text-small">
+                            <span class="cursor-pointer request-breadcrumb" @click="emit('navigateToBreadcrumb', 0)">
+                                {{ connectionRequestBreadcrumbs[0].text }}
+                            </span>
+                            <template v-if="connectionRequestBreadcrumbs.length > 2">
+                                <i class="ti ti-chevron-right"></i>
+                                <span class="d-flex align-items-end cursor-pointer request-breadcrumb" @click="emit('navigateToBreadcrumb', connectionRequestBreadcrumbs.length - 2)">
+                                    <i class="ti ti-dots"></i>
+                                </span>
+                            </template>
+                            <template v-if="connectionRequestBreadcrumbs.length > 1">
+                                <i class="ti ti-chevron-right"></i>
+                                <span class="cursor-pointer request-breadcrumb"
+                                      @click="emit('navigateToBreadcrumb', connectionRequestBreadcrumbs.length - 1)">
+                                    {{ connectionRequestBreadcrumbs[connectionRequestBreadcrumbs.length - 1].text }}
+                                </span>
+                            </template>
+                        </div>
+                        <div v-else class="d-flex gap-sm">
                             <i class="ti ti-chevron-left cursor-pointer" :class="{ disabled: !hasPrevious }" @click="goPrevious"></i>
                             <i class="ti ti-chevron-right cursor-pointer" :class="{ disabled: !hasNext }" @click="goNext"></i>
                         </div>
@@ -54,7 +73,6 @@
                                 </div>
                             </div>
                             <div>
-                                <!-- TODO: Fix Styling -->
                                 <BadgeList :entityTypeGuid="EntityType.Person"
                                            :entityKey="requestDetails.requesterPerson.idKey ?? ''"
                                            :badgeTypeGuids="options?.badgeGuids ?? []"
@@ -114,22 +132,23 @@
                                      @dismissErrorMessage="setErrorMessage('edit', '')" />
                 <ViewDockedPanelBody v-else
                                      :requestDetails="requestDetails"
-                                     :connectionRequestBreadcrumbs="connectionRequestBreadcrumbs"
                                      :aiSummary="aiSummary"
                                      :aiSummaryError="aiSummaryError"
-                                     :isAiSummaryLoading="isAiSummaryLoading"
+                                     :isAISummaryLoading="isAISummaryLoading"
                                      :options="options"
                                      :dockedPanelWidthNumber="dockedPanelWidthNumber"
                                      :canEditConnectionRequest="canEditConnectionRequest"
                                      :canEditConnectionRequestNote="canEditConnectionRequestNote"
                                      :activityErrorMessage="activityErrorMessage"
+                                     @fetchAISummary="fetchAISummary"
                                      @navigateToBreadcrumb="(index) => emit('navigateToBreadcrumb', index)"
                                      @navigateToAdditionalRequest="(key) => emit('navigateToAdditionalRequest', key)"
                                      @editActivity="(entry) => emit('editActivity', entry)"
                                      @onCelebrationClick="emit('onCelebrationClick', detailsBox)"
                                      @onReminderClick="emit('onReminderClick', detailsBox)"
                                      @onReassignConnector="(connector) => emit('onReassignConnector', connector)"
-                                     @launchWorkflow="(bag) => emit('launchWorkflow', bag)" />
+                                     @launchWorkflow="(bag) => emit('launchWorkflow', bag)"
+                                     @navigateToGroup="navigateToGroup" />
             </template>
         </template>
         <template #footer>
@@ -152,7 +171,7 @@
                             </RockButton>
                         </div>
                         <div class="d-flex align-items-center gap-xs">
-                            <RockButton v-if="!isRequestComplete && isRequestActiveOrFutureFollowUp"
+                            <RockButton v-if="isRequestActiveOrFutureFollowUp"
                                         :btnType="BtnType.Default"
                                         :disabled="isCompleteButtonDisabled"
                                         :title="completeButtonTooltip"
@@ -173,13 +192,7 @@
                                 Edit
                             </RockButton>
                             <template v-if="isRequestActiveOrFutureFollowUp">
-                                <RockButton v-if="isRequestComplete"
-                                            class="bg-success-soft text-success border-success"
-                                            @click="changeRequestState(ConnectionState.Active)">
-                                    Completed
-                                </RockButton>
-                                <RockButton v-else
-                                            :btnType="BtnType.Default"
+                                <RockButton :btnType="BtnType.Default"
                                             :disabled="isCompleteButtonDisabled"
                                             :title="completeButtonTooltip"
                                             @click="changeRequestState(ConnectionState.Connected)">
@@ -298,6 +311,11 @@
     height: fit-content;
 }
 
+.request-breadcrumb:hover {
+    color: var(--color-link);
+    text-decoration: underline;
+}
+
 /* Skeleton adjustments */
 .skeleton {
     background: var(--color-interface-soft);
@@ -317,6 +335,7 @@
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
     import BadgeList from "@Obsidian/Controls/badgeList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { NavigationUrlKey } from "./types.partial";
     import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -332,12 +351,13 @@
     import { UpdateConnectionRequestStatesBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/updateConnectionRequestStatesBag";
     import { ConnectionState } from "@Obsidian/Enums/Connection/connectionState";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
-    import { GetAiSummaryResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/getAiSummaryResponseBag";
+    import { GetAISummaryResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/getAISummaryResponseBag";
     import NoteItem from "./noteItem.partial.obs";
     import ConnectionStatusButton from "./connectionStatusButton.partial.obs";
     import { LaunchWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/launchWorkflowBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { MeetsGroupRequirement } from "@Obsidian/Enums/Group/meetsGroupRequirement";
+    import { AISummaryTriggerMode } from "@Obsidian/Enums/Connection/aiSummaryTriggerMode";
 
     const props = defineProps({
         modelValue: {
@@ -370,11 +390,6 @@
             default: true
         },
 
-        isInSingleRequestMode: {
-            type: Boolean as PropType<boolean>,
-            required: true
-        },
-
         isSaving: {
             type: Boolean as PropType<boolean>,
             default: false
@@ -383,16 +398,18 @@
         editBox: {
             type: Object as PropType<ValidPropertiesBox<ConnectionRequestBag>>,
             default: {}
+        },
+
+        isAdditionalRequest: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        navigationUrls: {
+            type: Object as PropType<Record<string, string>>,
+            default: {}
         }
     });
-
-    /*
-    When in single request mode:
-     - Force full width
-     - Hide navigation arrows
-     - Hide close button
-     - Disable resize?
-    */
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: boolean): void;
@@ -444,7 +461,7 @@
     const areNotesVisible = ref(false);
     const aiSummary = ref<string>("");
     const aiSummaryError = ref<string>("");
-    const isAiSummaryLoading = ref(false);
+    const isAISummaryLoading = ref(false);
 
     const editDockedPanelBodyRef = ref<InstanceType<typeof EditDockedPanelBody>>();
     const editConnectionRequestBox = ref<ValidPropertiesBox<ConnectionRequestBag>>({});
@@ -479,8 +496,6 @@
 
         return parseInt(dockedPanelWidth.value, 10);
     });
-
-    const isRequestComplete = computed(() => requestDetails.value?.connectionState === ConnectionState.Connected);
 
     const isRequestActiveOrFutureFollowUp = computed(() => requestDetails.value?.connectionState === ConnectionState.Active || requestDetails.value?.connectionState === ConnectionState.FutureFollowUp);
 
@@ -537,11 +552,21 @@
     }
 
     function navigateToPersonProfile(): void {
-        if (!props.detailsBox?.entity?.requesterPerson?.idKey) {
+        const key = props.detailsBox?.entity?.requesterPerson?.idKey;
+        if (!key || !props.navigationUrls[NavigationUrlKey.PersonProfilePage]) {
             return;
         }
-        const url = `/Person/${props.detailsBox.entity.requesterPerson.idKey}`;
-        // TODO - Ask Jon if new tab is desired.
+
+        const url = props.navigationUrls[NavigationUrlKey.PersonProfilePage].replace("((Key))", key);
+        window.open(url, "_blank");
+    }
+
+    function navigateToGroup(key: string): void {
+        if (!props.navigationUrls[NavigationUrlKey.GroupDetailPage]) {
+            return;
+        }
+
+        const url = props.navigationUrls[NavigationUrlKey.GroupDetailPage].replace("((Key))", key);
         window.open(url, "_blank");
     }
 
@@ -607,14 +632,15 @@
         isLoading.value = false;
     }
 
-    async function fetchAiSummary(): Promise<void> {
+    async function fetchAISummary(overrideCache: boolean): Promise<void> {
         if (!requestDetails.value?.connectionRequestIdKey) {
             return;
         }
 
-        isAiSummaryLoading.value = true;
-        const result = await invokeBlockAction<GetAiSummaryResponseBag>("GetAiSummary", {
-            connectionRequestIdKey: requestDetails.value.connectionRequestIdKey
+        isAISummaryLoading.value = true;
+        const result = await invokeBlockAction<GetAISummaryResponseBag>("GetAISummary", {
+            connectionRequestIdKey: requestDetails.value.connectionRequestIdKey,
+            overrideCache
         });
 
         if (result.isSuccess && result.data?.summary) {
@@ -624,7 +650,7 @@
             aiSummaryError.value = result.errorMessage ?? "An error occurred while creating the AI Summary.";
         }
 
-        isAiSummaryLoading.value = false;
+        isAISummaryLoading.value = false;
     }
 
     // watch(isFullWidth, () => {
@@ -673,8 +699,8 @@
             options.value = props.detailsBox.options;
             isLoading.value = false;
 
-            if (props.detailsBox.options.isAISummaryVisible) {
-                fetchAiSummary();
+            if (props.detailsBox.options.isAISummaryVisible && props.detailsBox.options.aiSummaryTrigger === AISummaryTriggerMode.Automatic) {
+                fetchAISummary(false);
             }
         }
     });

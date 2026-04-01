@@ -1073,7 +1073,6 @@ namespace Rock.Blocks.Lms
             }
 
             var components = LearningActivityContainer.Instance.Components.Values;
-            var now = DateTime.Now;
             var studentCount = new LearningParticipantService( RockContext ).GetStudents( entity.Id ).Count();
 
             // Return all activities for the course.

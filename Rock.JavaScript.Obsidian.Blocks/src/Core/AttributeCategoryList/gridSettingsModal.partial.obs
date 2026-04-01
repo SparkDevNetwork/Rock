@@ -8,7 +8,7 @@
         <EntityTypePicker v-model="entityType"
                           label="Entity Type"
                           :includeGlobalOption="true"
-                          :excludeEntityTypeGuids="props.excludedEntityTypeGuids"
+                          :entityTypeGuids="props.entityTypeGuids"
                           showBlankItem
                           enhanceForLongLists />
     </Modal>
@@ -35,7 +35,8 @@
             required: true
         },
 
-        excludedEntityTypeGuids: {
+        /** The entity type GUIDs derived from the grid rows to include in the entity type picker. */
+        entityTypeGuids: {
             type: Array as PropType<Guid[]>,
             default: () => []
         }

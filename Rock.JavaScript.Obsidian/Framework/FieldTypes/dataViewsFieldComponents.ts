@@ -3,7 +3,7 @@ import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./dataViewsField.partial";
+import { ConfigurationKey } from "./dataViewsField.partial";
 
 export const EditComponent = defineComponent({
     name: "DataViewsField.Edit",
@@ -19,7 +19,7 @@ export const EditComponent = defineComponent({
 
         // The selected Entity Type.
         const entityTypeGuid = computed((): string | null | undefined => {
-            const entityType = JSON.parse(props.configurationValues[ConfigurationValueKey.EntityType] ?? "{}") as ListItemBag;
+            const entityType = JSON.parse(props.configurationValues[ConfigurationKey.EntityType] ?? "{}") as ListItemBag;
             return entityType?.value;
         });
 
@@ -61,7 +61,7 @@ export const ConfigurationComponent = defineComponent({
 
         // Compute a consistent entity type string value to compare against.
         const entityTypeStringFromProps = computed((): string => {
-            const propsString = props.modelValue[ConfigurationValueKey.EntityType];
+            const propsString = props.modelValue[ConfigurationKey.EntityType];
             if (!propsString) {
                 return "{}";
             }
@@ -96,10 +96,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.EntityType] = JSON.stringify(entityType.value ?? {});
+            newValue[ConfigurationKey.EntityType] = JSON.stringify(entityType.value ?? {});
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.EntityType] !== entityTypeStringFromProps.value;
+            const anyValueChanged = newValue[ConfigurationKey.EntityType] !== entityTypeStringFromProps.value;
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -132,7 +132,7 @@ export const ConfigurationComponent = defineComponent({
             immediate: true
         });
 
-        watch(entityType, () => maybeUpdateConfiguration(ConfigurationValueKey.EntityType, JSON.stringify(entityType.value ?? {})));
+        watch(entityType, () => maybeUpdateConfiguration(ConfigurationKey.EntityType, JSON.stringify(entityType.value ?? {})));
 
         return {
             entityType

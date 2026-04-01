@@ -59,6 +59,7 @@
                    label="AI Summary Cache Duration"
                    inputGroupClasses="input-width-xl"
                    :decimalCount="0"
+                   :minimumValue="0"
                    :disabled="isAiInsightsPromptEmpty"
                    help="Set the number of minutes to cache generated summaries before they expire.">
             <template #inputGroupAppend>
@@ -277,13 +278,12 @@
 
     const aiSummaryTriggerValue = computed({
         get(): string {
-            const val = additionalSettings.value.aiSummaryTrigger;
-            return val != null ? val.toString() : "";
+            return (additionalSettings.value.aiSummaryTrigger ?? AISummaryTriggerMode.Manual).toString();
         },
         set(value: string) {
             additionalSettings.value = {
                 ...additionalSettings.value,
-                aiSummaryTrigger: value ? parseInt(value, 10) as AISummaryTriggerMode : null
+                aiSummaryTrigger: parseInt(value, 10) as AISummaryTriggerMode
             };
         }
     });
@@ -295,7 +295,7 @@
         set(value: number | null) {
             additionalSettings.value = {
                 ...additionalSettings.value,
-                aiSummaryCacheDurationMinutes: value
+                aiSummaryCacheDurationMinutes: value ?? 0
             };
         }
     });

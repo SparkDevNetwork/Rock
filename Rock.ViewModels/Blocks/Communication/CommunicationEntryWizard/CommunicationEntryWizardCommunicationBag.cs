@@ -88,9 +88,9 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         public DateTimeOffset? FutureSendDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the individual recipient person alias unique identifiers.
+        /// Gets or sets the individual recipient person alias identifier keys.
         /// </summary>
-        public List<Guid> IndividualRecipientPersonAliasGuids { get; set; }
+        public List<string> IndividualRecipientPersonAliasIdKeys { get; set; }
 
         /// <summary>
         /// Gets or sets the communication list group unique identifier.

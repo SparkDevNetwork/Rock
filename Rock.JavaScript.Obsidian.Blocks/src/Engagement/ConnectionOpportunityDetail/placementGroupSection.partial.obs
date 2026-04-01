@@ -71,9 +71,7 @@
     <ContentStack title="Placement Groups"
                   description="Select groups available for connecting requests, filtered by campus when applicable."
                   headerLocation="top">
-        <NotificationBox v-if="groupsErrorMessage" :alertType="AlertType.Danger">
-            {{ groupsErrorMessage }}
-        </NotificationBox>
+        <NotificationBox v-if="groupsErrorMessage" :alertType="AlertType.Danger" v-html="groupsErrorMessage" />
         <Grid :data="groupsGridData"
               keyField="guid"
               itemTerm="Placement Group"
@@ -95,13 +93,12 @@
                saveText="Add"
                cancelText="Cancel"
                :onSave="onSaveGroup">
+            <NotificationBox v-if="groupsModalErrorMessage" :alertType="AlertType.Danger" v-html="groupsModalErrorMessage" />
             <div class="row">
                 <div class="col-md-4">
                     <GroupPicker label="Group"
                                  v-model="thePlacementGroups"
-                                 :multiple="true"
-                                 :includedGroupTypeGuids="includedGroupTypeGuids"
-                                 :excludeAllByDefault="true" />
+                                 :multiple="true" />
                 </div>
             </div>
         </Modal>
@@ -163,6 +160,7 @@
     const invokeBlockAction = useInvokeBlockAction();
     const configErrorMessage = ref<string | null>(null);
     const groupsErrorMessage = ref<string | null>(null);
+    const groupsModalErrorMessage = ref<string | null>(null);
 
     // #endregion Values
 
@@ -202,12 +200,6 @@
 
     const areAnyGroupsArchived = computed(() =>
         placementGroupSectionData.value.groups?.some(g => g.isArchived)
-    );
-
-    const includedGroupTypeGuids = computed(() =>
-        (placementGroupSectionData.value.configs ?? [])
-            .filter(cfg => cfg.groupType?.value && !cfg.useAllGroupsOfType)
-            .map(cfg => cfg.groupType?.value as Guid)
     );
 
     // #endregion Computed Variables
@@ -358,6 +350,7 @@
      */
     function onAddGroup(): void {
         groupsErrorMessage.value = null;
+        groupsModalErrorMessage.value = null;
         thePlacementGroups.value = [];
         isGroupModalVisible.value = true;
     }
@@ -424,18 +417,40 @@
 
         // Fetch the groupType since we don't have that from the <GroupPicker /> for newly added groups.
         // We need it to be able to filter out groups that don't match the allowed Group Types if the PlacementGroupConfigs change before a database save.
-        for (const grp of updatedGroups) {
-            const key = grp.group?.value as string | undefined;
-            if (grp.groupType?.value || !key) {
-                continue;
-            }
+        await Promise.all(updatedGroups
+            .filter(grp => !grp.groupType?.value && grp.group?.value)
+            .map(async grp => {
+                const result = await invokeBlockAction<PlacementGroupBag>("GetSupplementalDataForNewPlacementGroup", { groupGuid: grp.group?.value });
+                if (result.isSuccess && result.data) {
+                    grp.groupType = result.data.groupType;
+                    grp.campus = result.data.campus;
+                    grp.isArchived = result.data.isArchived;
+                }
+            }));
 
-            const result = await invokeBlockAction<PlacementGroupBag>("GetSupplementalDataForNewPlacementGroup", { groupGuid: key });
-            if (result.isSuccess && result.data) {
-                grp.groupType = result.data.groupType;
-                grp.campus = result.data.campus;
-                grp.isArchived = result.data.isArchived;
+        // Validate that newly added groups match one of the configured group types
+        // that allow specifying specific groups (useAllGroupsOfType is false).
+        const configsRequiringSpecificGroups = (configs ?? [])
+            .filter(c => c.groupType?.value && !c.useAllGroupsOfType);
+
+        if (configsRequiringSpecificGroups.length > 0) {
+            const validGroups = filterGroupsByConfigs(configs, updatedGroups);
+            const hasInvalidNewGroups = updatedGroups.some(g =>
+                !validGroups.some(v => v.group?.value === g.group?.value)
+                && !groups.some(existing => existing.group?.value === g.group?.value)
+            );
+
+            if (hasInvalidNewGroups) {
+                const allowedNames = configsRequiringSpecificGroups
+                    .map(c => c.groupType?.text)
+                    .join(", ");
+                groupsModalErrorMessage.value = `One or more of the selected groups is not one of the configured group types that allow specifying a group (<strong>${allowedNames}</strong>). Please select groups that have one of these group types.`;
+                return;
             }
+        }
+        else {
+            groupsModalErrorMessage.value = "Placement Groups are not allowed because there are not any group types configured, or they all are configured to 'Use All Groups of This Type'. Please remove the placement group(s) or reconfigure the group types.";
+            return;
         }
 
         placementGroupSectionData.value = {
@@ -443,7 +458,7 @@
             groups: updatedGroups
         };
 
-        groupsErrorMessage.value = null;
+        groupsModalErrorMessage.value = null;
         isGroupModalVisible.value = false;
         thePlacementGroups.value = [];
     }

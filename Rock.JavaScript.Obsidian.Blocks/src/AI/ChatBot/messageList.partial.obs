@@ -1,0 +1,118 @@
+<template>
+    <div class="well messages-container" ref="messagesContainer">
+        <div v-for="(message, index) in messages"
+             :key="index"
+             class="message"
+             :class="getMessageClass(message)">
+            <div class="message-text" v-html="parseMarkdown(message.message ?? '')"></div>
+
+            <div v-if="isDebugEnabled && message.role == AuthorRole.Assistant" class="message-debug">
+                <span class="label label-info" title="Prompt Tokens">
+                    <i class="ti ti-upload"></i>
+                    {{ asFormattedString(message.consumedTokenCount - message.tokenCount) }}
+                </span>
+
+                <span class="label label-info" title="Completion Tokens">
+                    <i class="ti ti-download"></i>
+                    {{ asFormattedString(message.tokenCount) }}
+                </span>
+
+                <span v-if="doesMessageHaveLogData(message)"
+                      class="label label-info"
+                      title="Tool Calls">
+                    <i class="ti ti-code"></i>
+                    {{ getDebugToolCalls(message).length }}
+                </span>
+
+                <span v-if="message.duration"
+                      class="label label-info" title="Duration">
+                    <i class="ti ti-stopwatch"></i>
+                    {{ asFormattedString(message.duration / 1000, 3) }}s
+                </span>
+
+                <button v-if="doesMessageHaveLogData(message)"
+                        class="btn btn-link btn-xs"
+                        type="button"
+                        @click.prevent="onShowMessageDebug(message)">
+                    <i class="ti ti-bug"></i>
+                </button>
+            </div>
+        </div>
+
+        <div v-if="liveMessage && (liveMessage.tool || liveMessage?.message)"
+             class="message"
+             :class="getMessageClass(liveMessage)">
+            <div v-if="liveMessage.tool" class="message-preamble">
+                {{ liveMessage.tool }}
+                <span class="ti ti-loader fa fa-spin"></span>
+            </div>
+
+            <div v-else class="message-text" v-html="parseMarkdown(liveMessage.message ?? '')"></div>
+        </div>
+
+        <div v-else-if="isSending"
+             class="message-thinking">
+            <span class="ti ti-loader fa fa-spin"></span>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { ExtendedChatMessageBag } from "./types";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { getDebugToolCalls, parseMarkdown } from "./tools.partial";
+
+    const enum AuthorRole {
+        User = 0,
+
+        Assistant = 1
+    }
+
+    defineProps({
+        messages: {
+            type: Array as PropType<ExtendedChatMessageBag[]>,
+            required: true
+        },
+
+        liveMessage: {
+            type: Object as PropType<ExtendedChatMessageBag | null>,
+            required: false
+        },
+
+        isDebugEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isSending: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "showMessageDebug", message: ExtendedChatMessageBag): void;
+    }>();
+
+    function getMessageClass(message: ExtendedChatMessageBag): string[] {
+        const classes: string[] = [];
+
+        classes.push(message.role === AuthorRole.User ? "message-user" : "message-assistant");
+
+        if (message.logs && message.logs.length > 0) {
+            classes.push("has-logs");
+        }
+
+        return classes;
+    }
+
+    function doesMessageHaveLogData(message: ExtendedChatMessageBag): boolean {
+        return !!message.logs && message.logs.length > 0;
+    }
+
+    function onShowMessageDebug(message: ExtendedChatMessageBag): void {
+        emit("showMessageDebug", message);
+    }
+
+</script>

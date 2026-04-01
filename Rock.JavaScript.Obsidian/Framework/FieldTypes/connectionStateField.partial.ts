@@ -20,7 +20,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     RepeatColumns = "repeatColumns",
     Options = "options"
 }
@@ -42,7 +42,7 @@ export class ConnectionStateFieldType extends FieldTypeBase {
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.Options] ?? "[]") as ListItemBag[];
+            const values = JSON.parse(configurationValues[ConfigurationKey.Options] ?? "[]") as ListItemBag[];
             const publicValue = values.find(x => x.value === value);
 
             return publicValue?.text ?? value ?? "";

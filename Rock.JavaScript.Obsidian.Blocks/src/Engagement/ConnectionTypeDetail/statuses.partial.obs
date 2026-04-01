@@ -61,7 +61,26 @@
                     </div>
 
                     <div class="form-group">
-                        <InlineCheckBox v-model="theStatus.autoInactivateState"
+                        <div v-if="props.isFutureFollowupEnabled" class="row">
+                            <div class="col-md-6">
+                                <DropDownList v-model="autoStateSelection"
+                                              :items="autoStateOptions"
+                                              label="Automatically Set State to Selected Value"
+                                              help="Selecting this status will automatically set the request state to the selected Connection State. Leave blank to disable automatic state changes." />
+                                <ConditionalWell v-if="autoStateSelection === ConnectionState.FutureFollowUp.toString()">
+                                    <NumberBox v-model="theStatus.autoFutureFollowUpPauseInDays"
+                                               label="Future Follow-Up Period (Days)"
+                                               rules="required"
+                                               inputClasses="input-width-md"
+                                               :decimalCount="0"
+                                               :minimumValue="1"
+                                               help="This value determines how many days after the status change the follow-up date will be set." />
+                                </ConditionalWell>
+                            </div>
+                        </div>
+
+                        <InlineCheckBox v-else
+                                        v-model="theStatus.autoInactivateState"
                                         label="Automatically Set State to Inactive"
                                         help="Selecting this status will automatically set the request state to Inactive." />
                     </div>
@@ -104,13 +123,6 @@
                             <EditColumn @click="onEditAutomation" />
                             <DeleteColumn @click="onDeleteAutomation" />
                         </Grid>
-
-                        <NumberBox v-if="props.isFutureFollowupEnabled" v-model="theStatus.autoFutureFollowUpPauseInDays"
-                                   label="Auto Future Follow-Up Period (Days)"
-                                   inputClasses="input-width-md"
-                                   :decimalCount="0"
-                                   :minimumValue="0"
-                                   help="When a connection request is changed to this status, the request's state will automatically be set to Future Follow-Up. This value determines how many days after the status change the follow-up date will be set." />
                     </template>
                     <template v-else-if="theAutomation">
                         <div class="automation-form">
@@ -176,6 +188,7 @@
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -193,6 +206,7 @@
     import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ConnectionState, ConnectionStateDescription } from "@Obsidian/Enums/Connection/connectionState";
 
     const props = defineProps({
         /**
@@ -216,6 +230,16 @@
          */
         dueDateCalculationMode: {
             type: Number as PropType<DueDateCalculationMode>,
+            required: true
+        },
+
+        defaultStatusDueDateOffsetInDays: {
+            type: Number as PropType<number | null | undefined>,
+            required: true
+        },
+
+        defaultStatusDueSoonOffsetInDays: {
+            type: Number as PropType<number | null | undefined>,
             required: true
         },
 
@@ -253,6 +277,20 @@
             ? AlertType.Warning
             : AlertType.Danger;
     });
+
+    /** Tracks whether FutureFollowUp was explicitly selected before days are entered. */
+    const isFutureFollowUpSelected = ref(false);
+
+    const autoStateOptions = <ListItemBag[]>[
+        {
+            text: ConnectionStateDescription[ConnectionState.Inactive],
+            value: ConnectionState.Inactive.toString()
+        },
+        {
+            text: ConnectionStateDescription[ConnectionState.FutureFollowUp],
+            value: ConnectionState.FutureFollowUp.toString()
+        },
+    ];
 
     // #endregion Values
 
@@ -345,6 +383,42 @@
         },
         set(value: string) {
             theStatus.value.highlightColor = value;
+        }
+    });
+
+    /**
+     * Bridges the single dropdown selection in the UI to two separate model fields:
+     * autoInactivateState (boolean) and autoFutureFollowUpPauseInDays (number | null).
+     * The bag stores these as independent fields because the legacy block treated them
+     * separately — this computed provides a unified selection surface so the UI only
+     * exposes one control at a time. isFutureFollowUpSelected tracks an explicit
+     * FutureFollowUp selection before days are entered, preventing the dropdown from
+     * snapping back to blank while the NumberBox is still empty.
+     */
+    const autoStateSelection = computed({
+        get(): string {
+            if (theStatus.value.autoInactivateState) {
+                return ConnectionState.Inactive.toString();
+            }
+            if (isFutureFollowUpSelected.value || (theStatus.value.autoFutureFollowUpPauseInDays ?? 0) > 0) {
+                return ConnectionState.FutureFollowUp.toString();
+            }
+            return "";
+        },
+        set(value: string) {
+            isFutureFollowUpSelected.value = value === ConnectionState.FutureFollowUp.toString();
+
+            if (value === ConnectionState.Inactive.toString()) {
+                theStatus.value.autoInactivateState = true;
+                theStatus.value.autoFutureFollowUpPauseInDays = null;
+            }
+            else if (value === ConnectionState.FutureFollowUp.toString()) {
+                theStatus.value.autoInactivateState = false;
+            }
+            else {
+                theStatus.value.autoInactivateState = false;
+                theStatus.value.autoFutureFollowUpPauseInDays = null;
+            }
         }
     });
 
@@ -479,8 +553,8 @@
             isDefault: false,
             isNoteRequiredOnCompletion: false,
             autoInactivateState: false,
-            requestStatusDueDateOffsetInDays: 0,
-            requestStatusDueSoonOffsetInDays: 0,
+            requestStatusDueDateOffsetInDays: props.defaultStatusDueDateOffsetInDays ?? 0,
+            requestStatusDueSoonOffsetInDays: props.defaultStatusDueSoonOffsetInDays ?? 0,
             autoFutureFollowUpPauseInDays: null,
             automations: []
         };
@@ -560,6 +634,7 @@
         isEditing.value = false;
         statusErrorMessage.value = null;
         automationErrorMessage.value = null;
+        isFutureFollowUpSelected.value = false;
 
         theStatus.value = createNewStatus();
 
@@ -583,6 +658,7 @@
         isEditing.value = true;
         statusErrorMessage.value = null;
         automationErrorMessage.value = null;
+        isFutureFollowUpSelected.value = (selected.autoFutureFollowUpPauseInDays ?? 0) > 0;
 
         theStatus.value = {
             ...selected,
@@ -591,6 +667,13 @@
                 dataView: a.dataView ? { ...a.dataView } : null
             }))
         };
+
+        if (!theStatus.value.requestStatusDueDateOffsetInDays || theStatus.value.requestStatusDueDateOffsetInDays === 0) {
+            theStatus.value.requestStatusDueDateOffsetInDays = props.defaultStatusDueDateOffsetInDays;
+        }
+        if (!theStatus.value.requestStatusDueSoonOffsetInDays || theStatus.value.requestStatusDueSoonOffsetInDays === 0) {
+            theStatus.value.requestStatusDueSoonOffsetInDays = props.defaultStatusDueSoonOffsetInDays;
+        }
 
         showAutomationForm.value = false;
         theAutomation.value = null;

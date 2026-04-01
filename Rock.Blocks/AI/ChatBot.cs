@@ -9,10 +9,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Rock;
 using Rock.AI.Agent;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Enums.AI.Agent;
 using Rock.Enums.Cms;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility.ExtensionMethods;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 
@@ -36,16 +38,85 @@ namespace Rock.Blocks.AI
         ListSource = "SELECT [Guid] AS [Value], [Name] AS [Text] FROM [AIAgent] ORDER BY [Name]",
         Order = 0 )]
 
+    [BooleanField( "Docked Mode",
+        Description = "In Docked mode, the chat bot will appear as a docked panel on the page.",
+        Key = AttributeKey.DockedMode,
+        Order = 1 )]
+
     [SystemGuid.EntityTypeGuid( "c08511a6-d9f5-40f4-a9cc-50cbe40a4ab8" )]
     [SystemGuid.BlockTypeGuid( "91a66c59-830e-49b5-a196-dcf93d0dde92" )]
     public class ChatBot : RockBlockType
     {
-        #region Fields
+        #region Constants
 
-        /// <summary>
-        /// The agent builder used to construct chat agent instances for this block.
-        /// </summary>
-        private readonly IChatAgentBuilder _agentBuilder;
+        private static string DockedChatBotInitScript = @"(function () {
+    const panelContent = sessionStorage.getItem(""Rock.AI.ChatBot.DockedChat"");
+
+    if (!panelContent) {
+        return;
+    }
+
+    try {
+        const panelData = JSON.parse(panelContent);
+
+        const panelElement = document.createElement(""div"");
+        panelElement.innerHTML = panelData.content;
+
+        const dockedElement = panelElement.firstChild;
+        dockedElement.id = ""docked-chat-bot-loader"";
+        dockedElement.style.setProperty(""--top-header-height"", panelData.top);
+        // Remove the animation classes that might be there.
+        Array.from(dockedElement.classList)
+            .filter(function (c) { return c.startsWith(""docked-panel-slide-""); })
+            .forEach(function (c) { dockedElement.classList.remove(c); });
+
+        let addedPanel = false;
+        let updatedIcon = false;
+
+        let observer = new MutationObserver((mutations, observer) => {
+            if (!document.body) {
+                return;
+            }
+
+            if (!addedPanel) {
+                addedPanel = true;
+
+                document.body.style.setProperty(""--docked-panel-push-width"", panelData.width);
+                document.body.dataset.dockedPanelMode = ""push"";
+                document.body.appendChild(dockedElement);
+
+                dockedElement.querySelector("".messages-container"").scrollTop = panelData.scrollTop;
+            }
+
+            if (!updatedIcon) {
+                const icon = document.body.querySelector(""button.chatbot-placeholder-button > .ti-message-chatbot"");
+
+                if (icon) {
+                    updatedIcon = true;
+                    icon.classList.toggle(""ti-message-chatbot-filled"", ""ti-message-chatbot"");
+                }
+            }
+
+            if (addedPanel && updatedIcon) {
+                observer.disconnect();
+                observer = undefined;
+            }
+        });
+
+        document.addEventListener(""DOMContentLoaded"", function () {
+            if (observer) {
+                observer.disconnect();
+                observer = undefined;
+            }
+        });
+
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+    }
+    catch (e) {
+        console.error(e);
+    }
+})();
+";
 
         #endregion
 
@@ -57,7 +128,23 @@ namespace Rock.Blocks.AI
         private static class AttributeKey
         {
             public const string Agent = "Agent";
+            public const string DockedMode = "DockedMode";
         }
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// The agent builder used to construct chat agent instances for this block.
+        /// </summary>
+        private readonly IChatAgentBuilder _agentBuilder;
+
+        /// <summary>
+        /// The configuration bag that was created during the Obsidian
+        /// initialization phase.
+        /// </summary>
+        private Dictionary<string, object> _configurationBag;
 
         #endregion
 
@@ -86,7 +173,8 @@ namespace Rock.Blocks.AI
             {
                 return new Dictionary<string, object>
                 {
-                    ["error"] = "No agent has been configured."
+                    ["error"] = "No agent has been configured.",
+                    ["isDockedMode"] = GetAttributeValue( AttributeKey.DockedMode ).AsBoolean(),
                 };
             }
 
@@ -94,7 +182,8 @@ namespace Rock.Blocks.AI
             {
                 return new Dictionary<string, object>
                 {
-                    ["error"] = "You are not authorized to access this agent."
+                    ["error"] = "You are not authorized to access this agent.",
+                    ["isDockedMode"] = GetAttributeValue( AttributeKey.DockedMode ).AsBoolean(),
                 };
             }
 
@@ -103,7 +192,8 @@ namespace Rock.Blocks.AI
             {
                 return new Dictionary<string, object>
                 {
-                    ["error"] = "The AI Agent Provider is not configured. Please contact your system administrator."
+                    ["error"] = "The AI Agent Provider is not configured. Please contact your system administrator.",
+                    ["isDockedMode"] = GetAttributeValue( AttributeKey.DockedMode ).AsBoolean(),
                 };
             }
 
@@ -111,6 +201,7 @@ namespace Rock.Blocks.AI
             var sessions = GetRecentSessions( agentCache.Id );
 
             var sessionId = sessions.LastOrDefault()?.Id;
+
 
             // If no session was found, create a new session.
             if ( !sessionId.HasValue )
@@ -126,13 +217,47 @@ namespace Rock.Blocks.AI
             var messages = GetSessionMessages( sessionId.Value );
             var anchors = GetSessionAnchors( sessionId.Value );
 
-            return new Dictionary<string, object>
+            AddStartupScripts();
+
+            _configurationBag = new Dictionary<string, object>
             {
                 ["sessionId"] = sessionId.Value,
                 ["sessions"] = sessions,
                 ["messages"] = messages,
                 ["anchors"] = anchors,
+                ["isDebugAllowed"] = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ),
+                ["isDockedMode"] = GetAttributeValue( AttributeKey.DockedMode ).AsBoolean(),
             };
+
+            return _configurationBag;
+        }
+
+        /// <inheritdoc />
+        protected override string GetInitialHtmlContent()
+        {
+            if ( GetAttributeValue( AttributeKey.DockedMode ).AsBoolean() )
+            {
+                var disabled = _configurationBag == null
+                    ? "disabled=\"\""
+                    : string.Empty;
+
+                return $@"<button class=""btn btn-default rock-bookmark chatbot-placeholder-button"" {disabled}type=""button"">
+    <i class=""ti ti-message-chatbot""></i>
+</button>";
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Adds any startup scripts required by the chat bot.
+        /// </summary>
+        private void AddStartupScripts()
+        {
+            if ( GetAttributeValue( AttributeKey.DockedMode ).AsBoolean() )
+            {
+                RequestContext.Response.AddScriptToHead( "chat-bot-init", DockedChatBotInitScript );
+            }
         }
 
         /// <summary>

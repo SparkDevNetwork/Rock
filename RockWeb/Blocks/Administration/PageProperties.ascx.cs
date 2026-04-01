@@ -314,7 +314,13 @@ namespace RockWeb.Blocks.Administration
 
             var pageReference = new PageReference( page.Id );
             var pageUrl = pageReference.BuildUrl();
-            var pageLink = string.Format( "<a href='{0}{1}'>{0}{1}</a>", page.Site?.DefaultDomainUri, pageUrl.TrimStart( '/' ) );
+
+            var baseUrl = page.Site?.DefaultDomainUri is Uri u
+             && !u.Host.Equals( "localhost", StringComparison.OrdinalIgnoreCase )
+                ? u.ToString()
+                : "/";
+
+            var pageLink = string.Format( "<a href='{0}{1}'>{0}{1}</a>", baseUrl, pageUrl.TrimStart( '/' ) );
 
             lblMainDetailsCol2.Text = new DescriptionList()
                 .Add( "Layout", page.Layout )

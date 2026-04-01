@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Core.ExceptionDetail
 {
     /// <summary>
@@ -26,6 +30,11 @@ namespace Rock.ViewModels.Blocks.Core.ExceptionDetail
         /// Gets or sets the identifier of this exception log entry.
         /// </summary>
         public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the formatted date/time when this exception occurred.
+        /// </summary>
+        public string ExceptionDate { get; set; }
 
         /// <summary>
         /// Gets or sets the exception class name (e.g., "System.Web.HttpException").
@@ -46,5 +55,36 @@ namespace Rock.ViewModels.Blocks.Core.ExceptionDetail
         /// Gets or sets the call stack trace for this exception.
         /// </summary>
         public string StackTrace { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the site where this exception occurred.
+        /// </summary>
+        public string SiteName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the internal name of the page where this exception occurred.
+        /// </summary>
+        public string PageName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL of the page where this exception occurred.
+        /// </summary>
+        public string PageUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parsed query string items as key-value pairs.
+        /// </summary>
+        public List<ListItemBag> QueryStringItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the full name of the person who triggered this exception.
+        /// </summary>
+        public string PersonFullName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IdKey of the person who triggered this exception,
+        /// used for linking to the person's profile page.
+        /// </summary>
+        public string PersonIdKey { get; set; }
     }
 }

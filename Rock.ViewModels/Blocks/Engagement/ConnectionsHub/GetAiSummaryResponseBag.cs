@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,7 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
     /// <summary>
     /// The response bag for the GetAiSummary block action.
     /// </summary>
-    public class GetAiSummaryResponseBag
+    public class GetAISummaryResponseBag
     {
         /// <summary>
         /// Gets or sets the AI-generated summary of the connection request.

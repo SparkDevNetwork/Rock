@@ -19,7 +19,7 @@ import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { asBoolean, asTrueFalseOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./documentTypeField.partial";
+import { ConfigurationKey } from "./documentTypeField.partial";
 import { getFieldEditorProps } from "./utils";
 import { updateRefValue } from "@Obsidian/Utility/component";
 
@@ -34,10 +34,10 @@ export const EditComponent = defineComponent({
 
     setup(props, { emit }) {
         const internalValue = ref<string[] | string>([]);
-        const options = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+        const options = JSON.parse(props.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
 
         const allowMultipleValues = computed((): boolean => {
-            return asBoolean(props.configurationValues[ConfigurationValueKey.AllowMultiple]);
+            return asBoolean(props.configurationValues[ConfigurationKey.AllowMultiple]);
         });
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {
@@ -72,7 +72,7 @@ export const EditComponent = defineComponent({
     computed: {
         options(): ListItemBag[] {
             try {
-                const valuesConfig = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                const valuesConfig = JSON.parse(this.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
                 return valuesConfig.map(v => {
                     return {
                         text: v.text,
@@ -126,10 +126,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.AllowMultiple] = asTrueFalseOrNull(allowMultipleValues.value) ?? "False";
+            newValue[ConfigurationKey.AllowMultiple] = asTrueFalseOrNull(allowMultipleValues.value) ?? "False";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.AllowMultiple] !== (props.modelValue[ConfigurationValueKey.AllowMultiple] ?? "False");
+            const anyValueChanged = newValue[ConfigurationKey.AllowMultiple] !== (props.modelValue[ConfigurationKey.AllowMultiple] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -156,13 +156,13 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            allowMultipleValues.value = asBoolean(props.modelValue[ConfigurationValueKey.AllowMultiple]);
+            allowMultipleValues.value = asBoolean(props.modelValue[ConfigurationKey.AllowMultiple]);
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(allowMultipleValues, () => maybeUpdateConfiguration(ConfigurationValueKey.AllowMultiple, asTrueOrFalseString(allowMultipleValues.value)));
+        watch(allowMultipleValues, () => maybeUpdateConfiguration(ConfigurationKey.AllowMultiple, asTrueOrFalseString(allowMultipleValues.value)));
 
         return {
             allowMultipleValues

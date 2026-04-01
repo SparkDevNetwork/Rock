@@ -1,9 +1,9 @@
-﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="dropdown timepicker-input">
         <div class="bootstrap-timepicker input-group input-width-md">
             <input class="form-control" type="text" v-model="internalValue" :disabled="disabled" @focus="focusInput" @click="focusInput" @blur="onInputBlur" @keydown="onMainInputKeyDown" ref="inputEl" />
-            <span class="input-group-addon" :class="{ 'disabled': disabled }" @click="showPickerWidget = !showPickerWidget" ref="toggleBtnEl">
+            <span class="input-group-addon" :class="{ 'disabled': disabled, 'cursor-not-allowed': disabled }" @click="togglePickerWidget" ref="toggleBtnEl">
                 <i class="ti ti-clock"></i>
             </span>
         </div>
@@ -148,6 +148,12 @@
         highlightUnit(unit);
     });
 
+    watch(() => props.disabled, disabled => {
+        if (disabled) {
+            showPickerWidget.value = false;
+        }
+    });
+
     // #endregion
 
     // #region Functions
@@ -169,6 +175,15 @@
         }
 
         emit("update:modelValue", { hour, minute });
+    }
+
+    /** Toggle the picker widget unless the control is disabled */
+    function togglePickerWidget(): void {
+        if (props.disabled) {
+            return;
+        }
+
+        showPickerWidget.value = !showPickerWidget.value;
     }
 
     /** Convert the minute to have a leading zero if < 10 */
@@ -598,5 +613,12 @@
         document.removeEventListener("touchend", onClickOutsideWidget);
     });
 
+
     // #endregion
 </script>
+
+<style scoped>
+.bootstrap-timepicker .input-group-addon.disabled {
+    cursor: not-allowed;
+}
+</style>
