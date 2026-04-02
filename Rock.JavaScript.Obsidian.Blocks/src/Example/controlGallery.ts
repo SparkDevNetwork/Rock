@@ -50,7 +50,7 @@ import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watc
 import { convertComponentName } from "./ControlGallery/common/utils.partial";
 import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
 import { ControlGalleryInitializationBox } from "@Obsidian/ViewModels/Blocks/Example/ControlGallery/controlGalleryInitializationBox";
-import { upperCaseFirstCharacter } from "@Obsidian/Utility/stringUtils";
+import { splitCase, toTitleCase, upperCaseFirstCharacter } from "@Obsidian/Utility/stringUtils";
 import GalleryAndResult from "./ControlGallery/common/galleryAndResult.partial.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import Panel from "@Obsidian/Controls/panel.obs";
@@ -855,13 +855,50 @@ export default defineComponent({
             const components = { ...source };
 
             if (componentFilter.value) {
+                const componentFilterLowerCase = componentFilter.value.toLowerCase();
+                const componentFilterWordsLowerCase = splitCase(componentFilter.value).toLowerCase().split(" ").filter(word => word.length > 0);
+
                 Object.keys(components).forEach(key => {
-                    if (!components[key].name!.toLowerCase().includes(componentFilter.value.toLowerCase())) {
+                    const component = components[key];
+                    const componentNameLowerCase = component.name!.toLowerCase();
+                    const componentNameWordsLowerCase = splitCase(component.name!).toLowerCase().split(" ").filter(word => word.length > 0);
+                    const componentNameSentenceLowerCase = componentNameWordsLowerCase.join(" ");
+
+                    const isMatch =
+                        // The filter text is found anywhere in the component name; e.g., Search "button" matches components with names "Button", "RadioButton", and "ButtonDropDownList"
+                        componentNameLowerCase.includes(componentFilterLowerCase)
+
+                        // OR the filter words are found in the component name with no other characters in between; e.g., Search "button list" matches a component named "Button List" but not "Button Drop Down List"
+                        || componentNameSentenceLowerCase.includes(componentFilterLowerCase)
+
+                        // OR all filter words are found in the component name; e.g., Search "button list" matches components with names "ButtonDropDownList" and "RadioButtonList"
+                        || areAllWordsInSentenceInOrderButNotNecessarilyConsecutive(componentNameWordsLowerCase, componentFilterWordsLowerCase);
+
+                    if (!isMatch) {
                         delete components[key];
+                        return;
                     }
                 });
             }
+
             return components;
+        }
+
+        /**
+         *
+         * (Case sensitive)
+         *
+         * @param sentenceWords
+         * @param searchWords
+         * @returns
+         */
+        function areAllWordsInSentenceInOrderButNotNecessarilyConsecutive(sentenceWords: string[], searchWords: string[]): boolean {
+            let lastIndex = -1;
+
+            return searchWords.every(searchWord => {
+                lastIndex = sentenceWords.findIndex((sentenceWord, index) => index > lastIndex && sentenceWord.includes(searchWord));
+                return lastIndex !== -1;
+            });
         }
 
         const filteredControlGalleryComponents = computed(() => {
