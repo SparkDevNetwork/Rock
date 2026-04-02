@@ -1,11 +1,18 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField :modelValue="internalValue" v-bind="standardProps" name="schedule-builder">
+        <template #besideLabel v-if="displayScheduleFriendlyTextBesideLabel && scheduleSummary">
+            <div class="label label-info schedulebuilder-info">{{ scheduleSummary }}</div>
+        </template>
+
         <div class="control-wrapper">
-            <div class="picker">
+            <div class="picker picker-obsidian picker-select rollover-container" :class="{ 'picker-show-clear': showClearButton && !!scheduleSummary }">
                 <a class="picker-label" :class="{ 'disabled': disabled }" href="#" :title="scheduleSummary" @click.prevent="onEditSchedule">
-                    <i class="ti ti-calendar"></i>
-                    Edit Schedule
+                    <span class="selected-names"><i class="ti ti-calendar"></i>
+                        Edit Schedule</span>
+                    <button type="button" role="button" aria-label="Clear selection" class="btn picker-select-none" v-if="showClearButton && scheduleSummary && !disabled" @click.prevent.stop="onClearSchedule">
+                        <i class="ti ti-x"></i>
+                    </button>
                 </a>
             </div>
         </div>
@@ -296,6 +303,18 @@
             default: false
         },
 
+        /** Whether to display the friendly schedule text beside the label. */
+        displayScheduleFriendlyTextBesideLabel: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+
+        /** Whether the current schedule can be cleared from the picker. */
+        showClearButton: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
         ...standardRockFormFieldProps
     });
 
@@ -488,7 +507,7 @@
         const event = calendar?.events && calendar.events.length > 0 ? calendar.events[0] : null;
         const rrule = event?.recurrenceRules && event.recurrenceRules.length > 0 ? event.recurrenceRules[0] : null;
 
-        scheduleSummary.value = event?.toFriendlyText() ?? "No Schedule";
+        scheduleSummary.value = event?.toFriendlyText() ?? "";
         startDateTime.value = event?.startDateTime?.toISOString() ?? null;
         durationInSeconds.value = getEventDuration(event);
         scheduleType.value = rrule ? "recurring" : "oneTime";
@@ -883,6 +902,12 @@
     // #endregion
 
     // #region Event Handlers
+
+    function onClearSchedule(): void {
+        internalValue.value = "";
+        emit("update:modelValue", "");
+        updateValuesFromModel();
+    }
 
     function onEditSchedule(): void {
         if (!props.disabled) {

@@ -413,6 +413,9 @@ registerFieldType(FieldTypeGuids.Report, new ReportFieldType());
 import { ScheduleFieldType } from "./scheduleField.partial";
 registerFieldType(FieldTypeGuids.Schedule, new ScheduleFieldType());
 
+import { ScheduleBuilderFieldType } from "./scheduleBuilderField.partial";
+registerFieldType(FieldTypeGuids.ScheduleBuilder, new ScheduleBuilderFieldType());
+
 import { SchedulesFieldType } from "./schedulesField.partial";
 registerFieldType(FieldTypeGuids.Schedules, new SchedulesFieldType());
 
