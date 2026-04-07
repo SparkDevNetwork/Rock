@@ -7,6 +7,7 @@ export type GroupedGrid = {
         rows: Record<string, unknown>[];
     };
     iconCssClass?: string | null;
+    iconStyle?: string | null;
     key?: string | null;
     label?: string | null;
     order?: number | null;

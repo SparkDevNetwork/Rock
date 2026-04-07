@@ -12,7 +12,10 @@
                                           :photoSize="24" />
                         </template>
                         <template v-else>
-                            <i v-if="group.iconCssClass" :class="group.iconCssClass" class="mr-3"></i>
+                            <i v-if="group.iconCssClass"
+                               :class="group.iconCssClass"
+                               :style="group.iconStyle"
+                               class="mr-3"></i>
                         </template>
                         <span>{{ group.label }}</span>
                     </div>

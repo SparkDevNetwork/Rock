@@ -423,6 +423,8 @@
                                    :options="box.options"
                                    :canEditConnectionRequests="canEditConnectionRequests"
                                    :hideCampusLabel="selectedCampus !== null"
+                                   :attributesToShow="attributesToShow"
+                                   :currentPersonIdKey="currentPerson?.idKey"
                                    @selectItem="onSelectItem"
                                    @changeState="showChangeStateModal"
                                    @launchWorkflow="showLaunchWorkflowModal"
@@ -987,12 +989,10 @@
     // Breadcrumbs are used when a user navigates to an "additional request"
     const connectionRequestBreadcrumbs = ref<ListItemBag[]>([]);
 
-
-    // Board Refs
-    const selectedView = ref("list");
-
-
-
+    const selectedView = ref<string>((() => {
+        const preferenceValue = preferences.getValue(getConnectionFilterKey(PreferenceKey.SelectedViewConnectionTypeIdKey));
+        return isNullOrWhiteSpace(preferenceValue) ? enabledViews[0].value : preferenceValue;
+    })());
 
     // #region Computed Values
 
@@ -1841,6 +1841,7 @@
 
         if (result.isSuccess && result.data) {
             gridData.value = reactive(result.data);
+            console.log(gridData.value);
         }
         else {
             requestListErrorMessage.value = result.errorMessage ?? "Error loading grid data.";
@@ -2884,6 +2885,12 @@
         preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterIsRequestSourceShownConnectionTypIdKey), viewOptions.value.isRequestSourceShown.toString());
         preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterStatusConnectionTypIdKey), JSON.stringify(viewOptions.value.statusFilter));
         preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterDueConnectionTypIdKey), JSON.stringify(viewOptions.value.dueFilter));
+
+        await preferences.save();
+    });
+
+    watch(selectedView, async () => {
+        preferences.setValue(getConnectionFilterKey(PreferenceKey.SelectedViewConnectionTypeIdKey), selectedView.value);
 
         await preferences.save();
     });

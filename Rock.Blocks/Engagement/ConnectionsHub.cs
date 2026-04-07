@@ -532,8 +532,9 @@ namespace Rock.Blocks.Engagement
         /// <param name="iconCssClass">The optional CSS class for the icon associated with the grouping field.</param>
         /// <param name="photoUrl">The optional URL of the photo for the grouping field. Overridden with a default no-picture URL for unassigned persons.</param>
         /// <param name="textColorCssClass">The optional CSS class used to set the text color of the grouping field.</param>
+        /// <param name="iconStyle">The optional style to apply on the icon element.</param>
         /// <returns>A <see cref="GroupingFieldBag"/> populated with either the entity's details or unassigned defaults.</returns>
-        private GroupingFieldBag GetGroupingFieldBag( int? id, string type, string label, int? order = null, string iconCssClass = null, string photoUrl = null, string textColorCssClass = null )
+        private GroupingFieldBag GetGroupingFieldBag( int? id, string type, string label, int? order = null, string iconCssClass = null, string photoUrl = null, string textColorCssClass = null, string iconStyle = null )
         {
             if ( !id.HasValue )
             {
@@ -549,7 +550,8 @@ namespace Rock.Blocks.Engagement
                     Label = "Unassigned",
                     PhotoUrl = photoUrl,
                     Order = order,
-                    TextColorCssClass = textColorCssClass
+                    TextColorCssClass = textColorCssClass,
+                    IconStyle = iconStyle
                 };
 
                 return unassignedBag;
@@ -565,7 +567,8 @@ namespace Rock.Blocks.Engagement
                 IconCssClass = iconCssClass,
                 PhotoUrl = photoUrl,
                 Order = order,
-                TextColorCssClass = textColorCssClass
+                TextColorCssClass = textColorCssClass,
+                IconStyle = iconStyle
             };
 
             return assignedBag;
@@ -1923,7 +1926,7 @@ namespace Rock.Blocks.Engagement
                 ConnectorGrouping = GetGroupingFieldBag( connectionRequest.ConnectorPersonAliasId, "person", connectionRequest.ConnectorPersonAlias?.Person?.FullName, null, null, connectionRequest.ConnectorPersonAlias?.Person?.PhotoUrl ),
                 OpportunityGrouping = GetGroupingFieldBag( connectionRequest.ConnectionOpportunityId, "text", connectionRequest.ConnectionOpportunity.Name, connectionRequest.ConnectionOpportunity.Order, connectionRequest.ConnectionOpportunity.IconCssClass ),
                 CampusGrouping = GetGroupingFieldBag( connectionRequest.CampusId, "text", connectionRequest.Campus?.Name, connectionRequest.Campus?.Order ),
-                StatusGrouping = GetGroupingFieldBag( connectionRequest.ConnectionStatusId, "text", connectionRequest.ConnectionStatus?.Name, connectionRequest.ConnectionStatus?.Order ),
+                StatusGrouping = GetGroupingFieldBag( connectionRequest.ConnectionStatusId, "text", connectionRequest.ConnectionStatus?.Name, connectionRequest.ConnectionStatus?.Order, "ti ti-circle-filled", null, null, $"color: {connectionRequest.ConnectionStatus.HighlightColor};" ),
                 DueStatusGrouping = GetGroupingFieldBag( ( int ) dueStatus, "text", dueStatus.GetDisplayName(), dueStatus.GetOrder(), "ti ti-calendar", null, GetDueStatusTextColorCssClass( dueStatus ) ),
                 StateGrouping = new GroupingFieldBag
                 {
@@ -3347,7 +3350,7 @@ WHERE 1 = 1" );
 
                 if ( !statusGroupingById.TryGetValue( row.ConnectionStatusId, out var statusGrouping ) )
                 {
-                    statusGrouping = GetGroupingFieldBag( row.ConnectionStatusId, "text", row.ConnectionStatusName, row.ConnectionStatusOrder );
+                    statusGrouping = GetGroupingFieldBag( row.ConnectionStatusId, "text", row.ConnectionStatusName, row.ConnectionStatusOrder, "ti ti-circle-filled", null, null, $"color: {row.ConnectionStatusHighlightColor};" );
                     statusGroupingById[row.ConnectionStatusId] = statusGrouping;
                 }
 
@@ -3910,7 +3913,7 @@ WHERE 1 = 1" );
                         IconCssClass = GetStateIconCssClass( request.ConnectionState ),
                         Order = ( int ) request.ConnectionState
                     },
-                    StatusGrouping = GetGroupingFieldBag( request.ConnectionStatus.Id, "text", request.ConnectionStatus.Name, request.ConnectionStatus.Order ),
+                    StatusGrouping = GetGroupingFieldBag( request.ConnectionStatus.Id, "text", request.ConnectionStatus.Name, request.ConnectionStatus.Order, "ti ti-circle-filled", null, null, $"color: {request.ConnectionStatus.HighlightColor};" ),
                     ConnectionState = request.ConnectionState,
                     ConnectionStatusBag = new ConnectionStatusBag
                     {
@@ -4399,7 +4402,7 @@ WHERE 1 = 1" );
                     IconCssClass = GetStateIconCssClass( connectionRequest.ConnectionState ),
                     Order = ( int ) connectionRequest.ConnectionState
                 },
-                StatusGrouping = GetGroupingFieldBag( connectionRequestStatus.Id, "text", connectionRequestStatus.Name, connectionRequestStatus.Order ),
+                StatusGrouping = GetGroupingFieldBag( connectionRequestStatus.Id, "text", connectionRequestStatus.Name, connectionRequestStatus.Order, "ti ti-circle-filled", null, null, $"color: {connectionRequestStatus.HighlightColor};" ),
                 ConnectionStatusBag = new ConnectionStatusBag
                 {
                     Guid = connectionRequestStatus.Guid,

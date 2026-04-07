@@ -2,15 +2,16 @@
     <div class="action-toolbar"
          :class="{ selected: isSelectedView }">
         <template v-if="!isSelectedView">
-            <template v-if="viewModeItems.length > 1">
+            <div v-if="viewModeItems.length > 1">
                 <ButtonGroup v-model="internalViewMode"
                              :items="viewModeItems"
-                             :btnSize="BtnSize.ExtraSmall" />
-                <div class="action-toolbar-separator"></div>
-            </template>
-            <RockLabel>Group By</RockLabel>
-            <ButtonDropDownList v-model="groupingKey"
-                                :items="groupingFields" />
+                             :btnSize="BtnSize.Small" />
+            </div>
+            <div class="d-flex align-items-center gap-xs">
+                <RockLabel>Group By</RockLabel>
+                <ButtonDropDownList v-model="groupingKey"
+                                    :items="groupingFields" />
+            </div>
         </template>
         <template v-else>
             <slot name="selectedActionToolbar" />
@@ -25,18 +26,15 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-xsmall);
+    justify-content: space-between;
 }
 
 .action-toolbar.selected {
     background-color: var(--color-info-soft);
-    justify-content: space-between;
 }
 
-.action-toolbar-separator {
-    width: 1px;
-    height: 20px;
-    background-color: var(--color-interface-soft);
-    margin: 0 var(--spacing-xsmall);
+.gap-xs {
+    gap: var(--spacing-xsmall);
 }
 </style>
 

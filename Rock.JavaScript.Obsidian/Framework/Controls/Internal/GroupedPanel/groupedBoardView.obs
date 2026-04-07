@@ -2,15 +2,17 @@
     <div class="grouped-board-view">
         <div v-for="group in groups"
              :key="group.key ?? ''"
-             class="board-column">
+             class="board-column shadow-md">
             <div class="board-column-header d-flex align-items-center gap-sm">
                 <template v-if="group.type === 'person'">
                     <PersonAvatar :photoUrl="group.photoUrl ?? ''"
-                                  :photoSize="24" />
+                                  :photoSize="24"
+                                  marginRight="0" />
                 </template>
                 <template v-else>
                     <i v-if="group.iconCssClass"
-                       :class="[group.iconCssClass, group.textColorCssClass]"></i>
+                       :class="[group.iconCssClass, group.textColorCssClass]"
+                       :style="group.iconStyle"></i>
                 </template>
                 <span class="font-weight-semibold" :class="group.textColorCssClass">{{ group.label }}</span>
                 <span class="ml-auto text-interface-medium">{{ group.gridData.rows.length }}</span>
@@ -27,22 +29,26 @@
 <style scoped>
 .grouped-board-view {
     display: flex;
-    gap: var(--spacing-medium);
+    gap: var(--spacing-large);
     overflow-x: auto;
-    padding: var(--spacing-medium);
-    align-items: flex-start;
 }
 
 .board-column {
+    padding: var(--spacing-medium);
+    background-color: var(--color-interface-softer);
+    border-radius: var(--rounded-large);
     flex: 0 0 330px;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-small);
+    gap: var(--spacing-medium);
 }
 
 .board-column-header {
     padding: var(--spacing-xsmall) var(--spacing-small);
-    border-bottom: 2px solid var(--color-interface-soft);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    /* border-bottom: 2px solid var(--color-interface-soft); */
 }
 
 .board-column-body {

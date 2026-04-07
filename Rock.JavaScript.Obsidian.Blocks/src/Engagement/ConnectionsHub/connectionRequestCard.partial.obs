@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <template v-if="requesterPerson">
-        <PersonCard :photoUrl="requesterPerson.photoUrl ?? ''"
-                    :name="`${requesterPerson.nickName} ${requesterPerson.lastName}`"
+    <template v-if="connectionRequestRow.requestDetails">
+        <PersonCard :photoUrl="connectionRequestRow.requestDetails.photoUrl ?? ''"
+                    :name="`${connectionRequestRow.requestDetails.nickName} ${connectionRequestRow.requestDetails.lastName}`"
                     :campusShortCode="campusLabel?.shortCode"
                     :campusColor="campusLabel?.color"
                     :hideCampusLabel="hideCampusLabel"
@@ -48,7 +48,7 @@
                 <template v-if="canEditConnectionRequests">
                     <li v-if="options?.isRequestSecurityEnabled">
                         <button type="button"
-                                @click.stop="() => emit('showSecurity', connectionRequest['idKey'] as string | null | undefined)"
+                                @click.stop="() => emit('showSecurity', connectionRequestRow.idKey)"
                                 class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
                             <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
                         </button>
@@ -63,10 +63,10 @@
                 </template>
             </template>
             <template v-if="connectionState !== ConnectionState.Active" #subheader>
-                <div class="py-spacing-xs px-spacing-sm text-center text-semibold"
+                <div class="py-spacing-xs px-spacing-sm text-center text-semibold text-sm"
                      :class="stateColorClasses">
                     <template v-if="connectionState === ConnectionState.FutureFollowUp">
-                        Future Follow-Up: {{ daysElapsed(connectionRequest["followUpDate"]) }}
+                        Future Follow-Up: {{ daysElapsed(connectionRequestRow.followUpDate) }}
                     </template>
                     <template v-else>
                         {{ ConnectionStateDescription[connectionState] }}
@@ -77,27 +77,169 @@
                 <div class="details-container border-top">
                     <dl>
                         <dt>Opportunity</dt>
-                        <dd>{{ connectionRequest["connectionOpportunity"] }}</dd>
+                        <dd class="text-semibold"
+                            :ref="(el) => addTooltipIfOverflow(el as HTMLElement, connectionRequestRow.connectionOpportunity ?? '')">
+                            <i v-if="connectionRequestRow.opportunityGrouping?.iconCssClass"
+                               :class="connectionRequestRow.opportunityGrouping.iconCssClass"
+                               class="mr-spacing-tiny"></i>
+                            {{ connectionRequestRow.connectionOpportunity }}
+                        </dd>
                         <dt>Due Date</dt>
-                        <dd>{{ daysElapsed(connectionRequest["dueDate"], true) }}</dd>
+                        <dd v-if="!isNullOrWhiteSpace(connectionRequestRow.dueDate)"
+                            :class="getDueDateColor(connectionRequestRow.dueStatus, connectionState === ConnectionState.Connected)"
+                            :ref="(el) => addTooltipIfOverflow(el as HTMLElement, daysElapsed(connectionRequestRow.dueDate))">
+                            {{ daysElapsed(connectionRequestRow.dueDate, true) }}
+                        </dd>
+                        <dd v-else>
+                            <i class="ti ti-minus"></i>
+                        </dd>
                     </dl>
+                </div>
+                <div v-if="attributesToShow?.length && attributesToShow.length > 0"
+                     class="details-container bg-interface-softer border-top">
+                    <dl>
+                        <template v-for="attrFieldvalue in attributesToShow">
+                            <dt :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attrFieldvalue.title ?? '')">
+                                {{ attrFieldvalue.title }}
+                            </dt>
+                            <dd v-if="!isNullOrWhiteSpace(getAttributeTextValue(attrFieldvalue))"
+                                :ref="(el) => addTooltipIfOverflow(el as HTMLElement, getAttributeTextValue(attrFieldvalue)!)">
+                                {{ getAttributeTextValue(attrFieldvalue) }}
+                            </dd>
+                            <dd v-else>
+                                <i class="ti ti-minus"></i>
+                            </dd>
+                        </template>
+                    </dl>
+                </div>
+            </template>
+            <template #footer>
+                <div class="py-spacing-sm px-spacing-md border-top d-flex align-items-center justify-content-between">
+                    <HighlightLabel :labelType="getConnectorLabelType()"
+                                    iconCssClass="ti ti-user-circle">
+                        {{ connectionRequestRow.connectorDetails?.text }}
+                    </HighlightLabel>
+                    <div class="d-flex align-items-center gap-sm text-sm text-interface-medium">
+                        <div class="d-flex align-items-center gap-extra-tiny">
+                            <i class="ti ti-calendar-plus"></i>
+                            {{ getElapsedShortTime(connectionRequestRow.createdDateTime) }}
+                        </div>
+                        <div class="d-flex align-items-center gap-extra-tiny">
+                            <i class="ti ti-bolt"></i>
+                            {{ connectionRequestRow.activityCount }}
+                        </div>
+                    </div>
                 </div>
             </template>
         </PersonCard>
     </template>
 </template>
 
-<style scoped></style>
+<style scoped>
+.text-emerald {
+    color: #10B981 !important;
+}
+
+.gap-sm {
+    gap: var(--spacing-small);
+}
+
+.gap-tiny {
+    gap: var(--spacing-tiny);
+}
+
+.gap-extra-tiny {
+    gap: 2px;
+}
+</style>
 
 <script setup lang="ts">
+    import PersonCard from "@Obsidian/Controls/Internal/personCard.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import { ref, PropType, watch, computed } from "vue";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { ConnectionState, ConnectionStateDescription } from "@Obsidian/Enums/Connection/connectionState";
-    import PersonCard from "@Obsidian/Controls/Internal/personCard.obs";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
     import { CampusLabelBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/campusLabelBag";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
+    import { DueStatus } from "@Obsidian/Enums/Connection/dueStatus";
+    import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
+    import { addTooltipIfOverflow } from "./types.partial";
+
+    type ConnectionRequestCardRow = {
+        idKey?: string | null;
+        connectorGrouping?: GroupingFieldBag | null;
+        campusGrouping?: GroupingFieldBag | null;
+        opportunityGrouping?: GroupingFieldBag | null;
+        statusGrouping?: GroupingFieldBag | null;
+        stateGrouping?: GroupingFieldBag | null;
+        dueStatusGrouping?: GroupingFieldBag | null;
+        connectorDetails?: ListItemBag | null;
+        requestDetails?: PersonFieldBag | null;
+        requesterPersonAliasGuid?: string | null;
+        connectionOpportunity?: string | null;
+        connectionOpportunityGuid?: string | null;
+        connectionTypeSource?: string | null;
+        campus?: string | null;
+        campusGuid?: string | null;
+        group?: string | null;
+        connectionStatus?: ConnectionStatusBag | null;
+        lastActivityDateTime?: string | null;
+        activityCount?: number | null;
+        createdDateTime?: string | null;
+        dueDate?: string | null;
+        dueSoonDate?: string | null;
+        completedDateTime?: string | null;
+        dueStatus?: DueStatus | null;
+        followUpDate?: string | null;
+        connectionState?: ConnectionState | null;
+        celebrationText?: string | null;
+        reminderCount?: number | null;
+        hasPlacementGroup?: boolean | null;
+        hasRequiredGroupRequirements?: boolean | null;
+    };
+
+    /**
+     * Maps a raw grid row to a typed ConnectionRequestCardRow.
+     */
+    function toConnectionRequestCardRow(row: Record<string, unknown>): ConnectionRequestCardRow {
+        return {
+            idKey: row.idKey as string | null | undefined,
+            connectorGrouping: row.connectorGrouping as GroupingFieldBag | null | undefined,
+            campusGrouping: row.campusGrouping as GroupingFieldBag | null | undefined,
+            opportunityGrouping: row.opportunityGrouping as GroupingFieldBag | null | undefined,
+            statusGrouping: row.statusGrouping as GroupingFieldBag | null | undefined,
+            stateGrouping: row.stateGrouping as GroupingFieldBag | null | undefined,
+            dueStatusGrouping: row.dueStatusGrouping as GroupingFieldBag | null | undefined,
+            connectorDetails: row.connectorDetails as ListItemBag | null | undefined,
+            requestDetails: row.requestDetails as PersonFieldBag | null | undefined,
+            requesterPersonAliasGuid: row.requesterPersonAliasGuid as string | null | undefined,
+            connectionOpportunity: row.connectionOpportunity as string | null | undefined,
+            connectionOpportunityGuid: row.connectionOpportunityGuid as string | null | undefined,
+            connectionTypeSource: row.connectionTypeSource as string | null | undefined,
+            campus: row.campus as string | null | undefined,
+            campusGuid: row.campusGuid as string | null | undefined,
+            group: row.group as string | null | undefined,
+            connectionStatus: row.connectionStatus as ConnectionStatusBag | null | undefined,
+            lastActivityDateTime: row.lastActivityDateTime as string | null | undefined,
+            activityCount: row.activityCount as number | null | undefined,
+            createdDateTime: row.createdDateTime as string | null | undefined,
+            dueDate: row.dueDate as string | null | undefined,
+            dueSoonDate: row.dueSoonDate as string | null | undefined,
+            completedDateTime: row.completedDateTime as string | null | undefined,
+            dueStatus: row.dueStatus as DueStatus | null | undefined,
+            followUpDate: row.followUpDate as string | null | undefined,
+            connectionState: row.connectionState as ConnectionState | null | undefined,
+            celebrationText: row.celebrationText as string | null | undefined,
+            reminderCount: row.reminderCount as number | null | undefined,
+            hasPlacementGroup: row.hasPlacementGroup as boolean | null | undefined,
+            hasRequiredGroupRequirements: row.hasRequiredGroupRequirements as boolean | null | undefined,
+        };
+    }
 
     const props = defineProps({
         connectionRequest: {
@@ -118,6 +260,16 @@
         hideCampusLabel: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        attributesToShow: {
+            type: Array as PropType<AttributeFieldDefinitionBag[] | undefined>,
+            required: true
+        },
+
+        currentPersonIdKey: {
+            type: String as PropType<string | null | undefined>,
+            default: ""
         }
     });
 
@@ -129,10 +281,12 @@
         (e: "delete", row: Record<string, unknown>): void;
     }>();
 
-    const requesterPerson = computed<PersonFieldBag | null | undefined>(() => props.connectionRequest["requestDetails"] as PersonFieldBag | null | undefined);
+    // Map the raw grid row to a typed view for use within this component.
+    const connectionRequestRow = computed<ConnectionRequestCardRow>(() => toConnectionRequestCardRow(props.connectionRequest));
     const connectionState = computed<ConnectionState>(() => (props.connectionRequest["connectionState"] as ConnectionState | undefined) ?? ConnectionState.Active);
+
     const campusLabel = computed<CampusLabelBag | undefined>(() => {
-        const campusGuid = props.connectionRequest["campusGuid"] as string | null | undefined;
+        const campusGuid = connectionRequestRow.value.campusGuid;
 
         if (!campusGuid || !props.options?.campusLabels) {
             return;
@@ -141,7 +295,7 @@
         return props.options.campusLabels.find(c => c.guid === campusGuid);
     });
     const stateColorClasses = computed<string>(() => {
-        switch (connectionState.value) {
+        switch (connectionRequestRow.value.connectionState) {
             case ConnectionState.Inactive: {
                 return "bg-warning-soft text-warning-strong";
             }
@@ -156,15 +310,15 @@
             }
         }
     });
-    const daysElapsed = (dateTimeIsoToCheck: unknown, isDueDateCheck: boolean = false): string => {
-        const dateToCheckAssertion = dateTimeIsoToCheck as string | null | undefined;
+
+    const daysElapsed = (dateTimeIsoToCheck: string | null | undefined, isDueDateCheck: boolean = false): string => {
         const isCompleted = connectionState.value === ConnectionState.Connected;
 
-        if (!dateToCheckAssertion) {
+        if (!dateTimeIsoToCheck) {
             return "";
         }
 
-        const dateTimeToCheck = RockDateTime.parseISO(dateToCheckAssertion);
+        const dateTimeToCheck = RockDateTime.parseISO(dateTimeIsoToCheck);
         if (!dateTimeToCheck) {
             return "";
         }
@@ -172,7 +326,7 @@
         // Use the completion date as the reference point if completed, otherwise use today
         let referenceDate: RockDateTime;
         if (isCompleted) {
-            const completedDateTimeIso = props.connectionRequest["completedDateTime"] as string | null | undefined;
+            const completedDateTimeIso = connectionRequestRow.value.completedDateTime;
             const completedDate = RockDateTime.parseISO(completedDateTimeIso ?? "")?.date;
 
             referenceDate = completedDate ? completedDate : RockDateTime.now().date;
@@ -213,13 +367,64 @@
         }
     };
 
+    function getDueDateColor(dueStatus: DueStatus | null | undefined, isCompleted: boolean): string {
+        switch (dueStatus) {
+            case DueStatus.DueLater:
+                return isCompleted ? "text-emerald text-semibold" : "text-interface-strong";
+            case DueStatus.DueSoon:
+                return "text-warning text-semibold";
+            case DueStatus.Overdue:
+                return "text-danger text-semibold";
+            default:
+                return "text-interface-strong";
+        }
+    }
+
+    function getConnectorLabelType(): "warning" | "info" | "default" {
+        if (connectionRequestRow.value.connectorDetails?.value === "unassigned") {
+            return "warning";
+        }
+        else if (connectionRequestRow.value.connectorDetails?.value === props.currentPersonIdKey) {
+            return "info";
+        }
+        return "default";
+    }
+
     function selectRequest(): void {
-        const requestIdKey = props.connectionRequest["idKey"] as string | null | undefined;
+        const requestIdKey = connectionRequestRow.value.idKey;
 
         if (!requestIdKey || isNullOrWhiteSpace(requestIdKey)) {
             return;
         }
 
         emit("selectItem", requestIdKey);
+    }
+
+    /**
+     * Gets the text value for the atttribute field
+     * @param column The column.
+     * @returns A string value or undefined if there is no value.
+     */
+    function getAttributeTextValue(fieldBag: AttributeFieldDefinitionBag): string | undefined {
+        if (!fieldBag.name) {
+            return undefined;
+        }
+
+        const value = props.connectionRequest[fieldBag.name];
+
+        if (!value || typeof value !== "object") {
+            return undefined;
+        }
+
+        if (typeof value["text"] !== "string") {
+            return undefined;
+        }
+
+        return value["text"];
+    }
+
+    /** The time elapsed since the specified date in a human-readable format. */
+    function getElapsedShortTime(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date ?? "")?.localDateTime.toElapsedShortString() ?? "";
     }
 </script>
