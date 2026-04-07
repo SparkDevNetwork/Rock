@@ -1,0 +1,22 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.2",
+    "terser": "^5.46.1",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-css-injected-by-js": "^4.0.1"
+  },
+  "dependencies": {
+    "@blocknote/code-block": "^0.47.0",
+    "@blocknote/core": "^0.47.0",
+    "@floating-ui/dom": "^1.7.5",
+    "@shikijs/transformers": "^4.0.2"
+  }
+}

@@ -266,6 +266,7 @@ import EventItemOccurrencePickerGalleryPartial from "./ControlGallery/eventItemO
 import LinearGaugeChartGallery from "./ControlGallery/linearGaugeChartGallery.partial.obs";
 import EventItemOccurrencePickerGallery from "./ControlGallery/eventItemOccurrencePickerGallery.partial.obs";
 import TooltipGallery from "./ControlGallery/tooltipGallery.partial.obs";
+import BlockNoteEditorGallery from "./ControlGallery/blockNoteEditorGallery.partial.obs";
 
 const controlGalleryComponents: Record<string, Component> = [
     NotificationBoxGallery,
@@ -477,6 +478,7 @@ const controlGalleryComponents: Record<string, Component> = [
     LinearGaugeChartGallery,
     EventItemOccurrencePickerGallery,
     TooltipGallery,
+    BlockNoteEditorGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {

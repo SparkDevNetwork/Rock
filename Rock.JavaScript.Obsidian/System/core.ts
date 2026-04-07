@@ -66,6 +66,9 @@ class Obsidian {
     /** Functions that will need to be called once Obsidian is ready. */
     private readonly callbacks: Array<ReadyCallbackFn> = [];
 
+    /** The name of the global function used for native imports. */
+    private readonly nativeImportName = `nativeImport_${Math.floor(Math.random() * 100000)}`;
+
     /** True if Obsidian has fully initialized and is ready to render. */
     private isReady: boolean = false;
 
@@ -86,6 +89,11 @@ class Obsidian {
                 wildcard: packageId.indexOf("*") !== -1
             });
         }
+
+        const nativeImportScriptElement = document.createElement("script");
+        nativeImportScriptElement.type = "module";
+        nativeImportScriptElement.textContent = `window.${this.nativeImportName} = (url) => import(url);`;
+        document.head.appendChild(nativeImportScriptElement);
     }
 
     /**
@@ -287,6 +295,10 @@ class Obsidian {
         for (const callback of this.callbacks) {
             callback();
         }
+    }
+
+    public nativeImport(url: string): Promise<unknown> {
+        return (window as unknown as { [key: string]: (url: string) => Promise<unknown> })[this.nativeImportName](url);
     }
 }
 

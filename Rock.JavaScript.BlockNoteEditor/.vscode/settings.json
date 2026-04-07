@@ -1,0 +1,13 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "[typescript]": {
+    "editor.formatOnSave": true
+  },
+  "css.format.spaceAroundSelectorSeparator": true,
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "css.lint.duplicateProperties": "warning",
+  "css.lint.zeroUnits": "warning",
+  "css.lint.propertyIgnoredDueToDisplay": "warning"
+}

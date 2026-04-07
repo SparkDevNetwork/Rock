@@ -1,0 +1,21 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+        <div ref="containerElement"></div>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { createEditor } from "@Obsidian/Libs/blocknoteeditor";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { onMounted, ref } from "vue";
+
+    const containerElement = ref<HTMLDivElement>();
+
+    const importCode = getSfcControlImportPath("blockNoteEditor");
+    const exampleCode = `<RockLabel help="More Info">A Label</RockLabel>`;
+
+    onMounted(async () => {
+        createEditor(containerElement.value!);
+    });
+</script>
