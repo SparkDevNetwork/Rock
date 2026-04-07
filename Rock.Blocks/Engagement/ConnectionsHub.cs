@@ -277,6 +277,7 @@ namespace Rock.Blocks.Engagement
             options.ConnectionTypeIdKey = connectionTypeIdKey;
             options.RequiresPlacementGroupToComplete = connectionType.RequiresPlacementGroupToConnect;
             options.IsSequentialStatusMode = connectionType.IsSequentialStatusEnforced;
+            options.EnabledViews = connectionType.EnabledViews;
 
             // If a Connection Opportunity was provided as a page parameter, seed the person preference
             // so that GetGridData only needs to read from the preference (not the page parameter).
@@ -356,6 +357,17 @@ namespace Rock.Blocks.Engagement
             options.AreCelebrationsEnabled = connectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.Celebration );
             options.AreRemindersEnabled = connectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.Reminder );
             options.AreGroupPlacementsEnabled = connectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.GroupPlacement );
+
+            var campusLabels = CampusCache.All()
+                .Select( c => new CampusLabelBag
+                {
+                    Name = c.Name,
+                    ShortCode = c.ShortCode,
+                    Color = c.GetAttributeValue( "core_CampusColor" ),
+                    guid = c.Guid
+                } )
+                .ToList();
+            options.CampusLabels = campusLabels;
 
             var delimitedBadgeGuids = GetAttributeValue( AttributeKey.Badges );
             options.BadgeGuids = delimitedBadgeGuids.SplitDelimitedValues().AsGuidList();

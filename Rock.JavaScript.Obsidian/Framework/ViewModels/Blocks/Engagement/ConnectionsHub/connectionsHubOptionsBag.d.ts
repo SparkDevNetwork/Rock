@@ -21,7 +21,9 @@
 // </copyright>
 //
 
+import { EnabledViewFlags } from "@Obsidian/Enums/Connection/enabledViewFlags";
 import { Guid } from "@Obsidian/Types";
+import { CampusLabelBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/campusLabelBag";
 import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionActivityTypeBag";
 import { ConnectionOpportunityDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionOpportunityDetailBag";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
@@ -44,6 +46,9 @@ export type ConnectionsHubOptionsBag = {
 
     /** Gets or sets the GUIDs of the person profile badges to display on connection requests. */
     badgeGuids?: Guid[] | null;
+
+    /** Gets or sets a list of Campus Labels */
+    campusLabels?: CampusLabelBag[] | null;
 
     /** Gets or sets the boolean value indicating whether the current user can edit Connection Requests. */
     canEditConnectionRequests: boolean;
@@ -75,14 +80,23 @@ export type ConnectionsHubOptionsBag = {
     /** Gets or sets the attributes for Connection Request attributes specified at the Connection Type level. */
     connectionTypeRequestAttributes?: Record<string, PublicAttributeBag> | null;
 
+    /** Gets or sets the enabled views for this connection type. */
+    enabledViews: EnabledViewFlags;
+
     /** Gets or sets the list of column options that control which data fields are displayed in the request grid. */
     gridDataToShowItems?: ListItemBag[] | null;
 
     /** Gets or sets the CSS class for the icon to display alongside the block title. */
     iconCssClass?: string | null;
 
+    /** Gets whether board view is enabled for this connection type. */
+    isBoardViewEnabled: boolean;
+
     /** Gets or sets a value indicating whether the future follow-up feature is enabled for this Connection Type. */
     isFutureFollowUpEnabled: boolean;
+
+    /** Gets whether list view is enabled for this connection type. */
+    isListViewEnabled: boolean;
 
     /** Gets or sets a value indicating whether per-request security is enabled, allowing individual requests to have their own security settings. */
     isRequestSecurityEnabled: boolean;

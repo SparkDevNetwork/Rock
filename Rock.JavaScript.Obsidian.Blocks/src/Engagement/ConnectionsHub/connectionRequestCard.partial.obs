@@ -1,0 +1,225 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <template v-if="requesterPerson">
+        <PersonCard :photoUrl="requesterPerson.photoUrl ?? ''"
+                    :name="`${requesterPerson.nickName} ${requesterPerson.lastName}`"
+                    :campusShortCode="campusLabel?.shortCode"
+                    :campusColor="campusLabel?.color"
+                    :hideCampusLabel="hideCampusLabel"
+                    @click="selectRequest">
+            <template #secondaryHeaderActions>
+                <template v-if="canEditConnectionRequests">
+                    <li>
+                        <button type="button"
+                                @click.stop="() => emit('changeState', ConnectionState.Active, connectionRequest)"
+                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                            <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button"
+                                @click.stop="() => emit('changeState', ConnectionState.Inactive, connectionRequest)"
+                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                            <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
+                        </button>
+                    </li>
+                    <li v-if="options?.isFutureFollowUpEnabled">
+                        <button type="button"
+                                @click.stop="() => emit('changeState', ConnectionState.FutureFollowUp, connectionRequest)"
+                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                            <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button"
+                                @click.stop="() => emit('changeState', ConnectionState.Connected, connectionRequest)"
+                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                            <i class="ti ti-circle-check pr-spacing-sm text-interface-medium"></i>Mark Complete
+                        </button>
+                    </li>
+                </template>
+                <li>
+                    <button type="button"
+                            @click.stop="() => emit('launchWorkflow', connectionRequest)"
+                            class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                        <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
+                    </button>
+                </li>
+                <template v-if="canEditConnectionRequests">
+                    <li v-if="options?.isRequestSecurityEnabled">
+                        <button type="button"
+                                @click.stop="() => emit('showSecurity', connectionRequest['idKey'] as string | null | undefined)"
+                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                            <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button"
+                                @click.stop="() => emit('delete', connectionRequest)"
+                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold text-danger">
+                            <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
+                        </button>
+                    </li>
+                </template>
+            </template>
+            <template v-if="connectionState !== ConnectionState.Active" #subheader>
+                <div class="py-spacing-xs px-spacing-sm text-center text-semibold"
+                     :class="stateColorClasses">
+                    <template v-if="connectionState === ConnectionState.FutureFollowUp">
+                        Future Follow-Up: {{ daysElapsed(connectionRequest["followUpDate"]) }}
+                    </template>
+                    <template v-else>
+                        {{ ConnectionStateDescription[connectionState] }}
+                    </template>
+                </div>
+            </template>
+            <template #body>
+                <div class="details-container border-top">
+                    <dl>
+                        <dt>Opportunity</dt>
+                        <dd>{{ connectionRequest["connectionOpportunity"] }}</dd>
+                        <dt>Due Date</dt>
+                        <dd>{{ daysElapsed(connectionRequest["dueDate"], true) }}</dd>
+                    </dl>
+                </div>
+            </template>
+        </PersonCard>
+    </template>
+</template>
+
+<style scoped></style>
+
+<script setup lang="ts">
+    import { ref, PropType, watch, computed } from "vue";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { ConnectionState, ConnectionStateDescription } from "@Obsidian/Enums/Connection/connectionState";
+    import PersonCard from "@Obsidian/Controls/Internal/personCard.obs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
+    import { CampusLabelBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/campusLabelBag";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps({
+        connectionRequest: {
+            type: Object as PropType<Record<string, unknown>>,
+            default: {}
+        },
+
+        options: {
+            type: Object as PropType<ConnectionsHubOptionsBag | null | undefined>,
+            default: {}
+        },
+
+        canEditConnectionRequests: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        hideCampusLabel: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "selectItem", value: string): void;
+        (e: "changeState", state: ConnectionState, row: Record<string, unknown>): void;
+        (e: "launchWorkflow", row: Record<string, unknown>): void;
+        (e: "showSecurity", value: string | null | undefined): void;
+        (e: "delete", row: Record<string, unknown>): void;
+    }>();
+
+    const requesterPerson = computed<PersonFieldBag | null | undefined>(() => props.connectionRequest["requestDetails"] as PersonFieldBag | null | undefined);
+    const connectionState = computed<ConnectionState>(() => (props.connectionRequest["connectionState"] as ConnectionState | undefined) ?? ConnectionState.Active);
+    const campusLabel = computed<CampusLabelBag | undefined>(() => {
+        const campusGuid = props.connectionRequest["campusGuid"] as string | null | undefined;
+
+        if (!campusGuid || !props.options?.campusLabels) {
+            return;
+        }
+
+        return props.options.campusLabels.find(c => c.guid === campusGuid);
+    });
+    const stateColorClasses = computed<string>(() => {
+        switch (connectionState.value) {
+            case ConnectionState.Inactive: {
+                return "bg-warning-soft text-warning-strong";
+            }
+            case ConnectionState.FutureFollowUp: {
+                return "bg-info-soft text-info-strong";
+            }
+            case ConnectionState.Connected: {
+                return "bg-success-soft text-success-strong";
+            }
+            default: {
+                return "";
+            }
+        }
+    });
+    const daysElapsed = (dateTimeIsoToCheck: unknown, isDueDateCheck: boolean = false): string => {
+        const dateToCheckAssertion = dateTimeIsoToCheck as string | null | undefined;
+        const isCompleted = connectionState.value === ConnectionState.Connected;
+
+        if (!dateToCheckAssertion) {
+            return "";
+        }
+
+        const dateTimeToCheck = RockDateTime.parseISO(dateToCheckAssertion);
+        if (!dateTimeToCheck) {
+            return "";
+        }
+
+        // Use the completion date as the reference point if completed, otherwise use today
+        let referenceDate: RockDateTime;
+        if (isCompleted) {
+            const completedDateTimeIso = props.connectionRequest["completedDateTime"] as string | null | undefined;
+            const completedDate = RockDateTime.parseISO(completedDateTimeIso ?? "")?.date;
+
+            referenceDate = completedDate ? completedDate : RockDateTime.now().date;
+        }
+        else {
+            referenceDate = RockDateTime.now().date;
+        }
+        const dateToCheck = dateTimeToCheck.date;
+
+        const msPerDay = 1000 * 60 * 60 * 24;
+
+        const diffDays = Math.round((dateToCheck.toMilliseconds() - referenceDate.toMilliseconds()) / msPerDay);
+
+        if (isCompleted) {
+            if (diffDays > 0) {
+                return `Completed ${diffDays} ${diffDays === 1 ? "Day" : "Days"} Before Due`;
+            }
+            else if (diffDays < 0) {
+                const lateDays = Math.abs(diffDays);
+                return `Completed ${lateDays} ${lateDays === 1 ? "Day" : "Days"} After Due`;
+            }
+            else {
+                return "Completed on Due Date";
+            }
+        }
+
+        if (diffDays > 0) {
+            const pre = isDueDateCheck ? "Due in" : "In";
+            return `${pre} ${diffDays} ${diffDays === 1 ? "Day" : "Days"}`;
+        }
+        else if (diffDays < 0) {
+            const pastDays = Math.abs(diffDays);
+            const pastDateTerm = isDueDateCheck ? "Overdue" : "Ago";
+            return `${pastDays} ${pastDays === 1 ? "Day" : "Days"} ${pastDateTerm}`;
+        }
+        else {
+            return "Today";
+        }
+    };
+
+    function selectRequest(): void {
+        const requestIdKey = props.connectionRequest["idKey"] as string | null | undefined;
+
+        if (!requestIdKey || isNullOrWhiteSpace(requestIdKey)) {
+            return;
+        }
+
+        emit("selectItem", requestIdKey);
+    }
+</script>

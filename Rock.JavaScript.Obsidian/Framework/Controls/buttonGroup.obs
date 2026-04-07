@@ -6,7 +6,10 @@
                         @click="internalValue = item.value"
                         :btnSize="btnSize"
                         :btnType="itemButtonType(item)"
-                        :disabled="disabled">{{ item.text }}</RockButton>
+                        :disabled="disabled">
+                <i v-if="!isNullOrWhiteSpace(item.iconCssClass)" :class="item.iconCssClass"></i>
+                {{ item.text }}
+            </RockButton>
         </div>
     </RockFormField>
 </template>
@@ -20,11 +23,13 @@
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
 
-    // Use ListItemBag, but don't worry about the "category" property and make the other properties not null/undefined
+    // Use ListItemBag, but don't worry about the "category" property, make the other
+    // properties not null/undefined, and optionally allow an icon CSS class.
     type StandardListItemBag = {
         [P in keyof Pick<ListItemBag, "text" | "value">]-?: NonNullable<ListItemBag[P]>;
-    };
+    } & { iconCssClass?: string };
 
     const props = defineProps({
         modelValue: {

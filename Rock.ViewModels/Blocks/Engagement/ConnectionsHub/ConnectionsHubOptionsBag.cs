@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Enums.Connection;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
@@ -98,6 +99,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public ListItemBag SelectedConnector { get; set; }
 
         /// <summary>
+        /// Gets or sets a list of Campus Labels
+        /// </summary>
+        public List<CampusLabelBag> CampusLabels { get; set; }
+
+        /// <summary>
         /// Gets or sets the GUIDs of the person profile badges to display on connection requests.
         /// </summary>
         public List<Guid> BadgeGuids { get; set; }
@@ -146,6 +152,21 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the Connection Opportunity details resolved from the current filter state, used to populate the detail panel.
         /// </summary>
         public ConnectionOpportunityDetailBag ConnectionOpportunityDetailsFromFilter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the enabled views for this connection type.
+        /// </summary>
+        public EnabledViewFlags EnabledViews { get; set; }
+
+        /// <summary>
+        /// Gets whether list view is enabled for this connection type.
+        /// </summary>
+        public bool IsListViewEnabled => EnabledViews.HasFlag( EnabledViewFlags.List );
+
+        /// <summary>
+        /// Gets whether board view is enabled for this connection type.
+        /// </summary>
+        public bool IsBoardViewEnabled => EnabledViews.HasFlag( EnabledViewFlags.Board );
 
         /// <summary>
         /// Gets or sets the attributes for Connection Request attributes specified at the Connection Type level.

@@ -13,23 +13,25 @@
         </template>
     </ContextSlicer>
 
-    <GroupedGridPanel v-model:quickFilterValue="rawQuickFilter"
-                      v-model:groupingKey="selectedGrouping"
-                      v-model:orderedRequestKeys="orderedRequestKeys"
-                      ref="groupedGridPanel"
-                      :title="box.options?.title ?? ''"
-                      :titleIconCssClass="`${box.options?.iconCssClass ?? ''} panel-icon`"
-                      :isSelectedView="hasAnySelectedKeys"
-                      :rows="gridData?.rows ?? []"
-                      :filteredAndSortedRows="visibleRows"
-                      :panelSettingsActive="hasSettingsFilters"
-                      :groupingFields="groupingFields"
-                      itemTerm="Request"
-                      hasFullscreen
-                      :onAddItem="canEditConnectionRequests ? onAddItem : undefined"
-                      :onPanelSettingsClick="onPanelSettingsClick"
-                      :isAutoCollapseEnabled="isAutoCollapseEnabled"
-                      :headerSecondaryActions="secondaryActions">
+    <GroupedPanel v-model:quickFilterValue="rawQuickFilter"
+                  v-model:groupingKey="selectedGrouping"
+                  v-model:orderedRequestKeys="orderedRequestKeys"
+                  v-model:viewMode="selectedView"
+                  ref="groupedPanel"
+                  :title="box.options?.title ?? ''"
+                  :titleIconCssClass="`${box.options?.iconCssClass ?? ''} panel-icon`"
+                  :isSelectedView="hasAnySelectedKeys"
+                  :rows="gridData?.rows ?? []"
+                  :filteredAndSortedRows="visibleRows"
+                  :panelSettingsActive="hasSettingsFilters"
+                  :groupingFields="groupingFields"
+                  :viewModeItems="enabledViews"
+                  itemTerm="Request"
+                  hasFullscreen
+                  :onAddItem="canEditConnectionRequests ? onAddItem : undefined"
+                  :onPanelSettingsClick="onPanelSettingsClick"
+                  :isAutoCollapseEnabled="isAutoCollapseEnabled"
+                  :headerSecondaryActions="secondaryActions">
         <template #selectedActionToolbar>
             <div class="left-actions d-flex align-items-center gap-md">
                 <div class="d-flex align-items-center gap-tiny">
@@ -416,7 +418,18 @@
                 </div>
             </template>
         </template>
-    </GroupedGridPanel>
+        <template #boardCard="{ row }">
+            <ConnectionRequestCard :connectionRequest="row"
+                                   :options="box.options"
+                                   :canEditConnectionRequests="canEditConnectionRequests"
+                                   :hideCampusLabel="selectedCampus !== null"
+                                   @selectItem="onSelectItem"
+                                   @changeState="showChangeStateModal"
+                                   @launchWorkflow="showLaunchWorkflowModal"
+                                   @showSecurity="showSecurityModal"
+                                   @delete="showDeleteRequestModal" />
+        </template>
+    </GroupedPanel>
 
     <ChangeStatusFlyout v-model="isFlyoutOpen"
                         :errorMessage="flyoutErrorMessage"
@@ -722,7 +735,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
-    import GroupedGridPanel from "@Obsidian/Controls/Internal/groupedGridPanel.obs";
+    import GroupedPanel from "@Obsidian/Controls/Internal/groupedPanel.obs";
     import { isNullOrWhiteSpace, pluralize, safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { tooltip } from "@Obsidian/Utility/tooltip";
@@ -797,6 +810,8 @@
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { ConnectorOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectorOptionsBag";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ConnectionRequestCard from "./ConnectionsHub/connectionRequestCard.partial.obs";
+
 
     const box = useConfigurationValues<ListBlockBox<ConnectionsHubOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -841,6 +856,29 @@
         },
     ];
 
+    type IconListItemBag = {
+        text: string;
+        value: string;
+        iconCssClass?: string;
+    };
+
+    const enabledViews = <IconListItemBag[]>[];
+    if (box.options?.isListViewEnabled) {
+        enabledViews.push({
+            text: "List",
+            iconCssClass: "ti ti-layout-list",
+            value: "list"
+        });
+    }
+    if (box.options?.isBoardViewEnabled) {
+        enabledViews.push({
+            text: "Board",
+            iconCssClass: "ti ti-layout-cards",
+            value: "board"
+        });
+    }
+    // TODO - Grid View?
+
     // Soft security check to see if the user can edit the list of connection requests.
     const canEditGlobalConnectionRequests = ref<boolean>(box.options?.canEditConnectionRequests ?? false);
 
@@ -875,7 +913,7 @@
     // Grouped Grid Configuration
     const selectedKeys = ref<Record<string, string[]>>({});
     const selectedKeysOnUnmount = ref<Record<string, string[]>>({});
-    const groupedGridPanel = ref();
+    const groupedPanel = ref();
     const rawQuickFilter = ref("");
     const debouncedQuickFilter = ref(rawQuickFilter.value);
     const isAutoCollapseEnabled = ref<boolean>(asBoolean(preferences.getValue(PreferenceKey.IsAutoCollapseEnabled)));
@@ -948,6 +986,13 @@
     const dockedPanelCloseOnOutsideClick = ref<boolean>(true);
     // Breadcrumbs are used when a user navigates to an "additional request"
     const connectionRequestBreadcrumbs = ref<ListItemBag[]>([]);
+
+
+    // Board Refs
+    const selectedView = ref("list");
+
+
+
 
     // #region Computed Values
 
@@ -1586,7 +1631,7 @@
     }
 
     function collapseAll(): void {
-        groupedGridPanel.value.collapseAll();
+        groupedPanel.value.collapseAll();
     }
 
     function toggleAutoCollapse(): void {
@@ -2054,7 +2099,7 @@
     }
 
     function clearAllSelections(): void {
-        groupedGridPanel.value.clearSelectedKeys();
+        groupedPanel.value.clearSelectedKeys();
         selectedKeys.value = {};
         selectedKeysOnUnmount.value = {};
     }

@@ -1,0 +1,89 @@
+<template>
+    <Card class="person-card">
+        <template #header>
+            <div class="d-flex p-spacing-sm justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-sm">
+                    <PersonAvatar :photoUrl="photoUrl" marginRight="0" />
+                    <div class="text-md text-semibold">{{ name }}</div>
+                </div>
+                <div class="d-flex align-items-center gap-tiny">
+                    <span v-if="!hideCampusLabel && !isNullOrWhiteSpace(campusShortCode)"
+                          class="label label-default"
+                          :style="campusLabelStyle()">
+                        {{ campusShortCode }}
+                    </span>
+                    <div class="dropdown dropdown-right">
+                        <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown"></i>
+                        <ul class="dropdown-menu">
+                            <slot name="secondaryHeaderActions" />
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template #subheader>
+            <slot name="subheader" />
+        </template>
+        <template #body>
+            <slot name="body" />
+        </template>
+        <template #footer>
+            <slot name="footer" />
+        </template>
+    </Card>
+</template>
+
+<style scoped>
+.gap-sm {
+    gap: var(--spacing-small)
+}
+
+.gap-tiny {
+    gap: var(--spacing-tiny);
+}
+</style>
+
+<script setup lang="ts">
+    import Card from "./card.obs";
+    import PersonAvatar from "../personAvatar.obs";
+    import { ref, PropType, watch, computed } from "vue";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+
+    const props = defineProps({
+        photoUrl: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        name: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        campusShortCode: {
+            type: String as PropType<string | null | undefined>,
+        },
+
+        campusColor: {
+            type: String as PropType<string | null | undefined>,
+        },
+
+        hideCampusLabel: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    /** Contains the custom style values to apply to the span label. */
+    const campusLabelStyle = (): Record<string, string> | undefined => {
+        const baseColor = props.campusColor ?? "gray";
+        const pair = RockColor.calculateColorPair(new RockColor(baseColor));
+
+        // We are using the color lookup and we have a match.
+        return {
+            "backgroundColor": pair.backgroundColor.toRgba(),
+            "color": pair.foregroundColor.toRgba()
+        };
+    };
+</script>

@@ -1,0 +1,23 @@
+<template>
+    <div class="card">
+        <slot name="header" />
+        <slot name="subheader" />
+        <slot name="body" />
+        <slot name="footer" />
+    </div>
+</template>
+
+<style scoped>
+.card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+
+    const test = ref("test");
+</script>

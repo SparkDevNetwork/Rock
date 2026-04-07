@@ -1,0 +1,68 @@
+<template>
+    <div class="grouped-board-view">
+        <div v-for="group in groups"
+             :key="group.key ?? ''"
+             class="board-column">
+            <div class="board-column-header d-flex align-items-center gap-sm">
+                <template v-if="group.type === 'person'">
+                    <PersonAvatar :photoUrl="group.photoUrl ?? ''"
+                                  :photoSize="24" />
+                </template>
+                <template v-else>
+                    <i v-if="group.iconCssClass"
+                       :class="[group.iconCssClass, group.textColorCssClass]"></i>
+                </template>
+                <span class="font-weight-semibold" :class="group.textColorCssClass">{{ group.label }}</span>
+                <span class="ml-auto text-interface-medium">{{ group.gridData.rows.length }}</span>
+            </div>
+            <div class="board-column-body">
+                <template v-for="row in group.gridData.rows" :key="(row.idKey as string)">
+                    <slot name="boardCard" v-bind="{ row }" />
+                </template>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.grouped-board-view {
+    display: flex;
+    gap: var(--spacing-medium);
+    overflow-x: auto;
+    padding: var(--spacing-medium);
+    align-items: flex-start;
+}
+
+.board-column {
+    flex: 0 0 330px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+}
+
+.board-column-header {
+    padding: var(--spacing-xsmall) var(--spacing-small);
+    border-bottom: 2px solid var(--color-interface-soft);
+}
+
+.board-column-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    /* overflow-y: auto; */
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { GroupedGrid } from "./types.partial";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+
+    defineProps({
+        /** The pre-computed groups to render as board columns. */
+        groups: {
+            type: Array as PropType<GroupedGrid[]>,
+            required: true
+        }
+    });
+</script>
