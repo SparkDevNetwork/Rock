@@ -104,18 +104,6 @@
 		},
 		"vue.format.template.initialIndent": true,
 		"vue.format.script.initialIndent": true,
-		"volar.format.initialIndent": {
-			"typescript": true,
-			"html": true
-		},
-		"volar.vueserver.additionalExtensions": [
-			"obs"
-		],
-		"vue.complete.casing.props": "camel",
-		"vue.complete.casing.tags": "pascal",
-		"vue.server.additionalExtensions": [
-			"obs"
-		],
         "vue.suggest.propNameCasing": "alwaysCamelCase",
         "vue.suggest.componentNameCasing": "alwaysPascalCase",
 		"files.trimTrailingWhitespace": true,
@@ -140,7 +128,7 @@
 			"editor.formatOnSave": true
 		},
 		"css.format.spaceAroundSelectorSeparator": true,
-		"typescript.tsdk": "node_modules/typescript/lib",
+		"js/ts.tsdk.path": "Rock.JavaScript.Obsidian\\node_modules\\typescript\\lib",
 		"workbench.settings.openDefaultSettings": false,
 		"workbench.settings.openDefaultKeybindings": false,
 		"css.lint.duplicateProperties": "warning",
