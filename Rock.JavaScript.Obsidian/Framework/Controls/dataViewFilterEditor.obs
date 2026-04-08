@@ -1,0 +1,135 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <LoadingIndicator v-if="isLoadingTypes" />
+    <NotificationBox v-else-if="loadError" alertType="danger">{{ loadError }}</NotificationBox>
+    <div v-else class="data-view-filter-editor">
+        <DataViewFilterNode v-model="internalValue"
+                            :entityTypeGuid="entityTypeGuid"
+                            :availableFilterTypes="availableFilterTypes"
+                            :isRoot="true" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import DataViewFilterNode from "./Internal/DataViewFilter/dataViewFilterNode.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import {
+        cloneFilterNode,
+        createDefaultDataViewFilter
+    } from "@Obsidian/Core/Reporting/dataViewFilterEditor";
+    import type { Guid } from "@Obsidian/Types";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { DataFilterTypeItemBag } from "@Obsidian/ViewModels/Controls/dataFilterTypeItemBag";
+    import { DataViewFilterBag } from "@Obsidian/ViewModels/Reporting/dataViewFilterBag";
+    import { DataFilterGetAvailableTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/dataFilterGetAvailableTypesOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<DataViewFilterBag | null>,
+            required: false
+        },
+        entityTypeGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            required: true
+        },
+        excludedFilterTypeGuids: {
+            type: Array as PropType<Guid[]>,
+            default: () => []
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: DataViewFilterBag): void;
+    }>();
+
+    const http = useHttp();
+
+    // #region Values
+
+    const internalValue = ref<DataViewFilterBag>(cloneFilterNode(props.modelValue ?? createDefaultDataViewFilter()));
+    const availableFilterTypes = ref<DataFilterTypeItemBag[]>([]);
+    const isLoadingTypes = ref<boolean>(false);
+    const loadError = ref<string>("");
+    const isApplyingExternalModel = ref<boolean>(false);
+
+    // #endregion Values
+
+    // #region Functions
+
+    function serializeNodeValue(value: DataViewFilterBag | null | undefined): string {
+        return JSON.stringify(value ?? null);
+    }
+
+    async function loadAvailableFilterTypes(): Promise<void> {
+        isLoadingTypes.value = true;
+        loadError.value = "";
+
+        if (!props.entityTypeGuid) {
+            availableFilterTypes.value = [];
+            isLoadingTypes.value = false;
+            return;
+        }
+
+        const options: DataFilterGetAvailableTypesOptionsBag = {
+            entityTypeGuid: props.entityTypeGuid,
+            excludedFilterTypeGuids: props.excludedFilterTypeGuids,
+            isObsidianSupported: true
+        };
+
+        const result = await http.post<DataFilterTypeItemBag[]>("/api/v2/Controls/DataFilterGetAvailableTypes", undefined, options);
+
+        if (result.isSuccess && result.data) {
+            availableFilterTypes.value = result.data;
+        }
+        else {
+            availableFilterTypes.value = [];
+            loadError.value = result.errorMessage ?? "Unable to load the available data filters.";
+        }
+
+        isLoadingTypes.value = false;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        const nextValue = cloneFilterNode(props.modelValue ?? createDefaultDataViewFilter());
+
+        if (serializeNodeValue(nextValue) === serializeNodeValue(internalValue.value)) {
+            return;
+        }
+
+        isApplyingExternalModel.value = true;
+        internalValue.value = nextValue;
+        isApplyingExternalModel.value = false;
+    }, {
+        deep: true
+    });
+
+    watch(internalValue, () => {
+        if (isApplyingExternalModel.value) {
+            return;
+        }
+
+        const nextValue = cloneFilterNode(internalValue.value);
+
+        if (serializeNodeValue(nextValue) === serializeNodeValue(props.modelValue)) {
+            return;
+        }
+
+        emit("update:modelValue", nextValue);
+    }, {
+        deep: true
+    });
+
+    watch(() => [props.entityTypeGuid, JSON.stringify(props.excludedFilterTypeGuids)], async () => {
+        await loadAvailableFilterTypes();
+    }, {
+        immediate: true
+    });
+
+    // #endregion Watchers
+</script>

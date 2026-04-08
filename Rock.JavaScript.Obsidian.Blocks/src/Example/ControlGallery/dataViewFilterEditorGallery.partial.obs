@@ -1,0 +1,51 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      description="Edits a nested DataViewFilter tree using the same filter components that Data Views and Content Channel Views use.">
+
+        <ContentSection title="Filtering Logic">
+            <ContentStack title="Content Filtering"
+                          description="Defines the rule groups used to determine which items are included in the results.">
+                <DataViewFilterEditor v-model="value"
+                                      :entityTypeGuid="entityTypeGuid?.value" />
+            </ContentStack>
+        </ContentSection>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <EntityTypePicker label="For Entity Type"
+                                      v-model="entityTypeGuid"
+                                      enhanceForLongLists
+                                      showBlankItem />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DataViewFilterEditor from "@Obsidian/Controls/dataViewFilterEditor.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import { createDefaultDataViewFilter } from "@Obsidian/Core/Reporting/dataViewFilterEditor";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { DataViewFilterBag } from "@Obsidian/ViewModels/Reporting/dataViewFilterBag";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const defaultEntityTypeGuid = EntityType.Person;
+
+    const entityTypeGuid = ref<ListItemBag | null>({ text: "Person", value: defaultEntityTypeGuid });
+    const value = ref<DataViewFilterBag>(createDefaultDataViewFilter());
+
+    const importCode = getSfcControlImportPath("dataViewFilterEditor");
+    const exampleCode = `<DataViewFilterEditor v-model="value" :entityTypeGuid="entityTypeGuid" />`;
+
+    watch(entityTypeGuid, () => {
+        value.value = createDefaultDataViewFilter();
+    });
+</script>

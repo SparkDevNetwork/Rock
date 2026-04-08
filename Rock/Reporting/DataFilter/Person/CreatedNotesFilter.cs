@@ -211,7 +211,7 @@ namespace Rock.Reporting.DataFilter.Person
             {
                 result = $"Created {selectionConfig.MinimumCount} or more Person {"Note".PluralizeIf( selectionConfig.MinimumCount > 1 )}";
 
-                if ( selectionConfig.NoteTypeIds.Any() )
+                if ( selectionConfig.NoteTypeIds != null && selectionConfig.NoteTypeIds.Any() )
                 {
                     var noteTypeNames = new List<string>();
                     foreach ( var noteTypeId in selectionConfig.NoteTypeIds )

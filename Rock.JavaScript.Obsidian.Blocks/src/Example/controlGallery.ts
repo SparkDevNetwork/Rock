@@ -152,6 +152,7 @@ import CampusPickerGallery from "./ControlGallery/campusPickerGallery.partial.ob
 import ScheduleBuilderGallery from "./ControlGallery/scheduleBuilderGallery.partial.obs";
 import BinaryFilePickerGallery from "./ControlGallery/binaryFilePickerGallery.partial.obs";
 import EventItemPickerGallery from "./ControlGallery/eventItemPickerGallery.partial.obs";
+import DataViewFilterEditorGallery from "./ControlGallery/dataViewFilterEditorGallery.partial.obs";
 import DataViewPickerGallery from "./ControlGallery/dataViewPickerGallery.partial.obs";
 import WorkflowTypePickerGallery from "./ControlGallery/workflowTypePickerGallery.partial.obs";
 import FinancialGatewayPickerGallery from "./ControlGallery/financialGatewayPickerGallery.partial.obs";
@@ -331,6 +332,7 @@ const controlGalleryComponents: Record<string, Component> = [
     CodeEditorGallery,
     ModalGallery,
     EventItemPickerGallery,
+    DataViewFilterEditorGallery,
     DataViewPickerGallery,
     WorkflowTypePickerGallery,
     ComponentPickerGallery,

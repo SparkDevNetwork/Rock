@@ -571,8 +571,8 @@ namespace Rock.Reporting.DataFilter.Person
                 return string.Format(
                     "{0}|{1}|{2}|{3}|{4}",
                     this.DateRangeMode,
-                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( DateRangeMode ) ? this.NumberOfTimeUnits : ( int? ) null,
-                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming | SlidingDateRangeType.Current ).HasFlag( this.DateRangeMode ) ? this.TimeUnit : ( TimeUnitType? ) null,
+                    DateRangeMode.HasValue && ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( DateRangeMode.Value ) ? this.NumberOfTimeUnits : ( int? ) null,
+                    DateRangeMode.HasValue && ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming | SlidingDateRangeType.Current ).HasFlag( DateRangeMode.Value ) ? this.TimeUnit : ( TimeUnitType? ) null,
                     this.DateRangeMode == SlidingDateRangeType.DateRange ? this.StartDate : null,
                     this.DateRangeMode == SlidingDateRangeType.DateRange ? this.EndDate : null );
             }
