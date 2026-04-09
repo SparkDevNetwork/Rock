@@ -68,6 +68,12 @@ namespace Rock.Web.Cache
         public bool HasEndDate { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether a date is required for steps of this type.
+        /// </summary>
+        [DataMember]
+        public bool IsDateRequired { get; private set; }
+
+        /// <summary>
         /// Gets or sets the Id of the <see cref="DataView"/> associated with this step type. The data view reveals the people that are allowed to be
         /// considered for this step type.
         /// </summary>
@@ -210,6 +216,7 @@ namespace Rock.Web.Cache
             IconCssClass = sourceModel.IconCssClass;
             AllowMultiple = sourceModel.AllowMultiple;
             HasEndDate = sourceModel.HasEndDate;
+            IsDateRequired = sourceModel.IsDateRequired;
             AudienceDataViewId = sourceModel.AudienceDataViewId;
             ShowCountOnBadge = sourceModel.ShowCountOnBadge;
             AutoCompleteDataViewId = sourceModel.AutoCompleteDataViewId;
