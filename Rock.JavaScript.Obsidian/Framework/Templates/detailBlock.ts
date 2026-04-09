@@ -191,6 +191,15 @@ export default defineComponent({
         },
 
         /**
+         * Additional actions to display between the Save and Cancel buttons
+         * while in edit mode. Rendered as link buttons.
+         */
+        editFooterActions: {
+            type: Array as PropType<PanelAction[]>,
+            required: false
+        },
+
+        /**
          * Additional secondary actions to display in the footer of the panel.
          * These are currently displayed as icon buttons in the right of the footer.
          */
@@ -922,6 +931,8 @@ export default defineComponent({
     </template>
 
     <template #headerActions>
+        <slot v-if="$slots.headerActions" name="headerActions" />
+
         <div v-if="showExperienceMode" class="panel-experience-mode">
             <ExperienceModePicker />
         </div>
@@ -959,6 +970,7 @@ export default defineComponent({
     <template #footerActions>
         <template v-if="isEditMode">
             <RockButton btnType="primary" autoDisable autoLoading @click="onSaveClick" shortcutKey="s">Save</RockButton>
+            <RockButton v-for="action in editFooterActions" btnType="link" :disabled="action.disabled" @click="onActionClick(action, $event)">{{ action.title }}</RockButton>
             <RockButton btnType="link" @click="onEditCancelClick" shortcutKey="c">Cancel</RockButton>
         </template>
 
