@@ -3,13 +3,8 @@
                       :exampleCode="exampleCode"
                       description="Edits a nested DataViewFilter tree using the same filter components that Data Views and Content Channel Views use.">
 
-        <ContentSection title="Filtering Logic">
-            <ContentStack title="Content Filtering"
-                          description="Defines the rule groups used to determine which items are included in the results.">
-                <DataViewFilterEditor v-model="value"
-                                      :entityTypeGuid="entityTypeGuid?.value" />
-            </ContentStack>
-        </ContentSection>
+        <DataViewFilterEditor v-model="value"
+                              :entityTypeGuid="entityTypeGuid?.value" />
 
         <template #settings>
             <div class="row">
@@ -28,8 +23,6 @@
     import { ref, watch } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
-    import ContentSection from "@Obsidian/Controls/contentSection.obs";
-    import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import DataViewFilterEditor from "@Obsidian/Controls/dataViewFilterEditor.obs";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import { createDefaultDataViewFilter } from "@Obsidian/Core/Reporting/dataViewFilterEditor";
