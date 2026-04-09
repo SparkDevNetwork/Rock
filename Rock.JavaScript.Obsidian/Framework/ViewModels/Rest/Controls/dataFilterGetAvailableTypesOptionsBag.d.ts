@@ -33,4 +33,7 @@ export type DataFilterGetAvailableTypesOptionsBag = {
 
     /** Gets or sets a value indicating whether the filter type is supported in Obsidian. */
     isObsidianSupported: boolean;
+
+    /** Gets or sets the security grant token used to authorize access to protected resources. */
+    securityGrantToken?: string | null;
 };

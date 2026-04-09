@@ -1,44 +1,43 @@
 <template>
     <GalleryAndResult :importCode="importCode"
                       :exampleCode="exampleCode"
-                      description="Edits a nested DataViewFilter tree using the same filter components that Data Views and Content Channel Views use.">
+                      description="Edits a nested DataViewFilter tree using the same filter components that Data Views use.">
+
+        <NotificationBox alertType="info" heading="Note">
+            This control is for internal use only.
+        </NotificationBox>
 
         <DataViewFilterEditor v-model="value"
-                              :entityTypeGuid="entityTypeGuid?.value" />
+                              :entityTypeGuid="EntityType.Person" />
 
         <template #settings>
-            <div class="row">
-                <div class="col-md-3">
-                    <EntityTypePicker label="For Entity Type"
-                                      v-model="entityTypeGuid"
-                                      enhanceForLongLists
-                                      showBlankItem />
-                </div>
-            </div>
+            <p>This gallery displays the Data View Filters for the <code>Person</code> Entity Type.</p>
         </template>
     </GalleryAndResult>
 </template>
 
 <script setup lang="ts">
-    import { ref, watch } from "vue";
+    import { ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
     import DataViewFilterEditor from "@Obsidian/Controls/dataViewFilterEditor.obs";
-    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
-    import { createDefaultDataViewFilter } from "@Obsidian/Core/Reporting/dataViewFilterEditor";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { newGuid } from "@Obsidian/Utility/guid";
     import { DataViewFilterBag } from "@Obsidian/ViewModels/Reporting/dataViewFilterBag";
-    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    const defaultEntityTypeGuid = EntityType.Person;
-
-    const entityTypeGuid = ref<ListItemBag | null>({ text: "Person", value: defaultEntityTypeGuid });
-    const value = ref<DataViewFilterBag>(createDefaultDataViewFilter());
+    const value = ref<DataViewFilterBag>({
+        expressionType: FilterExpressionType.GroupAll,
+        guid: newGuid(),
+        childFilters: [
+            {
+                guid: newGuid(),
+                expressionType: FilterExpressionType.Filter
+            }
+        ]
+    });
 
     const importCode = getSfcControlImportPath("dataViewFilterEditor");
-    const exampleCode = `<DataViewFilterEditor v-model="value" :entityTypeGuid="entityTypeGuid" />`;
-
-    watch(entityTypeGuid, () => {
-        value.value = createDefaultDataViewFilter();
-    });
+    const exampleCode = `<DataViewFilterEditor v-model="value" :entityTypeGuid="EntityType.Person" />`;
 </script>

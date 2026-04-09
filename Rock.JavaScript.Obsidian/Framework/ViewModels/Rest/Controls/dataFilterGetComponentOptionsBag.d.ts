@@ -31,6 +31,9 @@ export type DataFilterGetComponentOptionsBag = {
     /** The selected data filter type unique identifier. */
     filterTypeGuid: Guid;
 
+    /** Gets or sets the security grant token used to authorize access to protected resources. */
+    securityGrantToken?: string | null;
+
     /** The current persisted selection. */
     selection?: string | null;
 };

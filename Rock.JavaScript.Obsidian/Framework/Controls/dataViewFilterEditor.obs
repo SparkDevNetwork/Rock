@@ -15,15 +15,14 @@
     import DataViewFilterNode from "./Internal/DataViewFilter/dataViewFilterNode.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import {
-        cloneFilterNode,
-        createDefaultDataViewFilter
-    } from "@Obsidian/Core/Reporting/dataViewFilterEditor";
     import type { Guid } from "@Obsidian/Types";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { useHttp } from "@Obsidian/Utility/http";
     import { DataFilterTypeItemBag } from "@Obsidian/ViewModels/Controls/dataFilterTypeItemBag";
     import { DataViewFilterBag } from "@Obsidian/ViewModels/Reporting/dataViewFilterBag";
     import { DataFilterGetAvailableTypesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/dataFilterGetAvailableTypesOptionsBag";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -45,6 +44,7 @@
     }>();
 
     const http = useHttp();
+    const securityGrantToken = useSecurityGrantToken();
 
     // #region Values
 
@@ -62,6 +62,33 @@
         return JSON.stringify(value ?? null);
     }
 
+    function cloneFilterNode(node: DataViewFilterBag | null | undefined): DataViewFilterBag {
+        return JSON.parse(JSON.stringify(node ?? createDefaultDataViewFilter()));
+    }
+
+    function createFilterNode(): DataViewFilterBag {
+        return {
+            guid: newGuid(),
+            expressionType: FilterExpressionType.Filter,
+            filterTypeGuid: null,
+            selection: null,
+            componentData: {},
+            childFilters: []
+        };
+    }
+
+    function createGroupNode(expressionType: FilterExpressionType = FilterExpressionType.GroupAll): DataViewFilterBag {
+        return {
+            guid: newGuid(),
+            expressionType,
+            childFilters: [createFilterNode()]
+        };
+    }
+
+    function createDefaultDataViewFilter(): DataViewFilterBag {
+        return createGroupNode(FilterExpressionType.GroupAll);
+    }
+
     async function loadAvailableFilterTypes(): Promise<void> {
         isLoadingTypes.value = true;
         loadError.value = "";
@@ -75,7 +102,8 @@
         const options: DataFilterGetAvailableTypesOptionsBag = {
             entityTypeGuid: props.entityTypeGuid,
             excludedFilterTypeGuids: props.excludedFilterTypeGuids,
-            isObsidianSupported: true
+            isObsidianSupported: true,
+            securityGrantToken: securityGrantToken.value
         };
 
         const result = await http.post<DataFilterTypeItemBag[]>("/api/v2/Controls/DataFilterGetAvailableTypes", undefined, options);

@@ -3929,6 +3929,15 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // We have to check access on the EntityType record because the
+                // component is not an IEntity so it will not work.
+                if ( grant == null || !grant.IsAccessGranted( options.EntityTypeGuid, Security.Authorization.VIEW ) )
+                {
+                    return BadRequest( "Security grant token is not valid." );
+                }
+
                 var entityType = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
                 var filteredEntityType = entityType?.GetEntityType();
 
@@ -3956,6 +3965,15 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // We have to check access on the EntityType record because the
+                // component is not an IEntity so it will not work.
+                if ( grant == null || !grant.IsAccessGranted( options.EntityTypeGuid, Security.Authorization.VIEW ) )
+                {
+                    return BadRequest( "Security grant token is not valid." );
+                }
+
                 if ( !TryGetAuthorizedDataFilterComponent( options.EntityTypeGuid, options.FilterTypeGuid, rockContext, out var filteredEntityType, out var component, out var errorResult ) )
                 {
                     return errorResult;
@@ -4002,6 +4020,15 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // We have to check access on the EntityType record because the
+                // component is not an IEntity so it will not work.
+                if ( grant == null || !grant.IsAccessGranted( options.EntityTypeGuid, Security.Authorization.VIEW ) )
+                {
+                    return BadRequest( "Security grant token is not valid." );
+                }
+
                 if ( !TryGetAuthorizedDataFilterComponent( options.EntityTypeGuid, options.FilterTypeGuid, rockContext, out var filteredEntityType, out var component, out var errorResult ) )
                 {
                     return errorResult;
@@ -4036,6 +4063,15 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // We have to check access on the EntityType record because the
+                // component is not an IEntity so it will not work.
+                if ( grant == null || !grant.IsAccessGranted( options.EntityTypeGuid, Security.Authorization.VIEW ) )
+                {
+                    return BadRequest( "Security grant token is not valid." );
+                }
+
                 if ( !TryGetAuthorizedDataFilterComponent( options.EntityTypeGuid, options.FilterTypeGuid, rockContext, out _, out var component, out var errorResult ) )
                 {
                     return errorResult;

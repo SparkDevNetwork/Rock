@@ -76,7 +76,7 @@
             </template>
         </template>
 
-        <div class="filter-group-list">
+        <div v-if="childFilters.length" class="filter-group-list">
             <DataViewFilterNode v-for="(child, index) in childFilters"
                                 :key="child.guid"
                                 :modelValue="child"
@@ -87,6 +87,8 @@
                                 @update:modelValue="onUpdateChild(index, $event)"
                                 @delete="removeChild(index)" />
         </div>
+
+        <p v-else class="text-muted">No filters. Click "Add Filter" or "Add Group" to get started.</p>
     </Panel>
 
     <Panel v-else
@@ -214,21 +216,10 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import {
-        cloneFilterNode,
-        createFilterNode,
-        createGroupNode,
-        getGroupJoinType,
-        getGroupTruthType,
-        isFilterNode,
-        setGroupJoinType,
-        setGroupTruthType
-    } from "@Obsidian/Core/Reporting/dataViewFilterEditor";
     import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
-    import { FilterGroupJoinType } from "@Obsidian/Enums/Reporting/filterGroupJoinType";
-    import { FilterGroupTruthType } from "@Obsidian/Enums/Reporting/filterGroupTruthType";
     import { FilterMode } from "@Obsidian/Enums/Reporting/filterMode";
     import type { Guid } from "@Obsidian/Types";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { useHttp } from "@Obsidian/Utility/http";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
@@ -237,11 +228,27 @@
     import { DataViewFilterBag } from "@Obsidian/ViewModels/Reporting/dataViewFilterBag";
     import { DataFilterGetComponentResultsBag } from "@Obsidian/ViewModels/Rest/Controls/dataFilterGetComponentResultsBag";
     import { DataFilterGetSelectionResultsBag } from "@Obsidian/ViewModels/Rest/Controls/dataFilterGetSelectionResultsBag";
+    import { DataFilterExecuteComponentRequestOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/dataFilterExecuteComponentRequestOptionsBag";
     import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     defineOptions({
         name: "DataViewFilterNode"
     });
+
+    // #region Types
+
+    enum FilterGroupJoinType {
+        All = 0,
+        Any = 1
+    }
+
+    enum FilterGroupTruthType {
+        True = 0,
+        False = 1
+    }
+
+    // #endregion Types
 
     const props = defineProps({
         modelValue: {
@@ -272,6 +279,7 @@
     }>();
 
     const http = useHttp();
+    const securityGrantToken = useSecurityGrantToken();
     const node = ref<DataViewFilterBag>(cloneFilterNode(props.modelValue));
     const isNodeExpanded = ref<boolean>(props.isRoot || props.isExpanded);
     const componentDefinition = ref<DataFilterGetComponentResultsBag["componentDefinition"]>();
@@ -346,7 +354,8 @@
         const result = await http.post<DataFilterGetComponentResultsBag>("/api/v2/Controls/DataFilterGetComponent", undefined, {
             entityTypeGuid: props.entityTypeGuid,
             filterTypeGuid: selectedFilterTypeGuidOrEmptyString.value,
-            selection: node.value.selection
+            selection: node.value.selection,
+            securityGrantToken: securityGrantToken.value
         });
 
         if (result.isSuccess && result.data) {
@@ -380,7 +389,8 @@
         const result = await http.post<DataFilterGetSelectionResultsBag>("/api/v2/Controls/DataFilterGetSelection", undefined, {
             entityTypeGuid: props.entityTypeGuid,
             filterTypeGuid: selectedFilterTypeGuidOrEmptyString.value,
-            componentData: componentData.value
+            componentData: componentData.value,
+            securityGrantToken: securityGrantToken.value
         });
 
         if (result.isSuccess && result.data) {
@@ -405,15 +415,18 @@
     }
 
     async function executeComponentRequest(request: Record<string, string>): Promise<Record<string, string> | null> {
-        if (!selectedFilterTypeGuidOrEmptyString.value) {
+        if (!selectedFilterTypeGuidOrEmptyString.value || !props.entityTypeGuid) {
             return null;
         }
 
-        const result = await http.post<Record<string, string>>("/api/v2/Controls/DataFilterExecuteComponentRequest", undefined, {
+        const options: DataFilterExecuteComponentRequestOptionsBag = {
             entityTypeGuid: props.entityTypeGuid,
             filterTypeGuid: selectedFilterTypeGuidOrEmptyString.value,
-            request
-        });
+            request,
+            securityGrantToken: securityGrantToken.value
+        };
+
+        const result = await http.post<Record<string, string>>("/api/v2/Controls/DataFilterExecuteComponentRequest", undefined, options);
 
         if (result.isSuccess) {
             return result.data ?? null;
@@ -497,6 +510,71 @@
         }
 
         emit("update:modelValue", nextNode);
+    }
+
+    function cloneFilterNode(node: DataViewFilterBag | null | undefined): DataViewFilterBag {
+        return JSON.parse(JSON.stringify(node ?? createDefaultDataViewFilter()));
+    }
+
+    function createFilterNode(): DataViewFilterBag {
+        return {
+            guid: newGuid(),
+            expressionType: FilterExpressionType.Filter,
+            filterTypeGuid: null,
+            selection: null,
+            componentData: {},
+            childFilters: []
+        };
+    }
+
+    function createGroupNode(expressionType: FilterExpressionType = FilterExpressionType.GroupAll): DataViewFilterBag {
+        return {
+            guid: newGuid(),
+            expressionType,
+            childFilters: [createFilterNode()]
+        };
+    }
+
+    function createDefaultDataViewFilter(): DataViewFilterBag {
+        return createGroupNode(FilterExpressionType.GroupAll);
+    }
+
+    function isFilterNode(node: DataViewFilterBag): boolean {
+        return node.expressionType === FilterExpressionType.Filter;
+    }
+
+    function getGroupJoinType(expressionType: FilterExpressionType): FilterGroupJoinType {
+        return expressionType === FilterExpressionType.GroupAny || expressionType === FilterExpressionType.GroupAnyFalse
+            ? FilterGroupJoinType.Any
+            : FilterGroupJoinType.All;
+    }
+
+    function getGroupTruthType(expressionType: FilterExpressionType): FilterGroupTruthType {
+        return expressionType === FilterExpressionType.GroupAllFalse || expressionType === FilterExpressionType.GroupAnyFalse
+            ? FilterGroupTruthType.False
+            : FilterGroupTruthType.True;
+    }
+
+    function setGroupJoinType(node: DataViewFilterBag, joinType: FilterGroupJoinType): void {
+        const isFalse = node.expressionType === FilterExpressionType.GroupAllFalse || node.expressionType === FilterExpressionType.GroupAnyFalse;
+
+        if (joinType === FilterGroupJoinType.All) {
+            node.expressionType = isFalse ? FilterExpressionType.GroupAllFalse : FilterExpressionType.GroupAll;
+        }
+        else {
+            node.expressionType = isFalse ? FilterExpressionType.GroupAnyFalse : FilterExpressionType.GroupAny;
+        }
+    }
+
+    function setGroupTruthType(node: DataViewFilterBag, truthType: FilterGroupTruthType): void {
+        const isAll = node.expressionType === FilterExpressionType.GroupAll || node.expressionType === FilterExpressionType.GroupAllFalse;
+
+        if (truthType === FilterGroupTruthType.True) {
+            node.expressionType = isAll ? FilterExpressionType.GroupAll : FilterExpressionType.GroupAny;
+        }
+        else {
+            node.expressionType = isAll ? FilterExpressionType.GroupAllFalse : FilterExpressionType.GroupAnyFalse;
+        }
     }
 
     watch(() => props.modelValue, async () => {

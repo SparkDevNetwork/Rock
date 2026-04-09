@@ -39,5 +39,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// Gets or sets a value indicating whether the filter type is supported in Obsidian.
         /// </summary>
         public bool IsObsidianSupported { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token used to authorize access to protected resources.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }

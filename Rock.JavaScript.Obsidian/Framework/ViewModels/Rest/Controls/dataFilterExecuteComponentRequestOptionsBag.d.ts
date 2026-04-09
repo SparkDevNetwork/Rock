@@ -33,4 +33,7 @@ export type DataFilterExecuteComponentRequestOptionsBag = {
 
     /** The request payload for the component. */
     request?: Record<string, string> | null;
+
+    /** Gets or sets the security grant token used to authorize access to protected resources. */
+    securityGrantToken?: string | null;
 };

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,5 +39,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// The request payload for the component.
         /// </summary>
         public Dictionary<string, string> Request { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token used to authorize access to protected resources.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }
