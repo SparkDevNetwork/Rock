@@ -67,7 +67,6 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        /// <param name="mobileSitesOnly">if set to <c>true</c> only mobile sites are shown.</param>
         /// <param name="shorteningSitesOnly">if set to <c>true</c> [shortening sites only].</param>
         public SiteFieldAttribute( string name = "Site", string description = "", bool required = true, string defaultSiteId = "", string category = "", int order = 0, string key = null, bool shorteningSitesOnly = false )
             : base( name, description, required, defaultSiteId, category, order, key, typeof( Rock.Field.Types.SiteFieldType ).FullName )
