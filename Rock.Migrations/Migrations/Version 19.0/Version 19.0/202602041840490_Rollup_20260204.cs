@@ -36,8 +36,7 @@ namespace Rock.Migrations
 
             PS_RenameBeaconDashboardToOutreachDashboard_Up();
 
-            // Removed.  See note below.
-            // NA_CleanupOldObsoleteBlockTypes_Up();
+            NA_CleanupOldObsoleteBlockTypes_Up();
         }
 
         private void JE_IconTransitionTableUpdate_Up()
@@ -130,25 +129,28 @@ WHERE [BlockType].[Guid] IN (
 
                  Reason: Prevent premature deletion of BlockTypes before Obsidian equivalents exist.
             */
-            //            Sql( @"
+            // Sql( @"
             //-- Delete old, chopped (v15.2) core webforms FamilyPreRegistration.ascx block
             //DELETE [BlockType] WHERE [Path] = '~/Blocks/Crm/FamilyPreRegistration.ascx' AND [Guid] = '463a454a-6370-4b4a-bca1-415f2d9b0cb7'
 
             //-- Delete old, chopped (v17.1) core Scheduled Job Detail block
             //DELETE [BlockType] WHERE [Path] = '~/Blocks/Core/ScheduledJobDetail.ascx'
-
-            //-- Delete old, very obsolete (v0.1) PluginManager block
-            //DECLARE @PluginManagerBlockTypeId INT = ( SELECT TOP (1) [Id] FROM [BlockType] WHERE [Path] = '~/Blocks/Core/PluginManager.ascx' AND [Guid] = 'F80268E6-2625-4565-AA2E-790C5E40A119' );
-
-            //IF @PluginManagerBlockTypeId IS NOT NULL
-            //BEGIN
-            //    DELETE FROM [Block]
-            //    WHERE [BlockTypeId] = @PluginManagerBlockTypeId;
-
-            //    DELETE FROM [BlockType]
-            //    WHERE [Id] = @PluginManagerBlockTypeId;
-            //END
             //" );
+
+            // This goes along with the deletion of the block via commit 7a115db90ed8c60d2d6ad4088ecc181524813d2e
+            Sql( @"
+            -- Delete old, very obsolete (v0.1) PluginManager block
+            DECLARE @PluginManagerBlockTypeId INT = ( SELECT TOP (1) [Id] FROM [BlockType] WHERE [Path] = '~/Blocks/Core/PluginManager.ascx' AND [Guid] = 'F80268E6-2625-4565-AA2E-790C5E40A119' );
+
+            IF @PluginManagerBlockTypeId IS NOT NULL
+            BEGIN
+                DELETE FROM [Block]
+                WHERE [BlockTypeId] = @PluginManagerBlockTypeId;
+
+                DELETE FROM [BlockType]
+                WHERE [Id] = @PluginManagerBlockTypeId;
+            END
+            " );
         }
 
         /// <summary>
