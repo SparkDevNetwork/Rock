@@ -1,6 +1,7 @@
 <template>
     <Panel v-model:quickFilterValue="internalQuickFilterValue"
-           panelHeaderCssClass="flex-shrink-0">
+           panelHeaderCssClass="flex-shrink-0"
+           :class="{ 'grouped-panel--board': isBoardView }">
         <template #headerActions>
             <HighlightLabel>
                 {{ countMessage }}
@@ -51,7 +52,8 @@
                 </template>
             </GroupedListView>
             <GroupedBoardView v-else-if="isBoardView"
-                              :groups="filteredGroups">
+                              :groups="filteredGroups"
+                              @cardMoved="(idKey: string, from: string, to: string) => emit('cardMoved', idKey, from, to)">
                 <template #boardCard="slotProps">
                     <slot name="boardCard" v-bind="slotProps" />
                 </template>
@@ -67,11 +69,25 @@
 :deep(.contentsection-list) {
     gap: var(--spacing-medium);
 }
+
+/* Board view: give the panel a fixed height so columns can scroll internally
+   rather than overflowing the page. The offset accounts for the fixed Rock nav
+   bar and the content above the panel (page title, filters, etc.). */
+:deep(.grouped-panel--board) {
+    height: calc(100vh - 310px);
+}
+
+/* Allow the panel body to fill the panel's remaining height so the board view
+   inside it can stretch to match. */
+:deep(.grouped-panel--board > .panel-body) {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
 </style>
 
 <script setup lang="ts">
     import { computed, ref, watch, PropType } from "vue";
-    import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
@@ -164,6 +180,16 @@
         onAddItem: {
             type: Function as PropType<(() => void | Promise<void>)>,
             required: false
+        },
+        /**
+         * A dictionary of all available groups for each grouping dimension, keyed
+         * by grouping field name. When provided, the board view will show columns
+         * for all groups in the active dimension — even those with no data rows.
+         */
+        availableGroups: {
+            type: Object as PropType<Record<string, GroupedGrid[]>>,
+            required: false,
+            default: undefined
         }
     });
 
@@ -172,6 +198,7 @@
         (e: "update:groupingKey", value: string): void;
         (e: "update:orderedRequestKeys", value: string[]): void;
         (e: "update:viewMode", value: string): void;
+        (e: "cardMoved", idKey: string, fromGroupKey: string, toGroupKey: string): void;
     }>();
 
     const internalQuickFilterValue = useVModelPassthrough(props, "quickFilterValue", emit);
@@ -198,8 +225,7 @@
         }
 
         for (const row of props.rows) {
-            const field = row[groupingKey.value] as GroupingFieldBag;
-            const key = field?.key ?? "";
+            const key = (row[groupingKey.value] as string) ?? "";
 
             map.set(key, (map.get(key) ?? 0) + 1);
         }
@@ -208,9 +234,31 @@
     });
 
     /**
+     * Builds a lookup from grouping key to GroupedGrid metadata for the
+     * active grouping dimension, sourced from the availableGroups prop.
+     */
+    const availableGroupsByKey = computed((): Map<string, GroupedGrid> => {
+        const map = new Map<string, GroupedGrid>();
+        const groups = props.availableGroups?.[groupingKey.value];
+
+        if (groups) {
+            for (const group of groups) {
+                if (group.key) {
+                    map.set(group.key, group);
+                }
+            }
+        }
+
+        return map;
+    });
+
+    const hasAvailableGroups = computed(() => availableGroupsByKey.value.size > 0);
+
+    /**
      * Groups the filtered and sorted rows by the active grouping key. The
      * resulting array is ordered with "unassigned" first, then by order, then
-     * alphabetically by label.
+     * alphabetically by label. When availableGroups is provided and the view
+     * is in board mode, empty groups are included so that all columns appear.
      */
     const filteredGroups = computed((): GroupedGrid[] => {
         if (!groupingKey.value) {
@@ -221,21 +269,49 @@
             }];
         }
 
-        return Enumerable
+        // Group rows by their string key value.
+        const dataGroups = Enumerable
             .from(props.filteredAndSortedRows)
             .groupBy(r => {
-                const field = r[groupingKey.value] as GroupingFieldBag;
-                return field?.key ?? "";
+                return (r[groupingKey.value] as string) ?? "";
             })
             .select(g => {
                 const rows = g.toArray();
-                const groupingField = rows[0][groupingKey.value] as GroupingFieldBag;
+                const key = g.key;
 
-                return {
-                    ...groupingField,
+                // Look up display metadata from available groups.
+                const metadata = availableGroupsByKey.value.get(key);
+
+                return <GroupedGrid>{
+                    key,
+                    label: metadata?.label ?? key,
+                    iconCssClass: metadata?.iconCssClass,
+                    iconStyle: metadata?.iconStyle,
+                    textColorCssClass: metadata?.textColorCssClass,
+                    photoUrl: metadata?.photoUrl,
+                    type: metadata?.type,
+                    order: metadata?.order,
                     gridData: { rows }
                 };
             })
+            .toArray();
+
+        // In board mode, merge in any available groups that have no data rows.
+        if (isBoardView.value && availableGroupsByKey.value.size > 0) {
+            const existingKeys = new Set(dataGroups.map(g => g.key));
+
+            for (const [key, metadata] of availableGroupsByKey.value) {
+                if (!existingKeys.has(key)) {
+                    dataGroups.push({
+                        ...metadata,
+                        gridData: { rows: [] }
+                    });
+                }
+            }
+        }
+
+        return Enumerable
+            .from(dataGroups)
             .orderBy(g => g.key === "unassigned" ? 0 : 1)
             .thenOrderBy(g => g.order)
             .thenOrderBy(g => g.label)

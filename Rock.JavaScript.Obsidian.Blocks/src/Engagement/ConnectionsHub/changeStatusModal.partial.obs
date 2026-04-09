@@ -108,7 +108,7 @@
 
     function onSave(): void {
         const bag: ConnectionRequestUpdateBag = {
-            connectionStatusGuid: status.value,
+            connectionStatusKey: status.value,
             note: note.value
         };
 

@@ -17,10 +17,16 @@
                 <span class="font-weight-semibold" :class="group.textColorCssClass">{{ group.label }}</span>
                 <span class="ml-auto text-interface-medium">{{ group.gridData.rows.length }}</span>
             </div>
-            <div class="board-column-body">
-                <template v-for="row in group.gridData.rows" :key="(row.idKey as string)">
+            <div class="board-column-body"
+                 v-drag-source="dragSourceOptions"
+                 v-drag-target="dragSourceOptions.id"
+                 :data-group-key="group.key ?? ''">
+                <div v-for="row in group.gridData.rows"
+                     :key="(row.idKey as string)"
+                     :data-id-key="(row.idKey as string)"
+                     class="board-card-wrapper">
                     <slot name="boardCard" v-bind="{ row }" />
-                </template>
+                </div>
             </div>
         </div>
     </div>
@@ -31,6 +37,7 @@
     display: flex;
     gap: var(--spacing-large);
     overflow-x: auto;
+    height: 100%;
 }
 
 .board-column {
@@ -41,6 +48,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-medium);
+    /* Allow the column to shrink so the column body scrolls rather than the page. */
+    min-height: 0;
 }
 
 .board-column-header {
@@ -55,12 +64,31 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-small);
-    /* overflow-y: auto; */
+    /* Fill remaining column height and scroll cards independently. */
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.board-column-body--drag-over {
+    outline: 2px dashed var(--color-primary);
+    outline-offset: -2px;
+    background-color: rgba(var(--color-primary-rgb), 0.06);
+    border-radius: var(--rounded-medium);
+}
+</style>
+
+<style>
+/* Dragula mirror and transit styles — must not be scoped. */
+.gu-transit {
+    opacity: 0.3;
 }
 </style>
 
 <script setup lang="ts">
     import { PropType } from "vue";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
+    import { newGuid } from "@Obsidian/Utility/guid";
     import { GroupedGrid } from "./types.partial";
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
 
@@ -71,4 +99,58 @@
             required: true
         }
     });
+
+    const emit = defineEmits<{
+        (e: "cardMoved", idKey: string, fromGroupKey: string, toGroupKey: string): void;
+    }>();
+
+    // #region Drag and Drop
+
+    const dragId = newGuid();
+
+    /** Shared drag source options for all board columns. A single id links
+     *  every column as both a source and a target so cards can move freely. */
+    const dragSourceOptions: IDragSourceOptions = {
+        id: dragId,
+        copyElement: false,
+
+        dragOver(operation) {
+            operation.targetContainer?.classList.add("board-column-body--drag-over");
+        },
+
+        dragOut(operation) {
+            operation.targetContainer?.classList.remove("board-column-body--drag-over");
+        },
+
+        dragEnd() {
+            // Safety cleanup of all highlights.
+            document.querySelectorAll(".board-column-body--drag-over")
+                .forEach(el => el.classList.remove("board-column-body--drag-over"));
+        },
+
+        dragDrop(operation) {
+            const element = operation.element as HTMLElement;
+            const sourceContainer = operation.sourceContainer as HTMLElement;
+            const targetContainer = operation.targetContainer as HTMLElement | undefined;
+
+            const idKey = element.dataset.idKey;
+            const fromGroupKey = sourceContainer.dataset.groupKey;
+            const toGroupKey = targetContainer?.dataset.groupKey;
+
+            if (!idKey || !fromGroupKey || !toGroupKey || fromGroupKey === toGroupKey) {
+                return;
+            }
+
+            // Revert Dragula's DOM mutation — let Vue re-render from data.
+            operation.element.remove();
+            operation.sourceContainer.insertBefore(
+                operation.element,
+                operation.sourceSibling ?? null
+            );
+
+            emit("cardMoved", idKey, fromGroupKey, toGroupKey);
+        }
+    };
+
+    // #endregion
 </script>

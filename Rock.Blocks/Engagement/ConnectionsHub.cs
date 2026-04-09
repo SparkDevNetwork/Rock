@@ -404,6 +404,7 @@ namespace Rock.Blocks.Engagement
                 .Select( s => new ConnectionStatusBag
                 {
                     Guid = s.Guid,
+                    IdKey = s.IdKey,
                     Name = s.Name,
                     HighlightColor = s.HighlightColor,
                     Order = s.Order,
@@ -412,6 +413,97 @@ namespace Rock.Blocks.Engagement
                 } )
                 .OrderBy( s => s.Order )
                 .ToList();
+
+            // Build the available groupings for each grouping dimension. These are
+            // used by the board view to render columns for groups that may not have
+            // any data rows (e.g., a status with no connection requests).
+            var availableGroupings = new Dictionary<string, List<GroupingFieldBag>>();
+
+            // Status groupings — all active statuses for the connection type.
+            availableGroupings["statusGrouping"] = connectionType.ConnectionStatuses
+                .Where( s => s.IsActive )
+                .OrderBy( s => s.Order )
+                .ThenBy( s => s.Name )
+                .Select( s => GetGroupingFieldBag( s.Id, "text", s.Name, s.Order, "ti ti-circle-filled", null, null, $"color: {s.HighlightColor};" ) )
+                .ToList();
+
+            // Opportunity groupings — all active opportunities for the connection type.
+            availableGroupings["opportunityGrouping"] = connectionType.ConnectionOpportunities
+                .Where( o => o.IsActive )
+                .OrderBy( o => o.Order )
+                .ThenBy( o => o.Name )
+                .Select( o => GetGroupingFieldBag( o.Id, "text", o.Name, o.Order, o.IconCssClass ) )
+                .ToList();
+
+            // Campus groupings — all active campuses.
+            var activeCampuses = CampusCache.All().Where( c => c.IsActive ?? true );
+            var campusGroupings = activeCampuses
+                .OrderBy( c => c.Order )
+                .ThenBy( c => c.Name )
+                .Select( c => GetGroupingFieldBag( c.Id, "text", c.Name, c.Order ) )
+                .ToList();
+
+            // Add the "Unassigned" entry so an empty unassigned column can appear.
+            campusGroupings.Insert( 0, GetGroupingFieldBag( null, "text", string.Empty, null, null, string.Empty ) );
+            availableGroupings["campusGrouping"] = campusGroupings;
+
+            // State groupings — all connection states (optionally excluding FutureFollowUp).
+            var stateGroupings = new List<GroupingFieldBag>();
+            foreach ( ConnectionState state in Enum.GetValues( typeof( ConnectionState ) ) )
+            {
+                if ( !connectionType.EnableFutureFollowup && state == ConnectionState.FutureFollowUp )
+                {
+                    continue;
+                }
+
+                stateGroupings.Add( new GroupingFieldBag
+                {
+                    Key = state.ToString(),
+                    Type = "text",
+                    Label = state.GetDisplayName(),
+                    IconCssClass = GetStateIconCssClass( state ),
+                    Order = ( int ) state
+                } );
+            }
+
+            availableGroupings["stateGrouping"] = stateGroupings;
+
+            // Due status groupings — all due status values.
+            var dueStatusGroupings = new List<GroupingFieldBag>();
+            foreach ( DueStatus ds in Enum.GetValues( typeof( DueStatus ) ) )
+            {
+                dueStatusGroupings.Add( GetGroupingFieldBag( ( int ) ds, "text", ds.GetDisplayName(), ds.GetOrder(), "ti ti-calendar", null, GetDueStatusTextColorCssClass( ds ) ) );
+            }
+
+            availableGroupings["dueStatusGrouping"] = dueStatusGroupings;
+
+            // Connector groupings — all connectors from connector groups plus the current person.
+            // TODO - Consider combining this with all possible connectors logic above.
+            var connectorGroupings = connectionType.ConnectionOpportunities
+                .Where( o => o.IsActive )
+                .SelectMany( o => o.ConnectionOpportunityConnectorGroups )
+                .SelectMany( g => g.ConnectorGroup.Members )
+                .Where( m => m.Person.PrimaryAlias != null )
+                .DistinctBy( m => m.Person.PrimaryAlias.Id )
+                .Select( m => GetGroupingFieldBag( m.Person.PrimaryAlias.Id, "person", m.Person.FullName, null, null, m.Person.PhotoUrl ) )
+                .ToList();
+
+            // Add current person if not already in the list.
+            if ( RequestContext.CurrentPerson?.PrimaryAlias != null )
+            {
+                var currentAliasId = RequestContext.CurrentPerson.PrimaryAlias.Id;
+                if ( !connectorGroupings.Any( g => g.Key == GetGroupingKey( currentAliasId ) ) )
+                {
+                    connectorGroupings.Add( GetGroupingFieldBag( currentAliasId, "person", RequestContext.CurrentPerson.FullName, null, null, RequestContext.CurrentPerson.PhotoUrl ) );
+                }
+            }
+
+            // Add the "Unassigned" entry so an empty unassigned column can appear.
+            connectorGroupings.Insert( 0, GetGroupingFieldBag( null, "person", string.Empty, null, null, string.Empty ) );
+
+            availableGroupings["connectorGrouping"] = connectorGroupings;
+
+            options.AvailableGroupings = availableGroupings;
 
             var tempConnectionRequest = new ConnectionRequest
             {
@@ -534,6 +626,22 @@ namespace Rock.Blocks.Engagement
         /// <param name="textColorCssClass">The optional CSS class used to set the text color of the grouping field.</param>
         /// <param name="iconStyle">The optional style to apply on the icon element.</param>
         /// <returns>A <see cref="GroupingFieldBag"/> populated with either the entity's details or unassigned defaults.</returns>
+        /// <summary>
+        /// Gets the grouping key string for the given identifier. Returns "unassigned" when the
+        /// identifier is null, otherwise returns the hashed key.
+        /// </summary>
+        /// <param name="id">The integer identifier to hash, or null for unassigned.</param>
+        /// <returns>A string grouping key.</returns>
+        private string GetGroupingKey( int? id )
+        {
+            if ( !id.HasValue )
+            {
+                return "unassigned";
+            }
+
+            return IdHasher.Instance.GetHash( id.Value );
+        }
+
         private GroupingFieldBag GetGroupingFieldBag( int? id, string type, string label, int? order = null, string iconCssClass = null, string photoUrl = null, string textColorCssClass = null, string iconStyle = null )
         {
             if ( !id.HasValue )
@@ -1923,23 +2031,17 @@ namespace Rock.Blocks.Engagement
             {
                 ConnectionRequest = connectionRequest,
                 ConnectionRequestId = connectionRequest.Id,
-                ConnectorGrouping = GetGroupingFieldBag( connectionRequest.ConnectorPersonAliasId, "person", connectionRequest.ConnectorPersonAlias?.Person?.FullName, null, null, connectionRequest.ConnectorPersonAlias?.Person?.PhotoUrl ),
-                OpportunityGrouping = GetGroupingFieldBag( connectionRequest.ConnectionOpportunityId, "text", connectionRequest.ConnectionOpportunity.Name, connectionRequest.ConnectionOpportunity.Order, connectionRequest.ConnectionOpportunity.IconCssClass ),
-                CampusGrouping = GetGroupingFieldBag( connectionRequest.CampusId, "text", connectionRequest.Campus?.Name, connectionRequest.Campus?.Order ),
-                StatusGrouping = GetGroupingFieldBag( connectionRequest.ConnectionStatusId, "text", connectionRequest.ConnectionStatus?.Name, connectionRequest.ConnectionStatus?.Order, "ti ti-circle-filled", null, null, $"color: {connectionRequest.ConnectionStatus.HighlightColor};" ),
-                DueStatusGrouping = GetGroupingFieldBag( ( int ) dueStatus, "text", dueStatus.GetDisplayName(), dueStatus.GetOrder(), "ti ti-calendar", null, GetDueStatusTextColorCssClass( dueStatus ) ),
-                StateGrouping = new GroupingFieldBag
-                {
-                    Key = connectionRequest.ConnectionState.ToString(),
-                    Type = "text",
-                    Label = connectionRequest.ConnectionState.GetDisplayName(),
-                    IconCssClass = GetStateIconCssClass( connectionRequest.ConnectionState ),
-                    Order = ( int ) connectionRequest.ConnectionState
-                },
+                ConnectorGroupingKey = GetGroupingKey( connectionRequest.ConnectorPersonAliasId ),
+                OpportunityGroupingKey = GetGroupingKey( connectionRequest.ConnectionOpportunityId ),
+                CampusGroupingKey = GetGroupingKey( connectionRequest.CampusId ),
+                StatusGroupingKey = GetGroupingKey( connectionRequest.ConnectionStatusId ),
+                DueStatusGroupingKey = GetGroupingKey( ( int ) dueStatus ),
+                StateGroupingKey = connectionRequest.ConnectionState.ToString(),
                 ConnectorDetails = connectorItem,
                 Person = requesterPerson,
                 RequesterPersonAliasGuid = connectionRequest.PersonAlias.Guid,
                 ConnectionOpportunity = connectionRequest.ConnectionOpportunity.Name,
+                ConnectionOpportunityIconCssClass = connectionRequest.ConnectionOpportunity.IconCssClass,
                 ConnectionOpportunityGuid = connectionRequest.ConnectionOpportunity.Guid,
                 ConnectionTypeSource = connectionRequest.ConnectionTypeSource?.Name,
                 Campus = connectionRequest.Campus?.Name,
@@ -3177,16 +3279,7 @@ WHERE 1 = 1" );
 
             var photoUrlByPersonId = new Dictionary<int, string>();
             var connectorByPersonId = new Dictionary<int, (ListItemBag Item, string FullName, string PhotoUrl)>();
-            var connectorGroupingByPersonAliasId = new Dictionary<int, GroupingFieldBag>();
-            var opportunityGroupingById = new Dictionary<int, GroupingFieldBag>();
-            var campusGroupingById = new Dictionary<int, GroupingFieldBag>();
-            var statusGroupingById = new Dictionary<int, GroupingFieldBag>();
-            var dueStatusGroupingByValue = new Dictionary<DueStatus, GroupingFieldBag>();
-            var stateGroupingByValue = new Dictionary<ConnectionState, GroupingFieldBag>();
-
             var unassignedConnectorItem = new ListItemBag { Value = "unassigned", Text = "Unassigned" };
-            var unassignedConnectorGrouping = GetGroupingFieldBag( null, "person", string.Empty, null, null, string.Empty );
-            var noCampusGrouping = GetGroupingFieldBag( null, "text", string.Empty, null );
 
             foreach ( var row in sqlRows )
             {
@@ -3198,7 +3291,7 @@ WHERE 1 = 1" );
                     ConnectionOpportunityId = row.ConnectionOpportunityId,
                     ConnectionOpportunityGuid = row.ConnectionOpportunityGuid,
                     ConnectionOpportunity = row.ConnectionOpportunityName,
-                    ConnectionOpportunityIcon = row.ConnectionOpportunityIconCssClass,
+                    ConnectionOpportunityIconCssClass = row.ConnectionOpportunityIconCssClass,
                     ConnectionTypeSource = row.ConnectionTypeSourceName ?? string.Empty,
                     CampusId = row.CampusId,
                     Campus = row.CampusName ?? string.Empty,
@@ -3310,74 +3403,12 @@ WHERE 1 = 1" );
                 request.DueStatus = dueStatus;
                 request.ConnectorDetails = connectorItem;
 
-                if ( row.ConnectorPersonId.HasValue )
-                {
-                    if ( !connectorGroupingByPersonAliasId.TryGetValue( row.ConnectorPersonAliasId.Value, out var connectorGrouping ) )
-                    {
-                        connectorGrouping = GetGroupingFieldBag( row.ConnectorPersonAliasId, "person", connectorFullName, null, null, connectorPhotoUrl );
-                        connectorGroupingByPersonAliasId[row.ConnectorPersonAliasId.Value] = connectorGrouping;
-                    }
-
-                    request.ConnectorGrouping = connectorGrouping;
-                }
-                else
-                {
-                    request.ConnectorGrouping = unassignedConnectorGrouping;
-                }
-
-                if ( !opportunityGroupingById.TryGetValue( row.ConnectionOpportunityId, out var opportunityGrouping ) )
-                {
-                    opportunityGrouping = GetGroupingFieldBag( row.ConnectionOpportunityId, "text", row.ConnectionOpportunityName, row.ConnectionOpportunityOrder, row.ConnectionOpportunityIconCssClass );
-                    opportunityGroupingById[row.ConnectionOpportunityId] = opportunityGrouping;
-                }
-
-                request.OpportunityGrouping = opportunityGrouping;
-
-                if ( row.CampusId.HasValue )
-                {
-                    if ( !campusGroupingById.TryGetValue( row.CampusId.Value, out var campusGrouping ) )
-                    {
-                        campusGrouping = GetGroupingFieldBag( row.CampusId, "text", row.CampusName ?? string.Empty, row.CampusOrder );
-                        campusGroupingById[row.CampusId.Value] = campusGrouping;
-                    }
-
-                    request.CampusGrouping = campusGrouping;
-                }
-                else
-                {
-                    request.CampusGrouping = noCampusGrouping;
-                }
-
-                if ( !statusGroupingById.TryGetValue( row.ConnectionStatusId, out var statusGrouping ) )
-                {
-                    statusGrouping = GetGroupingFieldBag( row.ConnectionStatusId, "text", row.ConnectionStatusName, row.ConnectionStatusOrder, "ti ti-circle-filled", null, null, $"color: {row.ConnectionStatusHighlightColor};" );
-                    statusGroupingById[row.ConnectionStatusId] = statusGrouping;
-                }
-
-                request.StatusGrouping = statusGrouping;
-
-                if ( !dueStatusGroupingByValue.TryGetValue( dueStatus, out var dueStatusGrouping ) )
-                {
-                    dueStatusGrouping = GetGroupingFieldBag( ( int ) dueStatus, "text", dueStatus.GetDisplayName(), dueStatus.GetOrder(), "ti ti-calendar", null, GetDueStatusTextColorCssClass( dueStatus ) );
-                    dueStatusGroupingByValue[dueStatus] = dueStatusGrouping;
-                }
-
-                request.DueStatusGrouping = dueStatusGrouping;
-
-                if ( !stateGroupingByValue.TryGetValue( connectionState, out var stateGrouping ) )
-                {
-                    stateGrouping = new GroupingFieldBag
-                    {
-                        Key = connectionState.ToString(),
-                        Type = "text",
-                        Label = connectionState.GetDisplayName(),
-                        IconCssClass = GetStateIconCssClass( connectionState ),
-                        Order = ( int ) connectionState
-                    };
-                    stateGroupingByValue[connectionState] = stateGrouping;
-                }
-
-                request.StateGrouping = stateGrouping;
+                request.ConnectorGroupingKey = GetGroupingKey( row.ConnectorPersonAliasId );
+                request.OpportunityGroupingKey = GetGroupingKey( row.ConnectionOpportunityId );
+                request.CampusGroupingKey = GetGroupingKey( row.CampusId );
+                request.StatusGroupingKey = GetGroupingKey( row.ConnectionStatusId );
+                request.DueStatusGroupingKey = GetGroupingKey( ( int ) dueStatus );
+                request.StateGroupingKey = connectionState.ToString();
 
                 connectionRequests.Add( request );
             }
@@ -3800,7 +3831,7 @@ WHERE 1 = 1" );
                 gridUpdateBags.Add( new ConnectionListGridUpdateBag
                 {
                     IdKey = connectionRequest.IdKey,
-                    ConnectorGrouping = GetGroupingFieldBag( newConnectorPersonAlias?.Id, "person", newConnectorPersonAlias?.Person?.FullName, null, null, newConnectorPersonAlias?.Person?.PhotoUrl ),
+                    ConnectorGroupingKey = GetGroupingKey( newConnectorPersonAlias?.Id ),
                     ConnectorDetails = connectorItem
                 } );
             }
@@ -3854,6 +3885,11 @@ WHERE 1 = 1" );
 
             var statusBagByIdKey = statusUpdateBags.ToDictionary( b => b.ConnectionRequestIdKey );
 
+            // Build lookups that resolve any key type without extra DB hits.
+            var statusByIdKey = connectionStatuses.ToDictionary( s => s.IdKey );
+            var statusByGuid = connectionStatuses.ToDictionary( s => s.Guid.ToString() );
+            var statusById = connectionStatuses.ToDictionary( s => s.Id.ToString() );
+
             foreach ( var request in connectionRequests )
             {
                 var currentStatus = connectionStatuses.Where( s => s.Id == request.ConnectionStatusId ).FirstOrDefault();
@@ -3879,7 +3915,11 @@ WHERE 1 = 1" );
                 {
                     continue;
                 }
-                var newStatus = connectionStatuses.Where( s => s.Guid == updateBag.ConnectionStatusGuid.AsGuid() ).FirstOrDefault();
+
+                var newStatus = statusByIdKey.GetValueOrNull( updateBag.ConnectionStatusKey )
+                    ?? statusByGuid.GetValueOrNull( updateBag.ConnectionStatusKey )
+                    ?? statusById.GetValueOrNull( updateBag.ConnectionStatusKey );
+
                 if ( newStatus == null )
                 {
                     return ActionBadRequest( $"{ConnectionStatus.FriendlyTypeName} not found." );
@@ -3905,15 +3945,8 @@ WHERE 1 = 1" );
                 gridUpdateBags.Add( new ConnectionListGridUpdateBag
                 {
                     IdKey = request.IdKey,
-                    StateGrouping = new GroupingFieldBag
-                    {
-                        Key = request.ConnectionState.ToString(),
-                        Type = "text",
-                        Label = request.ConnectionState.GetDisplayName(),
-                        IconCssClass = GetStateIconCssClass( request.ConnectionState ),
-                        Order = ( int ) request.ConnectionState
-                    },
-                    StatusGrouping = GetGroupingFieldBag( request.ConnectionStatus.Id, "text", request.ConnectionStatus.Name, request.ConnectionStatus.Order, "ti ti-circle-filled", null, null, $"color: {request.ConnectionStatus.HighlightColor};" ),
+                    StateGroupingKey = request.ConnectionState.ToString(),
+                    StatusGroupingKey = GetGroupingKey( request.ConnectionStatus.Id ),
                     ConnectionState = request.ConnectionState,
                     ConnectionStatusBag = new ConnectionStatusBag
                     {
@@ -3924,7 +3957,7 @@ WHERE 1 = 1" );
                         IsNoteRequiredOnCompletion = request.ConnectionStatus.IsNoteRequiredOnCompletion,
                         IsDefaultStatus = request.ConnectionStatus.IsDefault
                     },
-                    DueStatusGrouping = GetGroupingFieldBag( ( int ) dueStatus, "text", dueStatus.GetDisplayName(), dueStatus.GetOrder(), "ti ti-calendar", null, GetDueStatusTextColorCssClass( dueStatus ) ),
+                    DueStatusGroupingKey = GetGroupingKey( ( int ) dueStatus ),
                     DueStatus = dueStatus,
                     DueDate = request.DueDate,
                     DueSoonDate = request.DueSoonDate,
@@ -3998,14 +4031,7 @@ WHERE 1 = 1" );
                 gridUpdateBags.Add( new ConnectionListGridUpdateBag
                 {
                     IdKey = request.IdKey,
-                    StateGrouping = new GroupingFieldBag
-                    {
-                        Key = request.ConnectionState.ToString(),
-                        Type = "text",
-                        Label = request.ConnectionState.GetDisplayName(),
-                        IconCssClass = GetStateIconCssClass( request.ConnectionState ),
-                        Order = ( int ) request.ConnectionState
-                    },
+                    StateGroupingKey = request.ConnectionState.ToString(),
                     ConnectionState = request.ConnectionState,
                     FollowUpDate = request.FollowupDate,
                     CompletedDateTime = request.ConnectedDateTime
@@ -4368,7 +4394,7 @@ WHERE 1 = 1" );
                 return actionError;
             }
 
-            var connectionRequestStatus = new ConnectionStatusService( RockContext ).Get( bag.ConnectionStatusGuid );
+            var connectionRequestStatus = new ConnectionStatusService( RockContext ).Get( bag.ConnectionStatusKey, !PageCache.Layout.Site.DisablePredictableIds );
             if ( connectionRequestStatus == null || connectionRequestStatus.ConnectionTypeId != connectionRequest.ConnectionTypeId )
             {
                 return ActionBadRequest( "Invalid Connection Status" );
@@ -4394,15 +4420,8 @@ WHERE 1 = 1" );
             var gridUpdateBag = new ConnectionListGridUpdateBag
             {
                 IdKey = connectionRequest.IdKey,
-                StateGrouping = new GroupingFieldBag
-                {
-                    Key = connectionRequest.ConnectionState.ToString(),
-                    Type = "text",
-                    Label = connectionRequest.ConnectionState.GetDisplayName(),
-                    IconCssClass = GetStateIconCssClass( connectionRequest.ConnectionState ),
-                    Order = ( int ) connectionRequest.ConnectionState
-                },
-                StatusGrouping = GetGroupingFieldBag( connectionRequestStatus.Id, "text", connectionRequestStatus.Name, connectionRequestStatus.Order, "ti ti-circle-filled", null, null, $"color: {connectionRequestStatus.HighlightColor};" ),
+                StateGroupingKey = connectionRequest.ConnectionState.ToString(),
+                StatusGroupingKey = GetGroupingKey( connectionRequestStatus.Id ),
                 ConnectionStatusBag = new ConnectionStatusBag
                 {
                     Guid = connectionRequestStatus.Guid,
@@ -4413,7 +4432,7 @@ WHERE 1 = 1" );
                     IsDefaultStatus = connectionRequestStatus.IsDefault
                 },
                 ConnectionState = connectionRequest.ConnectionState,
-                DueStatusGrouping = GetGroupingFieldBag( ( int ) dueStatus, "text", dueStatus.GetDisplayName(), dueStatus.GetOrder(), "ti ti-calendar", null, GetDueStatusTextColorCssClass( dueStatus ) ),
+                DueStatusGroupingKey = GetGroupingKey( ( int ) dueStatus ),
                 DueStatus = dueStatus,
                 DueDate = connectionRequest.DueDate,
                 DueSoonDate = connectionRequest.DueSoonDate,
@@ -4689,7 +4708,7 @@ WHERE 1 = 1" );
                 return ActionBadRequest( "You are not authorized to view this Connection Request." );
             }
 
-            var box = GetConnectionRequestDetailBox( connectionRequest ); 
+            var box = GetConnectionRequestDetailBox( connectionRequest );
 
             return ActionOk( box );
         }
@@ -5281,7 +5300,7 @@ WHERE 1 = 1" );
             var connectionRequestService = new ConnectionRequestService( RockContext );
             var mobilePhoneDefinedValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
             var personalDeviceQuery = new PersonalDeviceService( RockContext ).Queryable().AsNoTracking();
-            
+
             var communicationRecipients = connectionRequestService
                 .GetByIds( connectionRequestIds )
                 .Where( cr => cr.ConnectionTypeId == connectionType.Id ) // Ensure these Connection Requests match the Connection Type.
@@ -5397,7 +5416,7 @@ WHERE 1 = 1" );
             var connectionRequestService = new ConnectionRequestService( RockContext );
             var mobilePhoneDefinedValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
             //var personalDeviceQuery = new PersonalDeviceService( RockContext ).Queryable().AsNoTracking();
-            
+
             var communicationRecipients = connectionRequestService
                 .GetByIds( connectionRequestIds )
                 .Where( cr => cr.ConnectionTypeId == connectionType.Id ) // Ensure these Connection Requests match the Connection Type.
@@ -5667,16 +5686,17 @@ WHERE 1 = 1" );
             return new GridBuilder<ConnectionRow>()
                 .WithBlock( this )
                 .AddField( "idKey", a => a.ConnectionRequestId.AsIdKey() )
-                .AddField( "connectorGrouping", a => a.ConnectorGrouping )
-                .AddField( "campusGrouping", a => a.CampusGrouping )
-                .AddField( "opportunityGrouping", a => a.OpportunityGrouping )
-                .AddField( "statusGrouping", a => a.StatusGrouping )
-                .AddField( "stateGrouping", a => a.StateGrouping )
-                .AddField( "dueStatusGrouping", a => a.DueStatusGrouping )
+                .AddField( "connectorGrouping", a => a.ConnectorGroupingKey )
+                .AddField( "campusGrouping", a => a.CampusGroupingKey )
+                .AddField( "opportunityGrouping", a => a.OpportunityGroupingKey )
+                .AddField( "statusGrouping", a => a.StatusGroupingKey )
+                .AddField( "stateGrouping", a => a.StateGroupingKey )
+                .AddField( "dueStatusGrouping", a => a.DueStatusGroupingKey )
                 .AddField( "connectorDetails", a => a.ConnectorDetails )
                 .AddField( "requestDetails", a => a.Person )
                 .AddField( "requesterPersonAliasGuid", a => a.RequesterPersonAliasGuid )
                 .AddTextField( "connectionOpportunity", a => a.ConnectionOpportunity )
+                .AddField( "connectionOpportunityIconCssClass", a => a.ConnectionOpportunityIconCssClass )
                 .AddField( "connectionOpportunityGuid", a => a.ConnectionOpportunityGuid)
                 .AddTextField( "connectionTypeSource", a => a.ConnectionTypeSource )
                 .AddTextField( "campus", a => a.Campus )
@@ -5735,17 +5755,17 @@ WHERE 1 = 1" );
 
             public ConnectionRequest ConnectionRequest { get; set; }
 
-            public GroupingFieldBag ConnectorGrouping { get; set; }
+            public string ConnectorGroupingKey { get; set; }
 
-            public GroupingFieldBag OpportunityGrouping { get; set; }
+            public string OpportunityGroupingKey { get; set; }
 
-            public GroupingFieldBag CampusGrouping { get; set; }
+            public string CampusGroupingKey { get; set; }
 
-            public GroupingFieldBag StateGrouping { get; set; }
+            public string StateGroupingKey { get; set; }
 
-            public GroupingFieldBag StatusGrouping { get; set; }
+            public string StatusGroupingKey { get; set; }
 
-            public GroupingFieldBag DueStatusGrouping { get; set; }
+            public string DueStatusGroupingKey { get; set; }
 
             public ListItemBag ConnectorDetails { get; set; }
 
@@ -5763,7 +5783,7 @@ WHERE 1 = 1" );
 
             public string ConnectionOpportunity { get; set; }
 
-            public string ConnectionOpportunityIcon { get; set; }
+            public string ConnectionOpportunityIconCssClass { get; set; }
 
             public string ConnectionTypeSource { get; set; }
 

@@ -31,7 +31,9 @@
                   :onAddItem="canEditConnectionRequests ? onAddItem : undefined"
                   :onPanelSettingsClick="onPanelSettingsClick"
                   :isAutoCollapseEnabled="isAutoCollapseEnabled"
-                  :headerSecondaryActions="secondaryActions">
+                  :headerSecondaryActions="secondaryActions"
+                  :availableGroups="availableGroups"
+                  @cardMoved="onCardMoved">
         <template #selectedActionToolbar>
             <div class="left-actions d-flex align-items-center gap-md">
                 <div class="d-flex align-items-center gap-tiny">
@@ -738,6 +740,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import GroupedPanel from "@Obsidian/Controls/Internal/groupedPanel.obs";
+    import { GroupedGrid } from "@Obsidian/Controls/Internal/GroupedPanel/types.partial";
     import { isNullOrWhiteSpace, pluralize, safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { tooltip } from "@Obsidian/Utility/tooltip";
@@ -885,7 +888,6 @@
     const canEditGlobalConnectionRequests = ref<boolean>(box.options?.canEditConnectionRequests ?? false);
 
     // Context Slicer configuration
-    const selectedGrouping = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? "connectorGrouping" : preferences.getValue(PreferenceKey.SelectedGroupByMode));
     const selectedCampus = ref<ListItemBag | null>(null);
     const areOnlyMyRequestsVisible = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.AreOnlyMyRequestsVisible)) ? "true" : preferences.getValue(PreferenceKey.AreOnlyMyRequestsVisible));
     const internalSelectedOpportunity = ref(box.options?.connectionOpportunityGuidFromPageParameter ?? preferences.getValue(getConnectionFilterKey(PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey)));
@@ -994,6 +996,13 @@
         return isNullOrWhiteSpace(preferenceValue) ? enabledViews[0].value : preferenceValue;
     })());
 
+    const selectedGrouping = ref<string>((() => {
+        if (selectedView.value === "board") {
+            return "statusGrouping";
+        }
+        return isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? "connectorGrouping" : preferences.getValue(PreferenceKey.SelectedGroupByMode);
+    })());
+
     // #region Computed Values
 
     const canEditConnectionRequests = computed<boolean>(() => {
@@ -1045,6 +1054,11 @@
     const groupingFields = computed(() => {
         let filteredGroupingFields = allGroupingFields;
 
+        // Board mode only allows status grouping.
+        if (selectedView.value === "board") {
+            return filteredGroupingFields.filter(g => g.value === "statusGrouping");
+        }
+
         if (!isNullOrWhiteSpace(selectedOpportunity.value)) {
             filteredGroupingFields = filteredGroupingFields.filter(g => g.value !== "opportunityGrouping");
         }
@@ -1053,6 +1067,38 @@
         }
 
         return filteredGroupingFields;
+    });
+
+    /** Converts the backend available groupings into the format expected by GroupedPanel. */
+    const availableGroups = computed<Record<string, GroupedGrid[]> | undefined>(() => {
+        const raw = box.options?.availableGroupings;
+        if (!raw) {
+            return undefined;
+        }
+
+        // When a status filter is active, restrict available status columns to
+        // only the allowed statuses so excluded ones don't appear as empty board
+        // columns. Map filter GUIDs to IdKeys via connectionStatuses.
+        const activeStatusFilter = viewOptions.value.statusFilter;
+        const allowedStatusKeys = activeStatusFilter?.length
+            ? (box.options?.connectionStatuses ?? [])
+                .filter(s => activeStatusFilter.includes(s.guid) && s.idKey)
+                .map(s => s.idKey!)
+            : null;
+
+        const result: Record<string, GroupedGrid[]> = {};
+        for (const [key, bags] of Object.entries(raw)) {
+            const filteredBags = key === "statusGrouping" && allowedStatusKeys?.length
+                ? bags.filter(bag => bag.key && allowedStatusKeys.includes(bag.key))
+                : bags;
+
+            result[key] = filteredBags.map(bag => ({
+                ...bag,
+                gridData: { rows: [] }
+            }));
+        }
+
+        return result;
     });
 
     const hasSelectedOpportunity = computed(() => !isNullOrWhiteSpace(selectedOpportunity.value));
@@ -1358,6 +1404,40 @@
     }
 
     // #endregion Grid Functions
+
+    // #region Board Functions
+
+    function onCardMoved(idKey: string, fromGroupKey: string, toGroupKey: string): void {
+        console.log("here: ", selectedGrouping.value);
+        const updateBag = <ConnectionRequestUpdateBag>{
+            connectionRequestIdKey: idKey
+        };
+
+        switch (selectedGrouping.value) {
+            case "connectorGrouping":
+
+                break;
+            case "stateGrouping":
+
+                break;
+            case "statusGrouping":
+                console.log("Changing status", toGroupKey);
+                updateBag.connectionStatusKey = toGroupKey;
+                changeRequestStatus(updateBag);
+                break;
+            case "opportunityGrouping":
+                // Maybe keep this
+                break;
+            case "campusGrouping":
+                // Need to add a block action if we want to keep this
+                break;
+            // Not including due status.
+            default:
+                break;
+        }
+    }
+
+    // #endregion Board Functions
 
     // #region Docked Panel Functions
 
@@ -1756,7 +1836,7 @@
 
                 statusUpdateBags.push({
                     connectionRequestIdKey: request.idKey,
-                    connectionStatusGuid: nextStatus.value,
+                    connectionStatusKey: nextStatus.value,
                     note: bag.note
                 });
             }
@@ -1765,7 +1845,7 @@
             for (const key of allSelectedKeys.value) {
                 statusUpdateBags.push({
                     connectionRequestIdKey: key,
-                    connectionStatusGuid: bag.connectionStatusGuid,
+                    connectionStatusKey: bag.connectionStatusKey,
                     note: bag.note
                 });
             }
@@ -1953,7 +2033,7 @@
 
         connectionRequestUpdateBag.value = {
             connectionRequestIdKey: key,
-            connectionStatusGuid: status.guid,
+            connectionStatusKey: status.guid,
             connectionState: state
         };
 
@@ -1980,7 +2060,7 @@
 
         connectionRequestUpdateBag.value = {
             connectionRequestIdKey: dockedPanelDetailsBox.value?.entity?.connectionRequestIdKey,
-            connectionStatusGuid: dockedPanelDetailsBox.value?.entity?.connectionStatus?.guid,
+            connectionStatusKey: dockedPanelDetailsBox.value?.entity?.connectionStatus?.guid,
             connectionState: dockedPanelDetailsBox.value?.entity?.connectionState,
             canCompleteRequest
         };
@@ -2148,11 +2228,11 @@
                     continue;
                 }
 
-                row.stateGrouping = updateBag.stateGrouping;
-                row.statusGrouping = updateBag.statusGrouping;
+                row.stateGroupingKey = updateBag.stateGroupingKey;
+                row.statusGroupingKey = updateBag.statusGroupingKey;
                 row.connectionStatus = updateBag.connectionStatusBag;
                 row.connectionState = updateBag.connectionState;
-                row.dueStatusGrouping = updateBag.dueStatusGrouping;
+                row.dueStatusGroupingKey = updateBag.dueStatusGroupingKey;
                 row.dueStatus = updateBag.dueStatus;
                 row.dueDate = updateBag.dueDate;
                 row.dueSoonDate = updateBag.dueSoonDate;
@@ -2191,11 +2271,11 @@
                 if (rowIndex !== -1 && gridData.value?.rows) {
                     const row = gridData.value.rows[rowIndex];
 
-                    row.stateGrouping = result.data.stateGrouping;
-                    row.statusGrouping = result.data.statusGrouping;
+                    row.stateGroupingKey = result.data.stateGroupingKey;
+                    row.statusGroupingKey = result.data.statusGroupingKey;
                     row.connectionState = result.data.connectionState;
                     row.connectionStatus = result.data.connectionStatusBag;
-                    row.dueStatusGrouping = result.data.dueStatusGrouping;
+                    row.dueStatusGroupingKey = result.data.dueStatusGroupingKey;
                     row.dueStatus = result.data.dueStatus;
                     row.dueDate = result.data.dueDate;
                     row.dueSoonDate = result.data.dueSoonDate;
@@ -2299,7 +2379,7 @@
                 if (rowIndex !== -1 && gridData.value?.rows) {
                     const row = gridData.value.rows[rowIndex];
 
-                    row.stateGrouping = resultBag.stateGrouping;
+                    row.stateGroupingKey = resultBag.stateGroupingKey;
                     row.connectionState = resultBag.connectionState;
                     row.followUpDate = resultBag.followUpDate;
 
@@ -2327,7 +2407,7 @@
                         continue;
                     }
 
-                    row.stateGrouping = updateBag.stateGrouping;
+                    row.stateGroupingKey = updateBag.stateGroupingKey;
                     row.connectionState = updateBag.connectionState;
                     row.followUpDate = updateBag.followUpDate;
                     row.completedDateTime = updateBag.completedDateTime;
@@ -2688,7 +2768,7 @@
                     continue;
                 }
 
-                row.connectorGrouping = updateBag.connectorGrouping;
+                row.connectorGroupingKey = updateBag.connectorGroupingKey;
                 row.connectorDetails = updateBag.connectorDetails;
             }
 
@@ -2890,6 +2970,10 @@
     });
 
     watch(selectedView, async () => {
+        if (selectedView.value === "list") {
+            selectedGrouping.value = isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? selectedGrouping.value : preferences.getValue(PreferenceKey.SelectedGroupByMode);
+        }
+
         preferences.setValue(getConnectionFilterKey(PreferenceKey.SelectedViewConnectionTypeIdKey), selectedView.value);
 
         await preferences.save();
@@ -2906,7 +2990,11 @@
     // });
 
     watch([selectedGrouping, isAutoCollapseEnabled], async () => {
-        preferences.setValue(PreferenceKey.SelectedGroupByMode, selectedGrouping.value);
+        // Only update the selected group by mode person preference when the selected view is "List".
+        if (selectedView.value === "list") {
+            preferences.setValue(PreferenceKey.SelectedGroupByMode, selectedGrouping.value);
+        }
+
         preferences.setValue(PreferenceKey.IsAutoCollapseEnabled, isAutoCollapseEnabled.value.toString());
 
         await preferences.save();

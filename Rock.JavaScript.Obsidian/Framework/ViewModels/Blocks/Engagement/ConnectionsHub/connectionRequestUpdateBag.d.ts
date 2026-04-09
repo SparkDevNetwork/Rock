@@ -34,11 +34,11 @@ export type ConnectionRequestUpdateBag = {
     /** Gets or sets the connection state to apply (e.g., Active, Inactive, Future Follow-up). */
     connectionState?: ConnectionState | null;
 
-    /** Gets or sets the GUID of the connection status to assign to this request. */
-    connectionStatusGuid?: string | null;
+    /** Gets or sets the key (Guid, IdKey, or Id) of the connection status to assign to this request. */
+    connectionStatusKey?: string | null;
 
-    /** Gets or sets the GUID of the connector's person alias to assign to this request. */
-    connectorPersonAliasGuid?: string | null;
+    /** Gets or sets the key (Guid, IdKey, or Id) of the connector's person alias to assign to this request. */
+    connectorPersonAliasKey?: string | null;
 
     /** Gets or sets the follow-up date for this request when transitioning to the Future Follow-up state. */
     followUpDate?: string | null;

@@ -79,8 +79,8 @@
                         <dt>Opportunity</dt>
                         <dd class="text-semibold"
                             :ref="(el) => addTooltipIfOverflow(el as HTMLElement, connectionRequestRow.connectionOpportunity ?? '')">
-                            <i v-if="connectionRequestRow.opportunityGrouping?.iconCssClass"
-                               :class="connectionRequestRow.opportunityGrouping.iconCssClass"
+                            <i v-if="connectionRequestRow.connectionOpportunityIconCssClass"
+                               :class="connectionRequestRow.connectionOpportunityIconCssClass"
                                class="mr-spacing-tiny"></i>
                             {{ connectionRequestRow.connectionOpportunity }}
                         </dd>
@@ -163,7 +163,6 @@
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
     import { CampusLabelBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/campusLabelBag";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
-    import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
     import { DueStatus } from "@Obsidian/Enums/Connection/dueStatus";
@@ -172,16 +171,17 @@
 
     type ConnectionRequestCardRow = {
         idKey?: string | null;
-        connectorGrouping?: GroupingFieldBag | null;
-        campusGrouping?: GroupingFieldBag | null;
-        opportunityGrouping?: GroupingFieldBag | null;
-        statusGrouping?: GroupingFieldBag | null;
-        stateGrouping?: GroupingFieldBag | null;
-        dueStatusGrouping?: GroupingFieldBag | null;
+        connectorGrouping?: string | null;
+        campusGrouping?: string | null;
+        opportunityGrouping?: string | null;
+        statusGrouping?: string | null;
+        stateGrouping?: string | null;
+        dueStatusGrouping?: string | null;
         connectorDetails?: ListItemBag | null;
         requestDetails?: PersonFieldBag | null;
         requesterPersonAliasGuid?: string | null;
         connectionOpportunity?: string | null;
+        connectionOpportunityIconCssClass?: string | null;
         connectionOpportunityGuid?: string | null;
         connectionTypeSource?: string | null;
         campus?: string | null;
@@ -209,16 +209,17 @@
     function toConnectionRequestCardRow(row: Record<string, unknown>): ConnectionRequestCardRow {
         return {
             idKey: row.idKey as string | null | undefined,
-            connectorGrouping: row.connectorGrouping as GroupingFieldBag | null | undefined,
-            campusGrouping: row.campusGrouping as GroupingFieldBag | null | undefined,
-            opportunityGrouping: row.opportunityGrouping as GroupingFieldBag | null | undefined,
-            statusGrouping: row.statusGrouping as GroupingFieldBag | null | undefined,
-            stateGrouping: row.stateGrouping as GroupingFieldBag | null | undefined,
-            dueStatusGrouping: row.dueStatusGrouping as GroupingFieldBag | null | undefined,
+            connectorGrouping: row.connectorGrouping as string | null | undefined,
+            campusGrouping: row.campusGrouping as string | null | undefined,
+            opportunityGrouping: row.opportunityGrouping as string | null | undefined,
+            statusGrouping: row.statusGrouping as string | null | undefined,
+            stateGrouping: row.stateGrouping as string | null | undefined,
+            dueStatusGrouping: row.dueStatusGrouping as string | null | undefined,
             connectorDetails: row.connectorDetails as ListItemBag | null | undefined,
             requestDetails: row.requestDetails as PersonFieldBag | null | undefined,
             requesterPersonAliasGuid: row.requesterPersonAliasGuid as string | null | undefined,
             connectionOpportunity: row.connectionOpportunity as string | null | undefined,
+            connectionOpportunityIconCssClass: row.connectionOpportunityIconCssClass as string | null | undefined,
             connectionOpportunityGuid: row.connectionOpportunityGuid as string | null | undefined,
             connectionTypeSource: row.connectionTypeSource as string | null | undefined,
             campus: row.campus as string | null | undefined,

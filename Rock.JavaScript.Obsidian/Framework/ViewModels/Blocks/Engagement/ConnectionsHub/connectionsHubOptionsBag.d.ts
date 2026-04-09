@@ -27,6 +27,7 @@ import { CampusLabelBag } from "@Obsidian/ViewModels/Blocks/Engagement/Connectio
 import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionActivityTypeBag";
 import { ConnectionOpportunityDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionOpportunityDetailBag";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
+import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -43,6 +44,14 @@ export type ConnectionsHubOptionsBag = {
 
     /** Gets or sets a value indicating whether reminders are enabled for connection requests. */
     areRemindersEnabled: boolean;
+
+    /**
+     * Gets or sets the available groupings for each grouping dimension. The dictionary is keyed
+     * by grouping field name (e.g., "statusGroupingKey") and contains the complete list of
+     * possible Rock.ViewModels.Core.Grid.GroupingFieldBag values for that dimension, including groups that
+     * may not have any data rows.
+     */
+    availableGroupings?: Record<string, GroupingFieldBag[]> | null;
 
     /** Gets or sets the GUIDs of the person profile badges to display on connection requests. */
     badgeGuids?: Guid[] | null;

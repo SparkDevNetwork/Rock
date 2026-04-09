@@ -246,7 +246,7 @@
         const newStatus = props.isSequentialMode ? nextStatus.value?.value : status.value;
         const updateBag: ConnectionRequestUpdateBag = {
             ...props.connectionRequestUpdateBag,
-            connectionStatusGuid: newStatus,
+            connectionStatusKey: newStatus,
             note: note.value
         };
 
@@ -265,6 +265,6 @@
     });
 
     watch(() => props.connectionRequestUpdateBag, bag => {
-        status.value = bag.connectionStatusGuid ?? "";
+        status.value = bag.connectionStatusKey ?? "";
     }, { immediate: true });
 </script>

@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 
 using Rock.Enums.Connection;
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
@@ -175,5 +176,13 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// The attributes.
         /// </value>
         public Dictionary<string, PublicAttributeBag> ConnectionTypeRequestAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the available groupings for each grouping dimension. The dictionary is keyed
+        /// by grouping field name (e.g., "statusGroupingKey") and contains the complete list of
+        /// possible <see cref="GroupingFieldBag"/> values for that dimension, including groups that
+        /// may not have any data rows.
+        /// </summary>
+        public Dictionary<string, List<GroupingFieldBag>> AvailableGroupings { get; set; }
     }
 }
