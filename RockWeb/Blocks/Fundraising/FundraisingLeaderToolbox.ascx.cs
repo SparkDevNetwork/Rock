@@ -170,7 +170,9 @@ namespace RockWeb.Blocks.Fundraising
             var rockContext = new RockContext();
 
             int groupId = hfGroupId.Value.AsInteger();
-            var groupMembersQuery = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == groupId );
+            var groupMembersQuery = new GroupMemberService( rockContext )
+                .Queryable()
+                .Where( a => a.GroupId == groupId && a.GroupMemberStatus == GroupMemberStatus.Active );
             var group = new GroupService( rockContext ).Get( groupId );
             group.LoadAttributes( rockContext );
             var defaultIndividualFundRaisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
