@@ -36,32 +36,32 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// <summary>
         /// Gets or sets the grouping key for the connection status column.
         /// </summary>
-        public string StatusGroupingKey { get; set; }
+        public string StatusGrouping { get; set; }
 
         /// <summary>
         /// Gets or sets the grouping key for the connection state column.
         /// </summary>
-        public string StateGroupingKey { get; set; }
+        public string StateGrouping { get; set; }
 
         /// <summary>
         /// Gets or sets the grouping key for the connector column.
         /// </summary>
-        public string ConnectorGroupingKey { get; set; }
+        public string ConnectorGrouping { get; set; }
 
         /// <summary>
         /// Gets or sets the grouping key for the connection opportunity column.
         /// </summary>
-        public string OpportunityGroupingKey { get; set; }
+        public string OpportunityGrouping { get; set; }
 
         /// <summary>
         /// Gets or sets the grouping key for the campus column.
         /// </summary>
-        public string CampusGroupingKey { get; set; }
+        public string CampusGrouping { get; set; }
 
         /// <summary>
         /// Gets or sets the grouping key for the due status column.
         /// </summary>
-        public string DueStatusGroupingKey { get; set; }
+        public string DueStatusGrouping { get; set; }
 
         /// <summary>
         /// Gets or sets the current connection status for this request.

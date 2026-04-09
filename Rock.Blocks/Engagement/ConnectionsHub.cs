@@ -2031,12 +2031,12 @@ namespace Rock.Blocks.Engagement
             {
                 ConnectionRequest = connectionRequest,
                 ConnectionRequestId = connectionRequest.Id,
-                ConnectorGroupingKey = GetGroupingKey( connectionRequest.ConnectorPersonAliasId ),
-                OpportunityGroupingKey = GetGroupingKey( connectionRequest.ConnectionOpportunityId ),
-                CampusGroupingKey = GetGroupingKey( connectionRequest.CampusId ),
-                StatusGroupingKey = GetGroupingKey( connectionRequest.ConnectionStatusId ),
-                DueStatusGroupingKey = GetGroupingKey( ( int ) dueStatus ),
-                StateGroupingKey = connectionRequest.ConnectionState.ToString(),
+                ConnectorGrouping = GetGroupingKey( connectionRequest.ConnectorPersonAliasId ),
+                OpportunityGrouping = GetGroupingKey( connectionRequest.ConnectionOpportunityId ),
+                CampusGrouping = GetGroupingKey( connectionRequest.CampusId ),
+                StatusGrouping = GetGroupingKey( connectionRequest.ConnectionStatusId ),
+                DueStatusGrouping = GetGroupingKey( ( int ) dueStatus ),
+                StateGrouping = connectionRequest.ConnectionState.ToString(),
                 ConnectorDetails = connectorItem,
                 Person = requesterPerson,
                 RequesterPersonAliasGuid = connectionRequest.PersonAlias.Guid,
@@ -3403,12 +3403,12 @@ WHERE 1 = 1" );
                 request.DueStatus = dueStatus;
                 request.ConnectorDetails = connectorItem;
 
-                request.ConnectorGroupingKey = GetGroupingKey( row.ConnectorPersonAliasId );
-                request.OpportunityGroupingKey = GetGroupingKey( row.ConnectionOpportunityId );
-                request.CampusGroupingKey = GetGroupingKey( row.CampusId );
-                request.StatusGroupingKey = GetGroupingKey( row.ConnectionStatusId );
-                request.DueStatusGroupingKey = GetGroupingKey( ( int ) dueStatus );
-                request.StateGroupingKey = connectionState.ToString();
+                request.ConnectorGrouping = GetGroupingKey( row.ConnectorPersonAliasId );
+                request.OpportunityGrouping = GetGroupingKey( row.ConnectionOpportunityId );
+                request.CampusGrouping = GetGroupingKey( row.CampusId );
+                request.StatusGrouping = GetGroupingKey( row.ConnectionStatusId );
+                request.DueStatusGrouping = GetGroupingKey( ( int ) dueStatus );
+                request.StateGrouping = connectionState.ToString();
 
                 connectionRequests.Add( request );
             }
@@ -3831,7 +3831,7 @@ WHERE 1 = 1" );
                 gridUpdateBags.Add( new ConnectionListGridUpdateBag
                 {
                     IdKey = connectionRequest.IdKey,
-                    ConnectorGroupingKey = GetGroupingKey( newConnectorPersonAlias?.Id ),
+                    ConnectorGrouping = GetGroupingKey( newConnectorPersonAlias?.Id ),
                     ConnectorDetails = connectorItem
                 } );
             }
@@ -3945,8 +3945,8 @@ WHERE 1 = 1" );
                 gridUpdateBags.Add( new ConnectionListGridUpdateBag
                 {
                     IdKey = request.IdKey,
-                    StateGroupingKey = request.ConnectionState.ToString(),
-                    StatusGroupingKey = GetGroupingKey( request.ConnectionStatus.Id ),
+                    StateGrouping = request.ConnectionState.ToString(),
+                    StatusGrouping = GetGroupingKey( request.ConnectionStatus.Id ),
                     ConnectionState = request.ConnectionState,
                     ConnectionStatusBag = new ConnectionStatusBag
                     {
@@ -3957,7 +3957,7 @@ WHERE 1 = 1" );
                         IsNoteRequiredOnCompletion = request.ConnectionStatus.IsNoteRequiredOnCompletion,
                         IsDefaultStatus = request.ConnectionStatus.IsDefault
                     },
-                    DueStatusGroupingKey = GetGroupingKey( ( int ) dueStatus ),
+                    DueStatusGrouping = GetGroupingKey( ( int ) dueStatus ),
                     DueStatus = dueStatus,
                     DueDate = request.DueDate,
                     DueSoonDate = request.DueSoonDate,
@@ -4031,7 +4031,7 @@ WHERE 1 = 1" );
                 gridUpdateBags.Add( new ConnectionListGridUpdateBag
                 {
                     IdKey = request.IdKey,
-                    StateGroupingKey = request.ConnectionState.ToString(),
+                    StateGrouping = request.ConnectionState.ToString(),
                     ConnectionState = request.ConnectionState,
                     FollowUpDate = request.FollowupDate,
                     CompletedDateTime = request.ConnectedDateTime
@@ -4420,8 +4420,8 @@ WHERE 1 = 1" );
             var gridUpdateBag = new ConnectionListGridUpdateBag
             {
                 IdKey = connectionRequest.IdKey,
-                StateGroupingKey = connectionRequest.ConnectionState.ToString(),
-                StatusGroupingKey = GetGroupingKey( connectionRequestStatus.Id ),
+                StateGrouping = connectionRequest.ConnectionState.ToString(),
+                StatusGrouping = GetGroupingKey( connectionRequestStatus.Id ),
                 ConnectionStatusBag = new ConnectionStatusBag
                 {
                     Guid = connectionRequestStatus.Guid,
@@ -4432,7 +4432,7 @@ WHERE 1 = 1" );
                     IsDefaultStatus = connectionRequestStatus.IsDefault
                 },
                 ConnectionState = connectionRequest.ConnectionState,
-                DueStatusGroupingKey = GetGroupingKey( ( int ) dueStatus ),
+                DueStatusGrouping = GetGroupingKey( ( int ) dueStatus ),
                 DueStatus = dueStatus,
                 DueDate = connectionRequest.DueDate,
                 DueSoonDate = connectionRequest.DueSoonDate,
@@ -5686,12 +5686,12 @@ WHERE 1 = 1" );
             return new GridBuilder<ConnectionRow>()
                 .WithBlock( this )
                 .AddField( "idKey", a => a.ConnectionRequestId.AsIdKey() )
-                .AddField( "connectorGrouping", a => a.ConnectorGroupingKey )
-                .AddField( "campusGrouping", a => a.CampusGroupingKey )
-                .AddField( "opportunityGrouping", a => a.OpportunityGroupingKey )
-                .AddField( "statusGrouping", a => a.StatusGroupingKey )
-                .AddField( "stateGrouping", a => a.StateGroupingKey )
-                .AddField( "dueStatusGrouping", a => a.DueStatusGroupingKey )
+                .AddField( "connectorGrouping", a => a.ConnectorGrouping )
+                .AddField( "campusGrouping", a => a.CampusGrouping )
+                .AddField( "opportunityGrouping", a => a.OpportunityGrouping )
+                .AddField( "statusGrouping", a => a.StatusGrouping )
+                .AddField( "stateGrouping", a => a.StateGrouping )
+                .AddField( "dueStatusGrouping", a => a.DueStatusGrouping )
                 .AddField( "connectorDetails", a => a.ConnectorDetails )
                 .AddField( "requestDetails", a => a.Person )
                 .AddField( "requesterPersonAliasGuid", a => a.RequesterPersonAliasGuid )
@@ -5755,17 +5755,17 @@ WHERE 1 = 1" );
 
             public ConnectionRequest ConnectionRequest { get; set; }
 
-            public string ConnectorGroupingKey { get; set; }
+            public string ConnectorGrouping { get; set; }
 
-            public string OpportunityGroupingKey { get; set; }
+            public string OpportunityGrouping { get; set; }
 
-            public string CampusGroupingKey { get; set; }
+            public string CampusGrouping { get; set; }
 
-            public string StateGroupingKey { get; set; }
+            public string StateGrouping { get; set; }
 
-            public string StatusGroupingKey { get; set; }
+            public string StatusGrouping { get; set; }
 
-            public string DueStatusGroupingKey { get; set; }
+            public string DueStatusGrouping { get; set; }
 
             public ListItemBag ConnectorDetails { get; set; }
 

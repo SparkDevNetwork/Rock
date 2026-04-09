@@ -7,10 +7,11 @@
                              :items="viewModeItems"
                              :btnSize="BtnSize.Small" />
             </div>
-            <div class="d-flex align-items-center gap-xs">
+            <div v-if="groupingFields.length > 1" class="d-flex align-items-center gap-xs">
                 <RockLabel>Group By</RockLabel>
                 <ButtonDropDownList v-model="groupingKey"
-                                    :items="groupingFields" />
+                                    :items="groupingFields"
+                                    :dropdownClass="viewModeItems.length > 1 ? 'dropdown-right' : ''" />
             </div>
         </template>
         <template v-else>

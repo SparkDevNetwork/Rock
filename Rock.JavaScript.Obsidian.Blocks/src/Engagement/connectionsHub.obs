@@ -45,7 +45,7 @@
                         <i class="ti ti-user-circle"></i>
                         <span class="activity-btn-label">Assign</span>
                     </RockButton>
-                    <RockButton @click="showChangeStatusModal" class="activity-btn" :disabled="!canEditConnectionRequests">
+                    <RockButton @click="showChangeStatusModal()" class="activity-btn" :disabled="!canEditConnectionRequests">
                         <template v-if="box.options?.isSequentialStatusMode">
                             <i class="ti ti-arrow-right"></i>
                             <span class="activity-btn-label">Advance to Next Status</span>
@@ -548,6 +548,7 @@
                        :requestDetails="requestDetailsForModal"
                        :viewOptions="viewOptions"
                        :errorMessage="modalErrorMessage"
+                       :selectedStatus="selectedStatus"
                        @dismissErrorMessage="onModalErrorMessageDismissed"
                        @close="onModalErrorMessageDismissed"
                        @updateStatus="updateStatusFromModal" />
@@ -965,6 +966,7 @@
         dueFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterDueConnectionTypIdKey))),
     });
     const allPossibleConnectors = ref(box.options?.allPossibleConnectors ?? []);
+    const selectedStatus = ref<string | null | undefined>();
     // SMS and Email modal state
     const communicationRecipients = ref<CommunicationRecipientBag[] | null | undefined>();
     const smsFromSystemPhoneNumbers = ref<ListItemBag[]>([]);
@@ -1408,10 +1410,10 @@
     // #region Board Functions
 
     function onCardMoved(idKey: string, fromGroupKey: string, toGroupKey: string): void {
-        console.log("here: ", selectedGrouping.value);
-        const updateBag = <ConnectionRequestUpdateBag>{
-            connectionRequestIdKey: idKey
-        };
+        if (!gridData.value?.rows) {
+            return;
+        }
+        const row = gridData.value.rows.find(r => r.idKey === idKey);
 
         switch (selectedGrouping.value) {
             case "connectorGrouping":
@@ -1421,9 +1423,9 @@
 
                 break;
             case "statusGrouping":
-                console.log("Changing status", toGroupKey);
-                updateBag.connectionStatusKey = toGroupKey;
-                changeRequestStatus(updateBag);
+                selectedStatus.value = box.options?.connectionStatuses?.find(s => s.idKey === toGroupKey)?.guid;
+                showChangeStatusModal(row);
+
                 break;
             case "opportunityGrouping":
                 // Maybe keep this
@@ -1786,8 +1788,8 @@
         isActivityModalVisible.value = true;
     }
 
-    function showChangeStatusModal(): void {
-        prepareRequestDetailsForModal();
+    function showChangeStatusModal(row: Record<string, unknown> | null = null): void {
+        prepareRequestDetailsForModal(row);
         isChangeStatusModalVisible.value = true;
     }
 
@@ -1818,8 +1820,7 @@
 
             const lastStatusIndex = connectionStatusItems.value.length - 1;
 
-
-            for (const request of selectedRequestDetails.value) {
+            for (const request of requestDetailsForModal.value) {
                 const currentIndex = statusIndexByGuid.get(request.connectionStatus?.guid);
                 if (currentIndex === undefined || isNullOrWhiteSpace(request.idKey)) {
                     continue;
@@ -1842,9 +1843,9 @@
             }
         }
         else {
-            for (const key of allSelectedKeys.value) {
+            for (const request of requestDetailsForModal.value) {
                 statusUpdateBags.push({
-                    connectionRequestIdKey: key,
+                    connectionRequestIdKey: request.idKey,
                     connectionStatusKey: bag.connectionStatusKey,
                     note: bag.note
                 });
@@ -1921,7 +1922,6 @@
 
         if (result.isSuccess && result.data) {
             gridData.value = reactive(result.data);
-            console.log(gridData.value);
         }
         else {
             requestListErrorMessage.value = result.errorMessage ?? "Error loading grid data.";
@@ -2228,11 +2228,11 @@
                     continue;
                 }
 
-                row.stateGroupingKey = updateBag.stateGroupingKey;
-                row.statusGroupingKey = updateBag.statusGroupingKey;
+                row.stateGrouping = updateBag.stateGrouping;
+                row.statusGrouping = updateBag.statusGrouping;
                 row.connectionStatus = updateBag.connectionStatusBag;
                 row.connectionState = updateBag.connectionState;
-                row.dueStatusGroupingKey = updateBag.dueStatusGroupingKey;
+                row.dueStatusGrouping = updateBag.dueStatusGrouping;
                 row.dueStatus = updateBag.dueStatus;
                 row.dueDate = updateBag.dueDate;
                 row.dueSoonDate = updateBag.dueSoonDate;
@@ -2271,11 +2271,11 @@
                 if (rowIndex !== -1 && gridData.value?.rows) {
                     const row = gridData.value.rows[rowIndex];
 
-                    row.stateGroupingKey = result.data.stateGroupingKey;
-                    row.statusGroupingKey = result.data.statusGroupingKey;
+                    row.stateGrouping = result.data.stateGrouping;
+                    row.statusGrouping = result.data.statusGrouping;
                     row.connectionState = result.data.connectionState;
                     row.connectionStatus = result.data.connectionStatusBag;
-                    row.dueStatusGroupingKey = result.data.dueStatusGroupingKey;
+                    row.dueStatusGrouping = result.data.dueStatusGrouping;
                     row.dueStatus = result.data.dueStatus;
                     row.dueDate = result.data.dueDate;
                     row.dueSoonDate = result.data.dueSoonDate;
@@ -2379,7 +2379,7 @@
                 if (rowIndex !== -1 && gridData.value?.rows) {
                     const row = gridData.value.rows[rowIndex];
 
-                    row.stateGroupingKey = resultBag.stateGroupingKey;
+                    row.stateGrouping = resultBag.stateGrouping;
                     row.connectionState = resultBag.connectionState;
                     row.followUpDate = resultBag.followUpDate;
 
@@ -2407,7 +2407,7 @@
                         continue;
                     }
 
-                    row.stateGroupingKey = updateBag.stateGroupingKey;
+                    row.stateGrouping = updateBag.stateGrouping;
                     row.connectionState = updateBag.connectionState;
                     row.followUpDate = updateBag.followUpDate;
                     row.completedDateTime = updateBag.completedDateTime;
@@ -2768,7 +2768,7 @@
                     continue;
                 }
 
-                row.connectorGroupingKey = updateBag.connectorGroupingKey;
+                row.connectorGrouping = updateBag.connectorGrouping;
                 row.connectorDetails = updateBag.connectorDetails;
             }
 
@@ -2885,6 +2885,13 @@
     // clicking inside a modal doesn't accidentally close the panel behind it.
     watch([isTransferModalVisible, isCelebrationModalVisible, isActivityModalVisible, isReminderModalVisible, isSendSMSModalVisible, isSendEmailModalVisible, isFlyoutOpen, isModalAlertVisible, isDeleteRequestModalVisible], (values) => {
         handleClickOutsideSettingForDockedPanel(!values.some(Boolean));
+    });
+
+    watch(isChangeStatusModalVisible, () => {
+        // Clear selected status whenever the change status modal is closed.
+        if (!isChangeStatusModalVisible.value) {
+            selectedStatus.value = null;
+        }
     });
 
     watch(areOnlyMyRequestsVisible, async () => {

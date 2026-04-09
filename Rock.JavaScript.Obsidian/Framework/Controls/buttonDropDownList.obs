@@ -2,7 +2,7 @@
 <template>
     <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="button-dropdownlist">
         <template #default="{ field, uniqueId }">
-            <div class="dropdown">
+            <div class="dropdown" :class="dropdownClass">
                 <div :class="{ open: isDropDownOpen }" ref="dropdownElement">
                     <RockButton class="dropdown-toggle" :btnType="btnType" :aria-expanded="isDropDownOpen ? 'true' : 'false'" @click.prevent.stop="toggleOpen" :id="uniqueId" v-bind="field">
                         {{ selectionStyle === 'title' && internalValue ? selectedText : title }}
@@ -71,6 +71,11 @@ li.disabled > button {
         btnType: {
             type: String as PropType<BtnType>,
             default: BtnType.Default
+        },
+
+        dropdownClass: {
+            type: String as PropType<string>,
+            default: ""
         },
 
         ...standardRockFormFieldProps

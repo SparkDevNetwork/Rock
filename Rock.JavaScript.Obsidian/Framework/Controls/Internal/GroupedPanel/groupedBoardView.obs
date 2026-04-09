@@ -38,16 +38,19 @@
     gap: var(--spacing-large);
     overflow-x: auto;
     height: 100%;
+    padding-bottom: var(--spacing-xsmall);
 }
 
 .board-column {
     padding: var(--spacing-medium);
     background-color: var(--color-interface-softer);
     border-radius: var(--rounded-large);
-    flex: 0 0 330px;
+    flex: 0 0 332px;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-medium);
+    width: 364px;
+    max-width: none;
     /* Allow the column to shrink so the column body scrolls rather than the page. */
     min-height: 0;
 }
@@ -70,18 +73,29 @@
     overflow-y: auto;
 }
 
-.board-column-body--drag-over {
-    outline: 2px dashed var(--color-primary);
+.board-column.drag-over {
+    outline: solid 2px var(--color-primary);
     outline-offset: -2px;
-    background-color: rgba(var(--color-primary-rgb), 0.06);
-    border-radius: var(--rounded-medium);
+    background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);
 }
 </style>
 
 <style>
 /* Dragula mirror and transit styles — must not be scoped. */
+.gu-mirror {
+    cursor: grabbing;
+    box-shadow: 0 0 0 1px var(--color-primary);
+    border-radius: var(--rounded-small);
+    transform: rotate(-5deg);
+}
+
 .gu-transit {
     opacity: 0.3;
+}
+
+body.is-dragging,
+body.is-dragging * {
+    cursor: grabbing !important;
 }
 </style>
 
@@ -114,18 +128,24 @@
         id: dragId,
         copyElement: false,
 
+        dragBegin() {
+            document.body.classList.add("is-dragging");
+        },
+
         dragOver(operation) {
-            operation.targetContainer?.classList.add("board-column-body--drag-over");
+            operation.targetContainer?.closest(".board-column")?.classList.add("drag-over");
         },
 
         dragOut(operation) {
-            operation.targetContainer?.classList.remove("board-column-body--drag-over");
+            operation.targetContainer?.closest(".board-column")?.classList.remove("drag-over");
         },
 
         dragEnd() {
+            document.body.classList.remove("is-dragging");
+
             // Safety cleanup of all highlights.
-            document.querySelectorAll(".board-column-body--drag-over")
-                .forEach(el => el.classList.remove("board-column-body--drag-over"));
+            document.querySelectorAll(".board-column.drag-over")
+                .forEach(el => el.classList.remove("drag-over"));
         },
 
         dragDrop(operation) {

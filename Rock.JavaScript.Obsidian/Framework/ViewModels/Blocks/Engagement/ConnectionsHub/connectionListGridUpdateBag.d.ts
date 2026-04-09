@@ -32,7 +32,7 @@ export type ConnectionListGridUpdateBag = {
     activityCount?: number | null;
 
     /** Gets or sets the grouping key for the campus column. */
-    campusGroupingKey?: string | null;
+    campusGrouping?: string | null;
 
     /** Gets or sets the celebration text to display for this request, if applicable. */
     celebrationText?: string | null;
@@ -50,7 +50,7 @@ export type ConnectionListGridUpdateBag = {
     connectorDetails?: ListItemBag | null;
 
     /** Gets or sets the grouping key for the connector column. */
-    connectorGroupingKey?: string | null;
+    connectorGrouping?: string | null;
 
     /** Gets or sets the date by which this request should be completed. */
     dueDate?: string | null;
@@ -62,7 +62,7 @@ export type ConnectionListGridUpdateBag = {
     dueStatus: DueStatus;
 
     /** Gets or sets the grouping key for the due status column. */
-    dueStatusGroupingKey?: string | null;
+    dueStatusGrouping?: string | null;
 
     /** Gets or sets the follow-up date for this request when it is in the Future Follow-up state. */
     followUpDate?: string | null;
@@ -74,11 +74,11 @@ export type ConnectionListGridUpdateBag = {
     lastActivityDateTime?: string | null;
 
     /** Gets or sets the grouping key for the connection opportunity column. */
-    opportunityGroupingKey?: string | null;
+    opportunityGrouping?: string | null;
 
     /** Gets or sets the grouping key for the connection state column. */
-    stateGroupingKey?: string | null;
+    stateGrouping?: string | null;
 
     /** Gets or sets the grouping key for the connection status column. */
-    statusGroupingKey?: string | null;
+    statusGrouping?: string | null;
 };

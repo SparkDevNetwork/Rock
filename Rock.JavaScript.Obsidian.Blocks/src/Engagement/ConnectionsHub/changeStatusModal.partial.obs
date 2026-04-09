@@ -11,18 +11,28 @@
                          @dismiss="emit('dismissErrorMessage')">
             {{ errorMessage }}
         </NotificationBox>
-        <NotificationBox v-if="isSequentialMode"
-                         alertType="info"
-                         heading="Sequential Mode">
-            <p>For each selected request, the current status will be marked as complete and will advance to the next configured status. Note: any request currently on its final status will be marked as Complete.</p>
-        </NotificationBox>
+        <template v-if="isNullOrWhiteSpace(selectedStatus)">
+            <NotificationBox v-if="isSequentialMode"
+                             alertType="info"
+                             heading="Sequential Mode">
+                <p>For each selected request, the current status will be marked as complete and will advance to the next configured status. Note: any request currently on its final status will be marked as Complete.</p>
+            </NotificationBox>
+            <div v-else class="row">
+                <div class="col-md-4">
+                    <DropDownList v-model="status"
+                                  :items="connectionStatusItems"
+                                  label="Status"
+                                  showBlankItem
+                                  enhanceForLongLists />
+                </div>
+            </div>
+        </template>
         <div v-else class="row">
-            <div class="col-md-4">
-                <DropDownList v-model="status"
-                              :items="connectionStatusItems"
-                              label="Status"
-                              showBlankItem
-                              enhanceForLongLists />
+            <div class="col-md-12">
+                <div class="form-group">
+                    <RockLabel class="text-interface-medium">Status</RockLabel>
+                    <div class="text-interface-stronger">{{ selectedStatusText }}</div>
+                </div>
             </div>
         </div>
         <div class="row">
@@ -43,6 +53,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import RequestTable from "./requestTable.partial.obs";
     import { ref, PropType, watch, computed } from "vue";
@@ -87,6 +98,10 @@
         errorMessage: {
             type: String as PropType<string>,
             required: true
+        },
+
+        selectedStatus: {
+            type: String as PropType<string | null | undefined>
         }
     });
 
@@ -99,9 +114,14 @@
 
     const isVisible = useVModelPassthrough(props, "visible", emit);
 
-    const status = ref();
+    const internalStatus = ref("");
+    const status = computed({
+        get: () => props.selectedStatus ?? internalStatus.value,
+        set: (value: string) => internalStatus.value = value
+    });
     const note = ref();
 
+    const selectedStatusText = computed(() => props.connectionStatusItems.find(s => s.value === props.selectedStatus)?.text);
     const isNoteRequired = computed(() => props.requestDetails.some(s => s.connectionStatus?.isNoteRequiredOnCompletion) ? "required" : "");
 
     const title = computed(() => props.isSequentialMode ? "Advance to Next Status" : "Change Status");
@@ -116,7 +136,7 @@
     }
 
     function resetModal(): void {
-        status.value = undefined;
+        internalStatus.value = "";
         note.value = undefined;
     }
 

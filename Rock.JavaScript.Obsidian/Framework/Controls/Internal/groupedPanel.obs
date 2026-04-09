@@ -1,7 +1,6 @@
 <template>
     <Panel v-model:quickFilterValue="internalQuickFilterValue"
-           panelHeaderCssClass="flex-shrink-0"
-           :class="{ 'grouped-panel--board': isBoardView }">
+           panelHeaderCssClass="flex-shrink-0">
         <template #headerActions>
             <HighlightLabel>
                 {{ countMessage }}
@@ -73,17 +72,19 @@
 /* Board view: give the panel a fixed height so columns can scroll internally
    rather than overflowing the page. The offset accounts for the fixed Rock nav
    bar and the content above the panel (page title, filters, etc.). */
+/*
+:class="{ 'grouped-panel--board': isBoardView }"
 :deep(.grouped-panel--board) {
     height: calc(100vh - 310px);
-}
+} */
 
 /* Allow the panel body to fill the panel's remaining height so the board view
    inside it can stretch to match. */
-:deep(.grouped-panel--board > .panel-body) {
+/* :deep(.grouped-panel--board > .panel-body) {
     flex: 1;
     min-height: 0;
     overflow: hidden;
-}
+} */
 </style>
 
 <script setup lang="ts">
@@ -251,8 +252,6 @@
 
         return map;
     });
-
-    const hasAvailableGroups = computed(() => availableGroupsByKey.value.size > 0);
 
     /**
      * Groups the filtered and sorted rows by the active grouping key. The

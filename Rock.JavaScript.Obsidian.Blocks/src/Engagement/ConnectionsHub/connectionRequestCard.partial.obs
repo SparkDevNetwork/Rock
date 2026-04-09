@@ -6,6 +6,8 @@
                     :campusShortCode="campusLabel?.shortCode"
                     :campusColor="campusLabel?.color"
                     :hideCampusLabel="hideCampusLabel"
+                    class="connection-request-card"
+                    :class="{ 'completed': connectionRequestRow.connectionState === ConnectionState.Connected }"
                     @click="selectRequest">
             <template #secondaryHeaderActions>
                 <template v-if="canEditConnectionRequests">
@@ -136,6 +138,14 @@
 </template>
 
 <style scoped>
+.connection-request-card {
+    cursor: pointer;
+}
+
+.connection-request-card.completed {
+    opacity: 0.5;
+}
+
 .text-emerald {
     color: #10B981 !important;
 }
