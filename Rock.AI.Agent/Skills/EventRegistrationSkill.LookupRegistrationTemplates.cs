@@ -32,7 +32,7 @@ internal sealed partial class EventRegistrationSkill
     [Description( "Retrieves all registration templates in Rock." )]
     [AgentPurpose( "Retrieves all registration templates in Rock." )]
     [AgentToolGuid( "ec52ca7b-7dd0-4947-9bf2-1930b3731acf" )]
-    public IAgentToolResult LookupRegistrationTemplates()
+    public AgentToolResult LookupRegistrationTemplates()
     {
         var templateResults = new RegistrationTemplateService( AgentRequestContext.RockContext )
             .Queryable()

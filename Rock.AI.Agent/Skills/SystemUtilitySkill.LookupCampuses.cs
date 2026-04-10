@@ -33,7 +33,7 @@ internal sealed partial class SystemUtilitySkill
 
     [Description( "Provides information on the campuses." )]
     [AgentToolGuid( "1FDDC83F-2911-5E86-4219-DB4A5F10BD42" )]
-    public IAgentToolResult LookupCampuses()
+    public AgentToolResult LookupCampuses()
     {
         var campusResults = RockCache.GetOrAddExisting( "rock.core.aiagent.lookupcampuses", null, () =>
         {

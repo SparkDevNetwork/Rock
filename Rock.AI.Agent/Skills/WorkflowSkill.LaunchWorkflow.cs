@@ -35,7 +35,7 @@ internal partial class WorkflowSkill
     [Description( "Launches a new workflow with the provides values." )]
     [AgentPurpose( "Launches a new workflow with the provides attribute values." )]
     [AgentToolGuid( "f1d4e4d1-1e92-4851-b83d-4ae7bcdfb5a2" )]
-    public IAgentToolResult LaunchWorkflow(
+    public AgentToolResult LaunchWorkflow(
         string workflowTypeIdKey = null,
         List<AttributeValueResult> attributeValues = null )
     {

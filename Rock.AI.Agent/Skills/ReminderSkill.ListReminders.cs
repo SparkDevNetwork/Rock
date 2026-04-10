@@ -31,7 +31,7 @@ internal sealed partial class ReminderSkill
 
     [Description( "Lists reminders that match the filters." )]
     [AgentToolGuid( "AA2EA764-8CB6-48B1-815B-0FDCCDC742DE" )]
-    public IAgentToolResult ListReminders(
+    public AgentToolResult ListReminders(
         List<string> reminderTypeIdKeys = null,
         string entityIdKey = null,
         string assignedToPersonIdKey = null,

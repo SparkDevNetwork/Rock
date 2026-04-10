@@ -32,7 +32,7 @@ internal sealed partial class AttendeeSkill
     [Description( "Lists giving contributions for the currently logged in person." )]
     [AgentUsage( "Lists financial contribution records for the currently logged in user." )]
     [AgentToolGuid( "13c5b8b5-64b1-48b3-908e-5af8edce9767" )]
-    public IAgentToolResult ListMyGivingContributions(
+    public AgentToolResult ListMyGivingContributions(
         DateTime? startDate = null,
         DateTime? endDate = null,
         int pageNumber = 1 )

@@ -31,7 +31,7 @@ internal sealed partial class EventRegistrationSkill
     [Description( "Retrieves the details of a event registration instance." )]
     [AgentPurpose( "Retrieves the details of a event registration instance" )]
     [AgentToolGuid( "fd59ad44-cc8a-4e38-93bc-80f0de0d4758" )]
-    public IAgentToolResult GetRegistrationInstance( string registrationInstanceIdKey )
+    public AgentToolResult GetRegistrationInstance( string registrationInstanceIdKey )
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
 

@@ -40,7 +40,7 @@ using AuthorRole = Rock.Enums.AI.Agent.AuthorRole;
 
 namespace Rock.AI.Agent;
 
-internal class ChatAgent : IChatAgent
+internal class ChatAgentImplementation : ChatAgent
 {
     #region Constants
 
@@ -153,7 +153,7 @@ internal class ChatAgent : IChatAgent
     /// The context for the current request. This is used to build up the
     /// chat history, anchors and session context.
     /// </summary>
-    private readonly AgentRequestContext _context;
+    private readonly AgentRequestContextImplementation _context;
 
     /// <summary>
     /// The tokenizer that will be used to count tokens when adding messages
@@ -189,12 +189,15 @@ internal class ChatAgent : IChatAgent
     /// </summary>
     private bool _sessionNeedsName = false;
 
+    /// <inheritdoc cref="SessionId"/>
+    private int? _sessionId;
+
     #endregion
 
     #region Properties
 
     /// <inheritdoc/>
-    public int? SessionId { get; private set; }
+    public override int? SessionId => _sessionId;
 
     /// <summary>
     /// The native Kernel instance that provides access to Semantic Kernel.
@@ -211,14 +214,14 @@ internal class ChatAgent : IChatAgent
     #region Constructors
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChatAgent"/> class.
+    /// Initializes a new instance of the <see cref="ChatAgentImplementation"/> class.
     /// </summary>
     /// <param name="kernel">The <see cref="Kernel"/> instance that will be used to communicate with the language model.</param>
     /// <param name="agentConfiguration">The configuration data for the agent.</param>
     /// <param name="rockContextFactory">The factory used when creating new <see cref="RockContext"/> objects.</param>
     /// <param name="rockRequestContextAccessor">The object that will provide the current <see cref="RockRequestContext"/> associated with the current request.</param>
     /// <param name="options">The options for the chat agent. This is used to configure various aspects of the agent's behavior.</param>
-    public ChatAgent( Kernel kernel, AgentConfiguration agentConfiguration, IRockContextFactory rockContextFactory, IRockRequestContextAccessor rockRequestContextAccessor, ChatAgentOptions options )
+    public ChatAgentImplementation( Kernel kernel, AgentConfiguration agentConfiguration, IRockContextFactory rockContextFactory, IRockRequestContextAccessor rockRequestContextAccessor, ChatAgentOptions options )
     {
         _kernel = kernel;
         _agentConfiguration = agentConfiguration;
@@ -226,8 +229,8 @@ internal class ChatAgent : IChatAgent
         _requestContext = rockRequestContextAccessor.RockRequestContext;
         _options = options ?? throw new ArgumentNullException( nameof( options ) );
 
-        _context = kernel.Services.GetRequiredService<AgentRequestContext>();
-        _context.ChatAgent = this;
+        _context = kernel.Services.GetRequiredService<AgentRequestContextImplementation>();
+        _context.SetChatAgent( this );
     }
 
     #endregion
@@ -235,7 +238,7 @@ internal class ChatAgent : IChatAgent
     #region Methods
 
     /// <inheritdoc/>
-    public Task StartNewSessionAsync( int? entityTypeId, int? entityId, CancellationToken cancellationToken )
+    public override Task StartNewSessionAsync( int? entityTypeId, int? entityId, CancellationToken cancellationToken )
     {
         if ( _requestContext?.CurrentPerson?.PrimaryAliasId == null )
         {
@@ -259,14 +262,14 @@ internal class ChatAgent : IChatAgent
         _context.Clear();
         AddSystemMessages();
 
-        SessionId = session.Id;
+        _sessionId = session.Id;
         _sessionNeedsName = true;
 
         return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
-    public Task LoadSessionAsync( int sessionId, CancellationToken cancellationToken )
+    public override Task LoadSessionAsync( int sessionId, CancellationToken cancellationToken )
     {
         using var rockContext = _rockContextFactory.CreateRockContext();
         var session = new AIAgentSessionService( rockContext ).Get( sessionId )
@@ -332,7 +335,7 @@ internal class ChatAgent : IChatAgent
             }
         }
 
-        SessionId = sessionId;
+        _sessionId = sessionId;
         _historyNeedsSummary = messages.Sum( m => m.TokenCount ) >= _agentConfiguration.AutoSummarizeThreshold;
         _sessionNeedsName = session.Name.IsNullOrWhiteSpace();
 
@@ -340,7 +343,7 @@ internal class ChatAgent : IChatAgent
     }
 
     /// <inheritdoc/>
-    public Task AddMessageAsync( AuthorRole role, string message, CancellationToken cancellationToken )
+    public override Task AddMessageAsync( AuthorRole role, string message, CancellationToken cancellationToken )
     {
         if ( role != AuthorRole.User && role != AuthorRole.Assistant && role != AuthorRole.Tool )
         {
@@ -406,7 +409,7 @@ internal class ChatAgent : IChatAgent
     }
 
     /// <inheritdoc/>
-    public Task<ContextAnchor> AddAnchorAsync( IEntity entity, CancellationToken cancellationToken )
+    public override Task<ContextAnchor> AddAnchorAsync( IEntity entity, CancellationToken cancellationToken )
     {
         var entityTypeId = entity.TypeId;
 
@@ -438,7 +441,7 @@ internal class ChatAgent : IChatAgent
     }
 
     /// <inheritdoc/>
-    public Task RemoveAnchorAsync( int entityTypeId, CancellationToken cancellationToken )
+    public override Task RemoveAnchorAsync( int entityTypeId, CancellationToken cancellationToken )
     {
         _context.RemoveAnchor( entityTypeId );
 
@@ -467,6 +470,34 @@ internal class ChatAgent : IChatAgent
         anchorsToInactivate.ForEach( a => a.IsActive = false );
 
         rockContext.SaveChanges();
+    }
+
+    /// <inheritdoc/>
+    public override Task<ContextAnchor> AddTransientAnchorAsync( IEntity entity, CancellationToken cancellationToken )
+    {
+        var entityTypeId = entity.TypeId;
+
+        var anchor = new AIAgentSessionAnchor
+        {
+            EntityTypeId = entityTypeId,
+            EntityId = entity.Id,
+            IsActive = true
+        };
+
+        using var rockContext = _rockContextFactory.CreateRockContext();
+        AIAgentSessionAnchorService.UpdateFromEntity( anchor, rockContext );
+
+        _context.AddTransientAnchor( anchor.EntityTypeId, anchor.PayloadJson );
+
+        return Task.FromResult( anchor.PayloadJson.FromJsonOrNull<ContextAnchor>() );
+    }
+
+    /// <inheritdoc/>
+    public override Task RemoveTransientAnchorAsync( int entityTypeId, CancellationToken cancellationToken )
+    {
+        _context.RemoveTransientAnchor( entityTypeId );
+
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -582,7 +613,7 @@ internal class ChatAgent : IChatAgent
     }
 
     /// <inheritdoc/>
-    public async Task<ChatMessageResponse> GetChatMessageResponseAsync( CancellationToken cancellationToken )
+    public override async Task<ChatMessageResponse> GetChatMessageResponseAsync( CancellationToken cancellationToken )
     {
         var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
 
@@ -622,7 +653,7 @@ internal class ChatAgent : IChatAgent
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<StreamingChatMessageResponse> GetStreamingChatMessageResponsesAsync( [EnumeratorCancellation] CancellationToken cancellationToken )
+    public override async IAsyncEnumerable<StreamingChatMessageResponse> GetStreamingChatMessageResponsesAsync( [EnumeratorCancellation] CancellationToken cancellationToken )
     {
         var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
 
@@ -678,7 +709,7 @@ internal class ChatAgent : IChatAgent
     }
 
     /// <inheritdoc/>
-    public async Task<object> InvokeToolAsync( string skillKey, string functionKey, IDictionary<string, object> arguments, CancellationToken cancellationToken )
+    public override async Task<object> InvokeToolAsync( string skillKey, string functionKey, IDictionary<string, object> arguments, CancellationToken cancellationToken )
     {
         KernelArguments args;
 
@@ -705,7 +736,7 @@ internal class ChatAgent : IChatAgent
     }
 
     /// <inheritdoc />
-    public async Task<PromptResult> InvokePromptAsync( string prompt, IDictionary<string, object> arguments, CancellationToken cancellationToken = default )
+    public override async Task<PromptResult> InvokePromptAsync( string prompt, IDictionary<string, object> arguments, CancellationToken cancellationToken = default )
     {
         var result = await _kernel.InvokePromptAsync( prompt );
         return new PromptResult( result );

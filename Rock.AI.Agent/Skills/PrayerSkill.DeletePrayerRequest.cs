@@ -33,7 +33,7 @@ internal sealed partial class PrayerSkill
     [Description( "Deletes a prayer request from the system." )]
     [AgentToolGuid( "423AFDB5-1095-4D55-8631-4F284FC0AFED" )]
     [AgentGuardrail( "This action will permanently delete the specified prayer request. Ensure that this action is intentional and that you have the correct prayer request identifier before proceeding." )]
-    public IAgentToolResult DeletePrayerRequest( string prayerRequestIdKey )
+    public AgentToolResult DeletePrayerRequest( string prayerRequestIdKey )
     {
         using var rockContext = RockApp.Current.CreateRockContext();
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );

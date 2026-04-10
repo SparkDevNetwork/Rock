@@ -32,7 +32,7 @@ internal sealed partial class SystemUtilitySkill
     [AgentPurpose( "Determines a date range from a natural language string." )]
     [AgentUsage( "This function is useful in cases where you need to determine a date range from a query that does not include specific time units." )]
     [AgentToolGuid( "87756092-9D52-448E-82EE-556A780DF7CF" )]
-    public IAgentToolResult DetermineDateRange(
+    public AgentToolResult DetermineDateRange(
         [Description( "A natural language string, such as 'first quarter', 'yesterday' 'tomorrow', 'year to date'.")]
         string query )
     {
@@ -58,7 +58,7 @@ internal sealed partial class SystemUtilitySkill
     //[AgentUsage( "These time units have specific meaning in this system and are used in UI, so if the query specifies one of these terms it should be used without inferring intent." )]
     //[AgentUsage( "Whole weeks are typically defined as Monday - Sunday, though the organization can override that." )]
     //[AgentToolGuid( "376bdaa2-a947-4e9f-baad-30f09f7c8f64" )]
-    //public IAgentToolResult CalculateSlidingDateRange(
+    //public AgentToolResult CalculateSlidingDateRange(
     //    DateRangeType dateRangeType,
     //    int numberOfUnits,
     //    TimeUnitType timeUnit )

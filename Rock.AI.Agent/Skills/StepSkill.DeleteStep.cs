@@ -33,7 +33,7 @@ internal sealed partial class StepSkill
     [Description( "Deletes a step from the system." )]
     [AgentToolGuid( "d62573f6-03da-4a1f-b550-cb0e1ec6a211" )]
     [AgentGuardrail( "This action will permanently delete the specified step. Ensure that this action is intentional and that you have the correct step identifier before proceeding." )]
-    public IAgentToolResult DeleteStep( string stepIdKey )
+    public AgentToolResult DeleteStep( string stepIdKey )
     {
         using var rockContext = RockApp.Current.CreateRockContext();
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );

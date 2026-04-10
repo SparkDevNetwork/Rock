@@ -48,7 +48,7 @@ internal class PushNotificationMedium : IAgentCommunicationMedium
     }
 
     /// <inheritdoc />
-    public async Task<DraftResult> DraftAsync( IChatAgent agent, DraftRequest request )
+    public async Task<DraftResult> DraftAsync( ChatAgent agent, DraftRequest request )
     {
         var prompt = DraftPromptBuilder.BuildPushDraftPrompt( request );
 

@@ -32,7 +32,7 @@ internal sealed partial class AttendanceSkill
     [AgentPurpose( "Retrieves a list of all of the check-in configurations." )]
     [AgentPurpose( "Check-in configurations are the high level container for all check-in related areas, groups and locations." )]
     [AgentToolGuid( "c11e7eff-7ef8-4476-b713-74ee267648bb" )]
-    public IAgentToolResult LookupCheckInConfigurations()
+    public AgentToolResult LookupCheckInConfigurations()
     {
         var checkInConfigurationPurposeId = DefinedValueCache.Get( DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), AgentRequestContext.RockContext ).Id;
 

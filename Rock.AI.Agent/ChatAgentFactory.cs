@@ -173,7 +173,8 @@ internal class ChatAgentFactory
     private IKernelBuilder CreateKernelBuilder( AgentProviderComponent provider, Action<IServiceCollection> configureServices )
     {
         var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddSingleton( _ => new AgentRequestContext( _requestContextAccessor.RockRequestContext, _agentConfiguration, _rockContextFactory.CreateRockContext() ) );
+        kernelBuilder.Services.AddSingleton( _ => new AgentRequestContextImplementation( _requestContextAccessor.RockRequestContext, _agentConfiguration, _rockContextFactory.CreateRockContext() ) );
+        kernelBuilder.Services.AddSingleton( sp => sp.GetRequiredService<AgentRequestContextImplementation>() as AgentRequestContext );
         kernelBuilder.Services.AddSingleton( _loggerFactory );
         kernelBuilder.Services.AddSingleton( typeof( ILogger<> ), typeof( Logger<> ) );
 
@@ -188,10 +189,10 @@ internal class ChatAgentFactory
     }
 
     /// <summary>
-    /// Builds and returns an <see cref="IChatAgent"/> instance using the configured kernel and agent configuration.
+    /// Builds and returns an <see cref="ChatAgent"/> instance using the configured kernel and agent configuration.
     /// </summary>
     /// <returns>A constructed chat agent instance.</returns>
-    public IChatAgent Build()
+    public ChatAgent Build()
     {
         var serializerOptions = AgentSerializerOptions.GetOptions( _agentConfiguration.AgentType, _agentConfiguration.AudienceType );
 
@@ -207,7 +208,7 @@ internal class ChatAgentFactory
 
         _logger.LogInformation( "Plugins loaded in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
 
-        var agent = new ChatAgent( kernel, _agentConfiguration, _rockContextFactory, _requestContextAccessor, _options );
+        var agent = new ChatAgentImplementation( kernel, _agentConfiguration, _rockContextFactory, _requestContextAccessor, _options );
         kernel.AutoFunctionInvocationFilters.Add( new StoreHistoryContentFunctionFilter( agent, serializerOptions ) );
 
         return agent;
@@ -365,7 +366,7 @@ internal class ChatAgentFactory
                 var proxySkill = new LavaToolExecutor( kernelServiceProvider.GetRequiredService<AgentRequestContext>(), requestContext );
 
                 var proxyFunction = KernelFunctionFactory.CreateFromMethod(
-                    method: ( Func<KernelArguments, IAgentToolResult> ) ( args => proxySkill.ExecuteLava( function, args ) ),
+                    method: ( Func<KernelArguments, AgentToolResult> ) ( args => proxySkill.ExecuteLava( function, args ) ),
                     functionName: function.Key,
                     description: InstructionFormatter.FormatInstructions( function.Instructions ),
                     parameters: parameters,
@@ -403,11 +404,11 @@ internal class ChatAgentFactory
     /// </summary>
     private sealed class StoreHistoryContentFunctionFilter : IAutoFunctionInvocationFilter
     {
-        private readonly IChatAgent _agent;
+        private readonly ChatAgent _agent;
 
         private readonly JsonSerializerOptions _serializerOptions;
 
-        public StoreHistoryContentFunctionFilter( IChatAgent agent, JsonSerializerOptions serializerOptions )
+        public StoreHistoryContentFunctionFilter( ChatAgent agent, JsonSerializerOptions serializerOptions )
         {
             _agent = agent ?? throw new ArgumentNullException( nameof( agent ) );
             _serializerOptions = serializerOptions ?? throw new ArgumentNullException( nameof( serializerOptions ) );

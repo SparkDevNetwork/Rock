@@ -37,7 +37,7 @@ internal sealed partial class FinanceSkill
     [AgentPurpose( "Retrieves a list of scheduled giving contributions." )]
     [AgentUsage( "The startDate and endDate parameters refer to the next scheduled payment date." )]
     [AgentToolGuid( "174cf77d-e122-4d20-be35-fc09f081c663" )]
-    public IAgentToolResult ListScheduledGivingContributions(
+    public AgentToolResult ListScheduledGivingContributions(
         string personIdKey = null,
         string campusIdKey = null,
         List<string> accountIdKeys = null,

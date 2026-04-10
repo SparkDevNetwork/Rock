@@ -32,7 +32,7 @@ internal sealed partial class NoteSkill
 
     [Description( "Provides a list of all note types available for use." )]
     [AgentToolGuid( "51046397-D246-4296-A1C0-EC6BF0D01FAA" )]
-    public IAgentToolResult LookupNoteTypes()
+    public AgentToolResult LookupNoteTypes()
     {
         var currentPerson = AgentRequestContext.CurrentPerson;
         var noteTypes = GetNoteTypes( currentPerson );

@@ -29,7 +29,7 @@ internal partial class SystemUtilitySkill
     [Description( "Gets minimal information about the person currently logged in and interacting with the agent." )]
     [AgentPurpose( "Gets minimal information about the user/person currently logged in." )]
     [AgentToolGuid( "cb9f23f1-3d21-4451-80c3-4efbd18a7fbc" )]
-    public IAgentToolResult GetCurrentPerson()
+    public AgentToolResult GetCurrentPerson()
     {
         var currentPerson = AgentRequestContext.CurrentPerson;
 

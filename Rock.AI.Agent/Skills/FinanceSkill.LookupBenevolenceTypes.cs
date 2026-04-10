@@ -31,7 +31,7 @@ internal sealed partial class FinanceSkill
     [Description( "Retrieves all configured benevolence types in Rock." )]
     [AgentPurpose( "Retrieves all configured benevolence types in Rock." )]
     [AgentToolGuid( "a7a059f6-08a2-4032-a91d-a787d1857752" )]
-    public IAgentToolResult LookupBenevolenceTypes()
+    public AgentToolResult LookupBenevolenceTypes()
     {
         var benevolenceTypeResults = GetConfiguredBenevolenceTypes()
             .Select( bt => new KeyNameResult( bt.Id, bt.Name ) )

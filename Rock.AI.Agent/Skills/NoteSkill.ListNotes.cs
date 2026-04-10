@@ -29,7 +29,7 @@ internal sealed partial class NoteSkill
 
     [Description( "Lists notes that match the specified criteria." )]
     [AgentToolGuid( "22B609E6-5D0A-4588-8BB9-456EF6F7D4A4" )]
-    public IAgentToolResult ListNotes(
+    public AgentToolResult ListNotes(
         DateTime? startDate = null,
         DateTime? endDate = null,
         string noteTypeIdKey = null,

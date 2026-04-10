@@ -37,7 +37,7 @@ internal sealed partial class PersonSkill
     [Description( "Updates a person's address." )]
     [AgentToolGuid( "D34E7821-36E0-F2BC-4496-7A82E1CE4475" )]
     [AgentPurpose( "The combination of the personIdKey and locationTypeValueIdKey parameters will determine which address gets added or updated." )]
-    public IAgentToolResult AddOrUpdateAddress(
+    public AgentToolResult AddOrUpdateAddress(
         string personIdKey,
         string locationTypeValueIdKey,
         string street1 = null,

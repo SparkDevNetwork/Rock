@@ -33,7 +33,7 @@ internal partial class LearningManagementSkill
     [Description( "Retrieves the LMS programs and courses configured in Rock." )]
     [AgentPurpose( "Retrieves the LMS programs and courses configured in Rock." )]
     [AgentToolGuid( "c476d5c7-ef21-4557-9d76-5e639496ba74" )]
-    public IAgentToolResult LookupPrograms()
+    public AgentToolResult LookupPrograms()
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
 

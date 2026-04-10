@@ -50,7 +50,7 @@ namespace Rock.AI.Agent.Tests.Mcp
                 Content = JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"method\":\"initialize\"}" )
             };
 
-            var response = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, request, CancellationToken.None );
+            var response = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, request, CancellationToken.None );
 
             Assert.IsNotNull( response );
             Assert.IsNull( response.Content );
@@ -71,7 +71,7 @@ namespace Rock.AI.Agent.Tests.Mcp
                 Content = JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"notifications/test\"}" )
             };
 
-            var response = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, request, CancellationToken.None );
+            var response = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, request, CancellationToken.None );
 
             Assert.IsNotNull( response );
             Assert.IsNull( response.Content );
@@ -92,7 +92,7 @@ namespace Rock.AI.Agent.Tests.Mcp
                 Content = JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\"}" )
             };
 
-            var response = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, request, CancellationToken.None );
+            var response = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, request, CancellationToken.None );
 
             Assert.IsNotNull( response );
             Assert.IsNotNull( response.Content );
@@ -110,7 +110,7 @@ namespace Rock.AI.Agent.Tests.Mcp
             var agent = new AgentBuilder().Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"unknowntest\"}" ), _serializerOptions );
 
-            var response = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var response = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( response );
             Assert.IsNotNull( response.Error );
@@ -133,7 +133,7 @@ namespace Rock.AI.Agent.Tests.Mcp
             var agent = new AgentBuilder().Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"initialize\"}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNull( rpcResult.Error );
@@ -151,7 +151,7 @@ namespace Rock.AI.Agent.Tests.Mcp
             var agent = new AgentBuilder().Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"initialize\", \"params\":{}}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNotNull( rpcResult.Result );
@@ -173,7 +173,7 @@ namespace Rock.AI.Agent.Tests.Mcp
             var agent = new AgentBuilder().Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"initialize\", \"params\":{\"protocolVersion\":\"2025-06-18\"}}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNotNull( rpcResult.Result );
@@ -195,7 +195,7 @@ namespace Rock.AI.Agent.Tests.Mcp
             var agent = new AgentBuilder().Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"initialize\", \"params\":{\"protocolVersion\":\"2025-03-26\"}}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNotNull( rpcResult.Result );
@@ -220,7 +220,7 @@ namespace Rock.AI.Agent.Tests.Mcp
                 .Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"initialize\", \"params\":{\"protocolVersion\":\"2025-03-26\"}}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNotNull( rpcResult.Result );
@@ -246,7 +246,7 @@ namespace Rock.AI.Agent.Tests.Mcp
             var agent = new AgentBuilder().Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"ping\"}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNull( rpcResult.Error );
@@ -268,7 +268,7 @@ namespace Rock.AI.Agent.Tests.Mcp
             var agent = new AgentBuilder().Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/list\"}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNull( rpcResult.Error );
@@ -292,7 +292,7 @@ namespace Rock.AI.Agent.Tests.Mcp
                 .Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/list\", \"params\":{}}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNotNull( rpcResult.Result );
@@ -319,7 +319,7 @@ namespace Rock.AI.Agent.Tests.Mcp
             var agent = new AgentBuilder().Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\"}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNotNull( rpcResult.Error );
@@ -339,7 +339,7 @@ namespace Rock.AI.Agent.Tests.Mcp
             var agent = new AgentBuilder().Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestTool\"}}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNotNull( rpcResult.Error );
@@ -360,7 +360,7 @@ namespace Rock.AI.Agent.Tests.Mcp
             var agent = new AgentBuilder().Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"IndividualFunctions__TestTool\"}}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNotNull( rpcResult.Error );
@@ -383,7 +383,7 @@ namespace Rock.AI.Agent.Tests.Mcp
                 .Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__StringTool\", \"arguments\": {}}}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNotNull( rpcResult.Result );
@@ -409,7 +409,7 @@ namespace Rock.AI.Agent.Tests.Mcp
                 .Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__StructuredTool\", \"arguments\": {}}}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNotNull( rpcResult.Result );
@@ -437,7 +437,7 @@ namespace Rock.AI.Agent.Tests.Mcp
                 .Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__StructuredTool\", \"arguments\": {}}}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNotNull( rpcResult.Result );
@@ -467,7 +467,7 @@ namespace Rock.AI.Agent.Tests.Mcp
                 .Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__EnumToString\", \"arguments\": {\"agentType\": 1}}}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNotNull( rpcResult.Result );
@@ -491,7 +491,7 @@ namespace Rock.AI.Agent.Tests.Mcp
                 .Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__EnumToString\", \"arguments\": {\"agentType\": \"Mcp\"}}}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNotNull( rpcResult.Result );
@@ -515,7 +515,7 @@ namespace Rock.AI.Agent.Tests.Mcp
                 .Build();
             var rpcRequest = new JsonRpcRequest( JsonRpcRequestTests.ToStream( "{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\":\"tools/call\", \"params\":{\"name\": \"TestSkill__Echo\", \"arguments\": {\"input\": null}}}" ), _serializerOptions );
 
-            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
+            var rpcResult = await mcp.HandleRequestAsync( ( ChatAgentImplementation ) agent.Agent, rpcRequest, _serializerOptions, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
             Assert.IsNotNull( rpcResult.Result );

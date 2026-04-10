@@ -26,7 +26,7 @@ internal partial class ConnectionSkill
 {
     [Description( "Gets the details of an existing connection request." )]
     [AgentToolGuid( "3e00b0ef-9aa8-4e77-8bcc-961a6ea6fd9c" )]
-    public IAgentToolResult GetConnectionRequest( string connectionRequestIdKey )
+    public AgentToolResult GetConnectionRequest( string connectionRequestIdKey )
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
 

@@ -33,7 +33,7 @@ internal partial class PersonSkill
     [Description( "Lists group membership records for a specific person." )]
     [AgentPurpose( "Retrieves the GroupMember records that identify the group's a person is a member of." )]
     [AgentToolGuid( "a02698ca-3c3a-48ed-adba-36f6f9b29cae" )]
-    public IAgentToolResult ListGroupMembershipsForPerson(
+    public AgentToolResult ListGroupMembershipsForPerson(
         string personIdKey,
         string groupTypeIdKey = null,
 

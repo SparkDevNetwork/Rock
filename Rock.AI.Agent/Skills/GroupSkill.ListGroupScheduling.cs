@@ -42,7 +42,7 @@ internal sealed partial class GroupSkill
     [AgentUsage( "If no dates are specified then the upcoming 28 days will be used." )]
     [AgentUsage( "If only one date is provided, it will be extended to a range of 28 days." )]
     [AgentToolGuid( "e317ad31-3230-4d16-b039-752c7beb68c6" )]
-    public IAgentToolResult ListScheduledAttendance(
+    public AgentToolResult ListScheduledAttendance(
         string groupIdKey = null,
         string locationIdKey = null,
         string personIdKey = null,

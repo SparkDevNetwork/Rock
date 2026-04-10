@@ -35,7 +35,7 @@ internal sealed partial class EventCalendarSkill
     [Description( "Retrieves a list of event item occurrences." )]
     [AgentPurpose( "Retrieves a list of event item occurrences." )]
     [AgentToolGuid( "ceaf039f-2404-476d-aa3f-c0cd02eeac84" )]
-    public IAgentToolResult ListEventItemOccurrences(
+    public AgentToolResult ListEventItemOccurrences(
         string eventCalendarIdKey = null,
         string campusIdKey = null,
         string partialName = null,

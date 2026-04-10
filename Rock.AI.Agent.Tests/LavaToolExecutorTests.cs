@@ -572,7 +572,7 @@ public class LavaToolExecutorTests
                 .Setup( m => m.GetCommonMergeFields( It.IsAny<Model.Person>(), It.IsAny<Lava.CommonMergeFieldsOptions>() ) )
                 .Returns( [] );
 
-            var requestContext = new AgentRequestContext( rockRequestContextMock.Object, agentConfiguration, null );
+            var requestContext = new AgentRequestContextImplementation( rockRequestContextMock.Object, agentConfiguration, null );
 
             var tool = new AgentTool
             {

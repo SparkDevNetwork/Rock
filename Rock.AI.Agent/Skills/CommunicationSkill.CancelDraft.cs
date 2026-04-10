@@ -28,7 +28,7 @@ internal partial class CommunicationSkill
 
     [Description( "Cancels and deletes a draft communication that has not yet been sent." )]
     [AgentToolGuid( "8EC76EA6-83BE-4796-9B91-6B4A34C0C3AD" )]
-    public IAgentToolResult CancelDraft( string communicationIdKey )
+    public AgentToolResult CancelDraft( string communicationIdKey )
     {
         if ( communicationIdKey.IsNullOrWhiteSpace() )
         {

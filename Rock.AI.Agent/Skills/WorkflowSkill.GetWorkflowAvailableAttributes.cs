@@ -29,7 +29,7 @@ internal partial class WorkflowSkill
     [Description( "Gets the available attributes that can be set when adding or updating a workflow." )]
     [AgentPurpose( "Provides a list of attribute definitions for Workflows and any value format instructions." )]
     [AgentToolGuid( "b7736059-2d51-4e6f-80ef-7f1d2dbc9757" )]
-    public IAgentToolResult GetWorkflowAvailableAttributes(
+    public AgentToolResult GetWorkflowAvailableAttributes(
         string workflowIdKey = null,
         string workflowTypeIdKey = null )
     {

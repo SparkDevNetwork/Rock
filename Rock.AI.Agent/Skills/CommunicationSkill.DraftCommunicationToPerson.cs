@@ -45,7 +45,7 @@ internal partial class CommunicationSkill
     [AgentUsage( "The function automatically resolves the recipient's actual contact details from the IdKey." )]
     [AgentToolPrerequisite( "If a corresponding draft already exists and has not been sent, pass existingDraftIdKey to update it instead of creating a new draft." )]
     [AgentToolGuid( "4EEF6200-AA05-4F26-AB4D-19C73DEB3BDD" )]
-    public async Task<IAgentToolResult> DraftCommunicationToPerson(
+    public async Task<AgentToolResult> DraftCommunicationToPerson(
                 [Description("The IdKey of the person to whom the communication will be sent. Used to fetch the contact information for the person.")]
                 string recipientIdKey,
 

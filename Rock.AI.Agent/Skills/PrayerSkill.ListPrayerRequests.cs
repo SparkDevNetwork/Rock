@@ -35,7 +35,7 @@ internal sealed partial class PrayerSkill
     [AgentUsage( "Most filters are optional. If none are provided, the most recent prayer requests are returned." )]
     [AgentUsage( "Use either the first and last name filter or the requested by IdKey, not both." )]
     [AgentUsage( "Results are paginated (PageNumber is required)." )]
-    public IAgentToolResult ListPrayerRequests(
+    public AgentToolResult ListPrayerRequests(
         string categoryIdKey = "",
 
         [Description("Optional. If provided, only prayer requests that are children of this category will be returned.")]

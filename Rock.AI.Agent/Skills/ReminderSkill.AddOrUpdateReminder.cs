@@ -34,7 +34,7 @@ internal sealed partial class ReminderSkill
     [AgentToolGuid( "AF90FA26-9A98-45EF-877C-6CF0EDE7035E" )]
     [AgentUsage( "Provide a repeatEveryXDays value with no repeatAmount to repeat indefinitely every X days. Provide both to repeat a specific number of times." )]
     [AgentToolPrerequisite( "Call LookupReminderTypes to determine available reminder types." )]
-    public IAgentToolResult AddOrUpdateReminder(
+    public AgentToolResult AddOrUpdateReminder(
         string reminderIdKey = null,
         string entityIdKey = null,
         string reminderTypeIdKey = null,

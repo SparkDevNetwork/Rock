@@ -33,7 +33,7 @@ internal sealed partial class StreakSkill
     [Description( "Retrieves all configured streak types in Rock." )]
     [AgentPurpose( "Retrieves all configured streak types in Rock." )]
     [AgentToolGuid( "dbc1ad8a-f41c-4bb7-89de-f9d795f017de" )]
-    public IAgentToolResult LookupStreakTypes()
+    public AgentToolResult LookupStreakTypes()
     {
         var streakTypeResults = StreakTypeCache.All( AgentRequestContext.RockContext )
             .Where( st => st.IsActive

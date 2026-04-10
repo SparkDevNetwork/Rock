@@ -34,7 +34,7 @@ internal sealed partial class AttendeeSkill
     [Description( "Returns a list of groups the current person is a member of." )]
     [AgentPurpose( "Returns a list of groups the current person is a member of." )]
     [AgentToolGuid( "5ca4d7d7-52be-4e07-94dd-adb284641903" )]
-    public IAgentToolResult ListMyGroups( string cursor = null )
+    public AgentToolResult ListMyGroups( string cursor = null )
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var currentPerson = AgentRequestContext.CurrentPerson;

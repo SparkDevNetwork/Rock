@@ -36,7 +36,7 @@ internal sealed partial class FinanceSkill
     [AgentUsage( "Any argument ending with 'ValueIdKey' must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the chosen IdKey." )]
     [AgentUsage( "The startDate and endDate parameters refer to the next scheduled payment date." )]
     [AgentToolGuid( "8d789711-32f2-474f-b89b-fa8d3b718fad" )]
-    public IAgentToolResult GetScheduledGivingContributionInsights(
+    public AgentToolResult GetScheduledGivingContributionInsights(
         string personIdKey = null,
         string campusIdKey = null,
         List<string> accountIdKeys = null,

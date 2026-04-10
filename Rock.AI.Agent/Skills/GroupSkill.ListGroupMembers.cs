@@ -33,7 +33,7 @@ internal sealed partial class GroupSkill
     [Description( "Returns a list of group members." )]
     [AgentPurpose( "Returns a list of group members." )]
     [AgentToolGuid( "66580b04-14e6-4fa8-8367-efe8f2a7e7ed" )]
-    public IAgentToolResult ListGroupMembers(
+    public AgentToolResult ListGroupMembers(
         string groupIdKey,
         string roleIdKey = null,
         string personIdKey = null,

@@ -26,7 +26,7 @@ internal sealed partial class NoteSkill
 
     [Description( "Gets the details of a single note." )]
     [AgentToolGuid( "C5690ED4-5CB3-4299-9E75-1D4E6FF7D323" )]
-    public IAgentToolResult GetNote( string noteIdKey )
+    public AgentToolResult GetNote( string noteIdKey )
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var note = helper.GetRequiredEntity<Model.Note>( noteIdKey );

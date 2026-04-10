@@ -31,7 +31,7 @@ internal sealed partial class SiteSkill
 
     [Description( "Retrieves all configured websites in Rock." )]
     [AgentToolGuid( "6234BB68-99B8-4B7C-884D-0D760B1F081C" )]
-    public IAgentToolResult LookupSites()
+    public AgentToolResult LookupSites()
     {
         var sites = SiteCache.All( AgentRequestContext.RockContext )
             .Where( s => s.IsActive || AgentRequestContext.AudienceType == AudienceType.Internal );

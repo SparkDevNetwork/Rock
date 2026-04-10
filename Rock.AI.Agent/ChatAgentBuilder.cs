@@ -25,23 +25,23 @@ using Rock.Net;
 namespace Rock.AI.Agent;
 
 /// <summary>
-/// Provides functionality to build instances of <see cref="IChatAgent"/>.
+/// Provides functionality to build instances of <see cref="ChatAgent"/>.
 /// </summary>
-internal class ChatAgentBuilder : IChatAgentBuilder
+internal class ChatAgentBuilderImplementation : ChatAgentBuilder
 {
     private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChatAgentBuilder"/> class.
+    /// Initializes a new instance of the <see cref="ChatAgentBuilderImplementation"/> class.
     /// </summary>
     /// <param name="serviceProvider">The service provider used to resolve dependencies for the chat agent.</param>
-    public ChatAgentBuilder( IServiceProvider serviceProvider )
+    public ChatAgentBuilderImplementation( IServiceProvider serviceProvider )
     {
         _serviceProvider = serviceProvider;
     }
 
     /// <inheritdoc/>
-    public IChatAgent Build( int agentId, ChatAgentOptions options )
+    public override ChatAgent Build( int agentId, ChatAgentOptions options )
     {
         var rockContext = _serviceProvider.GetRequiredService<RockContext>();
         var requestContextAccessor = _serviceProvider.GetRequiredService<IRockRequestContextAccessor>();

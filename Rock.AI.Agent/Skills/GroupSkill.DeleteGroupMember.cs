@@ -34,7 +34,7 @@ internal sealed partial class GroupSkill
     [Description( "Removes a group member from a group." )]
     [AgentToolGuid( "c2800552-0beb-4f54-8f1d-5eeb01df4192" )]
     [AgentGuardrail( "This action will permanently delete the specified group member. Ensure that this action is intentional and that you have the correct group member identifier before proceeding." )]
-    public IAgentToolResult DeleteGroupMember( string groupMemberIdKey )
+    public AgentToolResult DeleteGroupMember( string groupMemberIdKey )
     {
         using var rockContext = RockApp.Current.CreateRockContext();
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );

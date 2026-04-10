@@ -34,7 +34,7 @@ internal sealed partial class ConnectionSkill
     [Description( "Returns a list of connection requests that match the filters." )]
     [AgentUsage( "Requests can be filtered by connection type, connection opportunity, requester or connector. Connectors are people who are assigned a request." )]
     [AgentToolGuid( "DC03271E-2C54-D5AF-4F18-9CCC69F25202" )]
-    public IAgentToolResult ListConnectionRequests(
+    public AgentToolResult ListConnectionRequests(
         string connectionTypeIdKey = null,
         string connectionOpportunityIdKey = null,
         string requesterPersonIdKey = null,

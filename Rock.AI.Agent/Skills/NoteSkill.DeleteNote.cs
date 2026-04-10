@@ -33,7 +33,7 @@ internal sealed partial class NoteSkill
     [Description( "Deletes a note from the system." )]
     [AgentToolGuid( "DC4F7ABA-50F1-4ADD-A1E0-A9DAE8D51D2D" )]
     [AgentGuardrail( "This action will permanently delete the specified note. Ensure that this action is intentional and that you have the correct note identifier before proceeding." )]
-    public IAgentToolResult DeleteNote( string noteIdKey )
+    public AgentToolResult DeleteNote( string noteIdKey )
     {
         var currentPerson = AgentRequestContext.CurrentPerson;
         if ( currentPerson == null )

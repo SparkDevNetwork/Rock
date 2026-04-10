@@ -43,7 +43,7 @@ internal sealed partial class PersonSkill
     [AgentToolExample( "Update Ted Decker's record status to Inactive: 1) call with recordStatusValueIdKey='lookup'; 2) choose the IdKey for 'Inactive'; 3) call again with recordStatusValueIdKey='<IdKey>'" )]
     [AgentToolExample( "Clear middle name: pass middleName=\"\" and leave other fields null." )]
     [AgentToolExample( "Set suffix to Jr.: pass suffixValueIdKey='<IdKey for Jr.>' (or use 'lookup' first to find it)." )]
-    public IAgentToolResult UpdatePerson(
+    public AgentToolResult UpdatePerson(
         string personIdKey,
         string nickName = null,
         string firstName = null,

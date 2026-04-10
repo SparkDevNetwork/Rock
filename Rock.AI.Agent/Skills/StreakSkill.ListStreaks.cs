@@ -36,7 +36,7 @@ internal partial class StreakSkill
     [AgentPurpose( "Retrieves the streaks." )]
     [AgentUsage( "startDate and endDate refer to the date range of when the current streak started." )]
     [AgentToolGuid( "b02e509f-e674-41f1-8e7c-051ea7ef6946" )]
-    public IAgentToolResult ListStreaks(
+    public AgentToolResult ListStreaks(
         string personIdKey = null,
         string streakTypeIdKey = null,
         DateTime? startDate = null,

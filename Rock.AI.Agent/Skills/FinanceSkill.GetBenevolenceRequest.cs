@@ -34,7 +34,7 @@ internal sealed partial class FinanceSkill
     [Description( "Retrieves the details of a single benevolence request." )]
     [AgentPurpose( "Retrieves the details of a single benevolence request." )]
     [AgentToolGuid( "a318f309-f04f-49de-98cb-68de396cc35f" )]
-    public IAgentToolResult GetBenevolenceRequest( string benevolenceRequestIdKey )
+    public AgentToolResult GetBenevolenceRequest( string benevolenceRequestIdKey )
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var benevolenceTypeIds = GetConfiguredBenevolenceTypes().Select( bt => bt.Id ).ToList();

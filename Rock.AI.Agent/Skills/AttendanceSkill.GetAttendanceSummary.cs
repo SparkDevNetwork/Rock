@@ -34,7 +34,7 @@ internal partial class AttendanceSkill
     [Description( "Returns a summary of attendance records." )]
     [AgentPurpose( "Retrieves summary of attendance records." )]
     [AgentToolGuid( "cb7ce9aa-93eb-4d42-af86-1170582b8bb1" )]
-    public IAgentToolResult GetAttendanceSummary(
+    public AgentToolResult GetAttendanceSummary(
         string personIdKey = null,
         string checkInConfigurationIdKey = null,
         [Description( "Areas are group types in the database, but they are referred to as areas in the UI." )]

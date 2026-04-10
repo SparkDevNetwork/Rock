@@ -31,7 +31,7 @@ internal sealed partial class FinanceSkill
 
     [Description( "Lists transactions of type 'Contribution' that match the provided filters." )]
     [AgentToolGuid( "20FF0B2E-E403-48CE-B0C9-0CB6D80A7291" )]
-    public IAgentToolResult ListGivingContributions(
+    public AgentToolResult ListGivingContributions(
         string personIdKey = null,
         string campusIdKey = null,
         List<string> accountIdKeys = null,

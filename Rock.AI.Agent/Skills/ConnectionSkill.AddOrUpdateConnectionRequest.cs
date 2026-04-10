@@ -33,7 +33,7 @@ internal sealed partial class ConnectionSkill
 
     [Description( "Adds new or updates existing connection request." )]
     [AgentToolGuid( "8ee3913a-9bca-4971-a490-90abfc1690c3" )]
-    public IAgentToolResult AddOrUpdateConnectionRequest(
+    public AgentToolResult AddOrUpdateConnectionRequest(
         [Description( "Required when editing an existing connection request." )]
         string connectionRequestIdKey = null,
 

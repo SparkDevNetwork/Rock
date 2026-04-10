@@ -35,7 +35,7 @@ internal partial class StreakSkill
     [Description( "Lists achievement records that match the filters." )]
     [AgentPurpose( "Retrieves the achievements." )]
     [AgentToolGuid( "d1038401-a36a-4e08-af38-6825edbb1ded" )]
-    public IAgentToolResult ListAchievements(
+    public AgentToolResult ListAchievements(
         string personIdKey = null,
         string achievementTypeIdKey = null,
 

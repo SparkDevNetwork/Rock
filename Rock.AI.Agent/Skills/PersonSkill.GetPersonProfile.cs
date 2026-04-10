@@ -34,7 +34,7 @@ internal sealed partial class PersonSkill
     [AgentPurpose( "Retrieves the complete profile of a person." )]
     [AgentPurpose( "Serves as the primary entry point for gaining insights into an individual." )]
     [AgentToolGuid( "2142A382-6AB2-0995-4480-69B641AE2CDC" )]
-    public IAgentToolResult GetPersonProfile( string personIdKey )
+    public AgentToolResult GetPersonProfile( string personIdKey )
     {
         if ( personIdKey.IsNullOrWhiteSpace() )
         {

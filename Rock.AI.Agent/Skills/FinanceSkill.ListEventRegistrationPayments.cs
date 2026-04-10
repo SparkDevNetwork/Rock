@@ -32,7 +32,7 @@ internal sealed partial class FinanceSkill
 
     [Description( "Lists transactions of type 'Event Registration' that match the provided filters." )]
     [AgentToolGuid( "90732068-5e8d-48cf-8cd8-8eb05c5a27fb" )]
-    public IAgentToolResult ListEventRegistrationPayments(
+    public AgentToolResult ListEventRegistrationPayments(
         string personIdKey = null,
         string campusIdKey = null,
         List<string> accountIdKeys = null,

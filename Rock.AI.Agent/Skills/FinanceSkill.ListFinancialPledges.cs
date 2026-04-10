@@ -35,7 +35,7 @@ internal sealed partial class FinanceSkill
     [AgentPurpose( "Retrieves a list of financial pledges." )]
     [AgentUsage( "The startDate and endDate parameters refer to the pledge start date, pledges may not have dates." )]
     [AgentToolGuid( "c13b096e-4bc6-4780-8b9d-30133cde0194" )]
-    public IAgentToolResult ListFinancialPledges(
+    public AgentToolResult ListFinancialPledges(
         string personIdKey = null,
         string financialAccountIdKey = null,
         DateTime? startDate = null,

@@ -39,7 +39,7 @@ internal sealed partial class PersonSkill
     [AgentUsage( "Only use this function if a full name is provided." )]
     [AgentToolReturnDescription( "A collection of summaries about the matched people. These are not full profiles. Call `GetPersonProfile` passing the personIdKey to get a person's full profile. " )]
     [AgentToolGuid( "03093B11-A02D-F794-4A5E-9AEA2C6EF63E" )]
-    public IAgentToolResult SearchPerson(
+    public AgentToolResult SearchPerson(
         string fullName,
         int maxResults = 20,
         string campusIdKey = null )

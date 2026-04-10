@@ -34,7 +34,7 @@ internal partial class StepSkill
     [Description( "List steps that match the filters." )]
     [AgentPurpose( "List steps that math the filters." )]
     [AgentToolGuid( "c2226aa4-6efb-4199-ad9f-9d471502b67f" )]
-    public IAgentToolResult ListSteps(
+    public AgentToolResult ListSteps(
         string personIdKey = null,
         string stepTypeIdKey = null,
         string stepProgramIdKey = null,

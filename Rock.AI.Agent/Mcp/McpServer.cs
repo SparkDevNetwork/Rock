@@ -38,11 +38,11 @@ internal class McpServer : IMcpServer
     #region Methods
 
     /// <inheritdoc/>
-    public async Task<McpResponse> HandleRequestAsync( IChatAgent agent, McpRequest request, CancellationToken cancellationToken )
+    public async Task<McpResponse> HandleRequestAsync( ChatAgent agent, McpRequest request, CancellationToken cancellationToken )
     {
-        if ( !( agent is ChatAgent chatAgent ) )
+        if ( agent is not ChatAgentImplementation chatAgent  )
         {
-            throw new ArgumentOutOfRangeException( nameof( agent ), $"Parameter must be of type {typeof( ChatAgent ).FullName}." );
+            throw new ArgumentOutOfRangeException( nameof( agent ), $"Parameter must be of type {typeof( ChatAgentImplementation ).FullName}." );
         }
 
         var serializerOptions = AgentSerializerOptions.GetOptions( AgentType.Mcp, chatAgent.AgentConfiguration.AudienceType );
@@ -74,7 +74,7 @@ internal class McpServer : IMcpServer
     /// <param name="serializerOptions">The options that will be used when serializing and deserializing JSON data.</param>
     /// <param name="cancellationToken">A token that indicates if the request should be cancelled.</param>
     /// <returns>The response to the request.</returns>
-    internal async Task<JsonRpcResult> HandleRequestAsync( ChatAgent agent, JsonRpcRequest request, JsonSerializerOptions serializerOptions, CancellationToken cancellationToken )
+    internal async Task<JsonRpcResult> HandleRequestAsync( ChatAgentImplementation agent, JsonRpcRequest request, JsonSerializerOptions serializerOptions, CancellationToken cancellationToken )
     {
         if ( request.Method.StartsWith( "notifications/" ) || !request.Id.HasValue )
         {
@@ -109,7 +109,7 @@ internal class McpServer : IMcpServer
     /// </summary>
     /// <param name="rpcRequest">The JSON-RPC request to process.</param>
     /// <returns>A <see cref="JsonRpcResult"/> containing the server's protocol version, capabilities, and server information.
-    private JsonRpcResult ProcessInitialize( JsonRpcRequest rpcRequest, ChatAgent agent )
+    private JsonRpcResult ProcessInitialize( JsonRpcRequest rpcRequest, ChatAgentImplementation agent )
     {
         var parameters = rpcRequest.GetParameters<InitializeParameters>();
 
@@ -154,7 +154,7 @@ internal class McpServer : IMcpServer
     /// <param name="rpcRequest">The JSON-RPC request to process.</param>
     /// <param name="agent">The chat agent providing access to the kernel and plugins.</param>
     /// <returns>A <see cref="JsonRpcResult"/> containing a list of tools and their metadata.</returns>
-    private JsonRpcResult ProcessToolsList( JsonRpcRequest rpcRequest, ChatAgent agent )
+    private JsonRpcResult ProcessToolsList( JsonRpcRequest rpcRequest, ChatAgentImplementation agent )
     {
         var parameters = rpcRequest.GetParameters<ListToolsParameters>();
 
@@ -197,7 +197,7 @@ internal class McpServer : IMcpServer
     /// <param name="serializerOptions">The options to use when deserializing the arguments and serializing the response.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A <see cref="JsonRpcResult"/> containing the result of the tool function invocation.</returns>
-    private async Task<JsonRpcResult> ProcessToolsCallAsync( JsonRpcRequest rpcRequest, ChatAgent agent, JsonSerializerOptions serializerOptions, CancellationToken cancellationToken )
+    private async Task<JsonRpcResult> ProcessToolsCallAsync( JsonRpcRequest rpcRequest, ChatAgentImplementation agent, JsonSerializerOptions serializerOptions, CancellationToken cancellationToken )
     {
         var parameters = rpcRequest.GetParameters<CallToolParameters>();
 

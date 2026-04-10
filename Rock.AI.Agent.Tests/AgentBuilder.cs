@@ -88,10 +88,10 @@ internal class AgentBuilder
     #region Methods
 
     /// <summary>
-    /// Builds the IChatAgent instance using the configured functions, skills, and settings.
+    /// Builds the ChatAgent instance using the configured functions, skills, and settings.
     /// </summary>
     /// <returns>A configured IChatAgent instance.</returns>
-    internal ( IChatAgent Agent, List<string> output, List<string> logs ) Build()
+    internal ( ChatAgent Agent, List<string> output, List<string> logs ) Build()
     {
         var apiKey = ConfigurationManager.AppSettings["RockIntelligenceApiKey"];
 

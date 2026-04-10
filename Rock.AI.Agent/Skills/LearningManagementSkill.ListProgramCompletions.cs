@@ -35,7 +35,7 @@ internal sealed partial class LearningManagementSkill
     [Description( "Returns a list of in progress or completed programs." )]
     [AgentPurpose( "Returns a list of in progress or completed programs." )]
     [AgentToolGuid( "3b726cae-a7a1-4d53-9727-1fc2c6cf60ae" )]
-    public IAgentToolResult ListProgramCompletions(
+    public AgentToolResult ListProgramCompletions(
         string learningProgramIdKey = null,
         string personIdKey = null,
         CompletionStatus? completionStatus = null,

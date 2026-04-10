@@ -44,7 +44,7 @@ internal sealed partial class PersonSkill
     [AgentToolExample( "has Alisha Marble visted the giving page in the past 30 days" )]
     [AgentToolExample( "has Pete been active on our platform?" )]
     [AgentToolGuid( "EFDBC338-CC1C-46D2-A7F6-7AE5081147AE" )]
-    public IAgentToolResult GetPageVisitSummaryForPerson(
+    public AgentToolResult GetPageVisitSummaryForPerson(
         string personIdKey,
         DateTime? startDate = null,
         DateTime? endDate = null,

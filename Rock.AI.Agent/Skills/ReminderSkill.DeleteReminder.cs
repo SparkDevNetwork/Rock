@@ -30,7 +30,7 @@ internal sealed partial class ReminderSkill
     [Description( "Deletes a reminder from the system." )]
     [AgentToolGuid( "7E894055-3701-4172-AF81-6D4EC6B78752" )]
     [AgentGuardrail( "This action will permanently delete the specified reminder. Ensure that this action is intentional and that you have the correct identifier before proceeding." )]
-    public IAgentToolResult DeleteReminder( string reminderIdKey )
+    public AgentToolResult DeleteReminder( string reminderIdKey )
     {
         using var rockContext = RockApp.Current.CreateRockContext();
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );

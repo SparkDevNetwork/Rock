@@ -32,7 +32,7 @@ internal sealed partial class PersonSkill
 
     [Description( "Lists personal devices for the provided person." )]
     [AgentToolGuid( "29B7A989-59C4-4956-9C45-1D1297D3E673" )]
-    public IAgentToolResult ListPersonalDevicesForPerson( string personIdKey )
+    public AgentToolResult ListPersonalDevicesForPerson( string personIdKey )
     {
         var personId = IdHasher.Instance.GetId( personIdKey );
 

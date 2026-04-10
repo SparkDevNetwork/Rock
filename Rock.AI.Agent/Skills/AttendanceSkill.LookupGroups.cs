@@ -33,7 +33,7 @@ internal sealed partial class AttendanceSkill
     [Description( "Retrieves all configured groups for a check-in configuration in Rock." )]
     [AgentPurpose( "Retrieves a list of all groups that are configured for use with the check-in configuration." )]
     [AgentToolGuid( "470cc027-48ec-4626-98c6-6ff5f65c9161" )]
-    public IAgentToolResult LookupGroups(
+    public AgentToolResult LookupGroups(
         string checkInConfigurationIdKey,
         string areaIdKey = null )
     {

@@ -35,7 +35,7 @@ internal sealed partial class EventRegistrationSkill
     [AgentPurpose( "Retrieves a list of registration instances." )]
     [AgentUsage( "The startDate and endDate parameters filter instances that open within the window, close within the window, or exist during the entire window." )]
     [AgentToolGuid( "8a4a5cf4-a213-427f-a0c1-4e4d9082148c" )]
-    public IAgentToolResult ListRegistrationInstances(
+    public AgentToolResult ListRegistrationInstances(
         string registrationTemplateIdKey = null,
         string partialName = null,
         DateTime? startDate = null,

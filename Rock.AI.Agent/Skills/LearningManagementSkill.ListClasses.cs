@@ -36,7 +36,7 @@ internal sealed partial class LearningManagementSkill
     [Description( "Returns a list of classes." )]
     [AgentPurpose( "Returns a list of classes." )]
     [AgentToolGuid( "f80d1c2f-ebf1-4bb6-b1ef-081eb8fdb74d" )]
-    public IAgentToolResult ListClasses(
+    public AgentToolResult ListClasses(
         string learningProgramIdKey = null,
         string learningCourseIdKey = null,
         string enrolledPersonIdKey = null,

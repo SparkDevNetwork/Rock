@@ -32,7 +32,7 @@ internal sealed partial class NoteSkill
     [AgentUsage( "noteTypeIdKey and entityIdKey are required when adding, but can't be changed when updating." )]
     [AgentToolPrerequisite( "Call the LookupNoteTypes function to determine available note types. Select one that matches the note sentiment." )]
     [AgentToolGuid( "FB0E044A-068A-4B47-9990-B2A582F87B3A" )]
-    public IAgentToolResult AddOrUpdateNote(
+    public AgentToolResult AddOrUpdateNote(
         string noteIdKey = null,
         string noteTypeIdKey = null,
         string entityIdKey = null,

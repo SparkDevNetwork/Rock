@@ -31,7 +31,7 @@ internal partial class AttendeeSkill
     [Description( "Gets the available attributes that can be set when updating a family member." )]
     [AgentPurpose( "Provides a list of attribute definitions for family members and any value format instructions." )]
     [AgentToolGuid( "66b757c4-b2e5-419c-8289-fba2213750d4" )]
-    public IAgentToolResult GetFamilyMemberAvailableAttributes()
+    public AgentToolResult GetFamilyMemberAvailableAttributes()
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var editablePersonAttributeGuids = ConfigurationValues.GetReadOnlyValueOrDefault( ConfigurationKey.ViewablePersonAttributes, string.Empty ).SplitDelimitedValues().AsGuidList();

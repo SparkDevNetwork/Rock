@@ -32,7 +32,7 @@ internal sealed partial class StreakSkill
     [Description( "Retrieves all configured achievement types in Rock." )]
     [AgentPurpose( "Retrieves all configured achievement types in Rock." )]
     [AgentToolGuid( "f6c9300e-a770-4f92-827b-abc01ed21c8b" )]
-    public IAgentToolResult LookupAchievementTypes()
+    public AgentToolResult LookupAchievementTypes()
     {
         var achievementTypeResults = AchievementTypeCache.All( AgentRequestContext.RockContext )
             .Where( at => at.IsActive )

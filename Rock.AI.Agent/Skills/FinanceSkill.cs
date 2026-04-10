@@ -106,7 +106,7 @@ namespace Rock.AI.Agent.Skills
         /// <param name="originalAccountIds">The account ids requested to be filtered on.</param>
         /// <param name="campusId">The campus id requested to be filtered on.</param>
         /// <returns></returns>
-        private static List<FinancialAccountCache> GetFinancialAccountsForQuery( IAgentRequestContext agentRequestContext, List<string> originalAccountIds, string campusId )
+        private static List<FinancialAccountCache> GetFinancialAccountsForQuery( AgentRequestContext agentRequestContext, List<string> originalAccountIds, string campusId )
         {
             // The filtering for accounts will be handled as such:
             // A. If no accounts are specified, but a campus is specified, find all accounts for that campus. 
@@ -223,7 +223,7 @@ namespace Rock.AI.Agent.Skills
         /// <param name="campusIdKey">The campus id requested to be filtered on.</param>
         /// <param name="accountIds">The resulting account ids to filter on.</param>
         /// <returns><c>false</c> if filtering was performed and no accounts were available; otherwise <c>true</c>.</returns>
-        private static bool TryGetMatchingAccountIds( IAgentRequestContext agentRequestContext, List<string> accountIdKeys, string campusIdKey, out IList<int> accountIds )
+        private static bool TryGetMatchingAccountIds( AgentRequestContext agentRequestContext, List<string> accountIdKeys, string campusIdKey, out IList<int> accountIds )
         {
             // If they specified any accoun tkeys or a campus key, then we need
             // to resolve the account ids to filter on.
@@ -326,9 +326,9 @@ namespace Rock.AI.Agent.Skills
         /// <param name="pageNumber">The page number to retrieve in the set.</param>
         /// <param name="updateItems">A callback that will be called for any items when constructing the result.</param>
         /// <returns>A tool result.</returns>
-        internal static IAgentToolResult GetFinancialTransactionResult(
+        internal static AgentToolResult GetFinancialTransactionResult(
             AgentToolHelper helper,
-            IAgentRequestContext agentRequestContext,
+            AgentRequestContext agentRequestContext,
             IQueryable<FinancialTransaction> qry,
             string campusIdKey,
             List<string> accountIdKeys,

@@ -31,7 +31,7 @@ internal partial class FinanceSkill
 
     [Description( "Lists all active financial accounts configured in the system." )]
     [AgentToolGuid( "4DBAE64C-A7B9-4826-90C0-8DE4AA598FFF" )]
-    public IAgentToolResult LookupFinancialAccounts()
+    public AgentToolResult LookupFinancialAccounts()
     {
         // Load all top-level active accounts.
         var topLevelAccounts = FinancialAccountCache

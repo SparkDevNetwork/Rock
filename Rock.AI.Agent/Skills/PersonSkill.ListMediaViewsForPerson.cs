@@ -38,7 +38,7 @@ internal sealed partial class PersonSkill
     [AgentPurpose( "Retrieves media views for a specific person, optionally filtered by date and/or site." )]
     [AgentUsage( "The results are paginated (and the 'PageNumber' parameter is required.)" )]
     [AgentToolGuid( "AB6CB80C-352A-F895-4233-09BA9DA69CCC" )]
-    public IAgentToolResult ListMediaViewsForPerson( string personIdKey, int pageNumber = 1, DateTime? startDate = null, DateTime? endDate = null )
+    public AgentToolResult ListMediaViewsForPerson( string personIdKey, int pageNumber = 1, DateTime? startDate = null, DateTime? endDate = null )
     {
         // Validate person
         var personId = IdHasher.Instance.GetId( personIdKey );

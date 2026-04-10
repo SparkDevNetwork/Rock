@@ -31,7 +31,7 @@ internal sealed partial class StepSkill
 
     [Description( "Adds a new or updates an existing step." )]
     [AgentToolGuid( "9c7184d7-2bea-4e40-9ce3-ffaa339e2d10" )]
-    public IAgentToolResult AddOrUpdateStep(
+    public AgentToolResult AddOrUpdateStep(
         string stepIdKey = null,
 
         string stepTypeIdKey = null,

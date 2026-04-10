@@ -34,7 +34,7 @@ internal sealed partial class PersonSkill
     [Description( "Updates a person's phone number." )]
     [AgentUsage( "The phoneTypeValueIdKey must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the appropriate IdKey." )]
     [AgentToolGuid( "89A9F9C5-87F2-9197-46DA-5C96D0BDA628" )]
-    public IAgentToolResult UpdatePhoneNumber(
+    public AgentToolResult UpdatePhoneNumber(
         string personIdKey,
         string phoneNumber,
         string phoneTypeValueIdKey = null,

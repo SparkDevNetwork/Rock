@@ -28,7 +28,7 @@ internal partial class CommunicationSkill
 
     [Description( "Updates the current person's default SMS phone number preference." )]
     [AgentToolGuid( "56278E81-B81A-46CC-A529-E164DBE35AD3" )]
-    public IAgentToolResult UpdateCurrentPersonDefaultSmsPhoneNumber( string numberIdKey )
+    public AgentToolResult UpdateCurrentPersonDefaultSmsPhoneNumber( string numberIdKey )
     {
         var currentPerson = AgentRequestContext.CurrentPerson;
         if ( currentPerson == null )

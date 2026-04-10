@@ -32,7 +32,7 @@ internal sealed partial class GroupSkill
 
     [Description( "Adds a new or updates an existing group member." )]
     [AgentToolGuid( "085141cc-09c1-40d8-831c-faf4da96d604" )]
-    public IAgentToolResult AddOrUpdateGroupMember(
+    public AgentToolResult AddOrUpdateGroupMember(
         string groupMemberIdKey = null,
         string groupIdKey = null,
         string personIdKey = null,

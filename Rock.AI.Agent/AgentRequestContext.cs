@@ -38,7 +38,7 @@ namespace Rock.AI.Agent;
 /// responses and any other details that should be sent to the LLM.
 /// </summary>
 [LavaType]
-internal class AgentRequestContext : IAgentRequestContext
+internal class AgentRequestContextImplementation : AgentRequestContext
 {
     #region Fields
 
@@ -54,6 +54,12 @@ internal class AgentRequestContext : IAgentRequestContext
     private readonly Dictionary<int, string> _contextAnchors = new Dictionary<int, string>();
 
     /// <summary>
+    /// The context transient anchors that should be included in the chat. The key is
+    /// the <see cref="Model.EntityType"/> identifier.
+    /// </summary>
+    private readonly Dictionary<int, string> _contextTransientAnchors = new Dictionary<int, string>();
+
+    /// <summary>
     /// The list of messages that have been exchanged in the chat.
     /// </summary>
     private readonly List<ChatMessageContent> _chatMessages = new List<ChatMessageContent>();
@@ -64,44 +70,47 @@ internal class AgentRequestContext : IAgentRequestContext
     /// </summary>
     private ChatHistory _chatHistory = null;
 
+    /// <inheritdoc cref="ChatAgent"/>
+    private ChatAgentImplementation _chatAgent;
+
     #endregion
 
     #region Properties
 
     /// <inheritdoc/>
-    public int? AgentId { get; }
+    public override int? AgentId { get; }
 
     /// <inheritdoc/>
-    public string AgentName { get; }
+    public override string AgentName { get; }
 
     /// <inheritdoc/>
-    public AgentType AgentType { get; }
+    public override AgentType AgentType { get; }
 
     /// <inheritdoc/>
-    public AudienceType AudienceType { get; }
+    public override AudienceType AudienceType { get; }
 
     /// <inheritdoc/>
-    public Person CurrentPerson { get; private set; }
+    public override Person CurrentPerson { get; }
 
     /// <inheritdoc/>
-    public string RootUrlPath { get; }
+    public override string RootUrlPath { get; }
 
     /// <inheritdoc/>
-    public RockContext RockContext { get; }
+    public override RockContext RockContext { get; }
 
     /// <inheritdoc/>
-    public IChatAgent ChatAgent { get; internal set; }
+    public override ChatAgent ChatAgent => _chatAgent;
 
     #endregion
 
     #region Constructors
 
     /// <summary>
-    /// Creates a new instance of the <see cref="AgentRequestContext"/> class.
+    /// Creates a new instance of the <see cref="AgentRequestContextImplementation"/> class.
     /// </summary>
     /// <param name="rockRequestContext">The context for the current web request in process.</param>
     /// <param name="rockContext">The database context that can be used for read-only operations.</param>
-    internal AgentRequestContext( RockRequestContext rockRequestContext, AgentConfiguration agentConfiguration, RockContext rockContext )
+    internal AgentRequestContextImplementation( RockRequestContext rockRequestContext, AgentConfiguration agentConfiguration, RockContext rockContext )
     {
         RockContext = rockContext;
         AgentId = agentConfiguration.AgentId;
@@ -130,12 +139,22 @@ internal class AgentRequestContext : IAgentRequestContext
     #region Methods
 
     /// <summary>
+    /// Sets the chat agent that owns this request context.
+    /// </summary>
+    /// <param name="chatAgent">The chat agent.</param>
+    internal void SetChatAgent( ChatAgentImplementation chatAgent )
+    {
+        _chatAgent = chatAgent;
+    }
+
+    /// <summary>
     /// Clears all system messages, context anchors, chat messages, and cached chat history from the context.
     /// </summary>
     internal void Clear()
     {
         _systemMessages.Clear();
         _contextAnchors.Clear();
+        _contextTransientAnchors.Clear();
         _chatMessages.Clear();
         _chatHistory = null;
     }
@@ -230,6 +249,27 @@ internal class AgentRequestContext : IAgentRequestContext
     }
 
     /// <summary>
+    /// Adds or replaces a transient anchor for the specified entity type in the chat context.
+    /// </summary>
+    /// <param name="entityTypeId">The entity type identifier.</param>
+    /// <param name="payload">The context anchor payload to associate with the entity type.</param>
+    internal void AddTransientAnchor( int entityTypeId, string payload )
+    {
+        _contextTransientAnchors[entityTypeId] = payload;
+        _chatHistory = null;
+    }
+
+    /// <summary>
+    /// Removes a transient anchor for the specified entity type from the chat context.
+    /// </summary>
+    /// <param name="entityTypeId">The entity type identifier.</param>
+    internal void RemoveTransientAnchor( int entityTypeId )
+    {
+        _contextTransientAnchors.Remove( entityTypeId );
+        _chatHistory = null;
+    }
+
+    /// <summary>
     /// Gets the full chat history for the current context, including system messages, context anchors, session contexts, and chat messages.
     /// </summary>
     /// <returns>The aggregated chat history object.</returns>
@@ -241,6 +281,17 @@ internal class AgentRequestContext : IAgentRequestContext
 
             foreach ( var anchor in _contextAnchors )
             {
+                chatHistory.AddSystemMessage( $"ContextAnchor|{anchor.Value}" );
+            }
+
+            foreach ( var anchor in _contextTransientAnchors )
+            {
+                // Persisted anchors should take precedence over transient anchors.
+                if ( _contextAnchors.ContainsKey( anchor.Key ) )
+                {
+                    continue;
+                }
+
                 chatHistory.AddSystemMessage( $"ContextAnchor|{anchor.Value}" );
             }
 

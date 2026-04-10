@@ -32,7 +32,7 @@ internal sealed partial class AttendanceSkill
     [Description( "Retrieves all configured areas for a check-in configuration in Rock." )]
     [AgentPurpose( "Retrieves a list of all of the areas for a check-in configuration." )]
     [AgentToolGuid( "c3a82184-3a48-471e-aaa6-4e9d87496785" )]
-    public IAgentToolResult LookupAreas( string checkInConfigurationIdKey )
+    public AgentToolResult LookupAreas( string checkInConfigurationIdKey )
     {
         if ( checkInConfigurationIdKey.IsNullOrWhiteSpace() )
         {

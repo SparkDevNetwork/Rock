@@ -36,7 +36,7 @@ internal partial class StepSkill
     [Description( "Lists completed step programs that match the filters." )]
     [AgentPurpose( "Retrieves the completed step programs." )]
     [AgentToolGuid( "6cc0233d-3897-4f9a-9fea-e530094d40d3" )]
-    public IAgentToolResult ListStepProgramCompletions(
+    public AgentToolResult ListStepProgramCompletions(
         string personIdKey = null,
         string stepProgramIdKey = null,
 

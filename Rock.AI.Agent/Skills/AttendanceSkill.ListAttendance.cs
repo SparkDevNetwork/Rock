@@ -33,7 +33,7 @@ internal partial class AttendanceSkill
     [Description( "Lists attendance records that match the filters." )]
     [AgentPurpose( "Retrieves the attendance records that match the filters." )]
     [AgentToolGuid( "9b4ddaba-06eb-40d4-9ceb-19c83c30dcd3" )]
-    public IAgentToolResult ListAttendanceForPerson(
+    public AgentToolResult ListAttendanceForPerson(
         string personIdKey = null,
 
         string groupTypeIdKey = null,

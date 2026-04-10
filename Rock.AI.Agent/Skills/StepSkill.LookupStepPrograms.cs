@@ -33,7 +33,7 @@ internal partial class StepSkill
     [Description( "Retrieves the step programs and step types for each program." )]
     [AgentPurpose( "Retrieves the configuration for the step programs and step types within each program." )]
     [AgentToolGuid( "70dfbfee-7231-4762-90b9-916c1c0108bd" )]
-    public IAgentToolResult LookupStepPrograms()
+    public AgentToolResult LookupStepPrograms()
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
 

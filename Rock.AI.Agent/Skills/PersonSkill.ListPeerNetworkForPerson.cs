@@ -31,7 +31,7 @@ internal sealed partial class PersonSkill
 
     [Description( "Lists people in the provided person's peer network." )]
     [AgentToolGuid( "39244A1E-57BF-476B-AF88-65EBC205F25D" )]
-    public IAgentToolResult ListPeerNetworkForPerson( string personIdKey )
+    public AgentToolResult ListPeerNetworkForPerson( string personIdKey )
     {
         var rockContext = AgentRequestContext.RockContext;
 

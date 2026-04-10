@@ -33,7 +33,7 @@ internal sealed partial class EventCalendarSkill
     [Description( "Retrieves the details of a event item occurrence." )]
     [AgentPurpose( "Retrieves the details of a event item occurrence." )]
     [AgentToolGuid( "688fa8b0-100d-4eee-b10c-a77a743fe8da" )]
-    public IAgentToolResult GetEventItemOccurrence( string eventItemOccurrenceIdKey )
+    public AgentToolResult GetEventItemOccurrence( string eventItemOccurrenceIdKey )
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
         var calendarIds = GetConfiguredCalendars().Select( c => c.Id ).ToList();

@@ -33,7 +33,7 @@ internal sealed partial class AttendeeSkill
     [Description( "Get the profile details of the currently logged in person." )]
     [AgentUsage( "Get the profile details of the currently logged in person, including contact information and family members." )]
     [AgentToolGuid( "12d052b5-50d9-46b2-866c-c773a4a145f4" )]
-    public IAgentToolResult GetMyProfile()
+    public AgentToolResult GetMyProfile()
     {
         if ( AgentRequestContext.CurrentPerson == null )
         {

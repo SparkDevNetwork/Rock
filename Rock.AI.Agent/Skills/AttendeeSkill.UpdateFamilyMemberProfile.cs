@@ -41,7 +41,7 @@ internal sealed partial class AttendeeSkill
     [AgentPurpose( "Updates the profile details of a member of the current person's family." )]
     [AgentUsage( "Any argument ending with 'ValueIdKey' must be a valid IdKey or the literal 'lookup' to retrieve allowed values. After lookup, call again with the chosen IdKey." )]
     [AgentToolGuid( "10dc67a3-cf4f-4581-a80c-1b999e9767f2" )]
-    public IAgentToolResult UpdateFamilyMemberProfile(
+    public AgentToolResult UpdateFamilyMemberProfile(
         string personIdKey = null,
 
         string nickName = null,

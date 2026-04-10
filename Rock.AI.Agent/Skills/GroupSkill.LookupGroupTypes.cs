@@ -33,7 +33,7 @@ internal partial class GroupSkill
     [Description( "Retrieves the group types configured in Rock." )]
     [AgentPurpose( "Retrieves the group types and roles configured in Rock." )]
     [AgentToolGuid( "23c5ad96-68f8-4d3e-b2e9-96e179a08e5a" )]
-    public IAgentToolResult LookupGroupTypes()
+    public AgentToolResult LookupGroupTypes()
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
 

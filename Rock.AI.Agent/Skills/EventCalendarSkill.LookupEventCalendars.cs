@@ -34,7 +34,7 @@ internal sealed partial class EventCalendarSkill
     [Description( "Retrieves all configured calendars in Rock." )]
     [AgentPurpose( "Retrieves all configured calendars in Rock." )]
     [AgentToolGuid( "dbc1ad8a-f41c-4bb7-89de-f9d795f017de" )]
-    public IAgentToolResult LookupEventCalendars()
+    public AgentToolResult LookupEventCalendars()
     {
         var calendarResults = GetConfiguredCalendars()
             .Select( c => new KeyNameResult( c.Id, c.Name ) )

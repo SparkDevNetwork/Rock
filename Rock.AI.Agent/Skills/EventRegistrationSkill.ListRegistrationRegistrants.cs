@@ -36,7 +36,7 @@ internal sealed partial class EventRegistrationSkill
     [AgentPurpose( "Retrieves a list of registrants that have registered for a registration instance." )]
     [AgentUsage( "The startDate and endDate parameters filter the date the person was registered." )]
     [AgentToolGuid( "3a9fdd49-a029-4a98-9dc5-cfca1a53cfac" )]
-    public IAgentToolResult ListRegistrationRegistrants(
+    public AgentToolResult ListRegistrationRegistrants(
         string registrationInstanceIdKey = null,
         string personIdKey = null,
         DateTime? startDate = null,

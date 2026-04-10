@@ -30,7 +30,7 @@ internal sealed partial class ReminderSkill
 
     [Description( "Lists all reminder types that are available." )]
     [AgentToolGuid( "2452B308-F805-4DE6-83DE-1E340767A4EF" )]
-    public IAgentToolResult LookupReminderTypes()
+    public AgentToolResult LookupReminderTypes()
     {
         var reminderTypeService = new ReminderTypeService( AgentRequestContext.RockContext );
 

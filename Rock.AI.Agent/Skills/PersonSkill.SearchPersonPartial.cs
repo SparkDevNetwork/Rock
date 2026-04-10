@@ -39,7 +39,7 @@ internal sealed partial class PersonSkill
     [AgentToolReturnDescription( "A collection of summaries about the matched people. These are not full profiles. Call `GetPersonProfile` passing the personIdKey to get a person's full profile." )]
     [Description( "Does a name search based on a partial search (e.g. 't dec')." )]
     [AgentToolGuid( "873AFC46-1872-999F-4E6C-94409654F6BC" )]
-    public IAgentToolResult SearchPersonPartial(
+    public AgentToolResult SearchPersonPartial(
         string searchPattern,
         int maxResults = 20,
         string campusIdKey = null )

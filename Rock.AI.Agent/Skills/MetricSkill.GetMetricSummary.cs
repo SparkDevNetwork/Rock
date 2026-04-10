@@ -33,7 +33,7 @@ internal sealed partial class MetricSkill
     [Description( "Returns a summary of the values for a metric." )]
     [AgentPurpose( "Retrieves a summary of the values for a metric." )]
     [AgentToolGuid( "e233f5cf-469d-4f76-b159-5c6d70f62394" )]
-    public IAgentToolResult GetMetricSummary(
+    public AgentToolResult GetMetricSummary(
         string metricIdKey,
         DateTime startDate,
         DateTime endDate )

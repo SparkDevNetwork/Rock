@@ -33,7 +33,7 @@ internal partial class CommunicationSkill
 
     [Description( "Looks up system phone numbers." )]
     [AgentToolGuid( "FD3F160F-ABCA-4A18-B69F-0E21D61B6874" )]
-    public IAgentToolResult LookupSystemPhoneNumbers( bool? smsEnabled = null )
+    public AgentToolResult LookupSystemPhoneNumbers( bool? smsEnabled = null )
     {
         var spnResults = GetSystemPhoneNumbers( smsEnabled );
 

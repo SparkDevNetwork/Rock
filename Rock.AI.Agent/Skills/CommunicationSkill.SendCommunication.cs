@@ -33,7 +33,7 @@ internal partial class CommunicationSkill
 
     [Description( "Sends a previously drafted communication." )]
     [AgentToolGuid( "2BB35960-77C6-4EAD-9645-F0ACB0EF132B" )]
-    public IAgentToolResult SendCommunication( string communicationIdKey )
+    public AgentToolResult SendCommunication( string communicationIdKey )
     {
         var currentPerson = AgentRequestContext.CurrentPerson;
 

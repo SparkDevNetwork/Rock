@@ -34,7 +34,7 @@ internal sealed partial class ConnectionSkill
     [Description( "Returns the insights of connection requests." )]
     [AgentPurpose( "Retrieves an set of insights into connection requests." )]
     [AgentToolGuid( "51e14e2d-09a4-440e-9e7d-df1bf22bd918" )]
-    public IAgentToolResult GetConnectionRequestInsights(
+    public AgentToolResult GetConnectionRequestInsights(
         string connectionOpportunityIdKey = null,
         string campusIdKey = null )
     {

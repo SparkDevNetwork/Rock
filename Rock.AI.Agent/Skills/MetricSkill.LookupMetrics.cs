@@ -35,7 +35,7 @@ internal partial class MetricSkill
     [Description( "Retrieves the metrics configured in Rock." )]
     [AgentPurpose( "Retrieves the metrics configured in Rock." )]
     [AgentToolGuid( "5f38b6bf-b747-4a0f-a277-11776d2a3ff1" )]
-    public IAgentToolResult LookupMetrics()
+    public AgentToolResult LookupMetrics()
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
 

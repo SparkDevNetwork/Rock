@@ -38,7 +38,7 @@ internal interface IAgentCommunicationMedium
     /// <param name="request">The details of the draft.</param>
     /// <returns></returns>
     Task<DraftResult> DraftAsync(
-        IChatAgent agent,
+        ChatAgent agent,
         DraftRequest request );
 
     /// <summary>

@@ -97,7 +97,7 @@ namespace Rock.AI.Agent.Skills
 - Skip this function if information is incomplete — it is designed to provide what’s needed." )]
         [AgentUsage( "This function may be called 2–3 times per user request and is responsible for guiding the user and the model through the group selection process." )]
         [AgentToolGuid( "468688c4-86ad-401f-ab46-ac0875de2452" )]
-        public IAgentToolResult GroupMemberOperations(
+        public AgentToolResult GroupMemberOperations(
             string personIdKey,
             string groupIdKey,
             GroupMemberOperation operation,
@@ -402,7 +402,7 @@ Example:
         /// <param name="groupTypeRole"></param>
         /// <param name="groupMember"></param>
         /// <returns></returns>
-        private IAgentToolResult AddPersonToGroup( RockContext rockContext, Rock.Model.Person person, Group group, GroupTypeRole groupTypeRole, GroupMember groupMember = null )
+        private AgentToolResult AddPersonToGroup( RockContext rockContext, Rock.Model.Person person, Group group, GroupTypeRole groupTypeRole, GroupMember groupMember = null )
         {
             if ( groupMember != null )
             {
@@ -429,7 +429,7 @@ Example:
         /// <param name="groupMember"></param>
         /// <param name="groupTypeRole"></param>
         /// <returns></returns>
-        private IAgentToolResult UpdatePersonInGroup( RockContext rockContext, GroupMember groupMember, GroupTypeRole groupTypeRole )
+        private AgentToolResult UpdatePersonInGroup( RockContext rockContext, GroupMember groupMember, GroupTypeRole groupTypeRole )
         {
             if ( groupMember == null )
             {
@@ -449,7 +449,7 @@ Example:
         /// <param name="person"></param>
         /// <param name="group"></param>
         /// <returns></returns>
-        private IAgentToolResult DeletePersonFromGroup( RockContext rockContext, Rock.Model.Person person, Group group )
+        private AgentToolResult DeletePersonFromGroup( RockContext rockContext, Rock.Model.Person person, Group group )
         {
             var groupMemberService = new GroupMemberService( rockContext );
 

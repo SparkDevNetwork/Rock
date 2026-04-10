@@ -36,7 +36,7 @@ internal sealed partial class FinanceSkill
     [AgentPurpose( "Retrieves a list of benevolence requests." )]
     [AgentUsage( "Pass 'lookup' for any ValueIdKey parameters to get a list of valid options." )]
     [AgentToolGuid( "818fa3cd-6318-4391-97be-17bffe8d9f2f" )]
-    public IAgentToolResult ListBenevolenceRequests(
+    public AgentToolResult ListBenevolenceRequests(
         string benevolenceTypeIdKey = null,
         string personIdKey = null,
         string statusValueIdKey = null,

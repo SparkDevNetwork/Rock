@@ -34,7 +34,7 @@ internal partial class PersonSkill
     [Description( "Lists communication records for a specific person." )]
     [AgentPurpose( "Retrieves the communication records that have been sent to an individual." )]
     [AgentToolGuid( "dd7510bb-9176-4463-9b23-665000992a62" )]
-    public IAgentToolResult ListCommunicationHistoryForPerson(
+    public AgentToolResult ListCommunicationHistoryForPerson(
         string personIdKey,
 
         string senderPersonIdKey = null,

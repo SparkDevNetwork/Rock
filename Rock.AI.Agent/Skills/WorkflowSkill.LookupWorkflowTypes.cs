@@ -30,7 +30,7 @@ internal sealed partial class WorkflowSkill
     [Description( "Retrieves all workflow types configured for the agent." )]
     [AgentPurpose( "Retrieves all workflow types configured for the agent." )]
     [AgentToolGuid( "93d7c53f-5b2c-4d62-8274-89c21e387f88" )]
-    public IAgentToolResult LookupWorkflowTypes()
+    public AgentToolResult LookupWorkflowTypes()
     {
         var workflowTypeResults = GetConfiguredWorkflowTypes()
             .Select( c => new WorkflowTypeResult
