@@ -20,20 +20,20 @@ using Rock.Attribute;
 namespace Rock.AI.Agent
 {
     /// <summary>
-    /// Extension methods for <see cref="IChatAgentBuilder"/>. These provide
+    /// Extension methods for <see cref="ChatAgentBuilder"/>. These provide
     /// additional convenience methods that build on the core methods provided
     /// by the interface.
     /// </summary>
     [RockInternal( "18.0" )]
-    internal static class IChatAgentBuilderExtensions
+    internal static class ChatAgentBuilderExtensions
     {
         /// <summary>
-        /// Builds and returns an <see cref="IChatAgent"/> instance for the specified agent ID.
+        /// Builds and returns an <see cref="ChatAgent"/> instance for the specified agent ID.
         /// </summary>
         /// <param name="builder">The chat agent builder instance.</param>
         /// <param name="agentId">The unique identifier of the agent to build.</param>
         /// <returns>An initialized chat agent instance.</returns>
-        public static IChatAgent Build( this IChatAgentBuilder builder, int agentId )
+        public static ChatAgent Build( this ChatAgentBuilder builder, int agentId )
         {
             return builder.Build( agentId, new ChatAgentOptions() );
         }

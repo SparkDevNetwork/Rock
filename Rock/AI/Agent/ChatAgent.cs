@@ -38,7 +38,7 @@ namespace Rock.AI.Agent
     /// </para>
     /// </summary>
     [RockInternal( "18.0" )]
-    internal interface IChatAgent
+    internal abstract class ChatAgent
     {
         #region Properties
 
@@ -47,7 +47,7 @@ namespace Rock.AI.Agent
         /// this chat agent is currently using for history and context. If this
         /// is <c>null</c> then the chat agent is working in-memory only.
         /// </summary>
-        int? SessionId { get; }
+        public abstract int? SessionId { get; }
 
         #endregion
 
@@ -62,7 +62,7 @@ namespace Rock.AI.Agent
         /// <param name="entityId">The identifier of the <see cref="IEntity"/> this session is associated with.</param>
         /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
-        Task StartNewSessionAsync( int? entityTypeId, int? entityId, CancellationToken cancellationToken = default );
+        public abstract Task StartNewSessionAsync( int? entityTypeId, int? entityId, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Loads an existing session from the database. This will load the
@@ -71,7 +71,7 @@ namespace Rock.AI.Agent
         /// <param name="sessionId">The identifier of the <see cref="Model.AIAgentSession"/> to load.</param>
         /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
-        Task LoadSessionAsync( int sessionId, CancellationToken cancellationToken = default );
+        public abstract Task LoadSessionAsync( int sessionId, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Adds a message to the current session. If no session has been
@@ -81,19 +81,19 @@ namespace Rock.AI.Agent
         /// <param name="message">The message to be appended to the chat history.</param>
         /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
-        Task AddMessageAsync( AuthorRole role, string message, CancellationToken cancellationToken = default );
+        public abstract Task AddMessageAsync( AuthorRole role, string message, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Adds an entity anchor to the current session. An anchor is a way
         /// to add information about a specific entity being interacted with.
         /// If an existing anchor for the same entity type already exists then
         /// it is replaced with this entity. If no session has been created or
-        /// loaded then the anchor will only exist in-memory.
+        /// loaded then the anchor will transient.
         /// </summary>
         /// <param name="entity">The entity to be added as an anchor.</param>
         /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>A <see cref="ContextAnchor"/> that represents the entity anchor.</returns>
-        Task<ContextAnchor> AddAnchorAsync( IEntity entity, CancellationToken cancellationToken = default );
+        public abstract Task<ContextAnchor> AddAnchorAsync( IEntity entity, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Removes the entity anchor for the specified entity type from the
@@ -103,7 +103,29 @@ namespace Rock.AI.Agent
         /// <param name="entityTypeId">The identifier of the <see cref="Model.EntityType"/> whose anchor will be removed.</param>
         /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
-        Task RemoveAnchorAsync( int entityTypeId, CancellationToken cancellationToken = default );
+        public abstract Task RemoveAnchorAsync( int entityTypeId, CancellationToken cancellationToken = default );
+
+        /// <summary>
+        /// Adds an entity anchor to the current session. An anchor is a way
+        /// to add information about a specific entity being interacted with.
+        /// If an existing anchor for the same entity type already exists then
+        /// it is replaced with this entity. Transient anchors are not saved
+        /// to the database and will be lost once this instance is disposed.
+        /// </summary>
+        /// <param name="entity">The entity to be added as an anchor.</param>
+        /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
+        /// <returns>A <see cref="ContextAnchor"/> that represents the entity anchor.</returns>
+        public abstract Task<ContextAnchor> AddTransientAnchorAsync( IEntity entity, CancellationToken cancellationToken = default );
+
+        /// <summary>
+        /// Removes the entity anchor for the specified entity type from the
+        /// current session. This only removes the transient anchor and does
+        /// not affect any anchors that were saved to the database.
+        /// </summary>
+        /// <param name="entityTypeId">The identifier of the <see cref="Model.EntityType"/> whose anchor will be removed.</param>
+        /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
+        /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
+        public abstract Task RemoveTransientAnchorAsync( int entityTypeId, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Sends the current chat history information to the language model
@@ -111,7 +133,7 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>An object that represents the response from the assistant.</returns>
-        Task<ChatMessageResponse> GetChatMessageResponseAsync( CancellationToken cancellationToken = default );
+        public abstract Task<ChatMessageResponse> GetChatMessageResponseAsync( CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Sends the current chat history information to the language model
@@ -119,7 +141,7 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>An object that represents the response from the assistant.</returns>
-        IAsyncEnumerable<StreamingChatMessageResponse> GetStreamingChatMessageResponsesAsync( CancellationToken cancellationToken = default );
+        public abstract IAsyncEnumerable<StreamingChatMessageResponse> GetStreamingChatMessageResponsesAsync( CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Invokes a specific tool on the chat agent. This is primarily
@@ -130,7 +152,7 @@ namespace Rock.AI.Agent
         /// <param name="arguments">The arguments to pass to the tool.</param>
         /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>The value returned from the tool invocation.</returns>
-        Task<object> InvokeToolAsync( string skillKey, string toolKey, IDictionary<string, object> arguments, CancellationToken cancellationToken = default );
+        public abstract Task<object> InvokeToolAsync( string skillKey, string toolKey, IDictionary<string, object> arguments, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Asynchronously invokes a prompt with the specified arguments and returns the result.
@@ -143,7 +165,7 @@ namespace Rock.AI.Agent
         /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="PromptResult"/>
         /// object representing the outcome of the prompt.</returns>
-        Task<PromptResult> InvokePromptAsync( string prompt, IDictionary<string, object> arguments, CancellationToken cancellationToken = default );
+        public abstract Task<PromptResult> InvokePromptAsync( string prompt, IDictionary<string, object> arguments, CancellationToken cancellationToken = default );
 
         #endregion
     }

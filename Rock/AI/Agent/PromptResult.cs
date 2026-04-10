@@ -21,7 +21,7 @@ namespace Rock.AI.Agent
 {
     /// <summary>
     /// Represents the result of a prompt to the AI model.
-    /// Returned from <see cref="IChatAgent.InvokePromptAsync(string, System.Collections.Generic.IDictionary{string, object}, System.Threading.CancellationToken)"/>.
+    /// Returned from <see cref="ChatAgent.InvokePromptAsync(string, System.Collections.Generic.IDictionary{string, object}, System.Threading.CancellationToken)"/>.
     /// </summary>
     internal class PromptResult
     {

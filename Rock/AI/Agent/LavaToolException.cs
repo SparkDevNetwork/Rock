@@ -29,7 +29,7 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Gets the result representing an error state for the tool operation.
         /// </summary>
-        public IAgentToolResult ErrorResult { get; }
+        public AgentToolResult ErrorResult { get; }
 
         /// <summary>
         /// Initializes a new instance of the LavaToolException class with a specified error message and the associated
@@ -46,7 +46,7 @@ namespace Rock.AI.Agent
         /// tool result.
         /// </summary>
         /// <param name="result">The RockToolResult object containing details about the tool operation that caused the exception.</param>
-        public LavaToolException( IAgentToolResult result )
+        public LavaToolException( AgentToolResult result )
             : base( "Internal error processing Lava Tool." )
         {
             ErrorResult = result;

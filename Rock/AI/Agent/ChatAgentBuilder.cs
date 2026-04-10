@@ -19,7 +19,7 @@ namespace Rock.AI.Agent
 {
     /// <summary>
     /// <para>
-    /// Defines a builder for constructing <see cref="IChatAgent"/> instances
+    /// Defines a builder for constructing <see cref="ChatAgent"/> instances
     /// for a given agent identifier.
     /// </para>
     /// <para>
@@ -27,14 +27,31 @@ namespace Rock.AI.Agent
     /// properties may be added in the future.
     /// </para>
     /// </summary>
-    internal interface IChatAgentBuilder
+    internal abstract class ChatAgentBuilder
     {
+
+        #region Constructors
+
         /// <summary>
-        /// Builds and returns an <see cref="IChatAgent"/> instance for the specified agent ID.
+        /// Create a new instance of <see cref="ChatAgentBuilder"/>. The
+        /// constructor is internal to prevent plugins from inheriting.
+        /// </summary>
+        internal ChatAgentBuilder()
+        {
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Builds and returns an <see cref="ChatAgent"/> instance for the specified agent ID.
         /// </summary>
         /// <param name="agentId">The unique identifier of the agent to build.</param>
         /// <param name="options">The options that describe how the chat agent should be constructed.</param>
         /// <returns>An initialized chat agent instance.</returns>
-        IChatAgent Build( int agentId, ChatAgentOptions options );
+        public abstract ChatAgent Build( int agentId, ChatAgentOptions options );
+
+        #endregion
     }
 }

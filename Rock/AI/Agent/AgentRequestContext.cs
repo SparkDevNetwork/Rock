@@ -23,7 +23,7 @@ namespace Rock.AI.Agent
     /// <summary>
     /// Provides access to information about the current agent request.
     /// </summary>
-    internal interface IAgentRequestContext
+    internal abstract class AgentRequestContext
     {
         #region Properties
 
@@ -31,21 +31,21 @@ namespace Rock.AI.Agent
         /// The identifier of the <see cref="Model.AIAgent"/> that this request
         /// is being processed by.
         /// </summary>
-        int? AgentId { get; }
+        public abstract int? AgentId { get; }
 
         /// <inheritdoc cref="Model.AIAgent.Name"/>
-        string AgentName { get; }
+        public abstract string AgentName { get; }
 
         /// <inheritdoc cref="Model.AIAgent.AgentType"/>
-        AgentType AgentType { get; }
+        public abstract AgentType AgentType { get; }
 
         /// <inheritdoc cref="Model.AIAgent.AudienceType"/>
-        AudienceType AudienceType { get; }
+        public abstract AudienceType AudienceType { get; }
 
         /// <summary>
         /// The Person that is logged in and interacting with the agent.
         /// </summary>
-        Model.Person CurrentPerson { get; }
+        public abstract Model.Person CurrentPerson { get; }
 
         /// <summary>
         /// The root URL, such as <c>https://www.rocksolidchurch.com</c>, of
@@ -53,7 +53,7 @@ namespace Rock.AI.Agent
         /// this will be either the public application root or the internal
         /// application root.
         /// </summary>
-        string RootUrlPath { get; }
+        public abstract string RootUrlPath { get; }
 
         /// <summary>
         /// The <see cref="RockContext"/> that can be used to query the database.
@@ -62,12 +62,24 @@ namespace Rock.AI.Agent
         /// save changes create a new context by calling
         /// <c>RockApp.Current.CreateRockContext()</c>.
         /// </summary>
-        RockContext RockContext { get; }
+        public abstract RockContext RockContext { get; }
 
         /// <summary>
         /// The chat agent instance that this request is being processed by.
         /// </summary>
-        IChatAgent ChatAgent { get; }
+        public abstract ChatAgent ChatAgent { get; }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Create a new instance of <see cref="AgentRequestContext"/>. The
+        /// constructor is internal to prevent plugins from inheriting.
+        /// </summary>
+        internal AgentRequestContext()
+        {
+        }
 
         #endregion
     }
