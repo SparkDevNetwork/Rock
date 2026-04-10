@@ -241,13 +241,13 @@ namespace Rock.Tests.AI.Agent
             var helper = new AgentToolHelper( agentRequestContext, logger );
 
             var itemMock = new Mock<EntityResultBase>();
-            itemMock.Setup( m => m.Sanitize( It.IsAny<IAgentRequestContext>() ) ).Returns( true );
+            itemMock.Setup( m => m.Sanitize( It.IsAny<AgentRequestContext>() ) ).Returns( true );
 
             var originalItems = new[] { itemMock.Object };
 
             var result = helper.GetPaginatedResult( new PaginatedResult<EntityResultBase> { Items = originalItems }, sanitizeForSecurity: true );
 
-            itemMock.Verify( m => m.Sanitize( It.IsAny<IAgentRequestContext>() ), Times.Once );
+            itemMock.Verify( m => m.Sanitize( It.IsAny<AgentRequestContext>() ), Times.Once );
         }
 
         [TestMethod]
@@ -260,13 +260,13 @@ namespace Rock.Tests.AI.Agent
             var helper = new AgentToolHelper( agentRequestContext, logger );
 
             var itemMock = new Mock<EntityResultBase>();
-            itemMock.Setup( m => m.Sanitize( It.IsAny<IAgentRequestContext>() ) ).Returns( true );
+            itemMock.Setup( m => m.Sanitize( It.IsAny<AgentRequestContext>() ) ).Returns( true );
 
             var originalItems = new[] { itemMock.Object };
 
             var result = helper.GetPaginatedResult( new PaginatedResult<EntityResultBase> { Items = originalItems }, sanitizeForSecurity: false );
 
-            itemMock.Verify( m => m.Sanitize( It.IsAny<IAgentRequestContext>() ), Times.Never );
+            itemMock.Verify( m => m.Sanitize( It.IsAny<AgentRequestContext>() ), Times.Never );
         }
 
         #endregion
@@ -4333,9 +4333,9 @@ namespace Rock.Tests.AI.Agent
 
         #region Support
 
-        private IAgentRequestContext CreateAgentRequestContext( RockContext rockContext, AudienceType audienceType = AudienceType.Internal )
+        private AgentRequestContext CreateAgentRequestContext( RockContext rockContext, AudienceType audienceType = AudienceType.Internal )
         {
-            var mock = new Mock<IAgentRequestContext>();
+            var mock = new Mock<AgentRequestContext>();
 
             mock.Setup( m => m.RockContext ).Returns( rockContext );
             mock.Setup( m => m.AudienceType ).Returns( audienceType );

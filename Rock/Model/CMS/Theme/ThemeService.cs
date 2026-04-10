@@ -182,6 +182,8 @@ namespace Rock.Model
         ///     </para>
         /// </remarks>
         [RockInternal( "1.16.7", true )]
+        [Obsolete( "This method is no longer used and will be removed in a future release. Themes are no longer compiled on disk, they will be processed at request time." )]
+        [RockObsolete( "19.0" )]
         public static List<string> CompileAll( CancellationToken cancellationToken )
         {
             using ( var rockContext = new RockContext() )
@@ -220,6 +222,8 @@ namespace Rock.Model
         /// future it might write other changes to disk.
         /// </summary>
         /// <param name="themeId">The identifier of the theme to build.</param>
+        [Obsolete( "This method is no longer used and will be removed in a future release. Themes are no longer compiled on disk, they will be processed at request time." )]
+        [RockObsolete( "19.0" )]
         internal static void BuildTheme( int themeId )
         {
             using ( var rockContext = new RockContext() )
@@ -231,12 +235,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Build the theme specified so that the files on disk match the
-        /// current database configuration values. This currently writes out
-        /// the CSS overrides file based on the database configuration. In the
-        /// future it might write other changes to disk.
+        /// This method used to build and update the theme file on disk. Now it
+        /// is only used to restore the theme.css file to the original content
+        /// without the customized settings applied.
         /// </summary>
         /// <param name="theme">The theme to build.</param>
+        [Obsolete( "This method is no longer used and will be removed in a future release. Themes are no longer compiled on disk, they will be processed at request time." )]
+        [RockObsolete( "19.0" )]
         internal static void BuildTheme( Theme theme )
         {
             var websitePurposeValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.THEME_PURPOSE_WEBSITE_NEXTGEN.AsGuid() );
@@ -247,16 +252,11 @@ namespace Rock.Model
                 return;
             }
 
-            var customization = theme.GetAdditionalSettings<ThemeCustomizationSettings>();
-
             var webRoot = RockApp.Current.HostingSettings.WebRootPath;
             var themePath = Path.Combine( webRoot, "Themes", theme.Name );
             var stylesPath = Path.Combine( themePath, "Styles" );
-            var jsonPath = Path.Combine( themePath, "theme.json" );
             var themeCssPath = Path.Combine( stylesPath, "theme.css" );
 
-            var json = File.ReadAllText( jsonPath );
-            var themeDefinition = ThemeDefinition.Parse( json );
             var cssContent = string.Empty;
 
             if ( !Directory.Exists( stylesPath ) )
@@ -269,9 +269,42 @@ namespace Rock.Model
                 cssContent = File.ReadAllText( themeCssPath );
             }
 
-            cssContent = GetThemeCssContent( themeDefinition, customization, theme.Name, cssContent );
+            var newContent = ThemeOverrideBuilder.RemoveOverrides( cssContent );
 
-            File.WriteAllText( themeCssPath, cssContent );
+            if ( newContent != cssContent )
+            {
+                File.WriteAllText( themeCssPath, newContent );
+            }
+        }
+
+        /// <summary>
+        /// Gets the modified CSS content for the main theme file. This is used to
+        /// dynamically apply the theme customizations to the CSS content without
+        /// having to write the changes to disk.
+        /// </summary>
+        /// <param name="theme">The theme that contains the customization data.</param>
+        /// <param name="fileContent">The content of the main theme file.</param>
+        /// <returns>The updated file content, or the original content if it has no customizations.</returns>
+        internal static string GetThemeCssContent( Theme theme, string fileContent )
+        {
+            var websitePurposeValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.THEME_PURPOSE_WEBSITE_NEXTGEN.AsGuid() );
+            var checkinPurposeValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.THEME_PURPOSE_CHECKIN.AsGuid() );
+
+            if ( theme.PurposeValueId != websitePurposeValueId && theme.PurposeValueId != checkinPurposeValueId )
+            {
+                return fileContent;
+            }
+
+            var customization = theme.GetAdditionalSettings<ThemeCustomizationSettings>();
+
+            var webRoot = RockApp.Current.HostingSettings.WebRootPath;
+            var themePath = Path.Combine( webRoot, "Themes", theme.Name );
+            var jsonPath = Path.Combine( themePath, "theme.json" );
+
+            var json = File.ReadAllText( jsonPath );
+            var themeDefinition = ThemeDefinition.Parse( json );
+
+            return GetThemeCssContent( themeDefinition, customization, theme.Name, fileContent );
         }
 
         /// <summary>

@@ -899,7 +899,7 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
             // Rock’s signature system is only in-line enabled so if a new (non-legacy) template is selected
             // RegistrationTemplate.SignatureDocumentAction should be embed, if not then defer to the user's choice.
-            registrationTemplate.SignatureDocumentAction = documentTemplate?.IsLegacy == false || cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
+            registrationTemplate.SignatureDocumentAction = SignatureDocumentAction.Embed;
             registrationTemplate.WaitListEnabled = cbWaitListEnabled.Checked;
             registrationTemplate.ShowSmsOptIn = cbShowSmsOptIn.Checked;
             registrationTemplate.AreDuplicateRegistrantsPrevented = cbPreventDuplicateRegistrants.Checked;
@@ -2349,9 +2349,7 @@ The logged-in person's information will be used to complete the registrar inform
         {
             var selectedTemplate = GetSelectedTemplate();
             var isNonLegacySelected = selectedTemplate != null && selectedTemplate.IsLegacy != true;
-            var isLegacySelected = selectedTemplate != null && selectedTemplate.IsLegacy == true;
 
-            cbDisplayInLine.Visible = isLegacySelected;
             cbAllowExternalUpdates.Enabled = !isNonLegacySelected;
             cbAllowExternalUpdates.Help = GetAllowExternalUpdatesHelpText( !isNonLegacySelected );
 
@@ -2658,8 +2656,6 @@ The logged-in person's information will be used to complete the registrar inform
             dvpConnectionStatus.SetValue( registrationTemplate.ConnectionStatusValueId );
             dvpRecordSource.SetValue( registrationTemplate.RegistrantRecordSourceValueId );
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
-            cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
-            cbDisplayInLine.Visible = isLegacySignatureSelected;
             wtpRegistrationWorkflow.SetValue( registrationTemplate.RegistrationWorkflowTypeId );
             wtpRegistrantWorkflow.SetValue( registrationTemplate.RegistrantWorkflowTypeId );
             ddlRegistrarOption.SetValue( registrationTemplate.RegistrarOption.ConvertToInt() );

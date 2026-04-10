@@ -353,7 +353,7 @@
     height: 100%;
     flex: 0 0 20%;
     position: sticky;
-    top: calc(var(--spacing-medium) + 80px); // offset from top to account for fixed header
+    top: calc(var(--spacing-medium) + var(--sticky-element-offset, 0)); // offset from top to account for fixed header
 }
 
 .full-work-surface .contentsection-container > .contentsection-nav {

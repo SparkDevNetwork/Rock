@@ -20,6 +20,8 @@ using System.Web;
 using System.Web.Caching;
 using System.Web.Hosting;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Configuration;
 
 namespace Rock.Web
@@ -44,6 +46,17 @@ namespace Rock.Web
             if ( rootRelativePath.Contains( "?" ) )
             {
                 rootRelativePath = rootRelativePath.Remove( rootRelativePath.IndexOf( '?' ) );
+            }
+
+            if ( rootRelativePath.EndsWith( ".css", StringComparison.OrdinalIgnoreCase ) )
+            {
+                var cssProcessor = RockApp.Current.GetRequiredService<CssProcessor>();
+                var cssResult = cssProcessor.GetCssContent( rootRelativePath );
+
+                if ( cssResult != null )
+                {
+                    return $"{rootRelativePath}?v={cssResult.ETag}";
+                }
             }
 
             if ( HttpRuntime.Cache[rootRelativePath] == null )

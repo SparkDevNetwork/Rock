@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentSectionContainer sidebar>
+    <ContentSectionContainer :sidebar="false">
         <ContentSection light>
             <ContentStack>
                 <div class="row">
@@ -33,61 +33,49 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Visitor Filters" icon="ti ti-user" disableCollapse>
-            <ContentStack title="Previous Activity" headerLocation="top" description="These filters evaluate whether the visitor has previously visited the site.">
-                <CheckBoxList v-model="previousActivityTypes" :items="previousActivityItems" label="Visitor Type" :horizontal="true" :repeatColumns="4" />
+        <ContentSection title="Visitor Context" icon="ti ti-user" disableCollapse>
+            <ContentStack title="Activity & Device" headerLocation="top" description="Filters visitors based on prior visit status and device type.">
+                <CheckBoxList v-model="previousActivityTypes" :items="previousActivityItems" label="Visitor Type" help="Filters visitors based on whether this is their first visit or a return visit." :horizontal="false" :repeatColumns="0" />
+                <CheckBoxList v-model="deviceTypes" :items="deviceTypeItems" label="Device Type" help="Filters visitors by the type of device used for the request." :horizontal="false" :repeatColumns="0" />
             </ContentStack>
-            <ContentStack title="Device Type" headerLocation="top" description="These filters evaluate the type of device being used by the visitor.">
-                <CheckBoxList v-model="deviceTypes" :items="deviceTypeItems" label="Device Type" :horizontal="true" :repeatColumns="4" />
-            </ContentStack>
-        </ContentSection>
-
-        <ContentSection title="Query String Filter" icon="ti ti-key" disableCollapse>
-            <ContentStack headerLocation="top" description="These filters evaluate the query string parameters present in the request URL.">
-                <QueryStringFilter v-model="queryStringFilter" />
-            </ContentStack>
-        </ContentSection>
-
-        <ContentSection title="Cookie" icon="ti ti-cookie" disableCollapse>
-            <ContentStack headerLocation="top" description="These filters evaluate the cookies present in the visitor's browser.">
-                <CookieFilter v-model="cookieFilter" />
-            </ContentStack>
-        </ContentSection>
-
-        <ContentSection title="Browser" icon="ti ti-brand-safari" disableCollapse>
-            <ContentStack headerLocation="top" description="These filters evaluate the visitor's browser type and version.">
+            <ContentStack title="Browser" headerLocation="top" description="These filters evaluate the visitor's browser type and version.">
                 <BrowserFilter v-model="browserFilter" />
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="IP Addresses" icon="ti ti-server" disableCollapse>
-            <ContentStack headerLocation="top" description="These filters evaluate whether the visitor's IP address falls within a specified range.">
-                <IpAddressFilter v-model="ipAddressFilter" />
+        <ContentSection title="Location & Timing" icon="ti ti-calendar-time" disableCollapse>
+            <ContentStack title="Time Conditions" headerLocation="top" description="These filters evaluate the day of the week and time of day of the request.">
+                <CheckBoxList v-model="daysOfWeek" :items="daysOfWeekItems" label="Days of Week" :horizontal="true" :repeatColumns="2" />
+                <div class="form-group">
+                    <label class="control-label">Time of Day</label>
+                    <div class="form-control-group">
+                        <div class="form-row">
+                            <TimePicker v-model="beginningTimeOfDay" />
+                            <div class="input-group form-control-static">to</div>
+                            <TimePicker v-model="endingTimeOfDay" />
+                        </div>
+                    </div>
+                </div>
             </ContentStack>
-        </ContentSection>
-
-        <ContentSection title="Geolocation" icon="ti ti-world" disableCollapse>
-            <ContentStack headerLocation="top" description="These filters evaluate the visitor's geographic location.">
+            <ContentStack title="Geolocation" headerLocation="top" description="These filters evaluate the visitor's geographic location.">
                 <GeolocationFilter v-model="geolocationFilter" />
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Environment" icon="ti ti-calendar-time" disableCollapse>
-            <ContentStack headerLocation="top" description="These filters evaluate the day of the week and time of day of the request.">
-                <CheckBoxList v-model="daysOfWeek" :items="daysOfWeekItems" label="Days of Week" :horizontal="true" :repeatColumns="7" />
-                <label class="control-label">Time of Day</label>
-                <div class="form-control-group">
-                    <div class="form-row">
-                        <TimePicker v-model="beginningTimeOfDay" />
-                        <div class="input-group form-control-static">to</div>
-                        <TimePicker v-model="endingTimeOfDay" />
-                    </div>
-                </div>
+        <ContentSection title="Request Signals" icon="ti ti-key" disableCollapse>
+            <ContentStack title="Query String Filter" headerLocation="top" description="These filters evaluate the query string parameters present in the request URL.">
+                <QueryStringFilter v-model="queryStringFilter" />
+            </ContentStack>
+            <ContentStack title="Cookies" headerLocation="top" description="These filters evaluate the cookies present in the visitor's browser.">
+                <CookieFilter v-model="cookieFilter" />
+            </ContentStack>
+            <ContentStack title="IP Addresses" headerLocation="top" description="These filters evaluate whether the visitor's IP address falls within a specified range.">
+                <IpAddressFilter v-model="ipAddressFilter" />
             </ContentStack>
         </ContentSection>
 
-        <ContentSection v-if="hasAttributes" title="Extended Attributes" icon="ti ti-adjustments-plus" disableCollapse>
-            <ContentStack>
+        <ContentSection v-if="hasAttributes" title="Extended Criteria" icon="ti ti-adjustments-plus" disableCollapse>
+            <ContentStack title="Extended Attributes" headerLocation="top">
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
             </ContentStack>
         </ContentSection>

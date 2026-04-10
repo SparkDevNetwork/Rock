@@ -21,15 +21,15 @@ using Rock.Enums.AI.Agent;
 namespace Rock.AI.Agent
 {
     /// <summary>
-    /// Extension methods for <see cref="IAgentRequestContext"/>. These provide
+    /// Extension methods for <see cref="AgentRequestContext"/>. These provide
     /// additional convenience methods that build on the core methods provided
     /// by the interface.
     /// </summary>
     /// <remarks>
-    /// This allows unit tests to provide mocked <see cref="IAgentRequestContext"/>
+    /// This allows unit tests to provide mocked <see cref="AgentRequestContext"/>
     /// implementations without having to implement all the various overloads.
     /// </remarks>
-    internal static class IAgentRequestContextExtensions
+    internal static class AgentRequestContextExtensions
     {
         /// <summary>
         /// Resolves ~/ and ~~/ to the proper URL format. For Chat agents this
@@ -39,7 +39,7 @@ namespace Rock.AI.Agent
         /// <param name="context">The agent request context.</param>
         /// <param name="url">The relative URL to be formatted.</param>
         /// <returns>The resolved URL.</returns>
-        public static string ResolveRockUrl( this IAgentRequestContext context, string url )
+        public static string ResolveRockUrl( this AgentRequestContext context, string url )
         {
             if ( url.IsNullOrWhiteSpace() || url.Contains( "://" ) )
             {

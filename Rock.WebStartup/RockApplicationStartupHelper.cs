@@ -360,6 +360,7 @@ namespace Rock.WebStartup
             } );
             sc.AddSingleton<MetadataHelper>();
             sc.AddSingleton<ObsidianFingerprintManager>();
+            sc.AddSingleton<CssProcessor>();
             sc.AddSingleton<ILavaEngineFactory, LavaEngineFactory>();
             sc.AddSingleton<DebugTraceObserver>();
 

@@ -52,7 +52,7 @@ namespace Rock.Rest.v2
     {
         private readonly IMcpServer _mcpServer;
 
-        private readonly IChatAgentBuilder _agentBuilder;
+        private readonly ChatAgentBuilder _agentBuilder;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="McpController"/> class.
@@ -61,7 +61,7 @@ namespace Rock.Rest.v2
         public McpController( IServiceProvider serviceProvider )
         {
             _mcpServer = serviceProvider.GetRequiredService<IMcpServer>();
-            _agentBuilder = serviceProvider.GetRequiredService<IChatAgentBuilder>();
+            _agentBuilder = serviceProvider.GetRequiredService<ChatAgentBuilder>();
         }
 
         /// <summary>

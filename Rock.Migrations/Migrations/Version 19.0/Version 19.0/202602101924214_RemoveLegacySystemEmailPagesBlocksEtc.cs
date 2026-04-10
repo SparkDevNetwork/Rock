@@ -121,9 +121,9 @@ namespace Rock.Migrations
             Sql( @"
 DECLARE @SystemEmailGuid UNIQUEIDENTIFIER = '75CB0A4A-B1C5-4958-ADEB-8621BD231520';
 
--- Remove any other legacy records
-DELETE FROM [SystemEmail]
-WHERE [Guid] <> @SystemEmailGuid;
+-- Remove any other legacy records (We are commenting this out due to potential plugins that are still referencing records in this table)
+-- DELETE FROM [SystemEmail]
+-- WHERE [Guid] <> @SystemEmailGuid;
 
 -- Update the retained compatibility record
 UPDATE [SystemEmail]
@@ -136,7 +136,7 @@ SET
 Some RockShop plugins include legacy migrations that still reference this table. Dropping it could cause those plugins to fail during installation or upgrade. For that reason, the table has been intentionally retained out of an abundance of caution.
 
 This table should be considered deprecated and will be removed in a future major version once compatibility concerns have been resolved.'
-WHERE [Guid] = @SystemEmailGuid;
+-- WHERE [Guid] = @SystemEmailGuid;  NOTE: We are doing this for all remaining SystemEmail records.
 " );
 
             // Remove the legacy EntityType and any associated Categories

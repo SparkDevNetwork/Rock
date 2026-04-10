@@ -19,7 +19,7 @@
                     <div class="col-md-6">
                         <DropDownList v-model="connectionTypeGuid"
                                       label="Connection Type"
-                                      help="The Connection Type and Opportunity for the campaign."
+                                      help="Setting the Connection Type defines the available Connection Opportunities to use for this campaign."
                                       :items="options.connectionTypeOptions ?? []"
                                       :showBlankItem="true"
                                       rules="required"
@@ -32,33 +32,17 @@
                         <DropDownList v-if="connectionTypeGuid"
                                       v-model="connectionOpportunityGuid"
                                       label="Connection Opportunity"
+                                      help="The specific opportunity where the connection request will be created and managed."
                                       :items="connectionOpportunityOptions"
                                       :showBlankItem="true"
                                       rules="required" />
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <RockButton btnType="link" class="p-0" @click="showAdvancedSettings = !showAdvancedSettings">
-                        <i :class="showAdvancedSettings ? 'ti ti-chevron-up' : 'ti ti-chevron-down'" class="mr-1"></i>
-                        {{ showAdvancedSettings ? 'Hide Advanced Settings' : 'Show Advanced Settings' }}
-                    </RockButton>
-                </div>
-
-                <TransitionVerticalCollapse>
-                    <div v-if="showAdvancedSettings" class="contentsection-body-collapse">
-                        <CodeEditor v-model="requestCommentsLavaTemplate"
-                                    label="Request Comments Lava Template"
-                                    help="The template will be used to generate the comments for the connection request. It will be passed [Person] and [Family] merge fields for use in the template <span class='tip tip-lava'></span>."
-                                    mode="lava"
-                                    :editorHeight="200" />
-                    </div>
-                </TransitionVerticalCollapse>
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Who Should Be Connected" icon="ti ti-users" disableCollapse>
-            <ContentStack headerLocation="top" description="Determines who will be considered for creating connection requests.">
+        <ContentSection title="Connection Request Settings" icon="ti ti-users" disableCollapse>
+            <ContentStack title="Who Should Be Connected" description="Defines which individuals are eligible to receive connection requests.">
                 <div class="row">
                     <div class="col-md-6">
                         <DataViewPicker v-model="dataView"
@@ -67,49 +51,53 @@
                                         :entityTypeGuid="EntityType.Person"
                                         rules="required" />
                     </div>
+                </div>
+                <RadioButtonList v-model="familyLimitsValue"
+                                        label="Family Limits"
+                                        help="Given the list of people in the data view, should we create the connection request for each person or limit to just the head of the house for each family."
+                                        :items="familyLimitsOptions"
+                                        rules="required" />
+                <div class="row">
                     <div class="col-md-6">
-                        <RadioButtonList v-model="familyLimitsValue"
-                                         label="Family Limits"
-                                         help="Given the list of people in the data view, should we create the connection request for each person or limit to just the head of the house for each family."
-                                         :items="familyLimitsOptions"
-                                         rules="required"
-                                         horizontal />
+                        <GroupPicker v-model="optOutGroup"
+                             label="Opt Out Group"
+                             help="Your Data View can handle this filtering, but you can also use this group to limit who gets a connection request. Consider adding a manual workflow to your connection request to add people to this group." />
                     </div>
                 </div>
 
-                <GroupPicker v-model="optOutGroup"
-                             label="Opt Out Group"
-                             help="Your Data View can handle this filtering, but you can also use this group to limit who gets a connection request. Consider adding a manual workflow to your connection request to add people to this group." />
-            </ContentStack>
-        </ContentSection>
 
-        <ContentSection title="Request Creation Settings" icon="ti ti-playlist-add" disableCollapse>
-            <ContentStack headerLocation="top" description="These settings determine if requests should be auto created and assigned.">
+            </ContentStack>
+            <ContentStack title="Request Creation Settings" description="Defines how connection requests are generated and assigned to connectors.">
                 <RadioButtonList v-model="createConnectionRequestOptionValue"
                                  label="Create Connection Requests"
                                  help="Choose whether you want to automatically create all the connection requests at once or only as needed based on the daily limits of assigned connection requests."
                                  :items="enumToListItemBag(CreateConnectionRequestOptionsDescription)"
-                                 rules="required"
-                                 horizontal />
+                                 rules="required" />
 
                 <NumberBox v-model="dailyLimitAssigned"
                            label="Daily Limit of Assigned Connection Requests"
                            inputClasses="input-width-md"
                            help="The number of requests each connector will be assigned each day. This can be overridden by Group Member attributes. Leave blank to not auto assign." />
             </ContentStack>
-        </ContentSection>
-
-        <ContentSection title="Recurrence Settings" icon="ti ti-refresh" disableCollapse>
-            <ContentStack headerLocation="top" description="These settings determine if connections should be created on periodic basis.">
+            <ContentStack title="Recurrence Settings" description="Defines when individuals become eligible to receive a new connection request.">
                 <NumberBox v-model="daysBetweenConnection"
                            label="Number of Days Between Connection"
                            rules="required"
                            inputClasses="input-width-md"
                            help="The number of days since the last connection request was modified before a new connection request should be created." />
 
-                <CheckBox v-model="preferPreviousConnector"
-                          label="Prefer Previous Connector"
-                          help="When creating a new request, should the previous connector be used if they are still a connector." />
+                <InlineCheckBox v-model="preferPreviousConnector"
+                                label="Prefer Previous Connector"
+                                help="When creating a new request, should the previous connector be used if they are still a connector." />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Advanced Settings" icon="ti ti-adjustments-cog" disableCollapse>
+            <ContentStack title="Request Comments Lava Template" description="Defines the message included with generated connection requests. Includes [Person] and [Family] merge fields for use in the template <span class='tip tip-lava'></span>.">
+                <CodeEditor v-model="requestCommentsLavaTemplate"
+                            mode="lava"
+                            editor="monaco"
+                            :editorHeight="200" />
             </ContentStack>
         </ContentSection>
 
@@ -130,10 +118,9 @@
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
-    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
@@ -176,7 +163,6 @@
     const preferPreviousConnector = propertyRef(props.modelValue.bag?.preferPreviousConnector ?? false, "PreferPreviousConnector");
 
     const connectionOpportunityOptions = ref<ListItemBag[]>(props.options.connectionOpportunityOptions ?? []);
-    const showAdvancedSettings = ref(false);
 
     const familyLimitsOptions: ListItemBag[] = [
         { text: "Limit to Head of House", value: FamilyLimits.HeadOfHouse.toString() },

@@ -44,7 +44,9 @@ namespace Rock.Cms
             {
                 try
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     ThemeService.BuildTheme( message.ThemeId );
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
                 catch ( Exception ex )
                 {

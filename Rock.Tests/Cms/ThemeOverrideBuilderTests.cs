@@ -167,7 +167,7 @@ namespace Rock.Tests.Cms
 
             var content = builder.Build( string.Empty );
 
-            Assert.AreEqual( $"@charset \"UTF-8\";{Environment.NewLine}", content );
+            Assert.IsEmpty( content );
         }
 
         [TestMethod]
@@ -418,8 +418,7 @@ namespace Rock.Tests.Cms
                 var tablerPath = RockApp.Current.MapPath( "~/Styles/styles-v2/icons/tabler-icon.css" );
                 var tablerHash = System.IO.File.ReadAllText( tablerPath ).XxHash();
 
-                var expectedContent = $@"@charset ""UTF-8"";
-{ThemeOverrideBuilder.TopOverrideStartMarker}
+                var expectedContent = $@"{ThemeOverrideBuilder.TopOverrideStartMarker}
 @import url('on.css');
 @import url('/Styles/styles-v2/icons/tabler-icon.css?v={tablerHash}');
 {ThemeOverrideBuilder.TopOverrideEndMarker}

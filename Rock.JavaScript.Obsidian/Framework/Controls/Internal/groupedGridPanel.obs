@@ -78,20 +78,20 @@
 
 <script setup lang="ts">
     import { computed, ref, watch, PropType, ComponentPublicInstance, Ref } from "vue";
-    import PersonAvatar from "./personAvatar.obs";
-    import ContentSectionContainer from "./contentSectionContainer.obs";
-    import ContentSection from "./contentSection.obs";
-    import ContentStack from "./contentStack.obs";
-    import HighlightLabel from "./highlightLabel.obs";
     import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
-    import Panel from "./panel.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import ActionToolbar from "./actionToolbar.obs";
     import { IContentSectionHolder } from "@Obsidian/Core/Controls/contentSection";
+    import ActionToolbar from "./actionToolbar.obs";
+    import PersonAvatar from "../personAvatar.obs";
+    import ContentSectionContainer from "../contentSectionContainer.obs";
+    import ContentSection from "../contentSection.obs";
+    import ContentStack from "../contentStack.obs";
+    import HighlightLabel from "../highlightLabel.obs";
+    import Panel from "../panel.obs";
 
     const props = defineProps({
         groupingKey: {

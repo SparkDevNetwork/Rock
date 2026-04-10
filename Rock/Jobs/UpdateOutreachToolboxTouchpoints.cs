@@ -404,13 +404,20 @@ namespace Rock.Jobs
         private List<Person> GetPeopleToProcessForGeneralTouchpoints( RockContext rockContext, DateTime touchpointDate, OutreachNotificationTimeOfDay timeOfDay, TouchpointType touchpointType )
         {
             var date = touchpointDate.Date;
+            var dayAfter = date.AddDays( 1 );
 
-            // Touchpoints that were created on or after today. This is faster
-            // then checking for touchpoints created "today" because it can use
-            // an index on ScheduledDateTime.
+            // Touchpoints that were created today. It is faster to do a >= today
+            // and < tomorrow than checking for touchpoints created "today"
+            // because it can use an index on ScheduledDateTime.
+            //
+            // NOTE: We are aware this will cause people to be skipped if they
+            // reschedule a touchpoint for a later date as it will then appear
+            // as if they already were processed on that date. However, this
+            // is acceptable for now until we find a better way to handle it.
             var touchpointsQry = new ContactTouchpointService( rockContext )
                 .Queryable()
                 .Where( t => t.ScheduledDateTime >= date
+                    && t.ScheduledDateTime < dayAfter
                     && t.Type == touchpointType );
 
             var dayOfWeekFlag = touchpointDate.DayOfWeek.AsFlags();
@@ -585,13 +592,15 @@ namespace Rock.Jobs
         private List<Person> GetPeopleToProcessForAnnualTouchpoints( RockContext rockContext, DateTime touchpointDate )
         {
             var date = touchpointDate.Date;
+            var dayAfter = date.AddDays( 1 );
 
-            // Touchpoints that were created on or after today. This is faster
+            // Touchpoints that were created today. This is faster
             // then checking for touchpoints created "today" because it can use
             // an index on ScheduledDateTime.
             var touchpointsQry = new ContactTouchpointService( rockContext )
                 .Queryable()
-                .Where( t => t.ScheduledDateTime >= date )
+                .Where( t => t.ScheduledDateTime >= date
+                    && t.ScheduledDateTime < dayAfter )
                 .Where( t => t.Type == TouchpointType.Birthday
                     || t.Type == TouchpointType.WeddingAnniversary
                     || t.Type == TouchpointType.BaptismAnniversary
@@ -751,8 +760,8 @@ namespace Rock.Jobs
         /// <param name="runContext">The current job run context information.</param>
         private void ProcessReminderTouchpoints( RockContext rockContext, RunContext runContext )
         {
-            var today = runContext.ProcessingDateTime.Date;
-            var tomorrow = runContext.ProcessingDateTime.Date.AddDays( 1 );
+            var date = runContext.ProcessingDateTime.Date;
+            var dayAfter = runContext.ProcessingDateTime.Date.AddDays( 1 );
             var count = 0;
 
             // Touchpoints that were created on or after today but before
@@ -760,8 +769,8 @@ namespace Rock.Jobs
             // "today" because it can use an index on ScheduledDateTime.
             var contactsQry = new ContactTouchpointService( rockContext )
                 .Queryable()
-                .Where( t => t.ScheduledDateTime >= today
-                    && t.ScheduledDateTime < tomorrow
+                .Where( t => t.ScheduledDateTime >= date
+                    && t.ScheduledDateTime < dayAfter
                     && t.Type == TouchpointType.Reminder )
                 .Select( t => new
                 {

@@ -2,7 +2,7 @@
 <template>
     <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+    <NotificationBox v-if="errorMessage" ref="errorMessageElement" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -59,6 +59,7 @@
 
     const blockError = ref("");
     const errorMessage = ref("");
+    const errorMessageElement = ref<InstanceType<typeof NotificationBox> | null>(null);
 
     const connectionTypeViewBag = ref(config.entity);
     const connectionTypeEditBag = ref<ValidPropertiesBox<ConnectionTypeBag>>({
@@ -154,7 +155,12 @@
      */
     function scrollToErrorNotification(): void {
         nextTick(() => {
-            window.scrollTo({ top: 0, behavior: "smooth" });
+            if (errorMessageElement.value?.$el) {
+                errorMessageElement.value.$el.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                });
+            }
         });
     }
 

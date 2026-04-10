@@ -91,7 +91,8 @@
                                  iconLabelType="default"
                                  :title="summary.name"
                                  :description="summary.summary"
-                                 :primaryActions="getPrimaryActions(summary)">
+                                 :primaryActions="getPrimaryActions(summary)"
+                                 @click="onConnectionOpportunityClick(summary.idKey!)">
 
                         <template #prepend>
                             <HighlightLabel iconCssClass="ti ti-user-circle"
@@ -580,6 +581,28 @@
     function onOperationalSnapshotClick(): void {
         if (typeOperationalSnapshotPageUrl.value) {
             window.location.href = typeOperationalSnapshotPageUrl.value;
+        }
+    }
+
+    /**
+     * Navigates to the default view mode for the Connection Opportunity
+     * (prioritizing the List View)
+     */
+    function onConnectionOpportunityClick(idKey: string): void {
+        if (opportunityConnectionsListPageUrl.value && isListViewEnabled.value) {
+            window.location.href = opportunityConnectionsListPageUrl.value!.replace("((Key))", idKey);
+        }
+        else if (opportunityConnectionBoardPageUrl.value && (isBoardViewEnabled.value || isGridViewEnabled.value)) {
+            if (isBoardViewEnabled.value) {
+                window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", idKey)}&IsCardViewMode=True${campusPageParam.value}`;
+            }
+            else {
+                window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", idKey)}&IsCardViewMode=False${campusPageParam.value}`;
+            }
+        }
+        // Navigate to Connections List if there are no enabled views and the page url is setup.
+        else if (opportunityConnectionsListPageUrl.value) {
+            window.location.href = opportunityConnectionsListPageUrl.value!.replace("((Key))", idKey);
         }
     }
 

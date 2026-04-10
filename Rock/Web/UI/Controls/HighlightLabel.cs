@@ -99,7 +99,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( !string.IsNullOrWhiteSpace( this.ToolTip ) )
             {
-                string script = "$('[data-toggle=\"tooltip\"]').tooltip({html: true});";
+                string script = "$('[data-toggle=\"tooltip\"]').tooltip({html: true,container: \"body\"});";
                 ScriptManager.RegisterStartupScript( this, this.GetType(), "highlightlabel-tooltip", script, true );
             }
             base.OnPreRender( e );

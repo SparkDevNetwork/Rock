@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentSectionContainer sidebar>
+    <ContentSectionContainer :sidebar="false">
         <ContentSection light>
             <ContentStack>
                 <div class="row">
@@ -48,27 +48,31 @@
                             <div class="col-md-3">
                                 <RadioButtonList v-model="persistenceType"
                                                  label="Type"
+                                                 help="Determines how long a person remains in the segment based on a fixed interval or a defined schedule."
                                                  :items="persistenceTypeOptions" />
                             </div>
                             <div v-if="persistenceType === 'Schedule'" class="col-md-3">
                                 <RadioButtonList v-model="persistenceScheduleType"
                                                  label="Persistence Schedule"
+                                                 help="Specifies whether to use a custom schedule or select from a predefined schedule."
                                                  :items="persistedScheduleTypeOptions" />
                             </div>
                             <div v-if="persistenceType === 'Schedule'" class="col-md-6">
                                 <SchedulePicker v-if="persistenceScheduleType === 'Named'"
                                                 label="Named"
+                                                help="A predefined schedule that can be reused across segments."
                                                 v-model="persistedSchedule"
                                                 :multiple="false"
                                                 :includeCategoryGuids="[Category.SchedulePersonalizationSegments]" />
                                 <ScheduleBuilder v-else-if="persistenceScheduleType === 'Unique'"
                                                  label="Unique"
+                                                 help="A custom schedule defined specifically for this segment."
                                                  v-model="uniqueScheduleICalendarContent"
                                                  :hideStartDateTime="false"
                                                  :hideDuration="false" />
                             </div>
                             <div v-if="persistenceType === 'Interval'" class="col-md-9">
-                                <IntervalPicker v-model="persistenceInterval" label="Persistence Interval" />
+                                <IntervalPicker v-model="persistenceInterval" label="Persistence Interval" help="The amount of time a person remains in the segment after meeting the criteria." />
                             </div>
                         </div>
                     </div>
@@ -76,26 +80,29 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Person Filters" icon="ti ti-user" disableCollapse>
-            <ContentStack headerLocation="top" description="These filters determine which known individuals are included in this segment. Adding a data view will exclude anonymous visitors.">
-                <DataViewPicker label="Filter Data View" v-model="filterDataView" :displayOnlyPersisted="true" />
+        <ContentSection title="Filters" icon="ti ti-filter" disableCollapse>
+            <ContentStack title="Person Filters"
+                          headerLocation="top"
+                          description="Defines which known individuals are included in this segment. Applying a data view excludes anonymous visitors.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <DataViewPicker label="Filter Data View" help="The data view used to define which known individuals are included in the segment." v-model="filterDataView" :displayOnlyPersisted="true" />
+                    </div>
+                </div>
             </ContentStack>
-        </ContentSection>
-
-        <ContentSection title="Session Filters" icon="ti ti-world-code" disableCollapse>
-            <ContentStack headerLocation="top" description="These filters evaluate the number and characteristics of a visitor's browsing sessions.">
+            <ContentStack title="Session Filters"
+                          headerLocation="top"
+                          description="Defines the session activity used to include visitors in this segment.">
                 <SessionFilter v-model="sessionCountSegmentFilter" :sites="sites" />
             </ContentStack>
-        </ContentSection>
-
-        <ContentSection title="Page View Filters" icon="ti ti-sitemap" disableCollapse>
-            <ContentStack headerLocation="top" description="These filters evaluate which pages a visitor has viewed during their browsing sessions.">
+            <ContentStack title="Page View Filters"
+                          headerLocation="top"
+                          description="Defines the page view activity used to include visitors in this segment.">
                 <PageViewFilter v-model="pageViewSegmentFilter" :sites="sites" />
             </ContentStack>
-        </ContentSection>
-
-        <ContentSection title="Interaction Filters" icon="ti ti-hand-click" disableCollapse>
-            <ContentStack headerLocation="top" description="These filters evaluate a visitor's interaction history such as communication opens and link clicks.">
+            <ContentStack title="Interaction Filters"
+                          headerLocation="top"
+                          description="Defines the interaction activity used to include visitors in this segment.">
                 <InteractionFilter v-model="interactionSegmentFilter" />
             </ContentStack>
         </ContentSection>

@@ -303,7 +303,9 @@ namespace RockWeb
 
                 // Compile the next-generation themes.
                 var stopwatchCompileTheme = Stopwatch.StartNew();
+#pragma warning disable CS0618 // Type or member is obsolete
                 var compileMessages = ThemeService.CompileAll( _threadCancellationTokenSource.Token );
+#pragma warning restore CS0618 // Type or member is obsolete
                 stopwatchCompileTheme.Stop();
 
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )

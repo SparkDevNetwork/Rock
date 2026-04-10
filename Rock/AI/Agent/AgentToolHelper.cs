@@ -64,14 +64,14 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Indicates that the <see cref="_rockContext"/> is read-only and
         /// should not be used to save changes. This is set when the context
-        /// comes from the <see cref="IAgentRequestContext"/>.
+        /// comes from the <see cref="AgentRequestContext"/>.
         /// </summary>
         private readonly bool _isContextReadOnly;
 
         /// <summary>
         /// The context of the current agent request.
         /// </summary>
-        private readonly IAgentRequestContext _agentRequestContext;
+        private readonly AgentRequestContext _agentRequestContext;
 
         /// <summary>
         /// The logger to use for logging errors and information.
@@ -110,12 +110,12 @@ namespace Rock.AI.Agent
         public bool HasErrors => _errors.Count > 0;
 
         /// <summary>
-        /// Gets the <see cref="IAgentToolResult"/> that contains all the errors
+        /// Gets the <see cref="AgentToolResult"/> that contains all the errors
         /// encountered during processing. Any information will also be
         /// included. This will throw an exception if no errors have been
         /// encountered.
         /// </summary>
-        public IAgentToolResult ErrorResult => GetErrorResult();
+        public AgentToolResult ErrorResult => GetErrorResult();
 
         #endregion
 
@@ -127,7 +127,7 @@ namespace Rock.AI.Agent
         /// <param name="rockContext">The database context to use for reading and writing to the database.</param>
         /// <param name="agentRequestContext">The context of the current agent request.</param>
         /// <param name="logger">The logger to use for logging errors and information.</param>
-        public AgentToolHelper( RockContext rockContext, IAgentRequestContext agentRequestContext, ILogger logger )
+        public AgentToolHelper( RockContext rockContext, AgentRequestContext agentRequestContext, ILogger logger )
         {
             _rockContext = rockContext ?? throw new ArgumentNullException( nameof( rockContext ) );
             _agentRequestContext = agentRequestContext ?? throw new ArgumentNullException( nameof( agentRequestContext ) );
@@ -143,7 +143,7 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="agentRequestContext">The context of the current agent request.</param>
         /// <param name="logger">The logger to use for logging errors and information.</param>
-        public AgentToolHelper( IAgentRequestContext agentRequestContext, ILogger logger )
+        public AgentToolHelper( AgentRequestContext agentRequestContext, ILogger logger )
         {
             _agentRequestContext = agentRequestContext ?? throw new ArgumentNullException( nameof( agentRequestContext ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
@@ -156,12 +156,12 @@ namespace Rock.AI.Agent
         #region Result Methods
 
         /// <summary>
-        /// Gets the <see cref="IAgentToolResult"/> that contains all the errors and
+        /// Gets the <see cref="AgentToolResult"/> that contains all the errors and
         /// additional information encountered during processing. If no errors
         /// have been encountered then an exception will be thrown.
         /// </summary>
-        /// <returns>A new instance of <see cref="IAgentToolResult"/>.</returns>
-        private IAgentToolResult GetErrorResult()
+        /// <returns>A new instance of <see cref="AgentToolResult"/>.</returns>
+        private AgentToolResult GetErrorResult()
         {
             if ( _errors.Count == 0 )
             {
@@ -195,15 +195,15 @@ namespace Rock.AI.Agent
         /// helper.
         /// </para>
         /// <para>
-        /// The returned <see cref="IAgentToolResult"/> object will be configured
+        /// The returned <see cref="AgentToolResult"/> object will be configured
         /// to not have any history content.
         /// </para>
         /// </summary>
         /// <typeparam name="T">The type of object to be paginated.</typeparam>
         /// <param name="page">The items to be included in the results.</param>
-        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(IAgentRequestContext)"/>.</param>
-        /// <returns>A <see cref="IAgentToolResult"/> that contains the result data and any standard metadata.</returns>
-        public IAgentToolResult GetPaginatedResult<T>( PaginatedResult<T> page, bool sanitizeForSecurity = true )
+        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
+        /// <returns>A <see cref="AgentToolResult"/> that contains the result data and any standard metadata.</returns>
+        public AgentToolResult GetPaginatedResult<T>( PaginatedResult<T> page, bool sanitizeForSecurity = true )
         {
             return GetPaginatedResult<T, object>( page, null, sanitizeForSecurity );
         }
@@ -220,7 +220,7 @@ namespace Rock.AI.Agent
         /// helper.
         /// </para>
         /// <para>
-        /// The returned <see cref="IAgentToolResult"/> object will be configured
+        /// The returned <see cref="AgentToolResult"/> object will be configured
         /// to not have any history content.
         /// </para>
         /// </summary>
@@ -228,11 +228,11 @@ namespace Rock.AI.Agent
         /// <typeparam name="THistory">The type of object to be used in the history.</typeparam>
         /// <param name="page">The items to be included in the results.</param>
         /// <param name="historyPage">The page result to use for the history content.</param>
-        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(IAgentRequestContext)"/>.</param>
-        /// <returns>A <see cref="IAgentToolResult"/> that contains the result data and any standard metadata.</returns>
-        public IAgentToolResult GetPaginatedResult<T, THistory>( PaginatedResult<T> page, PaginatedResult<THistory> historyPage, bool sanitizeForSecurity = true )
+        /// <param name="sanitizeForSecurity">If <c>true</c> and <typeparamref name="T"/> is of type <see cref="EntityResultBase"/>, then each item will be sanitized by calling <see cref="EntityResultBase.Sanitize(AgentRequestContext)"/>.</param>
+        /// <returns>A <see cref="AgentToolResult"/> that contains the result data and any standard metadata.</returns>
+        public AgentToolResult GetPaginatedResult<T, THistory>( PaginatedResult<T> page, PaginatedResult<THistory> historyPage, bool sanitizeForSecurity = true )
         {
-            IAgentToolResult result;
+            AgentToolResult result;
 
             if ( sanitizeForSecurity == true && typeof( EntityResultBase ).IsAssignableFrom( typeof( T ) ) )
             {
