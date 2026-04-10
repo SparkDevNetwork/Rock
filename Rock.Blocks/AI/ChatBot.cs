@@ -138,7 +138,7 @@ namespace Rock.Blocks.AI
         /// <summary>
         /// The agent builder used to construct chat agent instances for this block.
         /// </summary>
-        private readonly IChatAgentBuilder _agentBuilder;
+        private readonly ChatAgentBuilder _agentBuilder;
 
         /// <summary>
         /// The configuration bag that was created during the Obsidian
@@ -156,7 +156,7 @@ namespace Rock.Blocks.AI
         /// <param name="serviceProvider">The service provider to get services from.</param>
         public ChatBot( IServiceProvider serviceProvider )
         {
-            _agentBuilder = serviceProvider.GetRequiredService<IChatAgentBuilder>();
+            _agentBuilder = serviceProvider.GetRequiredService<ChatAgentBuilder>();
         }
 
         #endregion
