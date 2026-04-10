@@ -29,6 +29,7 @@ using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Blocks.Cms.ContentChannelNavigation;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -503,12 +504,47 @@ namespace Rock.Blocks.Cms
                         continue;
                     }
 
+                    /*
+                        4/9/26 - MSE
+
+                        Some Obsidian field-type edit components emit a
+                        JSON-serialized object (e.g. ListItemBag) as their
+                        filter value rather than a raw string. The attribute
+                        filter expression expects the raw inner value, so we
+                        must unwrap it here. Additionally, the standard filter
+                        component may not set a ComparisonType for certain
+                        field types, so we fall back to the field type's own
+                        default.
+
+                        Reason: Some Obsidian edit components emit structured
+                        values that must be unwrapped for SQL-level attribute
+                        filtering.
+                    */
+
+                    // Unwrap the raw value from JSON-serialized editor output.
+                    var filterValue = filterEntry.Value?.Trim();
+
+                    // Some controls emit the literal string "null" when cleared.
+                    if ( filterValue == "null" )
+                    {
+                        filterValue = string.Empty;
+                    }
+
+                    if ( filterValue.IsNotNullOrWhiteSpace() && filterValue.StartsWith( "{" ) )
+                    {
+                        var bag = filterValue.FromJsonOrNull<ListItemBag>();
+                        if ( bag != null )
+                        {
+                            filterValue = bag.Value;
+                        }
+                    }
+
                     // Skip entries with no value unless the comparison type is
                     // IsBlank or IsNotBlank, which are valid without a value.
                     var isBlankComparison = filterEntry.ComparisonType.HasValue
                         && ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( filterEntry.ComparisonType.Value );
 
-                    if ( !isBlankComparison && filterEntry.Value.IsNullOrWhiteSpace() )
+                    if ( !isBlankComparison && filterValue.IsNullOrWhiteSpace() )
                     {
                         continue;
                     }
@@ -521,13 +557,24 @@ namespace Rock.Blocks.Cms
                         continue;
                     }
 
-                    var filterArgs = new List<string>();
-                    if ( filterEntry.ComparisonType.HasValue )
+                    // Determine the comparison type. If the client did not
+                    // provide one, fall back to the field type's default.
+                    var comparisonType = filterEntry.ComparisonType;
+                    if ( !comparisonType.HasValue && filterValue.IsNotNullOrWhiteSpace() )
                     {
-                        filterArgs.Add( filterEntry.ComparisonType.ConvertToInt().ToString() );
+                        var supportedTypes = entityField.FieldType.Field.FilterComparisonType;
+                        comparisonType = supportedTypes.HasFlag( ComparisonType.Contains )
+                            ? ComparisonType.Contains
+                            : ComparisonType.EqualTo;
                     }
 
-                    filterArgs.Add( filterEntry.Value );
+                    var filterArgs = new List<string>();
+                    if ( comparisonType.HasValue )
+                    {
+                        filterArgs.Add( comparisonType.ConvertToInt().ToString() );
+                    }
+
+                    filterArgs.Add( filterValue );
 
                     var parameterExpression = contentChannelItemService.ParameterExpression;
                     var attributeExpression = ExpressionHelper.GetAttributeExpression( contentChannelItemService, parameterExpression, entityField, filterArgs );
@@ -791,6 +838,29 @@ namespace Rock.Blocks.Cms
             RockContext.SaveChanges();
 
             return ActionOk();
+        }
+
+        /// <summary>
+        /// Creates an entity set for the subset of selected rows in the grid.
+        /// </summary>
+        /// <param name="entitySet">The entity set data from the grid.</param>
+        /// <returns>An action result that contains the identifier of the entity set.</returns>
+        [BlockAction]
+        public BlockActionResult CreateGridEntitySet( GridEntitySetBag entitySet )
+        {
+            if ( entitySet == null )
+            {
+                return ActionBadRequest( "No entity set data was provided." );
+            }
+
+            var rockEntitySet = GridHelper.CreateEntitySet( entitySet );
+
+            if ( rockEntitySet == null )
+            {
+                return ActionBadRequest( "No entities were found to create the set." );
+            }
+
+            return ActionOk( rockEntitySet.Id.ToString() );
         }
 
         #endregion Block Actions

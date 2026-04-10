@@ -455,6 +455,14 @@ namespace RockWeb.Blocks.Cms
                         breadCrumbs.Add( new BreadCrumb( "New Content Item", pageReference ) );
                     }
                 }
+
+                // When no items resolved (e.g. ContentItemId=0 for a new
+                // item), add a "New Content Item" breadcrumb so the page
+                // doesn't display a blank breadcrumb trail.
+                if ( !uniqueItemIds.Any() && itemId == 0 )
+                {
+                    breadCrumbs.Add( new BreadCrumb( "New Content Item", pageReference ) );
+                }
             }
 
             return breadCrumbs;
