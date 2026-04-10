@@ -90,18 +90,20 @@
                             {{ connectionRequestRow.connectionOpportunity }}
                         </dd>
                         <dt v-tooltip="dueDateTooltip">Due Date</dt>
-                        <dd v-if="!isNullOrWhiteSpace(connectionRequestRow.dueDate)"
-                            :class="getDueDateColor(connectionRequestRow.dueStatus, connectionState === ConnectionState.Connected)"
-                            v-tooltip="dueDateTooltip">
-                            <template v-if="connectionState === ConnectionState.Connected">
-                                {{ getCustomDateMedium(connectionRequestRow.dueDate) }}
-                            </template>
-                            <template v-else>
-                                {{ daysElapsed(connectionRequestRow.dueDate, true) }}
-                            </template>
-                        </dd>
-                        <dd v-else>
-                            <i class="ti ti-minus"></i>
+                        <dd :class="getDueDateColor(connectionRequestRow.dueStatus, connectionState === ConnectionState.Connected)">
+                            <span v-tooltip="dueDateTooltip">
+                                <template v-if="!isNullOrWhiteSpace(connectionRequestRow.dueDate)">
+                                    <template v-if="connectionState === ConnectionState.Connected">
+                                        {{ getCustomDateMedium(connectionRequestRow.dueDate) }}
+                                    </template>
+                                    <template v-else>
+                                        {{ daysElapsed(connectionRequestRow.dueDate, true) }}
+                                    </template>
+                                </template>
+                                <template v-else>
+                                    <i class="ti ti-minus"></i>
+                                </template>
+                            </span>
                         </dd>
                     </dl>
                 </div>
@@ -109,15 +111,20 @@
                      class="details-container bg-interface-softer border-top">
                     <dl>
                         <template v-for="attrFieldValue in attributesToShow">
-                            <dt v-tooltip.html="getAttributeTooltip(attrFieldValue)">
-                                {{ attrFieldValue.title }}
+                            <dt>
+                                <span v-tooltip.html="getAttributeTooltip(attrFieldValue)">
+                                    {{ attrFieldValue.title }}
+                                </span>
                             </dt>
-                            <dd v-if="!isNullOrWhiteSpace(getAttributeTextValue(attrFieldValue))"
-                                v-tooltip.html="getAttributeTooltip(attrFieldValue)">
-                                {{ getAttributeTextValue(attrFieldValue) }}
-                            </dd>
-                            <dd v-else>
-                                <i class="ti ti-minus"></i>
+                            <dd>
+                                <span v-tooltip.html="getAttributeTooltip(attrFieldValue)">
+                                    <template v-if="!isNullOrWhiteSpace(getAttributeTextValue(attrFieldValue))">
+                                        {{ getAttributeTextValue(attrFieldValue) }}
+                                    </template>
+                                    <template v-else>
+                                        <i class="ti ti-minus"></i>
+                                    </template>
+                                </span>
                             </dd>
                         </template>
                     </dl>
@@ -346,7 +353,7 @@
 
     const dueDateTooltip = (): string | null | undefined => {
         if (!connectionRequestRow.value.dueDate) {
-            return;
+            return "Due Date: <i class='ti ti-minus'></i>";
         }
         return `Due Date: ${getShortDate(connectionRequestRow.value.dueDate)}`;
     };

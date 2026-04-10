@@ -1,10 +1,10 @@
 <template>
     <Card class="person-card">
         <template #header>
-            <div class="d-flex p-spacing-sm justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-sm">
+            <div class="d-flex p-spacing-sm justify-content-between align-items-center gap-tiny">
+                <div class="d-flex align-items-center gap-sm min-w-0">
                     <PersonAvatar :photoUrl="photoUrl" marginRight="0" />
-                    <div class="text-md text-semibold" v-tooltip="nameTooltip">{{ name }}</div>
+                    <div class="text-md text-semibold text-truncate" v-tooltip="nameTooltip">{{ name }}</div>
                 </div>
                 <div class="d-flex align-items-center gap-tiny">
                     <span v-if="!hideCampusLabel && !isNullOrWhiteSpace(campusShortCode)"
