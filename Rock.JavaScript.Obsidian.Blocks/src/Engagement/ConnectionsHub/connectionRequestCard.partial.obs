@@ -89,7 +89,11 @@
                                class="mr-spacing-tiny"></i>
                             {{ connectionRequestRow.connectionOpportunity }}
                         </dd>
-                        <dt v-tooltip="dueDateTooltip">Due Date</dt>
+                        <dt>
+                            <span v-tooltip="dueDateTooltip">
+                                Due Date
+                            </span>
+                        </dt>
                         <dd :class="getDueDateColor(connectionRequestRow.dueStatus, connectionState === ConnectionState.Connected)">
                             <span v-tooltip="dueDateTooltip">
                                 <template v-if="!isNullOrWhiteSpace(connectionRequestRow.dueDate)">

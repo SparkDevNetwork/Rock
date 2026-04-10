@@ -131,7 +131,7 @@ body.is-dragging * {
     });
 
     const emit = defineEmits<{
-        (e: "cardMoved", idKey: string, fromGroupKey: string, toGroupKey: string): void;
+        (e: "cardMoved", idKey: string, fromGroupKey: string, toGroupKey: string, targetIndex: number): void;
     }>();
 
     const boardViewRef = ref<HTMLElement | null>(null);
@@ -205,8 +205,9 @@ body.is-dragging * {
             const idKey = element.dataset.idKey;
             const fromGroupKey = sourceContainer.dataset.groupKey;
             const toGroupKey = targetContainer?.dataset.groupKey;
+            const targetIndex = operation.targetIndex ?? 0;
 
-            if (!idKey || !fromGroupKey || !toGroupKey || fromGroupKey === toGroupKey) {
+            if (!idKey || !fromGroupKey || !toGroupKey) {
                 return;
             }
 
@@ -217,7 +218,7 @@ body.is-dragging * {
                 operation.sourceSibling ?? null
             );
 
-            emit("cardMoved", idKey, fromGroupKey, toGroupKey);
+            emit("cardMoved", idKey, fromGroupKey, toGroupKey, targetIndex);
         }
     }));
 

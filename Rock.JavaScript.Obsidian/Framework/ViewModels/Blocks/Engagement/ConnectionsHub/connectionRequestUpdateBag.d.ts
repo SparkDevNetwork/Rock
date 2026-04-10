@@ -45,4 +45,7 @@ export type ConnectionRequestUpdateBag = {
 
     /** Gets or sets an optional note to record with this update. */
     note?: string | null;
+
+    /** Gets or sets the Order that the Connection Request should be set to. */
+    targetIndex?: number | null;
 };

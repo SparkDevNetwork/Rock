@@ -60,5 +60,10 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets a value indicating whether this update includes completing the request.
         /// </summary>
         public bool? CanCompleteRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Order that the Connection Request should be set to.
+        /// </summary>
+        public int? TargetIndex { get; set; }
     }
 }

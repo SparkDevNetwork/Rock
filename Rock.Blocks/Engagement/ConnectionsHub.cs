@@ -2031,6 +2031,7 @@ namespace Rock.Blocks.Engagement
             {
                 ConnectionRequest = connectionRequest,
                 ConnectionRequestId = connectionRequest.Id,
+                Order = connectionRequest.Order,
                 ConnectorGrouping = GetGroupingKey( connectionRequest.ConnectorPersonAliasId ),
                 OpportunityGrouping = GetGroupingKey( connectionRequest.ConnectionOpportunityId ),
                 CampusGrouping = GetGroupingKey( connectionRequest.CampusId ),
@@ -3141,6 +3142,7 @@ SELECT
     cr.[DueDate]                                    AS [DueDate],
     cr.[DueSoonDate]                                AS [DueSoonDate],
     cr.[ConnectedDateTime]                          AS [ConnectedDateTime],
+    cr.[Order]                                      AS [Order],
     cel_note.[Text]                                 AS [CelebrationText],
     cr.[PersonAliasId]                              AS [PersonAliasId],
     rpa.[Guid]                                      AS [RequesterPersonAliasGuid],
@@ -3313,6 +3315,7 @@ WHERE 1 = 1" );
                     HasPlacementGroup = row.AssignedGroupId.HasValue,
                     HasRequiredGroupRequirements = false,
                     ReminderCount = row.ReminderCount,
+                    Order = row.Order,
                     ConnectionStatus = new ConnectionStatusBag
                     {
                         Guid = row.ConnectionStatusGuid,
@@ -3883,6 +3886,8 @@ WHERE 1 = 1" );
                 .Where( s => s.ConnectionTypeId == connectionType.Id )
                 .ToList();
 
+            var targetIndex = statusUpdateBags.FirstOrDefault()?.TargetIndex;
+
             var statusBagByIdKey = statusUpdateBags.ToDictionary( b => b.ConnectionRequestIdKey );
 
             // Build lookups that resolve any key type without extra DB hits.
@@ -3893,6 +3898,11 @@ WHERE 1 = 1" );
             foreach ( var request in connectionRequests )
             {
                 var currentStatus = connectionStatuses.Where( s => s.Id == request.ConnectionStatusId ).FirstOrDefault();
+
+                if ( targetIndex.HasValue )
+                {
+                    request.Order = targetIndex.Value;
+                }
 
                 // If Completed request, then apply state update.
                 if ( completedRequestIdKeys.Contains( request.IdKey ) )
@@ -4676,6 +4686,27 @@ WHERE 1 = 1" );
             CampaignConnectionHelper.AddConnectionRequestsForPerson( selectedCampaignConnectionItem, RequestContext.CurrentPerson, bag.NumberOfRequests, out numberOfRequestsRemaining );
 
             return ActionOk( );
+        }
+
+        [BlockAction]
+        public BlockActionResult ReorderConnectionRequest( string connectionRequestIdKey, int targetIndex )
+        {
+            var connectionRequestService = new ConnectionRequestService( RockContext );
+            var connectionRequest = connectionRequestService.Get( connectionRequestIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( connectionRequest == null )
+            {
+                return ActionBadRequest( $"{Rock.Model.ConnectionRequest.FriendlyTypeName} not found." );
+            }
+
+            if ( !CanEditSpecifiedConnectionRequest( connectionRequest, out var error ) )
+            {
+                return error;
+            }
+
+            connectionRequest.Order = targetIndex;
+            RockContext.SaveChanges();
+
+            return ActionOk( connectionRequest.Order );
         }
 
         #region Detail View Block Actions
@@ -5716,6 +5747,7 @@ WHERE 1 = 1" );
                 .AddField( "reminderCount", a => a.ReminderCount )
                 .AddField( "hasPlacementGroup", a => a.HasPlacementGroup )
                 .AddField( "hasRequiredGroupRequirements", a => a.HasRequiredGroupRequirements )
+                .AddField( "order", a => a.Order )
                 .AddAttributeFieldsFrom( a => a.ConnectionRequest, GetGridAttributes() );
         }
 
@@ -5831,6 +5863,11 @@ WHERE 1 = 1" );
             /// before the person can be added as a group member.
             /// </summary>
             public bool HasRequiredGroupRequirements { get; set; }
+
+            /// <summary>
+            /// Gets or sets the sort order of the ConnectionRequest within a board column.
+            /// </summary>
+            public int Order { get; set; }
         }
 
 
@@ -6005,6 +6042,9 @@ WHERE 1 = 1" );
             /// requirement. False when there is no placement group or no mandatory requirements exist.
             /// </summary>
             public bool HasRequiredGroupRequirements { get; set; }
+
+            /// <summary>Gets or sets the sort order of the ConnectionRequest within a board column.</summary>
+            public int Order { get; set; }
         }
 
         public class HistoryRow

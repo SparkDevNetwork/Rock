@@ -982,6 +982,10 @@
     const flyoutAnchorEl = ref<HTMLElement | null>(null);
     const isNoteRequired = ref(false);
 
+    /** The target index captured from the most recent board card move, used to
+     *  attach positional data to status update bags sent to the server. */
+    const cardMovedTargetIndex = ref<number | null>(null);
+
     // Docked Panel Configuration
     const isDockedPanelSaving = ref<boolean>(false);
     const connectionRequestUpdateBag = ref<ConnectionRequestUpdateBag>({} as ConnectionRequestUpdateBag);
@@ -1235,7 +1239,14 @@
         const sortBy = viewOptions.value.sortBy;
 
         if (isNullOrWhiteSpace(sortBy)) {
-            return rows;
+            // When no explicit sort is selected, sort by the persisted
+            // order on the connection request (ascending).
+            return rows.sort((a, b) => {
+                const aOrder = (a["order"] as number | null | undefined) ?? 0;
+                const bOrder = (b["order"] as number | null | undefined) ?? 0;
+
+                return aOrder - bOrder;
+            });
         }
 
         return rows.sort((a, b) => {
@@ -1437,11 +1448,23 @@
         };
     });
 
-    function onCardMoved(idKey: string, fromGroupKey: string, toGroupKey: string): void {
+    function onCardMoved(idKey: string, fromGroupKey: string, toGroupKey: string, targetIndex: number): void {
+        // If the from key and to key are the same then we just need to reorder the request.
+        if (fromGroupKey === toGroupKey) {
+            // Don't reorder if the board is sorted by a custom field.
+            if (viewOptions.value.sortBy) {
+                return;
+            }
+            reorderConnectionRequest(idKey, targetIndex);
+            return;
+        }
+
         if (!gridData.value?.rows) {
             return;
         }
         const row = gridData.value.rows.find(r => r.idKey === idKey);
+
+        cardMovedTargetIndex.value = targetIndex;
 
         switch (selectedGrouping.value) {
             case "connectorGrouping":
@@ -1866,7 +1889,8 @@
                 statusUpdateBags.push({
                     connectionRequestIdKey: request.idKey,
                     connectionStatusKey: nextStatus.value,
-                    note: bag.note
+                    note: bag.note,
+                    targetIndex: cardMovedTargetIndex.value
                 });
             }
         }
@@ -1875,7 +1899,8 @@
                 statusUpdateBags.push({
                     connectionRequestIdKey: request.idKey,
                     connectionStatusKey: bag.connectionStatusKey,
-                    note: bag.note
+                    note: bag.note,
+                    targetIndex: cardMovedTargetIndex.value
                 });
             }
         }
@@ -1889,6 +1914,7 @@
         }
         finally {
             isModalSaving.value = false;
+            cardMovedTargetIndex.value = null;
         }
     }
 
@@ -2905,6 +2931,24 @@
         }
         else {
             connectionRequestDockedPanelRef.value?.setErrorMessage("activity", result.errorMessage ?? "An error occurred while getting the Connection Request activity entries.");
+        }
+    }
+
+    async function reorderConnectionRequest(idKey: string, targetIndex: number): Promise<void> {
+        const result = await invokeBlockAction<number>("ReorderConnectionRequest", {
+            connectionRequestIdKey: idKey,
+            targetIndex
+        });
+        const rowIndex = gridData.value?.rows?.findIndex(r => r.idKey === idKey) ?? -1;
+
+        console.log("target index: ", targetIndex);
+        if (result.isSuccess && gridData.value?.rows && rowIndex !== -1) {
+            console.log("result: ", result.data);
+            const row = gridData.value.rows[rowIndex];
+            row.order = result.data;
+        }
+        else {
+            console.error(result.errorMessage ?? "An error occurred while reordering the Connection Request.");
         }
     }
 
