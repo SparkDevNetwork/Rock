@@ -960,7 +960,25 @@ namespace Rock.WebStartup
                 .Where( a => !installedMigrationNumbers.Contains( a.Key ) )
                 .ToDictionary( k => k.Key, v => v.Value );
 
-            // Iterate each migration in the assembly in MigrationNumber order 
+            // Iterate each migration in the assembly in MigrationNumber order
+            /*
+                 4/8/2026 - DH, KH, NA
+
+                 This approach allows Plugin\HotFixes\* data migrations to run in a non-sequential order
+                 without skipping any applicable migrations for the current Rock version that have not
+                 yet been run.
+
+                 For example, if migration #200 has not yet run on an instance, but #201 was previously
+                 executed (due to being included in an earlier hotfix release), the logic ensures that
+                 #200 will still execute when encountered.
+
+                 As a result, HotFix migration numbering must remain globally sequential across all
+                 branches. The next HotFix number should always be the next highest number available,
+                 regardless of the branch where the change is introduced.
+
+                 Reason: Ensure all data migrations execute reliably, even when delivered out of order
+                         across versions.
+            */
             var migrationTypesToRun = migrationTypesByNumber.OrderBy( a => a.Key ).Select( a => a.Value ).ToList();
 
             if ( !migrationTypesToRun.Any() )

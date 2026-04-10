@@ -219,7 +219,7 @@ function() {
 
             if ( selectionConfig != null )
             {
-                if ( selectionConfig.TransactionAlertTypeIds.Count > 0 )
+                if ( selectionConfig.TransactionAlertTypeIds != null && selectionConfig.TransactionAlertTypeIds.Count > 0 )
                 {
                     var alertTypeNames = new List<string>();
                     foreach ( var transactionAlertTypeId in selectionConfig.TransactionAlertTypeIds )
@@ -236,7 +236,10 @@ function() {
                 }
 
                 var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
-                result += $" {comparisonType.ConvertToString()}: ${selectionConfig.Amount}";
+                if ( comparisonType != null )
+                {
+                    result += $" {comparisonType.ConvertToString()}: ${selectionConfig.Amount}";
+                }
 
                 if ( selectionConfig.DelimitedDateRangeValues.IsNotNullOrWhiteSpace() )
                 {

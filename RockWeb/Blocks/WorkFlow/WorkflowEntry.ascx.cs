@@ -694,7 +694,7 @@ namespace RockWeb.Blocks.WorkFlow
                     /* if user isn't authorized to edit, limit to ones that are any of the following conditions
                     // - Not assigned
                     // - Assigned to current person
-                    // - Assigned to a group that the current user is a member of
+                    // - Assigned to a group that the current user is member (non-inactive) of
                     */
 
                     activeWorkflowActivitiesList = activeWorkflowActivitiesList.Where( a =>
@@ -711,7 +711,7 @@ namespace RockWeb.Blocks.WorkFlow
                             return true;
                         }
 
-                        if ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId ) )
+                        if ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId && m.GroupMemberStatus != GroupMemberStatus.Inactive ) )
                         {
                             // Assigned to a group that the current user is a member of
                             return true;

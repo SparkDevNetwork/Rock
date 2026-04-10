@@ -166,7 +166,7 @@ namespace Rock.Blocks.Core
                 .Select( e => new IndexableEntityBag
                 {
                     IdKey = e.IdKey,
-                    Name = e.Name,
+                    Name = e.FriendlyName,
                     IsIndexingEnabled = e.IsIndexingEnabled,
                     AllowsInteractiveBulkIndexing = GetAllowsInteractiveBulkIndexing( e )
                 } )

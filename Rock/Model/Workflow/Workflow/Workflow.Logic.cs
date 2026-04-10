@@ -275,7 +275,7 @@ namespace Rock.Model
                             ( canEdit ) ||
                             ( !a.AssignedGroupId.HasValue && !a.AssignedPersonAliasId.HasValue ) ||
                             ( a.AssignedPersonAlias != null && a.AssignedPersonAlias.PersonId == personId ) ||
-                            ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId ) )
+                            ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId && m.GroupMemberStatus != GroupMemberStatus.Inactive ) )
                         )
                     )
                     .ToList()
@@ -325,7 +325,7 @@ namespace Rock.Model
                         skipAuthorization
                         || ( !a.AssignedGroupId.HasValue && !a.AssignedPersonAliasId.HasValue )
                         || ( a.AssignedPersonAlias != null && a.AssignedPersonAlias.PersonId == personId )
-                        || ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId ) )
+                        || ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId && m.GroupMemberStatus != GroupMemberStatus.Inactive ) )
                     )
                 )
                 .OrderBy( a => a.ActivityTypeCache.Order )

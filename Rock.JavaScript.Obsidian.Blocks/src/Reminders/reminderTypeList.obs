@@ -10,9 +10,9 @@
           liveUpdates
           :showLaunchWorkflow="false"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
-          @selectItem="onSelectItem"
-          @reorderItems="onReorderItems">
-        <ReorderColumn />
+          @selectItem="onSelectItem">
+
+        <ReorderColumn v-if="config.isAddEnabled" @orderChanged="onOrderChanged" />
 
         <TextColumn name="name"
                     title="Name"
@@ -303,15 +303,13 @@
     /**
      * Called when the grid rows have been reordered.
      */
-    async function onReorderItems(key: string, beforeKey: string): Promise<void> {
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
         const result = await invokeBlockAction("ReorderItem", {
-            key,
-            beforeKey
+            key: item["guid"],
+            beforeKey: beforeItem?.["guid"] ?? null
         });
 
-        if (!result.isSuccess) {
-            await alert(result.errorMessage ?? "Unknown error while trying to reorder items.");
-        }
+        return result.isSuccess;
     }
 
     // #endregion

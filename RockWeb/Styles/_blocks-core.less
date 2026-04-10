@@ -629,6 +629,28 @@
 // 2. Schedule Builder
 // -------------------------
 
+
+.schedule-builder-field-edit-control {
+
+  .label.schedulebuilder-info {
+    padding: 1px 6px; // Hardcoded to match sliding date range
+    display: inline;
+  }
+
+  // Webforms override picker clear button to be inside the control and not affect layout
+  .picker-select {
+    gap: 0;
+
+    .btn.picker-select-none {
+      position: absolute;
+      right: var(--spacing-small);
+    }
+
+  }
+
+}
+
+
 .recurrence-pattern-type {
   padding-left: @spacing-lg-px;
   margin-top: 12px;

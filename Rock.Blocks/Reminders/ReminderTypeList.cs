@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.ComponentModel;
 using System.Linq;
@@ -97,6 +98,14 @@ namespace Rock.Blocks.Reminders
                 .OrderBy( rt => rt.Order )
                 .ThenBy( rt => rt.Name )
                 .ThenBy( rt => rt.Id );
+        }
+
+        /// <inheritdoc/>
+        protected override List<ReminderType> GetListItems( IQueryable<ReminderType> queryable, RockContext rockContext )
+        {
+            return queryable.ToList()
+                .Where( rt => rt.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .ToList();
         }
 
         /// <inheritdoc/>
@@ -186,7 +195,7 @@ namespace Rock.Blocks.Reminders
                 return false;
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 errorMessage = ActionBadRequest( $"Not authorized to edit {ReminderType.FriendlyTypeName}." );
                 return false;
@@ -337,7 +346,7 @@ namespace Rock.Blocks.Reminders
                 return ActionBadRequest( $"{ReminderType.FriendlyTypeName} not found." );
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to delete {ReminderType.FriendlyTypeName}." );
             }

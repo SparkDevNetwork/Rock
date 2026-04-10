@@ -3,7 +3,7 @@
     <RockFormField v-bind="standardFieldProps" name="maxAge" :modelValue="internalValue">
         <div class="btn-group">
             <RockButton v-for="(item, index) in items"
-                        @click="internalValue = item.value"
+                        @click.stop="internalValue = item.value"
                         :btnSize="btnSize"
                         :btnType="itemButtonType(item)"
                         :disabled="disabled">{{ item.text }}</RockButton>

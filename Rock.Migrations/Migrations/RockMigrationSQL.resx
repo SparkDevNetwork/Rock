@@ -413,36 +413,36 @@
     <value>Version 18.0\Version 18.0\202511051918499_UpdateGetGroupPlacementPeopleStoredProcedure_spGetGroupPlacementPeople.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202512121548566_UpdateGroupRequirementsJob_spSteps_StepFlow" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202512121548566_UpdateGroupRequirementsJob_spSteps_StepFlow.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 19.0\Version 19.0\202512121548566_UpdateGroupRequirementsJob_spSteps_StepFlow.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202512121548566_UpdateGroupRequirementsJob_spUpdateGroupMemberRequirements" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202512121548566_UpdateGroupRequirementsJob_spUpdateGroupMemberRequirements.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 19.0\Version 19.0\202512121548566_UpdateGroupRequirementsJob_spUpdateGroupMemberRequirements.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202512182358368_UpdatespCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202512182358368_UpdatespCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 19.0\Version 19.0\202512182358368_UpdatespCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingBinsAndPercentiles" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingBinsAndPercentiles.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 19.0\Version 19.0\202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingBinsAndPercentiles.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingJourneyStages" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingJourneyStages.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 19.0\Version 19.0\202601152051145_AddGivingAutomationProcedures_spGivingAutomation_UpdateGivingJourneyStages.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202601212358292_AddEntitySetAdditionalSettingsJson_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202601212358292_AddEntitySetAdditionalSettingsJson_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 19.0\Version 19.0\202601212358292_AddEntitySetAdditionalSettingsJson_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202602021859057_UpdatePersonMergeWithThrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202602021859057_UpdatePersonMergeWithThrow.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>Version 19.0\Version 19.0\202602021859057_UpdatePersonMergeWithThrow.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_202602062214190_GroupRequirementsImprovements_spUpdateGroupMemberRequiremennts" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202602062214190_GroupRequirementsImprovements_spUpdateGroupMemberRequiremennts.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 19.0\Version 19.0\202602062214190_GroupRequirementsImprovements_spUpdateGroupMemberRequiremennts.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202602182336503_Update_spCrm_PersonMerge6572" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202602182336503_Update_spCrm_PersonMerge6572.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+    <value>Version 19.0\Version 19.0\202602182336503_Update_spCrm_PersonMerge6572.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_202602251704362_Rollup_20260225_277_ExcludeArchivedAndDuplicateListMembers_spCommunication_SynchronizeListRecipients" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202602251704362_Rollup_20260225_277_ExcludeArchivedAndDuplicateListMembers_spCommunication_SynchronizeListRecipients.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Version 19.0\Version 19.0\202602251704362_Rollup_20260225_277_ExcludeArchivedAndDuplicateListMembers_spCommunication_SynchronizeListRecipients.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202602251704362_Rollup_20260225_268_ImproveSyncListRecipientsPerformance_spCommunication_SynchronizeListRecipients" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202602251704362_Rollup_20260225_268_ImproveSyncListRecipientsPerformance_spCommunication_SynchronizeListRecipients.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+    <value>Version 19.0\Version 19.0\202602251704362_Rollup_20260225_268_ImproveSyncListRecipientsPerformance_spCommunication_SynchronizeListRecipients.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
 </root>

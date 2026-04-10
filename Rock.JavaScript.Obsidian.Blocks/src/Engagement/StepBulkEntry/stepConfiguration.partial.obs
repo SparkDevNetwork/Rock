@@ -1,0 +1,198 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="isProgramPickerVisible" class="row">
+        <div class="col-md-6">
+            <StepProgramPicker v-model="internalProgram"
+                               label="Step Program" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <StepTypePicker v-model="internalType"
+                            label="Step Type"
+                            rules="required"
+                            :disabled="isTypePickerDisabled"
+                            :stepProgramGuid="stepProgramGuid ?? null" />
+        </div>
+        <div :class="stepTypeConfiguration?.hasEndDate ? 'col-md-3 col-sm-6' : 'col-md-6'">
+            <DatePicker v-model="internalStartDate"
+                        :label="stepTypeConfiguration?.startDateLabel ?? 'Date'"
+                        :rules="stepTypeConfiguration?.isDateRequired ? 'required' : ''" />
+        </div>
+        <div v-if="stepTypeConfiguration?.hasEndDate" class="col-md-3 col-sm-6">
+            <DatePicker v-model="internalEndDate"
+                        label="End Date" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <StepStatusPicker v-model="internalStatus"
+                              label="Status"
+                              rules="required"
+                              :showBlankItem="true"
+                              :stepProgramGuid="stepProgramGuid ?? null" />
+        </div>
+        <div class="col-md-6">
+            <CampusPicker v-model="internalCampus"
+                          label="Campus"
+                          forceVisible
+                          showBlankItem />
+        </div>
+    </div>
+
+    <AttributeValuesContainer v-if="stepTypeConfiguration?.stepAttributes && Object.keys(stepTypeConfiguration.stepAttributes).length > 0"
+                              v-model="internalAttributeValues"
+                              :attributes="stepTypeConfiguration.stepAttributes"
+                              isEditMode
+                              :numberOfColumns="2" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker.obs";
+    import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker.obs";
+    import StepTypePicker from "@Obsidian/Controls/stepTypePicker.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { StepBulkEntryStepTypeConfigurationBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepBulkEntry/stepBulkEntryStepTypeConfigurationBag";
+
+    const props = defineProps({
+        /** The current step type configuration, null until a step type is selected. */
+        stepTypeConfiguration: {
+            type: Object as PropType<StepBulkEntryStepTypeConfigurationBag | null>,
+            default: null
+        },
+
+        /** Whether the program picker should be shown. */
+        isProgramPickerVisible: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        /** Whether the step type picker should be disabled (pre-selected via settings or URL). */
+        isTypePickerDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The initial step program from block settings or page parameters. */
+        initialProgram: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        /** The initial step type from block settings or page parameters. */
+        initialType: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        /** The start date value. */
+        startDate: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The end date value. */
+        endDate: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The campus value. */
+        campus: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        /** The step status value. */
+        stepStatus: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        /** The attribute values. */
+        attributeValues: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:startDate", value: string): void;
+        (e: "update:endDate", value: string): void;
+        (e: "update:campus", value: ListItemBag | null): void;
+        (e: "update:stepStatus", value: ListItemBag | null): void;
+        (e: "update:attributeValues", value: Record<string, string>): void;
+        (e: "stepTypeChanged", value: Guid | null): void;
+        (e: "programChanged", value: Guid | null): void;
+    }>();
+
+    // #region Values
+
+    // Program and type use internal refs because they have one-time initialization
+    // and emit custom events (not v-model pass-through).
+    const internalProgram = ref<ListItemBag | null>(props.initialProgram ?? null);
+    const internalType = ref<ListItemBag | null>(props.initialType ?? null);
+
+    // v-model pass-through fields use computed get/set instead of
+    // bilateral watchers (ref → emit + prop → ref).
+    const internalStartDate = computed({
+        get: () => props.startDate,
+        set: (val) => emit("update:startDate", val)
+    });
+
+    const internalEndDate = computed({
+        get: () => props.endDate,
+        set: (val) => emit("update:endDate", val)
+    });
+
+    const internalCampus = computed({
+        get: () => props.campus,
+        set: (val) => emit("update:campus", val)
+    });
+
+    const internalStatus = computed({
+        get: () => props.stepStatus,
+        set: (val) => emit("update:stepStatus", val)
+    });
+
+    const internalAttributeValues = computed({
+        get: () => props.attributeValues,
+        set: (val) => emit("update:attributeValues", val)
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The current step program Guid, derived from the configuration or the picker. */
+    const stepProgramGuid = computed<Guid | null>(() => {
+        return props.stepTypeConfiguration?.stepProgramGuid
+            ?? internalProgram.value?.value
+            ?? props.initialProgram?.value
+            ?? null;
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    // Notify parent when the step type or program picker changes.
+    watch(() => internalType.value?.value ?? null, (newGuid) => {
+        emit("stepTypeChanged", newGuid);
+    });
+
+    watch(() => internalProgram.value?.value ?? null, (newGuid) => {
+        // Clear the step type since it may belong to a different program.
+        internalType.value = null;
+        emit("programChanged", newGuid);
+    });
+
+    // #endregion
+</script>

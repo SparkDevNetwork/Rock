@@ -603,5 +603,10 @@ namespace Rock.SystemGuid
         /// The job to run Post v19.0 Data Migrations to add an index to ensure the Communication Unsubscribe Report performs efficiently.
         /// </summary>
         public const string DATA_MIGRATIONS_190_ADD_COMMUNICATION_UNSUBSCRIBE_REPORT_INDEX = "ECBC94C0-7646-491E-A804-1CA228F0FFAD";
+
+        /// <summary>
+        /// The job to run Post v20.0 Data Migrations to add an Exception Log index to improve performance of the Exception List block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_200_ADD_EXCEPTION_LIST_INDEX = "A0824D0E-0E7C-4448-85FA-7C36C4AF29E6";
     }
 }
