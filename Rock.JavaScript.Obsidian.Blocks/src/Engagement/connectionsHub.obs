@@ -982,9 +982,10 @@
     const flyoutAnchorEl = ref<HTMLElement | null>(null);
     const isNoteRequired = ref(false);
 
-    /** The target index captured from the most recent board card move, used to
-     *  attach positional data to status update bags sent to the server. */
-    const cardMovedTargetIndex = ref<number | null>(null);
+    /** The idKey of the card that the most recent board drag was dropped before,
+     *  used to attach positional data to status update bags sent to the server.
+     *  Null means the card was dropped at the end of the column. */
+    const cardMovedBeforeIdKey = ref<string | null>(null);
 
     // Docked Panel Configuration
     const isDockedPanelSaving = ref<boolean>(false);
@@ -1448,14 +1449,14 @@
         };
     });
 
-    function onCardMoved(idKey: string, fromGroupKey: string, toGroupKey: string, targetIndex: number): void {
+    function onCardMoved(idKey: string, fromGroupKey: string, toGroupKey: string, beforeIdKey: string | null): void {
         // If the from key and to key are the same then we just need to reorder the request.
         if (fromGroupKey === toGroupKey) {
             // Don't reorder if the board is sorted by a custom field.
             if (viewOptions.value.sortBy) {
                 return;
             }
-            reorderConnectionRequest(idKey, targetIndex);
+            reorderConnectionRequest(idKey, beforeIdKey, toGroupKey);
             return;
         }
 
@@ -1464,7 +1465,10 @@
         }
         const row = gridData.value.rows.find(r => r.idKey === idKey);
 
-        cardMovedTargetIndex.value = targetIndex;
+        // Only set value needed for reorder if the sortBy filter is empty (defaulting to Order).
+        if (isNullOrWhiteSpace(viewOptions.value.sortBy)) {
+            cardMovedBeforeIdKey.value = beforeIdKey;
+        }
 
         switch (selectedGrouping.value) {
             case "connectorGrouping":
@@ -1890,7 +1894,7 @@
                     connectionRequestIdKey: request.idKey,
                     connectionStatusKey: nextStatus.value,
                     note: bag.note,
-                    targetIndex: cardMovedTargetIndex.value
+                    beforeIdKey: cardMovedBeforeIdKey.value
                 });
             }
         }
@@ -1900,7 +1904,7 @@
                     connectionRequestIdKey: request.idKey,
                     connectionStatusKey: bag.connectionStatusKey,
                     note: bag.note,
-                    targetIndex: cardMovedTargetIndex.value
+                    beforeIdKey: cardMovedBeforeIdKey.value
                 });
             }
         }
@@ -1914,7 +1918,7 @@
         }
         finally {
             isModalSaving.value = false;
-            cardMovedTargetIndex.value = null;
+            cardMovedBeforeIdKey.value = null;
         }
     }
 
@@ -2282,6 +2286,18 @@
                     continue;
                 }
 
+                // Mirror the server-side BulkUpdate: increment the order of
+                // all sibling rows in the target status that are at or after
+                // the new order so client-side sorting stays in sync.
+                const newOrder = updateBag.order;
+                if (newOrder !== undefined && gridData.value?.rows) {
+                    for (const sibling of gridData.value.rows) {
+                        if (sibling.idKey !== updateBag.idKey && sibling.statusGrouping === updateBag.statusGrouping && (sibling.order as number) >= newOrder) {
+                            (sibling.order as number) += 1;
+                        }
+                    }
+                }
+
                 row.stateGrouping = updateBag.stateGrouping;
                 row.statusGrouping = updateBag.statusGrouping;
                 row.connectionStatus = updateBag.connectionStatusBag;
@@ -2292,6 +2308,7 @@
                 row.dueSoonDate = updateBag.dueSoonDate;
                 row.followUpDate = updateBag.followUpDate;
                 row.completedDateTime = updateBag.completedDateTime;
+                row.order = newOrder;
             }
 
             // Need to validate the updated rows still meet server filter requirements.
@@ -2934,18 +2951,28 @@
         }
     }
 
-    async function reorderConnectionRequest(idKey: string, targetIndex: number): Promise<void> {
+    async function reorderConnectionRequest(idKey: string, beforeIdKey: string | null, statusGroupKey: string): Promise<void> {
         const result = await invokeBlockAction<number>("ReorderConnectionRequest", {
             connectionRequestIdKey: idKey,
-            targetIndex
+            beforeIdKey
         });
         const rowIndex = gridData.value?.rows?.findIndex(r => r.idKey === idKey) ?? -1;
 
-        console.log("target index: ", targetIndex);
         if (result.isSuccess && gridData.value?.rows && rowIndex !== -1) {
-            console.log("result: ", result.data);
+            const newOrder = result.data as number;
+
+            // Mirror the server-side BulkUpdate: increment sibling orders
+            // in the same status column at or after the new position.
+            for (const sibling of gridData.value.rows) {
+                if (sibling.idKey !== idKey
+                    && sibling.statusGrouping === statusGroupKey
+                    && (sibling.order as number) >= newOrder) {
+                    (sibling.order as number) += 1;
+                }
+            }
+
             const row = gridData.value.rows[rowIndex];
-            row.order = result.data;
+            row.order = newOrder;
         }
         else {
             console.error(result.errorMessage ?? "An error occurred while reordering the Connection Request.");

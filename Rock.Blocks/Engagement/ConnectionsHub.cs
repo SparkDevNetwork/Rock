@@ -3886,7 +3886,7 @@ WHERE 1 = 1" );
                 .Where( s => s.ConnectionTypeId == connectionType.Id )
                 .ToList();
 
-            var targetIndex = statusUpdateBags.FirstOrDefault()?.TargetIndex;
+            var beforeIdKey = statusUpdateBags.FirstOrDefault()?.BeforeIdKey;
 
             var statusBagByIdKey = statusUpdateBags.ToDictionary( b => b.ConnectionRequestIdKey );
 
@@ -3898,11 +3898,6 @@ WHERE 1 = 1" );
             foreach ( var request in connectionRequests )
             {
                 var currentStatus = connectionStatuses.Where( s => s.Id == request.ConnectionStatusId ).FirstOrDefault();
-
-                if ( targetIndex.HasValue )
-                {
-                    request.Order = targetIndex.Value;
-                }
 
                 // If Completed request, then apply state update.
                 if ( completedRequestIdKeys.Contains( request.IdKey ) )
@@ -3942,6 +3937,10 @@ WHERE 1 = 1" );
 
                 request.ConnectionStatusId = newStatus.Id;
                 request.ConnectionStatusHistoryNote = statusUpdateBags.First().Note;
+
+                // Resolve the drop position from the "before" card and shift
+                // sibling orders so the moved request slots in correctly.
+                ResolveAndApplyOrder( request, beforeIdKey );
             }
 
             RockContext.SaveChanges();
@@ -3972,7 +3971,8 @@ WHERE 1 = 1" );
                     DueDate = request.DueDate,
                     DueSoonDate = request.DueSoonDate,
                     FollowUpDate = request.FollowupDate,
-                    CompletedDateTime = request.ConnectedDateTime
+                    CompletedDateTime = request.ConnectedDateTime,
+                    Order = request.Order
                 } );
             }
 
@@ -4689,7 +4689,7 @@ WHERE 1 = 1" );
         }
 
         [BlockAction]
-        public BlockActionResult ReorderConnectionRequest( string connectionRequestIdKey, int targetIndex )
+        public BlockActionResult ReorderConnectionRequest( string connectionRequestIdKey, string beforeIdKey )
         {
             var connectionRequestService = new ConnectionRequestService( RockContext );
             var connectionRequest = connectionRequestService.Get( connectionRequestIdKey, !PageCache.Layout.Site.DisablePredictableIds );
@@ -4703,10 +4703,57 @@ WHERE 1 = 1" );
                 return error;
             }
 
-            connectionRequest.Order = targetIndex;
+            ResolveAndApplyOrder( connectionRequest, beforeIdKey );
             RockContext.SaveChanges();
 
             return ActionOk( connectionRequest.Order );
+        }
+
+        /// <summary>
+        /// Resolves the drop position from the "before" card's IdKey and applies the
+        /// correct Order value to the moved request. Shifts sibling request orders in
+        /// the same status column so the moved request slots in at the correct position.
+        /// Order is scoped to ConnectionStatusId only (not OpportunityId).
+        /// </summary>
+        /// <param name="request">The connection request being moved or reordered.</param>
+        /// <param name="beforeIdKey">The IdKey of the card the request was dropped before, or null if dropped at the end.</param>
+        private void ResolveAndApplyOrder( ConnectionRequest request, string beforeIdKey )
+        {
+            var connectionRequestService = new ConnectionRequestService( RockContext );
+
+            // Query siblings in the same status, excluding the moved request itself.
+            var siblingsQuery = connectionRequestService.Queryable()
+                .Where( r =>
+                    r.ConnectionStatusId == request.ConnectionStatusId &&
+                    r.Id != request.Id );
+
+            int newOrder;
+
+            if ( beforeIdKey.IsNotNullOrWhiteSpace() )
+            {
+                // Look up the "before" card's current Order value.
+                var beforeRequest = connectionRequestService.Get( beforeIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+                newOrder = beforeRequest?.Order ?? 0;
+            }
+            else
+            {
+                // Dropped at the end of the column — place after the current max.
+                var maxOrder = siblingsQuery
+                    .Select( r => ( int? ) r.Order )
+                    .Max();
+
+                newOrder = ( maxOrder ?? -1 ) + 1;
+            }
+
+            // Shift all siblings at or after the new position to make room.
+            var siblingsToShift = siblingsQuery.Where( r => r.Order >= newOrder );
+            RockContext.BulkUpdate( siblingsToShift, r => new ConnectionRequest
+            {
+                Order = r.Order + 1,
+                ModifiedDateTime = r.ModifiedDateTime
+            } );
+
+            request.Order = newOrder;
         }
 
         #region Detail View Block Actions

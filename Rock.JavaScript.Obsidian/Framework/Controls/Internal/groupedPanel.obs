@@ -53,7 +53,7 @@
             <GroupedBoardView v-else-if="isBoardView"
                               :groups="filteredGroups"
                               :canDropOnGroup="canDropOnGroup"
-                              @cardMoved="(idKey: string, from: string, to: string, targetIndex: number) => emit('cardMoved', idKey, from, to, targetIndex)">
+                              @cardMoved="(idKey: string, from: string, to: string, beforeIdKey: string | null) => emit('cardMoved', idKey, from, to, beforeIdKey)">
                 <template #boardCard="slotProps">
                     <slot name="boardCard" v-bind="slotProps" />
                 </template>
@@ -211,7 +211,7 @@
         (e: "update:groupingKey", value: string): void;
         (e: "update:orderedRequestKeys", value: string[]): void;
         (e: "update:viewMode", value: string): void;
-        (e: "cardMoved", idKey: string, fromGroupKey: string, toGroupKey: string, targetIndex: number): void;
+        (e: "cardMoved", idKey: string, fromGroupKey: string, toGroupKey: string, beforeIdKey: string | null): void;
     }>();
 
     const internalQuickFilterValue = useVModelPassthrough(props, "quickFilterValue", emit);

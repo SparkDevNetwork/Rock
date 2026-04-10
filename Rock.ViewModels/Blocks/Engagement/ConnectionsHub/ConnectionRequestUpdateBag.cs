@@ -62,8 +62,9 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public bool? CanCompleteRequest { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order that the Connection Request should be set to.
+        /// Gets or sets the IdKey of the Connection Request that the moved request
+        /// should be placed before. Null means place at the end of the column.
         /// </summary>
-        public int? TargetIndex { get; set; }
+        public string BeforeIdKey { get; set; }
     }
 }

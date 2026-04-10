@@ -117,6 +117,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the date from which this request is considered due soon.
         /// </summary>
         public DateTime? DueSoonDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sort order of the connection request within its status column.
+        /// </summary>
+        public int Order { get; set; }
     }
 }
 

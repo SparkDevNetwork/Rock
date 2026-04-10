@@ -81,4 +81,7 @@ export type ConnectionListGridUpdateBag = {
 
     /** Gets or sets the grouping key for the connection status column. */
     statusGrouping?: string | null;
+
+    /** Gets or sets the sort order of the connection request within its status column. */
+    order: number;
 };

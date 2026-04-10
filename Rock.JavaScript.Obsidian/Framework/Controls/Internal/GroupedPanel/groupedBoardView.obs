@@ -131,7 +131,7 @@ body.is-dragging * {
     });
 
     const emit = defineEmits<{
-        (e: "cardMoved", idKey: string, fromGroupKey: string, toGroupKey: string, targetIndex: number): void;
+        (e: "cardMoved", idKey: string, fromGroupKey: string, toGroupKey: string, beforeIdKey: string | null): void;
     }>();
 
     const boardViewRef = ref<HTMLElement | null>(null);
@@ -205,7 +205,10 @@ body.is-dragging * {
             const idKey = element.dataset.idKey;
             const fromGroupKey = sourceContainer.dataset.groupKey;
             const toGroupKey = targetContainer?.dataset.groupKey;
-            const targetIndex = operation.targetIndex ?? 0;
+
+            // Get the idKey of the card this was dropped before (null = end of column).
+            const targetSibling = operation.targetSibling as HTMLElement | undefined;
+            const beforeIdKey = targetSibling?.dataset?.idKey ?? null;
 
             if (!idKey || !fromGroupKey || !toGroupKey) {
                 return;
@@ -218,7 +221,7 @@ body.is-dragging * {
                 operation.sourceSibling ?? null
             );
 
-            emit("cardMoved", idKey, fromGroupKey, toGroupKey, targetIndex);
+            emit("cardMoved", idKey, fromGroupKey, toGroupKey, beforeIdKey);
         }
     }));
 
