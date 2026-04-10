@@ -4,17 +4,18 @@
             <div class="d-flex p-spacing-sm justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-sm">
                     <PersonAvatar :photoUrl="photoUrl" marginRight="0" />
-                    <div class="text-md text-semibold">{{ name }}</div>
+                    <div class="text-md text-semibold" v-tooltip="nameTooltip">{{ name }}</div>
                 </div>
                 <div class="d-flex align-items-center gap-tiny">
                     <span v-if="!hideCampusLabel && !isNullOrWhiteSpace(campusShortCode)"
                           class="label label-default"
-                          :style="campusLabelStyle()">
+                          :style="campusLabelStyle()"
+                          v-tooltip="campusTooltip">
                         {{ campusShortCode }}
                     </span>
-                    <div class="dropdown dropdown-right">
-                        <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown"></i>
-                        <ul class="dropdown-menu">
+                    <div class="dropdown dropdown-right" :class="{ 'open': isSecondaryActionDropdownOpen }">
+                        <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown" @click.stop="toggleDropdown"></i>
+                        <ul class="dropdown-menu" @click.stop="isSecondaryActionDropdownOpen = false">
                             <slot name="secondaryHeaderActions" />
                         </ul>
                     </div>
@@ -49,6 +50,7 @@
     import { ref, PropType, watch, computed } from "vue";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
 
     const props = defineProps({
         photoUrl: {
@@ -72,8 +74,20 @@
         hideCampusLabel: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        nameTooltip: {
+            type: String as PropType<string | null | undefined>,
+            default: undefined
+        },
+
+        campusTooltip: {
+            type: String as PropType<string | null | undefined>,
+            default: undefined
         }
     });
+
+    const isSecondaryActionDropdownOpen = ref(false);
 
     /** Contains the custom style values to apply to the span label. */
     const campusLabelStyle = (): Record<string, string> | undefined => {
@@ -86,4 +100,8 @@
             "color": pair.foregroundColor.toRgba()
         };
     };
+
+    function toggleDropdown(): void {
+        isSecondaryActionDropdownOpen.value = !isSecondaryActionDropdownOpen.value;
+    }
 </script>

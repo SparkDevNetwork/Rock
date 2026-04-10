@@ -1,5 +1,5 @@
 <template>
-    <div class="grouped-board-view">
+    <div ref="boardViewRef" class="grouped-board-view">
         <div v-for="group in groups"
              :key="group.key ?? ''"
              class="board-column shadow-md">
@@ -78,6 +78,11 @@
     outline-offset: -2px;
     background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);
 }
+
+.board-column.drag-disabled {
+    opacity: 0.5;
+    transition: opacity 0.15s ease;
+}
 </style>
 
 <style>
@@ -100,17 +105,28 @@ body.is-dragging * {
 </style>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { computed, PropType, ref } from "vue";
     import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { GroupedGrid } from "./types.partial";
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
 
-    defineProps({
+    const props = defineProps({
         /** The pre-computed groups to render as board columns. */
         groups: {
             type: Array as PropType<GroupedGrid[]>,
             required: true
+        },
+
+        /**
+         * Optional callback that determines whether a card from
+         * sourceGroupKey can be dropped onto targetGroupKey. When
+         * undefined all columns accept drops (default behavior).
+         */
+        canDropOnGroup: {
+            type: Function as PropType<((sourceGroupKey: string, targetGroupKey: string) => boolean) | undefined>,
+            required: false,
+            default: undefined
         }
     });
 
@@ -118,18 +134,49 @@ body.is-dragging * {
         (e: "cardMoved", idKey: string, fromGroupKey: string, toGroupKey: string): void;
     }>();
 
+    const boardViewRef = ref<HTMLElement | null>(null);
+
     // #region Drag and Drop
 
     const dragId = newGuid();
 
     /** Shared drag source options for all board columns. A single id links
      *  every column as both a source and a target so cards can move freely. */
-    const dragSourceOptions: IDragSourceOptions = {
+    const dragSourceOptions = computed<IDragSourceOptions>(() => ({
         id: dragId,
         copyElement: false,
 
-        dragBegin() {
+        acceptDrop(operation) {
+            if (!props.canDropOnGroup) {
+                return true;
+            }
+
+            const sourceKey = (operation.sourceContainer as HTMLElement)?.dataset.groupKey;
+            const targetKey = (operation.targetContainer as HTMLElement)?.dataset.groupKey;
+
+            if (!sourceKey || !targetKey) {
+                return false;
+            }
+
+            return props.canDropOnGroup(sourceKey, targetKey);
+        },
+
+        dragBegin(operation) {
             document.body.classList.add("is-dragging");
+
+            // When a drop constraint callback is provided, mark columns
+            // that cannot accept the dragged card so they appear disabled.
+            if (props.canDropOnGroup) {
+                const sourceKey = (operation.sourceContainer as HTMLElement)?.dataset.groupKey ?? "";
+
+                boardViewRef.value?.querySelectorAll<HTMLElement>(".board-column-body").forEach(body => {
+                    const targetKey = body.dataset.groupKey ?? "";
+
+                    if (targetKey !== sourceKey && !props.canDropOnGroup!(sourceKey, targetKey)) {
+                        body.closest(".board-column")?.classList.add("drag-disabled");
+                    }
+                });
+            }
         },
 
         dragOver(operation) {
@@ -146,6 +193,8 @@ body.is-dragging * {
             // Safety cleanup of all highlights.
             document.querySelectorAll(".board-column.drag-over")
                 .forEach(el => el.classList.remove("drag-over"));
+            document.querySelectorAll(".board-column.drag-disabled")
+                .forEach(el => el.classList.remove("drag-disabled"));
         },
 
         dragDrop(operation) {
@@ -170,7 +219,7 @@ body.is-dragging * {
 
             emit("cardMoved", idKey, fromGroupKey, toGroupKey);
         }
-    };
+    }));
 
     // #endregion
 </script>

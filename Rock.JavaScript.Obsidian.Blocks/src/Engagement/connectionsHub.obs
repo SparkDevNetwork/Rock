@@ -33,6 +33,7 @@
                   :isAutoCollapseEnabled="isAutoCollapseEnabled"
                   :headerSecondaryActions="secondaryActions"
                   :availableGroups="availableGroups"
+                  :canDropOnGroup="canDropOnGroup"
                   @cardMoved="onCardMoved">
         <template #selectedActionToolbar>
             <div class="left-actions d-flex align-items-center gap-md">
@@ -1409,6 +1410,33 @@
 
     // #region Board Functions
 
+    /**
+     * When sequential status mode is active and grouped by status,
+     * only allow drops on the next sequential status column.
+     */
+    const canDropOnGroup = computed<((sourceGroupKey: string, targetGroupKey: string) => boolean) | undefined>(() => {
+        if (!box.options?.isSequentialStatusMode || selectedGrouping.value !== "statusGrouping") {
+            return undefined;
+        }
+
+        const statuses = box.options?.connectionStatuses ?? [];
+        const sortedStatuses = [...statuses].sort((a, b) => a.order - b.order);
+        const nextKeyByKey = new Map<string, string>();
+
+        for (let i = 0; i < sortedStatuses.length - 1; i++) {
+            const currentKey = sortedStatuses[i].idKey;
+            const nextKey = sortedStatuses[i + 1].idKey;
+
+            if (currentKey && nextKey) {
+                nextKeyByKey.set(currentKey, nextKey);
+            }
+        }
+
+        return (sourceGroupKey: string, targetGroupKey: string): boolean => {
+            return nextKeyByKey.get(sourceGroupKey) === targetGroupKey;
+        };
+    });
+
     function onCardMoved(idKey: string, fromGroupKey: string, toGroupKey: string): void {
         if (!gridData.value?.rows) {
             return;
@@ -2382,6 +2410,7 @@
                     row.stateGrouping = resultBag.stateGrouping;
                     row.connectionState = resultBag.connectionState;
                     row.followUpDate = resultBag.followUpDate;
+                    row.completedDateTime = resultBag.completedDateTime;
 
                     // If this row stopped meeting server filters then splice it.
                     if (!isRowVisibleWithServerFilters(row)) {

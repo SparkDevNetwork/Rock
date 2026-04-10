@@ -6,6 +6,8 @@
                     :campusShortCode="campusLabel?.shortCode"
                     :campusColor="campusLabel?.color"
                     :hideCampusLabel="hideCampusLabel"
+                    :nameTooltip="`Requester: ${connectionRequestRow.requestDetails.nickName} ${connectionRequestRow.requestDetails.lastName}`"
+                    :campusTooltip="`Campus: ${connectionRequestRow.campus}`"
                     class="connection-request-card"
                     :class="{ 'completed': connectionRequestRow.connectionState === ConnectionState.Connected }"
                     @click="selectRequest">
@@ -13,28 +15,28 @@
                 <template v-if="canEditConnectionRequests">
                     <li>
                         <button type="button"
-                                @click.stop="() => emit('changeState', ConnectionState.Active, connectionRequest)"
+                                @click="() => emit('changeState', ConnectionState.Active, connectionRequest)"
                                 class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
                             <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
                         </button>
                     </li>
                     <li>
                         <button type="button"
-                                @click.stop="() => emit('changeState', ConnectionState.Inactive, connectionRequest)"
+                                @click="() => emit('changeState', ConnectionState.Inactive, connectionRequest)"
                                 class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
                             <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
                         </button>
                     </li>
                     <li v-if="options?.isFutureFollowUpEnabled">
                         <button type="button"
-                                @click.stop="() => emit('changeState', ConnectionState.FutureFollowUp, connectionRequest)"
+                                @click="() => emit('changeState', ConnectionState.FutureFollowUp, connectionRequest)"
                                 class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
                             <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
                         </button>
                     </li>
                     <li>
                         <button type="button"
-                                @click.stop="() => emit('changeState', ConnectionState.Connected, connectionRequest)"
+                                @click="() => emit('changeState', ConnectionState.Connected, connectionRequest)"
                                 class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
                             <i class="ti ti-circle-check pr-spacing-sm text-interface-medium"></i>Mark Complete
                         </button>
@@ -42,7 +44,7 @@
                 </template>
                 <li>
                     <button type="button"
-                            @click.stop="() => emit('launchWorkflow', connectionRequest)"
+                            @click="() => emit('launchWorkflow', connectionRequest)"
                             class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
                         <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
                     </button>
@@ -50,14 +52,14 @@
                 <template v-if="canEditConnectionRequests">
                     <li v-if="options?.isRequestSecurityEnabled">
                         <button type="button"
-                                @click.stop="() => emit('showSecurity', connectionRequestRow.idKey)"
+                                @click="() => emit('showSecurity', connectionRequestRow.idKey)"
                                 class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
                             <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
                         </button>
                     </li>
                     <li>
                         <button type="button"
-                                @click.stop="() => emit('delete', connectionRequest)"
+                                @click="() => emit('delete', connectionRequest)"
                                 class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold text-danger">
                             <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
                         </button>
@@ -66,7 +68,8 @@
             </template>
             <template v-if="connectionState !== ConnectionState.Active" #subheader>
                 <div class="py-spacing-xs px-spacing-sm text-center text-semibold text-sm"
-                     :class="stateColorClasses">
+                     :class="stateColorClasses"
+                     v-tooltip="stateTooltip">
                     <template v-if="connectionState === ConnectionState.FutureFollowUp">
                         Future Follow-Up: {{ daysElapsed(connectionRequestRow.followUpDate) }}
                     </template>
@@ -78,19 +81,24 @@
             <template #body>
                 <div class="details-container border-top">
                     <dl>
-                        <dt>Opportunity</dt>
+                        <dt v-tooltip.overflow="connectionRequestRow.connectionOpportunity">Opportunity</dt>
                         <dd class="text-semibold"
-                            :ref="(el) => addTooltipIfOverflow(el as HTMLElement, connectionRequestRow.connectionOpportunity ?? '')">
+                            v-tooltip.overflow="connectionRequestRow.connectionOpportunity">
                             <i v-if="connectionRequestRow.connectionOpportunityIconCssClass"
                                :class="connectionRequestRow.connectionOpportunityIconCssClass"
                                class="mr-spacing-tiny"></i>
                             {{ connectionRequestRow.connectionOpportunity }}
                         </dd>
-                        <dt>Due Date</dt>
+                        <dt v-tooltip="dueDateTooltip">Due Date</dt>
                         <dd v-if="!isNullOrWhiteSpace(connectionRequestRow.dueDate)"
                             :class="getDueDateColor(connectionRequestRow.dueStatus, connectionState === ConnectionState.Connected)"
-                            :ref="(el) => addTooltipIfOverflow(el as HTMLElement, daysElapsed(connectionRequestRow.dueDate))">
-                            {{ daysElapsed(connectionRequestRow.dueDate, true) }}
+                            v-tooltip="dueDateTooltip">
+                            <template v-if="connectionState === ConnectionState.Connected">
+                                {{ getCustomDateMedium(connectionRequestRow.dueDate) }}
+                            </template>
+                            <template v-else>
+                                {{ daysElapsed(connectionRequestRow.dueDate, true) }}
+                            </template>
                         </dd>
                         <dd v-else>
                             <i class="ti ti-minus"></i>
@@ -100,13 +108,13 @@
                 <div v-if="attributesToShow?.length && attributesToShow.length > 0"
                      class="details-container bg-interface-softer border-top">
                     <dl>
-                        <template v-for="attrFieldvalue in attributesToShow">
-                            <dt :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attrFieldvalue.title ?? '')">
-                                {{ attrFieldvalue.title }}
+                        <template v-for="attrFieldValue in attributesToShow">
+                            <dt v-tooltip.html="getAttributeTooltip(attrFieldValue)">
+                                {{ attrFieldValue.title }}
                             </dt>
-                            <dd v-if="!isNullOrWhiteSpace(getAttributeTextValue(attrFieldvalue))"
-                                :ref="(el) => addTooltipIfOverflow(el as HTMLElement, getAttributeTextValue(attrFieldvalue)!)">
-                                {{ getAttributeTextValue(attrFieldvalue) }}
+                            <dd v-if="!isNullOrWhiteSpace(getAttributeTextValue(attrFieldValue))"
+                                v-tooltip.html="getAttributeTooltip(attrFieldValue)">
+                                {{ getAttributeTextValue(attrFieldValue) }}
                             </dd>
                             <dd v-else>
                                 <i class="ti ti-minus"></i>
@@ -118,15 +126,16 @@
             <template #footer>
                 <div class="py-spacing-sm px-spacing-md border-top d-flex align-items-center justify-content-between">
                     <HighlightLabel :labelType="getConnectorLabelType()"
-                                    iconCssClass="ti ti-user-circle">
+                                    iconCssClass="ti ti-user-circle"
+                                    v-tooltip="connectorTooltip">
                         {{ connectionRequestRow.connectorDetails?.text }}
                     </HighlightLabel>
                     <div class="d-flex align-items-center gap-sm text-sm text-interface-medium">
-                        <div class="d-flex align-items-center gap-extra-tiny">
+                        <div class="d-flex align-items-center gap-extra-tiny" v-tooltip="createdDateTooltip">
                             <i class="ti ti-calendar-plus"></i>
                             {{ getElapsedShortTime(connectionRequestRow.createdDateTime) }}
                         </div>
-                        <div class="d-flex align-items-center gap-extra-tiny">
+                        <div class="d-flex align-items-center gap-extra-tiny" v-tooltip.html="activitiesTooltip">
                             <i class="ti ti-bolt"></i>
                             {{ connectionRequestRow.activityCount }}
                         </div>
@@ -169,7 +178,7 @@
     import { ref, PropType, watch, computed } from "vue";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { ConnectionState, ConnectionStateDescription } from "@Obsidian/Enums/Connection/connectionState";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
     import { CampusLabelBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/campusLabelBag";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
@@ -177,7 +186,7 @@
     import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
     import { DueStatus } from "@Obsidian/Enums/Connection/dueStatus";
     import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
-    import { addTooltipIfOverflow } from "./types.partial";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
 
     type ConnectionRequestCardRow = {
         idKey?: string | null;
@@ -322,8 +331,61 @@
         }
     });
 
+    const stateTooltip = (): string | null | undefined => {
+        if (!connectionRequestRow.value.connectionState || connectionRequestRow.value.connectionState === ConnectionState.Inactive) {
+            return;
+        }
+
+        if (connectionRequestRow.value.connectionState === ConnectionState.FutureFollowUp) {
+            return `Future Follow-Up: ${getShortDate(connectionRequestRow.value.followUpDate)}`;
+        }
+        else {
+            return `Completed on: ${getShortDate(connectionRequestRow.value.completedDateTime)}`;
+        }
+    };
+
+    const dueDateTooltip = (): string | null | undefined => {
+        if (!connectionRequestRow.value.dueDate) {
+            return;
+        }
+        return `Due Date: ${getShortDate(connectionRequestRow.value.dueDate)}`;
+    };
+
+    const getAttributeTooltip = (attributeFieldValue: AttributeFieldDefinitionBag): string | null | undefined => {
+        const textValue = getAttributeTextValue(attributeFieldValue);
+
+        if (isNullOrWhiteSpace(textValue)) {
+            return `${attributeFieldValue.title}: <i class="ti ti-minus"></i>`;
+        }
+        return `${attributeFieldValue.title}: ${textValue}`;
+    };
+
+    const connectorTooltip = (): string => {
+        if (!connectionRequestRow.value.connectorDetails?.text) {
+            return `Connector: Unassigned`;
+        }
+        return `Connector: ${connectionRequestRow.value.connectorDetails.text}`;
+    };
+
+    const createdDateTooltip = (): string | null | undefined => {
+        if (!connectionRequestRow.value.createdDateTime) {
+            return;
+        }
+        return `Created on: ${getShortDate(connectionRequestRow.value.createdDateTime)}`;
+    };
+
+    const activitiesTooltip = (): string | null | undefined => {
+        let tooltip = `Activities: ${connectionRequestRow.value.activityCount ?? 0}`;
+
+        if (!isNullOrWhiteSpace(connectionRequestRow.value.lastActivityDateTime)) {
+            tooltip += `.<br>Last Activity: ${getShortDate(connectionRequestRow.value.lastActivityDateTime)}`;
+        }
+
+        return tooltip;
+    };
+
     const daysElapsed = (dateTimeIsoToCheck: string | null | undefined, isDueDateCheck: boolean = false): string => {
-        const isCompleted = connectionState.value === ConnectionState.Connected;
+        // const isCompleted = connectionState.value === ConnectionState.Connected;
 
         if (!dateTimeIsoToCheck) {
             return "";
@@ -335,34 +397,35 @@
         }
 
         // Use the completion date as the reference point if completed, otherwise use today
-        let referenceDate: RockDateTime;
-        if (isCompleted) {
-            const completedDateTimeIso = connectionRequestRow.value.completedDateTime;
-            const completedDate = RockDateTime.parseISO(completedDateTimeIso ?? "")?.date;
+        // let referenceDate: RockDateTime;
+        // if (isCompleted) {
+        //     const completedDateTimeIso = connectionRequestRow.value.completedDateTime;
+        //     const completedDate = RockDateTime.parseISO(completedDateTimeIso ?? "")?.date;
 
-            referenceDate = completedDate ? completedDate : RockDateTime.now().date;
-        }
-        else {
-            referenceDate = RockDateTime.now().date;
-        }
+        //     referenceDate = completedDate ? completedDate : RockDateTime.now().date;
+        // }
+        // else {
+        //     referenceDate = RockDateTime.now().date;
+        // }
+        const referenceDate = RockDateTime.now();
         const dateToCheck = dateTimeToCheck.date;
 
         const msPerDay = 1000 * 60 * 60 * 24;
 
         const diffDays = Math.round((dateToCheck.toMilliseconds() - referenceDate.toMilliseconds()) / msPerDay);
 
-        if (isCompleted) {
-            if (diffDays > 0) {
-                return `Completed ${diffDays} ${diffDays === 1 ? "Day" : "Days"} Before Due`;
-            }
-            else if (diffDays < 0) {
-                const lateDays = Math.abs(diffDays);
-                return `Completed ${lateDays} ${lateDays === 1 ? "Day" : "Days"} After Due`;
-            }
-            else {
-                return "Completed on Due Date";
-            }
-        }
+        // if (isCompleted) {
+        //     if (diffDays > 0) {
+        //         return `Completed ${diffDays} ${diffDays === 1 ? "Day" : "Days"} Before Due`;
+        //     }
+        //     else if (diffDays < 0) {
+        //         const lateDays = Math.abs(diffDays);
+        //         return `Completed ${lateDays} ${lateDays === 1 ? "Day" : "Days"} After Due`;
+        //     }
+        //     else {
+        //         return "Completed on Due Date";
+        //     }
+        // }
 
         if (diffDays > 0) {
             const pre = isDueDateCheck ? "Due in" : "In";
@@ -434,8 +497,17 @@
         return value["text"];
     }
 
+    function getShortDate(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date ?? "")?.toLocaleString(DateTimeFormat.DateShort) ?? "";
+    }
+
+    function getCustomDateMedium(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date ?? "")?.toLocaleString({ month: "short", day: "numeric" }) ?? "";
+    }
+
     /** The time elapsed since the specified date in a human-readable format. */
     function getElapsedShortTime(date: string | null | undefined): string {
         return RockDateTime.parseISO(date ?? "")?.localDateTime.toElapsedShortString() ?? "";
     }
+
 </script>

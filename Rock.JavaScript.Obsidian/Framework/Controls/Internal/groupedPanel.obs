@@ -52,6 +52,7 @@
             </GroupedListView>
             <GroupedBoardView v-else-if="isBoardView"
                               :groups="filteredGroups"
+                              :canDropOnGroup="canDropOnGroup"
                               @cardMoved="(idKey: string, from: string, to: string) => emit('cardMoved', idKey, from, to)">
                 <template #boardCard="slotProps">
                     <slot name="boardCard" v-bind="slotProps" />
@@ -189,6 +190,17 @@
          */
         availableGroups: {
             type: Object as PropType<Record<string, GroupedGrid[]>>,
+            required: false,
+            default: undefined
+        },
+
+        /**
+         * Optional callback that determines whether a card from
+         * sourceGroupKey can be dropped onto targetGroupKey. When
+         * undefined all columns accept drops (default behavior).
+         */
+        canDropOnGroup: {
+            type: Function as PropType<((sourceGroupKey: string, targetGroupKey: string) => boolean) | undefined>,
             required: false,
             default: undefined
         }
