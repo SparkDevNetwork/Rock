@@ -3186,11 +3186,21 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
 
                             The attributeCol controls helps add the Attributes to the page.
                             But, not having the attributeCol.ID set causes the Page to throw View State Exception as DynamicControlsHtmlGenericControl instances are required to have an Id.
-                            
+
                             Reason: https://github.com/SparkDevNetwork/Rock/issues/3867
+
+                            4/10/2026 - MSE
+
+                            Changed from attribute.Key to attribute.Id to prevent duplicate
+                            control ID errors. ASP.NET control IDs are case-insensitive, so
+                            two attributes whose keys differ only in case (e.g. "Image" vs
+                            "image") would collide. Using the integer Id guarantees uniqueness.
+
+                            Reason: Prevents HttpException when the same entity has attributes
+                            from different qualifier sources with the same key.
                          */
 
-                        attributeCol.ID = "attributeCol_" + attribute.Key;
+                        attributeCol.ID = "attributeCol_" + attribute.Id;
 
                         attributeRow.Controls.Add( attributeCol );
                         attributeCol.AddCssClass( $"col-md-{colSize}" );
