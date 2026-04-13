@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -9,7 +25,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Rock;
 using Rock.AI.Agent;
 using Rock.Attribute;
-using Rock.Configuration;
 using Rock.Enums.AI.Agent;
 using Rock.Enums.Cms;
 using Rock.Model;
@@ -199,9 +214,7 @@ namespace Rock.Blocks.AI
 
             // Find the recent sessions.
             var sessions = GetRecentSessions( agentCache.Id );
-
             var sessionId = sessions.LastOrDefault()?.Id;
-
 
             // If no session was found, create a new session.
             if ( !sessionId.HasValue )
@@ -242,7 +255,7 @@ namespace Rock.Blocks.AI
                     : string.Empty;
 
                 return $@"<button class=""btn btn-default rock-bookmark chatbot-placeholder-button"" {disabled}type=""button"">
-    <i class=""ti ti-message-chatbot""></i>
+    <i class=""ti ti-sparkles""></i>
 </button>";
             }
 
@@ -321,7 +334,7 @@ namespace Rock.Blocks.AI
         /// <returns>A list of active anchors in the session.</returns>
         private List<ChatAnchorBag> GetSessionAnchors( int sessionId )
         {
-            return new AIAgentSessionAnchorService( RockContext )
+            var anchors = new AIAgentSessionAnchorService( RockContext )
                 .Queryable()
                 .Where( s => s.AIAgentSessionId == sessionId
                     && s.IsActive )
@@ -340,6 +353,60 @@ namespace Rock.Blocks.AI
                     Name = s.Name
                 } )
                 .ToList();
+
+            // Add in any transient anchors from the page context.
+            var contextTypes = RequestContext.GetContextEntityTypes();
+
+            foreach ( var contextTypeName in PageCache.PageContexts.Keys )
+            {
+                var contextType = contextTypes.FirstOrDefault( t => t.FullName == contextTypeName );
+
+                if ( contextType == null )
+                {
+                    continue;
+                }
+
+                var contextEntityType = EntityTypeCache.Get( contextType, false, RockContext );
+
+                if ( contextEntityType == null || anchors.Any( a => a.EntityTypeId == contextEntityType.Id ) )
+                {
+                    continue;
+                }
+
+                var entity = RequestContext.GetContextEntity( contextType );
+
+                anchors.Add( new ChatAnchorBag
+                {
+                    Id = 0,
+                    EntityTypeId = contextEntityType.Id,
+                    EntityTypeName = contextEntityType.FriendlyName,
+                    Name = AIAgentSessionAnchorService.GetEntityContextName( entity ),
+                } );
+            }
+            return anchors;
+        }
+
+        /// <summary>
+        /// Adds the transient anchors to the chat agent for this page.
+        /// </summary>
+        /// <param name="agent">The chat agent to be updated.</param>
+        private async Task AddTransientAnchorsAsync( ChatAgent agent )
+        {
+            var contextTypes = RequestContext.GetContextEntityTypes();
+
+            foreach ( var contextTypeName in PageCache.PageContexts.Keys )
+            {
+                var contextType = contextTypes.FirstOrDefault( t => t.FullName == contextTypeName );
+
+                if ( contextType == null )
+                {
+                    continue;
+                }
+
+                var entity = RequestContext.GetContextEntity( contextType );
+
+                await agent.AddTransientAnchorAsync( entity );
+            }
         }
 
         #endregion
@@ -378,7 +445,9 @@ namespace Rock.Blocks.AI
             } );
 
             await agent.LoadSessionAsync( request.SessionId );
+            await AddTransientAnchorsAsync( agent );
             await agent.AddMessageAsync( AuthorRole.User, request.Message );
+
             var internalLogs = new List<ChatDebugLog>();
 
             async IAsyncEnumerable<SendMessageResponseBag> ResponseFactory()
