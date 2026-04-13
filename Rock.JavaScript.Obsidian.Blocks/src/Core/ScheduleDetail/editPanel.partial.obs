@@ -30,11 +30,11 @@
         <div class="row">
             <div class="col-md-6">
                 <Numberbox v-model="enableCheckIn"
-                            append="mins before start"
-                            label="Enable Check-in">
-                            <template #inputGroupAppend>
-                                <span class="input-group-addon">mins before start</span>
-                            </template>
+                           append="mins before start"
+                           label="Enable Check-in">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">mins before start</span>
+                    </template>
                 </Numberbox>
 
                 <CategoryPicker v-model="category"
@@ -46,10 +46,10 @@
 
             <div class="col-md-6">
                 <Numberbox v-model="closeCheckIn"
-                            label="Close Check-in">
-                            <template #inputGroupAppend>
-                                <span class="input-group-addon">mins after start</span>
-                            </template>
+                           label="Close Check-in">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">mins after start</span>
+                    </template>
                 </Numberbox>
 
                 <CheckBox v-model="autoInactivateWhenComplete"
@@ -63,13 +63,13 @@
                 <div class="row">
                     <div class="col-md-8">
                         <ScheduleBuilder v-model="calendarContent"
-                                label="Schedule"/>
+                                         label="Schedule" />
                     </div>
 
                     <div class="col-md-2">
                         <RockButton btnType="link" data-toggle="tooltip" ref="previewRef"
-                            data-placement="auto" data-container="body" data-html="true"
-                            title="" :data-original-title="props.options?.helpText">Preview</RockButton>
+                                    data-placement="auto" data-container="body" data-html="true"
+                                    :title="props.options?.helpText ?? ''" :data-original-title="props.options?.helpText">Preview</RockButton>
                     </div>
                 </div>
             </div>
