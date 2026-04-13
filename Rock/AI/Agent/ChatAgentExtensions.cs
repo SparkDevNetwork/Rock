@@ -34,14 +34,13 @@ namespace Rock.AI.Agent
     internal static class ChatAgentExtensions
     {
         /// <summary>
-        /// Starts a new session in the database without associating it with
-        /// a specific entity.
+        /// Starts a new standard session in the database.
         /// </summary>
         /// <param name="chatAgent">The chat agent instance.</param>
         /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
         public static Task StartNewSessionAsync( this ChatAgent chatAgent )
         {
-            return chatAgent.StartNewSessionAsync( null, null );
+            return chatAgent.StartNewSessionAsync( Enums.AI.Agent.SessionType.Standard );
         }
     }
 }

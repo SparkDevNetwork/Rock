@@ -58,11 +58,10 @@ namespace Rock.AI.Agent
         /// associated with a specific entity to help provide filtering and
         /// initial context information.
         /// </summary>
-        /// <param name="entityTypeId">The identifier of the <see cref="Model.EntityType"/> this session is associated with.</param>
-        /// <param name="entityId">The identifier of the <see cref="IEntity"/> this session is associated with.</param>
+        /// <param name="sessionType">The type of session to be created.</param>
         /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
-        public abstract Task StartNewSessionAsync( int? entityTypeId, int? entityId, CancellationToken cancellationToken = default );
+        public abstract Task StartNewSessionAsync( SessionType sessionType, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Loads an existing session from the database. This will load the

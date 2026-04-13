@@ -276,8 +276,7 @@ namespace Rock.Blocks.AI
                     .Where( s => s.Id == resumeSessionId
                         && s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id
                         && s.AIAgentId == agentCache.Id
-                        && !s.RelatedEntityTypeId.HasValue
-                        && !s.RelatedEntityId.HasValue )
+                        && s.SessionType == SessionType.Docked )
                     .Select( s => ( int? ) s.Id )
                     .FirstOrDefault();
 
@@ -285,7 +284,7 @@ namespace Rock.Blocks.AI
             }
             else
             {
-                sessions = GetRecentSessions( agentCache.Id );
+                sessions = GetRecentStandardSessions( agentCache.Id );
 
                 sessionId = IdHasher.Instance.GetId( sessions.LastOrDefault()?.IdKey );
             }
@@ -295,7 +294,7 @@ namespace Rock.Blocks.AI
             {
                 var agent = _agentBuilder.Build( agentCache.Id );
 
-                await agent.StartNewSessionAsync( null, null );
+                await agent.StartNewSessionAsync( IsDockedMode ? SessionType.Docked : SessionType.Standard );
 
                 if ( IsDockedMode )
                 {
@@ -303,7 +302,7 @@ namespace Rock.Blocks.AI
                 }
                 else
                 {
-                    sessions = GetRecentSessions( agentCache.Id );
+                    sessions = GetRecentStandardSessions( agentCache.Id );
                     sessionId = IdHasher.Instance.GetId( sessions.Last().IdKey );
                 }
             }
@@ -357,7 +356,7 @@ namespace Rock.Blocks.AI
         /// </summary>
         /// <param name="agentId">The unique identifier of the agent.</param>
         /// <returns>A list of recent chat sessions.</returns>
-        private List<ChatSessionBag> GetRecentSessions( int agentId )
+        private List<ChatSessionBag> GetRecentStandardSessions( int agentId )
         {
             var recentDate = RockDateTime.Today.AddDays( -30 );
 
@@ -365,8 +364,7 @@ namespace Rock.Blocks.AI
                 .Queryable()
                 .Where( s => s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id
                     && s.AIAgentId == agentId
-                    && !s.RelatedEntityTypeId.HasValue
-                    && !s.RelatedEntityId.HasValue
+                    && s.SessionType == SessionType.Standard
                     && s.LastMessageDateTime >= recentDate)
                 .OrderBy( s => s.LastMessageDateTime )
                 .Select( s => new
@@ -634,7 +632,7 @@ namespace Rock.Blocks.AI
             } );
 
             // Start a new session.
-            await agent.StartNewSessionAsync( null, null );
+            await agent.StartNewSessionAsync( IsDockedMode ? SessionType.Docked : SessionType.Standard );
 
             return ActionOk( new ChatSessionBag
             {
