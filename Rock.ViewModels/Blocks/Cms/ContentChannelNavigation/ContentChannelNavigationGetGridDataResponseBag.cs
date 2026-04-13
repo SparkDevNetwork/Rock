@@ -85,5 +85,14 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelNavigation
         /// occurrences. Controls the event occurrences column.
         /// </summary>
         public bool HasEventOccurrences { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether any user-applied filters
+        /// are active for the current grid data request. This is determined
+        /// server-side after converting filter values to their internal
+        /// representation, so it is the authoritative source for whether
+        /// the grid settings indicator should appear active.
+        /// </summary>
+        public bool HasActiveFilters { get; set; }
     }
 }

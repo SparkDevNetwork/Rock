@@ -152,7 +152,18 @@ namespace Rock.Field.Types
         public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
             var jsonValue = publicValue.FromJsonOrNull<JsonValue>();
-            return jsonValue != null ? $"{jsonValue.InteractionChannel?.Value}|{jsonValue.InteractionComponent?.Value}" : string.Empty;
+
+            if ( jsonValue == null )
+            {
+                return string.Empty;
+            }
+
+            if ( jsonValue.InteractionChannel == null && jsonValue.InteractionComponent == null )
+            {
+                return string.Empty;
+            }
+
+            return $"{jsonValue.InteractionChannel?.Value}|{jsonValue.InteractionComponent?.Value}";
         }
 
         #region Parse Helpers

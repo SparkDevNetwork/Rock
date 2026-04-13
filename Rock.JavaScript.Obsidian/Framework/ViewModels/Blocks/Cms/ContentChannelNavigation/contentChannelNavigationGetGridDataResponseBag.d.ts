@@ -58,6 +58,15 @@ export type ContentChannelNavigationGetGridDataResponseBag = {
     gridDefinition?: GridDefinitionBag | null;
 
     /**
+     * Gets or sets a value indicating whether any user-applied filters
+     * are active for the current grid data request. This is determined
+     * server-side after converting filter values to their internal
+     * representation, so it is the authoritative source for whether
+     * the grid settings indicator should appear active.
+     */
+    hasActiveFilters: boolean;
+
+    /**
      * Gets or sets a value indicating whether any items have event
      * occurrences. Controls the event occurrences column.
      */

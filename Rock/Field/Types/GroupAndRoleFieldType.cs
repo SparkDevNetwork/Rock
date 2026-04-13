@@ -108,6 +108,13 @@ namespace Rock.Field.Types
 
             if ( groupRoleValue != null )
             {
+                if ( groupRoleValue.GroupType == null
+                    && groupRoleValue.Group == null
+                    && groupRoleValue.GroupRole == null )
+                {
+                    return string.Empty;
+                }
+
                 return $"{groupRoleValue.GroupType?.Value}|{groupRoleValue.Group?.Value}|{groupRoleValue.GroupRole?.Value}";
             }
 
