@@ -1,10 +1,10 @@
 <template>
     <div class="sessions-container" ref="sessionsContainer">
         <div v-for="session in sessions"
-             :key="session.id"
+             :key="session.idKey!"
              class="session"
-             :class="{ 'active': session.id === sessionId }"
-             @click="onSelectSession(session.id)">
+             :class="{ 'active': session.idKey === sessionIdKey }"
+             @click="onSelectSession(session.idKey!)">
             <div class="session-name">{{ session.name || "Unnamed Session" }}</div>
             <div v-if="sessions.length > 1"
                  class="session-delete"
@@ -29,19 +29,19 @@
             required: true
         },
 
-        sessionId: {
-            type: Number as PropType<number>,
+        sessionIdKey: {
+            type: String as PropType<string>,
             required: true
         }
     });
 
     const emit = defineEmits<{
-        (e: "selectSession", sessionId: number): void;
+        (e: "selectSession", sessionIdKey: string): void;
         (e: "deleteSession", session: ChatSessionBag): void;
     }>();
 
-    function onSelectSession(sessionId: number): void {
-        emit("selectSession", sessionId);
+    function onSelectSession(sessionIdKey: string): void {
+        emit("selectSession", sessionIdKey);
     }
 
     function onDeleteSession(session: ChatSessionBag): void {

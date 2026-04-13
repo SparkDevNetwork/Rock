@@ -29,6 +29,7 @@ using Rock.Enums.AI.Agent;
 using Rock.Enums.Cms;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Utility.ExtensionMethods;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
@@ -163,6 +164,15 @@ namespace Rock.Blocks.AI
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Checks if this block instance is configured for docked mode.
+        /// </summary>
+        protected bool IsDockedMode => GetAttributeValue( AttributeKey.DockedMode ).AsBoolean();
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
@@ -181,40 +191,104 @@ namespace Rock.Blocks.AI
         /// <inheritdoc />
         public async override Task<object> GetObsidianBlockInitializationAsync()
         {
+            AddStartupScripts();
+
+            if ( IsDockedMode )
+            {
+                // In docked mode we defer the configuration until the client
+                // requests it via block action. This way we don't create sessions
+                // all over the place when the chat panel is closed.
+
+                if ( !TryGetConfiguredAgent( out _, out var errorConfiguration ) )
+                {
+                    return errorConfiguration;
+                }
+
+                return new Dictionary<string, object>
+                {
+                    ["isDockedMode"] = true,
+                };
+            }
+
+            return await GetConfigurationBag();
+        }
+
+        private bool TryGetConfiguredAgent( out AIAgentCache agentCache, out object errorConfiguration )
+        {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
-            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+
+            agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
 
             if ( agentCache == null )
             {
-                return new Dictionary<string, object>
+                errorConfiguration = new Dictionary<string, object>
                 {
                     ["error"] = "No agent has been configured.",
-                    ["isDockedMode"] = GetAttributeValue( AttributeKey.DockedMode ).AsBoolean(),
+                    ["isDockedMode"] = IsDockedMode,
                 };
+
+                return false;
             }
 
             if ( !agentCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
-                return new Dictionary<string, object>
+                errorConfiguration = new Dictionary<string, object>
                 {
                     ["error"] = "You are not authorized to access this agent.",
-                    ["isDockedMode"] = GetAttributeValue( AttributeKey.DockedMode ).AsBoolean(),
+                    ["isDockedMode"] = IsDockedMode,
                 };
+
+                return false;
             }
 
-            var provider = AgentProviderContainer.GetActiveComponent();
-            if ( provider == null )
+            if ( AgentProviderContainer.GetActiveComponent() == null )
             {
-                return new Dictionary<string, object>
+                errorConfiguration = new Dictionary<string, object>
                 {
                     ["error"] = "The AI Agent Provider is not configured. Please contact your system administrator.",
-                    ["isDockedMode"] = GetAttributeValue( AttributeKey.DockedMode ).AsBoolean(),
+                    ["isDockedMode"] = IsDockedMode,
                 };
+
+                return false;
             }
 
-            // Find the recent sessions.
-            var sessions = GetRecentSessions( agentCache.Id );
-            var sessionId = sessions.LastOrDefault()?.Id;
+            errorConfiguration = null;
+
+            return true;
+        }
+
+        private async Task<object> GetConfigurationBag( int? resumeSessionId = null )
+        {
+            if ( !TryGetConfiguredAgent( out var agentCache, out var errorConfiguration ) )
+            {
+                return errorConfiguration;
+            }
+
+            List<ChatSessionBag> sessions;
+            int? sessionId;
+
+            if ( IsDockedMode )
+            {
+                // This is a bit of a hack to make sure the session exists and
+                // is valid.
+                sessionId = new AIAgentSessionService( RockContext )
+                    .Queryable()
+                    .Where( s => s.Id == resumeSessionId
+                        && s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id
+                        && s.AIAgentId == agentCache.Id
+                        && !s.RelatedEntityTypeId.HasValue
+                        && !s.RelatedEntityId.HasValue )
+                    .Select( s => ( int? ) s.Id )
+                    .FirstOrDefault();
+
+                sessions = new List<ChatSessionBag>();
+            }
+            else
+            {
+                sessions = GetRecentSessions( agentCache.Id );
+
+                sessionId = IdHasher.Instance.GetId( sessions.LastOrDefault()?.IdKey );
+            }
 
             // If no session was found, create a new session.
             if ( !sessionId.HasValue )
@@ -223,23 +297,28 @@ namespace Rock.Blocks.AI
 
                 await agent.StartNewSessionAsync( null, null );
 
-                sessions = GetRecentSessions( agentCache.Id );
-                sessionId = sessions.Last().Id;
+                if ( IsDockedMode )
+                {
+                    sessionId = agent.SessionId;
+                }
+                else
+                {
+                    sessions = GetRecentSessions( agentCache.Id );
+                    sessionId = IdHasher.Instance.GetId( sessions.Last().IdKey );
+                }
             }
 
             var messages = GetSessionMessages( sessionId.Value );
             var anchors = GetSessionAnchors( sessionId.Value );
 
-            AddStartupScripts();
-
             _configurationBag = new Dictionary<string, object>
             {
-                ["sessionId"] = sessionId.Value,
+                ["sessionIdKey"] = sessionId.Value.AsIdKey(),
                 ["sessions"] = sessions,
                 ["messages"] = messages,
                 ["anchors"] = anchors,
                 ["isDebugAllowed"] = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ),
-                ["isDockedMode"] = GetAttributeValue( AttributeKey.DockedMode ).AsBoolean(),
+                ["isDockedMode"] = IsDockedMode,
             };
 
             return _configurationBag;
@@ -248,7 +327,7 @@ namespace Rock.Blocks.AI
         /// <inheritdoc />
         protected override string GetInitialHtmlContent()
         {
-            if ( GetAttributeValue( AttributeKey.DockedMode ).AsBoolean() )
+            if ( IsDockedMode )
             {
                 var disabled = _configurationBag == null
                     ? "disabled=\"\""
@@ -267,7 +346,7 @@ namespace Rock.Blocks.AI
         /// </summary>
         private void AddStartupScripts()
         {
-            if ( GetAttributeValue( AttributeKey.DockedMode ).AsBoolean() )
+            if ( IsDockedMode )
             {
                 RequestContext.Response.AddScriptToHead( "chat-bot-init", DockedChatBotInitScript );
             }
@@ -280,12 +359,15 @@ namespace Rock.Blocks.AI
         /// <returns>A list of recent chat sessions.</returns>
         private List<ChatSessionBag> GetRecentSessions( int agentId )
         {
+            var recentDate = RockDateTime.Today.AddDays( -30 );
+
             return new AIAgentSessionService( RockContext )
                 .Queryable()
                 .Where( s => s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id
                     && s.AIAgentId == agentId
                     && !s.RelatedEntityTypeId.HasValue
-                    && !s.RelatedEntityId.HasValue )
+                    && !s.RelatedEntityId.HasValue
+                    && s.LastMessageDateTime >= recentDate)
                 .OrderBy( s => s.LastMessageDateTime )
                 .Select( s => new
                 {
@@ -296,7 +378,7 @@ namespace Rock.Blocks.AI
                 .ToList()
                 .Select( s => new ChatSessionBag
                 {
-                    Id = s.Id,
+                    IdKey = s.Id.AsIdKey(),
                     LastMessageDateTime = s.LastMessageDateTime.ToRockDateTimeOffset(),
                     Name = s.Name
                 } )
@@ -413,11 +495,16 @@ namespace Rock.Blocks.AI
 
         #region Block Actions
 
+        [BlockAction]
+        public async Task<BlockActionResult> GetDockedConfiguration( string sessionKey )
+        {
+            return ActionOk( await GetConfigurationBag( IdHasher.Instance.GetId( sessionKey ) ) );
+        }
+
         /// <summary>
         /// Sends a user message to the chat agent for the specified session and returns the assistant's response.
         /// </summary>
         /// <param name="message">The message from the user.</param>
-        /// <param name="sessionId">The chat session identifier.</param>
         /// <returns>A block action result containing the assistant's response message and token usage metrics.</returns>
         [BlockAction]
         public async Task<BlockActionResult> SendMessage( SendMessageRequestBag request )
@@ -444,7 +531,7 @@ namespace Rock.Blocks.AI
                 IsSecurityEnabled = true
             } );
 
-            await agent.LoadSessionAsync( request.SessionId );
+            await agent.LoadSessionAsync( IdHasher.Instance.GetId( request.SessionIdKey ) ?? 0 );
             await AddTransientAnchorsAsync( agent );
             await agent.AddMessageAsync( AuthorRole.User, request.Message );
 
@@ -551,7 +638,7 @@ namespace Rock.Blocks.AI
 
             return ActionOk( new ChatSessionBag
             {
-                Id = agent.SessionId.Value,
+                IdKey = agent.SessionId.Value.AsIdKey(),
                 LastMessageDateTime = RockDateTime.Now.ToRockDateTimeOffset(),
             } );
         }
@@ -559,13 +646,14 @@ namespace Rock.Blocks.AI
         /// <summary>
         /// Loads a specific chat session and returns its messages and anchors if the session belongs to the current person.
         /// </summary>
-        /// <param name="sessionId">The unique identifier of the session to load.</param>
+        /// <param name="sessionIdKey">The unique identifier of the session to load.</param>
         /// <returns>A block action result containing session messages and anchors, or an error if not found.</returns>
         [BlockAction]
-        public BlockActionResult LoadSession( int sessionId )
+        public BlockActionResult LoadSession( string sessionIdKey )
         {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
             var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+            var sessionId = IdHasher.Instance.GetId( sessionIdKey ) ?? 0;
 
             if ( agentCache == null )
             {
@@ -603,13 +691,14 @@ namespace Rock.Blocks.AI
         /// <summary>
         /// Clears a chat session of all chat history.
         /// </summary>
-        /// <param name="sessionId">The unique identifier of the session to clear.</param>
+        /// <param name="sessionIdKey">The unique identifier of the session to clear.</param>
         /// <returns>A block action result indicating success or failure.</returns>
         [BlockAction]
-        public BlockActionResult ClearSession( int sessionId )
+        public BlockActionResult ClearSession( string sessionIdKey )
         {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
             var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+            var sessionId = IdHasher.Instance.GetId( sessionIdKey ) ?? 0;
 
             if ( agentCache == null )
             {
@@ -650,13 +739,14 @@ namespace Rock.Blocks.AI
         /// <summary>
         /// Deletes a chat session if it belongs to the current person.
         /// </summary>
-        /// <param name="sessionId">The unique identifier of the session to delete.</param>
+        /// <param name="sessionIdKey">The unique identifier of the session to delete.</param>
         /// <returns>A block action result indicating success or failure.</returns>
         [BlockAction]
-        public BlockActionResult DeleteSession( int sessionId )
+        public BlockActionResult DeleteSession( string sessionIdKey )
         {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
             var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+            var sessionId = IdHasher.Instance.GetId( sessionIdKey ) ?? 0;
 
             if ( agentCache == null )
             {
@@ -690,15 +780,16 @@ namespace Rock.Blocks.AI
         /// <summary>
         /// Creates a context anchor for the specified entity within a chat session.
         /// </summary>
-        /// <param name="sessionId">The chat session identifier.</param>
+        /// <param name="sessionIdKey">The chat session identifier.</param>
         /// <param name="entityTypeName">The name of the entity type.</param>
         /// <param name="entityId">The unique identifier of the entity.</param>
         /// <returns>A block action result containing the updated session anchors.</returns>
         [BlockAction]
-        public async Task<BlockActionResult> CreateAnchor( int sessionId, string entityTypeName, int entityId )
+        public async Task<BlockActionResult> CreateAnchor( string sessionIdKey, string entityTypeName, int entityId )
         {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
             var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+            var sessionId = IdHasher.Instance.GetId( sessionIdKey ) ?? 0;
 
             if ( agentCache == null )
             {
@@ -738,14 +829,15 @@ namespace Rock.Blocks.AI
         /// <summary>
         /// Deletes an existing context anchor from a chat session.
         /// </summary>
-        /// <param name="sessionId">The chat session identifier.</param>
+        /// <param name="sessionIdKey">The chat session identifier.</param>
         /// <param name="entityTypeId">The identifier of the entity type whose anchor should be removed.</param>
         /// <returns>A block action result indicating success or failure.</returns>
         [BlockAction]
-        public async Task<BlockActionResult> DeleteAnchor( int sessionId, int entityTypeId )
+        public async Task<BlockActionResult> DeleteAnchor( string sessionIdKey, int entityTypeId )
         {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
             var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+            var sessionId = IdHasher.Instance.GetId( sessionIdKey ) ?? 0;
 
             if ( agentCache == null )
             {
@@ -778,17 +870,17 @@ namespace Rock.Blocks.AI
         private class ChatSessionBag
         {
             /// <summary>
-            /// Gets or sets the unique identifier for the chat session.
+            /// The unique identifier for the chat session.
             /// </summary>
-            public int Id { get; set; }
+            public string IdKey { get; set; }
 
             /// <summary>
-            /// Gets or sets the date and time of the last message in the session.
+            /// The date and time of the last message in the session.
             /// </summary>
             public DateTimeOffset LastMessageDateTime { get; set; }
 
             /// <summary>
-            /// Gets or sets the display name for the session.
+            /// The display name for the session.
             /// </summary>
             public string Name { get; set; }
         }
@@ -850,7 +942,7 @@ namespace Rock.Blocks.AI
             /// <summary>
             /// Gets or sets the identifier of the chat session.
             /// </summary>
-            public int SessionId { get; set; }
+            public string SessionIdKey { get; set; }
 
             /// <summary>
             /// Requests that additional debug information be included in the response.
