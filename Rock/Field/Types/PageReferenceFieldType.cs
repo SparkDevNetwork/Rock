@@ -145,19 +145,24 @@ namespace Rock.Field.Types
         {
             var jsonValue = publicValue.FromJsonOrNull<PageRouteValueBag>();
 
-            if ( jsonValue != null )
+            if ( jsonValue == null )
             {
-                if ( jsonValue.Route != null )
-                {
-                    return $"{jsonValue.Page.Value},{jsonValue.Route.Value}";
-                }
-                else
-                {
-                    return jsonValue.Page.Value;
-                }
+                return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
             }
 
-            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+            var pageGuid = jsonValue.Page?.Value;
+            if ( pageGuid.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var routeGuid = jsonValue.Route?.Value;
+            if ( routeGuid.IsNullOrWhiteSpace() )
+            {
+                return pageGuid;
+            }
+
+            return $"{pageGuid},{routeGuid}";
         }
 
         #endregion
@@ -261,7 +266,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Reads new values entered by the user for the field.  Returns with Page.Guid,PageRoute.Guid or just Page.Guid 
+        /// Reads new values entered by the user for the field.  Returns with Page.Guid,PageRoute.Guid or just Page.Guid
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues">The configuration values.</param>
