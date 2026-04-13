@@ -206,7 +206,7 @@ namespace Rock.Blocks.CheckIn
                 schedules.Add( new ListItemBag
                 {
                     Value = IdHasher.Instance.GetHash( item.Id ),
-                    Text = item.Name
+                    Text = item.Name ?? $"(unnamed {item.Id})"
                 } );
             }
 
