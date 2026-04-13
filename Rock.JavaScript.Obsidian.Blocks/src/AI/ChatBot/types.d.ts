@@ -1,7 +1,7 @@
 export type ChatBotConfigurationBag = {
     error?: string | null;
 
-    sessionId?: number | null;
+    sessionIdKey?: string | null;
 
     sessions?: ChatSessionBag[] | null;
 
@@ -15,7 +15,7 @@ export type ChatBotConfigurationBag = {
 };
 
 export type ChatSessionBag = {
-    id: number;
+    idKey?: string | null;
 
     name?: string | null;
 
@@ -25,7 +25,7 @@ export type ChatSessionBag = {
 export type SendMessageRequestBag = {
     message?: string | null;
 
-    sessionId: number;
+    sessionIdKey: string;
 
     isDebugEnabled: boolean;
 };

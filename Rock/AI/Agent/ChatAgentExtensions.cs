@@ -22,26 +22,25 @@ using Rock.Attribute;
 namespace Rock.AI.Agent
 {
     /// <summary>
-    /// Extension methods for <see cref="IChatAgent"/>. These provide additional
+    /// Extension methods for <see cref="ChatAgent"/>. These provide additional
     /// convenience methods that build on the core methods provided by the
     /// interface.
     /// </summary>
     /// <remarks>
-    /// This allows unit tests to provide mocked <see cref="IChatAgent"/>
+    /// This allows unit tests to provide mocked <see cref="ChatAgent"/>
     /// implementations without having to implement all the various overloads.
     /// </remarks>
     [RockInternal( "18.0" )]
-    internal static class IChatAgentExtensions
+    internal static class ChatAgentExtensions
     {
         /// <summary>
-        /// Starts a new session in the database without associating it with
-        /// a specific entity.
+        /// Starts a new standard session in the database.
         /// </summary>
         /// <param name="chatAgent">The chat agent instance.</param>
         /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
-        public static Task StartNewSessionAsync( this IChatAgent chatAgent )
+        public static Task StartNewSessionAsync( this ChatAgent chatAgent )
         {
-            return chatAgent.StartNewSessionAsync( null, null );
+            return chatAgent.StartNewSessionAsync( Enums.AI.Agent.SessionType.Standard );
         }
     }
 }
