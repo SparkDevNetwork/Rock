@@ -2842,6 +2842,8 @@ namespace Rock.Utility
         /// <param name="rockContext">The rock context.</param>
         private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, int pctAttendance, int pctAttendedRegularService, int scheduleId, int altScheduleId, Dictionary<Guid, List<Attendance>> attendanceData, RockContext rockContext )
         {
+            var generatedAttendanceCodes = attendanceData.SelectMany( kvp => kvp.Value ).Select( a => a.AttendanceCode.Code ).ToList();
+
             // for each weekend between the starting and ending date...
             for ( DateTime date = startingDate; date <= endDate; date = date.AddDays( 7 ) )
             {
@@ -2887,9 +2889,10 @@ namespace Rock.Utility
                     // Only create one attendance record per day for each person/schedule/group/location
                     AttendanceCode attendanceCode = new AttendanceCode()
                     {
-                        Code = GenerateRandomCode( _securityCodeLength ),
+                        Code = GenerateRandomCode( _securityCodeLength, generatedAttendanceCodes ),
                         IssueDateTime = _args.AttendanceCodeIssuedDateTime ?? RockDateTime.Now,
                     };
+                    Trace.WriteLine( $"Creating Attendance Code {attendanceCode.Code}." );
 
                     var attendance = attendanceService.AddOrUpdate( member.Person.PrimaryAliasId, checkinDateTime, item.GroupId, item.LocationId, scheduleId, 1, _kioskDeviceId, null, null, null, null );
                     attendance.AttendanceCode = attendanceCode;
@@ -2908,12 +2911,24 @@ namespace Rock.Utility
         /// A little method to generate a random sequence of characters of a certain length.
         /// </summary>
         /// <param name="len">length of code to generate</param>
+        /// <param name="existingCodes">The existing codes that have already been generated.</param>
         /// <returns>a random sequence of alpha numeric characters</returns>
-        private static string GenerateRandomCode( int len )
+        private static string GenerateRandomCode( int len, List<string> existingCodes )
         {
-            string chars = "BCDFGHJKMNPQRTVWXYZ0123456789";
-            var code = Enumerable.Range( 0, len ).Select( x => chars[_random.Next( 0, chars.Length )] );
-            return new string( code.ToArray() );
+            string randomCode;
+
+            do
+            {
+                string chars = "BCDFGHJKMNPQRTVWXYZ0123456789";
+                var code = Enumerable.Range( 0, len ).Select( x => chars[_random.Next( 0, chars.Length )] );
+
+                randomCode = new string( code.ToArray() );
+
+            } while ( existingCodes.Contains( randomCode ) );
+
+            existingCodes.Add( randomCode );
+
+            return randomCode;
         }
 
         /// <summary>

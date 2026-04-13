@@ -444,7 +444,7 @@
                         :anchorEl="flyoutAnchorEl"
                         :connectionRequestUpdateBag="connectionRequestUpdateBag"
                         :isNoteRequired="isNoteRequired"
-                        :isSequentialMode="box.options?.isSequentialStatusMode ?? false"
+                        :isSequentialMode="isSequentialStatus"
                         :connectionStatusItems="connectionStatusItems"
                         @updateStatus="changeRequestStatus"
                         @updateState="updateStateFromFlyout"
@@ -1158,9 +1158,22 @@
 
     const normalizedQuickFilter = computed(() => debouncedQuickFilter.value.toLowerCase());
 
+    const isSequentialStatus = computed<boolean>(() => {
+        if (isDockedPanelVisible.value) {
+            return dockedPanelDetailsBox.value?.options?.isSequentialStatusMode ?? false;
+        }
+        return box.options?.isSequentialStatusMode ?? false;
+    });
+
     const connectionStatusItems = computed<ListItemBag[]>(() => {
-        const statuses = dockedPanelDetailsBox.value?.options?.connectionStatuses
-            ?? box.options?.connectionStatuses;
+        let statuses: ConnectionStatusBag[] | null | undefined;
+
+        if (isDockedPanelVisible.value && dockedPanelDetailsBox.value?.options?.connectionStatuses) {
+            statuses = dockedPanelDetailsBox.value.options.connectionStatuses;
+        }
+        else {
+            statuses = box.options?.connectionStatuses;
+        }
 
         return (
             statuses?.slice() // avoid mutating source
@@ -2330,7 +2343,10 @@
             isFlyoutSaving.value = true;
 
             // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-            const connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            let connectionTypeIdKey: string | null | undefined;
+            if (isDockedPanelVisible.value) {
+                connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
 
             const result = await invokeBlockAction<ConnectionListGridUpdateBag>("ChangeRequestStatus", {
                 bag,
@@ -2435,7 +2451,10 @@
 
     async function updateRequestStates(bag: UpdateConnectionRequestStatesBag): Promise<string | null> {
         // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-        const connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        let connectionTypeIdKey: string | null | undefined;
+        if (isDockedPanelVisible.value) {
+            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        }
 
         const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("UpdateRequestStates", {
             bag: bag,
@@ -2501,7 +2520,10 @@
             isModalSaving.value = true;
 
             // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-            const connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            let connectionTypeIdKey: string | null | undefined;
+            if (isDockedPanelVisible.value) {
+                connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
 
             const result = await invokeBlockAction<LaunchWorkflowResultBag>("LaunchWorkflowForRequests", {
                 bag: bag,
@@ -2536,7 +2558,10 @@
 
     async function deleteRequests(connectionRequestIdKeys: string[]): Promise<string | null> {
         // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-        const connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        let connectionTypeIdKey: string | null | undefined;
+        if (isDockedPanelVisible.value) {
+            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        }
 
         const result = await invokeBlockAction("DeleteRequests", {
             connectionRequestIdKeys: connectionRequestIdKeys,
@@ -2570,7 +2595,10 @@
             isModalSaving.value = true;
 
             // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-            const connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            let connectionTypeIdKey: string | null | undefined;
+            if (isDockedPanelVisible.value) {
+                connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
 
             // If we have an activity Id Key then we are in update mode.
             if (bag.activityIdKey) {
@@ -2822,7 +2850,10 @@
 
     async function reassignConnector(connectionRequestIdKeys: string[], connector: string, fromDockedPanel: boolean = false): Promise<void> {
         // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-        const connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        let connectionTypeIdKey: string | null | undefined;
+        if (isDockedPanelVisible.value) {
+            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        }
 
         const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("ReassignConnector", {
             connectionRequestIdKeys: connectionRequestIdKeys,
@@ -2895,7 +2926,10 @@
             isModalSaving.value = true;
 
             // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-            const connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            let connectionTypeIdKey: string | null | undefined;
+            if (isDockedPanelVisible.value) {
+                connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
 
             const result = await invokeBlockAction<ConnectionListGridUpdateBag>("UpsertCelebrationText", { bag, connectionTypeIdKey });
 

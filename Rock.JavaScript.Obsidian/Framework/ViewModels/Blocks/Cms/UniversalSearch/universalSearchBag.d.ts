@@ -30,7 +30,10 @@ export type UniversalSearchBag = {
     /** Gets or sets the available entity type options. */
     availableModels?: ListItemBag[] | null;
 
-    /** Gets or sets the error message. A non-empty value indicates that an error is preventing the block from being displayed. */
+    /**
+     * Gets or sets the error message. A non-empty value indicates that
+     * an error is preventing the block from being displayed.
+     */
     errorMessage?: string | null;
 
     /** Gets or sets the available field filters. */
@@ -39,11 +42,11 @@ export type UniversalSearchBag = {
     /** Gets or sets the initial search results. */
     initialResults?: UniversalSearchResultsBag | null;
 
-    /** Gets or sets a value indicating whether the current request originated from smart search. */
-    isSmartSearchRequest: boolean;
-
     /** Gets or sets a value indicating whether the refine search panel is visible. */
     isRefinedSearchVisible: boolean;
+
+    /** Gets or sets a value indicating whether the current request originated from smart search. */
+    isSmartSearchRequest: boolean;
 
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
@@ -63,21 +66,21 @@ export type UniversalSearchBag = {
     /** Gets or sets the number of results to show per page. */
     resultsPerPage: number;
 
-    /** Gets or sets the security grant token. */
-    securityGrantToken?: string | null;
-
     /** Gets or sets the effective search type value. */
     searchTypeValue: number;
 
-    /** Gets or sets a value indicating whether the model filter should be shown. */
-    showModelFilter: boolean;
-
-    /** Gets or sets a value indicating whether the refine search toggle should be shown. */
-    showRefinedSearchToggle: boolean;
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 
     /** Gets or sets the currently selected filter values keyed by filter field. */
     selectedFilters?: Record<string, string[]> | null;
 
     /** Gets or sets the currently selected entity type identifiers. */
     selectedModelIds?: string[] | null;
+
+    /** Gets or sets a value indicating whether the model filter should be shown. */
+    showModelFilter: boolean;
+
+    /** Gets or sets a value indicating whether the refine search toggle should be shown. */
+    showRefinedSearchToggle: boolean;
 };

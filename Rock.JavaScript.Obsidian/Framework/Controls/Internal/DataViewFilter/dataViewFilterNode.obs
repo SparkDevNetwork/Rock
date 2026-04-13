@@ -1,0 +1,634 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="!isFilter"
+           :modelValue="true"
+           class="filter-group"
+           :class="{ 'filter-root': isRoot }"
+           :hasCollapse="!isRoot"
+           type="widget">
+        <template #title>
+            <div class="filter-header">
+                <HighlightLabel class="filter-header-icon" labelType="info"><i class="ti ti-filter-2"></i></HighlightLabel>
+
+                <div class="filter-header-group">
+                    <div class="filter-header-item">
+                        <ButtonGroup :modelValue="groupTruthType"
+                                     :items="groupTruthTypes"
+                                     btnSize="xs"
+                                     selectedBtnType="primary"
+                                     @update:modelValue="onSetGroupTruthType" />
+                        <span class="filter-header-text text-muted">when</span>
+                    </div>
+                    <div class="filter-header-item">
+                        <ButtonGroup :modelValue="groupJoinType"
+                                     :items="groupJoinTypes"
+                                     btnSize="xs"
+                                     selectedBtnType="primary"
+                                     @update:modelValue="onSetGroupJoinType" />
+                        <span class="filter-header-text text-muted">match</span>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template #headerActions>
+            <template v-if="!isRoot">
+                <RockButton btnSize="xs"
+                            btnType="link"
+                            class="text-primary"
+                            title="Add Filter"
+                            @click.prevent="addFilter">
+                    <i class="ti ti-filter-plus ti-lg"></i>
+                </RockButton>
+
+                <RockButton btnSize="xs"
+                            btnType="link"
+                            class="text-primary"
+                            title="Add Group"
+                            @click.prevent="addGroup">
+                    <i class="ti ti-filter-2-plus ti-lg"></i>
+                </RockButton>
+
+                <RockButton btnSize="xs"
+                            btnType="link"
+                            class="text-danger"
+                            isSquare
+                            title="Remove Group"
+                            @click.prevent="emit('delete')">
+                    <i class="ti ti-trash ti-lg"></i>
+                </RockButton>
+            </template>
+
+            <template v-else>
+                <RockButton btnSize="xs"
+                            btnType="link"
+                            class="text-primary"
+                            @click.prevent="addFilter">
+                    <i class="ti ti-filter-plus ti-lg"></i>&nbsp;Add Filter
+                </RockButton>
+
+                <RockButton btnSize="xs"
+                            btnType="link"
+                            class="text-primary"
+                            @click.prevent="addGroup">
+                    <i class="ti ti-filter-2-plus ti-lg"></i>&nbsp;Add Group
+                </RockButton>
+            </template>
+        </template>
+
+        <div v-if="childFilters.length" class="filter-group-list">
+            <DataViewFilterNode v-for="(child, index) in childFilters"
+                                :key="child.guid"
+                                :modelValue="child"
+                                :entityTypeGuid="entityTypeGuid"
+                                :availableFilterTypes="availableFilterTypes"
+                                :isRoot="false"
+                                :isExpanded="true"
+                                @update:modelValue="onUpdateChild(index, $event)"
+                                @delete="removeChild(index)" />
+        </div>
+
+        <p v-else class="text-muted">No filters. Click "Add Filter" or "Add Group" to get started.</p>
+    </Panel>
+
+    <Panel v-else
+           :modelValue="isNodeExpanded"
+           class="filter-item"
+           hasCollapse
+           @update:modelValue="onFilterExpandedUpdate">
+        <template #title>
+            <div class="filter-header">
+                <HighlightLabel class="filter-header-icon" labelType="success" iconCssClass="ti ti-filter"></HighlightLabel>
+
+                <div class="filter-header-group">
+                    <div class="filter-header-item">
+                        <span class="filter-header-text">{{ filterPanelTitle }}</span>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template #headerActions>
+            <RockButton btnSize="xs"
+                        btnType="link"
+                        class="text-danger"
+                        isSquare
+                        title="Remove Filter"
+                        @click.prevent="emit('delete')">
+                <i class="ti ti-trash ti-lg"></i>
+            </RockButton>
+        </template>
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="selectedFilterTypeGuidOrEmptyString"
+                              :items="filterTypeItems"
+                              enhanceForLongLists
+                              grouped
+                              label="Filter Type"
+                              :showBlankItem="false"
+                              :popupContainerOverride="popupContainerOverride" />
+            </div>
+        </div>
+
+        <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+        <ConditionalWell v-else class="filter-item-editor">
+            <NotificationBox v-if="!isLoadingComponent && selectedFilterDescription" alertType="info">{{ selectedFilterDescription }}</NotificationBox>
+            <LoadingIndicator v-if="isLoadingComponent" />
+            <DynamicComponent v-else-if="componentDefinition && selectedFilterTypeGuidOrEmptyString"
+                              :modelValue="componentData"
+                              :definition="componentDefinition"
+                              :executeRequest="executeComponentRequest"
+                              :properties="{ filterMode: FilterMode.AdvancedFilter }"
+                              @update:modelValue="onUpdateComponentData" />
+        </ConditionalWell>
+    </Panel>
+</template>
+
+<style scoped>
+:deep(.filter-group),
+:deep(.filter-item) {
+    margin-bottom: 0;
+}
+
+:deep(.filter-node) {
+    margin-bottom: 0;
+}
+
+.filter-header-text {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-regular);
+}
+
+.filter-group-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large);
+}
+
+.filter-item-editor:empty {
+    display: none;
+}
+
+.filter-header {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--spacing-small);
+    margin: var(--spacing-small) 0;
+}
+
+.filter-header-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-xsmall);
+}
+
+.filter-header-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-xsmall);
+}
+
+.filter-item-editor :deep(*:last-child) {
+    margin-bottom: 0;
+}
+
+:deep(.filter-group .panel-title) .filter-header > .label.filter-header-icon,
+:deep(.filter-item .panel-title) .filter-header > .label.filter-header-icon {
+    margin-left: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DynamicComponent from "@Obsidian/Controls/dynamicComponent.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
+    import { FilterMode } from "@Obsidian/Enums/Reporting/filterMode";
+    import type { Guid } from "@Obsidian/Types";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { DataFilterTypeItemBag } from "@Obsidian/ViewModels/Controls/dataFilterTypeItemBag";
+    import { DataViewFilterBag } from "@Obsidian/ViewModels/Reporting/dataViewFilterBag";
+    import { DataFilterGetComponentResultsBag } from "@Obsidian/ViewModels/Rest/Controls/dataFilterGetComponentResultsBag";
+    import { DataFilterGetSelectionResultsBag } from "@Obsidian/ViewModels/Rest/Controls/dataFilterGetSelectionResultsBag";
+    import { DataFilterExecuteComponentRequestOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/dataFilterExecuteComponentRequestOptionsBag";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    defineOptions({
+        name: "DataViewFilterNode"
+    });
+
+    // #region Types
+
+    enum FilterGroupJoinType {
+        All = 0,
+        Any = 1
+    }
+
+    enum FilterGroupTruthType {
+        True = 0,
+        False = 1
+    }
+
+    // #endregion Types
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<DataViewFilterBag>,
+            required: true
+        },
+        entityTypeGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            required: true
+        },
+        availableFilterTypes: {
+            type: Array as PropType<DataFilterTypeItemBag[]>,
+            required: true
+        },
+        isRoot: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        isExpanded: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: DataViewFilterBag): void;
+        (e: "delete"): void;
+    }>();
+
+    const http = useHttp();
+    const securityGrantToken = useSecurityGrantToken();
+    const node = ref<DataViewFilterBag>(cloneFilterNode(props.modelValue));
+    const isNodeExpanded = ref<boolean>(props.isRoot || props.isExpanded);
+    const componentDefinition = ref<DataFilterGetComponentResultsBag["componentDefinition"]>();
+    const componentData = ref<Record<string, string>>({});
+    const isLoadingComponent = ref(false);
+    const errorMessage = ref("");
+    const formattedSelection = ref(node.value.selection ?? "");
+    const selectedFilterTitle = ref("");
+    const selectedFilterDescription = ref("");
+    const selectedFilterTypeGuidOrEmptyString = ref<string>(node.value.filterTypeGuid ?? "");
+    const isApplyingExternalModel = ref(false);
+    const isApplyingComponentLoad = ref(false);
+    const isSyncingSelection = ref(false);
+    const filterTypeItems = ref<ListItemBag[]>([]);
+    const popupContainerOverride = typeof document !== "undefined" ? document.body : undefined;
+
+    const isFilter = computed(() => isFilterNode(node.value));
+    const childFilters = computed(() => node.value.childFilters ?? []);
+    const groupJoinType = computed<string>(() => getGroupJoinType(node.value.expressionType).toString());
+    const groupJoinTypes = Enumerable
+        .from([FilterGroupJoinType.All, FilterGroupJoinType.Any])
+        .select(t => {
+            return {
+                text: t === FilterGroupJoinType.All ? "All" : "Any",
+                value: t.toString()
+            };
+        })
+        .toArray();
+    const groupTruthType = computed<string>(() => getGroupTruthType(node.value.expressionType).toString());
+    const groupTruthTypes = Enumerable
+        .from([FilterGroupTruthType.True, FilterGroupTruthType.False])
+        .select(t => {
+            return {
+                text: t === FilterGroupTruthType.True ? "Include" : "Exclude",
+                value: t.toString()
+            };
+        })
+        .toArray();
+    const filterPanelTitle = computed(() => {
+        return (formattedSelection.value || selectedFilterTitle.value || "Select Filter");
+        // return isNodeExpanded.value
+        //     ? (selectedFilterTitle.value || "Filter")
+        //     : (formattedSelection.value || selectedFilterTitle.value || "Select Filter");
+    });
+
+    function serializeNodeValue(value: DataViewFilterBag | null | undefined): string {
+        return JSON.stringify(value ?? null);
+    }
+
+    function serializeComponentDataValue(value: Record<string, string> | null | undefined): string {
+        return JSON.stringify(value ?? {});
+    }
+
+    async function loadFilterComponent(): Promise<void> {
+        if (!selectedFilterTypeGuidOrEmptyString.value) {
+            componentDefinition.value = null;
+            componentData.value = {};
+            formattedSelection.value = "";
+            selectedFilterTitle.value = "";
+            selectedFilterDescription.value = "";
+            errorMessage.value = "";
+            node.value.filterTypeGuid = null;
+            node.value.selection = null;
+            node.value.componentData = {};
+            emitNode();
+            return;
+        }
+
+        isLoadingComponent.value = true;
+        errorMessage.value = "";
+
+        const result = await http.post<DataFilterGetComponentResultsBag>("/api/v2/Controls/DataFilterGetComponent", undefined, {
+            entityTypeGuid: props.entityTypeGuid,
+            filterTypeGuid: selectedFilterTypeGuidOrEmptyString.value,
+            selection: node.value.selection,
+            securityGrantToken: securityGrantToken.value
+        });
+
+        if (result.isSuccess && result.data) {
+            componentDefinition.value = result.data.componentDefinition;
+            isApplyingComponentLoad.value = true;
+            componentData.value = result.data.componentData ?? {};
+            await nextTick();
+            isApplyingComponentLoad.value = false;
+            node.value.selection = result.data.selection ?? null;
+            formattedSelection.value = result.data.formattedSelection ?? "";
+            selectedFilterTitle.value = result.data.title ?? "";
+            selectedFilterDescription.value = result.data.description ?? "";
+            node.value.filterTypeGuid = selectedFilterTypeGuidOrEmptyString.value;
+            node.value.componentData = { ...componentData.value };
+            emitNode();
+        }
+        else {
+            componentDefinition.value = null;
+            componentData.value = {};
+            errorMessage.value = result.errorMessage ?? "Unable to load the filter editor.";
+        }
+
+        isLoadingComponent.value = false;
+    }
+
+    async function updateSelectionFromComponentData(): Promise<void> {
+        if (!selectedFilterTypeGuidOrEmptyString.value) {
+            return;
+        }
+
+        const result = await http.post<DataFilterGetSelectionResultsBag>("/api/v2/Controls/DataFilterGetSelection", undefined, {
+            entityTypeGuid: props.entityTypeGuid,
+            filterTypeGuid: selectedFilterTypeGuidOrEmptyString.value,
+            componentData: componentData.value,
+            securityGrantToken: securityGrantToken.value
+        });
+
+        if (result.isSuccess && result.data) {
+            const nextSelection = result.data.selection ?? null;
+            const nextComponentData = { ...componentData.value };
+            const nextFormattedSelection = result.data.formattedSelection ?? "";
+            const componentDataChanged = serializeComponentDataValue(nextComponentData) !== serializeComponentDataValue(node.value.componentData ?? {});
+            const selectionChanged = nextSelection !== (node.value.selection ?? null);
+            const formattedSelectionChanged = nextFormattedSelection !== formattedSelection.value;
+
+            if (!componentDataChanged && !selectionChanged && !formattedSelectionChanged) {
+                return;
+            }
+
+            isSyncingSelection.value = true;
+            node.value.selection = nextSelection;
+            node.value.componentData = nextComponentData;
+            formattedSelection.value = nextFormattedSelection;
+            emitNode();
+            isSyncingSelection.value = false;
+        }
+    }
+
+    async function executeComponentRequest(request: Record<string, string>): Promise<Record<string, string> | null> {
+        if (!selectedFilterTypeGuidOrEmptyString.value || !props.entityTypeGuid) {
+            return null;
+        }
+
+        const options: DataFilterExecuteComponentRequestOptionsBag = {
+            entityTypeGuid: props.entityTypeGuid,
+            filterTypeGuid: selectedFilterTypeGuidOrEmptyString.value,
+            request,
+            securityGrantToken: securityGrantToken.value
+        };
+
+        const result = await http.post<Record<string, string>>("/api/v2/Controls/DataFilterExecuteComponentRequest", undefined, options);
+
+        if (result.isSuccess) {
+            return result.data ?? null;
+        }
+
+        return null;
+    }
+
+    function onUpdateComponentData(value: unknown): void {
+        if (typeof value !== "object" || value === null) {
+            componentData.value = {};
+            return;
+        }
+
+        componentData.value = { ...value };
+    }
+
+    function onFilterExpandedUpdate(value: boolean): void {
+        isNodeExpanded.value = value;
+    }
+
+    function addFilter(): void {
+        node.value.childFilters = [...childFilters.value, createFilterNode()];
+        emitNode();
+    }
+
+    function addGroup(): void {
+        node.value.childFilters = [...childFilters.value, createGroupNode(FilterExpressionType.GroupAll)];
+        emitNode();
+    }
+
+    function removeChild(index: number): void {
+        const newChildren = [...childFilters.value];
+        newChildren.splice(index, 1);
+        node.value.childFilters = newChildren;
+        emitNode();
+    }
+
+    function onUpdateChild(index: number, child: DataViewFilterBag): void {
+        const newChildren = [...childFilters.value];
+        newChildren.splice(index, 1, child);
+        node.value.childFilters = newChildren;
+        emitNode();
+    }
+
+    function onSetGroupJoinType(event: string): void {
+        const value = toNumberOrNull(event);
+        if (isNullish(value)) {
+            return;
+        }
+
+        const groupJoinTypes: number[] = [FilterGroupJoinType.All, FilterGroupJoinType.Any];
+        if (!groupJoinTypes.includes(value)) {
+            return;
+        }
+
+        setGroupJoinType(node.value, value as FilterGroupJoinType);
+        emitNode();
+    }
+
+    function onSetGroupTruthType(event: string): void {
+        const value = toNumberOrNull(event);
+        if (isNullish(value)) {
+            return;
+        }
+
+        const groupTruthTypes: number[] = [FilterGroupTruthType.True, FilterGroupTruthType.False];
+        if (!groupTruthTypes.includes(value)) {
+            return;
+        }
+
+        setGroupTruthType(node.value, value as FilterGroupTruthType);
+        emitNode();
+    }
+
+    function emitNode(): void {
+        const nextNode = cloneFilterNode(node.value);
+
+        if (serializeNodeValue(nextNode) === serializeNodeValue(props.modelValue)) {
+            return;
+        }
+
+        emit("update:modelValue", nextNode);
+    }
+
+    function cloneFilterNode(node: DataViewFilterBag | null | undefined): DataViewFilterBag {
+        return JSON.parse(JSON.stringify(node ?? createDefaultDataViewFilter()));
+    }
+
+    function createFilterNode(): DataViewFilterBag {
+        return {
+            guid: newGuid(),
+            expressionType: FilterExpressionType.Filter,
+            filterTypeGuid: null,
+            selection: null,
+            componentData: {},
+            childFilters: []
+        };
+    }
+
+    function createGroupNode(expressionType: FilterExpressionType = FilterExpressionType.GroupAll): DataViewFilterBag {
+        return {
+            guid: newGuid(),
+            expressionType,
+            childFilters: [createFilterNode()]
+        };
+    }
+
+    function createDefaultDataViewFilter(): DataViewFilterBag {
+        return createGroupNode(FilterExpressionType.GroupAll);
+    }
+
+    function isFilterNode(node: DataViewFilterBag): boolean {
+        return node.expressionType === FilterExpressionType.Filter;
+    }
+
+    function getGroupJoinType(expressionType: FilterExpressionType): FilterGroupJoinType {
+        return expressionType === FilterExpressionType.GroupAny || expressionType === FilterExpressionType.GroupAnyFalse
+            ? FilterGroupJoinType.Any
+            : FilterGroupJoinType.All;
+    }
+
+    function getGroupTruthType(expressionType: FilterExpressionType): FilterGroupTruthType {
+        return expressionType === FilterExpressionType.GroupAllFalse || expressionType === FilterExpressionType.GroupAnyFalse
+            ? FilterGroupTruthType.False
+            : FilterGroupTruthType.True;
+    }
+
+    function setGroupJoinType(node: DataViewFilterBag, joinType: FilterGroupJoinType): void {
+        const isFalse = node.expressionType === FilterExpressionType.GroupAllFalse || node.expressionType === FilterExpressionType.GroupAnyFalse;
+
+        if (joinType === FilterGroupJoinType.All) {
+            node.expressionType = isFalse ? FilterExpressionType.GroupAllFalse : FilterExpressionType.GroupAll;
+        }
+        else {
+            node.expressionType = isFalse ? FilterExpressionType.GroupAnyFalse : FilterExpressionType.GroupAny;
+        }
+    }
+
+    function setGroupTruthType(node: DataViewFilterBag, truthType: FilterGroupTruthType): void {
+        const isAll = node.expressionType === FilterExpressionType.GroupAll || node.expressionType === FilterExpressionType.GroupAllFalse;
+
+        if (truthType === FilterGroupTruthType.True) {
+            node.expressionType = isAll ? FilterExpressionType.GroupAll : FilterExpressionType.GroupAny;
+        }
+        else {
+            node.expressionType = isAll ? FilterExpressionType.GroupAllFalse : FilterExpressionType.GroupAnyFalse;
+        }
+    }
+
+    watch(() => props.modelValue, async () => {
+        const incomingNode = cloneFilterNode(props.modelValue);
+
+        if (serializeNodeValue(incomingNode) === serializeNodeValue(node.value)) {
+            return;
+        }
+
+        isApplyingExternalModel.value = true;
+        node.value = incomingNode;
+        selectedFilterTypeGuidOrEmptyString.value = node.value.filterTypeGuid ?? "";
+        formattedSelection.value = node.value.selection ?? "";
+        componentData.value = { ...(node.value.componentData ?? {}) };
+        await nextTick();
+        isApplyingExternalModel.value = false;
+    }, {
+        deep: true
+    });
+
+    watch(() => props.availableFilterTypes, () => {
+        filterTypeItems.value = props.availableFilterTypes.map(filterType => ({
+            text: filterType.title,
+            value: filterType.filterTypeGuid,
+            category: filterType.section
+        }));
+    }, {
+        deep: true,
+        immediate: true
+    });
+
+    watch(selectedFilterTypeGuidOrEmptyString, async (newValue, oldValue) => {
+        if (newValue !== oldValue && isFilter.value) {
+            await loadFilterComponent();
+        }
+    });
+
+    watch(componentData, async () => {
+        if (isApplyingExternalModel.value || isApplyingComponentLoad.value || isSyncingSelection.value) {
+            return;
+        }
+
+        if (serializeComponentDataValue(componentData.value) === serializeComponentDataValue(node.value.componentData ?? {})) {
+            return;
+        }
+
+        if (isFilter.value && selectedFilterTypeGuidOrEmptyString.value) {
+            await updateSelectionFromComponentData();
+        }
+    }, {
+        deep: true
+    });
+
+    if (isFilter.value && selectedFilterTypeGuidOrEmptyString.value) {
+        loadFilterComponent();
+    }
+</script>

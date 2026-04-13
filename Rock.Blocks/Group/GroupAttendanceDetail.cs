@@ -30,6 +30,7 @@ using Rock.Model;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.GroupAttendanceDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -498,8 +499,27 @@ namespace Rock.Blocks.Group
 
         /// <summary>
         /// Gets the Occurrence ID page parameter or null if missing.
+        /// Supports both raw integer IDs and IdKey format.
         /// </summary>
-        private int? OccurrenceIdPageParameter => PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull();
+        private int? OccurrenceIdPageParameter
+        {
+            get
+            {
+                var value = PageParameter( PageParameterKey.OccurrenceId );
+                if ( value.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
+                var intValue = value.AsIntegerOrNull();
+                if ( intValue.HasValue )
+                {
+                    return intValue;
+                }
+
+                return IdHasher.Instance.GetId( value );
+            }
+        }
 
         /// <summary>
         /// Gets the Date page parameter or null if missing.
@@ -1516,7 +1536,7 @@ namespace Rock.Blocks.Group
                         {
                             // If there are no locations to choose from, then display the date picker.
                             box.AttendanceOccurrenceDateSelectionMode = GroupAttendanceDetailDateSelectionMode.DatePicker;
-                        } 
+                        }
                         break;
                 }
 
@@ -2493,7 +2513,7 @@ namespace Rock.Blocks.Group
             public AttendanceOccurrence AttendanceOccurrence { get; internal set; }
 
             public CampusCache Campus { get; internal set; }
-            
+
             public string ErrorMessage { get; set; }
 
             public Model.Group Group { get; internal set; }

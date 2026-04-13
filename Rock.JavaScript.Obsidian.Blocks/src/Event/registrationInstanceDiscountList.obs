@@ -1,0 +1,238 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Discount"
+          title="Discounts"
+          :exportTitle="config.options?.exportTitleName ?? ''"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          :showLaunchWorkflow="false"
+          @gridSettingsClick="isGridSettingsVisible = true">
+
+        <TextColumn name="registrationId"
+                    title="Registration ID"
+                    field="registrationId"
+                    :hideOnScreen="true" />
+
+        <TextColumn name="registeredByName"
+                    title="Registered By"
+                    field="registeredByName"
+                    :filter="textValueFilter" />
+
+        <DateColumn name="registrationDate"
+                    title="Registration Date"
+                    field="registrationDate"
+                    :filter="dateValueFilter" />
+
+        <NumberColumn name="registrantCount"
+                      title="Registrant Count"
+                      field="registrantCount"
+                      :filter="numberValueFilter" />
+
+        <TextColumn name="discountCode"
+                    title="Discount Code"
+                    field="discountCode"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn name="discount"
+                    title="Discount"
+                    field="discount"
+                    :filter="textValueFilter" />
+
+        <CurrencyColumn name="totalCost"
+                        title="Total Cost"
+                        field="totalCost"
+                        :quickFilterValue="getCurrencyQuickFilterValue('totalCost')"
+                        :filter="numberValueFilter" />
+
+        <CurrencyColumn name="discountQualifiedCost"
+                        title="Discount Qualified Cost"
+                        field="discountQualifiedCost"
+                        width="220px"
+                        :quickFilterValue="getCurrencyQuickFilterValue('discountQualifiedCost')"
+                        :filter="numberValueFilter" />
+
+        <CurrencyColumn name="totalDiscount"
+                        title="Total Discount"
+                        field="totalDiscount"
+                        :quickFilterValue="getCurrencyQuickFilterValue('totalDiscount')"
+                        :filter="numberValueFilter" />
+
+        <CurrencyColumn name="registrationCost"
+                        title="Registration Cost"
+                        field="registrationCost"
+                        :quickFilterValue="getCurrencyQuickFilterValue('registrationCost')"
+                        :filter="numberValueFilter" />
+
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :discountCodeItems="config.options?.discountCodeItems ?? []" />
+
+    <div class="row">
+        <div class="col-md-4 col-md-offset-8 margin-t-md">
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title">Total Results</h1>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-xs-8">Total Cost</div>
+                        <div class="col-xs-4 text-right">{{ formatCurrency(summaryTotalCost) }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-8">Discount Qualified Cost</div>
+                        <div class="col-xs-4 text-right">{{ formatCurrency(summaryDiscountQualifiedCost) }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-8">Total Discount</div>
+                        <div class="col-xs-4 text-right">{{ formatCurrency(summaryTotalDiscount) }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-8">Registration Cost</div>
+                        <div class="col-xs-4 text-right">{{ formatCurrency(summaryRegistrationCost) }}</div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-xs-8">Total Registrations</div>
+                        <div class="col-xs-4 text-right">{{ summaryTotalRegistrations }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-8">Total Registrants</div>
+                        <div class="col-xs-4 text-right">{{ summaryTotalRegistrants }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./RegistrationInstanceDiscountList/gridSettingsModal.partial.obs";
+    import { GridSettingsOptions, PreferenceKey } from "./RegistrationInstanceDiscountList/types.partial";
+    import Grid, { CurrencyColumn, DateColumn, NumberColumn, TextColumn, numberValueFilter, dateValueFilter, textValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { asFormattedString, toCurrencyOrNull, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { RegistrationInstanceDiscountListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceDiscountList/registrationInstanceDiscountListOptionsBag";
+    import { RegistrationInstanceDiscountListGetGridDataResponseBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceDiscountList/registrationInstanceDiscountListGetGridDataResponseBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+
+    const config = useConfigurationValues<ListBlockBox<RegistrationInstanceDiscountListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+
+    const summaryTotalCost = ref(0);
+    const summaryDiscountQualifiedCost = ref(0);
+    const summaryTotalDiscount = ref(0);
+    const summaryRegistrationCost = ref(0);
+    const summaryTotalRegistrations = ref(0);
+    const summaryTotalRegistrants = ref(0);
+
+    const gridSettings = ref<GridSettingsOptions>({
+        dateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterDateRange)),
+        discountCode: preferences.getValue(PreferenceKey.FilterDiscountCode),
+        codeSearch: preferences.getValue(PreferenceKey.FilterCodeSearch)
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.dateRange
+            || !!gridSettings.value.discountCode
+            || !!gridSettings.value.codeSearch;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<RegistrationInstanceDiscountListGetGridDataResponseBag>("GetGridData");
+
+        if (result.isSuccess && result.data && result.data.gridData) {
+            gridData = reactive(result.data.gridData);
+
+            summaryTotalCost.value = result.data.totalCost;
+            summaryDiscountQualifiedCost.value = result.data.discountQualifiedCost;
+            summaryTotalDiscount.value = result.data.totalDiscount;
+            summaryRegistrationCost.value = result.data.registrationCost;
+            summaryTotalRegistrations.value = result.data.totalRegistrations;
+            summaryTotalRegistrants.value = result.data.totalRegistrants;
+
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Returns a quickFilterValue function for a currency field that formats
+     * the value as a decimal string for the grid's quick search.
+     *
+     * @param fieldName The name of the field containing the currency value.
+     */
+    function getCurrencyQuickFilterValue(fieldName: string): (row: Record<string, unknown>) => string {
+        return (row: Record<string, unknown>): string => {
+            const numberValue = toNumberOrNull(row[fieldName] as string);
+            if (numberValue) {
+                return asFormattedString(numberValue, 2);
+            }
+            return "";
+        };
+    }
+
+    /**
+     * Formats a number as a currency string for display.
+     *
+     * @param value The number to format.
+     */
+    function formatCurrency(value: number): string {
+        return toCurrencyOrNull(value) ?? toCurrencyOrNull(0) ?? "";
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(gridSettings, async () => {
+        const dateRangeString = gridSettings.value.dateRange
+            ? slidingDateRangeToString(gridSettings.value.dateRange)
+            : "";
+
+        preferences.setValue(PreferenceKey.FilterDateRange, dateRangeString);
+        preferences.setValue(PreferenceKey.FilterDiscountCode, gridSettings.value.discountCode);
+        preferences.setValue(PreferenceKey.FilterCodeSearch, gridSettings.value.codeSearch);
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion Watchers
+
+    gridDataSource.value = loadGridData();
+</script>

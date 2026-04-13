@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "obsidian-build",
+    "watch": "obsidian-build --watch"
+  },
+  "overrides": {
+    "sass": "1.77.6"
+  },
+  "dependencies": {
+    "@sparkdevnetwork/obsidian-build-tools": "^1.0.9"
+  }
+}

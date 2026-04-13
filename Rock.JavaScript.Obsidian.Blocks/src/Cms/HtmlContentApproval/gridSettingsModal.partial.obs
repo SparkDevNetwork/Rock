@@ -1,0 +1,120 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList v-model="site"
+                              label="Site"
+                              :items="siteItems"
+                              :showBlankItem="true" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="approvalStatus"
+                              label="Approval Status"
+                              :items="approvalStatusItems"
+                              :showBlankItem="false" />
+            </div>
+
+            <div v-if="isApproveVisible" class="col-md-4">
+                <PersonPicker v-model="approvedBy"
+                              label="Approved By"
+                              :enableSelfSelection="true" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import { ref, PropType, watch } from "vue";
+    import { ApprovalStatus, GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        sites: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        },
+
+        isApproveVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const site = ref(props.modelValue.site ?? "");
+    const approvalStatus = ref(props.modelValue.approvalStatus ?? "");
+    const approvedBy = ref<ListItemBag | undefined>(props.modelValue.approvedBy);
+
+    const siteItems = props.sites;
+
+    const approvalStatusItems: ListItemBag[] = [
+        {
+            text: "[All]",
+            value: ApprovalStatus.All
+        },
+        {
+            text: "Approved",
+            value: ApprovalStatus.Approved
+        },
+        {
+            text: "Unapproved",
+            value: ApprovalStatus.Unapproved
+        }
+    ];
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            site: site.value,
+            approvalStatus: approvalStatus.value,
+            approvedBy: approvedBy.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        site.value = props.modelValue.site ?? "";
+        approvalStatus.value = props.modelValue.approvalStatus ?? "";
+        approvedBy.value = props.modelValue.approvedBy;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

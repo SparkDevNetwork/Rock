@@ -339,6 +339,11 @@ function () {
         {
             var selectionConfig = SelectionConfig.Parse( selection );
 
+            if ( selectionConfig == null )
+            {
+                return null;
+            }
+
             string groupTypeName = null;
             using ( var rockContext = new RockContext() )
             {
@@ -352,7 +357,7 @@ function () {
             }
 
             string projectTypes = string.Empty;
-            if ( selectionConfig.IncludeProjectTypes.Any() )
+            if ( selectionConfig.IncludeProjectTypes != null && selectionConfig.IncludeProjectTypes.Any() )
             {
                 var projectTypeNames = new List<string>();
                 foreach ( var projectTypeGuid in selectionConfig.IncludeProjectTypes )
