@@ -3112,6 +3112,8 @@
     });
 
     watch(selectedView, async () => {
+        removeCurrentUrlQueryParams("SelectedView");
+
         if (selectedView.value === "list") {
             selectedGrouping.value = isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? selectedGrouping.value : preferences.getValue(PreferenceKey.SelectedGroupByMode);
         }

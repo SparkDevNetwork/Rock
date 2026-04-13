@@ -206,7 +206,7 @@
                     title: "Connection Board",
                     type: "default",
                     handler: () => {
-                        window.location.href = `${connectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}&IsCardViewMode=True${campusPageParam.value}`;
+                        window.location.href = `${connectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}`;
                     }
                 });
             }

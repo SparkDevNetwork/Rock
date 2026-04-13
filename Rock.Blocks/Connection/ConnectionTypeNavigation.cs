@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Enums.Connection;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -361,8 +362,8 @@ namespace Rock.Blocks.Connection
             {
                 [NavigationUrlKey.ConfigurationPage] = this.GetLinkedPageUrl( AttributeKey.ConfigurationPage ),
                 [NavigationUrlKey.OpportunitiesPage] = this.GetLinkedPageUrl( AttributeKey.OpportunitiesPage, PageParameterKey.ConnectionType, "((Key))" ),
-                [NavigationUrlKey.ConnectionsListPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsListPage, PageParameterKey.ConnectionType, "((Key))" ),
-                [NavigationUrlKey.ConnectionBoardPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionBoardPage, PageParameterKey.ConnectionType, "((Key))" ),
+                [NavigationUrlKey.ConnectionsListPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsListPage, new Dictionary<string, string> { [PageParameterKey.ConnectionType] = "((Key))", ["SelectedView"] = EnabledViewFlags.List.ToString().ToLower() } ),
+                [NavigationUrlKey.ConnectionBoardPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsListPage, new Dictionary<string, string> { [PageParameterKey.ConnectionType] = "((Key))", ["SelectedView"] = EnabledViewFlags.Board.ToString().ToLower() } ),
                 [NavigationUrlKey.OperationalSnapshotPage] = this.GetLinkedPageUrl( AttributeKey.OperationalSnapshotPage, PageParameterKey.ConnectionType, "((Key))" )
             };
         }

@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Constants;
+using Rock.Enums.Connection;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -560,15 +561,25 @@ namespace Rock.Blocks.Connection
                 { PageParameterKey.ConnectionOpportunity, "((Key))" }
             };
 
+            var listQueryParams = new Dictionary<string, string>( opportunityQueryParams )
+            {
+                { "SelectedView", EnabledViewFlags.List.ToString().ToLower() }
+            };
+
+            var boardQueryParams = new Dictionary<string, string>( opportunityQueryParams )
+            {
+                { "SelectedView", EnabledViewFlags.Board.ToString().ToLower() }
+            };
+
             return new Dictionary<string, string>
             {
                 // Connection Type-level URLs.
-                [NavigationUrlKey.TypeConnectionsListPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsListPage, PageParameterKey.ConnectionType, connectionTypeKey ),
+                [NavigationUrlKey.TypeConnectionsListPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsListPage, new Dictionary<string, string> { [PageParameterKey.ConnectionType] = connectionTypeKey, ["SelectedView"] = EnabledViewFlags.List.ToString().ToLower() }),
                 [NavigationUrlKey.TypeOperationalSnapshotPage] = this.GetLinkedPageUrl( AttributeKey.OperationalSnapshotPage, PageParameterKey.ConnectionType, connectionTypeKey ),
 
                 // Connection Opportunity-level URLs.
-                [NavigationUrlKey.OpportunityConnectionsListPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsListPage, opportunityQueryParams ),
-                [NavigationUrlKey.OpportunityConnectionBoardPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionBoardPage, opportunityQueryParams )
+                [NavigationUrlKey.OpportunityConnectionsListPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsListPage, listQueryParams ),
+                [NavigationUrlKey.OpportunityConnectionBoardPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsListPage, boardQueryParams )
             };
         }
 

@@ -127,6 +127,7 @@ namespace Rock.Blocks.Engagement
             public const string Connector = "Connector";
             public const string ConnectionOpportunity = "ConnectionOpportunity";
             public const string Request = "Request";
+            public const string SelectedView = "SelectedView";
         }
 
         private static class PreferenceKey
@@ -136,6 +137,7 @@ namespace Rock.Blocks.Engagement
             public const string AreOnlyMyRequestsVisible = "AreOnlyMyRequestsVisible";
             public const string SelectedConnector = "SelectedConnector";
             public const string FilterStateConnectionTypeIdKey = "FilterState_ConnectionTypeIdKey_{0}";
+            public const string SelectedViewConnectionTypeIdKey = "SelectedView_ConnectionTypeIdKey_{0}";
         }
 
         private static class SqlParamKey
@@ -278,6 +280,21 @@ namespace Rock.Blocks.Engagement
             options.RequiresPlacementGroupToComplete = connectionType.RequiresPlacementGroupToConnect;
             options.IsSequentialStatusMode = connectionType.IsSequentialStatusEnforced;
             options.EnabledViews = connectionType.EnabledViews;
+
+            // If a SelectedView was provided as a page parameter, validate it against
+            // the enabled views and seed the person preference so the client initializes
+            // to the requested view.
+            var selectedViewParam = PageParameter( PageParameterKey.SelectedView );
+            if ( selectedViewParam.IsNotNullOrWhiteSpace() )
+            {
+                if ( Enum.TryParse<EnabledViewFlags>( selectedViewParam, true, out var viewFlag )
+                     && viewFlag != EnabledViewFlags.None
+                     && connectionType.EnabledViews.HasFlag( viewFlag ) )
+                {
+                    this.PersonPreferences.SetValue( string.Format( PreferenceKey.SelectedViewConnectionTypeIdKey, connectionTypeIdKey ), selectedViewParam.ToLower() );
+                    this.PersonPreferences.Save();
+                }
+            }
 
             // If a Connection Opportunity was provided as a page parameter, seed the person preference
             // so that GetGridData only needs to read from the preference (not the page parameter).

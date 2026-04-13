@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Enums.Connection;
 using Rock.Model;
 using Rock.Model.Connection.ConnectionType.Options;
 using Rock.Obsidian.UI;
@@ -237,7 +238,8 @@ namespace Rock.Blocks.Engagement
                         {
                             { "ConnectionType", ConnectionType?.IdKey },
                             { "Connector", "((Key))" },
-                            { "ConnectionOpportunity", "((ConnectionOpportunityKey))" }
+                            { "ConnectionOpportunity", "((ConnectionOpportunityKey))" },
+                            { "SelectedView", EnabledViewFlags.List.ToString().ToLower() }
                         }
                     )
                 }
