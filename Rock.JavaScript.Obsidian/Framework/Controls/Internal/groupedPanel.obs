@@ -1,7 +1,19 @@
 <template>
     <Panel v-model:quickFilterValue="internalQuickFilterValue"
-           panelHeaderCssClass="flex-shrink-0">
+           type="block"
+           panelBodyCssClass="overflow-hidden"
+           panelHeaderCssClass="flex-shrink-0"
+           worksurfaceMode>
         <template #headerActions>
+            <ButtonGroup v-model="internalViewMode"
+                         :items="viewModeItems"
+                         :btnSize="BtnSize.ExtraSmall" />
+            <div v-if="groupingFields.length > 1" class="d-flex align-items-center gap-xs">
+                <ButtonDropDownList v-model="groupingKey"
+                                    :items="groupingFields"
+                                    :dropdownClass="viewModeItems.length > 1 ? 'dropdown-right' : ''"
+                                    :btnSize="BtnSize.ExtraSmall" />
+            </div>
             <HighlightLabel>
                 {{ countMessage }}
             </HighlightLabel>
@@ -25,15 +37,18 @@
             </button>
         </template>
         <template #preBody>
-            <ActionToolbar v-model:groupingKey="groupingKey"
-                           v-model:viewMode="internalViewMode"
-                           :viewModeItems="viewModeItems"
-                           :groupingFields="groupingFields"
-                           :isSelectedView="isSelectedView">
-                <template #selectedActionToolbar>
-                    <slot name="selectedActionToolbar" />
-                </template>
-            </ActionToolbar>
+            <TransitionVerticalCollapse>
+                <ActionToolbar v-if="isSelectedView"
+                               v-model:groupingKey="groupingKey"
+                               v-model:viewMode="internalViewMode"
+                               :viewModeItems="viewModeItems"
+                               :groupingFields="groupingFields"
+                               :isSelectedView="isSelectedView">
+                    <template #selectedActionToolbar>
+                        <slot name="selectedActionToolbar" />
+                    </template>
+                </ActionToolbar>
+            </TransitionVerticalCollapse>
         </template>
         <template v-if="rows.length > 0">
             <GroupedListView v-if="isListView"
@@ -100,6 +115,11 @@
     import ActionToolbar from "./GroupedPanel/actionToolbar.obs";
     import GroupedListView from "./GroupedPanel/groupedListView.obs";
     import GroupedBoardView from "./GroupedPanel/groupedBoardView.obs";
+    import ButtonGroup from "../buttonGroup.obs";
+    import RockLabel from "../rockLabel.obs";
+    import TransitionVerticalCollapse from "../transitionVerticalCollapse.obs";
+    import ButtonDropDownList from "../buttonDropDownList.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { GroupedGrid } from "./GroupedPanel/types.partial";
 
 

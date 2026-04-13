@@ -42,25 +42,27 @@
 }
 
 .board-column {
-    padding: var(--spacing-medium);
+    padding: var(--spacing-medium) 0;
     background-color: var(--color-interface-softer);
     border-radius: var(--rounded-large);
-    flex: 0 0 332px;
+    flex: 0 0 348px;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-medium);
-    width: 364px;
+    width: 380px;
     max-width: none;
     /* Allow the column to shrink so the column body scrolls rather than the page. */
-    min-height: 0;
+    /* min-height: 0; */
+    /* overflow-y: auto; */
 }
 
 .board-column-header {
-    padding: var(--spacing-xsmall) var(--spacing-small);
+    padding: var(--spacing-xsmall) 0;
+    margin: 0 var(--spacing-medium);
     display: flex;
     align-items: center;
     gap: var(--spacing-xsmall);
-    /* border-bottom: 2px solid var(--color-interface-soft); */
+    border-bottom: 2px solid var(--color-interface-soft);
 }
 
 .board-column-body {
@@ -70,7 +72,32 @@
     /* Fill remaining column height and scroll cards independently. */
     flex: 1;
     min-height: 0;
+
+    /* overflow must be set in the base state for scrollbar-gutter to reserve space. */
     overflow-y: auto;
+    scrollbar-gutter: stable;
+    padding: 0 var(--spacing-xsmall) 0 var(--spacing-medium);
+}
+
+/* Set the srollbar to transparent when there is no hover event. */
+.board-column-body::-webkit-scrollbar {
+    background-color: transparent;
+}
+
+.board-column-body::-webkit-scrollbar-thumb {
+    background-color: transparent;
+}
+
+.board-column-body:hover::-webkit-scrollbar {
+    background-color: var(--color-interface-softer);
+}
+
+.board-column-body:hover::-webkit-scrollbar-thumb {
+    background-color: var(--color-interface-soft);
+}
+
+.board-column-body:hover::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-interface-medium);
 }
 
 .board-column.drag-over {

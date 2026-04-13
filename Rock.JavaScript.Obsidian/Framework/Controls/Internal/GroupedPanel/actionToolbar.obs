@@ -2,17 +2,7 @@
     <div class="action-toolbar"
          :class="{ selected: isSelectedView }">
         <template v-if="!isSelectedView">
-            <div v-if="viewModeItems.length > 1">
-                <ButtonGroup v-model="internalViewMode"
-                             :items="viewModeItems"
-                             :btnSize="BtnSize.Small" />
-            </div>
-            <div v-if="groupingFields.length > 1" class="d-flex align-items-center gap-xs">
-                <RockLabel>Group By</RockLabel>
-                <ButtonDropDownList v-model="groupingKey"
-                                    :items="groupingFields"
-                                    :dropdownClass="viewModeItems.length > 1 ? 'dropdown-right' : ''" />
-            </div>
+            <slot />
         </template>
         <template v-else>
             <slot name="selectedActionToolbar" />

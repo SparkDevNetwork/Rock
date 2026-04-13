@@ -89,6 +89,16 @@
                                class="mr-spacing-tiny"></i>
                             {{ connectionRequestRow.connectionOpportunity }}
                         </dd>
+                        <template v-if="viewOptions.isRequestSourceShown">
+                            <dt>Source</dt>
+                            <dd v-if="!isNullOrWhiteSpace(connectionRequestRow.connectionTypeSource)"
+                                v-tooltip.overflow="connectionRequestRow.connectionTypeSource">
+                                {{ connectionRequestRow.connectionTypeSource }}
+                            </dd>
+                            <dd v-else>
+                                <i class="ti ti-minus"></i>
+                            </dd>
+                        </template>
                         <dt>
                             <span v-tooltip="dueDateTooltip">
                                 Due Date
@@ -198,6 +208,7 @@
     import { DueStatus } from "@Obsidian/Enums/Connection/dueStatus";
     import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
     import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { ViewOptions } from "./types.partial";
 
     type ConnectionRequestCardRow = {
         idKey?: string | null;
@@ -291,6 +302,11 @@
         hideCampusLabel: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        viewOptions: {
+            type: Object as PropType<ViewOptions>,
+            required: true
         },
 
         attributesToShow: {

@@ -426,6 +426,7 @@
                                    :options="box.options"
                                    :canEditConnectionRequests="canEditConnectionRequests"
                                    :hideCampusLabel="selectedCampus !== null"
+                                   :viewOptions="viewOptions"
                                    :attributesToShow="attributesToShow"
                                    :currentPersonIdKey="currentPerson?.idKey"
                                    @selectItem="onSelectItem"
