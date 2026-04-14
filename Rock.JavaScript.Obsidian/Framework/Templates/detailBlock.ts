@@ -931,11 +931,11 @@ export default defineComponent({
     </template>
 
     <template #headerActions>
-        <slot v-if="$slots.headerActions" name="headerActions" />
-
         <div v-if="showExperienceMode" class="panel-experience-mode">
             <ExperienceModePicker />
         </div>
+
+        <slot v-if="$slots.headerActions" name="headerActions" />
 
         <span v-for="action in headerActions" :class="getClassForIconAction(action)" :title="action.title" @click="onActionClick(action, $event)">
             <i :class="getActionIconCssClass(action)"></i>
@@ -970,7 +970,7 @@ export default defineComponent({
     <template #footerActions>
         <template v-if="isEditMode">
             <RockButton btnType="primary" autoDisable autoLoading @click="onSaveClick" shortcutKey="s">Save</RockButton>
-            <RockButton v-for="action in editFooterActions" btnType="link" :disabled="action.disabled" @click="onActionClick(action, $event)">{{ action.title }}</RockButton>
+            <RockButton v-for="action in editFooterActions" btnType="action.type" :disabled="action.disabled" @click="onActionClick(action, $event)">{{ action.title }}</RockButton>
             <RockButton btnType="link" @click="onEditCancelClick" shortcutKey="c">Cancel</RockButton>
         </template>
 

@@ -67,6 +67,7 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { alert } from "@Obsidian/Utility/dialogs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 
     const config = useConfigurationValues<DetailBlockBox<StepEntryBag, StepEntryOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -133,7 +134,7 @@
 
         return [{
             title: "Save Then Add",
-            type: "default",
+            type: BtnType.Link,
             disabled: isSavingAndAdding.value,
             handler: onSaveThenAdd
         }];
