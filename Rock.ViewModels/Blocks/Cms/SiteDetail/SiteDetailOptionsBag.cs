@@ -37,5 +37,12 @@ namespace Rock.ViewModels.Blocks.Cms.SiteDetail
         /// The reserved key names.
         /// </value>
         public List<string> ReservedKeyNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Site entity type
+        /// has indexing enabled. When false, the "Is Indexed" checkbox
+        /// should be hidden.
+        /// </summary>
+        public bool IsIndexingEnabled { get; set; }
     }
 }

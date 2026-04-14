@@ -39,7 +39,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of pages." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -53,7 +53,8 @@ namespace Rock.Blocks.Cms
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "b49f5c5b-95d4-448d-8a82-be7661e4ff1d" )]
-    [Rock.SystemGuid.BlockTypeGuid( "39b02b93-b1af-4f9b-a535-33f470d91106" )]
+    [Rock.SystemGuid.BlockTypeGuid( "D9847FE8-5279-4CC4-BD69-8A71B2F1ED70" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "39b02b93-b1af-4f9b-a535-33f470d91106" )]
     [CustomizedGrid]
     public class PageList : RockEntityListBlockType<Page>
     {
@@ -105,14 +106,15 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override IQueryable<Page> GetListQueryable( RockContext rockContext )
         {
-            // Retrieve the siteId from page parameters
-            var siteIdParam = PageParameter( PageParameterKey.SiteId );
-            var siteId = Rock.Utility.IdHasher.Instance.GetId( siteIdParam ) ?? siteIdParam.AsIntegerOrNull();
+            var siteId = SiteCache.Get(
+                PageParameter( PageParameterKey.SiteId ),
+                !PageCache.Layout.Site.DisablePredictableIds
+            )?.Id ?? 0;
 
             // Fetch pages directly associated with the site
             var pages = new PageService( rockContext )
                 .Queryable().AsNoTracking()
-                .Where( p => p.Layout.SiteId == siteId );
+                .Where( p => p.SiteId == siteId );
 
             return pages;
         }

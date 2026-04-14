@@ -37,13 +37,14 @@ namespace Rock.Blocks.Bus
     [Category( "Bus" )]
     [Description( "Displays the details of bus queues." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the page short link details.",
         Key = AttributeKey.DetailPage )]
 
-    [Rock.SystemGuid.BlockTypeGuid( "8a5785fc-3094-4c2c-929a-3fd6d21da7f8" )]
+    [Rock.SystemGuid.BlockTypeGuid( "F9872CD9-EF32-4791-B0A9-1D104250AB18" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "8a5785fc-3094-4c2c-929a-3fd6d21da7f8" )]
 
     [Rock.SystemGuid.EntityTypeGuid( "BE20153D-8462-403D-B18D-8E8AFC274EE5")]
     public class QueueList : RockListBlockType<QueueListBag>

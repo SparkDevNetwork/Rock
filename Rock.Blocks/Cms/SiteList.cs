@@ -40,7 +40,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of sites." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the site details.",
@@ -77,7 +77,8 @@ namespace Rock.Blocks.Cms
         Order = 4 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "12a8c8ae-7bbe-41d2-9448-8d7eae298099" )]
-    [Rock.SystemGuid.BlockTypeGuid( "d27a9c0d-e118-4172-8f8e-368c973f5486" )]
+    [Rock.SystemGuid.BlockTypeGuid( "441D5A71-C250-4FF5-90C3-DEEAD3AC028D" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "d27a9c0d-e118-4172-8f8e-368c973f5486" )]
     [CustomizedGrid]
     public class SiteList : RockEntityListBlockType<Site>
     {
