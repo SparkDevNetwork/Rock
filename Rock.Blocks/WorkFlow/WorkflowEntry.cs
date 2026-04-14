@@ -194,9 +194,16 @@ namespace Rock.Blocks.Workflow
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "02D2DBA8-5300-4367-B15B-E37DFB3F7D1E" )]
-    [Rock.SystemGuid.BlockTypeGuid( SystemGuid.BlockType.OBSIDIAN_WORKFLOW_ENTRY )]
+    [Rock.SystemGuid.BlockTypeGuid( "A8BD05C8-6F89-4628-845B-059E686F089A" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( SystemGuid.BlockType.OBSIDIAN_WORKFLOW_ENTRY )]
     public class WorkflowEntry : RockBlockType, IBreadCrumbBlock
     {
+        #region Properties
+
+        private bool IsAllowingPredictableIds => !PageCache.Layout.Site.DisablePredictableIds;
+
+        #endregion Properties
+
         #region Keys
 
         /// <summary>
@@ -308,9 +315,10 @@ namespace Rock.Blocks.Workflow
 
         private string WorkflowTypePageParameter => PageParameter( PageParameterKey.WorkflowType );
 
-        private int? WorkflowTypeIdPageParameter =>
-            PageParameter( PageParameterKey.WorkflowType ).AsIntegerOrNull()
-            ?? PageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
+        private string WorkflowTypeIdPageParameter =>
+            !string.IsNullOrEmpty( PageParameter( PageParameterKey.WorkflowType ) ) ?
+                PageParameter( PageParameterKey.WorkflowType ) :
+                PageParameter( PageParameterKey.WorkflowTypeId );
 
         private Guid? WorkflowTypeGuidPageParameter =>
             PageParameter( PageParameterKey.WorkflowType ).AsGuidOrNull()
@@ -346,7 +354,18 @@ namespace Rock.Blocks.Workflow
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var workflowId = PageParameter( PageParameterKey.WorkflowId ).AsIntegerOrNull();
+            string workflowIdParam = PageParameter( PageParameterKey.WorkflowId );
+
+            var workflowId = workflowIdParam != "0" ?
+                new WorkflowService( RockContext )
+                    .GetQueryableByKey(
+                        workflowIdParam,
+                        IsAllowingPredictableIds
+                    )
+                    .Select( w => ( int? ) w.Id )
+                    .FirstOrDefault() :
+                0;
+
             var workflowGuid = PageParameter( PageParameterKey.WorkflowGuid ).AsGuidOrNull();
             var workflow = LoadWorkflow( workflowId, workflowGuid, out var errorMessage );
 
@@ -377,7 +396,13 @@ namespace Rock.Blocks.Workflow
                 this.RequestContext.Response.SetPageTitle( workflow.WorkflowTypeCache.Name );
             }
 
-            var actionId = RequestContext.GetPageParameter( PageParameterKey.ActionId ).AsIntegerOrNull();
+            var actionId = new WorkflowActionService( RockContext ).GetQueryableByKey(
+                RequestContext.GetPageParameter( PageParameterKey.ActionId ),
+                IsAllowingPredictableIds
+            )
+            .Select( wa => ( int? ) wa.Id)
+            .FirstOrDefault();
+
             var initialAction = ProcessWorkflow( workflow, actionId, null, null, null );
 
             return new WorkflowEntryOptionsBag
@@ -404,9 +429,10 @@ namespace Rock.Blocks.Workflow
             {
                 return WorkflowTypeCache.Get( workflowTypeGuidPageParam.Value, this.RockContext );
             }
-            else if ( workflowTypeIdPageParam.HasValue && allowPassingWorkflowTypeId )
+            else if ( !string.IsNullOrEmpty( workflowTypeIdPageParam ) && allowPassingWorkflowTypeId )
             {
-                return WorkflowTypeCache.Get( workflowTypeIdPageParam.Value, this.RockContext );
+                var cacheByKey = WorkflowTypeCache.Get( workflowTypeIdPageParam, IsAllowingPredictableIds );
+                return cacheByKey != null ? WorkflowTypeCache.Get( cacheByKey.Id, this.RockContext ) : null;
             }
             else if ( workflowTypeSlugPageParam.IsNotNullOrWhiteSpace() )
             {
@@ -618,8 +644,19 @@ namespace Rock.Blocks.Workflow
         /// <returns>An instance of <see cref="IEntity"/> if one is available; otherwise <c>null</c>.</returns>
         private IEntity GetInitialWorkflowEntity()
         {
-            var personId = RequestContext.GetPageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
-            var groupId = RequestContext.GetPageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            var personId = new PersonService( RockContext ).GetQueryableByKey(
+                RequestContext.GetPageParameter( PageParameterKey.PersonId ),
+                IsAllowingPredictableIds
+            )
+            .Select( p => ( int? ) p.Id )
+            .FirstOrDefault();
+
+            var groupId = new GroupService( RockContext ).GetQueryableByKey(
+                RequestContext.GetPageParameter( PageParameterKey.GroupId ),
+                IsAllowingPredictableIds
+            )
+            .Select( g => ( int? ) g.Id )
+            .FirstOrDefault();
 
             if ( personId.HasValue )
             {

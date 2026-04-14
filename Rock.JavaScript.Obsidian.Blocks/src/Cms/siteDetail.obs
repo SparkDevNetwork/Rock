@@ -193,7 +193,7 @@
     });
 
     const options = computed((): SiteDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {} as SiteDetailOptionsBag;
     });
 
     // #endregion
