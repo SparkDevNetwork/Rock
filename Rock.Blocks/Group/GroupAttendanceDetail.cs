@@ -223,7 +223,8 @@ namespace Rock.Blocks.Group
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "64ECB2E0-218F-4EB4-8691-7DC94A767037" )]
-    [Rock.SystemGuid.BlockTypeGuid( "308DBA32-F656-418E-A019-9D18235027C1" )]
+    // Original Obsidian was [Rock.SystemGuid.BlockTypeGuid( "308DBA32-F656-418E-A019-9D18235027C1" )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUP_ATTENDANCE_DETAIL )]
     public class GroupAttendanceDetail : RockBlockType
     {
         #region Attribute Values
