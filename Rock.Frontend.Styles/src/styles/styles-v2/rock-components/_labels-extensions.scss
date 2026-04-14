@@ -11,9 +11,9 @@
 // ======================== ALTERNATIVE STYLE ========================
 
 .label {
-  height: 26px; // Hardcode to match the height of the .btn-xs for better alignment when placed beside each other, such as in panel headers
-  padding: var(--spacing-tiny) var(--spacing-xsmall); // Adjust padding to better fit the new height
+  min-height: 26px; // Hardcode to match the height of the .btn-xs for better alignment when placed beside each other, such as in panel headers
   line-height: 16px; // Adjust line-height to vertically center the text within the new height
+  align-items: center; // Vertically center the content if it wraps to multiple lines
   a {
     color: inherit; // allow for links in labels
   }
