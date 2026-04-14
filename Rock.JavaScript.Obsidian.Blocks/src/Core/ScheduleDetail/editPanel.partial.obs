@@ -67,7 +67,7 @@
                     </div>
 
                     <div class="col-md-2">
-                        <RockButton btnType="link" data-toggle="tooltip" ref="previewRef"
+                        <RockButton btnType="link" ref="previewRef"
                                     data-placement="auto" data-container="body" data-html="true"
                                     :title="props.options?.helpText ?? ''" :data-original-title="props.options?.helpText">Preview</RockButton>
                     </div>
@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch, onMounted } from "vue";
+    import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -88,12 +88,15 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
-    import { tooltip } from "@Obsidian/Utility/tooltip";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { resetTooltip } from "@Obsidian/Utility/tooltip";
     import { ScheduleBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleDetail/scheduleBag";
     import { ScheduleDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleDetail/scheduleDetailOptionsBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const errorMessage = ref("");
 
     const props = defineProps({
         modelValue: {
@@ -144,6 +147,35 @@
     // #endregion
 
     // #region Event Handlers
+    /**
+     * Event handler for the Preview data being changed. Sends the
+     * iCalendarContent to the server to get the PreviewHTML.
+     */
+    async function onGetPreviewHtml(): Promise<void | string> {
+        errorMessage.value = "";
+
+        const buttonElement = previewRef.value?.$el as HTMLElement | undefined;
+
+        if (!buttonElement) {
+            return;
+        }
+
+        const result = await invokeBlockAction<string>("GetPreviewHtml", {
+            iCalendarContent: props.modelValue.iCalendarContent
+        });
+
+        if (result.isSuccess && result.data) {
+            if (typeof result.data === "string") {
+                buttonElement.title = result.data;
+                buttonElement.setAttribute("title", result.data);
+                buttonElement.setAttribute("data-original-title", result.data);
+                await resetTooltip(buttonElement, {
+                    container: "body",
+                    html: true
+                });
+            }
+        }
+    }
 
     // #endregion
 
@@ -186,9 +218,10 @@
 
     // enable tooltip on the preview
     const previewRef = ref<InstanceType<typeof RockButton>>();
-    onMounted(() => {
-        tooltip(previewRef?.value?.$el);
-    });
+
+    watch(() => props.modelValue.iCalendarContent, () => {
+        onGetPreviewHtml();
+    }, { immediate: true });
 
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.
