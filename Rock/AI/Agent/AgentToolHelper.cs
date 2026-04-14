@@ -50,7 +50,7 @@ namespace Rock.AI.Agent
         /// <summary>
         /// The default page size to use when paginating results.
         /// </summary>
-        private const int DefaultPageSize = 25;
+        private const int DefaultPageSize = 50;
 
         #endregion
 
