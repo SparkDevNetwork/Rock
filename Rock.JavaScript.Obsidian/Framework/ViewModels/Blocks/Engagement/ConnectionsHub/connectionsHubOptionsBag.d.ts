@@ -25,6 +25,7 @@ import { Guid } from "@Obsidian/Types";
 import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionActivityTypeBag";
 import { ConnectionOpportunityDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionOpportunityDetailBag";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
+import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionWorkflowBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -103,5 +104,5 @@ export type ConnectionsHubOptionsBag = {
     title?: string | null;
 
     /** Gets or sets the list of workflows that can be launched from connection requests. */
-    workflowItems?: ListItemBag[] | null;
+    workflowItems?: ConnectionWorkflowBag[] | null;
 };

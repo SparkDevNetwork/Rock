@@ -67,6 +67,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public DateTimeOffset? FollowUpDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the GUID of the connection opportunity this request belongs to.
+        /// </summary>
+        public Guid? ConnectionOpportunityGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the connection opportunity this request belongs to.
         /// </summary>
         public string ConnectionOpportunityName { get; set; }

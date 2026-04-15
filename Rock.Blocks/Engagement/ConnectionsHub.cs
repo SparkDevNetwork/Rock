@@ -360,28 +360,33 @@ namespace Rock.Blocks.Engagement
             var delimitedBadgeGuids = GetAttributeValue( AttributeKey.Badges );
             options.BadgeGuids = delimitedBadgeGuids.SplitDelimitedValues().AsGuidList();
 
-            var manualWorkflows = new List<ConnectionWorkflow>();
-            var authorizedWorkflowItems = new List<ListItemBag>();
+            var manualWorkflows = new List<(ConnectionWorkflow Workflow, Guid? OpportunityGuid)>();
+            var authorizedWorkflowItems = new List<ConnectionWorkflowBag>();
 
             manualWorkflows.AddRange( connectionType.ConnectionWorkflows
                 .Where( w => w.TriggerType == ConnectionWorkflowTriggerType.Manual && ( w.WorkflowType.IsActive ?? true ) ) // Mirroring Webforms by setting IsActive to true by default.
+                .Select( w => ( w, ( Guid? ) null ) )
                 .ToList() );
 
             manualWorkflows.AddRange( connectionType.ConnectionOpportunities
-                .SelectMany( o => o.ConnectionWorkflows )
-                .Where( w => w.TriggerType == ConnectionWorkflowTriggerType.Manual && ( w.WorkflowType.IsActive ?? true ) ) // Mirroring Webforms by setting IsActive to true by default.
+                .SelectMany( o => o.ConnectionWorkflows.Select( w => (Workflow: w, OpportunityGuid: ( Guid? ) o.Guid) ) )
+                .Where( x => x.Workflow.TriggerType == ConnectionWorkflowTriggerType.Manual && ( x.Workflow.WorkflowType.IsActive ?? true ) ) // Mirroring Webforms by setting IsActive to true by default.
                 .ToList()
             );
 
             foreach ( var manualWorkflow in manualWorkflows )
             {
-                if ( manualWorkflow.WorkflowType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                if ( manualWorkflow.Workflow.WorkflowType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                 {
-                    authorizedWorkflowItems.Add( new ListItemBag
+                    authorizedWorkflowItems.Add( new ConnectionWorkflowBag
                     {
-                        Text = manualWorkflow.WorkflowType.Name,
-                        Value = manualWorkflow.Guid.ToString(),
-                        Category = manualWorkflow.ConnectionTypeId.HasValue ? "Connection Type Workflows" : "Connection Opportunity Workflows"
+                        ListItemBag = new ListItemBag
+                        {
+                            Text = manualWorkflow.Workflow.WorkflowType.Name,
+                            Value = manualWorkflow.Workflow.Guid.ToString(),
+                            Category = manualWorkflow.Workflow.ConnectionTypeId.HasValue ? "Connection Type Workflows" : "Connection Opportunity Workflows"
+                        },
+                        ConnectionOpportunityGuid = manualWorkflow.OpportunityGuid
                     } );
                 }
             }
@@ -747,6 +752,11 @@ namespace Rock.Blocks.Engagement
         /// <returns>True if the Connection Request meets all criteria for the Connection Workflow; otherwise false.</returns>
         private bool IsEligibleForWorkflow( ConnectionWorkflow cw, ConnectionRequest request, List<int> includeIds, List<int> excludeIds )
         {
+            if ( cw.ConnectionOpportunityId.HasValue && cw.ConnectionOpportunityId != request.ConnectionOpportunityId )
+            {
+                return false;
+            }
+
             if ( cw.ManualTriggerFilterConnectionStatusId.HasValue && cw.ManualTriggerFilterConnectionStatusId != request.ConnectionStatusId )
             {
                 return false;
@@ -2185,6 +2195,7 @@ namespace Rock.Blocks.Engagement
                     IsDefaultStatus = connectionRequest.ConnectionStatus.IsDefault
                 } : null,
                 FollowUpDate = connectionRequest.FollowupDate?.ToRockDateTimeOffset(),
+                ConnectionOpportunityGuid = connectionRequest.ConnectionOpportunity.Guid,
                 ConnectionOpportunityName = connectionRequest.ConnectionOpportunity.Name,
                 ConnectionOpportunityIcon = connectionRequest.ConnectionOpportunity.IconCssClass,
                 Campus = connectionRequest.Campus?.Name,

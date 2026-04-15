@@ -46,6 +46,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public string ConnectionOpportunity { get; set; }
 
         /// <summary>
+        /// Gets or sets the conection opportunity Guid.
+        /// </summary>
+        public Guid? ConnectionOpportunityGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the display value of the request source (e.g., a defined value description).
         /// </summary>
         public string ConnectionTypeSource { get; set; }
