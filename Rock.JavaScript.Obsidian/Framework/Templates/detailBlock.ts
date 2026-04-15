@@ -281,6 +281,19 @@ export default defineComponent({
         showExperienceMode: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * A value that resets the internal edit form when it changes. Changing
+         * this value clears the form's submit count and visible validation
+         * errors, which re-locks individual fields so they stop rendering
+         * error state until the next submit attempt. Useful after a
+         * "save and add another" flow where the entity is reset but the
+         * panel stays in edit mode.
+         */
+        formResetKey: {
+            type: String as PropType<string>,
+            default: ""
         }
     },
 
@@ -970,7 +983,7 @@ export default defineComponent({
     <template #footerActions>
         <template v-if="isEditMode">
             <RockButton btnType="primary" autoDisable autoLoading @click="onSaveClick" shortcutKey="s">Save</RockButton>
-            <RockButton v-for="action in editFooterActions" btnType="action.type" :disabled="action.disabled" @click="onActionClick(action, $event)">{{ action.title }}</RockButton>
+            <RockButton v-for="action in editFooterActions" :btnType="action.type" :disabled="action.disabled" @click="onActionClick(action, $event)">{{ action.title }}</RockButton>
             <RockButton btnType="link" @click="onEditCancelClick" shortcutKey="c">Cancel</RockButton>
         </template>
 
@@ -999,7 +1012,7 @@ export default defineComponent({
             }
         </v-style>
 
-        <RockForm ref="editForm" v-if="isEditModeVisible" v-show="isEditMode" @submit="onSaveSubmit">
+        <RockForm ref="editForm" v-if="isEditModeVisible" v-show="isEditMode" :formResetKey="formResetKey" @submit="onSaveSubmit">
             <RockSuspense @ready="onEditSuspenseReady">
                 <slot name="edit" />
             </RockSuspense>

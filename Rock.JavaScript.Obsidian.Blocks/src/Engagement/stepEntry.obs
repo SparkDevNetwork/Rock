@@ -7,6 +7,7 @@
     <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError"
+                 ref="detailBlockRef"
                  v-model:mode="panelMode"
                  :name="panelName"
                  :titleIconCssClass="options?.stepTypeIconCssClass"
@@ -20,6 +21,7 @@
                  :isSecurityHidden="true"
                  :isFullScreenVisible="false"
                  :editFooterActions="editFooterActions"
+                 :formResetKey="formResetKey"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -68,6 +70,7 @@
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<DetailBlockBox<StepEntryBag, StepEntryOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -79,6 +82,8 @@
     const errorMessage = ref("");
     const successMessage = ref("");
     const isSavingAndAdding = ref(false);
+    const detailBlockRef = ref<InstanceType<typeof DetailBlock> | null>(null);
+    const formResetKey = ref("");
 
     const stepViewBag = ref(config.entity);
     const stepEditBag = ref<ValidPropertiesBox<StepEntryBag>>({
@@ -203,28 +208,14 @@
             box: stepEditBag.value
         });
 
-        if (result.isSuccess && result.data) {
-            // Save always returns a redirect URL for this block.
-            return result.data;
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save step.";
+            return false;
         }
 
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save step.";
-        return false;
-    }
-
-    /** Saves the current step and resets the form for a new entry, keeping all values except the person. */
-    async function onSaveThenAdd(): Promise<void> {
-        errorMessage.value = "";
-        successMessage.value = "";
-        isSavingAndAdding.value = true;
-
-        const result = await invokeBlockAction<string>("Save", {
-            box: stepEditBag.value
-        });
-
-        isSavingAndAdding.value = false;
-
-        if (result.isSuccess) {
+        // When invoked via Save Then Add, reset the form for a new entry and
+        // stay in edit mode instead of redirecting to the success page.
+        if (isSavingAndAdding.value) {
             successMessage.value = "Step saved successfully. Add another person below.";
 
             stepEditBag.value = {
@@ -235,9 +226,42 @@
                 } as StepEntryBag,
                 validProperties: stepEditBag.value.validProperties
             };
+
+            // Bump the form reset key so RockForm clears its submit count and
+            // visible errors. Without this, the now-blank (but required) Person
+            // picker stays highlighted in its error state from the submit that
+            // just completed.
+            formResetKey.value = newGuid();
+
+            return false;
         }
-        else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save step.";
+
+        // Normal Save — server returns the success page URL to redirect to.
+        return result.data ?? false;
+    }
+
+    /** Saves the current step and resets the form for a new entry, keeping all values except the person. */
+    async function onSaveThenAdd(): Promise<void> {
+        errorMessage.value = "";
+        successMessage.value = "";
+        isSavingAndAdding.value = true;
+
+        try {
+            /*
+                4/15/26 - MSE
+
+                Route through the DetailBlock save pipeline (onSaveClick ->
+                RockForm.submitForm) so existing validation runs before the Save action.
+
+                Previously, calling the Save action directly bypassed validation,
+                allowing steps to be created without a Status, Start Date, or required attributes.
+
+                Save Then Add must follow the same required-field rules as the main Save button.
+            */
+            await detailBlockRef.value?.onSaveClick();
+        }
+        finally {
+            isSavingAndAdding.value = false;
         }
     }
 
