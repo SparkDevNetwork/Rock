@@ -682,6 +682,14 @@ namespace Rock
         /// </summary>
         public static DateTimeOffset ToRockDateTimeOffset( this DateTime dateTime )
         {
+            // Preserve DateTime.MinValue as the sentinel for "no value".
+            // Applying a timezone offset to this value can be invalid in some time zones,
+            // so we return DateTimeOffset.MinValue to keep the sentinel semantics intact.
+            if ( dateTime == DateTime.MinValue )
+            {
+                return DateTimeOffset.MinValue;
+            }
+
             // We can only apply a time zone offset to an unspecified type.
             var unspecifiedDateTime = DateTime.SpecifyKind( dateTime, DateTimeKind.Unspecified );
 
