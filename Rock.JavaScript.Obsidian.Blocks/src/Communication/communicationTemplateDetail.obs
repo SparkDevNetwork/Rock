@@ -55,11 +55,11 @@
                                      horizontal
                                      :items="[
                                         {
-                                            text: 'Legacy',
+                                            text: CommunicationTemplateVersionDescription[CommunicationTemplateVersion.Legacy],
                                             value: `${CommunicationTemplateVersion.Legacy}`
                                         },
                                         {
-                                            text: 'Beta',
+                                            text: CommunicationTemplateVersionDescription[CommunicationTemplateVersion.Beta],
                                             value: `${CommunicationTemplateVersion.Beta}`
                                         }
                                     ]"
