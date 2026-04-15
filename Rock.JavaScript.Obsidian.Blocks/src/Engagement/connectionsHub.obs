@@ -1538,6 +1538,7 @@
         }
 
         const connectionOpportunity = row["connectionOpportunity"] as string | null | undefined;
+        const connectionOpportunityGuid = row["connectionOpportunityGuid"] as string | null | undefined;
         const connectionStatus = row["connectionStatus"] as ConnectionStatusBag | null | undefined;
         const connectionTypeSource = row["connectionTypeSource"] as string | null | undefined;
         const connector = row["connectorDetails"] as ListItemBag | null | undefined;
@@ -1549,6 +1550,7 @@
         return {
             idKey,
             connectionOpportunity,
+            connectionOpportunityGuid,
             connectionStatus,
             connectionTypeSource,
             connector,
@@ -1570,6 +1572,7 @@
         const bag = <BulkRequestViewBag>{
             idKey: box.entity.connectionRequestIdKey,
             connectionOpportunity: box.entity.connectionOpportunityName,
+            connectionOpportunityGuid: box.entity.connectionOpportunityGuid,
             connectionStatus: box.entity.connectionStatus,
             connectionTypeSource: box.entity.connectionTypeSource,
             connector: connector,
