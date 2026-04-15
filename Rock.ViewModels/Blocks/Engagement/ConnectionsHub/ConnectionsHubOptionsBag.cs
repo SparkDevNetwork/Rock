@@ -125,7 +125,7 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// <summary>
         /// Gets or sets the list of workflows that can be launched from connection requests.
         /// </summary>
-        public List<ListItemBag> WorkflowItems { get; set; }
+        public List<ConnectionWorkflowBag> WorkflowItems { get; set; }
 
         /// <summary>
         /// Gets or sets the complete list of connectors that can be assigned to connection requests.

@@ -62,6 +62,9 @@ export type ConnectionRequestDetailsBag = {
     /** Gets or sets the date by which this request was completed. */
     completedDateTime?: string | null;
 
+    /** Gets or sets the GUID of the connection opportunity this request belongs to. */
+    connectionOpportunityGuid?: Guid | null;
+
     /** Gets or sets the CSS icon class for the connection opportunity this request belongs to. */
     connectionOpportunityIcon?: string | null;
 
