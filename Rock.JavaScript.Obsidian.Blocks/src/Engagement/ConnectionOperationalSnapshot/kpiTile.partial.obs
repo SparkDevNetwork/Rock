@@ -24,7 +24,6 @@
 .kpi-tile {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-medium);
     padding: var(--spacing-large);
 
     background: var(--color-interface-softer);
@@ -40,11 +39,13 @@
     font-size: var(--font-size-small);
     font-weight: var(--font-weight-semibold);
     color: var(--color-interface-strong);
+    margin-bottom: var(--spacing-medium);
 }
 
 .kpi-tile-value {
     font-size: var(--font-size-h3);
     font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-xsmall);
 }
 
 .kpi-tile-footer {

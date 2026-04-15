@@ -52,7 +52,7 @@
   > .panel-header {
     display:            flex;
     align-items:        center;
-    min-height:         48px;
+    min-height:         57px; // Hardcode to sync up grid header height, but allow to grow if content requires more space
     padding:            0;
     line-height:        1em;
 
