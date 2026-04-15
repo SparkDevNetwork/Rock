@@ -359,6 +359,16 @@ namespace Rock.Web
         }
 
         /// <summary>
+        /// Allows external points in Rock to clear the CSS cache. Right now
+        /// this is used by the theme editor after saving changes to a theme
+        /// to ensure that the theme is properly refreshed.
+        /// </summary>
+        public void ClearCache()
+        {
+            RockCache.Remove( CssCacheKey );
+        }
+
+        /// <summary>
         /// Disposes the file system watcher and resources.
         /// </summary>
         public void Dispose()
