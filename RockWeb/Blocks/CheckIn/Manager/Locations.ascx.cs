@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         CurrentNavPath = globalPreferences.GetValue( "checkin-manager-current-nav-path" );
                     }
 
-                    SetChartOptions();
+                    //SetChartOptions();
                     BuildNavigationControls();
                 }
             }
@@ -370,7 +370,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             }
 
-            RegisterStartupScript();
+            //RegisterStartupScript();
         }
 
         /// <summary>
@@ -380,7 +380,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            SetChartOptions();
+            //SetChartOptions();
             BuildNavigationControls();
         }
 
@@ -761,70 +761,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
 
             return string.Empty;
-        }
-
-        private void SetChartOptions()
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            var options = new ChartOptions();
-#pragma warning restore CS0618 // Type or member is obsolete
-            options.series = new SeriesOptions( false, true, false );
-            options.xaxis = new AxisOptions { mode = AxisMode.time };
-            options.grid = new GridOptions { hoverable = true, clickable = false };
-
-            options.SetChartStyle( GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
-
-            options.xaxis.timeformat = "%I:%M";
-
-            hfChartOptions.Value = JsonConvert.SerializeObject( options, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore, NullValueHandling = NullValueHandling.Ignore } );
-        }
-
-        private void RegisterStartupScript()
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            var options = new ChartOptions();
-#pragma warning restore CS0618 // Type or member is obsolete
-            options.series = new SeriesOptions( false, true, false );
-            options.yaxis = new AxisOptions { min = 0, minTickSize = 1 };
-            options.xaxis = new AxisOptions { mode = AxisMode.time };
-            options.grid = new GridOptions { hoverable = true, clickable = false };
-            options.SetChartStyle( GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
-            options.xaxis.timeformat = "%I:%M";
-
-            string script = string.Format( @"
-    var data = eval($('#{1}').val());
-    var options = {2};
-    $.plot( $('#{0}'), data, options );
-
-    $('.js-threshold-btn-edit').on('click', function(e){{
-        var $parentDiv = $(this).closest('div.js-threshold');
-        $parentDiv.find('.js-threshold-nb').val($parentDiv.find('.js-threshold-hf').val());
-        $parentDiv.find('.js-threshold-view').hide();
-        $parentDiv.find('.js-threshold-edit').show();
-    }});
-
-    $('a.js-threshold-edit').on('click', function(e){{
-        var $parentDiv = $(this).closest('div.js-threshold');
-        $parentDiv.find('.js-threshold-edit').hide();
-        $parentDiv.find('.js-threshold-view').show();
-        return true;
-    }});
-
-    $('.js-threshold').on('click', function(e){{
-        e.stopPropagation();
-    }});
-",
-                pnlChart.ClientID, hfChartData.ClientID,
-                JsonConvert.SerializeObject(
-                    options,
-                    Formatting.Indented,
-                    new JsonSerializerSettings()
-                    {
-                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                        NullValueHandling = NullValueHandling.Ignore
-                    } ) );
-
-            ScriptManager.RegisterStartupScript( pnlChart, pnlChart.GetType(), "chart", script, true );
         }
 
         #region Get Navigation Data
@@ -1473,7 +1409,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     .ThenBy( i => i.Name );
                 rptNavItems.DataBind();
 
-                RegisterStartupScript();
+                //RegisterStartupScript();
             }
         }
 

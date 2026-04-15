@@ -524,18 +524,9 @@ mission. We are so grateful for your commitment.</p>
         {
             var financialScheduledTransactionGuid = PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull();
 
-#pragma warning disable CS0618
-            var financialScheduledTransactionId = PageParameter( PageParameterKey.ScheduledTransactionId ).AsIntegerOrNull();
-#pragma warning restore CS0618
-
             if ( financialScheduledTransactionGuid.HasValue )
             {
                 return financialScheduledTransactionGuid.Value;
-            }
-
-            if ( financialScheduledTransactionId.HasValue )
-            {
-                return new FinancialScheduledTransactionService( new RockContext() ).GetGuid( financialScheduledTransactionId.Value );
             }
 
             return null;
