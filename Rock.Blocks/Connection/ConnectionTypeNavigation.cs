@@ -159,7 +159,7 @@ namespace Rock.Blocks.Connection
         private PersonPreferenceCollection BlockPersonPreferences => this.GetBlockPersonPreferences();
 
         /// <summary>
-        /// Gets or sets the current person's connection type visibility preference.
+        /// Gets the current person's connection type visibility preference.
         /// </summary>
         private string TypeVisibilityPreference
         {
