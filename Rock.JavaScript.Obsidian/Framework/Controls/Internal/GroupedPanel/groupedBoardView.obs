@@ -14,7 +14,7 @@
                        :class="[group.iconCssClass, group.textColorCssClass]"
                        :style="group.iconStyle"></i>
                 </template>
-                <span class="font-weight-semibold" :class="group.textColorCssClass">{{ group.label }}</span>
+                <span class="font-weight-semibold text-truncate" :class="group.textColorCssClass" v-tooltip.overflow="group.label">{{ group.label }}</span>
                 <span class="ml-auto text-interface-medium">{{ group.gridData.rows.length }}</span>
             </div>
             <div class="board-column-body"
@@ -136,6 +136,7 @@ body.is-dragging * {
     import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { GroupedGrid } from "./types.partial";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
 
     const props = defineProps({

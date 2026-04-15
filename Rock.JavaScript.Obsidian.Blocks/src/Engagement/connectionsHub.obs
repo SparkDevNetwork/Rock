@@ -447,35 +447,22 @@
                   :showMergeTemplate="false"
                   :isCountMessageVisible="false"
                   :hideFilterHeaderRow="true"
+                  :entityTypeGuid="EntityType.ConnectionRequest"
                   class="grid-hover border-0 mb-spacing-none"
                   @selectItem="onSelectItem"
                   @selectedKeysChanged="state => onSelectedKeysChanged('all', state)"
                   @filteredRowsChanged="onFilteredRowsChanged">
                 <SelectColumn />
 
-                <PersonColumn name="requestDetails"
-                              title="Request Details"
-                              field="requestDetails" />
-
-                <Column v-if="viewOptions.gridDataToShow?.includes('connectionOpportunity') && selectedGrouping !== 'opportunityGrouping'"
-                        name="connectionOpportunity"
-                        field="connectionOpportunity">
+                <Column name="requestDetails"
+                        title="Name"
+                        field="requestDetails">
                     <template #format="{ row }">
-                        <div class="d-flex flex-column align-items-start gap-1">
-                            <HighlightLabel labelType="custom"
-                                            customClass="label-default text-xs text-semibold text-interface-strong">
-                                {{ row.connectionOpportunity }}
-                            </HighlightLabel>
-                            <span v-if="!isNullOrWhiteSpace(row.connectionTypeSource) && viewOptions.isRequestSourceShown"
-                                  class="text-small text-interface-medium">
-                                {{ row.connectionTypeSource }}
-                            </span>
-                        </div>
+                        {{ row.requestDetails.nickName }} {{ row.requestDetails.lastName }}
                     </template>
                 </Column>
 
-                <Column v-if="selectedGrouping !== 'connectorGrouping'"
-                        title="Connector"
+                <Column title="Connector"
                         name="connectorDetails"
                         field="connectorDetails">
                     <template #format="{ row }">
@@ -483,8 +470,7 @@
                     </template>
                 </Column>
 
-                <Column v-if="selectedGrouping !== 'campusGrouping'"
-                        name="campus"
+                <Column name="campus"
                         title="Campus"
                         field="campus"
                         :filter="pickExistingValueFilter">
@@ -498,10 +484,29 @@
                     </template>
                 </Column>
 
+                <Column v-if="viewOptions.gridDataToShow?.includes('connectionOpportunity')"
+                        name="connectionOpportunity"
+                        title="Opportunity"
+                        field="connectionOpportunity"
+                        :filter="pickExistingValueFilter">
+                    <template #format="{ row }">
+                        <div class="d-flex flex-column align-items-start gap-1">
+                            <div>
+                                {{ row.connectionOpportunity }}
+                            </div>
+                            <span v-if="!isNullOrWhiteSpace(row.connectionTypeSource) && viewOptions.isRequestSourceShown"
+                                  class="text-small text-interface-medium">
+                                {{ row.connectionTypeSource }}
+                            </span>
+                        </div>
+                    </template>
+                </Column>
+
                 <Column v-if="box.options?.areGroupPlacementsEnabled"
                         name="group"
                         title="Group"
-                        field="group">
+                        field="group"
+                        :filter="pickExistingValueFilter">
                     <template #format="{ row }">
                         <div v-if="!!row.group">
                             {{ row.group }}
@@ -518,18 +523,12 @@
                         field="activity">
                     <template #format="{ row }">
                         <div v-if="!!row.lastActivityDateTime && !!row.activityCount"
-                             class="d-flex align-items-center gap-1">
-                            <div class="activity-metric activity-date">
-                                <i class="ti ti-calendar-month"></i>
-                                <span>
-                                    {{ getElapsedShortTime(row.lastActivityDateTime) }}
-                                </span>
+                             class="d-flex flex-column align-items-start gap-1">
+                            <div>
+                                {{ row.activityCount }} {{ pluralize("Activity", row.activityCount) }}
                             </div>
-                            <div class="activity-metric activity-count">
-                                <i class="ti ti-bolt"></i>
-                                <span>
-                                    {{ row.activityCount }}
-                                </span>
+                            <div class="text-small text-interface-medium" v-tooltip="`Last Activity: ${formatColumnDate(row.lastActivityDateTime)}`">
+                                Last Activity: {{ getElapsedShortTime(row.lastActivityDateTime) }}
                             </div>
                         </div>
                         <div v-else>
@@ -540,12 +539,13 @@
 
                 <Column v-if="viewOptions.gridDataToShow?.includes('dueDate')"
                         name="dueDate"
-                        title="Due"
+                        title="Due Date"
                         field="dueDate"
-                        width="2%">
+                        width="5%"
+                        :filter="dateValueFilter">
                     <template #format="{ row }">
                         <div v-if="!!row.dueDate && row.connectionState !== ConnectionState.Inactive" :class="getDueDateColor(row.dueStatus, row.connectionState === ConnectionState.Connected)">
-                            {{ formatDueDateShortLabel(row.dueDate, row.connectionState === ConnectionState.Connected, row.completedDateTime) }}
+                            {{ formatColumnDate(row.dueDate) }}
                         </div>
                         <div v-else>
                             <i class="ti ti-minus"></i>
@@ -553,152 +553,34 @@
                     </template>
                 </Column>
 
-                <AttributeColumns :attributes="attributesToShow" />
-
-                <Column v-if="box.options?.areCelebrationsEnabled"
-                        name="celebration"
-                        field="celebration"
-                        width="52">
+                <Column name="connectionState"
+                        title="State"
+                        field="connectionState"
+                        :filter="pickExistingValueFilter">
                     <template #format="{ row }">
-                        <i v-if="isNullOrWhiteSpace(row.celebrationText)"
-                           class="ti ti-confetti cursor-pointer"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           data-original-title="Add Celebration"
-                           @click.stop="showCelebrationModal(row)">
-                        </i>
-                        <i v-else
-                           class="ti ti-confetti-filled cursor-pointer text-info-strong"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           data-original-title="Has Celebration"
-                           @click.stop="showCelebrationModal(row)">
-                        </i>
-                    </template>
-                </Column>
-
-                <Column v-if="box.options?.areRemindersEnabled"
-                        name="reminder"
-                        field="reminder"
-                        width="52">
-                    <template #format="{ row }">
-                        <i v-if="row.reminderCount > 0"
-                           class="ti ti-bell-filled cursor-pointer text-info-strong"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           :data-original-title="`${row.reminderCount} ${pluralize('Reminder', row.reminderCount)}`"
-                           @click.stop="showReminderModal(row)">
-                        </i>
-                        <i v-else
-                           class="ti ti-bell cursor-pointer"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           data-original-title="Add Reminder"
-                           @click.stop="showReminderModal(row)">
-                        </i>
+                        <HighlightLabel :labelType="getConnectionStateLabel(row.connectionState)">
+                            {{ ConnectionStateDescription[row.connectionState] }}<template v-if="row.connectionState === ConnectionState.FutureFollowUp"> - {{ formatColumnDate(row.followUpDate) }}</template>
+                        </HighlightLabel>
                     </template>
                 </Column>
 
                 <Column name="connectionStatus"
-                        field="connectionStatus">
+                        title="Status"
+                        field="connectionStatus"
+                        width="5%"
+                        :filter="pickExistingValueFilter">
                     <template #format="{ row }">
-                        <div class="w-100">
-                            <template v-if="row.connectionState === ConnectionState.Active">
-                                <ConnectionStatusButton :isSequentialStatusMode="box.options?.isSequentialStatusMode"
-                                                        :highlightColor="row.connectionStatus.highlightColor"
-                                                        :currentStatusName="row.connectionStatus.name"
-                                                        :disabled="!canEditConnectionRequests"
-                                                        @click.stop="(e) => onStatusClick(row, e)" />
-                            </template>
-                            <div v-else-if="row.connectionState === ConnectionState.Inactive"
-                                 class="text-center text-semibold text-slate">
-                                {{ ConnectionStateDescription[ConnectionState.Inactive] }}
-                            </div>
-                            <div v-else-if="row.connectionState === ConnectionState.FutureFollowUp"
-                                 class="text-center text-semibold text-info-strong">
-                                {{ ConnectionStateDescription[ConnectionState.FutureFollowUp] }} - {{ asLocaleString(row.followUpDate) }}
-                            </div>
-                            <div v-else-if="row.connectionState === ConnectionState.Connected"
-                                 class="text-center text-semibold text-emerald">
-                                {{ ConnectionStateDescription[ConnectionState.Connected] }}
-                            </div>
-                        </div>
+                        <HighlightLabel labelType="custom"
+                                        v-tooltip.overflow="row.connectionStatus.name"
+                                        :style="`background-color: ${row.connectionStatus.highlightColor};`">
+                            {{ row.connectionStatus.name }}
+                        </HighlightLabel>
                     </template>
                 </Column>
 
-                <Column name="options"
-                        field="options"
-                        width="52"
-                        itemClass="grid-cell-overflow">
-                    <template #format="{ row }">
-                        <div :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === row.idKey }]">
-                            <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown" @click.stop="toggleGridRowDropdown(row.idKey)"></i>
-                            <ul class="dropdown-menu">
-                                <template v-if="canEditConnectionRequests">
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.Active, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.Inactive, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
-                                        </button>
-                                    </li>
-                                    <li v-if="box.options?.isFutureFollowUpEnabled">
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.FutureFollowUp, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.Connected, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-circle-check pr-spacing-sm text-interface-medium"></i>Mark Complete
-                                        </button>
-                                    </li>
-                                </template>
-                                <li>
-                                    <button type="button"
-                                            @click.stop="showLaunchWorkflowModal(row)"
-                                            class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                        <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
-                                    </button>
-                                </li>
-                                <template v-if="canEditConnectionRequests">
-                                    <li v-if="box.options?.isRequestSecurityEnabled">
-                                        <button type="button"
-                                                @click.stop="showSecurityModal(row.idKey)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showDeleteRequestModal(row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold text-danger">
-                                            <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
-                                        </button>
-                                    </li>
-                                </template>
-                            </ul>
-                        </div>
-                    </template>
-                </Column>
+                <AttributeColumns :attributes="attributesToShow" />
+
+                <SecurityColumn v-if="canEditConnectionRequests && box.options?.isRequestSecurityEnabled" />
             </Grid>
         </template>
     </GroupedPanel>
@@ -1004,7 +886,7 @@
     import { computed, reactive, ref, watch, nextTick } from "vue";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
-    import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns, SecurityColumn, pickExistingValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
@@ -1086,7 +968,7 @@
     import { ConnectorOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectorOptionsBag";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ConnectionRequestCard from "./ConnectionsHub/connectionRequestCard.partial.obs";
-    import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
 
 
     const box = useConfigurationValues<ListBlockBox<ConnectionsHubOptionsBag>>();
@@ -1883,6 +1765,9 @@
         return 0;
     }
 
+    function formatColumnDate(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date as string)?.toASPString("d") ?? "";
+    }
 
     function formatDueDateShortLabel(dueDate: string | null | undefined, isCompleted: boolean, completedDateTime: string | null | undefined): string {
         // Use the completion date as the reference point if completed, otherwise use today
@@ -1918,6 +1803,21 @@
                 return "text-danger text-semibold";
             default:
                 return "text-interface-strong";
+        }
+    }
+
+    function getConnectionStateLabel(state: ConnectionState | undefined): "default" | "primary" | "success" | "info" | "warning" | "danger" | "campus" | "type" | "custom" {
+        switch (state) {
+            case ConnectionState.Active:
+                return "default";
+            case ConnectionState.FutureFollowUp:
+                return "info";
+            case ConnectionState.Inactive:
+                return "warning";
+            case ConnectionState.Connected:
+                return "success";
+            default:
+                return "default";
         }
     }
 
