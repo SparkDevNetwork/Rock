@@ -35,20 +35,6 @@ namespace Rock.Model
         /// <param name="methodInfo">The method information.</param>
         /// <param name="httpMethod">The HTTP method.</param>
         /// <param name="controllerName">Name of the controller.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Use the method with the 'rockGuid' property instead." )]
-        public static string GetApiId( MethodInfo methodInfo, string httpMethod, string controllerName )
-        {
-            return GetApiId( methodInfo, httpMethod, controllerName, out _ );
-        }
-
-        /// <summary>
-        /// Gets the API identifier.
-        /// </summary>
-        /// <param name="methodInfo">The method information.</param>
-        /// <param name="httpMethod">The HTTP method.</param>
-        /// <param name="controllerName">Name of the controller.</param>
         /// <param name="restActionGuid">If this RestAction has a well-known guid, returns the Guid associated with this API.</param>
         /// <returns></returns>
         public static string GetApiId( MethodInfo methodInfo, string httpMethod, string controllerName, out Guid? restActionGuid )

@@ -263,17 +263,6 @@ namespace Rock.Lava
                     return true;
                 }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-                if ( pi.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Count() > 0 )
-                {
-                    return false;
-                }
-                if ( pi.GetCustomAttributes( typeof( LavaIncludeAttribute ) ).Count() > 0 )
-                {
-                    return true;
-                }
-#pragma warning restore CS0618 // Type or member is obsolete
-
                 // otherwise return false
                 return false;
             } );

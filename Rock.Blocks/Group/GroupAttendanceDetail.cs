@@ -336,14 +336,6 @@ namespace Rock.Blocks.Group
 
             public const string Group = "Group";
 
-            [Obsolete( "Use 'GroupMembers' merge field instead.", false )]
-            [RockObsolete( "1.15.2" )]
-            public const string GroupMember = "GroupMember";
-
-            [Obsolete( "Use 'Roles' merge field instead.", false )]
-            [RockObsolete( "1.15.2" )]
-            public const string GroupRoleName = "GroupRoleName";
-
             public const string Person = "Person";
 
             public const string GroupMembers = "GroupMembers";
@@ -1864,10 +1856,6 @@ namespace Rock.Blocks.Group
             var mergeFields = this.RequestContext.GetCommonMergeFields();
             mergeFields.Add( MergeFieldKeys.Person, attendanceData.Person );
             mergeFields.Add( MergeFieldKeys.Attended, attendanceData.DidAttend );
-#pragma warning disable CS0618 // Type or member is obsolete
-            mergeFields.Add( MergeFieldKeys.GroupMember, attendanceData.GroupMembers?.FirstOrDefault() );
-            mergeFields.Add( MergeFieldKeys.GroupRoleName, string.Join( ", ", attendanceData.Roles?.Distinct() ?? Enumerable.Empty<string>() ) );
-#pragma warning restore CS0618 // Type or member is obsolete
             mergeFields.Add( MergeFieldKeys.GroupMembers, attendanceData.GroupMembers );
             mergeFields.Add( MergeFieldKeys.Roles, string.Join( ", ", attendanceData.Roles?.Distinct() ?? Enumerable.Empty<string>() ) );
 

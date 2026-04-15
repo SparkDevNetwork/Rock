@@ -69,21 +69,6 @@ namespace Rock
         {
             // Initialize the default time zone.
             _defaultTimeZoneInfo = organizationTimeZoneInfo ?? TimeZoneInfo.Local;
-
-            // Initialize the default graduation date.
-#pragma warning disable CS0618 // Type or member is obsolete
-            var graduationDateWithCurrentYear = new DateTime( Today.Year, 6, 1 );
-
-            if ( graduationDateWithCurrentYear < Today )
-            {
-                // if the graduation date already occurred this year, return next year' graduation date
-                CurrentGraduationDate = graduationDateWithCurrentYear.AddYears( 1 );
-            }
-            else
-            {
-                CurrentGraduationDate = graduationDateWithCurrentYear;
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
@@ -220,28 +205,6 @@ namespace Rock
 
             return ( DateTime? ) null;
         }
-
-        /// <summary>
-        /// Gets the current graduation date base on the GradeTransitionDate GlobalAttribute and current datetime.
-        /// For example, if the Grade Transition Date is June 1st and the current date is June 1st or earlier, it will return June 1st of the current year;
-        /// otherwise, it will return June 1st of next year
-        /// </summary>
-        /// <value>
-        /// The current graduation date.
-        /// </value>
-        [RockObsolete("1.13")]
-        [Obsolete( "Use PersonService.GetCurrentGraduationDate() instead." )]
-        public static DateTime CurrentGraduationDate { get; internal set; }
-
-        /// <summary>
-        /// Gets the current graduation year based on <see cref="CurrentGraduationDate"/>
-        /// </summary>
-        /// <value>
-        /// The current graduation year.
-        /// </value>
-        [RockObsolete( "1.13" )] 
-        [Obsolete( "Use PersonService.GetCurrentGraduationYear() instead." )]
-        public static int CurrentGraduationYear => CurrentGraduationDate.Year;
 
         /// <summary>
         /// Gets the Date of which Sunday is associated with the specified Date/Time, based on <see cref="RockDateTime.FirstDayOfWeek" />

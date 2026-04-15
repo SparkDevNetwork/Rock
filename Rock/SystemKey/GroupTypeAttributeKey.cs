@@ -161,13 +161,6 @@ namespace Rock.SystemKey
         public const string CHECKIN_GROUPTYPE_AGE_RESTRICTION = "core_AgeRestriction";
 
         /// <summary>
-        /// Attribute key for GroupTypes that allow checkout
-        /// </summary>
-        [RockObsolete( "1.14" )]
-        [Obsolete( "This value is no longer used. Use CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK and/or CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER instead. We'll leave this in in case a plugin is still using it but won't allow the old attribute to be edited." )]
-        public const string CHECKIN_GROUPTYPE_ALLOW_CHECKOUT = "core_checkin_AllowCheckout";
-
-        /// <summary>
         /// Attribute key for GroupTypes that allow checkout using the kiosks
         /// </summary>
         public const string CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK = "core_checkin_AllowCheckout_Kiosk";

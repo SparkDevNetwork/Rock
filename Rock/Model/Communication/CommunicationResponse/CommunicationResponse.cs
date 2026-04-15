@@ -80,17 +80,6 @@ namespace Rock.Model
         public bool IsRead { get; set; }
 
         /// <summary>
-        /// Gets or sets the related SMS from defined value identifier.
-        /// </summary>
-        /// <value>
-        /// The related SMS from defined value identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use RelatedSmsFromSystemPhoneNumberId instead." )]
-        [RockObsolete( "1.15" )]
-        public int? RelatedSmsFromDefinedValueId { get; set; }
-
-        /// <summary>
         /// Gets or sets the related SMS system phone number identifier this
         /// response was received on.
         /// </summary>

@@ -402,10 +402,6 @@ mission. We are so grateful for your commitment.</p>
 
         public static class PageParameterKey
         {
-            [RockObsolete( "1.13.1" )]
-            [Obsolete( "Pass the GUID instead using the key ScheduledTransactionGuid." )]
-            public const string ScheduledTransactionId = "ScheduledTransactionId";
-
             public const string ScheduledTransactionGuid = "ScheduledTransactionGuid";
         }
 

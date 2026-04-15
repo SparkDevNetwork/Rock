@@ -85,18 +85,6 @@ namespace Rock.Web.Cache
         public string Class { get; private set; }
 
         /// <summary>
-        /// Gets the CSS class to use when displaying an icon that represents
-        /// this field type.
-        /// </summary>
-        /// <value>
-        /// The CSS class to use when displaying an icon that represents this
-        /// field type.
-        /// </value>
-        [RockObsolete( "1.13.3" )]
-        [Obsolete( "Font icon classes are no longer used, use IconSvg instead." )]
-        public string IconCssClass { get; } = "";
-
-        /// <summary>
         /// Gets the SVG content to use when displaying an icon that represents
         /// this field type.
         /// </summary>

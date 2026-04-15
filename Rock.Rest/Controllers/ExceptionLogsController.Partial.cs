@@ -32,52 +32,6 @@ namespace Rock.Rest.Controllers
     public partial class ExceptionLogsController
     {
         /// <summary>
-        /// Gets the exceptions grouped by date.
-        /// </summary>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [System.Web.Http.Route( "api/ExceptionLogs/GetChartData" )]
-        [Rock.SystemGuid.RestActionGuid( "403444AE-0267-408A-B9A8-7E5D70AA594F" )]
-        [RockObsolete( "1.14.0" )]
-        [Obsolete( "This method is no longer used by the Exception List block." )]
-        public IEnumerable<IChartData> GetChartData()
-        {
-            // Load data into a List so we can so all the aggregate calculations in C# instead making the Database do it
-            var exceptionList = this.Get()
-                .Where( x => x.HasInnerException == false && x.CreatedDateTime != null ).Select( s => new
-                {
-                    s.CreatedDateTime,
-                    s.ExceptionType
-                } ).ToList();
-
-            var exceptionSummaryList = exceptionList.GroupBy( x => x.CreatedDateTime.Value.Date )
-            .Select( eg => new
-            {
-                DateValue = eg.Key,
-                ExceptionCount = eg.Count(),
-                UniqueExceptionCount = eg.Select( y => y.ExceptionType ).Distinct().Count()
-            } )
-            .OrderBy( eg => eg.DateValue ).ToList();
-
-            var allCountsQry = exceptionSummaryList.Select( c => new ExceptionChartData
-            {
-                DateTimeStamp = c.DateValue.ToJavascriptMilliseconds(),
-                YValue = c.ExceptionCount,
-                SeriesName = "Total Exceptions"
-            } );
-
-            var uniqueCountsQry = exceptionSummaryList.Select( c => new ExceptionChartData
-            {
-                DateTimeStamp = c.DateValue.ToJavascriptMilliseconds(),
-                YValue = c.UniqueExceptionCount,
-                SeriesName = "Unique Exceptions"
-            } );
-
-            var result = allCountsQry.Union( uniqueCountsQry );
-            return result;
-        }
-
-        /// <summary>
         /// Logs the exception.
         /// </summary>
         /// <param name="ex">The ex.</param>

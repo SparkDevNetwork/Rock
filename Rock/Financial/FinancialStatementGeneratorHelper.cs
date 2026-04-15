@@ -1340,36 +1340,6 @@ namespace Rock.Financial
 
             foreach ( var documentPersonId in documentPersonIds )
             {
-                // Create the document, linking the entity and binary file.
-#pragma warning disable CS0618
-                // This is obsolete, but we'll still need to use it until it this option is completely remove
-                var overwriteDocumentsOfThisTypeCreatedOnSameDate = saveOptions.OverwriteDocumentsOfThisTypeCreatedOnSameDate;
-#pragma warning restore CS0618
-
-                if ( overwriteDocumentsOfThisTypeCreatedOnSameDate == true && doNotSave == false )
-                {
-                    using ( var deleteDocContext = new RockContext() )
-                    {
-                        var deleteDocumentService = new DocumentService( deleteDocContext );
-
-                        // See if there is an existing one.
-                        // Note include BinaryFile in the Get since we'll have to mark it temporary if it exists.
-                        var existingDocument = deleteDocumentService.Queryable().Where(
-                            a => a.DocumentTypeId == documentTypeId.Value
-                            && a.EntityId == documentPersonId
-                            && a.CreatedDateTime.HasValue
-                            && a.CreatedDateTime >= today && a.CreatedDateTime < tomorrow )
-                            .Include( a => a.BinaryFile ).FirstOrDefault();
-
-                        // NOTE: Delete vs update since we normally don't change the contents of documents/binary files once they've been created
-                        if ( existingDocument != null )
-                        {
-                            deleteDocumentService.Delete( existingDocument );
-                            deleteDocContext.SaveChanges();
-                        }
-                    }
-                }
-
                 if ( saveOptions.OverwriteDocumentsOfThisTypeWithSamePurposeKey == true && doNotSave == false )
                 {
                     using ( var deleteDocContext = new RockContext() )
