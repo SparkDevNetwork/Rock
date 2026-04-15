@@ -170,6 +170,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public bool IsBoardViewEnabled => EnabledViews.HasFlag( EnabledViewFlags.Board );
 
         /// <summary>
+        /// Gets whether grid view is enabled for this connection type.
+        /// </summary>
+        public bool IsGridViewEnabled => EnabledViews.HasFlag( EnabledViewFlags.Grid );
+
+        /// <summary>
         /// Gets or sets the attributes for Connection Request attributes specified at the Connection Type level.
         /// </summary>
         /// <value>

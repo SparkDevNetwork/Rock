@@ -5780,6 +5780,7 @@ WHERE 1 = 1" );
         {
             return new GridBuilder<ConnectionRow>()
                 .WithBlock( this )
+                .AddField( "id", a => a.ConnectionRequestId )
                 .AddField( "idKey", a => a.ConnectionRequestId.AsIdKey() )
                 .AddField( "connectorGrouping", a => a.ConnectorGrouping )
                 .AddField( "campusGrouping", a => a.CampusGrouping )

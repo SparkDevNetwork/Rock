@@ -23,10 +23,6 @@
 .action-toolbar.selected {
     background-color: var(--color-info-soft);
 }
-
-.gap-xs {
-    gap: var(--spacing-xsmall);
-}
 </style>
 
 <script setup lang="ts">

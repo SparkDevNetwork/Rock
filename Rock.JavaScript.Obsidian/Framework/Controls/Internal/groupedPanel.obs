@@ -1,19 +1,24 @@
 <template>
     <Panel v-model:quickFilterValue="internalQuickFilterValue"
            type="block"
-           panelBodyCssClass="overflow-hidden"
+           :panelBodyCssClass="panelBodyCssClasses"
            panelHeaderCssClass="flex-shrink-0"
-           worksurfaceMode>
+           :class="{ 'h-100': !isBoardView }"
+           :worksurfaceMode="isBoardView">
         <template #headerActions>
-            <ButtonGroup v-model="internalViewMode"
-                         :items="viewModeItems"
-                         :btnSize="BtnSize.ExtraSmall" />
             <div v-if="groupingFields.length > 1" class="d-flex align-items-center gap-xs">
+                <RockLabel class="text-interface-stronger text-xs">
+                    Group By
+                </RockLabel>
                 <ButtonDropDownList v-model="groupingKey"
                                     :items="groupingFields"
                                     :dropdownClass="viewModeItems.length > 1 ? 'dropdown-right' : ''"
                                     :btnSize="BtnSize.ExtraSmall" />
             </div>
+            <ButtonGroup v-if="viewModeItems.length > 1"
+                         v-model="internalViewMode"
+                         :items="viewModeItems"
+                         :btnSize="BtnSize.ExtraSmall" />
             <HighlightLabel>
                 {{ countMessage }}
             </HighlightLabel>
@@ -73,6 +78,9 @@
                     <slot name="boardCard" v-bind="slotProps" />
                 </template>
             </GroupedBoardView>
+            <template v-if="isGridView">
+                <slot name="gridView" />
+            </template>
         </template>
         <template v-else>
             <slot name="emptyView" />
@@ -85,22 +93,9 @@
     gap: var(--spacing-medium);
 }
 
-/* Board view: give the panel a fixed height so columns can scroll internally
-   rather than overflowing the page. The offset accounts for the fixed Rock nav
-   bar and the content above the panel (page title, filters, etc.). */
-/*
-:class="{ 'grouped-panel--board': isBoardView }"
-:deep(.grouped-panel--board) {
-    height: calc(100vh - 310px);
-} */
-
-/* Allow the panel body to fill the panel's remaining height so the board view
-   inside it can stretch to match. */
-/* :deep(.grouped-panel--board > .panel-body) {
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-} */
+.gap-xs {
+    gap: var(--spacing-xsmall);
+}
 </style>
 
 <script setup lang="ts">
@@ -240,8 +235,18 @@
 
     const groupedListViewRef = ref<InstanceType<typeof GroupedListView> | null>(null);
 
-    const isListView = computed(() => props.viewMode !== "board");
+    const isListView = computed(() => props.viewMode === "list");
     const isBoardView = computed(() => props.viewMode === "board");
+    const isGridView = computed(() => props.viewMode === "grid");
+
+    const panelBodyCssClasses = computed(() => {
+        // let bodyClass = "overflow-hidden";
+        let bodyClass = "overflow-hidden";
+        if (isGridView.value) {
+            bodyClass += " p-spacing-none";
+        }
+        return bodyClass;
+    });
 
     // #region Grouping Computation
 

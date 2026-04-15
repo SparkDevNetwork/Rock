@@ -25,6 +25,12 @@ import { ConnectionState } from "@Obsidian/Enums/Connection/connectionState";
 
 /** Represents the data required to update the state, status, connector, or follow-up date of a connection request. */
 export type ConnectionRequestUpdateBag = {
+    /**
+     * Gets or sets the IdKey of the Connection Request that the moved request
+     * should be placed before. Null means place at the end of the column.
+     */
+    beforeIdKey?: string | null;
+
     /** Gets or sets a value indicating whether this update includes completing the request. */
     canCompleteRequest?: boolean | null;
 
@@ -45,7 +51,4 @@ export type ConnectionRequestUpdateBag = {
 
     /** Gets or sets an optional note to record with this update. */
     note?: string | null;
-
-    /** Gets or sets the IdKey of the Connection Request that the moved request should be placed before. Null means place at the end. */
-    beforeIdKey?: string | null;
 };

@@ -22,7 +22,7 @@
                   :titleIconCssClass="`${box.options?.iconCssClass ?? ''} panel-icon`"
                   :isSelectedView="hasAnySelectedKeys"
                   :rows="gridData?.rows ?? []"
-                  :filteredAndSortedRows="visibleRows"
+                  :filteredAndSortedRows="visibleRowsFilteredByGrid"
                   :panelSettingsActive="hasSettingsFilters"
                   :groupingFields="groupingFields"
                   :viewModeItems="enabledViews"
@@ -435,6 +435,272 @@
                                    @showSecurity="showSecurityModal"
                                    @delete="showDeleteRequestModal" />
         </template>
+        <template #gridView>
+            <Grid :definition="box.gridDefinition ?? undefined"
+                  :data="gridViewData"
+                  ref="gridViewGridRef"
+                  keyField="idKey"
+                  :isTitleHidden="true"
+                  :isSearchVisible="false"
+                  :isFooterHidden="true"
+                  :showExport="false"
+                  :showMergeTemplate="false"
+                  :isCountMessageVisible="false"
+                  :hideFilterHeaderRow="true"
+                  class="grid-hover border-0 mb-spacing-none"
+                  @selectItem="onSelectItem"
+                  @selectedKeysChanged="state => onSelectedKeysChanged('all', state)"
+                  @filteredRowsChanged="onFilteredRowsChanged">
+                <SelectColumn />
+
+                <PersonColumn name="requestDetails"
+                              title="Request Details"
+                              field="requestDetails" />
+
+                <Column v-if="viewOptions.gridDataToShow?.includes('connectionOpportunity') && selectedGrouping !== 'opportunityGrouping'"
+                        name="connectionOpportunity"
+                        field="connectionOpportunity">
+                    <template #format="{ row }">
+                        <div class="d-flex flex-column align-items-start gap-1">
+                            <HighlightLabel labelType="custom"
+                                            customClass="label-default text-xs text-semibold text-interface-strong">
+                                {{ row.connectionOpportunity }}
+                            </HighlightLabel>
+                            <span v-if="!isNullOrWhiteSpace(row.connectionTypeSource) && viewOptions.isRequestSourceShown"
+                                  class="text-small text-interface-medium">
+                                {{ row.connectionTypeSource }}
+                            </span>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column v-if="selectedGrouping !== 'connectorGrouping'"
+                        title="Connector"
+                        name="connectorDetails"
+                        field="connectorDetails">
+                    <template #format="{ row }">
+                        {{ row.connectorDetails?.text }}
+                    </template>
+                </Column>
+
+                <Column v-if="selectedGrouping !== 'campusGrouping'"
+                        name="campus"
+                        title="Campus"
+                        field="campus"
+                        :filter="pickExistingValueFilter">
+                    <template #format="{ row }">
+                        <div v-if="!!row.campus">
+                            {{ row.campus }}
+                        </div>
+                        <div v-else>
+                            <i class="ti ti-minus"></i>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column v-if="box.options?.areGroupPlacementsEnabled"
+                        name="group"
+                        title="Group"
+                        field="group">
+                    <template #format="{ row }">
+                        <div v-if="!!row.group">
+                            {{ row.group }}
+                        </div>
+                        <div v-else>
+                            <i class="ti ti-minus"></i>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column v-if="viewOptions.gridDataToShow?.includes('activity')"
+                        name="activity"
+                        title="Activity"
+                        field="activity">
+                    <template #format="{ row }">
+                        <div v-if="!!row.lastActivityDateTime && !!row.activityCount"
+                             class="d-flex align-items-center gap-1">
+                            <div class="activity-metric activity-date">
+                                <i class="ti ti-calendar-month"></i>
+                                <span>
+                                    {{ getElapsedShortTime(row.lastActivityDateTime) }}
+                                </span>
+                            </div>
+                            <div class="activity-metric activity-count">
+                                <i class="ti ti-bolt"></i>
+                                <span>
+                                    {{ row.activityCount }}
+                                </span>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <i class="ti ti-minus"></i>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column v-if="viewOptions.gridDataToShow?.includes('dueDate')"
+                        name="dueDate"
+                        title="Due"
+                        field="dueDate"
+                        width="2%">
+                    <template #format="{ row }">
+                        <div v-if="!!row.dueDate && row.connectionState !== ConnectionState.Inactive" :class="getDueDateColor(row.dueStatus, row.connectionState === ConnectionState.Connected)">
+                            {{ formatDueDateShortLabel(row.dueDate, row.connectionState === ConnectionState.Connected, row.completedDateTime) }}
+                        </div>
+                        <div v-else>
+                            <i class="ti ti-minus"></i>
+                        </div>
+                    </template>
+                </Column>
+
+                <AttributeColumns :attributes="attributesToShow" />
+
+                <Column v-if="box.options?.areCelebrationsEnabled"
+                        name="celebration"
+                        field="celebration"
+                        width="52">
+                    <template #format="{ row }">
+                        <i v-if="isNullOrWhiteSpace(row.celebrationText)"
+                           class="ti ti-confetti cursor-pointer"
+                           :ref="(el) => addTooltip(el as Element)"
+                           data-toggle="tooltip"
+                           data-placement="auto"
+                           data-container="body"
+                           data-original-title="Add Celebration"
+                           @click.stop="showCelebrationModal(row)">
+                        </i>
+                        <i v-else
+                           class="ti ti-confetti-filled cursor-pointer text-info-strong"
+                           :ref="(el) => addTooltip(el as Element)"
+                           data-toggle="tooltip"
+                           data-placement="auto"
+                           data-container="body"
+                           data-original-title="Has Celebration"
+                           @click.stop="showCelebrationModal(row)">
+                        </i>
+                    </template>
+                </Column>
+
+                <Column v-if="box.options?.areRemindersEnabled"
+                        name="reminder"
+                        field="reminder"
+                        width="52">
+                    <template #format="{ row }">
+                        <i v-if="row.reminderCount > 0"
+                           class="ti ti-bell-filled cursor-pointer text-info-strong"
+                           :ref="(el) => addTooltip(el as Element)"
+                           data-toggle="tooltip"
+                           data-placement="auto"
+                           data-container="body"
+                           :data-original-title="`${row.reminderCount} ${pluralize('Reminder', row.reminderCount)}`"
+                           @click.stop="showReminderModal(row)">
+                        </i>
+                        <i v-else
+                           class="ti ti-bell cursor-pointer"
+                           :ref="(el) => addTooltip(el as Element)"
+                           data-toggle="tooltip"
+                           data-placement="auto"
+                           data-container="body"
+                           data-original-title="Add Reminder"
+                           @click.stop="showReminderModal(row)">
+                        </i>
+                    </template>
+                </Column>
+
+                <Column name="connectionStatus"
+                        field="connectionStatus">
+                    <template #format="{ row }">
+                        <div class="w-100">
+                            <template v-if="row.connectionState === ConnectionState.Active">
+                                <ConnectionStatusButton :isSequentialStatusMode="box.options?.isSequentialStatusMode"
+                                                        :highlightColor="row.connectionStatus.highlightColor"
+                                                        :currentStatusName="row.connectionStatus.name"
+                                                        :disabled="!canEditConnectionRequests"
+                                                        @click.stop="(e) => onStatusClick(row, e)" />
+                            </template>
+                            <div v-else-if="row.connectionState === ConnectionState.Inactive"
+                                 class="text-center text-semibold text-slate">
+                                {{ ConnectionStateDescription[ConnectionState.Inactive] }}
+                            </div>
+                            <div v-else-if="row.connectionState === ConnectionState.FutureFollowUp"
+                                 class="text-center text-semibold text-info-strong">
+                                {{ ConnectionStateDescription[ConnectionState.FutureFollowUp] }} - {{ asLocaleString(row.followUpDate) }}
+                            </div>
+                            <div v-else-if="row.connectionState === ConnectionState.Connected"
+                                 class="text-center text-semibold text-emerald">
+                                {{ ConnectionStateDescription[ConnectionState.Connected] }}
+                            </div>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column name="options"
+                        field="options"
+                        width="52"
+                        itemClass="grid-cell-overflow">
+                    <template #format="{ row }">
+                        <div :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === row.idKey }]">
+                            <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown" @click.stop="toggleGridRowDropdown(row.idKey)"></i>
+                            <ul class="dropdown-menu">
+                                <template v-if="canEditConnectionRequests">
+                                    <li>
+                                        <button type="button"
+                                                @click.stop="showChangeStateModal(ConnectionState.Active, row)"
+                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                            <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button"
+                                                @click.stop="showChangeStateModal(ConnectionState.Inactive, row)"
+                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                            <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
+                                        </button>
+                                    </li>
+                                    <li v-if="box.options?.isFutureFollowUpEnabled">
+                                        <button type="button"
+                                                @click.stop="showChangeStateModal(ConnectionState.FutureFollowUp, row)"
+                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                            <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button"
+                                                @click.stop="showChangeStateModal(ConnectionState.Connected, row)"
+                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                            <i class="ti ti-circle-check pr-spacing-sm text-interface-medium"></i>Mark Complete
+                                        </button>
+                                    </li>
+                                </template>
+                                <li>
+                                    <button type="button"
+                                            @click.stop="showLaunchWorkflowModal(row)"
+                                            class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                        <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
+                                    </button>
+                                </li>
+                                <template v-if="canEditConnectionRequests">
+                                    <li v-if="box.options?.isRequestSecurityEnabled">
+                                        <button type="button"
+                                                @click.stop="showSecurityModal(row.idKey)"
+                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
+                                            <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button"
+                                                @click.stop="showDeleteRequestModal(row)"
+                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold text-danger">
+                                            <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
+                                        </button>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                    </template>
+                </Column>
+            </Grid>
+        </template>
     </GroupedPanel>
 
     <ChangeStatusFlyout v-model="isFlyoutOpen"
@@ -738,7 +1004,7 @@
     import { computed, reactive, ref, watch, nextTick } from "vue";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
-    import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns } from "@Obsidian/Controls/grid";
+    import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
@@ -806,6 +1072,7 @@
     import ReminderModal from "@Obsidian/Controls/Internal/reminderModal.obs";
     import RequestTable from "./ConnectionsHub/requestTable.partial.obs";
     import ConnectionRequestDockedPanel from "./ConnectionsHub/connectionRequestDockedPanel.partial.obs";
+    import { downloadFile } from "@Obsidian/Utility/file";
     import { debounce } from "@Obsidian/Utility/util";
     import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
     import { ConnectionRequestDetailBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailBox";
@@ -819,6 +1086,7 @@
     import { ConnectorOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectorOptionsBag";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ConnectionRequestCard from "./ConnectionsHub/connectionRequestCard.partial.obs";
+    import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
 
 
     const box = useConfigurationValues<ListBlockBox<ConnectionsHubOptionsBag>>();
@@ -885,7 +1153,13 @@
             value: "board"
         });
     }
-    // TODO - Grid View?
+    if (box.options?.isGridViewEnabled) {
+        enabledViews.push({
+            text: "Grid",
+            iconCssClass: "ti ti-table",
+            value: "grid"
+        });
+    }
 
     // Soft security check to see if the user can edit the list of connection requests.
     const canEditGlobalConnectionRequests = ref<boolean>(box.options?.canEditConnectionRequests ?? false);
@@ -1012,6 +1286,9 @@
         return isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? "connectorGrouping" : preferences.getValue(PreferenceKey.SelectedGroupByMode);
     })());
 
+    const gridViewGridRef = ref();
+    const gridViewFilteredRows = ref<Record<string, unknown>[]>();
+
     // #region Computed Values
 
     const canEditConnectionRequests = computed<boolean>(() => {
@@ -1049,6 +1326,12 @@
             iconCssClass: "ti ti-chevrons-up",
             title: "Collapse All",
             handler: collapseAll
+        },
+        {
+            type: "default",
+            iconCssClass: "ti ti-file-excel",
+            title: "Export to Excel",
+            handler: exportToExcel
         }
     ]);
 
@@ -1203,6 +1486,35 @@
         rows = sortRows(rows);
 
         return rows;
+    });
+
+    const gridViewData = computed<GridDataBag>(() => ({
+        rows: visibleRows.value
+    }));
+
+    /*
+    * Computed value that applies column filters from Grid View to the visibleRows computed property.
+    * When the Connections Hub is not in Grid View, the visible rows property will be returned and no
+    * Grid column filtering will be applied.
+    *
+    * Used to populate the count label in the Grouped Panel and as the filtered row set from which
+    * the Block exports to Excel.
+    */
+    const visibleRowsFilteredByGrid = computed(() => {
+        if (selectedView.value !== "grid") {
+            return visibleRows.value;
+        }
+
+        // When in grid view, the grid has already applied its own column filters and
+        // reported back the surviving rows via onFilteredRowsChanged. Filter the
+        // source rows down to only those whose idKey appears in that set so the panel
+        // counts/display stay in sync with what the grid is showing.
+        if (gridViewFilteredRows.value) {
+            const filteredKeySet = new Set(gridViewFilteredRows.value.map(r => r["idKey"]));
+            return visibleRows.value.filter(r => filteredKeySet.has(r["idKey"]));
+        }
+
+        return visibleRows.value;
     });
 
     // #endregion Computed Values
@@ -1430,6 +1742,15 @@
 
     function onAddItem(): void {
         isAddConnectionRequestModalVisible.value = true;
+    }
+
+    /**
+     * Called when the rows that match the user filters have changed.
+     *
+     * @param state The state object that describes the grid.
+     */
+    function onFilteredRowsChanged(state: IGridState): void {
+        gridViewFilteredRows.value = [...state.filteredRows];
     }
 
     // #endregion Grid Functions
@@ -1788,6 +2109,345 @@
     function toggleAutoCollapse(): void {
         isAutoCollapseEnabled.value = !isAutoCollapseEnabled.value;
     }
+
+    // #region Export to Excel
+
+    /**
+     * Exports the currently visible connection requests to an Excel file.
+     * Follows the same formatting pattern as the Grid component's built-in
+     * export (grid.partial.obs).
+     */
+    async function exportToExcel(): Promise<void> {
+        const rows = visibleRowsFilteredByGrid.value;
+
+        if (!rows.length) {
+            return;
+        }
+
+        // Build the list of columns to export based on current view options.
+        type ExportColumn = {
+            key: string;
+            title: string;
+            getValue: (row: Record<string, unknown>) => unknown;
+        };
+
+        const columns: ExportColumn[] = [];
+
+        columns.push({
+            key: "id",
+            title: "Id",
+            getValue: (row) => row.id
+        });
+
+        columns.push({
+            key: "name",
+            title: "Name",
+            getValue: (row) => {
+                const person = row.requestDetails as PersonFieldBag | null;
+                return person ? `${person.nickName ?? ""} ${person.lastName ?? ""}`.trim() : "";
+            }
+        });
+
+        const gridDataToShow = viewOptions.value.gridDataToShow ?? [];
+
+        if (gridDataToShow.includes("connectionOpportunity")) {
+            columns.push({
+                key: "connectionOpportunity",
+                title: "Opportunity",
+                getValue: (row) => (row.connectionOpportunity as string) ?? ""
+            });
+
+            if (viewOptions.value.isRequestSourceShown) {
+                columns.push({
+                    key: "connectionTypeSource",
+                    title: "Source",
+                    getValue: (row) => (row.connectionTypeSource as string) ?? ""
+                });
+            }
+        }
+
+        columns.push({
+            key: "connectorDetails",
+            title: "Connector",
+            getValue: (row) => (row.connectorDetails as ListItemBag | null)?.text ?? ""
+        });
+
+        columns.push({
+            key: "campus",
+            title: "Campus",
+            getValue: (row) => (row.campus as string) ?? ""
+        });
+
+        if (box.options?.areGroupPlacementsEnabled) {
+            columns.push({
+                key: "group",
+                title: "Group",
+                getValue: (row) => (row.group as string) ?? ""
+            });
+        }
+
+        if (viewOptions.value.isRequestSourceShown) {
+            columns.push({
+                key: "connectionTypeSource",
+                title: "Connection Request Source",
+                getValue: (row) => row.connectionTypeSource
+            });
+        }
+
+        if (gridDataToShow.includes("activity")) {
+            columns.push({
+                key: "lastActivityDateTime",
+                title: "Last Activity",
+                getValue: (row) => toExcelDate(row.lastActivityDateTime as string | null | undefined)
+            });
+
+            columns.push({
+                key: "activityCount",
+                title: "Activity Count",
+                getValue: (row) => (row.activityCount as number) ?? ""
+            });
+        }
+
+        if (gridDataToShow.includes("dueDate")) {
+            columns.push({
+                key: "dueDate",
+                title: "Due Date",
+                getValue: (row) => toExcelDate(row.dueDate as string | null | undefined)
+            });
+            columns.push({
+                key: "dueSoonDate",
+                title: "Due Soon Date",
+                getValue: (row) => toExcelDate(row.dueSoonDate as string | null | undefined)
+            });
+        }
+
+        columns.push({
+            key: "connectionStatus",
+            title: "Status",
+            getValue: (row) => (row.connectionStatus as ConnectionStatusBag | null)?.name ?? ""
+        });
+
+        columns.push({
+            key: "connectionState",
+            title: "State",
+            getValue: (row) => {
+                const state = row.connectionState as ConnectionState | null | undefined;
+                return state != null ? (ConnectionStateDescription[state] ?? "") : "";
+            }
+        });
+
+        columns.push({
+            key: "createdDateTime",
+            title: "Created",
+            getValue: (row) => toExcelDate(row.createdDateTime as string | null | undefined)
+        });
+
+        if (box.options?.isFutureFollowUpEnabled === true) {
+            columns.push({
+                key: "followUpDate",
+                title: "Follow-up Date",
+                getValue: (row) => toExcelDate(row.followUpDate as string | null | undefined)
+            });
+        }
+
+        columns.push({
+            key: "completedDateTime",
+            title: "Completed",
+            getValue: (row) => toExcelDate(row.completedDateTime as string | null | undefined)
+        });
+
+        columns.push({
+            key: "order",
+            title: "Order",
+            getValue: (row) => row.order
+        });
+
+        // Attribute columns the user has selected.
+        for (const attr of (attributesToShow.value ?? [])) {
+            const attrName = attr.name;
+            if (!attrName) {
+                return;
+            }
+            columns.push({
+                key: attrName,
+                title: attr.title ?? attrName,
+                getValue: (row) => {
+                    const value = row[attrName];
+
+                    if (!value || typeof value !== "object") {
+                        return undefined;
+                    }
+
+                    if (typeof value["text"] !== "string") {
+                        return undefined;
+                    }
+
+                    return value["text"];
+                }
+            });
+        }
+
+        columns.push({
+            key: "requesterPersonAliasGuid",
+            title: "Person Alias Guid",
+            getValue: (row) => row.requesterPersonAliasGuid
+        });
+
+        columns.push({
+            key: "connectionOpportunityGuid",
+            title: "Connection Opportunity Guid",
+            getValue: (row) => row.connectionOpportunityGuid
+        });
+
+        columns.push({
+            key: "campusGuid",
+            title: "Campus Guid",
+            getValue: (row) => row.campusGuid
+        });
+
+        // Dynamically import ExcelJS so it is only loaded when needed.
+        const exceljs = await import("@Obsidian/Libs/exceljs");
+        const title = box.options?.title || "Connection Requests";
+
+        const workbook = new exceljs.Workbook();
+        workbook.created = new Date();
+        workbook.modified = new Date();
+        const worksheet = workbook.addWorksheet(title);
+
+        // Set the column headers.
+        worksheet.columns = columns.map(c => ({
+            header: c.title,
+            key: c.key
+        }));
+
+        // Build the data rows.
+        const rowData: Record<string, unknown>[] = [];
+        for (const row of rows) {
+            const record: Record<string, unknown> = {};
+            for (const col of columns) {
+                record[col.key] = col.getValue(row);
+            }
+            rowData.push(record);
+        }
+
+        worksheet.addRows(rowData);
+
+        // Apply formatting to data rows.
+        const lineHeight = 15;
+        const padding = 2;
+
+        worksheet.eachRow((row, index) => {
+            let maxLines = 1;
+
+            row.eachCell((cell) => {
+                const text = cell.value?.toString() ?? "";
+
+                if (text.includes("\n")) {
+                    const lineCount = text.split("\n").length;
+                    if (lineCount > maxLines) {
+                        maxLines = lineCount;
+                    }
+
+                    cell.alignment = { wrapText: true, vertical: "top" };
+                }
+                else {
+                    cell.alignment = { wrapText: false, vertical: "top" };
+                }
+
+                row.height = (maxLines * lineHeight) + padding;
+
+                // Zebra striping every other row.
+                if ((index + 1) % 2 === 0) {
+                    cell.fill = {
+                        type: "pattern",
+                        pattern: "solid",
+                        fgColor: { argb: "ffc6f1c7" }
+                    };
+                }
+            });
+        });
+
+        // Freeze the header rows.
+        worksheet.views = [{ state: "frozen", ySplit: 3 }];
+
+        // Auto-fit column widths.
+        for (const column of worksheet.columns) {
+            if (!column.key) {
+                continue;
+            }
+
+            let maxLength: number = (column.header?.toString() ?? "").length + 3;
+
+            for (const row of rowData) {
+                const value = row[column.key];
+
+                if (typeof value === "string") {
+                    const longestLineLength = value.split("\n").reduce((max, str) => Math.max(max, str.length), 0);
+                    maxLength = Math.max(maxLength, longestLineLength + 1);
+                }
+                else if (typeof value === "boolean") {
+                    maxLength = Math.max(maxLength, 6);
+                }
+                else if (value instanceof Date) {
+                    maxLength = Math.max(maxLength, 11);
+                }
+                else {
+                    maxLength = Math.max(maxLength, String(value).length + 1);
+                }
+            }
+
+            column.width = Math.min(80, Math.max(4, maxLength));
+        }
+
+        // Insert the title and export timestamp header rows.
+        worksheet.insertRows(1, [{}, {}]);
+        worksheet.getCell(1, 1).value = title;
+        worksheet.getCell(2, 1).value = `Exported on ${RockDateTime.now().toASPString("G")}`;
+        worksheet.getCell(1, 1).font = { size: 18 };
+
+        // Style header rows (title, timestamp, column headers).
+        worksheet.getRows(1, 3)?.forEach(row => {
+            row.eachCell(cell => {
+                cell.fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: "ffdedede" }
+                };
+                cell.font = cell.font ?? {};
+                cell.font.bold = true;
+            });
+        });
+
+        worksheet.mergeCells(1, 1, 1, worksheet.columns.length);
+        worksheet.mergeCells(2, 1, 2, worksheet.columns.length);
+
+        // Set up auto-filter on the data range.
+        worksheet.autoFilter = {
+            from: { row: 3, column: 1 },
+            to: { row: rowData.length + 3, column: worksheet.columns.length }
+        };
+
+        // Download the file.
+        const buffer = await workbook.xlsx.writeBuffer();
+        const data = new Blob([buffer], { type: "application/octet-stream" });
+        await downloadFile(data, `${title.replace(/[^a-zA-Z0-9\-_]/g, "")}.xlsx`);
+    }
+
+    /**
+     * Converts an ISO date string to a UTC Date object suitable for Excel.
+     * Excel is not timezone aware, so we strip the zone information.
+     */
+    function toExcelDate(isoDate: string | null | undefined): Date | string {
+        const parsed = RockDateTime.parseISO(isoDate ?? "");
+
+        if (!parsed) {
+            return "";
+        }
+
+        return new Date(Date.UTC(parsed.year, parsed.month - 1, parsed.day, parsed.hour, parsed.minute, parsed.second));
+    }
+
+    // #endregion Export to Excel
 
     function showCelebrationModal(row: Record<string, unknown> | null = null, detailsBox: ConnectionRequestDetailBox | null = null): void {
         prepareRequestDetailsForModal(row, detailsBox);
@@ -2253,6 +2913,7 @@
 
     function clearAllSelections(): void {
         groupedPanel.value.clearSelectedKeys();
+        gridViewGridRef.value?.clearSelectedKeys();
         selectedKeys.value = {};
         selectedKeysOnUnmount.value = {};
     }
@@ -3113,6 +3774,7 @@
 
     watch(selectedView, async () => {
         removeCurrentUrlQueryParams("SelectedView");
+        clearAllSelections();
 
         if (selectedView.value === "list") {
             selectedGrouping.value = isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? selectedGrouping.value : preferences.getValue(PreferenceKey.SelectedGroupByMode);

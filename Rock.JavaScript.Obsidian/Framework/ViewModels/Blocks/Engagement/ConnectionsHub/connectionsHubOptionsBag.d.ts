@@ -104,6 +104,9 @@ export type ConnectionsHubOptionsBag = {
     /** Gets or sets a value indicating whether the future follow-up feature is enabled for this Connection Type. */
     isFutureFollowUpEnabled: boolean;
 
+    /** Gets whether grid view is enabled for this connection type. */
+    isGridViewEnabled: boolean;
+
     /** Gets whether list view is enabled for this connection type. */
     isListViewEnabled: boolean;
 
