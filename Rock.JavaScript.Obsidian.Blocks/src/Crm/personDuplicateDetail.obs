@@ -69,12 +69,12 @@
                     title="Gender"
                     field="gender"
                     :disableSort="true"
-                    width="80px" />
+                    width="120px" />
         <NumberColumn name="age"
                       title="Age"
                       field="age"
                       :disableSort="true"
-                      width="60px" />
+                      width="100px" />
         <Column name="addresses"
                 title="Addresses"
                 field="addresses"
