@@ -150,18 +150,12 @@ namespace Rock.Blocks.Communication
 
             if ( systemCommunicationGuid == null )
             {
-                var systemCommunicationId = new SystemCommunicationService( RockContext )
-                    .GetQueryableByKey(
-                        RequestContext.GetPageParameter( PageParameterKey.SystemCommunicationId ),
-                        !PageCache.Layout.Site.DisablePredictableIds
-                    )
-                    .Select( sc => ( int? ) sc.Id)
-                    .FirstOrDefault();
-                if ( systemCommunicationId.HasValue )
-                {
-                    systemCommunicationGuid = new SystemCommunicationService( rockContext ).GetGuid( systemCommunicationId.Value );
-                }
-                else
+                systemCommunicationGuid = new SystemCommunicationService( RockContext ).GetSelect(
+                    RequestContext.GetPageParameter( PageParameterKey.SystemCommunicationId ),
+                    sc => ( Guid? ) sc.Guid,
+                    !PageCache.Layout.Site.DisablePredictableIds );
+
+                if ( !systemCommunicationGuid.HasValue )
                 {
                     return new SystemCommunicationPreviewInitializationBox
                     {

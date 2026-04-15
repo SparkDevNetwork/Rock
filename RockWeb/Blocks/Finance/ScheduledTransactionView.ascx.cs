@@ -269,9 +269,7 @@ namespace RockWeb.Blocks.Finance
             if ( scheduledTransactionKey.IsNotNullOrWhiteSpace() )
             {
                 return new FinancialScheduledTransactionService( new RockContext() )
-                    .GetQueryableByKey( scheduledTransactionKey, !PageCache.Layout.Site.DisablePredictableIds )
-                    .Select( t => ( Guid? ) t.Guid )
-                    .FirstOrDefault();
+                    .GetSelect( scheduledTransactionKey, t => ( Guid? ) t.Guid, !PageCache.Layout.Site.DisablePredictableIds );
             }
 
             return null;

@@ -360,10 +360,10 @@ namespace RockWeb.Blocks.Communication
         /// <returns></returns>
         private int? GetSmsPipelineId()
         {
-            return new SmsPipelineService( new RockContext() ).GetQueryableByKey(
+            return new SmsPipelineService( new RockContext() ).GetSelect(
                 PageParameter( PageParameterKey.EntityId ),
-                !PageCache.Layout.Site.DisablePredictableIds
-            ).Select( p => ( int? ) p.Id ).FirstOrDefault();
+                p => ( int? ) p.Id,
+                !PageCache.Layout.Site.DisablePredictableIds );
         }
 
         #endregion

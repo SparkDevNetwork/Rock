@@ -357,13 +357,10 @@ namespace Rock.Blocks.Workflow
             string workflowIdParam = PageParameter( PageParameterKey.WorkflowId );
 
             var workflowId = workflowIdParam != "0" ?
-                new WorkflowService( RockContext )
-                    .GetQueryableByKey(
-                        workflowIdParam,
-                        IsAllowingPredictableIds
-                    )
-                    .Select( w => ( int? ) w.Id )
-                    .FirstOrDefault() :
+                new WorkflowService( RockContext ).GetSelect(
+                    workflowIdParam,
+                    w => ( int? ) w.Id,
+                    IsAllowingPredictableIds ) :
                 0;
 
             var workflowGuid = PageParameter( PageParameterKey.WorkflowGuid ).AsGuidOrNull();
@@ -396,12 +393,10 @@ namespace Rock.Blocks.Workflow
                 this.RequestContext.Response.SetPageTitle( workflow.WorkflowTypeCache.Name );
             }
 
-            var actionId = new WorkflowActionService( RockContext ).GetQueryableByKey(
+            var actionId = new WorkflowActionService( RockContext ).GetSelect(
                 RequestContext.GetPageParameter( PageParameterKey.ActionId ),
-                IsAllowingPredictableIds
-            )
-            .Select( wa => ( int? ) wa.Id)
-            .FirstOrDefault();
+                wa => ( int? ) wa.Id,
+                IsAllowingPredictableIds );
 
             var initialAction = ProcessWorkflow( workflow, actionId, null, null, null );
 
@@ -644,27 +639,22 @@ namespace Rock.Blocks.Workflow
         /// <returns>An instance of <see cref="IEntity"/> if one is available; otherwise <c>null</c>.</returns>
         private IEntity GetInitialWorkflowEntity()
         {
-            var personId = new PersonService( RockContext ).GetQueryableByKey(
+            var person = new PersonService( RockContext ).Get(
                 RequestContext.GetPageParameter( PageParameterKey.PersonId ),
-                IsAllowingPredictableIds
-            )
-            .Select( p => ( int? ) p.Id )
-            .FirstOrDefault();
+                IsAllowingPredictableIds );
 
-            var groupId = new GroupService( RockContext ).GetQueryableByKey(
-                RequestContext.GetPageParameter( PageParameterKey.GroupId ),
-                IsAllowingPredictableIds
-            )
-            .Select( g => ( int? ) g.Id )
-            .FirstOrDefault();
-
-            if ( personId.HasValue )
+            if ( person != null )
             {
-                return new PersonService( RockContext ).Get( personId.Value );
+                return person;
             }
-            else if ( groupId.HasValue )
+
+            var group = new GroupService( RockContext ).Get(
+                RequestContext.GetPageParameter( PageParameterKey.GroupId ),
+                IsAllowingPredictableIds );
+
+            if ( group != null )
             {
-                return new GroupService( RockContext ).Get( groupId.Value );
+                return group;
             }
 
             return null;
@@ -1030,7 +1020,7 @@ namespace Rock.Blocks.Workflow
 
                 if ( !GetAttributeValue( AttributeKey.DisablePassingWorkflowId ).AsBoolean() )
                 {
-                    pageParams.TryAdd( PageParameterKey.WorkflowId, workflow.Id.ToString() );
+                    pageParams.TryAdd( PageParameterKey.WorkflowId, workflow.IdKey );
                 }
 
                 pageParams.TryAdd( PageParameterKey.WorkflowGuid, workflow.Guid.ToString() );

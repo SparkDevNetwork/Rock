@@ -163,7 +163,7 @@ namespace Rock.Blocks.Security.BackgroundCheck
 
             var queryParams = new Dictionary<string, string>
             {
-                { "WorkflowId", entity.WorkflowId.Value.ToString() }
+                { "WorkflowId", IdHasher.Instance.GetHash( entity.WorkflowId.Value ) }
             };
 
             var url = this.GetLinkedPageUrl( AttributeKey.WorkflowDetailPage, queryParams );

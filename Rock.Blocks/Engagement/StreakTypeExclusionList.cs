@@ -38,13 +38,14 @@ namespace Rock.Blocks.Engagement
     [Category( "Streaks" )]
     [Description( "Lists all the exclusions for a streak type." )]
     [IconCssClass( "ti ti-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the streak type exclusion details.",
         Key = AttributeKey.DetailPage )]
     [Rock.SystemGuid.EntityTypeGuid( "7740ecd4-1f20-4de3-8289-4a4f0aff0646" )]
-    [Rock.SystemGuid.BlockTypeGuid( "70a4fbe1-511b-457d-84a3-cf6d5b0e09ae" )]
+    [Rock.SystemGuid.BlockTypeGuid( "4266D56C-EAB9-4D37-BD74-EBAD9233F8F2" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "70a4fbe1-511b-457d-84a3-cf6d5b0e09ae" )]
     [CustomizedGrid]
     public class StreakTypeExclusionList : RockEntityListBlockType<StreakTypeExclusion>
     {
@@ -193,12 +194,9 @@ namespace Rock.Blocks.Engagement
         {
             if ( _streakType == null )
             {
-                var streakTypeId = PageParameter( PageParameterKey.StreakTypeId ).AsIntegerOrNull();
-
-                if ( streakTypeId.HasValue )
-                {
-                    _streakType = new StreakTypeService( RockContext ).Get( streakTypeId.Value );
-                }
+                _streakType = new StreakTypeService( RockContext ).Get(
+                    PageParameter( PageParameterKey.StreakTypeId ),
+                    !PageCache.Layout.Site.DisablePredictableIds );
             }
 
             return _streakType;

@@ -39,7 +39,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Streaks" )]
     [Description( "Lists all the people enrolled in a streak type." )]
     [IconCssClass( "ti ti-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the streak details.",
@@ -54,7 +54,8 @@ namespace Rock.Blocks.Engagement
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "b7894ceb-837a-468e-92b1-53a1631c828e" )]
-    [Rock.SystemGuid.BlockTypeGuid( "73efc838-d5e3-4dbd-b5af-c3c81d3e7daf" )]
+    [Rock.SystemGuid.BlockTypeGuid( "46A5143E-8DE7-4E3D-96B3-674E8FD12949" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "73efc838-d5e3-4dbd-b5af-c3c81d3e7daf" )]
     [CustomizedGrid]
     public class StreakList : RockEntityListBlockType<Streak>
     {
@@ -79,15 +80,16 @@ namespace Rock.Blocks.Engagement
             public const string PersonId = "PersonId";
         }
 
-        private static class PreferenceKey
-        {
-            public const string FilterFirstName = "filter-first-name";
-            public const string FilterLastName = "filter-last-name";
-            public const string FilterEnrollmentDateUpperValue = "filter-enrollment-date-upper-value";
-            public const string FilterEnrollmentDateLowerValue = "filter-enrollment-date-lower-value";
-        }
-
         #endregion Keys
+
+        #region Constants
+
+        /// <summary>
+        /// The number of recent engagement bits to render in the summary graph for each streak row.
+        /// </summary>
+        private const int EngagementBitsToShow = 24;
+
+        #endregion Constants
 
         #region Methods
 
@@ -190,7 +192,7 @@ namespace Rock.Blocks.Engagement
             return new GridBuilder<Streak>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddField( "personId", a => a.PersonAlias.PersonId )
+                .AddTextField( "personIdKey", a => a.PersonAlias.Person.IdKey )
                 .AddTextField( "lastName", a => a.PersonAlias.Person.LastName )
                 .AddTextField( "nickName", a => a.PersonAlias.Person.NickName )
                 .AddTextField( "fullName", a => a.PersonAlias.Person.FullName )
@@ -216,7 +218,7 @@ namespace Rock.Blocks.Engagement
 
             if ( streakType != null )
             {
-                var occurrenceEngagements = new StreakTypeService( RockContext ).GetEngagmentBitsForStreak( streakType, streak, 24 ) ?? new OccurrenceEngagement[0];
+                var occurrenceEngagements = new StreakTypeService( RockContext ).GetEngagmentBitsForStreak( streakType, streak, EngagementBitsToShow ) ?? new OccurrenceEngagement[0];
                 var stringBuilder = new StringBuilder();
                 foreach ( var occurrence in occurrenceEngagements )
                 {
@@ -245,9 +247,9 @@ namespace Rock.Blocks.Engagement
         /// <returns></returns>
         private StreakTypeCache GetStreakType()
         {
-            var streakTypeIdParam = PageParameter( PageParameterKey.StreakTypeId );
-            var streakTypeId = Rock.Utility.IdHasher.Instance.GetId( streakTypeIdParam ) ?? streakTypeIdParam.AsIntegerOrNull();
-            return streakTypeId.HasValue ? StreakTypeCache.Get( streakTypeId.Value ) : null;
+            return StreakTypeCache.Get(
+                PageParameter( PageParameterKey.StreakTypeId ),
+                !PageCache.Layout.Site.DisablePredictableIds );
         }
 
         #endregion

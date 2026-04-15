@@ -736,12 +736,10 @@ namespace Rock.Blocks.Administration
         /// <returns></returns>
         private static Page CreateNewPage( PageService pageService, string parentPageIdParam, bool isAllowingPredictableIds )
         {
-            var parentPageId = pageService.GetQueryableByKey(
+            var parentPageId = pageService.GetSelect(
                 parentPageIdParam,
-                isAllowingPredictableIds
-            )
-            .Select( p => ( int? ) p.Id )
-            .FirstOrDefault();
+                p => ( int? ) p.Id,
+                isAllowingPredictableIds );
 
             var page = new Page { Id = 0, IsSystem = false, ParentPageId = parentPageId };
 
