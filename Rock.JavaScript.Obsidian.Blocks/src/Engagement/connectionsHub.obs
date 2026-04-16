@@ -1257,6 +1257,13 @@
             handler: exportToExcel
         });
 
+        actions.push({
+            type: "default",
+            iconCssClass: "ti ti-file-spreadsheet",
+            title: "Export to CSV",
+            handler: exportToCsv
+        });
+
         return actions;
     });
 
@@ -2083,18 +2090,30 @@
         isAutoCollapseEnabled.value = !isAutoCollapseEnabled.value;
     }
 
-    // #region Export to Excel
+    // #region Export to Excel or CSV
 
     /**
-     * Exports the currently visible connection requests to an Excel file.
-     * Follows the same formatting pattern as the Grid component's built-in
-     * export (grid.partial.obs).
+     * Builds the workbook containing the currently visible connection requests,
+     * along with the raw row data and the title used for the export. This is
+     * shared by the Excel and CSV export paths so the two formats stay in sync.
+     * Follows the same pattern as the Grid component's getExportWorkbook
+     * (grid.partial.obs).
      */
-    async function exportToExcel(): Promise<void> {
-        const rows = visibleRowsFilteredByGrid.value;
+    async function getExportWorkbook(): Promise<{ workbook: import("@Obsidian/Libs/exceljs").Workbook, rowData: Record<string, unknown>[], title: string } | null> {
+        // When the user has selected specific rows, limit the export to just
+        // those rows. Otherwise, export every currently visible row.
+        let rows = visibleRowsFilteredByGrid.value;
+
+        if (hasAnySelectedKeys.value) {
+            const selectedKeySet = new Set(allSelectedKeys.value);
+            rows = rows.filter(row => {
+                const idKey = row["idKey"] as string | null | undefined;
+                return !!idKey && selectedKeySet.has(idKey);
+            });
+        }
 
         if (!rows.length) {
-            return;
+            return null;
         }
 
         // Build the list of columns to export based on current view options.
@@ -2126,14 +2145,14 @@
         if (gridDataToShow.includes("connectionOpportunity")) {
             columns.push({
                 key: "connectionOpportunity",
-                title: "Opportunity",
+                title: "Connection Opportunity",
                 getValue: (row) => (row.connectionOpportunity as string) ?? ""
             });
 
             if (viewOptions.value.isRequestSourceShown) {
                 columns.push({
                     key: "connectionTypeSource",
-                    title: "Source",
+                    title: "Connection Request Source",
                     getValue: (row) => (row.connectionTypeSource as string) ?? ""
                 });
             }
@@ -2154,23 +2173,15 @@
         if (box.options?.areGroupPlacementsEnabled) {
             columns.push({
                 key: "group",
-                title: "Group",
+                title: "Placement Group",
                 getValue: (row) => (row.group as string) ?? ""
-            });
-        }
-
-        if (viewOptions.value.isRequestSourceShown) {
-            columns.push({
-                key: "connectionTypeSource",
-                title: "Connection Request Source",
-                getValue: (row) => row.connectionTypeSource
             });
         }
 
         if (gridDataToShow.includes("activity")) {
             columns.push({
                 key: "lastActivityDateTime",
-                title: "Last Activity",
+                title: "Last Activity Date",
                 getValue: (row) => toExcelDate(row.lastActivityDateTime as string | null | undefined)
             });
 
@@ -2196,13 +2207,13 @@
 
         columns.push({
             key: "connectionStatus",
-            title: "Status",
+            title: "Connection Status",
             getValue: (row) => (row.connectionStatus as ConnectionStatusBag | null)?.name ?? ""
         });
 
         columns.push({
             key: "connectionState",
-            title: "State",
+            title: "Connection State",
             getValue: (row) => {
                 const state = row.connectionState as ConnectionState | null | undefined;
                 return state != null ? (ConnectionStateDescription[state] ?? "") : "";
@@ -2211,21 +2222,21 @@
 
         columns.push({
             key: "createdDateTime",
-            title: "Created",
+            title: "Created Date",
             getValue: (row) => toExcelDate(row.createdDateTime as string | null | undefined)
         });
 
         if (box.options?.isFutureFollowUpEnabled === true) {
             columns.push({
                 key: "followUpDate",
-                title: "Follow-up Date",
+                title: "Follow-Up Date",
                 getValue: (row) => toExcelDate(row.followUpDate as string | null | undefined)
             });
         }
 
         columns.push({
             key: "completedDateTime",
-            title: "Completed",
+            title: "Completed Date",
             getValue: (row) => toExcelDate(row.completedDateTime as string | null | undefined)
         });
 
@@ -2239,7 +2250,7 @@
         for (const attr of (attributesToShow.value ?? [])) {
             const attrName = attr.name;
             if (!attrName) {
-                return;
+                return null;
             }
             columns.push({
                 key: attrName,
@@ -2304,6 +2315,47 @@
         }
 
         worksheet.addRows(rowData);
+
+        return { workbook, rowData, title };
+    }
+
+    /**
+     * Triggers an automatic download of the workbook so it can be saved to
+     * the filesystem. Mirrors the Grid component's downloadWorkbook helper
+     * (grid.partial.obs) so CSV and Excel paths share a single download flow.
+     *
+     * @param workbook The workbook to be downloaded by the browser.
+     * @param title The title of the workbook, used as the base for the filename.
+     * @param format The format to use when downloading the workbook.
+     */
+    async function downloadWorkbook(workbook: import("@Obsidian/Libs/exceljs").Workbook, title: string, format: "csv" | "xlsx"): Promise<void> {
+        const buffer = format === "xlsx"
+            ? await workbook.xlsx.writeBuffer()
+            : await workbook.csv.writeBuffer();
+
+        const data = new Blob([buffer], { type: "application/octet-stream" });
+
+        await downloadFile(data, `${title.replace(/[^a-zA-Z0-9\-_]/g, "")}.${format}`);
+    }
+
+    /**
+     * Exports the currently visible connection requests to an Excel file.
+     * Follows the same formatting pattern as the Grid component's built-in
+     * export (grid.partial.obs).
+     */
+    async function exportToExcel(): Promise<void> {
+        const result = await getExportWorkbook();
+
+        if (!result) {
+            return;
+        }
+
+        const { workbook, rowData, title } = result;
+        const worksheet = workbook.getWorksheet(title);
+
+        if (!worksheet) {
+            return;
+        }
 
         // Apply formatting to data rows.
         const lineHeight = 15;
@@ -2400,10 +2452,24 @@
             to: { row: rowData.length + 3, column: worksheet.columns.length }
         };
 
-        // Download the file.
-        const buffer = await workbook.xlsx.writeBuffer();
-        const data = new Blob([buffer], { type: "application/octet-stream" });
-        await downloadFile(data, `${title.replace(/[^a-zA-Z0-9\-_]/g, "")}.xlsx`);
+        await downloadWorkbook(workbook, title, "xlsx");
+    }
+
+    /**
+     * Exports the currently visible connection requests to a CSV file. Skips
+     * Excel-only formatting (styling, merged header rows, auto-filter) since
+     * CSV is a plain text format. Mirrors onExportToCsv in grid.partial.obs.
+     */
+    async function exportToCsv(): Promise<void> {
+        const result = await getExportWorkbook();
+
+        if (!result) {
+            return;
+        }
+
+        const { workbook, title } = result;
+
+        await downloadWorkbook(workbook, title, "csv");
     }
 
     /**
@@ -2420,7 +2486,7 @@
         return new Date(Date.UTC(parsed.year, parsed.month - 1, parsed.day, parsed.hour, parsed.minute, parsed.second));
     }
 
-    // #endregion Export to Excel
+    // #endregion Export to Excel or CSV
 
     async function mergeTemplate(): Promise<void> {
         if (!gridViewGridRef.value) {
