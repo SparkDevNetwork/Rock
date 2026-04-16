@@ -435,6 +435,9 @@
                                    @showSecurity="showSecurityModal"
                                    @delete="showDeleteRequestModal" />
         </template>
+        <template #emptyColumn>
+            <div class="text-center p-spacing-md border rounded">No requests available.</div>
+        </template>
         <template #gridView>
             <Grid :definition="box.gridDefinition ?? undefined"
                   :data="gridViewData"
@@ -1237,6 +1240,12 @@
             actions.push(
                 {
                     type: "default",
+                    iconCssClass: "ti ti-message",
+                    title: "Communicate",
+                    handler: onCommunicate
+                },
+                {
+                    type: "default",
                     iconCssClass: "ti ti-files",
                     title: "Merge Template",
                     handler: mergeTemplate
@@ -1277,6 +1286,11 @@
 
     const groupingFields = computed(() => {
         let filteredGroupingFields = allGroupingFields;
+
+        // No grouping on Grid View
+        if (selectedView.value === "grid") {
+            return [];
+        }
 
         // Board mode only allows status grouping.
         if (selectedView.value === "board") {
@@ -2487,6 +2501,14 @@
     }
 
     // #endregion Export to Excel or CSV
+
+    async function onCommunicate(): Promise<void> {
+        if (!gridViewGridRef.value) {
+            return;
+        }
+
+        await gridViewGridRef.value.onCommunicate();
+    }
 
     async function mergeTemplate(): Promise<void> {
         if (!gridViewGridRef.value) {
@@ -3850,14 +3872,18 @@
     //     onAddRequest(newConnectionRequest.value);
     // });
 
-    watch([selectedGrouping, isAutoCollapseEnabled], async () => {
+    watch(selectedGrouping, async () => {
         // Only update the selected group by mode person preference when the selected view is "List".
-        if (selectedView.value === "list") {
-            preferences.setValue(PreferenceKey.SelectedGroupByMode, selectedGrouping.value);
+        if (selectedView.value !== "list") {
+            return;
         }
 
-        preferences.setValue(PreferenceKey.IsAutoCollapseEnabled, isAutoCollapseEnabled.value.toString());
+        preferences.setValue(PreferenceKey.SelectedGroupByMode, selectedGrouping.value);
+        await preferences.save();
+    });
 
+    watch(isAutoCollapseEnabled, async () => {
+        preferences.setValue(PreferenceKey.IsAutoCollapseEnabled, isAutoCollapseEnabled.value.toString());
         await preferences.save();
     });
 

@@ -77,6 +77,9 @@
                 <template #boardCard="slotProps">
                     <slot name="boardCard" v-bind="slotProps" />
                 </template>
+                <template #emptyColumn>
+                    <slot name="emptyColumn" />
+                </template>
             </GroupedBoardView>
             <template v-if="isGridView">
                 <slot name="gridView" />
@@ -241,11 +244,12 @@
 
     const panelBodyCssClasses = computed(() => {
         // let bodyClass = "overflow-hidden";
-        let bodyClass = "overflow-hidden";
+        // TODO - Need to fix row item dropdowns.
         if (isGridView.value) {
-            bodyClass += " p-spacing-none";
+            // bodyClass += " p-spacing-none";
+            return "p-spacing-none";
         }
-        return bodyClass;
+        // return bodyClass;
     });
 
     // #region Grouping Computation

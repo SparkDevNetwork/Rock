@@ -27,6 +27,9 @@
                      class="board-card-wrapper">
                     <slot name="boardCard" v-bind="{ row }" />
                 </div>
+                <div v-if="group.gridData.rows.length === 0" class="board-column-empty">
+                    <slot name="emptyColumn" />
+                </div>
             </div>
         </div>
     </div>
@@ -106,6 +109,10 @@
     background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);
 }
 
+.board-column.drag-over .board-column-empty {
+    display: none;
+}
+
 .board-column.drag-disabled {
     opacity: 0.5;
     transition: opacity 0.15s ease;
@@ -173,6 +180,11 @@ body.is-dragging * {
     const dragSourceOptions = computed<IDragSourceOptions>(() => ({
         id: dragId,
         copyElement: false,
+
+        startDrag(operation) {
+            // Prevent the empty-column placeholder from being dragged.
+            return !(operation.element as HTMLElement).classList.contains("board-column-empty");
+        },
 
         acceptDrop(operation) {
             if (!props.canDropOnGroup) {

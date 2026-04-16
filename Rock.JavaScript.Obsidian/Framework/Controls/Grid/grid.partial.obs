@@ -626,6 +626,7 @@
         rowUpdated,
         rowsUpdated,
         clearSelectedKeys,
+        onCommunicate,
         onMergeTemplate,
         onPersonMerge
     });

@@ -5393,6 +5393,33 @@ WHERE 1 = 1" );
             }
         }
 
+        /// <summary>
+        /// Creates a communication for the subset of selected rows in the grid.
+        /// </summary>
+        /// <para>
+        /// This method is typically defined in the RockListBlockType, but
+        /// because this is a custom Block it must provide its own endpoint
+        /// to support Communications.
+        /// </para>
+        /// <returns>An action result that contains identifier of the communication.</returns>
+        [BlockAction]
+        public BlockActionResult CreateGridCommunication( GridCommunicationBag communication )
+        {
+            if ( communication == null )
+            {
+                return ActionBadRequest( "No communication data was provided." );
+            }
+
+            var rockCommunication = GridHelper.CreateCommunication( communication, RequestContext );
+
+            if ( rockCommunication == null )
+            {
+                return ActionBadRequest( "Grid has no recipients." );
+            }
+
+            return ActionOk( rockCommunication.Id.ToString() );
+        }
+
         #endregion Grid View Block Actions
 
         #region Communication Block Actions
