@@ -12,7 +12,7 @@
                  :entityTypeGuid="EntityType.PageShortLink"
                  entityTypeName="PageShortLink"
                  :isAuditHidden="false"
-                 :isBadgesVisible="true"
+                 :isBadgesVisible="false"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
@@ -24,7 +24,11 @@
                  @edit="onEdit"
                  @save="onSave">
         <template #view>
-            <ViewPanel :modelValue="pageShortLinkViewBag" :options="options" />
+            <ViewPanel
+                       :modelValue="pageShortLinkViewBag"
+                       :options="options"
+                       @downloadPNG="downloadPNG"
+                       @downloadSVG="downloadSVG" />
         </template>
 
         <template #edit>
@@ -48,6 +52,7 @@
     import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { downloadFile } from "@Obsidian/Utility/file";
 
     const config = useConfigurationValues<DetailBlockBox<PageShortLinkBag, PageShortLinkDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -247,5 +252,41 @@
     else if (!config.entity.idKey) {
         pageShortLinkEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
+    }
+
+    function getFileName(ext: "svg" | "png"): string {
+        console.log(pageShortLinkViewBag.value);
+        const shortCode = pageShortLinkViewBag.value?.token?.split("/").pop() ?? "shortlink";
+        return `shortlink-${shortCode}-qr.${ext}`;
+    }
+
+    function downloadSVG(): void {
+        const svg = pageShortLinkViewBag.value?.qrCodeSVG;
+
+        if (!svg) {
+            return;
+        }
+
+        const blob = new Blob([svg], {
+            type: "image/svg+xml;charset=utf-8"
+        });
+
+        downloadFile(blob, getFileName("svg"));
+    }
+
+    async function downloadPNG(): Promise<void> {
+        const result = await invokeBlockAction<string>("GetQRCodePNG", {
+            shortLink: pageShortLinkViewBag.value?.copyLink
+        });
+
+        if (!result.data) {
+            return;
+        }
+
+        const dataUrl = `data:image/png;base64,${result.data}`;
+        const fetchResult = await fetch(dataUrl);
+        const blob = await fetchResult.blob();
+
+        downloadFile(blob, getFileName("png"));
     }
 </script>

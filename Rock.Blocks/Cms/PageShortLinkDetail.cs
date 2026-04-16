@@ -22,6 +22,8 @@ using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.Linq;
 
+using QRCoder;
+
 using Rock.Attribute;
 using Rock.Cms;
 using Rock.Constants;
@@ -322,6 +324,8 @@ namespace Rock.Blocks.Cms
                 + entity.Token;
 
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
+
+            bag.QRCodeSVG = GetQrCode( bag.CopyLink );
 
             return bag;
         }
@@ -818,6 +822,28 @@ GROUP BY [Bucket], [Partition]";
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        private string GetQrCode( string data )
+        {
+            if ( data.IsNullOrWhiteSpace() )
+            {
+                return "";
+            }
+
+            using ( var qrGenerator = new QRCodeGenerator() )
+            {
+                var qrCodeData = qrGenerator.CreateQrCode( data, QRCodeGenerator.ECCLevel.Q );
+                var svgQrCode = new SvgQRCode( qrCodeData );
+                var svg = svgQrCode.GetGraphic( 8, "#000000", "#ffffff" );
+
+                return svg;
+            }
+        }
+
         #endregion
 
         #region Block Actions
@@ -997,6 +1023,29 @@ GROUP BY [Bucket], [Partition]";
                 RockContext );
 
             return ActionOk( data );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="shortLinkId"></param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult GetQRCodePNG( string shortLink )
+        {
+            if ( shortLink == null )
+            {
+                return ActionBadRequest( "Page short link not found." );
+            }
+
+            using ( var qrGenerator = new QRCodeGenerator() )
+            {
+                var qrCodeData = qrGenerator.CreateQrCode( shortLink, QRCodeGenerator.ECCLevel.Q );
+
+                var pngBytes = new PngByteQRCode( qrCodeData ).GetGraphic( 20 );
+
+                return ActionOk( Convert.ToBase64String( pngBytes ) );
+            }
         }
 
         #endregion
