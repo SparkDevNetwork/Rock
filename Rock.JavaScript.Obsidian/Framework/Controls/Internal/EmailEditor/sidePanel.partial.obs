@@ -688,34 +688,31 @@
     }
 
     function getEmailSectionMenuItems(emailSection: EmailEditorEmailSectionBag): MenuAction[] {
-        if (emailSection.isSystem) {
-            return [
-                {
-                    title: "Clone",
-                    type: "default",
-                    handler: () => onEmailSectionCloneClicked(emailSection)
-                }
-            ];
+        const menuItems: MenuAction[] = [];
+
+        if (emailSection.canEdit) {
+            menuItems.push({
+                title: "Edit Details",
+                type: "default",
+                handler: () => onEmailSectionEditClicked(emailSection)
+            });
         }
-        else {
-            return [
-                {
-                    title: "Edit Details",
-                    type: "default",
-                    handler: () => onEmailSectionEditClicked(emailSection)
-                },
-                {
-                    title: "Clone",
-                    type: "default",
-                    handler: () => onEmailSectionCloneClicked(emailSection)
-                },
-                {
-                    title: "Delete",
-                    type: "danger",
-                    handler: () => onEmailSectionDeleteClicked(emailSection)
-                }
-            ];
+
+        menuItems.push({
+            title: "Clone",
+            type: "default",
+            handler: () => onEmailSectionCloneClicked(emailSection)
+        });
+
+        if (emailSection.canDelete) {
+            menuItems.push({
+                title: "Delete",
+                type: "danger",
+                handler: () => onEmailSectionDeleteClicked(emailSection)
+            });
         }
+
+        return menuItems;
     }
 
     async function loadEmailSections(): Promise<void> {

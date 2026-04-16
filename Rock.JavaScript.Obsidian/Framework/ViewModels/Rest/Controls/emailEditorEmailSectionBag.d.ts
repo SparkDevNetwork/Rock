@@ -26,6 +26,12 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Bag containing the email section information needed for the Email Editor control. */
 export type EmailEditorEmailSectionBag = {
+    /** Gets or sets a value indicating whether the current person can delete this email section. */
+    canDelete: boolean;
+
+    /** Gets or sets a value indicating whether the current person can edit this email section. */
+    canEdit: boolean;
+
     /** Gets or sets the email section category. */
     category?: ListItemBag | null;
 
