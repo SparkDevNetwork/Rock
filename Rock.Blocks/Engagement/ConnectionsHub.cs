@@ -5356,6 +5356,45 @@ WHERE 1 = 1" );
 
         #endregion Detail View Block Actions
 
+        #region Grid View Block Actions
+
+        /// <summary>
+        /// Creates an entity set for the subset of selected rows in the Grid View.
+        /// <para>
+        /// This method is typically defined in the RockListBlockType, but
+        /// because this is a custom Block it must provide its own endpoint
+        /// to support Merge Templates.
+        /// </para>
+        /// </summary>
+        /// <returns>An action result that contains the identifier of the entity set.</returns>
+        [BlockAction]
+        public BlockActionResult CreateGridEntitySet( GridEntitySetBag entitySet )
+        {
+            try
+            {
+                if ( entitySet == null )
+                {
+                    return ActionBadRequest( "No entity set data was provided." );
+                }
+
+                var rockEntitySet = GridHelper.CreateEntitySet( entitySet );
+
+                if ( rockEntitySet == null )
+                {
+                    return ActionBadRequest( "No entities were found to create the set." );
+                }
+
+                return ActionOk( rockEntitySet.Id.ToString() );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                return ActionBadRequest( "There was an error while creating the entity set." );
+            }
+        }
+
+        #endregion Grid View Block Actions
+
         #region Communication Block Actions
 
         [BlockAction]
@@ -5790,6 +5829,7 @@ WHERE 1 = 1" );
                 .AddField( "dueStatusGrouping", a => a.DueStatusGrouping )
                 .AddField( "connectorDetails", a => a.ConnectorDetails )
                 .AddField( "requestDetails", a => a.Person )
+                .AddField( "personIdKey", a => a.Person.IdKey )
                 .AddField( "requesterPersonAliasGuid", a => a.RequesterPersonAliasGuid )
                 .AddTextField( "connectionOpportunity", a => a.ConnectionOpportunity )
                 .AddField( "connectionOpportunityIconCssClass", a => a.ConnectionOpportunityIconCssClass )

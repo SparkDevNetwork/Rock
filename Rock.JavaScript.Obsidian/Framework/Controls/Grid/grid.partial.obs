@@ -625,7 +625,9 @@
         deleteRow,
         rowUpdated,
         rowsUpdated,
-        clearSelectedKeys
+        clearSelectedKeys,
+        onMergeTemplate,
+        onPersonMerge
     });
 
     // #endregion

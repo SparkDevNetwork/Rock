@@ -440,6 +440,7 @@
                   :data="gridViewData"
                   ref="gridViewGridRef"
                   keyField="idKey"
+                  personKeyField="personIdKey"
                   :isTitleHidden="true"
                   :isSearchVisible="false"
                   :isFooterHidden="true"
@@ -456,7 +457,10 @@
 
                 <Column name="requestDetails"
                         title="Name"
-                        field="requestDetails">
+                        field="requestDetails"
+                        :filter="pickExistingValueFilter"
+                        :filterValue="getRequesterFilterValue"
+                        :sortValue="getRequesterFilterValue">
                     <template #format="{ row }">
                         {{ row.requestDetails.nickName }} {{ row.requestDetails.lastName }}
                     </template>
@@ -464,7 +468,10 @@
 
                 <Column title="Connector"
                         name="connectorDetails"
-                        field="connectorDetails">
+                        field="connectorDetails"
+                        :filter="pickExistingValueFilter"
+                        :filterValue="getConnectorFilterValue"
+                        :sortValue="getConnectorFilterValue">
                     <template #format="{ row }">
                         {{ row.connectorDetails?.text }}
                     </template>
@@ -500,6 +507,9 @@
                             </span>
                         </div>
                     </template>
+                    <template #condensed="{ row }">
+                        {{ row.connectionOpportunity }}
+                    </template>
                 </Column>
 
                 <Column v-if="box.options?.areGroupPlacementsEnabled"
@@ -518,9 +528,9 @@
                 </Column>
 
                 <Column v-if="viewOptions.gridDataToShow?.includes('activity')"
-                        name="activity"
+                        name="activityCount"
                         title="Activity"
-                        field="activity">
+                        field="activityCount">
                     <template #format="{ row }">
                         <div v-if="!!row.lastActivityDateTime && !!row.activityCount"
                              class="d-flex flex-column align-items-start gap-1">
@@ -562,13 +572,20 @@
                             {{ ConnectionStateDescription[row.connectionState] }}<template v-if="row.connectionState === ConnectionState.FutureFollowUp"> - {{ formatColumnDate(row.followUpDate) }}</template>
                         </HighlightLabel>
                     </template>
+                    <template #condensed="{ row }">
+                        <HighlightLabel :labelType="getConnectionStateLabel(row.connectionState)">
+                            {{ ConnectionStateDescription[row.connectionState] }}
+                        </HighlightLabel>
+                    </template>
                 </Column>
 
                 <Column name="connectionStatus"
                         title="Status"
                         field="connectionStatus"
                         width="5%"
-                        :filter="pickExistingValueFilter">
+                        :filter="pickExistingValueFilter"
+                        :filterValue="getStatusFilterValue"
+                        :sortValue="getStatusFilterValue">
                     <template #format="{ row }">
                         <HighlightLabel labelType="custom"
                                         v-tooltip.overflow="row.connectionStatus.name"
@@ -580,7 +597,7 @@
 
                 <AttributeColumns :attributes="attributesToShow" />
 
-                <SecurityColumn v-if="canEditConnectionRequests && box.options?.isRequestSecurityEnabled" />
+                <SecurityColumn v-if="canEditConnectionRequests && box.options?.isRequestSecurityEnabled" :itemTitle="() => 'Item'" />
             </Grid>
         </template>
     </GroupedPanel>
@@ -1190,32 +1207,58 @@
      * Gets the list of secondary action items to be included in the panel.
      * This is computed because the auto-collapse toggle title depends on reactive state.
      */
-    const secondaryActions = computed((): PanelAction[] => [
-        {
-            type: "default",
-            iconCssClass: "ti ti-plus",
-            title: "Add From Campaign",
-            handler: showAddFromCampaignModal
-        },
-        {
-            type: "default",
-            iconCssClass: "ti ti-viewport-short",
-            title: isAutoCollapseEnabled.value ? "Turn Off Auto-Collapse" : "Turn On Auto-Collapse",
-            handler: toggleAutoCollapse
-        },
-        {
-            type: "default",
-            iconCssClass: "ti ti-chevrons-up",
-            title: "Collapse All",
-            handler: collapseAll
-        },
-        {
+    const secondaryActions = computed((): PanelAction[] => {
+        const actions: PanelAction[] = [
+            {
+                type: "default",
+                iconCssClass: "ti ti-plus",
+                title: "Add From Campaign",
+                handler: showAddFromCampaignModal
+            }
+        ];
+
+        if (selectedView.value === "list") {
+            actions.push(
+                {
+                    type: "default",
+                    iconCssClass: "ti ti-viewport-short",
+                    title: isAutoCollapseEnabled.value ? "Turn Off Auto-Collapse" : "Turn On Auto-Collapse",
+                    handler: toggleAutoCollapse
+                },
+                {
+                    type: "default",
+                    iconCssClass: "ti ti-chevrons-up",
+                    title: "Collapse All",
+                    handler: collapseAll
+                }
+            );
+        }
+        else if (selectedView.value === "grid") {
+            actions.push(
+                {
+                    type: "default",
+                    iconCssClass: "ti ti-files",
+                    title: "Merge Template",
+                    handler: mergeTemplate
+                },
+                {
+                    type: "default",
+                    iconCssClass: "ti ti-users",
+                    title: "Merge People",
+                    handler: mergePerson
+                }
+            );
+        }
+
+        actions.push({
             type: "default",
             iconCssClass: "ti ti-file-excel",
             title: "Export to Excel",
             handler: exportToExcel
-        }
-    ]);
+        });
+
+        return actions;
+    });
 
     // Computed setter normalizes v-model updates so the dropdown’s blank "All Opportunities" value is never stored in component state.
     const selectedOpportunity = computed({
@@ -1763,6 +1806,36 @@
         }
 
         return 0;
+    }
+
+    /**
+    * Gets the filter value text to use for the requester column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getRequesterFilterValue(row: Record<string, unknown>): string {
+        const person = row["requestDetails"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+    * Gets the filter value text to use for the connector column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getConnectorFilterValue(row: Record<string, unknown>): string {
+        const connectorItem = row["connectorDetails"] as ListItemBag;
+        return !connectorItem ? "" : `${connectorItem.text}`;
+    }
+
+    /**
+    * Gets the filter value text to use for the status column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getStatusFilterValue(row: Record<string, unknown>): string {
+        const statusBag = row["connectionStatus"] as ConnectionStatusBag;
+        return !statusBag ? "" : `${statusBag.name}`;
     }
 
     function formatColumnDate(date: string | null | undefined): string {
@@ -2348,6 +2421,22 @@
     }
 
     // #endregion Export to Excel
+
+    async function mergeTemplate(): Promise<void> {
+        if (!gridViewGridRef.value) {
+            return;
+        }
+
+        await gridViewGridRef.value.onMergeTemplate();
+    }
+
+    async function mergePerson(): Promise<void> {
+        if (!gridViewGridRef.value) {
+            return;
+        }
+
+        await gridViewGridRef.value.onPersonMerge();
+    }
 
     function showCelebrationModal(row: Record<string, unknown> | null = null, detailsBox: ConnectionRequestDetailBox | null = null): void {
         prepareRequestDetailsForModal(row, detailsBox);
