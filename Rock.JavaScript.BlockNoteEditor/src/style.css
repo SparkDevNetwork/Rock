@@ -168,6 +168,11 @@ html[theme="dark"] .bn-container {
 }
 
 /* Embed (File/Video) block overrides */
+.bn-file-block-content-wrapper {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .bn-file-block-content-wrapper .bn-resize-handle {
   display: none;
 }
