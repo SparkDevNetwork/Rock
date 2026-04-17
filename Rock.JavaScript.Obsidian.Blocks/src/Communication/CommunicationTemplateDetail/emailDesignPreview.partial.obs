@@ -7,10 +7,11 @@
                     <div class="side-panel">
                         <div v-if="isLogoInMessage" class="row">
                             <div class="col-md-6">
-                                <ImageUploader v-model="internalLogoBinaryFile"
-                                               help="Provide a PNG with a transparent background. (Image size: 200px x 50px)"
-                                               label="Logo"
-                                               @update:modelValue="onLogoUpdate" />
+                                <div class="form-group">
+                                    <RockLabel help="Provide a PNG with a transparent background. (Image size: 200px x 50px)">Logo</RockLabel>
+                                    <ImageUploader v-model="internalLogoBinaryFile"
+                                                   @update:modelValue="onLogoUpdate" />
+                                </div>
                             </div>
                         </div>
 
@@ -62,11 +63,11 @@
                         <div class="side-panel">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <ImageUploader
-                                                   v-model="internalLogoBinaryFile"
-                                                   help="Provide a PNG with a transparent background. (Image size: 200px x 50px)"
-                                                   label="Logo"
+                                    <div class="form-group">
+                                        <RockLabel help="Provide a PNG with a transparent background. (Image size: 200px x 50px)">Logo</RockLabel>
+                                        <ImageUploader v-model="internalLogoBinaryFile"
                                                    @update:modelValue="onLogoUpdate" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -86,13 +87,6 @@
     </div>
 </template>
 
-<style scoped>
-.lava-input-group {
-    display: flex;
-    flex-direction: row;
-    align-items: end;
-}
-</style>
 
 <script setup lang="ts">
     import { ref, computed, watch, PropType } from "vue";
@@ -101,6 +95,7 @@
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { CommunicationTemplateVersion } from "@Obsidian/Enums/Communication/communicationTemplateVersion";
     import { toTitleCase, splitCase } from "@Obsidian/Utility/stringUtils";
