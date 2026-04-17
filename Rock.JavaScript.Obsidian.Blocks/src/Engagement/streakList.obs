@@ -4,7 +4,7 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          personKeyField="personId"
+          personKeyField="personIdKey"
           itemTerm="Streak"
           :title="gridTitle"
           :entityTypeGuid="EntityType.Streak"
@@ -27,7 +27,7 @@
                 visiblePriority="xs"
                 width="15%">
             <template #format="{ row }">
-                <PersonAvatar :personIdKey="row.personId" :photoUrl="photoUrl(row)" photoSize="xs" marginRight="sm" enableHoverInfo />
+                <PersonAvatar :personIdKey="row.personIdKey" :photoUrl="photoUrl(row)" photoSize="xs" marginRight="sm" enableHoverInfo />
                 <span class="mr-1">{{ `${row.fullName ?? ""}` }}</span>
                 <span v-if="row.signalMarkup" class="mr-1" v-html="row.signalMarkup"></span>
             </template>
@@ -278,7 +278,7 @@
     */
     function onPersonClick(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.ProfilePage]) {
-            const personIdKey = gridData?.rows?.find(r => r["idKey"] === key)?.personId as string;
+            const personIdKey = gridData?.rows?.find(r => r["idKey"] === key)?.personIdKey as string;
             if (personIdKey) {
                 window.location.href = config.navigationUrls?.[NavigationUrlKey.ProfilePage].replace("((Key))", personIdKey);
             }

@@ -10,7 +10,7 @@
                title="My Content"
                class="list-as-blocks">
             <template #headerActions>
-                <div class="header-actions d-flex align-items-center">
+                <div class="d-none d-md-flex align-items-center gap-spacing-md">
                     <div v-if="config.options?.isCategoryFilterShown" class="form-horizontal label-auto">
                         <DropDownList v-model="selectedCategoryValue"
                                       label="Category"
@@ -30,6 +30,24 @@
                             @update:modelValue="onPendingToggleChanged" />
                 </div>
             </template>
+
+            <div class="d-md-none d-flex flex-column gap-spacing-md mb-spacing-md">
+                <DropDownList v-if="config.options?.isCategoryFilterShown"
+                              v-model="selectedCategoryValue"
+                              label="Category"
+                              :items="config.options?.categoryItems ?? []"
+                              :showBlankItem="true"
+                              enhanceForLongLists
+                              @update:modelValue="onCategoryChanged" />
+
+                <Toggle v-model="isPendingFilterActive"
+                        trueText="Pending"
+                        falseText="All Items"
+                        onButtonActiveCssClass="btn-success"
+                        offButtonActiveCssClass="btn-success"
+                        btnSize="sm"
+                        @update:modelValue="onPendingToggleChanged" />
+            </div>
 
             <ul>
                 <li v-for="(channel, index) in channels"
@@ -57,7 +75,7 @@
               liveUpdates
               stickyHeader
               gridSettings
-              :gridSettingsActive="hasSettingsFilters"
+              :gridSettingsActive="hasActiveFilters"
               :onAddItem="canEdit ? onAddItem : undefined"
               @gridSettingsClick="isGridSettingsVisible = true"
               @selectItem="onSelectItem">
@@ -155,16 +173,9 @@
     </div>
 </template>
 
-<style scoped>
-.header-actions {
-    gap: var(--spacing-large);
-}
-</style>
-
 <script setup lang="ts">
     import { computed, reactive, ref, watch } from "vue";
     import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./ContentChannelNavigation/types.partial";
-    import { isFilterEntryEmpty } from "./ContentChannelNavigation/utilities.partial";
     import GridSettingsModal from "./ContentChannelNavigation/gridSettingsModal.partial.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -209,8 +220,10 @@
     let gridData: GridDataBag | undefined;
     const gridSettings = ref<GridSettingsOptions>(getGridSettingsFromPreferences());
     const isGridSettingsVisible = ref(false);
+    let isReplacingGridSettingsForChannelSwitch = false;
 
     const isReorderEnabled = ref(false);
+    const hasActiveFilters = ref(false);
     const isIncludeTime = ref(false);
     const showDateStatusColumn = ref(false);
     const showOccurrencesColumn = ref(false);
@@ -220,18 +233,6 @@
     // #endregion Values
 
     // #region Computed Values
-
-    /**
-     * Whether any grid filter settings are active.
-     */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.dateRangeLower
-            || !!gridSettings.value.dateRangeUpper
-            || !!gridSettings.value.status
-            || !!gridSettings.value.title
-            || !!gridSettings.value.createdBy?.value
-            || Object.values(gridSettings.value.attributeFilterValues).some(v => !!v && !isFilterEntryEmpty(v));
-    });
 
     /**
      * Whether the start date/time column should be visible.
@@ -346,6 +347,7 @@
             channelName.value = result.data.channelName ?? "";
             canEdit.value = result.data.canEdit ?? false;
             isReorderEnabled.value = result.data.isReorderEnabled ?? false;
+            hasActiveFilters.value = result.data.hasActiveFilters ?? false;
             addItemUrl.value = result.data.addItemUrl ?? "";
             attributeFilters.value = result.data.attributeFilters ?? [];
             isIncludeTime.value = result.data.isIncludeTime ?? false;
@@ -381,6 +383,7 @@
             // before updating channels so both render in the same frame.
             if (!selectedChannelGuid.value && isInList(preferredGuid)) {
                 selectedChannelGuid.value = preferredGuid;
+                isReplacingGridSettingsForChannelSwitch = true;
                 gridSettings.value = getGridSettingsFromPreferences();
                 gridDataSource.value = loadGridData();
                 await gridDataSource.value.catch(() => { });
@@ -408,14 +411,19 @@
     /**
      * Called when a channel tile is clicked. Selects the channel and loads its grid data.
      */
-    function onChannelClick(channel: ContentChannelNavigationChannelBag): void {
+    async function onChannelClick(channel: ContentChannelNavigationChannelBag): Promise<void> {
         selectedChannelGuid.value = channel.guid ?? null;
 
         preferences.setValue(PreferenceKey.SelectedChannel, channel.guid ?? "");
-        preferences.save();
+        await preferences.save();
 
         // Load saved filter settings for this channel.
+        isReplacingGridSettingsForChannelSwitch = true;
         gridSettings.value = getGridSettingsFromPreferences();
+
+        if (channel.guid) {
+            gridDataSource.value = loadGridData();
+        }
     }
 
     /**
@@ -423,7 +431,7 @@
      */
     async function onCategoryChanged(): Promise<void> {
         preferences.setValue(PreferenceKey.CategoryFilter, selectedCategoryValue.value);
-        preferences.save();
+        await preferences.save();
 
         await refreshChannels();
     }
@@ -433,7 +441,7 @@
      */
     async function onPendingToggleChanged(): Promise<void> {
         preferences.setValue(PreferenceKey.StatusFilter, asTrueOrFalseString(isPendingFilterActive.value));
-        preferences.save();
+        await preferences.save();
 
         await refreshChannels();
     }
@@ -508,21 +516,15 @@
      * When grid filter settings change, persist them to person preferences and reload grid data.
      */
     watch(gridSettings, async () => {
+        if (isReplacingGridSettingsForChannelSwitch) {
+            isReplacingGridSettingsForChannelSwitch = false;
+            return;
+        }
+
         if (selectedChannelGuid.value) {
             const allFilters = safeParseJson<Record<string, GridSettingsOptions>>(preferences.getValue(PreferenceKey.FilterGridSettings)) ?? {};
 
-            /*
-                3/30/26 - MSE
-
-                Only store entries for channels with active filters to keep
-                the preference JSON small for churches with many channels.
-            */
-            if (hasSettingsFilters.value) {
-                allFilters[selectedChannelGuid.value] = gridSettings.value;
-            }
-            else {
-                delete allFilters[selectedChannelGuid.value];
-            }
+            allFilters[selectedChannelGuid.value] = gridSettings.value;
 
             preferences.setValue(PreferenceKey.FilterGridSettings, JSON.stringify(allFilters));
             await preferences.save();
@@ -540,10 +542,16 @@
         preferences.save();
     }
 
-    // Load channels immediately, and grid data if a channel is pre-selected.
-    refreshChannels();
+    (async () => {
+        try {
+            await refreshChannels();
 
-    if (selectedChannelGuid.value) {
-        gridDataSource.value = loadGridData();
-    }
+            if (selectedChannelGuid.value && !gridDataSource.value) {
+                gridDataSource.value = loadGridData();
+            }
+        }
+        catch (error) {
+            blockError.value = error instanceof Error ? error.message : "Failed to initialize block.";
+        }
+    })();
 </script>

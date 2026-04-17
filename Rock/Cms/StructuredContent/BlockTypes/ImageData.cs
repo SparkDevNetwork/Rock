@@ -61,30 +61,6 @@ namespace Rock.Cms.StructuredContent.BlockTypes
         /// </value>
         [DataMember( Name = "url" )]
         public string Url { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether a border should be displayed
-        /// around the image.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if a border should be displayed; otherwise, <c>false</c>.
-        /// </value>
-        [Obsolete( "This value is not used by Rock." )]
-        [RockObsolete("1.13")]
-        [DataMember( Name = "withBorder" )]
-        public bool WithBorder { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether a background should be
-        /// displayed behind the image.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if a background should be displayed; otherwise, <c>false</c>.
-        /// </value>
-        [Obsolete( "This value is not used by Rock." )]
-        [RockObsolete("1.13")]
-        [DataMember( Name = "withBackground" )]
-        public bool WithBackground { get; set; }
     }
 
 }

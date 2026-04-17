@@ -257,17 +257,6 @@ namespace Rock.Model
         #region SMS Properties
 
         /// <summary>
-        /// Gets or sets from number.
-        /// </summary>
-        /// <value>
-        /// From number.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use SmsFromSystemPhoneNumberId instead." )]
-        [RockObsolete( "1.15" )]
-        public int? SMSFromDefinedValueId { get; set; }
-
-        /// <summary>
         /// Gets or sets the system phone number identifier used for SMS sending.
         /// </summary>
         /// <value>
@@ -446,17 +435,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
-
-        /// <summary>
-        /// Gets or sets the SMS from defined value.
-        /// </summary>
-        /// <value>
-        /// The SMS from defined value.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use SmsFromSystemPhoneNumber instead." )]
-        [RockObsolete( "1.15" )]
-        public virtual DefinedValue SMSFromDefinedValue { get; set; }
 
         /// <summary>
         /// Gets or sets the system phone number used for SMS sending.

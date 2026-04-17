@@ -9,7 +9,11 @@
 
 
 // ======================== ALTERNATIVE STYLE ========================
+
 .label {
+  min-height: 26px; // Hardcode to match the height of the .btn-xs for better alignment when placed beside each other, such as in panel headers
+  line-height: 16px; // Adjust line-height to vertically center the text within the new height
+  align-items: center; // Vertically center the content if it wraps to multiple lines
   a {
     color: inherit; // allow for links in labels
   }
@@ -27,8 +31,8 @@
 }
 
 .label-type {
-  color:            var(--base-interface-softest);
-  background-color: var(--color-interface-medium);
+  color:            var(--color-interface-strong);
+  background-color: var(--color-interface-soft);
 }
 
 .label-communicationstatus-approved {

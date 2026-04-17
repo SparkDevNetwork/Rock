@@ -53,7 +53,4 @@ export type StepBulkEntryStepTypeConfigurationBag = {
 
     /** Gets or sets the step program unique identifier, used to filter the status picker. */
     stepProgramGuid: Guid;
-
-    /** Gets or sets the name of the step type for display in the UI. */
-    stepTypeName?: string | null;
 };

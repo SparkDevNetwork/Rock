@@ -16,7 +16,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Streaks" )]
     [Description( "Allows editing a streak occurrence, engagement, or exclusion map." )]
     [IconCssClass( "ti ti-calendar-check" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -31,7 +31,8 @@ namespace Rock.Blocks.Engagement
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "4935B24C-851A-4480-A907-EAEB90D594D2" )]
-    [Rock.SystemGuid.BlockTypeGuid( "B5616E10-0551-41BB-BD14-3ABA33E0040B" )]
+    [Rock.SystemGuid.BlockTypeGuid( "4DB69FBA-32C7-448A-B322-EDFBCEF2D124" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "B5616E10-0551-41BB-BD14-3ABA33E0040B" )]
     public class StreakMapEditor : RockBlockType
     {
         #region Keys
@@ -147,26 +148,21 @@ namespace Rock.Blocks.Engagement
         /// <returns></returns>
         private StreakTypeCache GetStreakType()
         {
-            int streakTypeId;
             var streak = GetStreak();
-            var exclusion = GetStreakTypeExclusion();
-
             if ( streak != null )
             {
-                streakTypeId = streak.StreakTypeId;
-            }
-            else if ( exclusion != null )
-            {
-                streakTypeId = exclusion.StreakTypeId;
-            }
-            else
-            {
-                var streakTypeIdParam = PageParameter( PageParameterKey.StreakTypeId );
-                streakTypeId = Rock.Utility.IdHasher.Instance.GetId( streakTypeIdParam ) ?? streakTypeIdParam.AsInteger();
+                return StreakTypeCache.Get( streak.StreakTypeId );
             }
 
-            var streakType = StreakTypeCache.Get( streakTypeId );
-            return streakType;
+            var exclusion = GetStreakTypeExclusion();
+            if ( exclusion != null )
+            {
+                return StreakTypeCache.Get( exclusion.StreakTypeId );
+            }
+
+            return StreakTypeCache.Get(
+                PageParameter( PageParameterKey.StreakTypeId ),
+                !PageCache.Layout.Site.DisablePredictableIds );
         }
 
         /// <summary>
@@ -177,14 +173,9 @@ namespace Rock.Blocks.Engagement
         {
             if ( _streak == null )
             {
-                var streakIdParam = PageParameter( PageParameterKey.StreakId );
-                var streakId = Rock.Utility.IdHasher.Instance.GetId( streakIdParam ) ?? streakIdParam.AsIntegerOrNull();
-
-                if ( streakId.HasValue && streakId.Value > 0 )
-                {
-                    var streakService = new StreakService( RockContext );
-                    _streak = streakService.Get( streakId.Value );
-                }
+                _streak = new StreakService( RockContext ).Get(
+                    PageParameter( PageParameterKey.StreakId ),
+                    !PageCache.Layout.Site.DisablePredictableIds );
             }
 
             return _streak;
@@ -199,14 +190,9 @@ namespace Rock.Blocks.Engagement
         {
             if ( _streakTypeExclusion == null )
             {
-                var exclusionIdParam = PageParameter( PageParameterKey.StreakTypeExclusionId );
-                var id = Rock.Utility.IdHasher.Instance.GetId( exclusionIdParam ) ?? exclusionIdParam.AsIntegerOrNull();
-
-                if ( id.HasValue && id.Value > 0 )
-                {
-                    var service = new StreakTypeExclusionService( RockContext );
-                    _streakTypeExclusion = service.Get( id.Value );
-                }
+                _streakTypeExclusion = new StreakTypeExclusionService( RockContext ).Get(
+                    PageParameter( PageParameterKey.StreakTypeExclusionId ),
+                    !PageCache.Layout.Site.DisablePredictableIds );
             }
 
             return _streakTypeExclusion;

@@ -221,24 +221,6 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// Gets or sets the html content.
-        /// </summary>
-        /// <value>
-        /// The html content.
-        /// </value>
-        [Obsolete( "Use Rock.Cms.StructuredContent.StructuredContentHelper instead." )]
-        [RockObsolete( "1.13" )]
-        public string HtmlContent
-        {
-            get
-            {
-                var helper = new StructuredContentHelper( HttpUtility.UrlDecode( this.StructuredContent ) );
-
-                return helper.Render();
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the structured content.
         /// </summary>
         /// <value>

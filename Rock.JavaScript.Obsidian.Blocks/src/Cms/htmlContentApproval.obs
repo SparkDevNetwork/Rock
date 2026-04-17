@@ -59,7 +59,10 @@
         <PersonColumn name="approvedByPersonAlias"
                       title="Approved By"
                       field="approvedByPersonAlias"
+                      :hideAvatar="true"
+                      :showAsLink="true"
                       :filter="pickExistingValueFilter"
+                      :filterValue="getApprovedByFilterValue"
                       :detailField="false" />
 
         <DateColumn name="approvedDateTime"
@@ -92,6 +95,7 @@
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { HtmlContentApprovalOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/HtmlContentApproval/htmlContentApprovalOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { ApprovalStatus, PreferenceKey, GridSettingsOptions } from "./HtmlContentApproval/types.partial";
     import GridSettingsModal from "./HtmlContentApproval/gridSettingsModal.partial.obs";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
@@ -166,6 +170,14 @@
      */
     function getIsApprovedDisplayValue(row: Record<string, unknown>): string {
         return row["isApproved"] ? "Yes" : "No";
+    }
+
+    /**
+     * Gets the filter value for the "Approved By" person column.
+     */
+    function getApprovedByFilterValue(row: Record<string, unknown>): string {
+        const person = row["approvedByPersonAlias"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**

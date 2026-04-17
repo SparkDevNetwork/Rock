@@ -508,7 +508,7 @@ namespace Rock.Blocks.Engagement
         {
             var queryParams = new Dictionary<string, string>
             {
-                [PageParameterKey.StreakTypeId] = IdHasher.Instance.GetId( idKey ).ToStringSafe()
+                [PageParameterKey.StreakTypeId] = idKey
             };
             return new Dictionary<string, string>
             {
@@ -777,6 +777,11 @@ namespace Rock.Blocks.Engagement
                 return ActionNotFound();
             }
             var streakType = StreakTypeCache.Get( key, false );
+
+            if ( streakType == null )
+            {
+                return ActionNotFound();
+            }
 
             if ( !streakType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
             {

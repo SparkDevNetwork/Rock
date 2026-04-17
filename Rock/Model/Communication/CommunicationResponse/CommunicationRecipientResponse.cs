@@ -191,16 +191,6 @@ namespace Rock.Model
         public string SMSMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the binary file unique identifier.
-        /// </summary>
-        /// <value>
-        /// The binary file unique identifier.
-        /// </value>
-        [RockObsolete("1.13")]
-        [Obsolete( "Use HasAttachments() or GetBinaryFileGuids() instead" )]
-        public List<Guid> BinaryFileGuids { get; set; }
-
-        /// <summary>
         /// Determines whether the specified rock context has attachments.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>

@@ -191,26 +191,6 @@ namespace Rock.CheckIn
             }
         }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance has health note.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance has health note; otherwise, <c>false</c>.
-        /// </value>
-        [Obsolete( "No longer used. This will always return false." )]
-        [RockObsolete( "1.13" )]
-        public bool HasHealthNote { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has legal note.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance has legal note; otherwise, <c>false</c>.
-        /// </value>
-        [Obsolete( "No longer used. This will always return false." )]
-        [RockObsolete( "1.13" )]
-        public bool HasLegalNote { get; private set; }
-
         /// <inheritdoc cref="Attendance.IsFirstTime"/>
         public bool IsFirstTime { get; private set; }
 
@@ -526,21 +506,6 @@ namespace Rock.CheckIn
         public string GetMobileTagAndSchedulesHtml()
         {
             return $"<div class='person-tag'>{this.Tag}</div><div class='small text-muted text-wrap'>{this.ServiceTimes}</div>";
-        }
-
-        /// <summary>
-        /// Gets the badges HTML.
-        /// </summary>
-        /// <param name="isMobile">if set to <c>true</c> [is mobile].</param>
-        /// <returns>System.String.</returns>
-        [Obsolete( "Use other GetBadgesHtml " )]
-        [RockObsolete( "1.13" )]
-        public string GetBadgesHtml( bool isMobile )
-        {
-            List<AttributeCache> attributesForAlertIcons = new List<AttributeCache>();
-            attributesForAlertIcons.Add( AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_ALLERGY.AsGuid() ) );
-            attributesForAlertIcons.Add( AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_LEGAL_NOTE.AsGuid() ) );
-            return GetBadgesHtml( attributesForAlertIcons );
         }
 
         /// <summary>

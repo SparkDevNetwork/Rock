@@ -51,11 +51,9 @@
     import { PageListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageList/pageListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { reactive, ref } from "vue";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<ListBlockBox<PageListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const layoutOptions = ref<ListItemBag[]>([]);
 
     // #region Values
 
@@ -74,17 +72,6 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
-
-            // Extract the layouts from the grid data
-            const layoutData = new Set(gridData.rows?.map(row => row.layout as string));
-
-            layoutOptions.value = Array.from(layoutData).map(layout => {
-                return {
-                    text: layout,
-                    value: layout
-                };
-            });
-
             return gridData;
         }
         else {

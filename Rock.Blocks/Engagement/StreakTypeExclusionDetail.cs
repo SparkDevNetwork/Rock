@@ -40,14 +40,15 @@ namespace Rock.Blocks.Engagement
     [Category( "Streaks" )]
     [Description( "Displays the details of the given Exclusion for editing." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "0667f91d-e7fc-44e6-a969-eebbf99802b2" )]
-    [Rock.SystemGuid.BlockTypeGuid( "d8b2132d-8725-47ff-84cd-c86c163abe4d" )]
+    [Rock.SystemGuid.BlockTypeGuid( "21E9D4D3-9111-4E2F-A605-C4556BD62430" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "d8b2132d-8725-47ff-84cd-c86c163abe4d" )]
     public class StreakTypeExclusionDetail : RockEntityDetailBlockType<StreakTypeExclusion, StreakTypeExclusionBag>, IBreadCrumbBlock
     {
         #region Keys
@@ -267,7 +268,7 @@ namespace Rock.Blocks.Engagement
 
             if ( streakType != null )
             {
-                queryParams.Add( PageParameterKey.StreakTypeId, streakType.Id.ToString() );
+                queryParams.Add( PageParameterKey.StreakTypeId, streakType.IdKey );
             }
 
             return new Dictionary<string, string>
@@ -318,29 +319,21 @@ namespace Rock.Blocks.Engagement
         /// <returns></returns>
         private StreakType GetStreakType( StreakTypeExclusion exclusion )
         {
-            StreakType streakType = null;
-            var streakTypeService = new StreakTypeService( RockContext );
-
             if ( exclusion?.StreakType != null )
             {
-                streakType = exclusion.StreakType;
-            }
-            else if ( exclusion != null && exclusion.StreakTypeId > 0 )
-            {
-                streakType = streakTypeService.Get( exclusion.StreakTypeId );
-            }
-            else
-            {
-                var streakTypeIdParam = PageParameter( PageParameterKey.StreakTypeId );
-                var streakTypeId = Rock.Utility.IdHasher.Instance.GetId( streakTypeIdParam ) ?? streakTypeIdParam.AsIntegerOrNull();
-
-                if ( streakTypeId > 0 )
-                {
-                    streakType = streakTypeService.Get( streakTypeId.Value );
-                }
+                return exclusion.StreakType;
             }
 
-            return streakType;
+            var streakTypeService = new StreakTypeService( RockContext );
+
+            if ( exclusion != null && exclusion.StreakTypeId > 0 )
+            {
+                return streakTypeService.Get( exclusion.StreakTypeId );
+            }
+
+            return streakTypeService.Get(
+                PageParameter( PageParameterKey.StreakTypeId ),
+                !PageCache.Layout.Site.DisablePredictableIds );
         }
 
         /// <inheritdoc/>
@@ -484,11 +477,13 @@ namespace Rock.Blocks.Engagement
                 return ActionBadRequest( errorMessage );
             }
 
+            var streakTypeIdKey = entity.StreakType.IdKey;
+
             entityService.Delete( entity );
             RockContext.SaveChanges();
 
             return ActionOk( this.GetParentPageUrl( new Dictionary<string, string> {
-                    { PageParameterKey.StreakTypeId, entity.StreakTypeId.ToString() }
+                    { PageParameterKey.StreakTypeId, streakTypeIdKey }
             } ) );
         }
 

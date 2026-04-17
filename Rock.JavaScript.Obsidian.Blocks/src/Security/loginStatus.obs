@@ -1,0 +1,113 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ul :class="containerClasses">
+        <li v-if="isLoggedIn" class="dropdown">
+            <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
+                <div class="loginstatus-wrapper">
+                    <div class="profile-photo" :style="profilePhotoStyle"></div>
+                    <span v-if="!isMinimalMode">{{ nickName }}</span>
+                </div>
+                <b v-if="!isMinimalMode" class="ti ti-caret-down-filled"></b>
+            </a>
+
+            <ul class="dropdown-menu">
+                <li v-if="myAccountUrl">
+                    <a :href="myAccountUrl">My Account</a>
+                </li>
+                <li v-if="mySettingsUrl">
+                    <a :href="mySettingsUrl">My Settings</a>
+                </li>
+                <li v-if="myProfileUrl">
+                    <a :href="myProfileUrl">My Profile</a>
+                </li>
+                <li v-for="(page, index) in customNavPages" :key="index"
+                    :class="{ 'divider': page.isDivider }">
+                    <a v-if="!page.isDivider" :href="page.url ?? '#'">{{ page.title }}</a>
+                </li>
+                <li v-if="hasDropdownItems" class="divider"></li>
+                <li>
+                    <a href="#" @click.prevent="onLogoutClick">Log Out</a>
+                </li>
+            </ul>
+        </li>
+
+        <li v-else>
+            <a href="#" @click.prevent="onLoginClick">Log In</a>
+        </li>
+    </ul>
+</template>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { LoginStatusInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/LoginStatus/loginStatusInitializationBox";
+
+    const config = useConfigurationValues<LoginStatusInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const isLoggedIn = config.isLoggedIn ?? false;
+    const isMinimalMode = config.isMinimalMode ?? false;
+    const nickName = config.nickName ?? "";
+    const photoUrl = config.photoUrl ?? "";
+    const myAccountUrl = config.myAccountUrl ?? null;
+    const myProfileUrl = config.myProfileUrl ?? null;
+    const mySettingsUrl = config.mySettingsUrl ?? null;
+    const loginPageUrl = config.loginPageUrl ?? "";
+    const customNavPages = config.customNavPages ?? [];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const profilePhotoStyle = computed((): string => {
+        return `background-image: url('${photoUrl}');`;
+    });
+
+    const containerClasses = computed((): string[] => {
+        const classes = ["nav", "navbar-nav", "loginstatus"];
+
+        if (isMinimalMode) {
+            classes.push("loginstatus-minimal");
+        }
+
+        return classes;
+    });
+
+    const hasDropdownItems = computed((): boolean => {
+        return !!myAccountUrl || !!myProfileUrl || !!mySettingsUrl || customNavPages.length > 0;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Handles the login link click by navigating to the login page.
+     */
+    function onLoginClick(): void {
+        if (loginPageUrl) {
+            window.location.href = loginPageUrl;
+        }
+    }
+
+    /**
+     * Handles the logout link click by invoking the Logout block action
+     * and redirecting to the returned URL.
+     */
+    async function onLogoutClick(): Promise<void> {
+        const result = await invokeBlockAction<string>("Logout");
+
+        if (result.isSuccess && result.data) {
+            window.location.href = result.data;
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

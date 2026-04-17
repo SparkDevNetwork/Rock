@@ -67,7 +67,9 @@ namespace Rock.Blocks.Finance
         Order = 3 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "a68dd358-1392-475f-92b4-dea544ff219e" )]
-    [Rock.SystemGuid.BlockTypeGuid( "f1950524-e959-440f-9cf6-1a8b9b7527d8" )]
+    // Original obsidian was [Rock.SystemGuid.BlockTypeGuid( "f1950524-e959-440f-9cf6-1a8b9b7527d8" )]
+    [Rock.SystemGuid.BlockTypeGuid( "AB345CE7-5DC6-41AF-BBDC-8D23D52AFE25" )]
+
     [CustomizedGrid]
     public class FinancialBatchList : RockListBlockType<FinancialBatchList.BatchData>
     {

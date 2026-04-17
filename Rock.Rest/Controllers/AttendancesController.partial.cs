@@ -333,26 +333,6 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="attendanceId">The attendance identifier.</param>
         [Authenticate, Secured]
-        [System.Web.Http.Route( "api/Attendances/ScheduledPersonSendConfirmationEmail" )]
-        [HttpPut]
-        [Obsolete( "Use ScheduledPersonSendConfirmationCommunication instead." )]
-        [RockObsolete( "1.13" )]
-        [Rock.SystemGuid.RestActionGuid( "8531ED24-D82A-4FFB-8F5C-3848FCC04A44" )]
-        public void ScheduledPersonSendConfirmationEmail( int attendanceId )
-        {
-            var rockContext = new RockContext();
-            var attendanceService = new AttendanceService( rockContext );
-            var sendConfirmationAttendancesQuery = attendanceService.Queryable().Where( a => a.Id == attendanceId );
-            List<string> errorMessages;
-            attendanceService.SendScheduleConfirmationSystemEmails( sendConfirmationAttendancesQuery, out errorMessages );
-            rockContext.SaveChanges();
-        }
-
-        /// <summary>
-        /// Sends (or Re-sends) a confirmation email to the person in the specified scheduled attendance record
-        /// </summary>
-        /// <param name="attendanceId">The attendance identifier.</param>
-        [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/ScheduledPersonSendConfirmationCommunication" )]
         [HttpPut]
         [Rock.SystemGuid.RestActionGuid( "B126E3E7-5B54-4A91-8214-2006BB4D3DEB" )]

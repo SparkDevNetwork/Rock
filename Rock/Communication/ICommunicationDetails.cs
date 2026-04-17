@@ -104,16 +104,6 @@ namespace Rock.Communication
         #region SMS Properties
 
         /// <summary>
-        /// Gets or sets from number.
-        /// </summary>
-        /// <value>
-        /// From number.
-        /// </value>
-        [Obsolete( "Use SmsFromSystemPhoneNumberId instead." )]
-        [RockObsolete( "1.15" )]
-        int? SMSFromDefinedValueId { get; set; }
-
-        /// <summary>
         /// Gets or sets the system phone number identifier to use when sending an SMS message.
         /// </summary>
         /// <value>

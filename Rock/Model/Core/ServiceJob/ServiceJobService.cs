@@ -58,29 +58,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Schedules the Job to run immediately and waits for the job to finish.
-        /// Returns <c>false</c> with an <c>out</c> if the job is already running as a RunNow job or if an exception occurs.
-        /// </summary>
-        /// <param name="job">The job.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        [Obsolete]
-        [RockObsolete( "1.15" )]
-        public bool RunNow( ServiceJob job, out string errorMessage )
-        {
-            if ( RunNow( job ) )
-            {
-                errorMessage = string.Empty;
-                return true;
-            }
-            else
-            {
-                errorMessage = "Unable to run job.";
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Runs the now.
         /// </summary>
         /// <param name="job">The job.</param>

@@ -42,7 +42,7 @@ namespace Rock.Blocks.Workflow
     [Category( "Workflow" )]
     [Description( "Lists all the workflows." )]
     [IconCssClass( "ti ti-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Entry Page",
         Description = "Page used to launch a new workflow of the selected type.",
@@ -57,7 +57,8 @@ namespace Rock.Blocks.Workflow
         Key = AttributeKey.DefaultWorkflowType )]
 
     [Rock.SystemGuid.EntityTypeGuid( "1208bfdd-18cf-4539-b36b-9744b10d7635" )]
-    [Rock.SystemGuid.BlockTypeGuid( "ea76c61f-aa94-4e8b-b105-1effc0fea59a" )]
+    [Rock.SystemGuid.BlockTypeGuid( "C86C80DF-F2FD-47F8-81CF-7C5EA4100C3B" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "ea76c61f-aa94-4e8b-b105-1effc0fea59a" )]
     [CustomizedGrid]
     public class WorkflowList : RockEntityListBlockType<Rock.Model.Workflow>, IBreadCrumbBlock
     {

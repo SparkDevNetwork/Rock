@@ -371,7 +371,7 @@
         updateRefValue(pageDisplayBreadCrumb, props.modelValue.bag?.pageDisplayBreadCrumb ?? false);
         updateRefValue(pageDisplayIcon, props.modelValue.bag?.pageDisplayIcon ?? false);
         updateRefValue(pageDisplayDescription, props.modelValue.bag?.pageDisplayDescription ?? false);
-        updateRefValue(displayInNavWhen, props.modelValue.bag?.displayInNavWhen.toString() ?? "");
+        updateRefValue(displayInNavWhen, props.modelValue.bag?.displayInNavWhen?.toString() ?? "");
         updateRefValue(menuDisplayDescription, props.modelValue.bag?.menuDisplayDescription ?? false);
         updateRefValue(menuDisplayChildPages, props.modelValue.bag?.menuDisplayChildPages ?? false);
         updateRefValue(breadCrumbDisplayName, props.modelValue.bag?.breadCrumbDisplayName ?? false);

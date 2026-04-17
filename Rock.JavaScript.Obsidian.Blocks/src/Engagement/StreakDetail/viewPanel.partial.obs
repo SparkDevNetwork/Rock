@@ -64,7 +64,7 @@
             return valueBuilder.build();
         }
 
-        valueBuilder.addHtmlValue("", props.options?.personHTML ?? "");
+        valueBuilder.addHtmlValue("", props.options?.personHtml ?? "");
 
         return valueBuilder.build();
     });

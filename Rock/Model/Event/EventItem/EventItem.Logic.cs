@@ -119,23 +119,6 @@ namespace Rock.Model
             return attributes;
         }
 
-        /// <summary>
-        /// Get any alternate Ids that should be used when loading attribute value for this entity.
-        /// </summary>
-        /// <param name="rockContext"></param>
-        /// <returns>
-        /// A list of any alternate entity Ids that should be used when loading attribute values.
-        /// </returns>
-        [Obsolete( "Use GetAlternateEntityIdsByType instead." )]
-        [RockObsolete( "1.13" )]
-        public override List<int> GetAlternateEntityIds( RockContext rockContext )
-        {
-            //
-            // Find all the calendar Ids this event item is present on.
-            //
-            return this.EventCalendarItems.Select( c => c.Id ).ToList();
-        }
-
         /// <inheritdoc/>
         public override Dictionary<int, List<int>> GetAlternateEntityIdsByType( RockContext rockContext )
         {

@@ -752,9 +752,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
             var currentPerson = GetCurrentPerson();
             var workflowEntryBlockType = BlockTypeCache.Get( Rock.SystemGuid.BlockType.WORKFLOW_ENTRY );
-            var obsidianWorkflowEntryBlockType = BlockTypeCache.Get( Rock.SystemGuid.BlockType.OBSIDIAN_WORKFLOW_ENTRY );
             var pagesWithAWorkflowEntryBlock = PageCache.All()
-                .Where( p => p.Blocks.Any( b => b.BlockTypeId == workflowEntryBlockType.Id || b.BlockTypeId == obsidianWorkflowEntryBlockType.Id ) )
+                .Where( p => p.Blocks.Any( b => b.BlockTypeId == workflowEntryBlockType.Id ) )
                 .Where( p => p.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 .ToList();
 
@@ -762,7 +761,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
             foreach ( var page in pagesWithAWorkflowEntryBlock )
             {
-                var workflowEntryBlocks = page.Blocks.Where( b => b.BlockTypeId == workflowEntryBlockType.Id || b.BlockTypeId == obsidianWorkflowEntryBlockType.Id ).ToList();
+                var workflowEntryBlocks = page.Blocks.Where( b => b.BlockTypeId == workflowEntryBlockType.Id ).ToList();
 
                 foreach ( var block in workflowEntryBlocks )
                 {

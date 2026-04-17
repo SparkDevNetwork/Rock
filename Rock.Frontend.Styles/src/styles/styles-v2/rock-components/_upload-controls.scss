@@ -13,6 +13,10 @@
 
 
 // ======================== IMAGE UPLOAD STYLE ========================
+.control-wrapper:has(.imageupload-group) {
+  margin-bottom: var(--spacing-medium);
+}
+
 .imageupload-group,
 .fileupload-group {
   position:         relative;

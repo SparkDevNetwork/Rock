@@ -19,10 +19,14 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
+using Rock.Configuration;
 using Rock.Model;
+using Rock.Web;
 
 namespace Rock.Cms
 {
@@ -44,9 +48,7 @@ namespace Rock.Cms
             {
                 try
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    ThemeService.BuildTheme( message.ThemeId );
-#pragma warning restore CS0618 // Type or member is obsolete
+                    RockApp.Current.GetRequiredService<CssProcessor>().ClearCache();
                 }
                 catch ( Exception ex )
                 {

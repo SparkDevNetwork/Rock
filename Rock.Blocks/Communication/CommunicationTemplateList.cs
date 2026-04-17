@@ -168,7 +168,7 @@ namespace Rock.Blocks.Communication
                 .AddTextField( "supports", a => GetSupportsText( a ) )
                 .AddPersonField( "createdBy", a => a.CreatedByPersonAlias?.Person )
                 .AddTextField( "description", a => a.Description )
-                .AddTextField( "version", a => a.Version.ConvertToString() )
+                .AddTextField( "version", a => a.Version.GetDisplayName() )
                 .AddField( "isActive", a => a.IsActive )
                 .AddField( "isSystem", a => a.IsSystem )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );

@@ -17,7 +17,7 @@
         <div class="row">
             <div class="col-md-4">
                 <DropDownList v-model="workflow"
-                              :items="workflowItems"
+                              :items="workflowDropDownItems"
                               label="Workflow"
                               rules="required"
                               showBlankItem
@@ -36,10 +36,11 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import RequestTable from "./requestTable.partial.obs";
-    import { ref, PropType, watch } from "vue";
+    import { computed, ref, PropType, watch } from "vue";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { BulkRequestViewBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/bulkRequestViewBag";
+    import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionWorkflowBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ViewOptions } from "./types.partial";
     import { LaunchWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/launchWorkflowBag";
@@ -51,7 +52,7 @@
         },
 
         workflowItems: {
-            type: Array as PropType<ListItemBag[]>,
+            type: Array as PropType<ConnectionWorkflowBag[]>,
             required: true
         },
 
@@ -84,6 +85,23 @@
     }>();
 
     const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const requestOpportunityGuids = computed<string[]>(() => {
+        return [...new Set(
+            props.requestDetails
+                .map(r => r.connectionOpportunityGuid)
+                .filter((g): g is string => !!g)
+        )];
+    });
+
+    const workflowDropDownItems = computed<ListItemBag[]>(() => {
+        const opportunityGuids = requestOpportunityGuids.value;
+
+        return props.workflowItems
+            .filter(w => !w.connectionOpportunityGuid || opportunityGuids.includes(w.connectionOpportunityGuid))
+            .map(w => w.listItemBag)
+            .filter((item): item is ListItemBag => item != null);
+    });
 
     const workflow = ref();
 

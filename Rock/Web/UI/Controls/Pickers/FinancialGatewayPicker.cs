@@ -32,28 +32,6 @@ namespace Rock.Web.UI.Controls
     public class FinancialGatewayPicker : RockDropDownList
     {
         /// <summary>
-        /// Gets or sets a value indicating whether all gateways should be included. If set to false, only gateways
-        /// that are active and support rock initiated transactions will be included.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show all]; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Use IncludeInactive instead" )]
-        public bool ShowAll
-        {
-            get
-            {
-                return IncludeInactive;
-            }
-
-            set
-            {
-                IncludeInactive = value;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether inactive gateways should be included.
         /// This checks both the FinancialGateway model and the GatewayComponent.
         /// </summary>

@@ -42,7 +42,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular site." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -57,7 +57,8 @@ namespace Rock.Blocks.Cms
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "88ce8a0b-35b6-4427-817f-2fdf485d0241" )]
-    [Rock.SystemGuid.BlockTypeGuid( "3e935e45-4796-4389-ab1c-98d2403faedf" )]
+    [Rock.SystemGuid.BlockTypeGuid( "2AC06C36-869F-45F7-8C14-802781C5F70E" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "3e935e45-4796-4389-ab1c-98d2403faedf" )]
     public class SiteDetail : RockEntityDetailBlockType<Site, SiteBag>
     {
         #region Keys
@@ -105,9 +106,6 @@ namespace Rock.Blocks.Cms
 
             options.Themes = new List<ListItemBag>();
 
-            var physicalRootFolder = AppDomain.CurrentDomain.BaseDirectory;
-            string physicalFolder = Path.Combine( physicalRootFolder, RequestContext.ResolveRockUrl( "~~/" ).RemoveLeadingForwardslash() );
-
             var sites = SiteCache.All()
                 .Where( s => !string.IsNullOrWhiteSpace( s.Theme ) )
                 .DistinctBy( s => s.Theme )
@@ -119,6 +117,9 @@ namespace Rock.Blocks.Cms
                 } );
 
             options.Themes.AddRange( sites );
+
+            var siteEntityType = EntityTypeCache.Get( "Rock.Model.Site" );
+            options.IsIndexingEnabled = siteEntityType != null && siteEntityType.IsIndexingEnabled;
 
             return options;
         }
@@ -961,18 +962,16 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult CompileTheme( string idKey )
         {
-            var rockContext = new RockContext();
-            SiteService siteService = new SiteService( rockContext );
-            Site site = siteService.Get( idKey );
+            var siteService = new SiteService( RockContext );
+            var site = siteService.Get( idKey );
 
             if ( site == null )
             {
                 return ActionBadRequest( "Unable to find the requested site." );
             }
 
-            string messages;
             var theme = new Rock.Web.UI.RockTheme( site.Theme );
-            bool success = theme.Compile( out messages );
+            bool success = theme.Compile( out var messages );
 
             if ( success )
             {
@@ -980,7 +979,7 @@ namespace Rock.Blocks.Cms
             }
             else
             {
-                return ActionBadRequest( string.Format( "An error occurred compiling the theme {0}. Message: {1}.", site.Theme, messages ) );
+                return ActionBadRequest( $"An error occurred compiling the theme {site.Theme}. Message: {messages}." );
             }
         }
 

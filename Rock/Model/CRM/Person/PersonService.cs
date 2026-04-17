@@ -648,18 +648,6 @@ namespace Rock.Model
         private class PersonMatchResult
         {
             /// <summary>
-            /// Initializes a new instance of the <see cref="PersonMatchResult"/> class.
-            /// </summary>
-            /// <param name="query">The query.</param>
-            /// <param name="person">The person.</param>
-            [RockObsolete( "1.13" )]
-            [Obsolete( "Use the constructor that takes a list of AccountProtectionProfiles" )]
-            public PersonMatchResult( PersonMatchQuery query, PersonSummary person )
-                : this( query, person, new List<AccountProtectionProfile> { AccountProtectionProfile.Extreme, AccountProtectionProfile.High, AccountProtectionProfile.Medium } )
-            {
-            }
-
-            /// <summary>
             /// Initializes a new instance of the <see cref="PersonMatchResult" /> class.
             /// </summary>
             /// <param name="query">The person match query.</param>

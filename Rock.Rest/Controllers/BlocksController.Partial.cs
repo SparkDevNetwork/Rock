@@ -131,61 +131,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Executes an action handler on a specific block.
         /// </summary>
-        /// <param name="blockGuid">The block unique identifier.</param>
-        /// <param name="actionName">Name of the action.</param>
-        /// <returns></returns>
-        [Authenticate]
-        [HttpGet]
-        [System.Web.Http.Route( "api/blocks/action/{blockGuid}/{actionName}" )]
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Does not provide access to site-level or layout-level blocks. Use api/blocks/actions/{pageGuid}/{blockGuid}/{actionName} instead.")]
-        [Rock.SystemGuid.RestActionGuid( "E025B9B5-060A-4853-AC78-0D5B850771F8" )]
-        public async Task<IHttpActionResult> BlockAction( Guid blockGuid, string actionName )
-        {
-            return await v2.BlockActionsController.ProcessAction( this, null, blockGuid, actionName, null, _serviceProvider );
-        }
-
-        /// <summary>
-        /// Executes an action handler on a specific block.
-        /// </summary>
-        /// <param name="blockGuid">The block unique identifier.</param>
-        /// <param name="actionName">Name of the action.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
-        [Authenticate]
-        [HttpPost]
-        [System.Web.Http.Route( "api/blocks/action/{blockGuid}/{actionName}" )]
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Does not provide access to site-level or layout-level blocks. Use api/blocks/actions/{pageGuid}/{blockGuid}/{actionName} instead." )]
-        [Rock.SystemGuid.RestActionGuid( "227011DC-2242-4DBA-A931-526DC52951EA" )]
-        public async Task<IHttpActionResult> BlockActionAsPost( string blockGuid, string actionName, [NakedBody] string parameters )
-        {
-            if ( parameters == string.Empty )
-            {
-                return await v2.BlockActionsController.ProcessAction( this, null, blockGuid.AsGuidOrNull(), actionName, null, _serviceProvider );
-            }
-
-            //
-            // We have to manually parse the JSON data, otherwise any strings
-            // that look like dates get converted to Date objects. This causes
-            // problems because then when we later stuff that Date object into
-            // an actual string, the format has been changed. This happens, for
-            // example, with Attribute Values.
-            //
-            using ( var stringReader = new StringReader( parameters ) )
-            {
-                using ( var jsonReader = new JsonTextReader( stringReader ) { DateParseHandling = DateParseHandling.None } )
-                {
-                    var parameterToken = JToken.ReadFrom( jsonReader );
-
-                    return await v2.BlockActionsController.ProcessAction( this, null, blockGuid.AsGuidOrNull(), actionName, parameterToken, _serviceProvider );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Executes an action handler on a specific block.
-        /// </summary>
         /// <param name="pageGuid">The page unique identifier.</param>
         /// <param name="blockGuid">The block unique identifier.</param>
         /// <param name="actionName">Name of the action.</param>

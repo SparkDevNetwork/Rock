@@ -65,7 +65,7 @@ You can view an online version of this email here:
         Order = 4)]
 
     [IntegerField( "Bulk Email Threshold",
-        Description = "Auto-hides the 'Is Bulk Email' option when starting a new communication if the recipient count exceeds the specified threshold.",
+        Description = "Automatically sets the Message Classification to Bulk / Marketing when the recipient count exceeds this threshold to help meet bulk messaging rules.",
         IsRequired = false,
         Key = AttributeKey.BulkEmailThreshold,
         Order = 5 )]

@@ -9,7 +9,7 @@
             <i :class="dockedChatBotIcon"></i>
         </RockButton>
 
-        <DockedPanel v-if="!config.error"
+        <DockedPanel v-if="!config.error && isDockedPanelReady"
                      v-model="isDockedChatOpen"
                      v-model:width="dockedChatWidth"
                      canResize
@@ -48,7 +48,7 @@
     <div v-else class="block-content-main chat-container styled-scroll" ref="chatContainer">
         <div class="sessions-column">
             <SessionList :sessions="sessions"
-                         :sessionId="sessionId"
+                         :sessionIdKey="sessionIdKey"
                          @selectSession="onSelectSession"
                          @deleteSession="onDeleteSession" />
 
@@ -98,6 +98,7 @@
     import type { ChatBotConfigurationBag, ExtendedChatMessageBag, ChatAnchorBag, SendMessageRequestBag, SendMessageResponseBag, ChatMessageBag, ChatSessionBag, SessionState } from "./ChatBot/types";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { debounce } from "@Obsidian/Utility/util";
+    import { useSuspense } from "@Obsidian/Utility/suspense";
 
     const enum AuthorRole {
         User = 0,
@@ -105,9 +106,10 @@
         Assistant = 1
     }
 
-    const config = useConfigurationValues<ChatBotConfigurationBag>();
+    const config = ref(useConfigurationValues<ChatBotConfigurationBag>());
     const invokeBlockAction = useInvokeBlockAction();
     const invokeStreamingBlockAction = useInvokeStreamingBlockAction();
+    const suspense = useSuspense();
 
     // #region Values
 
@@ -117,26 +119,30 @@
 
     const message = ref("");
     const isSending = ref(false);
-    const messages = reactive<ExtendedChatMessageBag[]>(config.messages ?? []);
+    const messages = reactive<ExtendedChatMessageBag[]>(config.value.messages ?? []);
     const liveMessage = ref<ExtendedChatMessageBag | null>(null);
-    const sessions = reactive(config.sessions ?? []);
-    const anchors = reactive(config.anchors ?? []);
-    const sessionId = ref(config.sessionId ?? 0);
+    const sessions = reactive(config.value.sessions ?? []);
+    const anchors = reactive(config.value.anchors ?? []);
+    const sessionIdKey = ref(config.value.sessionIdKey ?? "");
 
     const isDebugEnabled = ref(false);
     const isMessageDebugVisible = ref(false);
     const debugMessage = ref<ExtendedChatMessageBag | null>(null);
 
-    const isDockedMode = config.isDockedMode;
     const dockedChatContainer = ref<HTMLDivElement>();
     let previousDockedScrollTop: number | null = null;
     const isDockedChatOpen = ref(false);
+    const isDockedPanelReady = ref(true);
     const dockedChatWidth = ref("500px");
     const saveSessionData = debounce(saveSessionDataInternal, 100);
 
     // #endregion
 
     // #region Computed Values
+
+    const isDockedMode = computed((): boolean => {
+        return config.value.isDockedMode;
+    });
 
     const isSendDisabled = computed((): boolean => {
         return isSending.value || !message.value;
@@ -147,7 +153,7 @@
     });
 
     const dockedChatBotIcon = computed((): string => {
-        return !config.error && isDockedChatOpen.value
+        return !config.value.error && isDockedChatOpen.value
             ? "ti ti-sparkles"
             : "ti ti-sparkles";
     });
@@ -157,7 +163,7 @@
     // #region Functions
 
     function updateSessionDate(): void {
-        const session = sessions.find(s => s.id === sessionId.value);
+        const session = sessions.find(s => s.idKey === sessionIdKey.value);
 
         if (session) {
             session.lastMessageDateTime = RockDateTime.now().toISOString();
@@ -222,6 +228,37 @@
         });
     }
 
+    async function resumeDockedSession(): Promise<void> {
+        const storageKey = "Rock.AI.ChatBot.DockedSessionKey";
+        const sessionKey = sessionStorage.getItem(storageKey);
+
+        const result = await invokeBlockAction<ChatBotConfigurationBag>("GetDockedConfiguration", { sessionKey });
+
+        if (result.isSuccess && result.data) {
+            config.value = result.data;
+
+            sessionIdKey.value = result.data.sessionIdKey ?? "";
+            messages.splice(0, messages.length, ...(result.data.messages ?? []));
+            anchors.splice(0, anchors.length, ...(result.data.anchors ?? []));
+            sessions.splice(0, sessions.length, ...(result.data.sessions ?? []));
+
+            isDockedPanelReady.value = true;
+            isDebugEnabled.value = config.value.isDebugAllowed === true && localStorage.getItem("Rock.AI.ChatBot.DebugEnabled") === "true";
+
+            sessionStorage.setItem(storageKey, result.data.sessionIdKey ?? "");
+
+            // Remove the loader element if it is present, this is used to make it
+            // appear that the chat bot is still on the screen between page
+            // navigation events.
+            document.getElementById("docked-chat-bot-loader")?.remove();
+
+            saveSessionData();
+        }
+        else {
+            console.error("Failed to get docked chat configuration:", result.errorMessage);
+        }
+    }
+
     // #endregion
 
     // #region Event Handlers
@@ -255,7 +292,7 @@
         try {
             const request: SendMessageRequestBag = {
                 message: msg,
-                sessionId: sessionId.value,
+                sessionIdKey: sessionIdKey.value,
                 isDebugEnabled: isDebugEnabled.value
             };
 
@@ -342,7 +379,7 @@
             const entityTypeName = parts[1];
             const entityId = parseInt(parts[2]);
 
-            const result = await invokeBlockAction<ChatAnchorBag[]>("CreateAnchor", { sessionId: sessionId.value, entityTypeName, entityId });
+            const result = await invokeBlockAction<ChatAnchorBag[]>("CreateAnchor", { sessionIdKey: sessionIdKey.value, entityTypeName, entityId });
 
             if (result.isSuccess && result.data) {
                 anchors.splice(0, anchors.length, ...result.data);
@@ -357,7 +394,7 @@
     }
 
     async function onDeleteAnchor(entityTypeId: number): Promise<void> {
-        const result = await invokeBlockAction("DeleteAnchor", { sessionId: sessionId.value, entityTypeId });
+        const result = await invokeBlockAction("DeleteAnchor", { sessionIdKey: sessionIdKey.value, entityTypeId });
 
         if (result.isSuccess) {
             const index = anchors.findIndex(a => a.entityTypeId === entityTypeId);
@@ -370,15 +407,15 @@
         }
     }
 
-    async function onSelectSession(id: number): Promise<void> {
-        if (sessionId.value === id) {
+    async function onSelectSession(id: string): Promise<void> {
+        if (sessionIdKey.value === id) {
             return;
         }
 
-        const result = await invokeBlockAction<{ messages: ChatMessageBag[], anchors: ChatAnchorBag[] }>("LoadSession", { sessionId: id });
+        const result = await invokeBlockAction<{ messages: ChatMessageBag[], anchors: ChatAnchorBag[] }>("LoadSession", { sessionIdKey: id });
 
         if (result.isSuccess && result.data) {
-            sessionId.value = id;
+            sessionIdKey.value = id;
             messages.splice(0, messages.length, ...result.data.messages);
             anchors.splice(0, anchors.length, ...result.data.anchors);
             updateSessionOrder();
@@ -395,7 +432,7 @@
         const result = await invokeBlockAction<ChatSessionBag>("StartNewSession");
 
         if (result.isSuccess && result.data) {
-            sessionId.value = result.data.id;
+            sessionIdKey.value = result.data.idKey ?? "";
             messages.splice(0, messages.length);
             anchors.splice(0, anchors.length);
             sessions.push(result.data);
@@ -412,13 +449,13 @@
             return;
         }
 
-        const result = await invokeBlockAction("DeleteSession", { sessionId: session.id });
+        const result = await invokeBlockAction("DeleteSession", { sessionIdKey: session.idKey });
 
         if (result.isSuccess) {
-            const index = sessions.findIndex(s => s.id === session.id);
+            const index = sessions.findIndex(s => s.idKey === session.idKey);
             if (index !== -1) {
                 sessions.splice(index, 1);
-                await onSelectSession(sessions[sessions.length - 1].id);
+                await onSelectSession(sessions[sessions.length - 1].idKey ?? "");
             }
         }
         else {
@@ -431,7 +468,7 @@
             return;
         }
 
-        const result = await invokeBlockAction("ClearSession", { sessionId: sessionId.value });
+        const result = await invokeBlockAction("ClearSession", { sessionIdKey: sessionIdKey.value });
 
         if (result.isSuccess) {
             messages.splice(0, messages.length);
@@ -455,12 +492,16 @@
         isMessageDebugVisible.value = true;
     }
 
-    function onToggleDockedChatClick(e: Event): void {
-        isDockedChatOpen.value = !isDockedChatOpen.value;
-
+    async function onToggleDockedChatClick(e: Event): Promise<void> {
         if (e.currentTarget instanceof HTMLElement) {
             e.currentTarget.blur();
         }
+
+        if (sessionIdKey.value === "") {
+            await resumeDockedSession();
+        }
+
+        isDockedChatOpen.value = !isDockedChatOpen.value;
     }
 
     // #endregion
@@ -512,16 +553,24 @@
             messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight);
             sessionsContainer.value?.scrollTo(0, sessionsContainer.value.scrollHeight);
         }
-
-        // Remove the loader element if it is present, this is used to make it
-        // appear that the chat bot is still on the screen between page
-        // navigation events.
-        document.getElementById("docked-chat-bot-loader")?.remove();
     });
 
     onBeforeUnmount(() => {
         messagesContainer.value?.removeEventListener("scroll", saveSessionData);
     });
 
-    isDebugEnabled.value = config.isDebugAllowed && localStorage.getItem("Rock.AI.ChatBot.DebugEnabled") === "true";
+    isDebugEnabled.value = config.value.isDebugAllowed === true && localStorage.getItem("Rock.AI.ChatBot.DebugEnabled") === "true";
+
+    if (isDockedMode.value && !config.value.error) {
+        isDockedPanelReady.value = false;
+
+        if (isDockedChatOpen.value) {
+            if (suspense) {
+                suspense.addOperation(resumeDockedSession());
+            }
+            else {
+                resumeDockedSession();
+            }
+        }
+    }
 </script>

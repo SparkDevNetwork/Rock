@@ -67,13 +67,6 @@ namespace Rock.SystemGuid
         public const string GROUP_FINANCE_USERS = "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9";
 
         /// <summary>
-        /// The security group used by mobile app
-        /// </summary>
-        /// <remarks>Use <see cref="GROUP_MOBILE_APPLICATION_USERS"/></remarks>
-        [RockObsolete( "1.15" )]
-        public const string GROUP_MOBILE_APP = "EDD336D5-1429-41D9-8D41-2581A05F0E16";
-
-        /// <summary>
         /// Get the photo request application group
         /// </summary>
         public const string GROUP_PHOTO_REQUEST = "2108EF9C-10DC-4466-973D-D25AAB7818BE";
