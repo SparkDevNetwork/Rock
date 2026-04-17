@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc && vite build",
-    "watch": "vite build --watch"
+    "watch": "vite build --watch --minify false"
   },
   "devDependencies": {
     "@types/node": "^25.5.2",
