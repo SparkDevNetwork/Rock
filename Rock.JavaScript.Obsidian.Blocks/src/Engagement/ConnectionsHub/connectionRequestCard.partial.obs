@@ -13,57 +13,38 @@
                     @click="selectRequest">
             <template #secondaryHeaderActions>
                 <template v-if="canEditConnectionRequests">
-                    <li>
-                        <button type="button"
-                                @click="() => emit('changeState', ConnectionState.Active, connectionRequest)"
-                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                            <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
-                        </button>
-                    </li>
-                    <li>
-                        <button type="button"
-                                @click="() => emit('changeState', ConnectionState.Inactive, connectionRequest)"
-                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                            <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
-                        </button>
-                    </li>
-                    <li v-if="options?.isFutureFollowUpEnabled">
-                        <button type="button"
-                                @click="() => emit('changeState', ConnectionState.FutureFollowUp, connectionRequest)"
-                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                            <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
-                        </button>
-                    </li>
-                    <li>
-                        <button type="button"
-                                @click="() => emit('changeState', ConnectionState.Connected, connectionRequest)"
-                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                            <i class="ti ti-circle-check pr-spacing-sm text-interface-medium"></i>Mark Complete
-                        </button>
-                    </li>
+                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                         @click="emit('changeState', ConnectionState.Active, connectionRequest)">
+                        <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
+                    </div>
+                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                         @click="emit('changeState', ConnectionState.Inactive, connectionRequest)">
+                        <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
+                    </div>
+                    <div v-if="options?.isFutureFollowUpEnabled"
+                         class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                         @click="emit('changeState', ConnectionState.FutureFollowUp, connectionRequest)">
+                        <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
+                    </div>
+                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                         @click="emit('changeState', ConnectionState.Connected, connectionRequest)">
+                        <i class="ti ti-circle-check pr-spacing-sm text-interface-medium"></i>Mark Complete
+                    </div>
                 </template>
-                <li>
-                    <button type="button"
-                            @click="() => emit('launchWorkflow', connectionRequest)"
-                            class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                        <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
-                    </button>
-                </li>
+                <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                     @click="emit('launchWorkflow', connectionRequest)">
+                    <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
+                </div>
                 <template v-if="canEditConnectionRequests">
-                    <li v-if="options?.isRequestSecurityEnabled">
-                        <button type="button"
-                                @click="() => emit('showSecurity', connectionRequestRow.idKey)"
-                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                            <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
-                        </button>
-                    </li>
-                    <li>
-                        <button type="button"
-                                @click="() => emit('delete', connectionRequest)"
-                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold text-danger">
-                            <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
-                        </button>
-                    </li>
+                    <div v-if="options?.isRequestSecurityEnabled"
+                         class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                         @click="emit('showSecurity', connectionRequestRow.idKey)">
+                        <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
+                    </div>
+                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold text-danger"
+                         @click="emit('delete', connectionRequest)">
+                        <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
+                    </div>
                 </template>
             </template>
             <template v-if="connectionState !== ConnectionState.Active" #subheader>

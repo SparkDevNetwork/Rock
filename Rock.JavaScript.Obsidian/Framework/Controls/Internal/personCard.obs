@@ -13,12 +13,15 @@
                           v-tooltip="campusTooltip">
                         {{ campusShortCode }}
                     </span>
-                    <div class="dropdown dropdown-right" :class="{ 'open': isSecondaryActionDropdownOpen }">
-                        <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown" @click.stop="toggleDropdown"></i>
-                        <ul class="dropdown-menu" @click.stop="isSecondaryActionDropdownOpen = false">
+                    <DropDownContent v-model="isSecondaryActionDropdownOpen" enableFlip placement="bottom-end" preventAnchorClickPropagation>
+                        <template #anchor>
+                            <i class="ti ti-dots-vertical cursor-pointer"></i>
+                        </template>
+                        <div class="d-flex flex-column bg-interface-softest dropdown-content text-sm"
+                             @click.stop="isSecondaryActionDropdownOpen = false">
                             <slot name="secondaryHeaderActions" />
-                        </ul>
-                    </div>
+                        </div>
+                    </DropDownContent>
                 </div>
             </div>
         </template>
@@ -46,6 +49,7 @@
 
 <script setup lang="ts">
     import Card from "./card.obs";
+    import DropDownContent from "../dropDownContent.obs";
     import PersonAvatar from "../personAvatar.obs";
     import { ref, PropType, watch, computed } from "vue";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
@@ -101,7 +105,4 @@
         };
     };
 
-    function toggleDropdown(): void {
-        isSecondaryActionDropdownOpen.value = !isSecondaryActionDropdownOpen.value;
-    }
 </script>

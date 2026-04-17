@@ -335,64 +335,51 @@
                         width="52"
                         itemClass="grid-cell-overflow">
                     <template #format="{ row }">
-                        <div :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === row.idKey }]">
-                            <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown" @click.stop="toggleGridRowDropdown(row.idKey)"></i>
-                            <ul class="dropdown-menu">
+                        <DropDownContent :modelValue="openDropdownIndex === row.idKey"
+                                         @update:modelValue="val => openDropdownIndex = val ? row.idKey : null"
+                                         enableFlip
+                                         placement="bottom-end"
+                                         preventAnchorClickPropagation>
+                            <template #anchor>
+                                <i class="ti ti-dots-vertical cursor-pointer"></i>
+                            </template>
+                            <div class="d-flex flex-column bg-interface-softest dropdown-content text-sm">
                                 <template v-if="canEditConnectionRequests">
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.Active, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.Inactive, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
-                                        </button>
-                                    </li>
-                                    <li v-if="box.options?.isFutureFollowUpEnabled">
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.FutureFollowUp, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.Connected, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-circle-check pr-spacing-sm text-interface-medium"></i>Mark Complete
-                                        </button>
-                                    </li>
+                                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                         @click.stop="showChangeStateModal(ConnectionState.Active, row)">
+                                        <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
+                                    </div>
+                                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                         @click.stop="showChangeStateModal(ConnectionState.Inactive, row)">
+                                        <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
+                                    </div>
+                                    <div v-if="box.options?.isFutureFollowUpEnabled"
+                                         class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                         @click.stop="showChangeStateModal(ConnectionState.FutureFollowUp, row)">
+                                        <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
+                                    </div>
+                                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                         @click.stop="showChangeStateModal(ConnectionState.Connected, row)">
+                                        <i class="ti ti-circle-check pr-spacing-sm text-interface-medium"></i>Mark Complete
+                                    </div>
                                 </template>
-                                <li>
-                                    <button type="button"
-                                            @click.stop="showLaunchWorkflowModal(row)"
-                                            class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                        <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
-                                    </button>
-                                </li>
+                                <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                     @click.stop="showLaunchWorkflowModal(row)">
+                                    <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
+                                </div>
                                 <template v-if="canEditConnectionRequests">
-                                    <li v-if="box.options?.isRequestSecurityEnabled">
-                                        <button type="button"
-                                                @click.stop="showSecurityModal(row.idKey)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showDeleteRequestModal(row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold text-danger">
-                                            <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
-                                        </button>
-                                    </li>
+                                    <div v-if="box.options?.isRequestSecurityEnabled"
+                                         class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                         @click.stop="showSecurityModal(row.idKey)">
+                                        <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
+                                    </div>
+                                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold text-danger"
+                                         @click.stop="showDeleteRequestModal(row)">
+                                        <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
+                                    </div>
                                 </template>
-                            </ul>
-                        </div>
+                            </div>
+                        </DropDownContent>
                     </template>
                 </Column>
             </Grid>
@@ -908,6 +895,7 @@
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
     import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns, SecurityColumn, pickExistingValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import GroupedPanel from "@Obsidian/Controls/Internal/groupedPanel.obs";
@@ -1977,10 +1965,6 @@
         if (dockedPanelDetailsBox.value?.entity) {
             dockedPanelDetailsBox.value.entity.reminderCount++;
         }
-    }
-
-    function toggleGridRowDropdown(key: string | null | undefined): void {
-        openDropdownIndex.value = openDropdownIndex.value === key ? null : key;
     }
 
     /**
