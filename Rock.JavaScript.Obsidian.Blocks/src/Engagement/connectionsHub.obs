@@ -386,8 +386,25 @@
         </template>
         <template #emptyView>
             <template v-if="areRequestsLoading">
-                <div class="skeleton-list">
-                    <div v-for="index in skeletonCount" :key="index" class="skeleton rounded" style="height: 300px"></div>
+                <!-- Board View Skeleton -->
+                <div v-if="selectedView === 'board'" class="skeleton-board">
+                    <div v-for="columnIndex in skeletonCount" :key="`board-col-${columnIndex}`" class="skeleton-board-column">
+                        <div class="skeleton skeleton-heading"></div>
+                        <div v-for="cardIndex in 4" :key="`board-card-${columnIndex}-${cardIndex}`"
+                             class="skeleton rounded skeleton-board-card"></div>
+                    </div>
+                </div>
+                <!-- Grid View Skeleton -->
+                <div v-else-if="selectedView === 'grid'" class="d-flex flex-column">
+                    <div v-for="rowIndex in 16" :key="`grid-row-${rowIndex}`" class="skeleton-grid-row" :class="{ 'bg-interface-softer': rowIndex % 2 === 0 }">
+                        <div v-for="colIndex in 8" :key="`grid-col-${colIndex}`"
+                             :style="colIndex % 2 === 0 ? 'max-width: 260px;' : 'max-width: 160px;'"
+                             class="skeleton skeleton-text m-spacing-xs" />
+                    </div>
+                </div>
+                <!-- List View Skeleton -->
+                <div v-else class="skeleton-list">
+                    <div v-for="index in skeletonCount" :key="`list-${index}`" class="skeleton rounded" style="height: 300px"></div>
                 </div>
             </template>
             <template v-else>
@@ -803,6 +820,48 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-medium);
+}
+
+.skeleton-board {
+    display: flex;
+    gap: var(--spacing-large);
+    overflow-x: hidden;
+    height: 100%;
+}
+
+.skeleton-board-column {
+    flex: 0 0 380px;
+    width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    padding: var(--spacing-medium);
+    background-color: var(--color-interface-softer);
+    border-radius: var(--rounded-large);
+}
+
+.skeleton-board-column .skeleton-heading {
+    background-color: var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+    flex-shrink: 0;
+    margin: var(--spacing-small) 0;
+}
+
+.skeleton-board-card {
+    height: 180px;
+    background-color: var(--color-interface-soft);
+}
+
+.skeleton-grid-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-small) var(--spacing-medium);
+    border-bottom: 1px solid var(--color-interface-softer);
+}
+
+.skeleton-grid-row .skeleton {
+    background-color: var(--color-interface-soft);
 }
 
 .empty-list {
