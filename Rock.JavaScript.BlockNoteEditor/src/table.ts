@@ -1,6 +1,7 @@
-import { BlockNoteEditor, createTableBlockSpec, type Extension, type ExtensionOptions } from "@blocknote/core";
+import { createTableBlockSpec, type Extension, type ExtensionOptions } from "@blocknote/core";
 import { TableHandlesExtension, type TableHandlesState } from "@blocknote/core/extensions";
 import { Hover, Menu } from "./functions";
+import type { RockBlockNoteEditor } from "./schema";
 
 const tableBlockSpec = createTableBlockSpec();
 
@@ -36,7 +37,7 @@ tableBlockSpec.extensions = tableBlockSpec.extensions?.map(fn => {
  */
 export class TableHandles {
     /** BlockNote editor instance that this handle controller operates on. */
-    private readonly editor: BlockNoteEditor;
+    private readonly editor: RockBlockNoteEditor;
 
     /** Root container used for positioning and for hosting the handle elements. */
     private readonly container: HTMLElement;
@@ -69,7 +70,7 @@ export class TableHandles {
      * @param editor The BlockNote editor instance.
      * @param container The container element used for positioning and hosting the handle elements.
      */
-    constructor(editor: BlockNoteEditor, container: HTMLElement) {
+    constructor(editor: RockBlockNoteEditor, container: HTMLElement) {
         this.editor = editor;
         this.container = container;
 

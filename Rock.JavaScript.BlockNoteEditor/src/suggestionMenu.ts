@@ -1,6 +1,6 @@
-import type { BlockNoteEditor } from "@blocknote/core";
 import { getDefaultSlashMenuItems, SuggestionMenu as SuggestionMenuExension, type SuggestionMenuState, type DefaultSuggestionItem, filterSuggestionItems } from "@blocknote/core/extensions";
 import { Hover } from "./functions";
+import type { RockBlockNoteEditor } from "./schema";
 
 const iconTable: Record<string, string> = {
     "heading": "ti ti-h-1",
@@ -41,7 +41,7 @@ const supportedBlockKeys = [
 ]
 
 export class SuggestionMenu {
-    private readonly editor: BlockNoteEditor;
+    private readonly editor: RockBlockNoteEditor;
 
     private readonly container: HTMLElement;
 
@@ -53,7 +53,7 @@ export class SuggestionMenu {
     private filteredMenuItems: DefaultSuggestionItem[] = [];
     private selectedIndex: number = 0;
 
-    constructor(editor: BlockNoteEditor, container: HTMLElement) {
+    constructor(editor: RockBlockNoteEditor, container: HTMLElement) {
         this.editor = editor;
         this.container = container;
         this.defaultMenuItems = getDefaultSlashMenuItems(editor)

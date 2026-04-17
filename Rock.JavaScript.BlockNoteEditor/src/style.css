@@ -167,6 +167,11 @@ html[theme="dark"] .bn-container {
   color: #fff;
 }
 
+/* Embed (File/Video) block overrides */
+.bn-file-block-content-wrapper .bn-resize-handle {
+  display: none;
+}
+
 /* Suggestion menu */
 .bn-menu.bn-suggestion-menu {
   max-height: 300px;

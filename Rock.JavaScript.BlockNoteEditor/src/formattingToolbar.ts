@@ -1,6 +1,6 @@
-import type { BlockNoteEditor } from "@blocknote/core";
 import { FormattingToolbarExtension, ShowSelectionExtension } from "@blocknote/core/extensions";
 import { computePosition } from "@floating-ui/dom";
+import type { RockBlockNoteEditor } from "./schema";
 
 type ToolbarElement = {
     element: HTMLElement;
@@ -63,13 +63,13 @@ export interface IFormattingToolbarItem {
 }
 
 export class FormattingToolbar {
-    public readonly editor: BlockNoteEditor;
+    public readonly editor: RockBlockNoteEditor;
     private readonly toolbar: HTMLElement;
     private readonly showSelectionExtension: ReturnType<ReturnType<typeof ShowSelectionExtension>>;
     private readonly formattingToolbarExtension: ReturnType<ReturnType<typeof FormattingToolbarExtension>>;
     private readonly items: ToolbarElement[] = [];
 
-    constructor(editor: BlockNoteEditor, items: IFormattingToolbarItem[]) {
+    constructor(editor: RockBlockNoteEditor, items: IFormattingToolbarItem[]) {
         this.editor = editor;
         this.toolbar = this.createToolbar(items);
         this.showSelectionExtension = editor.getExtension(ShowSelectionExtension)!;

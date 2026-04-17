@@ -1,6 +1,6 @@
-import type { Block, BlockNoteEditor } from "@blocknote/core";
 import { createIconButton } from "./functions";
 import { SideMenuExtension, SuggestionMenu } from "@blocknote/core/extensions";
+import type { RockBlock, RockBlockNoteEditor } from "./schema";
 
 export class SideMenu {
     public readonly element: HTMLDivElement;
@@ -8,9 +8,9 @@ export class SideMenu {
     private addButton: HTMLButtonElement;
     private actionButton: HTMLButtonElement;
 
-    private block: Block<any, any, any> | null = null;
+    private block: RockBlock | null = null;
 
-    constructor(editor: BlockNoteEditor, container: HTMLElement) {
+    constructor(editor: RockBlockNoteEditor, container: HTMLElement) {
         this.addButton = createIconButton('ti ti-plus');
         this.addButton.type = "button";
         this.actionButton = createIconButton('ti ti-grip-vertical');
@@ -70,7 +70,7 @@ export class SideMenu {
                 return;
             }
 
-            this.block = state.currentVal.block;
+            this.block = state.currentVal.block as RockBlock;
             const box = state.currentVal.referencePos;
 
             container.appendChild(this.element);
