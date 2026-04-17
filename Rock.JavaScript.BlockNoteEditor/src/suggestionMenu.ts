@@ -88,6 +88,7 @@ export class SuggestionMenu {
         }
 
         if (!this.hover) {
+            this.selectedIndex = 0;
             this.hover = new Hover(this.menu, this.container, {
                 menu: true,
                 autoDismiss: true,
@@ -97,7 +98,6 @@ export class SuggestionMenu {
         }
 
         const filteredItems = filterSuggestionItems(this.defaultMenuItems, current.query);
-        this.selectedIndex = 0;
         this.updateMenu(this.menu, filteredItems);
 
         this.hover.show(current.referencePos, "bottom-start");
@@ -185,6 +185,16 @@ export class SuggestionMenu {
 
         if (this.menu) {
             this.updateMenu(this.menu, this.filteredMenuItems);
+
+            const selectedItem = this.filteredMenuItems[this.selectedIndex];
+
+            if (selectedItem) {
+                const selectedElement = this.menu.querySelector(`li[data-menu-key="${selectedItem.key}"]`);
+
+                if (selectedElement) {
+                    selectedElement.scrollIntoView({ behavior: "instant", block: "nearest" });
+                }
+            }
         }
     }
 
