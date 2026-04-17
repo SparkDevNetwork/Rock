@@ -6,7 +6,7 @@ export class FilePanel {
 
     private blockId: string | undefined;
 
-    constructor(editor: RockBlockNoteEditor, container: HTMLElement, fileTypeGuid?: string | null) {
+    constructor(editor: RockBlockNoteEditor, container: HTMLElement) {
         this.fileElement = document.createElement("input");
         this.fileElement.type = "file";
         this.fileElement.style.display = "none";
@@ -29,9 +29,7 @@ export class FilePanel {
             const file = this.fileElement.files[0];
 
             try {
-                const isImage = editor.getBlock(blockId)?.type === "image";
-
-                let updateData = await uploadBinaryFile(file, fileTypeGuid, isImage);
+                let updateData = await editor.uploadFile(file, blockId);
 
                 if (typeof updateData === "string") {
                     updateData = {
@@ -68,7 +66,7 @@ export class FilePanel {
     }
 }
 
-export async function uploadBinaryFile(file: File, fileTypeGuid: string | null | undefined, isImage?: boolean): Promise<string | Record<any, any>> {
+export async function uploadBinaryFile(file: File, fileTypeGuid: string | null | undefined): Promise<string | Record<any, any>> {
     const data = new FormData();
     fileTypeGuid = fileTypeGuid ?? "C1142570-8CD6-4A20-83B1-ACB47C1CD377";
 
@@ -83,6 +81,7 @@ export async function uploadBinaryFile(file: File, fileTypeGuid: string | null |
         throw new Error("Network response was not ok");
     }
 
+    const isImage = file.type.startsWith("image/");
     const uploadedFile = await response.json();
 
     if (uploadedFile.Id && uploadedFile.FileName) {

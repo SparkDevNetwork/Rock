@@ -1,7 +1,6 @@
 import { BlockNoteSchema, createCodeBlockSpec, defaultBlockSpecs } from "@blocknote/core";
 import { tableBlockSpec } from "./table";
 import { codeBlockOptions } from "./codeOptions";
-import { createImageBlockSpec } from "./image";
 
 export const rockSchema = BlockNoteSchema.create({
     blockSpecs: {
@@ -11,7 +10,6 @@ export const rockSchema = BlockNoteSchema.create({
             ...codeBlockOptions,
             defaultLanguage: "text",
         }),
-        image: createImageBlockSpec(),
     }
 });
 
