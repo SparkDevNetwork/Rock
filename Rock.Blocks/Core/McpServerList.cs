@@ -89,7 +89,7 @@ namespace Rock.Blocks.Core
             // If done in a block action, the API Key would be included in the API response which could be logged and
             // would be more easily accessible to users inspecting network requests,
             // but including it in the page's HTML means it is less likely to be accidentally exposed in logs and is not included in API responses.
-            var apiKey = GetOrCreateMcpApiKeyForCurrentPerson();
+            var apiKey = Types.Mobile.Cms.VoiceAgent.GetOrCreateMcpApiKeyForCurrentPerson( GetCurrentPerson(), RockContext );
 
             return mcpAiAgents
                 .Select( aa => new McpServerListItemBag
@@ -103,79 +103,6 @@ namespace Rock.Blocks.Core
                 .ToList();
         }
 
-        private string GetOrCreateMcpApiKeyForCurrentPerson()
-        {
-            var currentPerson = GetCurrentPerson();
-
-            // Get this person's single MCP API Key, if it exists.
-            // If multiple exist for some reason, just grab the first one.
-            // This API Key will be included in the generated MCP Server URL
-            // so the AI agent can use it to authenticate API requests from the client back to the server.
-            var apiKey = currentPerson
-                .Users
-                .Where( ul => ul.ApiKeyPurpose == ApiKeyPurpose.Mcp && ul.ApiKey.IsNotNullOrWhiteSpace() )
-                .Select( ul => ul.ApiKey )
-                .FirstOrDefault();
-
-            if ( apiKey.IsNullOrWhiteSpace() )
-            {
-                // Generate a new UserLogin API Key record since it hasn't been created yet.
-                apiKey = Rock.Utility.KeyHelper.GenerateKey( ( RockContext rockContext, string key ) =>
-                {
-                    // Only compare ApiKey here so the value is unique across all UserLogin records, regardless of Person or Purpose.
-                    // The ApiKey can be used by itself to authenticate Rest API requests.
-                    // It would be an issue if multiple people had UserLogin records with the same ApiKey,
-                    // because API requests that included that ApiKey could potentially authenticate as any of those people,
-                    // and it would be unpredictable which one it would authenticate as.
-                    return new UserLoginService( rockContext ).Queryable().Any( a => a.ApiKey == key );
-                } );
-
-                // The ApiKey UserLogin will be saved with the Database authentication Entity Type
-                // to follow the pattern of how API Keys are created for other rest client authentication types.
-                var entityType = new EntityTypeService( RockContext )
-                    .Get( "Rock.Security.Authentication.Database" );
-
-                var userLoginService = new UserLoginService( RockContext );
-                userLoginService.Add( new UserLogin
-                {
-                    UserName = Guid.NewGuid().ToString(),
-                    IsConfirmed = true,
-                    PersonId = currentPerson.Id,
-                    EntityTypeId = entityType.Id,
-                    ApiKey = apiKey,
-                    ApiKeyPurpose = ApiKeyPurpose.Mcp
-                } );
-                RockContext.SaveChanges();
-
-                // Just in case we hit a race condition and another API Key was created for this user and purpose between when we checked and when we tried to create,
-                // delete the one we just created and use the existing one instead.
-                var existingApiKey = userLoginService.Queryable()
-                    .Where( ul => ul.PersonId == currentPerson.Id && ul.ApiKeyPurpose == ApiKeyPurpose.Mcp && ul.ApiKey != apiKey )
-                    .ToList()
-                    .Where( ul => ul.ApiKey.IsNotNullOrWhiteSpace() )
-                    .OrderBy( ul => ul.CreatedDateTime )
-                    .Select( ul => ul.ApiKey )
-                    .FirstOrDefault();
-
-                if ( existingApiKey.IsNotNullOrWhiteSpace() )
-                {
-                    var apiKeysToDelete = userLoginService.Queryable()
-                        .Where( ul =>
-                            ul.PersonId == currentPerson.Id
-                            && ul.ApiKeyPurpose == ApiKeyPurpose.Mcp
-                            && ul.ApiKey == apiKey )
-                        .ToList();
-                    userLoginService.DeleteRange( apiKeysToDelete );
-                    RockContext.SaveChanges();
-
-                    // Get the existing API Key that was created by another request.
-                    apiKey = existingApiKey;
-                }
-            }
-
-            return apiKey;
-        }
-        
         #endregion
     }
 }
