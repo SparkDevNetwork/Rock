@@ -1,6 +1,6 @@
 import type { Block, BlockNoteEditor } from "@blocknote/core";
 import { createIconButton } from "./functions";
-import { SideMenuExtension } from "@blocknote/core/extensions";
+import { SideMenuExtension, SuggestionMenu } from "@blocknote/core/extensions";
 
 export class SideMenu {
     public readonly element: HTMLDivElement;
@@ -12,17 +12,37 @@ export class SideMenu {
 
     constructor(editor: BlockNoteEditor, container: HTMLElement) {
         this.addButton = createIconButton('ti ti-plus');
+        this.addButton.type = "button";
         this.actionButton = createIconButton('ti ti-grip-vertical');
         this.actionButton.type = "button";
         this.actionButton.draggable = true;
 
         const sideMenuExtension = editor.getExtension(SideMenuExtension)!;
+        const suggestionMenuExtension = editor.getExtension(SuggestionMenu)!;
 
         this.addButton.addEventListener('click', () => {
-            const anchorBlock = this.block!;
-            /*const newBlocks = */editor.insertBlocks([{ type: "paragraph" }], anchorBlock, "after");
+            if (!this.block) {
+                return;
+            }
 
-            // editor.setSelection(newBlocks[0], anchorBlock);
+            const blockContent = this.block.content;
+            const isBlockEmpty = blockContent !== undefined
+                && Array.isArray(blockContent)
+                && blockContent.length === 0;
+
+            // If the current block is empty, open the suggestion menu for
+            // the current block. Otherwise, insert a new paragraph block and
+            // open the suggestion menu for that new block.
+            if (isBlockEmpty) {
+                editor.setTextCursorPosition(this.block);
+                suggestionMenuExtension.openSuggestionMenu("/");
+            }
+            else {
+                const newBlock = editor.insertBlocks([{ type: "paragraph" }], this.block, "after")[0];
+
+                editor.setTextCursorPosition(newBlock);
+                suggestionMenuExtension.openSuggestionMenu("/");
+            }
         });
 
         this.actionButton.addEventListener('dragstart', (event) => {
