@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 
 using Rock.AI.Agent.Mcp;
 using Rock.Attribute;
+using Rock.Common.Mobile.ViewModel;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -60,18 +61,25 @@ namespace Rock.Blocks.Types.Mobile.Cms
         AllowHtml = true,
         Order = 2 )]
 
+    [MobileNavigationActionField( "Stop Action",
+        Description = "The navigation action to perform when the stop button is pressed.",
+        IsRequired = false,
+        DefaultValue = MobileNavigationActionFieldAttribute.PopSinglePageValue,
+        Key = AttributeKeys.StopAction,
+        Order = 3 )]
+
     [CustomDropdownListField( "Rock MCP",
         Description = "Select an MCP agent configured in Rock. This agent will be available to the AI assistant.",
         ListSource = "SELECT [Guid] AS [Value], [Name] AS [Text] FROM [AIAgent] WHERE [AgentType] = 1",
         IsRequired = false,
         Key = AttributeKeys.RockMcp,
-        Order = 3 )]
+        Order = 4 )]
 
     [ValueListField( "External MCP",
         Description = "Enter one or more MCP server URLs from external systems that should be available to the AI agent.",
         IsRequired = false,
         Key = AttributeKeys.ExternalMcp,
-        Order = 4 )]
+        Order = 5 )]
 
 
     [Rock.SystemGuid.EntityTypeGuid( "8654b230-5868-4490-8832-61dbdd1fd6d4" )]
@@ -86,6 +94,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             public const string ApiKey = "ApiKey";
             public const string Model = "Model";
             public const string Instruction = "Instruction";
+            public const string StopAction = "StopAction";
             public const string RockMcp = "RockMcp";
             public const string ExternalMcp = "ExternalMcp";
         }
@@ -209,7 +218,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
             return new Rock.Common.Mobile.Blocks.Cms.VoiceAgent.Configuration
             {
                 Model = GetAttributeValue( AttributeKeys.Model ),
-                Instruction = GetAttributeValue( AttributeKeys.Instruction )
+                Instruction = GetAttributeValue( AttributeKeys.Instruction ),
+                StopAction = GetAttributeValue( AttributeKeys.StopAction ).FromJsonOrNull<MobileNavigationActionViewModel>() ?? new MobileNavigationActionViewModel(),
             };
         }
 

@@ -1958,8 +1958,12 @@ namespace Rock.Blocks.Engagement
                 HasRequiredGroupRequirements = connectionRequest.AssignedGroup?.GroupRequirements?.Any( r => r.MustMeetRequirementToAddMember ) ?? false
             };
 
-            var builder = GetGridBuilder();
-            var row = builder.Build( new[] { newConnection } ).Rows[0];
+            IEnumerable<ConnectionRow> tempRequestEnumerable = new[] { newConnection };
+            var gridAttributes = GetGridAttributes();
+
+            GridAttributeLoader.LoadFor( tempRequestEnumerable, a => a.ConnectionRequest, gridAttributes, RockContext );
+
+            var row = GetGridBuilder().Build( tempRequestEnumerable ).Rows[0];
 
             return row;
         }
@@ -5707,7 +5711,7 @@ WHERE 1 = 1" );
             if ( _gridAttributes == null )
             {
                 var availableAttributes = new List<AttributeCache>();
-                var connectionTypeId = ConnectionTypeCache.Get( PageParameter( PageParameterKey.ConnectionType ), !PageCache.Layout.Site.DisablePredictableIds )?.Id;
+                var connectionTypeId = GetConnectionTypeCacheFromPageParameters()?.Id;
 
                 if ( connectionTypeId.HasValue )
                 {
