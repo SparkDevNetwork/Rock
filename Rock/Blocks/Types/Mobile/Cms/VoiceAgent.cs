@@ -1,15 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+
+using Nest;
 
 using Newtonsoft.Json;
 
 using Rock.AI.Agent.Mcp;
 using Rock.Attribute;
 using Rock.Common.Mobile.ViewModel;
+using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -111,8 +117,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
         private string GetRockMcpUrl( string slug )
         {
+            var apiKey = GetOrCreateMcpApiKeyForCurrentPerson( GetCurrentPerson(), RockContext );
+
             var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" ).TrimEnd( '/' );
-            var mcpUrl = $"{baseUrl}/api/v2/mcp/{slug}";
+            var mcpUrl = $"{baseUrl}/api/v2/mcp/{slug}?apikey={apiKey}";
 
             return mcpUrl;
         }
@@ -174,6 +182,90 @@ namespace Rock.Blocks.Types.Mobile.Cms
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Retrieves the MCP API key associated with the specified person, creating one if it does not already exist.
+        /// </summary>
+        /// <remarks>If multiple MCP API keys exist for the person, the first one found is returned. If no
+        /// key exists, a new one is generated and persisted. In the event of a race condition where another key is
+        /// created concurrently, the method ensures only one key is retained and returns the existing key.</remarks>
+        /// <param name="currentPerson">The person for whom to retrieve or create the MCP API key. Cannot be null.</param>
+        /// <param name="rockContext">The database context used for querying and persisting user login and API key information. Cannot be null.</param>
+        /// <returns>A string containing the MCP API key for the specified person. The string is never null but may be empty if
+        /// the key could not be created.</returns>
+        internal static string GetOrCreateMcpApiKeyForCurrentPerson( Person currentPerson, RockContext rockContext )
+        {
+            // Get this person's single MCP API Key, if it exists.
+            // If multiple exist for some reason, just grab the first one.
+            // This API Key will be included in the generated MCP Server URL
+            // so the AI agent can use it to authenticate API requests from the client back to the server.
+            var apiKey = currentPerson
+                .Users
+                .Where( ul => ul.ApiKeyPurpose == ApiKeyPurpose.Mcp && ul.ApiKey.IsNotNullOrWhiteSpace() )
+                .Select( ul => ul.ApiKey )
+                .FirstOrDefault();
+
+            if ( apiKey.IsNotNullOrWhiteSpace() )
+            {
+                return apiKey;
+            }
+
+            // Generate a new UserLogin API Key record since it hasn't been created yet.
+            apiKey = Rock.Utility.KeyHelper.GenerateKey( ( RockContext keyContext, string key ) =>
+            {
+                // Only compare ApiKey here so the value is unique across all UserLogin records, regardless of Person or Purpose.
+                // The ApiKey can be used by itself to authenticate Rest API requests.
+                // It would be an issue if multiple people had UserLogin records with the same ApiKey,
+                // because API requests that included that ApiKey could potentially authenticate as any of those people,
+                // and it would be unpredictable which one it would authenticate as.
+                return new UserLoginService( keyContext ).Queryable().Any( a => a.ApiKey == key );
+            } );
+
+            // The ApiKey UserLogin will be saved with the Database authentication Entity Type
+            // to follow the pattern of how API Keys are created for other rest client authentication types.
+            var entityType = new EntityTypeService( rockContext )
+                .Get( "Rock.Security.Authentication.Database" );
+
+            var userLoginService = new UserLoginService( rockContext );
+            userLoginService.Add( new UserLogin
+            {
+                UserName = Guid.NewGuid().ToString(),
+                IsConfirmed = true,
+                PersonId = currentPerson.Id,
+                EntityTypeId = entityType.Id,
+                ApiKey = apiKey,
+                ApiKeyPurpose = ApiKeyPurpose.Mcp
+            } );
+            rockContext.SaveChanges();
+
+            // Just in case we hit a race condition and another API Key was created for this user and purpose between when we checked and when we tried to create,
+            // delete the one we just created and use the existing one instead.
+            var existingApiKey = userLoginService.Queryable()
+                .Where( ul => ul.PersonId == currentPerson.Id && ul.ApiKeyPurpose == ApiKeyPurpose.Mcp && ul.ApiKey != apiKey )
+                .ToList()
+                .Where( ul => ul.ApiKey.IsNotNullOrWhiteSpace() )
+                .OrderBy( ul => ul.CreatedDateTime )
+                .Select( ul => ul.ApiKey )
+                .FirstOrDefault();
+
+            if ( existingApiKey.IsNotNullOrWhiteSpace() )
+            {
+                var apiKeysToDelete = userLoginService.Queryable()
+                    .Where( ul =>
+                        ul.PersonId == currentPerson.Id
+                        && ul.ApiKeyPurpose == ApiKeyPurpose.Mcp
+                        && ul.ApiKey == apiKey )
+                    .ToList();
+                userLoginService.DeleteRange( apiKeysToDelete );
+                rockContext.SaveChanges();
+
+                // Get the existing API Key that was created by another request.
+                apiKey = existingApiKey;
+            }
+
+            return apiKey;
+
         }
 
         #endregion
