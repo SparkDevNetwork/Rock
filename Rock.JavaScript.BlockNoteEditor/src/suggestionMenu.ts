@@ -17,7 +17,6 @@ const iconTable: Record<string, string> = {
     "table": "ti ti-table",
     "image": "ti ti-photo",
     "video": "ti ti-video",
-    // "audio": "ti ti-music",
     "file": "ti ti-file"
 };
 
@@ -36,7 +35,6 @@ const supportedBlockKeys = [
     "table",
     "image",
     "video",
-    // "audio",
     "file",
 ]
 
@@ -61,7 +59,6 @@ export class SuggestionMenu {
 
         this.blockSuggestionMenu = this.editor.getExtension(SuggestionMenuExension)!;
 
-        // this.blockSuggestionMenu.addTriggerCharacter("/");
         this.blockSuggestionMenu.addSuggestionMenu({
             triggerCharacter: "/",
         });
@@ -144,7 +141,15 @@ export class SuggestionMenu {
 
         const descriptionElement = document.createElement("span");
         descriptionElement.classList.add("description");
-        descriptionElement.textContent = item.subtext ?? "";
+        if (item.key === "image") {
+            descriptionElement.textContent = "Add an image";
+        }
+        else if (item.key === "file") {
+            descriptionElement.textContent = "Add a file";
+        }
+        else {
+            descriptionElement.textContent = item.subtext ?? "";
+        }
         li.appendChild(descriptionElement);
 
         const badgeContainerElement = document.createElement("span");
@@ -256,6 +261,12 @@ export class SuggestionMenu {
             }
 
             return true;
+        }
+
+        if (event.key === "Escape") {
+            event.preventDefault();
+            event.stopPropagation();
+            this.blockSuggestionMenu.closeMenu();
         }
 
         return false;
