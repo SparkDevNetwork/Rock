@@ -3175,6 +3175,15 @@ WHERE 1 = 1" );
 
             var connectionRequests = new List<ConnectionRow>( sqlRows.Count );
 
+            // Resolve grid attributes once up front so we can build the minimal
+            // in-memory ConnectionRequest stubs alongside each ConnectionRow in
+            // the projection loop below, avoiding a second round-trip to the
+            // database to re-fetch full ConnectionRequest entities just for
+            // Attribute Value hydration.
+            var gridAttributes = GetGridAttributes();
+            var hasGridAttributes = gridAttributes.Count > 0;
+            var connectionTypeId = connectionType.Id;
+
             var photoUrlByPersonId = new Dictionary<int, string>();
             var connectorByPersonId = new Dictionary<int, (ListItemBag Item, string FullName, string PhotoUrl)>();
             var connectorGroupingByPersonAliasId = new Dictionary<int, GroupingFieldBag>();
@@ -3379,33 +3388,23 @@ WHERE 1 = 1" );
 
                 request.StateGrouping = stateGrouping;
 
-                connectionRequests.Add( request );
-            }
-
-            // Load attribute values for any grid-configured attributes. When the attribute
-            // list is empty this is a no-op. When attributes are present we fetch only the
-            // raw ConnectionRequest entities needed for Attribute Value hydration rather than
-            // re-running the full projection query.
-            var gridAttributes = GetGridAttributes();
-            if ( gridAttributes.Count > 0 )
-            {
-                var connectionRequestIds = connectionRequests
-                    .Select( r => r.ConnectionRequestId )
-                    .ToList();
-
-                var connectionRequestEntities = new ConnectionRequestService( RockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Where( cr => connectionRequestIds.Contains( cr.Id ) )
-                    .ToDictionary( cr => cr.Id );
-
-                foreach ( var request in connectionRequests )
+                if ( hasGridAttributes )
                 {
-                    if ( connectionRequestEntities.TryGetValue( request.ConnectionRequestId, out var entity ) )
+                    // Build a minimal, detached ConnectionRequest so GridAttributeLoader
+                    // can use Id to fetch Attribute Values and read the qualifier
+                    // columns (ConnectionTypeId, ConnectionOpportunityId, CampusId) via
+                    // reflection. This intentionally avoids a second round-trip that
+                    // would otherwise issue a WHERE IN clause with one entry per row.
+                    request.ConnectionRequest = new ConnectionRequest
                     {
-                        request.ConnectionRequest = entity;
-                    }
+                        Id = row.Id,
+                        ConnectionTypeId = connectionTypeId,
+                        ConnectionOpportunityId = row.ConnectionOpportunityId,
+                        CampusId = row.CampusId
+                    };
                 }
+
+                connectionRequests.Add( request );
             }
 
             GridAttributeLoader.LoadFor( connectionRequests, a => a.ConnectionRequest, gridAttributes, RockContext );
