@@ -96,12 +96,10 @@ export class FormattingToolbar {
     }
 
     private onStateChange(state: { prevVal: boolean; currentVal: boolean }): void {
-        // const block = editor.getTextCursorPosition().block;
-        // const from = editor.prosemirrorState.selection.from;
-        // const to = editor.prosemirrorState.selection.to;
         const box = this.editor.getSelectionBoundingBox();
+        const isFileOrImage = this.editor.getSelection()?.blocks.some(b => b.type === "file" || b.type === "image");
 
-        if (!state.currentVal || !box) {
+        if (!state.currentVal || !box || isFileOrImage) {
             this.showSelection(false);
             this.toolbar.remove();
             return;
