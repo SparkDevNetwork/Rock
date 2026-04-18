@@ -1,9 +1,9 @@
 <template>
     <Panel v-model:quickFilterValue="internalQuickFilterValue"
-           type="block"
+           :type="isBoardView ? 'block' : 'default'"
            :panelBodyCssClass="panelBodyCssClasses"
            panelHeaderCssClass="flex-shrink-0"
-           :class="{ 'h-100': !isBoardView }"
+
            :worksurfaceMode="isBoardView">
         <template #headerActions>
             <div v-if="groupingFields.length > 1" class="d-flex align-items-center gap-xs">
