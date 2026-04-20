@@ -292,12 +292,12 @@ namespace Rock.Blocks.CheckIn.Manager
                 .Queryable()
                 .Where( gl => gl.Location.Guid == locationGuid && gl.Schedules.Any() )
                 .SelectMany( gl => gl.Schedules )
+                .Where( s => !string.IsNullOrEmpty( s.Name ) && s.IsActive )
                 .Select( s => new
                 {
                     s.Guid,
                     s.Name
                 } )
-                .Where( s => !string.IsNullOrEmpty( s.Name ) )
                 .Distinct()
                 .Select( s => new ListItemBag
                 {
