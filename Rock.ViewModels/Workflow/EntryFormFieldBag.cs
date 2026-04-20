@@ -70,5 +70,12 @@ namespace Rock.ViewModels.Workflow
         /// depending on the values of other fields.
         /// </summary>
         public FieldFilterGroupBag VisibilityRule { get; set; }
+
+        /// <summary>
+        /// A string that contains the security grant required for this form
+        /// field to function. If null or empty then the default security grant
+        /// from the block will be used.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }
