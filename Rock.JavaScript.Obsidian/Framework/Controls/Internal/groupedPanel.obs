@@ -42,18 +42,21 @@
             </button>
         </template>
         <template #preBody>
-            <TransitionVerticalCollapse>
-                <ActionToolbar v-if="isSelectedView"
-                               v-model:groupingKey="groupingKey"
-                               v-model:viewMode="internalViewMode"
-                               :viewModeItems="viewModeItems"
-                               :groupingFields="groupingFields"
-                               :isSelectedView="isSelectedView">
-                    <template #selectedActionToolbar>
-                        <slot name="selectedActionToolbar" />
-                    </template>
-                </ActionToolbar>
-            </TransitionVerticalCollapse>
+            <transition name="action-toolbar-slide">
+                <div v-if="isSelectedView" class="action-toolbar-slide">
+                    <div class="action-toolbar-slide-inner">
+                        <ActionToolbar v-model:groupingKey="groupingKey"
+                                       v-model:viewMode="internalViewMode"
+                                       :viewModeItems="viewModeItems"
+                                       :groupingFields="groupingFields"
+                                       :isSelectedView="isSelectedView">
+                            <template #selectedActionToolbar>
+                                <slot name="selectedActionToolbar" />
+                            </template>
+                        </ActionToolbar>
+                    </div>
+                </div>
+            </transition>
         </template>
         <template v-if="rows.length > 0">
             <GroupedListView v-if="isListView"
@@ -99,6 +102,36 @@
 .gap-xs {
     gap: var(--spacing-xsmall);
 }
+
+/*
+    Animates to content size via grid-template-rows 0fr <-> 1fr, driven by
+    Vue's <Transition> enter/leave classes. Vue applies the enter-from class
+    atomically with DOM insertion, so the toolbar never paints at natural
+    height in the panel's fixed-height flex layout.
+
+    This is needed because the groupedBoardView renders the panel with a fixed
+    height, causing the standard TransitionVerticalCollapse pattern to not
+    function correctly
+*/
+.action-toolbar-slide {
+    display: grid;
+    grid-template-rows: 1fr;
+}
+
+.action-toolbar-slide-inner {
+    overflow: hidden;
+    min-height: 0;
+}
+
+.action-toolbar-slide-enter-active,
+.action-toolbar-slide-leave-active {
+    transition: grid-template-rows 0.2s ease-in-out;
+}
+
+.action-toolbar-slide-enter-from,
+.action-toolbar-slide-leave-to {
+    grid-template-rows: 0fr;
+}
 </style>
 
 <script setup lang="ts">
@@ -115,7 +148,6 @@
     import GroupedBoardView from "./GroupedPanel/groupedBoardView.obs";
     import ButtonGroup from "../buttonGroup.obs";
     import RockLabel from "../rockLabel.obs";
-    import TransitionVerticalCollapse from "../transitionVerticalCollapse.obs";
     import ButtonDropDownList from "../buttonDropDownList.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { GroupedGrid } from "./GroupedPanel/types.partial";

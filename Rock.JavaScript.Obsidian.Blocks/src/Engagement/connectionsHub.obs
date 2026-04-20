@@ -433,7 +433,9 @@
                                    :viewOptions="viewOptions"
                                    :attributesToShow="attributesToShow"
                                    :currentPersonIdKey="currentPerson?.idKey"
-                                   @selectItem="onSelectItem"
+                                   :isSelected="allSelectedKeySet.has(row.idKey as string)"
+                                   @selectItem="onSelectBoardCard"
+                                   @toggleSelection="onToggleBoardCardSelection"
                                    @changeState="showChangeStateModal"
                                    @launchWorkflow="showLaunchWorkflowModal"
                                    @showSecurity="showSecurityModal"
@@ -1391,6 +1393,7 @@
     const skeletonCount = computed<number>(() => selectedGrouping.value === "connectorGrouping" && asBoolean(areOnlyMyRequestsVisible.value) ? 1 : 3);
 
     const allSelectedKeys = computed(() => Object.values(selectedKeys.value).flat());
+    const allSelectedKeySet = computed(() => new Set(allSelectedKeys.value));
     const hasAnySelectedKeys = computed(() => allSelectedKeys.value.length > 0);
 
     const selectedRequestDetails = computed((): BulkRequestViewBag[] => {
@@ -1731,6 +1734,40 @@
         selectedRequestKeyForDockedPanel.value = key;
         isFlyoutOpen.value = false;
         isDockedPanelVisible.value = true;
+    }
+
+    /**
+     * Handles a plain click on a board card. Clears any active multi-selection
+     * before opening the docked detail panel so plain click is a "focus one"
+     * action. Ctrl+click goes through onToggleBoardCardSelection instead.
+     */
+    function onSelectBoardCard(key: string): void {
+        if (hasAnySelectedKeys.value) {
+            clearAllSelections();
+        }
+
+        onSelectItem(key);
+    }
+
+    /**
+     * Toggles a card in/out of the board-view selection bucket. Board-view
+     * selections live under the "board" key in `selectedKeys` so they flow
+     * through `allSelectedKeys` and drive the shared bulk-action toolbar.
+     */
+    function onToggleBoardCardSelection(groupKey: string, idKey: string): void {
+        const current = selectedKeys.value[groupKey] ?? [];
+
+        // If the connection type has sequential status configured then we must clear
+        // selections in any status grouping that does not match the selected group key.
+        if (box.options?.isSequentialStatusMode) {
+            Object.keys(selectedKeys.value)
+                .filter(key => key !== groupKey)
+                .forEach(key => selectedKeys.value[key] = []);
+        }
+
+        selectedKeys.value[groupKey] = current.includes(idKey)
+            ? current.filter(k => k !== idKey)
+            : [...current, idKey];
     }
 
     function onAddItem(): void {

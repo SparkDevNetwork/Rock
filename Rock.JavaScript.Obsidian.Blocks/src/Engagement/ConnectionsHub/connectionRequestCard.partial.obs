@@ -9,8 +9,8 @@
                     :nameTooltip="`Requester: ${connectionRequestRow.requestDetails.nickName} ${connectionRequestRow.requestDetails.lastName}`"
                     :campusTooltip="`Campus: ${connectionRequestRow.campus}`"
                     class="connection-request-card"
-                    :class="{ 'completed': connectionRequestRow.connectionState === ConnectionState.Connected }"
-                    @click="selectRequest">
+                    :class="{ 'completed': connectionRequestRow.connectionState === ConnectionState.Connected, 'selected': isSelected }"
+                    @click="onCardClick">
             <template #secondaryHeaderActions>
                 <template v-if="canEditConnectionRequests">
                     <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
@@ -157,6 +157,10 @@
     opacity: 0.5;
 }
 
+.connection-request-card.selected {
+    box-shadow: 0 0 0 2px var(--color-primary);
+}
+
 .text-emerald {
     color: #10B981 !important;
 }
@@ -298,11 +302,17 @@
         currentPersonIdKey: {
             type: String as PropType<string | null | undefined>,
             default: ""
+        },
+
+        isSelected: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
     const emit = defineEmits<{
         (e: "selectItem", value: string): void;
+        (e: "toggleSelection", groupingKey: string, value: string): void;
         (e: "changeState", state: ConnectionState, row: Record<string, unknown>): void;
         (e: "launchWorkflow", row: Record<string, unknown>): void;
         (e: "showSecurity", value: string | null | undefined): void;
@@ -393,8 +403,6 @@
     };
 
     const daysElapsed = (dateTimeIsoToCheck: string | null | undefined, isDueDateCheck: boolean = false): string => {
-        // const isCompleted = connectionState.value === ConnectionState.Connected;
-
         if (!dateTimeIsoToCheck) {
             return "";
         }
@@ -404,36 +412,12 @@
             return "";
         }
 
-        // Use the completion date as the reference point if completed, otherwise use today
-        // let referenceDate: RockDateTime;
-        // if (isCompleted) {
-        //     const completedDateTimeIso = connectionRequestRow.value.completedDateTime;
-        //     const completedDate = RockDateTime.parseISO(completedDateTimeIso ?? "")?.date;
-
-        //     referenceDate = completedDate ? completedDate : RockDateTime.now().date;
-        // }
-        // else {
-        //     referenceDate = RockDateTime.now().date;
-        // }
         const referenceDate = RockDateTime.now();
         const dateToCheck = dateTimeToCheck.date;
 
         const msPerDay = 1000 * 60 * 60 * 24;
 
         const diffDays = Math.round((dateToCheck.toMilliseconds() - referenceDate.toMilliseconds()) / msPerDay);
-
-        // if (isCompleted) {
-        //     if (diffDays > 0) {
-        //         return `Completed ${diffDays} ${diffDays === 1 ? "Day" : "Days"} Before Due`;
-        //     }
-        //     else if (diffDays < 0) {
-        //         const lateDays = Math.abs(diffDays);
-        //         return `Completed ${lateDays} ${lateDays === 1 ? "Day" : "Days"} After Due`;
-        //     }
-        //     else {
-        //         return "Completed on Due Date";
-        //     }
-        // }
 
         if (diffDays > 0) {
             const pre = isDueDateCheck ? "Due in" : "In";
@@ -472,10 +456,19 @@
         return "default";
     }
 
-    function selectRequest(): void {
+    function onCardClick(event: MouseEvent): void {
+        // Connection Request cards can only be grouped by status currently.
+        const groupingKey = connectionRequestRow.value.statusGrouping;
         const requestIdKey = connectionRequestRow.value.idKey;
 
-        if (!requestIdKey || isNullOrWhiteSpace(requestIdKey)) {
+        if (!groupingKey || isNullOrWhiteSpace(groupingKey) || !requestIdKey || isNullOrWhiteSpace(requestIdKey)) {
+            return;
+        }
+
+        // Ctrl+click (Windows/Linux) or Cmd+click (Mac) toggles multi-select
+        // without opening the docked detail panel.
+        if (event.ctrlKey || event.metaKey) {
+            emit("toggleSelection", groupingKey, requestIdKey);
             return;
         }
 

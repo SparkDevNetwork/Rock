@@ -19,7 +19,7 @@
              v-drag-source="dragSourceOptions"
              v-drag-target="dragSourceOptions.id"
              :data-group-key="group.key ?? ''">
-            <div :style="beforePadStyle" class="flex-shrink-0"></div>
+            <div v-if="group.gridData.rows.length > 0" :style="beforePadStyle" class="flex-shrink-0"></div>
             <div v-for="row in virtualItems"
                  :key="(row.idKey as string)"
                  :data-id-key="(row.idKey as string)"
