@@ -16,9 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
@@ -29,6 +27,17 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
     public class CheckInScheduleBuilderOptionsBag
     {
         /// <summary>
+        /// Gets or sets whether the page has a valid check-in configuration parameter.
+        /// </summary>
+        public bool HasValidCheckInConfigurationPageParam { get; set; }
+
+        /// <summary>
+        /// Maps each campus Guid to its root location Guid.
+        /// Used by the client to scope the parent location picker when the campus context changes.
+        /// </summary>
+        public Dictionary<string, string> CampusRootLocations { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
         /// The list of GroupTypes that can be chosen from
         /// </summary>
         public List<Guid> GroupTypes { get; set; }
@@ -36,7 +45,7 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
         /// <summary>
         /// The list of Areas that can be chosen from
         /// </summary>
-        public List<Guid> Areas { get; set; }
+        public List<ListItemBag> Areas { get; set; }
 
         /// <summary>
         /// The Default Schedule Category
