@@ -24898,6 +24898,11 @@ ul.activeusers {
   margin-left: var(--spacing-xsmall);
 }
 
+.lava-shortcode-documentation pre {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
 /*
     Used to manage styles for specific blocks.
 
