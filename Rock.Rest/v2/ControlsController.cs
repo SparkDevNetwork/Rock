@@ -8072,6 +8072,36 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
+        /// Gets the media element metadata for the requested media element.
+        /// </summary>
+        /// <param name="options">The options that describe which media elements to load.</param>
+        /// <returns>An instance of <see cref="MediaElementPickerGetMediaElementMetadataResponseBag"/> that represents the metadata.</returns>
+        [HttpPost]
+        [Route( "MediaElementPickerGetMediaElementMetadata" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( MediaElementPickerGetMediaElementMetadataResponseBag ) )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "de62c797-6b65-4261-b317-a5c37dfe9d77" )]
+        public IActionResult MediaElementPickerGetMediaElementMetadata( [FromBody] MediaElementPickerGetMediaElementMetadataOptionsBag options )
+        {
+            using var rockContext = new RockContext();
+            var mediaElementService = new Rock.Model.MediaElementService( rockContext );
+            var mediaElement = mediaElementService.Get( options.MediaElementGuid );
+
+            if ( mediaElement == null )
+            {
+                return NotFound();
+            }
+
+            return Ok( new MediaElementPickerGetMediaElementMetadataResponseBag
+            {
+                Name = mediaElement.Name,
+                ThumbnailUrl = mediaElement.DefaultThumbnailUrl,
+            } );
+        }
+
+        /// <summary>
         /// Get all of the list items and the account/folder/element, depending on what the deepest given item is.
         /// </summary>
         /// <param name="options">The options that describe which media element picker data to load.</param>

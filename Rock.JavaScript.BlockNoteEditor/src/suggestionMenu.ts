@@ -1,6 +1,16 @@
-import { getDefaultSlashMenuItems, SuggestionMenu as SuggestionMenuExension, type SuggestionMenuState, type DefaultSuggestionItem, filterSuggestionItems } from "@blocknote/core/extensions";
+import { getDefaultSlashMenuItems, insertOrUpdateBlockForSlashMenu, SuggestionMenu as SuggestionMenuExension, type SuggestionMenuState, type DefaultSuggestionItem, filterSuggestionItems } from "@blocknote/core/extensions";
 import { Hover } from "./functions";
-import type { RockBlockNoteEditor } from "./schema";
+import type { RockBlockNoteEditor, RockPartialBlock } from "./schema";
+
+type SuggestionMenuItem = DefaultSuggestionItem | {
+    key: "media";
+    title: string;
+    onItemClick: () => void;
+    subtext?: string;
+    badge?: string;
+    aliases?: string[];
+    group?: string;
+};
 
 const iconTable: Record<string, string> = {
     "heading": "ti ti-h-1",
@@ -15,6 +25,7 @@ const iconTable: Record<string, string> = {
     "paragraph": "ti ti-letter-t",
     "code_block": "ti ti-code",
     "table": "ti ti-table",
+    "media": "ti ti-player-play",
     "image": "ti ti-photo",
     "video": "ti ti-video",
     "file": "ti ti-file"
@@ -33,10 +44,30 @@ const supportedBlockKeys = [
     "paragraph",
     "code_block",
     "table",
+    "media",
     "image",
     "video",
     "file",
 ]
+
+function getMediaSlashMenuItem(editor: RockBlockNoteEditor): SuggestionMenuItem {
+    return {
+        key: "media",
+        title: "Media",
+        subtext: "Insert a Rock media element",
+        aliases: ["media element", "video player", "audio player"],
+        onItemClick: () => {
+            const mediaBlock: RockPartialBlock = {
+                type: "media",
+                props: {
+                    mediaElementGuid: "",
+                },
+            };
+
+            insertOrUpdateBlockForSlashMenu(editor, mediaBlock);
+        },
+    };
+}
 
 export class SuggestionMenu {
     private readonly editor: RockBlockNoteEditor;
@@ -47,15 +78,18 @@ export class SuggestionMenu {
 
     private hover: Hover | null = null;
     private menu: HTMLElement | null = null;
-    private readonly defaultMenuItems: DefaultSuggestionItem[];
-    private filteredMenuItems: DefaultSuggestionItem[] = [];
+    private readonly defaultMenuItems: SuggestionMenuItem[];
+    private filteredMenuItems: SuggestionMenuItem[] = [];
     private selectedIndex: number = 0;
 
     constructor(editor: RockBlockNoteEditor, container: HTMLElement) {
         this.editor = editor;
         this.container = container;
-        this.defaultMenuItems = getDefaultSlashMenuItems(editor)
-            .filter(item => supportedBlockKeys.includes(item.key));
+        this.defaultMenuItems = [
+            ...getDefaultSlashMenuItems(editor)
+                .filter(item => supportedBlockKeys.includes(item.key)),
+            getMediaSlashMenuItem(editor),
+        ];
 
         this.blockSuggestionMenu = this.editor.getExtension(SuggestionMenuExension)!;
 
@@ -120,7 +154,7 @@ export class SuggestionMenu {
         return this.menu;
     }
 
-    private createSuggestionMenuItem(item: DefaultSuggestionItem): HTMLElement {
+    private createSuggestionMenuItem(item: SuggestionMenuItem): HTMLElement {
         const li = document.createElement("li");
         const iconClass = iconTable[item.key] || "ti ti-square";
 
@@ -163,7 +197,7 @@ export class SuggestionMenu {
         return li;
     }
 
-    private updateMenu(menu: HTMLElement, items: DefaultSuggestionItem[]) {
+    private updateMenu(menu: HTMLElement, items: SuggestionMenuItem[]) {
         let index = 0;
         this.filteredMenuItems = items;
 

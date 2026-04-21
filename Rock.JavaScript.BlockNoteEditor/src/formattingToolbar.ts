@@ -97,9 +97,11 @@ export class FormattingToolbar {
 
     private onStateChange(state: { prevVal: boolean; currentVal: boolean }): void {
         const box = this.editor.getSelectionBoundingBox();
-        const isFileOrImage = this.editor.getSelection()?.blocks.some(b => b.type === "file" || b.type === "image");
+        const ignoredBlockTypes = ["file", "image", "media"];
+        const isIgnoredBlock = !this.editor.getSelection()
+            || this.editor.getSelection()?.blocks.some(b => ignoredBlockTypes.includes(b.type))
 
-        if (!state.currentVal || !box || isFileOrImage) {
+        if (!state.currentVal || !box || isIgnoredBlock) {
             this.showSelection(false);
             this.toolbar.remove();
             return;

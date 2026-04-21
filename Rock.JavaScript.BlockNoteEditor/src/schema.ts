@@ -1,10 +1,12 @@
 import { BlockNoteSchema, createCodeBlockSpec, defaultBlockSpecs } from "@blocknote/core";
+import { mediaBlockSpec } from "./media";
 import { tableBlockSpec } from "./table";
 import { codeBlockOptions } from "./codeOptions";
 
 export const rockSchema = BlockNoteSchema.create({
     blockSpecs: {
         ...defaultBlockSpecs,
+        media: mediaBlockSpec,
         table: tableBlockSpec,
         codeBlock: createCodeBlockSpec({
             ...codeBlockOptions,
