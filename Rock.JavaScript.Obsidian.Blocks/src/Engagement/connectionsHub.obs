@@ -953,7 +953,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { computed, reactive, ref, watch, nextTick } from "vue";
+    import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
     import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns, SecurityColumn, pickExistingValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
@@ -3092,6 +3092,33 @@
         selectedKeysOnUnmount.value = {};
     }
 
+    /*
+        4/20/26 - KBH
+
+        Clears the board multi-selection when the user clicks away from
+        the cards and the bulk-action toolbar. Excludes clicks inside cards,
+        the action toolbar, and any open modal/dropdown/popover so bulk
+        actions can finish flowing through the modal snapshot before the
+        selection is torn down.
+
+        Reason: Users expect an "outside click" to deselect, matching the
+        mental model set by the multi-select UI and common kanban patterns.
+    */
+    const ignoreOutsideClickSelectors = ".board-card-wrapper, .action-toolbar, .modal, .dropdown-menu, .popover";
+
+    function handleOutsideClick(event: MouseEvent): void {
+        if (!hasAnySelectedKeys.value || selectedView.value !== "board") {
+            return;
+        }
+
+        const target = event.target as Element | null;
+        if (target?.closest(ignoreOutsideClickSelectors)) {
+            return;
+        }
+
+        clearAllSelections();
+    }
+
     async function getSmsConfiguration(selectedKeys: string[], connectionTypeIdKey: string | null | undefined): Promise<HttpResult<GetSmsConfigurationResponseBag>> {
         const bag: GetSmsConfigurationRequestBag = {
             connectionRequestIdKeys: selectedKeys,
@@ -4008,4 +4035,12 @@
     }
 
     onConfigurationValuesChanged(useReloadBlock());
+
+    onMounted(() => {
+        document.addEventListener("click", handleOutsideClick);
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("click", handleOutsideClick);
+    });
 </script>

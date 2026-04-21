@@ -66,7 +66,7 @@ body.is-dragging * {
     min-width: 26px;
     height: 26px;
     padding: 0 var(--spacing-xsmall);
-    border-radius: var(--rounded-pill);
+    border-radius: 999px;
     background-color: var(--color-primary);
     color: var(--color-primary-text, #fff);
     font-size: var(--font-size-xsmall);
