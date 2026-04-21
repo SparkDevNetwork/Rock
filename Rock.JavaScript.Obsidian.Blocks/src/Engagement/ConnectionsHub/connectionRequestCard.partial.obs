@@ -158,7 +158,7 @@
 }
 
 .connection-request-card.selected {
-    box-shadow: 0 0 0 2px var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
 }
 
 .text-emerald {

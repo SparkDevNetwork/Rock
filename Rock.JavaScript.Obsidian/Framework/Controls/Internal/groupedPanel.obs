@@ -76,6 +76,8 @@
             <GroupedBoardView v-else-if="isBoardView"
                               :groups="filteredGroups"
                               :canDropOnGroup="canDropOnGroup"
+                              :isGroupDrag="isGroupDrag"
+                              :selectedCount="selectedCount"
                               @cardMoved="(idKey: string, from: string, to: string, beforeIdKey: string | null) => emit('cardMoved', idKey, from, to, beforeIdKey)">
                 <template #boardCard="slotProps">
                     <slot name="boardCard" v-bind="slotProps" />
@@ -253,6 +255,24 @@
             type: Function as PropType<((sourceGroupKey: string, targetGroupKey: string) => boolean) | undefined>,
             required: false,
             default: undefined
+        },
+
+        /**
+         * Optional callback invoked at drag start to determine whether
+         * the card being dragged is part of a multi-card selection.
+         * Drives group-drag visual styling on the board view.
+         */
+        isGroupDrag: {
+            type: Function as PropType<((idKey: string) => boolean) | undefined>,
+            required: false,
+            default: undefined
+        },
+
+        /** Number of selected cards to display on the group-drag badge. */
+        selectedCount: {
+            type: Number,
+            required: false,
+            default: 0
         }
     });
 

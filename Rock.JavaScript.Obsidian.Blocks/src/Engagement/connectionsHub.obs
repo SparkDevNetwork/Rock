@@ -34,6 +34,8 @@
                   :headerSecondaryActions="secondaryActions"
                   :availableGroups="availableGroups"
                   :canDropOnGroup="canDropOnGroup"
+                  :isGroupDrag="isCardInGroupDrag"
+                  :selectedCount="allSelectedKeys.length"
                   @cardMoved="onCardMoved">
         <template #selectedActionToolbar>
             <div class="left-actions d-flex align-items-center gap-md">
@@ -1814,6 +1816,15 @@
         };
     });
 
+    /**
+     * Reports whether a card is part of a multi-card selection so the board
+     * view can apply group-drag styling to the mirror and transit previews.
+     * Matches the group-drag trigger condition in onCardMoved.
+     */
+    function isCardInGroupDrag(idKey: string): boolean {
+        return allSelectedKeys.value.length > 1 && allSelectedKeySet.value.has(idKey);
+    }
+
     function onCardMoved(idKey: string, fromGroupKey: string, toGroupKey: string, beforeIdKey: string | null): void {
         // If the from key and to key are the same then we just need to reorder the request.
         if (fromGroupKey === toGroupKey) {
@@ -1835,6 +1846,11 @@
             cardMovedBeforeIdKey.value = beforeIdKey;
         }
 
+        // Group drag: dragged card is part of a multi-card selection.
+        // Fall through to single-card path if not selected or sole selection,
+        // so we never move cards the user didn't drag.
+        const isGroupDrag = allSelectedKeys.value.length > 1 && allSelectedKeySet.value.has(idKey);
+
         switch (selectedGrouping.value) {
             case "connectorGrouping":
 
@@ -1844,7 +1860,8 @@
                 break;
             case "statusGrouping":
                 selectedStatus.value = box.options?.connectionStatuses?.find(s => s.idKey === toGroupKey)?.guid;
-                showChangeStatusModal(row);
+                // null = bulk (uses selectedRequestDetails); row = single card.
+                showChangeStatusModal(isGroupDrag ? null : row);
 
                 break;
             case "opportunityGrouping":
