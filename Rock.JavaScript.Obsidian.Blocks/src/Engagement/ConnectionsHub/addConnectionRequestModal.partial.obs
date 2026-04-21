@@ -336,6 +336,17 @@
         ...(props.connectionOpportunityDetails?.connectionOpportunityRequestAttributes ?? {})
     }));
 
+    /**
+     * Merges server-provided default edit values for the combined connection type and connection
+     * opportunity request attributes. Some field types (e.g. Matrix) need their edit value JSON
+     * pre-populated from configuration in order to render; for a brand-new Connection Request we
+     * have no saved values, so the server ships these defaults for us to seed the form with.
+     */
+    const combinedRequestAttributeDefaultValues = computed<Record<string, string>>(() => ({
+        ...(props.options?.connectionTypeRequestAttributeValues ?? {}),
+        ...(props.connectionOpportunityDetails?.connectionOpportunityRequestAttributeValues ?? {})
+    }));
+
     const hasCombinedRequestAttributes = computed<boolean>(() => Object.keys(combinedRequestAttributes.value).length > 0);
 
     function onSave(): void {
@@ -369,20 +380,19 @@
 
     /**
      * Prunes request attribute values to only those whose attribute keys are still
-     * valid for the currently selected Connection Type and Connection Opportunity.
+     * valid for the currently selected Connection Type and Connection Opportunity,
+     * and seeds any missing keys from the server-provided default edit values.
      *
      * This is necessary because request attributes come from multiple dynamic
      * sources and the shared AttributeValues object may contain stale entries
-     * when the opportunity (and its attribute schema) changes. A new object is
-     * assigned to ensure downstream components react to removed keys.
+     * when the opportunity (and its attribute schema) changes. Seeding missing
+     * keys is also necessary for field types like Matrix whose edit value JSON
+     * is derived from configuration and must be present for the editor to render.
+     * A new object is assigned to ensure downstream components react to changes.
      */
-    function pruneAttributeValues(): void {
-        if (!connectionRequestAttributeValues.value) {
-            connectionRequestAttributeValues.value = {};
-            return;
-        }
-
+    function pruneAndSeedAttributeValues(): void {
         const currentValues = connectionRequestAttributeValues.value ?? {};
+        const defaults = combinedRequestAttributeDefaultValues.value;
         const connectionTypeAttributeKeys = Object.keys(props.options?.connectionTypeRequestAttributes ?? {});
         const connectionOpportunityAttributeKeys = Object.keys(props.connectionOpportunityDetails?.connectionOpportunityRequestAttributes ?? {});
 
@@ -391,15 +401,25 @@
             ...connectionOpportunityAttributeKeys
         ]);
 
-        const prunedValues: Record<string, string> = {};
+        const nextValues: Record<string, string> = {};
 
+        // Keep only values for keys that are still valid for the current schema.
         for (const key of Object.keys(currentValues)) {
             if (validKeys.has(key)) {
-                prunedValues[key] = currentValues[key];
+                nextValues[key] = currentValues[key];
             }
         }
 
-        connectionRequestAttributeValues.value = prunedValues;
+        // Seed any valid keys that do not yet have a value from the server defaults.
+        for (const key of validKeys) {
+            if (nextValues[key] === undefined || nextValues[key] === null || nextValues[key] === "") {
+                if (defaults[key] !== undefined) {
+                    nextValues[key] = defaults[key];
+                }
+            }
+        }
+
+        connectionRequestAttributeValues.value = nextValues;
     }
 
     function onConnectionOpportunityChanged(value: string | string[]): void {
@@ -431,8 +451,15 @@
     });
 
     watch(() => props.connectionOpportunityDetails, () => {
-        pruneAttributeValues();
+        pruneAndSeedAttributeValues();
     });
+
+    // Seed default attribute values for the initially available Connection Type level
+    // request attributes. This ensures field types (e.g. Matrix) that rely on configuration
+    // derived data in their edit value JSON render correctly before an opportunity is chosen.
+    watch(() => props.options?.connectionTypeRequestAttributes, () => {
+        pruneAndSeedAttributeValues();
+    }, { immediate: true });
 
     watch(() => props.connectionOpportunityDetails?.connectorOptions, async () => {
         // Wait to see if the Connector dropdown is cleared.
