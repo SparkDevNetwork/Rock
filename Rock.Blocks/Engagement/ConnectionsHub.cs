@@ -415,6 +415,11 @@ namespace Rock.Blocks.Engagement
 
             options.ConnectionTypeRequestAttributes = tempConnectionRequest.GetPublicAttributesForEdit( RequestContext.CurrentPerson );
 
+            // Also include the pre-rendered edit values so that field types such as Matrix
+            // (whose edit value JSON is derived from their configuration) can render their
+            // inner attributes on a brand-new Connection Request that has no stored values.
+            options.ConnectionTypeRequestAttributeValues = tempConnectionRequest.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson );
+
             // The values should equal the field names for each respective column.
             options.GridDataToShowItems = new List<ListItemBag>
             {
@@ -1146,7 +1151,12 @@ namespace Rock.Blocks.Engagement
                 ConnectorOptions = connectorOptionsBag,
                 PlacementGroups = placementGroups,
                 Campuses = campusItems,
-                ConnectionOpportunityRequestAttributes = tempConnectionRequest.GetPublicAttributesForEdit( RequestContext.CurrentPerson )
+                ConnectionOpportunityRequestAttributes = tempConnectionRequest.GetPublicAttributesForEdit( RequestContext.CurrentPerson ),
+
+                // Also include the pre-rendered edit values so that field types such as Matrix
+                // (whose edit value JSON is derived from their configuration) can render their
+                // inner attributes on a brand-new Connection Request that has no stored values.
+                ConnectionOpportunityRequestAttributeValues = tempConnectionRequest.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
             };
         }
 
