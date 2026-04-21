@@ -58,5 +58,14 @@
 }
 // ====================== END ALTERNATIVE STYLE ======================
 
+// ====================== ADDITIONAL LABEL STYLES ======================
 
+span.label {
 
+    > a {
+      line-height: 16px; // hardcode to align text vertically within the span
+    }
+
+  }
+
+// =====================================================================
