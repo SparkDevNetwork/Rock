@@ -2027,6 +2027,18 @@ namespace Rock.Blocks.Engagement
 
             var celebrationText = GetCelebrationText( connectionRequest.Id );
 
+            var hasPlacementAssignment = connectionRequest.AssignedGroupId.HasValue
+                && connectionRequest.AssignedGroupMemberRoleId.HasValue;
+
+            var isExistingMember = hasPlacementAssignment
+                && new GroupMemberService( RockContext ).Queryable().AsNoTracking()
+                    .Any( gm => gm.GroupId == connectionRequest.AssignedGroupId.Value
+                        && gm.GroupRoleId == connectionRequest.AssignedGroupMemberRoleId.Value
+                        && gm.PersonId == connectionRequest.PersonAlias.PersonId
+                        && !gm.IsArchived );
+
+            var isPendingMember = hasPlacementAssignment && !isExistingMember;
+
             var requesterPerson = new PersonFieldBag
             {
                 IdKey = connectionRequest.PersonAlias.Person.IdKey,
@@ -2080,7 +2092,8 @@ namespace Rock.Blocks.Engagement
                 CelebrationText = celebrationText,
                 ReminderCount = reminderCount,
                 HasPlacementGroup = connectionRequest.AssignedGroup != null,
-                HasRequiredGroupRequirements = connectionRequest.AssignedGroup?.GroupRequirements?.Any( r => r.MustMeetRequirementToAddMember ) ?? false
+                HasRequiredGroupRequirements = connectionRequest.AssignedGroup?.GroupRequirements?.Any( r => r.MustMeetRequirementToAddMember ) ?? false,
+                IsPendingMember = isPendingMember
             };
 
             var builder = GetGridBuilder();
@@ -3187,7 +3200,12 @@ SELECT
     cra_agg.[LastActivityDateTime]                  AS [LastActivityDateTime],
     COALESCE(rem_agg.[ReminderCount], 0)            AS [ReminderCount],
     CAST(CASE WHEN grp_req.[GroupId] IS NOT NULL THEN 1 ELSE 0 END AS BIT)
-                                                    AS [HasRequiredGroupRequirements]
+                                                    AS [HasRequiredGroupRequirements],
+    CAST(CASE WHEN cr.[AssignedGroupId] IS NOT NULL
+                   AND cr.[AssignedGroupMemberRoleId] IS NOT NULL
+                   AND gm_match.[IsMember] IS NULL
+              THEN 1 ELSE 0 END AS BIT)
+                                                    AS [IsPendingMember]
 FROM [ConnectionRequest] cr
 INNER JOIN [ConnectionOpportunity] co
     ON co.[Id] = cr.[ConnectionOpportunityId]
@@ -3241,6 +3259,18 @@ OUTER APPLY (
     WHERE [NoteTypeId] = @CelebrationNoteTypeId
       AND [EntityId] = cr.[Id]
 ) cel_note
+OUTER APPLY (
+    -- Short-circuits to NULL when the request has no placement group/role assigned,
+    -- otherwise uses the GroupMember index on (GroupId, PersonId) for a fast seek.
+    SELECT TOP 1 1 AS [IsMember]
+    FROM [GroupMember] gm
+    WHERE cr.[AssignedGroupId] IS NOT NULL
+      AND cr.[AssignedGroupMemberRoleId] IS NOT NULL
+      AND gm.[GroupId] = cr.[AssignedGroupId]
+      AND gm.[GroupRoleId] = cr.[AssignedGroupMemberRoleId]
+      AND gm.[PersonId] = rp.[Id]
+      AND gm.[IsArchived] = 0
+) gm_match
 WHERE 1 = 1" );
 
             // Campus context filter.
@@ -3331,6 +3361,7 @@ WHERE 1 = 1" );
                     ConnectorPersonAliasGuid = row.ConnectorPersonAliasGuid,
                     HasPlacementGroup = row.AssignedGroupId.HasValue,
                     HasRequiredGroupRequirements = false,
+                    IsPendingMember = row.IsPendingMember,
                     ReminderCount = row.ReminderCount,
                     Order = row.Order,
                     ConnectionStatus = new ConnectionStatusBag
@@ -5865,6 +5896,7 @@ WHERE 1 = 1" );
                 .AddTextField( "campus", a => a.Campus )
                 .AddField( "campusGuid", a => a.CampusGuid )
                 .AddTextField( "group", a => a.Group )
+                .AddField( "isPendingMember", a => a.IsPendingMember )
                 .AddField( "connectionStatus", a => a.ConnectionStatus )
                 .AddDateTimeField( "lastActivityDateTime", a => a.LastActivityDateTime )
                 .AddField( "activityCount", a => a.ActivityCount )
@@ -5995,6 +6027,13 @@ WHERE 1 = 1" );
             /// before the person can be added as a group member.
             /// </summary>
             public bool HasRequiredGroupRequirements { get; set; }
+
+            /// <summary>
+            /// Gets or sets whether the requester is a pending placement — true when the request has
+            /// both an AssignedGroupId and AssignedGroupMemberRoleId but the requester is not yet an
+            /// active GroupMember in that group/role.
+            /// </summary>
+            public bool IsPendingMember { get; set; }
 
             /// <summary>
             /// Gets or sets the sort order of the ConnectionRequest within a board column.
@@ -6174,6 +6213,14 @@ WHERE 1 = 1" );
             /// requirement. False when there is no placement group or no mandatory requirements exist.
             /// </summary>
             public bool HasRequiredGroupRequirements { get; set; }
+
+            /// <summary>
+            /// Gets or sets whether the requester is a pending placement — true when the request has
+            /// both an AssignedGroupId and AssignedGroupMemberRoleId but the requester is not yet an
+            /// active (non-archived) GroupMember in that group/role. False when no placement is
+            /// assigned or when the requester is already a member.
+            /// </summary>
+            public bool IsPendingMember { get; set; }
 
             /// <summary>Gets or sets the sort order of the ConnectionRequest within a board column.</summary>
             public int Order { get; set; }

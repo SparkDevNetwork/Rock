@@ -529,6 +529,16 @@
                         field="group"
                         :filter="pickExistingValueFilter">
                     <template #format="{ row }">
+                        <div v-if="!!row.group"
+                             class="text-truncate"
+                             v-tooltip.overflow="row.group + (row.isPendingMember ? ' (Pending Member)' : '')">
+                            {{ row.group }}<span v-if="row.isPendingMember"> (Pending Member)</span>
+                        </div>
+                        <div v-else>
+                            <i class="ti ti-minus"></i>
+                        </div>
+                    </template>
+                    <template #condensed="{ row }">
                         <div v-if="!!row.group">
                             {{ row.group }}
                         </div>
@@ -812,6 +822,11 @@
 /* The .grid-cell class sets overflow: hidden. This prevens the dropdown menu from working within the cell. This class will set overflow: visible for any grid column with the itemClass "grid-cell-overflow" */
 :deep(.grid-cell.grid-cell-overflow) {
     overflow: visible;
+}
+
+/* The dropdown content within the List View needs to have a greater index then the grid column header (currently 3). */
+:deep(.grid-cell-overflow .floating-dropdown) {
+    z-index: 4;
 }
 
 .activity-metric {
