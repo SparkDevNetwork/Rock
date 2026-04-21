@@ -108,7 +108,7 @@
                             </div>
                         </div>
                         <TransitionVerticalCollapse>
-                            <div v-show="areNotesVisible" class="bg-interface-softest">
+                            <div v-show="areNotesVisible" class="person-note-container">
                                 <NoteItem v-for="note in requestDetails.personNotes" :note="note" />
                             </div>
                         </TransitionVerticalCollapse>
@@ -236,6 +236,13 @@
 </template>
 
 <style scoped>
+.person-note-container {
+    background-color: var(--color-interface-softest);
+    max-height: 400px;
+    overflow-y: auto;
+    border-bottom: 1px solid var(--color-interface-soft);
+}
+
 .disabled {
     cursor: default;
     color: var(--color-interface-medium);

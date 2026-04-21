@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="p-spacing-md border-bottom d-flex flex-column gap-xs">
+    <div class="note-item">
         <div class="d-flex gap-xs align-items-center">
             <PersonAvatar v-if="note.createdByPhotoUrl"
                           :photoUrl="note.createdByPhotoUrl"
@@ -24,6 +24,18 @@
 </template>
 
 <style scoped>
+.note-item {
+    padding: var(--spacing-medium);
+    border-bottom: 1px solid var(--color-interface-soft);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+}
+
+.note-item:last-child {
+    border: none;
+}
+
 /* text-sm is incorrectly returning xsmall at the moment in develop */
 .text-small {
     font-size: var(--font-size-small);
