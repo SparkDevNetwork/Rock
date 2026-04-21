@@ -154,5 +154,10 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// The attributes.
         /// </value>
         public Dictionary<string, PublicAttributeBag> ConnectionTypeRequestAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default, pre-rendered edit values for the Connection Type level request attributes.
+        /// </summary>
+        public Dictionary<string, string> ConnectionTypeRequestAttributeValues { get; set; }
     }
 }
