@@ -132,7 +132,7 @@
   height:       36px;
   padding:      var(--spacing-xsmall) 12px 0;
   margin-right: 0;
-  color:      #fff;
+  color:      var(--base-interface-softest);
   background:   #2d2e31;
   border-color: var(--adminbar-bg); // TODO this should be darken by 10% using css mix() when available
   border-style: solid;
@@ -145,14 +145,17 @@
 
   > span {
     display:        none;
-    margin-top:     3px;
     margin-bottom:  var(--spacing-tiny);
     font-size:      12px;
     text-align:     center;
   }
 
   > span.label {
-    margin-top: 1px;
+
+    a {
+      color: var(--color-interface-stronger);
+    }
+
   }
 
   > span.cms-admin-footer-property {
@@ -162,7 +165,7 @@
   }
 
   a {
-    color: #fff;
+    color: var(--base-interface-softest);
     text-decoration: none;  //Added to remove the underline of "Page Load Time:" span of the admin bar
   }
 
@@ -185,7 +188,7 @@
 }
 
 #cms-admin-footer .btn {
-  color:      #fff;
+  color:      var(--base-interface-softest);
   text-shadow:  none;
   box-shadow:   none;
 }

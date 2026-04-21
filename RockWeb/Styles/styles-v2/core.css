@@ -1290,7 +1290,7 @@ iframe {
   height: 36px;
   padding: var(--spacing-xsmall) 12px 0;
   margin-right: 0;
-  color: #fff;
+  color: var(--base-interface-softest);
   background: #2d2e31;
   border-color: var(--adminbar-bg);
   border-style: solid;
@@ -1302,13 +1302,12 @@ iframe {
 }
 #cms-admin-footer > span {
   display: none;
-  margin-top: 3px;
   margin-bottom: var(--spacing-tiny);
   font-size: 12px;
   text-align: center;
 }
-#cms-admin-footer > span.label {
-  margin-top: 1px;
+#cms-admin-footer > span.label a {
+  color: var(--color-interface-stronger);
 }
 #cms-admin-footer > span.cms-admin-footer-property {
   padding: 0 6px;
@@ -1316,7 +1315,7 @@ iframe {
   border-radius: var(--rounded-tiny);
 }
 #cms-admin-footer a {
-  color: #fff;
+  color: var(--base-interface-softest);
   text-decoration: none;
 }
 #cms-admin-footer a:hover {
@@ -1335,7 +1334,7 @@ iframe {
 }
 
 #cms-admin-footer .btn {
-  color: #fff;
+  color: var(--base-interface-softest);
   text-shadow: none;
   box-shadow: none;
 }
