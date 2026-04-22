@@ -62,5 +62,10 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionOperationalSnapshot
         /// Gets or sets the metrics related to completion quality and efficiency.
         /// </summary>
         public CompletionMetricsBag CompletionMetrics { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether future follow-ups are enabled.
+        /// </summary>
+        public bool IsFutureFollowUpEnabled { get; set; }
     }
 }
