@@ -81,8 +81,6 @@ namespace RockWeb.Blocks.Finance
 
         private static class PageParameterKey
         {
-            [RockObsolete( "1.13.1" )]
-            [Obsolete( "Pass the GUID instead using the key ScheduledTransactionGuid." )]
             public const string ScheduledTransactionId = "ScheduledTransactionId";
 
             public const string ScheduledTransactionGuid = "ScheduledTransactionGuid";
@@ -261,18 +259,17 @@ namespace RockWeb.Blocks.Finance
         {
             var financialScheduledTransactionGuid = PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull();
 
-#pragma warning disable CS0618
-            var financialScheduledTransactionId = PageParameter( PageParameterKey.ScheduledTransactionId ).AsIntegerOrNull();
-#pragma warning restore CS0618
-
             if ( financialScheduledTransactionGuid.HasValue )
             {
                 return financialScheduledTransactionGuid.Value;
             }
 
-            if ( financialScheduledTransactionId.HasValue )
+            var scheduledTransactionKey = PageParameter( PageParameterKey.ScheduledTransactionId );
+
+            if ( scheduledTransactionKey.IsNotNullOrWhiteSpace() )
             {
-                return new FinancialScheduledTransactionService( new RockContext() ).GetGuid( financialScheduledTransactionId.Value );
+                return new FinancialScheduledTransactionService( new RockContext() )
+                    .GetSelect( scheduledTransactionKey, t => ( Guid? ) t.Guid, !PageCache.Layout.Site.DisablePredictableIds );
             }
 
             return null;

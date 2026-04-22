@@ -26,6 +26,16 @@ namespace Rock.ViewModels.Rest.Controls
     public class EmailEditorEmailSectionBag
     {
         /// <summary>
+        /// Gets or sets a value indicating whether the current person can delete this email section.
+        /// </summary>
+        public bool CanDelete { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current person can edit this email section.
+        /// </summary>
+        public bool CanEdit { get; set; }
+
+        /// <summary>
         /// Gets or sets the email section category.
         /// </summary>
         public ListItemBag Category { get; set; }

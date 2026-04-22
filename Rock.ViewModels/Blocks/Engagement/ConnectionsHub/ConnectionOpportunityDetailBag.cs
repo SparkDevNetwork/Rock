@@ -53,5 +53,10 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// The attributes.
         /// </value>
         public Dictionary<string, PublicAttributeBag> ConnectionOpportunityRequestAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default, pre-rendered edit values for the Connection Opportunity level request attributes.
+        /// </summary>
+        public Dictionary<string, string> ConnectionOpportunityRequestAttributeValues { get; set; }
     }
 }

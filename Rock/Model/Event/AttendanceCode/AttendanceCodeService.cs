@@ -64,13 +64,6 @@ namespace Rock.Model
             "5XL", "6XL", "7XL", "8XL", "9XL", "XXL", "F4T", "FRT", "DHR", "MFR", "FKR"
         };
 
-        /// <summary>
-        /// A list of <see cref="System.String"/> values that are not allowable as attendance codes.
-        /// </summary>
-        [Obsolete( "Use NoGood instead" )]
-        [RockObsolete( "1.13" )]
-        public static readonly List<string> noGood = NoGood;
-
         private static readonly string timeoutExceptionMessage = "Too many attempts to create a unique attendance code.  There is almost certainly a check-in system 'Security Code Length' configuration problem.";
 
         /// <summary>

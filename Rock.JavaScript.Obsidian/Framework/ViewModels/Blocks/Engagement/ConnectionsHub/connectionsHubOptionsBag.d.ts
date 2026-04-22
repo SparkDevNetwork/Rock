@@ -28,6 +28,7 @@ import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagemen
 import { ConnectionOpportunityDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionOpportunityDetailBag";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
 import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
+import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionWorkflowBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -92,6 +93,9 @@ export type ConnectionsHubOptionsBag = {
     /** Gets or sets the enabled views for this connection type. */
     enabledViews: EnabledViewFlags;
 
+    /** Gets or sets the default, pre-rendered edit values for the Connection Type level request attributes. */
+    connectionTypeRequestAttributeValues?: Record<string, string> | null;
+
     /** Gets or sets the list of column options that control which data fields are displayed in the request grid. */
     gridDataToShowItems?: ListItemBag[] | null;
 
@@ -129,5 +133,5 @@ export type ConnectionsHubOptionsBag = {
     title?: string | null;
 
     /** Gets or sets the list of workflows that can be launched from connection requests. */
-    workflowItems?: ListItemBag[] | null;
+    workflowItems?: ConnectionWorkflowBag[] | null;
 };

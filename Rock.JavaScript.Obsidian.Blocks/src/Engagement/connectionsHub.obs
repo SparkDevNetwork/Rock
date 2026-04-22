@@ -38,12 +38,12 @@
                   :selectedCount="allSelectedKeys.length"
                   @cardMoved="onCardMoved">
         <template #selectedActionToolbar>
-            <div class="left-actions d-flex align-items-center gap-md">
-                <div class="d-flex align-items-center gap-tiny">
+            <div class="left-actions d-flex align-items-center gap-spacing-md">
+                <div class="d-flex align-items-center gap-spacing-tiny">
                     <RockLabel class="text-info-strong mb-0">Selected</RockLabel>
                     <Badge class="font-weight-semibold bg-info-strong">{{ allSelectedKeys.length }}</Badge>
                 </div>
-                <div class="d-flex align-items-center gap-xs">
+                <div class="d-flex align-items-center gap-spacing-xs">
                     <RockButton class="activity-btn" @click="showAssignRequestModal" :disabled="!canEditConnectionRequests">
                         <i class="ti ti-user-circle"></i>
                         <span class="activity-btn-label">Assign</span>
@@ -101,8 +101,8 @@
                     </div>
                 </div>
             </div>
-            <div class="right-actions d-flex align-items-center gap-md">
-                <div class="pl-spacing-md d-flex align-items-center gap-xs">
+            <div class="right-actions d-flex align-items-center gap-spacing-md">
+                <div class="pl-spacing-md d-flex align-items-center gap-spacing-xs">
                     <RockButton @click="showSMSModal()" class="activity-btn">
                         <i class="ti ti-message-circle-plus"></i>
                         <span class="activity-btn-label">SMS</span>
@@ -112,12 +112,12 @@
                         <span class="activity-btn-label">Email</span>
                     </RockButton>
                 </div>
-                <div class="border-left border-info pl-spacing-md d-flex align-items-center gap-md">
+                <div class="border-left-divider pl-spacing-md d-flex align-items-center gap-spacing-md">
                     <RockButton class="activity-btn" @click="showAddActivityModal()" :disabled="!canEditConnectionRequests">
                         <i class="ti ti-activity"></i>
                         <span class="activity-btn-label">Add Activity</span>
                     </RockButton>
-                    <div class="d-flex align-items-center gap-sm">
+                    <div class="d-flex align-items-center gap-spacing-sm">
                         <i class="ti ti-x cursor-pointer" @click="clearAllSelections"></i>
                     </div>
                 </div>
@@ -160,7 +160,7 @@
                         name="connectionOpportunity"
                         field="connectionOpportunity">
                     <template #format="{ row }">
-                        <div class="d-flex flex-column align-items-start gap-1">
+                        <div class="d-flex flex-column align-items-start gap-spacing-tiny">
                             <HighlightLabel labelType="custom"
                                             customClass="label-default text-xs text-semibold text-interface-strong">
                                 {{ row.connectionOpportunity }}
@@ -222,7 +222,7 @@
                         field="activity">
                     <template #format="{ row }">
                         <div v-if="!!row.lastActivityDateTime && !!row.activityCount"
-                             class="d-flex align-items-center gap-1">
+                             class="d-flex align-items-center gap-spacing-tiny">
                             <div class="activity-metric activity-date">
                                 <i class="ti ti-calendar-month"></i>
                                 <span>
@@ -323,15 +323,15 @@
                                                         @click.stop="(e) => onStatusClick(row, e)" />
                             </template>
                             <div v-else-if="row.connectionState === ConnectionState.Inactive"
-                                 class="text-center text-semibold text-slate">
+                                 class=" font-size-sm text-center text-semibold text-slate">
                                 {{ ConnectionStateDescription[ConnectionState.Inactive] }}
                             </div>
                             <div v-else-if="row.connectionState === ConnectionState.FutureFollowUp"
-                                 class="text-center text-semibold text-info-strong">
+                                 class="font-size-sm text-center text-semibold text-info-strong">
                                 {{ ConnectionStateDescription[ConnectionState.FutureFollowUp] }} - {{ asLocaleString(row.followUpDate) }}
                             </div>
                             <div v-else-if="row.connectionState === ConnectionState.Connected"
-                                 class="text-center text-semibold text-emerald">
+                                 class="font-size-sm text-center text-semibold text-emerald">
                                 {{ ConnectionStateDescription[ConnectionState.Connected] }}
                             </div>
                         </div>
@@ -695,7 +695,8 @@
                    @addSuccess="increaseReminderCount">
         <template #postBody>
             <RequestTable :requestDetails="requestDetailsForModal"
-                          :viewOptions="viewOptions" />
+                          :viewOptions="viewOptions"
+                          :isConnectorVisible="true" />
         </template>
     </ReminderModal>
 
@@ -839,6 +840,15 @@
     z-index: 4;
 }
 
+:deep(.grid-body) {
+    border-bottom-left-radius: var(--rounded-medium);
+    border-bottom-right-radius: var(--rounded-medium);
+}
+
+:deep(.grid-body > .grid-row:has(+ div) .grid-cell) {
+    border-bottom: none;
+}
+
 .activity-metric {
     display: flex;
     align-items: center;
@@ -902,26 +912,6 @@
     gap: var(--spacing-xsmall);
 }
 
-.gap-tiny {
-    gap: var(--spacing-tiny);
-}
-
-.gap-xs {
-    gap: var(--spacing-xsmall);
-}
-
-.gap-sm {
-    gap: var(--spacing-small);
-}
-
-.gap-md {
-    gap: var(--spacing-medium);
-}
-
-.gap-lg {
-    gap: var(--spacing-large);
-}
-
 .ddl-min-width {
     min-width: 150px;
 }
@@ -932,6 +922,10 @@
 
 .activity-count {
     color: var(--color-interface-medium);
+}
+
+.border-left-divider {
+    border-left: 1px solid var(--color-interface-softer);
 }
 
 .text-slate {
@@ -2164,6 +2158,7 @@
         }
 
         const connectionOpportunity = row["connectionOpportunity"] as string | null | undefined;
+        const connectionOpportunityGuid = row["connectionOpportunityGuid"] as string | null | undefined;
         const connectionStatus = row["connectionStatus"] as ConnectionStatusBag | null | undefined;
         const connectionTypeSource = row["connectionTypeSource"] as string | null | undefined;
         const connector = row["connectorDetails"] as ListItemBag | null | undefined;
@@ -2175,6 +2170,7 @@
         return {
             idKey,
             connectionOpportunity,
+            connectionOpportunityGuid,
             connectionStatus,
             connectionTypeSource,
             connector,
@@ -2196,6 +2192,7 @@
         const bag = <BulkRequestViewBag>{
             idKey: box.entity.connectionRequestIdKey,
             connectionOpportunity: box.entity.connectionOpportunityName,
+            connectionOpportunityGuid: box.entity.connectionOpportunityGuid,
             connectionStatus: box.entity.connectionStatus,
             connectionTypeSource: box.entity.connectionTypeSource,
             connector: connector,

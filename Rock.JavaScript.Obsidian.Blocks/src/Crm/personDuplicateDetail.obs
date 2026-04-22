@@ -1,7 +1,10 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="isPersonNotFound" alertType="warning">The requested person could not be found.</NotificationBox>
+    <NotificationBox v-if="hasNoDuplicates" alertType="success" class="alert-grid">No duplicates found for this person.</NotificationBox>
+    <Grid v-if="!isPersonNotFound"
+          :definition="config.gridDefinition ?? undefined"
           title="Person Duplicates"
           :data="gridDataSource"
           keyField="idKey"
@@ -26,7 +29,7 @@
                 <span v-if="row.confidenceScore >= config.options!.confidenceScoreHigh" class='label label-success'>
                     {{ (row.confidenceScore as number).toFixed(2) }}%
                 </span>
-                <span v-else-if="row.confidenceScore >= config.options!.confidenceScoreLow" class='label label-warning'>
+                <span v-else-if="row.confidenceScore > config.options!.confidenceScoreLow" class='label label-warning'>
                     {{ (row.confidenceScore as number).toFixed(2) }}%
                 </span>
                 <span v-else-if="row.confidenceScore > 0" class='label label-default'>
@@ -66,14 +69,12 @@
                     title="Gender"
                     field="gender"
                     :disableSort="true"
-                    itemClass="justify-content-center text-center"
-                    width="80" />
-        <TextColumn name="age"
-                    title="Age"
-                    field="age"
-                    :disableSort="true"
-                    itemClass="justify-content-center text-center"
-                    width="60" />
+                    width="120px" />
+        <NumberColumn name="age"
+                      title="Age"
+                      field="age"
+                      :disableSort="true"
+                      width="100px" />
         <Column name="addresses"
                 title="Addresses"
                 field="addresses"
@@ -81,17 +82,9 @@
                 :disableSort="true">
             <template #format="{ row }">
                 <ul class="list-unstyled">
-                    <li v-for="address in row.addresses" class="address clearfix">
+                    <li v-for="(address, index) in row.addresses" :key="index" class="address clearfix">
                         <strong>{{ address.groupLocationTypeValue }}</strong>
-                        <div>
-                            {{ (address.street1 as string) }}
-                        </div>
-                        <div v-if="address.street2 !== null">
-                            {{ address.street2 }}
-                        </div>
-                        <div>
-                            {{ address.city }}, {{ address.state }} {{ address.postalCode }}
-                        </div>
+                        <div v-html="address.formattedHtmlAddress"></div>
                     </li>
                 </ul>
             </template>
@@ -102,7 +95,7 @@
                 :disableSort="true">
             <template #format="{ row }">
                 <ul class="list-unstyled">
-                    <li v-for="phoneNumber in row.phoneNumbers" class="phone clearfix">
+                    <li v-for="(phoneNumber, index) in row.phoneNumbers" :key="index" class="phone clearfix">
                         <strong>{{ phoneNumber.phoneNumberTypeValue }}</strong>
                         <p>{{ phoneNumber.phoneNumber }}</p>
                     </li>
@@ -145,10 +138,22 @@
     </Grid>
 </template>
 
+<style scoped>
+/*
+    Bootstrap's default `ul` has a bottom margin. The address and phone
+    number lists render inline inside grid cells, so the trailing margin
+    adds an awkward gap beneath each cell. Strip it via a scoped override.
+*/
+:deep(.list-unstyled) {
+    margin-bottom: 0;
+}
+</style>
+
+
 <script setup lang="ts">
     import { ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import Grid, { Column, TextColumn, AttributeColumns, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { Column, TextColumn, NumberColumn, AttributeColumns, SelectColumn } from "@Obsidian/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
@@ -177,6 +182,10 @@
 
     const isMarkingDuplicate = ref(false);
 
+    const hasNoDuplicates = ref(false);
+
+    const isPersonNotFound = ref(false);
+
     // #endregion Values
 
     // #region Functions
@@ -188,9 +197,19 @@
         const result = await invokeBlockAction<GridDataBag>("GetGridData");
 
         if (result.isSuccess && result.data) {
-            if (result.data.rows && result.data.rows.length > 0) {
-                primaryRowIdKey.value = result.data.rows[0]["idKey"] as string;
+            const rows = result.data.rows ?? [];
+
+            if (rows.length > 0) {
+                primaryRowIdKey.value = rows[0]["idKey"] as string;
             }
+
+            // If the grid has only the primary person row, no duplicates were found.
+            hasNoDuplicates.value = rows.length === 1 && rows[0]["isDuplicateRow"] === false;
+
+            // When the PersonId page parameter doesn't resolve to a real person, the grid
+            // returns no rows. Surface a friendly warning and hide the empty grid.
+            isPersonNotFound.value = rows.length === 0;
+
             return result.data;
         }
         else {
@@ -232,48 +251,57 @@
 
     function onPersonProfileClick(idKey: string): void {
         if (idKey?.length > 0) {
-            window.location.href = `/person/${idKey}`;
+            // Open in a new tab so the reviewer keeps their place in the duplicate grid.
+            window.open(`/person/${idKey}`, "_blank", "noopener");
         }
     }
 
     async function onNotDuplicateClick(idKey: string): Promise<void> {
         isMarkingDuplicate.value = true;
-        if (await confirm("Are you sure this is not a duplicate?")) {
-            const response = await invokeBlockAction("MarkNotDuplicate", {
-                personDuplicateIdKey: idKey
-            });
+        try {
+            if (await confirm("Are you sure this is not a duplicate?")) {
+                const response = await invokeBlockAction("MarkNotDuplicate", {
+                    personDuplicateIdKey: idKey
+                });
 
-            if (response.isSuccess) {
-                gridDataSource.value = loadGridData();
-            }
-            else if (response.errorMessage) {
-                errorMessage.value = response.errorMessage;
-            }
-            else {
-                errorMessage.value = "An unknown error occurred while trying to mark duplicate as not a duplicate.";
+                if (response.isSuccess) {
+                    gridDataSource.value = loadGridData();
+                }
+                else if (response.errorMessage) {
+                    errorMessage.value = response.errorMessage;
+                }
+                else {
+                    errorMessage.value = "An unknown error occurred while trying to mark duplicate as not a duplicate.";
+                }
             }
         }
-        isMarkingDuplicate.value = false;
+        finally {
+            isMarkingDuplicate.value = false;
+        }
     }
 
     async function onIgnoreDuplicateClick(idKey: string): Promise<void> {
         isMarkingDuplicate.value = true;
-        if (await confirm("This will ignore this potential duplicate until the score changes. Are you sure you want to ignore this as a duplicate?")) {
-            const response = await invokeBlockAction("MarkIgnoreDuplicate", {
-                personDuplicateIdKey: idKey
-            });
+        try {
+            if (await confirm("This will ignore this potential duplicate until the score changes. Are you sure you want to ignore this as a duplicate?")) {
+                const response = await invokeBlockAction("MarkIgnoreDuplicate", {
+                    personDuplicateIdKey: idKey
+                });
 
-            if (response.isSuccess) {
-                gridDataSource.value = loadGridData();
-            }
-            else if (response.errorMessage) {
-                errorMessage.value = response.errorMessage;
-            }
-            else {
-                errorMessage.value = "An unknown error occurred while trying to mark duplicate as ignored.";
+                if (response.isSuccess) {
+                    gridDataSource.value = loadGridData();
+                }
+                else if (response.errorMessage) {
+                    errorMessage.value = response.errorMessage;
+                }
+                else {
+                    errorMessage.value = "An unknown error occurred while trying to mark duplicate as ignored.";
+                }
             }
         }
-        isMarkingDuplicate.value = false;
+        finally {
+            isMarkingDuplicate.value = false;
+        }
     }
 
     // #endregion

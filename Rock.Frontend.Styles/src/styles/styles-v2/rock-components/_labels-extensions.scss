@@ -9,10 +9,16 @@
 
 
 // ======================== ALTERNATIVE STYLE ========================
+
 .label {
+  height: 26px; // Hardcode to match the height of the .btn-xs for better alignment when placed beside each other, such as in panel headers
+  align-items: center; // Vertically center the content if it wraps to multiple lines
+  padding: var(--spacing-tiny) var(--spacing-xsmall);
+
   a {
     color: inherit; // allow for links in labels
   }
+
 }
 
 .label-outline {
@@ -27,8 +33,8 @@
 }
 
 .label-type {
-  color:            var(--base-interface-softest);
-  background-color: var(--color-interface-medium);
+  color:            var(--color-interface-strong);
+  background-color: var(--color-interface-soft);
 }
 
 .label-communicationstatus-approved {
@@ -52,5 +58,14 @@
 }
 // ====================== END ALTERNATIVE STYLE ======================
 
+// ====================== ADDITIONAL LABEL STYLES ======================
 
+span.label {
 
+    > a {
+      line-height: 16px; // hardcode to align text vertically within the span
+    }
+
+  }
+
+// =====================================================================

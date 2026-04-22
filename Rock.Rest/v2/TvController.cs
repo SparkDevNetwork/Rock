@@ -953,36 +953,6 @@ namespace Rock.Rest.v2.Controllers
                 .Select( s => s[random.Next( s.Length )] ).ToArray() );
         }
 
-        /// <summary>
-        /// Gets the client ip.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <remarks>We now utilize the global method on the <see cref="WebRequestHelper" /> class.</remarks>
-        /// <returns></returns>
-        [RockObsolete( "1.15" )]
-        private string GetClientIp( HttpRequestMessage request )
-        {
-            // http://stackoverflow.com/questions/735350/how-to-get-a-users-client-ip-address-in-asp-net
-            if ( request.Headers.Contains( "X-FORWARDED-FOR" ) )
-            {
-                return request.Headers.GetValues( "X-FORWARDED-FOR" ).First();
-            }
-            else if ( request.Properties.ContainsKey( "MS_HttpContext" ) )
-            {
-                return ( ( HttpContextWrapper ) request.Properties["MS_HttpContext"] ).Request.UserHostAddress;
-            }
-            else if ( request.Properties.ContainsKey( RemoteEndpointMessageProperty.Name ) )
-            {
-                RemoteEndpointMessageProperty prop;
-                prop = ( RemoteEndpointMessageProperty ) this.Request.Properties[RemoteEndpointMessageProperty.Name];
-                return prop.Address;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
         #endregion
     }
 }

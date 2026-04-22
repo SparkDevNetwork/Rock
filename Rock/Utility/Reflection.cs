@@ -1117,7 +1117,7 @@ namespace Rock
                         }
                     }
 
-                    if ( isRockAssembly )
+                    if ( isRockAssembly && IsPluginAssemblyValid( assembly ) )
                     {
                         pluginAssemblies.Add( assembly );
                     }
@@ -1129,6 +1129,39 @@ namespace Rock
             return _pluginAssemblies.ToList();
         }
 
+        /// <summary>
+        /// Makes a best effort check on if the assembly is a valid plugin assembly.
+        /// This is designed to catch things like an out of date plugin that is
+        /// referencing an older version of Rock and has types that cannot be
+        /// resolved. Without this, EF will blow up when trying to build the model
+        /// and prevent Rock from starting up.
+        /// </summary>
+        /// <param name="assembly">The plugin assembly to check.</param>
+        /// <returns><c>true</c> if the assembly appears to be valid; otherwise <c>false</c>.</returns>
+        private static bool IsPluginAssemblyValid( Assembly assembly )
+        {
+            try
+            {
+                var modelTypes = assembly.GetTypes()
+                    .Where( t => typeof( IEntity ).IsAssignableFrom( t ) );
+
+                foreach ( var type in modelTypes )
+                {
+                    foreach ( var prop in type.GetProperties() )
+                    {
+                        // Force access to the property type to ensure it is
+                        // a type that can be resolved.
+                        _ = prop.PropertyType.FullName;
+                    }
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Gets the name of the type in a "friendly" manner.

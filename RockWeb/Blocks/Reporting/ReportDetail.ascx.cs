@@ -102,6 +102,7 @@ namespace RockWeb.Blocks.Reporting
             public const string ParentCategoryId = "ParentCategoryId";
             public const string ReportId = "ReportId";
             public const string DataViewId = "DataViewId";
+            public const string ExpandedIds = "ExpandedIds";
         }
 
         #endregion PageParameterKey
@@ -578,7 +579,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            int? categoryId = null;
+            string categoryId = null;
             var rockContext = new RockContext();
             var reportService = new ReportService( rockContext );
             var report = reportService.Get( hfReportId.Value.AsInteger() );
@@ -594,16 +595,24 @@ namespace RockWeb.Blocks.Reporting
                 }
                 else
                 {
-                    categoryId = report.CategoryId;
+                    if ( report.CategoryId.HasValue )
+                    {
+                        categoryId = CategoryCache.Get( report.CategoryId.Value )?.IdKey;
+                    }
 
                     reportService.Delete( report );
                     rockContext.SaveChanges();
 
-                    // reload page, selecting the deleted data view's parent
+                    // reload page, selecting the deleted report's parent
                     var qryParams = new Dictionary<string, string>();
-                    if ( categoryId != null )
+                    if ( !string.IsNullOrEmpty( categoryId ) )
                     {
-                        qryParams["CategoryId"] = categoryId.ToString();
+                        qryParams["CategoryId"] = categoryId;
+                    }
+
+                    if ( !string.IsNullOrEmpty( PageParameter( PageParameterKey.ExpandedIds ) ) )
+                    {
+                        qryParams["ExpandedIds"] = PageParameter( PageParameterKey.ExpandedIds );
                     }
 
                     NavigateToPage( RockPage.Guid, qryParams );
@@ -785,7 +794,13 @@ namespace RockWeb.Blocks.Reporting
             }
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["ReportId"] = report.Id.ToString();
+            qryParams["ReportId"] = report.IdKey;
+
+            if ( !string.IsNullOrEmpty( PageParameter( PageParameterKey.ExpandedIds ) ) )
+            {
+                qryParams["ExpandedIds"] = PageParameter( PageParameterKey.ExpandedIds );
+            }
+
             NavigateToPage( RockPage.Guid, qryParams );
         }
 
@@ -853,12 +868,18 @@ namespace RockWeb.Blocks.Reporting
 
             if ( reportId == 0 )
             {
-                int? parentCategoryId = GetIdFromPageParameter( PageParameterKey.ParentCategoryId );
-                if ( parentCategoryId.HasValue )
+                var parentCategory = CategoryCache.Get( PageParameter( PageParameterKey.ParentCategoryId ), !PageCache.Layout.Site.DisablePredictableIds );
+                if ( parentCategory != null )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
-                    qryParams["CategoryId"] = parentCategoryId.ToString();
+                    qryParams["CategoryId"] = parentCategory.IdKey;
+
+                    if ( !string.IsNullOrEmpty( PageParameter( PageParameterKey.ExpandedIds ) ) )
+                    {
+                        qryParams["ExpandedIds"] = PageParameter( PageParameterKey.ExpandedIds );
+                    }
+
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else

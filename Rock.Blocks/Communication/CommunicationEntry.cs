@@ -2590,9 +2590,6 @@ namespace Rock.Blocks.Communication
             }
 
             /// <inheritdoc/>
-            public int? SMSFromDefinedValueId { get; set; }
-
-            /// <inheritdoc/>
             public void SetEmailAttachments( IEnumerable<int> binaryFileIds )
             {
                 if ( _bag.EmailAttachmentBinaryFiles == null )

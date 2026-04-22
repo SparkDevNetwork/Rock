@@ -1,0 +1,393 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!config.options?.isBlockVisible"
+                     :alertType="AlertType.Danger">
+        {{ config.options?.blockErrorMessage ?? "You are not authorized to configure this page." }}
+    </NotificationBox>
+
+    <Grid v-else
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Category"
+          title="Category List"
+          :entityTypeGuid="EntityType.Category"
+          tooltipField="description"
+          stickyHeader
+          liveUpdates
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <template v-if="!config.options?.isEntityTypeContextFixed" #gridHeaderPrepend>
+            <div class="form-inline d-flex justify-content-end p-3 category-list-entity-type-filter">
+                <EntityTypePicker v-model="entityTypeFilter"
+                                  label="Entity Type"
+                                  :includeGlobalOption="false"
+                                  :showBlankItem="true"
+                                  :excludeEntityTypeGuids="excludedEntityTypeGuids"
+                                  enhanceForLongLists
+                                  style="min-width: 250px;" />
+            </div>
+        </template>
+
+        <ReorderColumn @orderChanged="onOrderChanged" />
+
+        <TextColumn name="name"
+                    title="Category"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="iconCssClass"
+                    title="Icon Class"
+                    field="iconCssClass"
+                    :filter="textValueFilter"
+                    visiblePriority="sm" />
+
+        <NumberColumn name="childCount"
+                      title="Child Categories"
+                      field="childCount"
+                      :filter="numberValueFilter"
+                      headerClass="header-text-right"
+                      itemClass="text-right"
+                      visiblePriority="md" />
+
+        <TextColumn v-if="!config.options?.isEntityTypeContextFixed"
+                    name="entityTypeName"
+                    title="Entity Type"
+                    field="entityTypeName"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn v-if="!config.options?.isEntityTypeContextFixed"
+                    name="entityQualifierField"
+                    title="Entity Qualifier Field"
+                    field="entityQualifierField"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="lg" />
+
+        <TextColumn v-if="!config.options?.isEntityTypeContextFixed"
+                    name="entityQualifierValue"
+                    title="Entity Qualifier Value"
+                    field="entityQualifierValue"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="lg" />
+
+        <EditColumn @click="onEditClick"
+                    :rowDisabled="(row) => row.isSystem === true" />
+
+        <SecurityColumn v-if="config.options?.isSecurityColumnVisible"
+                        itemTitle="name" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <Modal v-model="isModalOpen"
+           title="Category"
+           saveText="Save"
+           @save="onSave">
+
+        <div v-if="showEntityInfoPanel" class="well">
+            <div class="row">
+                <div class="col-md-6">
+                    <EntityTypePicker v-model="entityType"
+                                      label="Entity Type"
+                                      rules="required"
+                                      :showBlankItem="true"
+                                      :includeGlobalOption="false"
+                                      :excludeEntityTypeGuids="excludedEntityTypeGuids"
+                                      enhanceForLongLists />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="qualifierField" label="Qualifier Field" />
+                </div>
+                <div class="col-md-6">
+                    <TextBox v-model="qualifierValue" label="Qualifier Value" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name" label="Name" rules="required" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline"
+                         :rows="3" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <CategoryPicker v-if="showParentCategoryPicker"
+                                v-model="parentCategory"
+                                label="Parent Category"
+                                :multiple="false"
+                                :entityTypeGuid="entityType?.value ?? undefined" />
+
+                <AttributeValuesContainer v-model="attributeValues"
+                                          :attributes="attributes"
+                                          :showCategoryLabel="false"
+                                          :isEditMode="true" />
+            </div>
+        </div>
+
+        <IconPicker v-model="iconCssClass" label="Icon CSS Class" />
+
+        <ColorPicker v-model="highlightColor" label="Highlight Color" />
+    </Modal>
+</template>
+
+<style scoped>
+:deep(.header-text-right .grid-column-title) {
+    text-align: right;
+}
+
+.category-list-entity-type-filter :deep(.control-label) {
+    margin-right: var(--spacing-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, reactive, ref, watch } from "vue";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import Grid, { TextColumn, NumberColumn, ReorderColumn, EditColumn, SecurityColumn, DeleteColumn, textValueFilter, numberValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { CategoryBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryList/categoryBag";
+    import { CategoryListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryList/categoryListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { PageParameterKey, PreferenceKey } from "./CategoryList/types.partial";
+
+    const config = useConfigurationValues<ListBlockBox<CategoryListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+    provideSecurityGrant(securityGrant);
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const excludedEntityTypeGuids = config.options?.excludedEntityTypeGuids ?? [];
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isModalOpen = ref(false);
+
+    // Grid header filter (only rendered when the entity-type context is not fixed).
+    const entityTypeFilter = ref<ListItemBag | null>(
+        safeParseJson(preferences.getValue(PreferenceKey.FilterEntityType)) ?? null
+    );
+
+    // Modal form state.
+    const idKey = ref("");
+    const name = ref("");
+    const description = ref("");
+    const iconCssClass = ref("");
+    const highlightColor = ref("");
+    const parentCategory = ref<ListItemBag | null>(null);
+    const entityType = ref<ListItemBag | null>(null);
+    const qualifierField = ref("");
+    const qualifierValue = ref("");
+    const attributes = ref<Record<string, PublicAttributeBag>>({});
+    const attributeValues = ref<Record<string, string>>({});
+
+    // #endregion
+
+    // #region Computed Values
+
+    // The well containing Entity Type / Qualifier pickers is shown in the same
+    // condition as the Parent Category picker: only when the block is letting
+    // the user freely choose the category's entity-type context.
+    const showEntityInfoPanel = computed((): boolean => !config.options?.isEntityTypeContextFixed);
+    const showParentCategoryPicker = computed((): boolean => !config.options?.isEntityTypeContextFixed);
+
+    // #endregion
+
+    // #region Functions
+
+    /** Fetches the grid rows from the server. */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+
+        throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+    }
+
+    /** Clears every field bound to the add/edit modal. */
+    function resetModal(): void {
+        idKey.value = "";
+        name.value = "";
+        description.value = "";
+        iconCssClass.value = "";
+        highlightColor.value = "";
+        parentCategory.value = null;
+        entityType.value = null;
+        qualifierField.value = "";
+        qualifierValue.value = "";
+        attributes.value = {};
+        attributeValues.value = {};
+    }
+
+    /** Loads the category for the given key (empty string for a new category) and opens the modal. */
+    async function openEditModal(key: string): Promise<void> {
+        const result = await invokeBlockAction<CategoryBag>("Edit", { key });
+
+        if (result.isSuccess && result.data) {
+            idKey.value = result.data.idKey ?? "";
+            name.value = result.data.name ?? "";
+            description.value = result.data.description ?? "";
+            iconCssClass.value = result.data.iconCssClass ?? "";
+            highlightColor.value = result.data.highlightColor ?? "";
+            // entityType must be set before parentCategory — the entityType watcher clears parentCategory on change.
+            entityType.value = result.data.entityType ?? null;
+            parentCategory.value = result.data.parentCategory ?? null;
+            qualifierField.value = result.data.entityTypeQualifierColumn ?? "";
+            qualifierValue.value = result.data.entityTypeQualifierValue ?? "";
+            attributes.value = result.data.attributes ?? {};
+            attributeValues.value = result.data.attributeValues ?? {};
+
+            isModalOpen.value = true;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to edit category.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Row-click handler; drills into the child categories when hierarchy is enabled, otherwise a no-op. */
+    function onSelectItem(key: string): void {
+        if (!config.options?.isHierarchyEnabled) {
+            return;
+        }
+
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+        const id = row?.["id"];
+
+        if (id != null) {
+            const url = new URL(window.location.href);
+            url.search = "";
+            url.searchParams.set(PageParameterKey.Category, String(id));
+            window.location.href = url.toString();
+        }
+    }
+
+    /** Edit-column click handler; opens the modal for the selected category. */
+    async function onEditClick(key: string): Promise<void> {
+        await openEditModal(key);
+    }
+
+    /** Add-button handler; opens the modal for a brand-new category. */
+    async function onAddItem(): Promise<void> {
+        await openEditModal("");
+    }
+
+    /** Delete-column click handler; removes the category server-side and then splices it out of the local grid data. */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", { key });
+
+        if (result.isSuccess) {
+            if (gridData?.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+                if (index !== -1) {
+                    gridData.rows.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete category.");
+        }
+    }
+
+    /** Drag-reorder handler; persists the new ordering and returns whether the reorder succeeded. */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
+    }
+
+    /** Modal save handler; sends the bag to the server, refreshes the grid, and closes the modal on success. */
+    async function onSave(): Promise<void> {
+        const bag: CategoryBag = {
+            idKey: idKey.value,
+            name: name.value,
+            description: description.value,
+            iconCssClass: iconCssClass.value,
+            highlightColor: highlightColor.value,
+            parentCategory: parentCategory.value,
+            entityType: entityType.value,
+            entityTypeQualifierColumn: qualifierField.value,
+            entityTypeQualifierValue: qualifierValue.value,
+            attributes: attributes.value,
+            attributeValues: attributeValues.value
+        };
+
+        const result = await invokeBlockAction<string>("Save", { bag });
+
+        if (result.isSuccess) {
+            gridDataSource.value = loadGridData();
+            isModalOpen.value = false;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to save category.");
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            resetModal();
+        }
+    });
+
+    // Clear the selected parent when the entity type changes so a stale cross-type parent isn't saved.
+    watch(entityType, () => {
+        parentCategory.value = null;
+    });
+
+    watch(entityTypeFilter, async (newValue) => {
+        preferences.setValue(PreferenceKey.FilterEntityType, JSON.stringify(newValue ?? null));
+        await preferences.save();
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

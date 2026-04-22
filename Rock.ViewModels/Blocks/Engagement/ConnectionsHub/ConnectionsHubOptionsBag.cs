@@ -132,7 +132,7 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// <summary>
         /// Gets or sets the list of workflows that can be launched from connection requests.
         /// </summary>
-        public List<ListItemBag> WorkflowItems { get; set; }
+        public List<ConnectionWorkflowBag> WorkflowItems { get; set; }
 
         /// <summary>
         /// Gets or sets the complete list of connectors that can be assigned to connection requests.
@@ -189,5 +189,10 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// may not have any data rows.
         /// </summary>
         public Dictionary<string, List<GroupingFieldBag>> AvailableGroupings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default, pre-rendered edit values for the Connection Type level request attributes.
+        /// </summary>
+        public Dictionary<string, string> ConnectionTypeRequestAttributeValues { get; set; }
     }
 }

@@ -167,16 +167,6 @@ namespace Rock.Financial
             public string DocumentPurposeKey { get; set; }
 
             /// <summary>
-            /// Gets or sets a value indicating whether [overwrite documents of this type created on same date].
-            /// </summary>
-            /// <value>
-            ///   <c>true</c> if [overwrite documents of this type created on same date]; otherwise, <c>false</c>.
-            /// </value>
-            [RockObsolete("1.13")]
-            [Obsolete("Use OverwriteDocumentsOfThisTypeWithSamePurposeKey instead.")]
-            public bool OverwriteDocumentsOfThisTypeCreatedOnSameDate { get; set; } = false; // Defaulted to false when deprecated.
-
-            /// <summary>
             /// Gets or sets a value indicating whether [overwrite documents of this type with the same purpose key].
             /// </summary>
             /// <value>

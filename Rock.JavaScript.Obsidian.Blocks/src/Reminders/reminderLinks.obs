@@ -1,0 +1,418 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <template v-if="isBlockVisible">
+        <div class="dropdown js-rock-reminders">
+            <a ref="bellEl"
+               class="rock-bookmark"
+               :class="{ 'active has-reminders': hasAnyCounts }"
+               href="#"
+               @click.prevent="onBellClick">
+                <i class="ti ti-bell"></i>
+                <span v-if="hasAnyCounts" class="indicator-bottom"></span>
+            </a>
+
+            <ul v-if="isDropdownOpen"
+                ref="dropdownEl"
+                class="dropdown-menu dropdown-menu-reminders js-reminders-container"
+                style="display: block">
+                <li v-if="canAddReminder">
+                    <a href="#" @click.prevent="onAddReminderClick">Add Reminder</a>
+                </li>
+                <li>
+                    <a href="#" class="reminder-link-item" @click.prevent="onViewRemindersClick">
+                        <span>View Reminders</span>
+                        <span :class="badgeClassFor(counts.reminders)">{{ counts.reminders }}</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="reminder-link-item" @click.prevent="onViewNotificationsClick">
+                        <span>View Notifications</span>
+                        <span :class="badgeClassFor(counts.notifications)">{{ counts.notifications }}</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <AddReminderModal v-model="isModalOpen"
+                          :contextData="contextData"
+                          :saveCallback="onSaveReminder"
+                          @markComplete="onMarkComplete"
+                          @cancelReoccurrence="onCancelReoccurrence"
+                          @edit="onEditReminder"
+                          @delete="onDeleteReminder"
+                          @viewAll="onViewAllFromModal" />
+    </template>
+</template>
+
+<style scoped>
+.reminder-link-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { ReminderLinksInitializationBox } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderLinks/reminderLinksInitializationBox";
+    import { ReminderLinksCountsBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderLinks/reminderLinksCountsBag";
+    import { ReminderLinksContextDataBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderLinks/reminderLinksContextDataBag";
+    import { SaveReminderRequestBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderLinks/saveReminderRequestBag";
+    import AddReminderModal from "./ReminderLinks/addReminderModal.partial.obs";
+    import { CachedCounts, NavigationUrlKey } from "./ReminderLinks/types.partial";
+
+    // #region Values
+
+    // Background count refresh cadence while the tab stays open.
+    const pollingIntervalMs = 10 * 60 * 1000;
+
+    // Max age of a cached counts payload before onMounted also refetches.
+    const cacheFreshnessMs = 60 * 1000;
+
+    const config = useConfigurationValues<ReminderLinksInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    const isBlockVisible = config.isBlockVisible;
+    const storageKey = config.countsLocalStorageKey ?? "";
+
+    const counts = ref<ReminderLinksCountsBag>({
+        reminders: 0,
+        notifications: 0
+    });
+    const contextData = ref<ReminderLinksContextDataBag | null>(null);
+    const canAddReminder = ref(config.canAddReminder ?? false);
+
+    const bellEl = ref<HTMLAnchorElement | null>(null);
+    const dropdownEl = ref<HTMLUListElement | null>(null);
+    const isDropdownOpen = ref(false);
+    const isModalOpen = ref(false);
+
+    let refreshTimer: ReturnType<typeof setInterval> | null = null;
+
+    // #endregion
+
+    // #region Computed / Derived Values
+
+    /** True when either reminder or notification count is greater than zero. */
+    const hasAnyCounts = computed((): boolean => {
+        return (counts.value.reminders ?? 0) > 0 || (counts.value.notifications ?? 0) > 0;
+    });
+
+    /** Bootstrap badge class for a count — info when non-zero, default when zero. */
+    function badgeClassFor(count: number | null | undefined): string {
+        return (count ?? 0) > 0 ? "badge badge-info" : "badge badge-default";
+    }
+
+    // #endregion
+
+    // #region localStorage cache
+
+    /** Reads the cached counts from localStorage, or null on miss / parse failure. */
+    function readCachedCounts(): CachedCounts | null {
+        if (!storageKey) {
+            return null;
+        }
+
+        try {
+            const raw = localStorage.getItem(storageKey);
+            if (!raw) {
+                return null;
+            }
+            return JSON.parse(raw) as CachedCounts;
+        }
+        catch {
+            return null;
+        }
+    }
+
+    /** Writes the given counts to localStorage using the cached-counts shape. */
+    function writeCachedCounts(next: ReminderLinksCountsBag): void {
+        if (!storageKey) {
+            return;
+        }
+
+        try {
+            const payload: CachedCounts = {
+                timestamp: Date.now(),
+                reminders: next.reminders ?? 0,
+                notifications: next.notifications ?? 0
+            };
+            localStorage.setItem(storageKey, JSON.stringify(payload));
+        }
+        catch {
+            // localStorage.setItem can throw in Safari private mode or when the
+            // browser's storage quota is exceeded. Swallow — the UI already has
+            // the fresh counts; missing the cache write just means next load
+            // will re-fetch.
+        }
+    }
+
+    // #endregion
+
+    // #region Count refresh
+
+    /** Updates the reactive counts and mirrors them to the localStorage cache. */
+    function applyCounts(next: ReminderLinksCountsBag): void {
+        counts.value = {
+            reminders: next.reminders ?? 0,
+            notifications: next.notifications ?? 0
+        };
+        writeCachedCounts(counts.value);
+    }
+
+    /** Fetches fresh counts from the server; silent no-op on failure. */
+    async function refreshCounts(): Promise<void> {
+        const result = await invokeBlockAction<ReminderLinksCountsBag>("GetNotificationCounts");
+        if (result.isSuccess && result.data) {
+            applyCounts(result.data);
+        }
+    }
+
+    // #endregion
+
+    // #region Dropdown open/close
+
+    /** Opens the dropdown and lazily primes context data. */
+    function openDropdown(): void {
+        isDropdownOpen.value = true;
+        void ensureContextData();
+    }
+
+    /** Closes the dropdown. */
+    function closeDropdown(): void {
+        isDropdownOpen.value = false;
+    }
+
+    /** Merges a context-data response into the reactive state. */
+    function applyContextResult(data: ReminderLinksContextDataBag | null | undefined): void {
+        if (!data) {
+            return;
+        }
+        contextData.value = data;
+        canAddReminder.value = data.canAddReminder;
+        if (data.counts) {
+            applyCounts(data.counts);
+        }
+    }
+
+    /**
+     * Fetches context-aware data the first time the dropdown opens so we know
+     * whether to show the Add Reminder item without a latency hiccup.
+     */
+    async function ensureContextData(): Promise<void> {
+        if (contextData.value != null) {
+            return;
+        }
+        if (config.contextEntityTypeId == null) {
+            canAddReminder.value = false;
+            return;
+        }
+
+        const result = await invokeBlockAction<ReminderLinksContextDataBag>("GetReminderLinksData");
+        if (result.isSuccess) {
+            applyContextResult(result.data);
+        }
+    }
+
+    // #endregion
+
+    // #region Event handlers
+
+    /** Toggles the dropdown when the bell icon is clicked. */
+    function onBellClick(): void {
+        if (isDropdownOpen.value) {
+            closeDropdown();
+        }
+        else {
+            openDropdown();
+        }
+    }
+
+    /** Closes the dropdown when a mouse-down occurs outside the bell or menu. */
+    function onDocumentMouseDown(e: MouseEvent): void {
+        if (!isDropdownOpen.value) {
+            return;
+        }
+        const target = e.target as Node;
+        if (bellEl.value?.contains(target) || dropdownEl.value?.contains(target)) {
+            return;
+        }
+        closeDropdown();
+    }
+
+    /** Closes the dropdown on Escape. */
+    function onDocumentKeydown(e: KeyboardEvent): void {
+        if (e.key === "Escape" && isDropdownOpen.value) {
+            closeDropdown();
+        }
+    }
+
+    /** Pauses polling while the tab is hidden; resumes (and refreshes if stale) on return. */
+    function onVisibilityChange(): void {
+        if (document.hidden) {
+            if (refreshTimer != null) {
+                clearInterval(refreshTimer);
+                refreshTimer = null;
+            }
+            return;
+        }
+
+        const cached = readCachedCounts();
+        const isFresh = cached != null && cached.timestamp + cacheFreshnessMs >= Date.now();
+        if (!isFresh) {
+            void refreshCounts();
+        }
+
+        if (refreshTimer == null) {
+            refreshTimer = setInterval(refreshCounts, pollingIntervalMs);
+        }
+    }
+
+    /** Fetches fresh context data and opens the Add Reminder modal. */
+    async function onAddReminderClick(): Promise<void> {
+        closeDropdown();
+        // Always re-fetch so the existing-reminders list and reminder type
+        // options reflect the current state of the database.
+        const result = await invokeBlockAction<ReminderLinksContextDataBag>("GetReminderLinksData");
+        if (!result.isSuccess || !result.data) {
+            await alert(result.errorMessage ?? "Unable to load reminder data.");
+            return;
+        }
+        applyContextResult(result.data);
+        isModalOpen.value = true;
+    }
+
+    /** Navigates to the configured URL for the given navigation key. */
+    function navigateTo(key: NavigationUrlKey): void {
+        const url = config.navigationUrls?.[key];
+        if (url) {
+            window.location.href = url;
+        }
+    }
+
+    /** Navigates to the configured View Reminders page. */
+    function onViewRemindersClick(): void {
+        navigateTo(NavigationUrlKey.ViewRemindersPage);
+    }
+
+    /** Navigates to the configured View Notifications page. */
+    function onViewNotificationsClick(): void {
+        navigateTo(NavigationUrlKey.ViewNotificationsPage);
+    }
+
+    /** Routes the modal's "see all" link to the View Reminders page. */
+    function onViewAllFromModal(): void {
+        navigateTo(NavigationUrlKey.ViewRemindersPage);
+    }
+
+    /**
+     * Submits the Add Reminder form and refreshes context state on success.
+     * Returns a boolean so the modal knows whether to close itself — keeping the
+     * close decision on the success side of the round trip lets the modal's
+     * built-in saveAutoDisable/saveAutoLoading gate the Save button for the
+     * entire request and prevents duplicate submissions from a double-click.
+     */
+    async function onSaveReminder(bag: SaveReminderRequestBag): Promise<boolean> {
+        const result = await invokeBlockAction<ReminderLinksContextDataBag>("SaveReminder", { bag });
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to save reminder.");
+            return false;
+        }
+        applyContextResult(result.data);
+        return true;
+    }
+
+    /** Invokes a reminder action, alerts on failure, applies refreshed context data on success. */
+    async function invokeReminderAction(actionName: string, idKey: string, failureMessage: string): Promise<void> {
+        const result = await invokeBlockAction<ReminderLinksContextDataBag>(actionName, { reminderIdKey: idKey });
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? failureMessage);
+            return;
+        }
+        applyContextResult(result.data);
+    }
+
+    /** Marks a reminder complete and refreshes context state. */
+    async function onMarkComplete(idKey: string): Promise<void> {
+        await invokeReminderAction("MarkReminderComplete", idKey, "Unable to update reminder.");
+    }
+
+    /** Cancels reoccurrence on a reminder and refreshes context state. */
+    async function onCancelReoccurrence(idKey: string): Promise<void> {
+        await invokeReminderAction("CancelReminderReoccurrence", idKey, "Unable to update reminder.");
+    }
+
+    /** Navigates to the Edit Reminder page with the hashed reminder id. */
+    function onEditReminder(idKey: string): void {
+        const baseUrl = config.navigationUrls?.[NavigationUrlKey.EditReminderPage];
+        if (!baseUrl) {
+            return;
+        }
+        const separator = baseUrl.includes("?") ? "&" : "?";
+        window.location.href = `${baseUrl}${separator}ReminderId=${encodeURIComponent(idKey)}`;
+    }
+
+    /** Confirms, deletes the reminder, then refreshes context state. */
+    async function onDeleteReminder(idKey: string): Promise<void> {
+        const confirmed = await confirm("Are you sure you want to delete this reminder?");
+        if (!confirmed) {
+            return;
+        }
+        await invokeReminderAction("DeleteReminder", idKey, "Unable to delete reminder.");
+    }
+
+    // #endregion
+
+    // #region Lifecycle
+
+    onMounted(() => {
+        if (!isBlockVisible) {
+            return;
+        }
+
+        // Warm the bell from cached counts first so the indicator reflects
+        // client-side state without waiting on the round trip.
+        const cached = readCachedCounts();
+        if (cached && typeof cached.reminders === "number" && typeof cached.notifications === "number") {
+            counts.value = {
+                reminders: cached.reminders,
+                notifications: cached.notifications
+            };
+        }
+
+        // Only refresh and start polling if the tab is currently visible. If
+        // the page opened in a background tab, defer both until the
+        // visibilitychange handler fires on first foreground.
+        if (!document.hidden) {
+            const isFresh = cached != null && cached.timestamp + cacheFreshnessMs >= Date.now();
+            if (!isFresh) {
+                void refreshCounts();
+            }
+            refreshTimer = setInterval(refreshCounts, pollingIntervalMs);
+        }
+
+        document.addEventListener("mousedown", onDocumentMouseDown);
+        document.addEventListener("keydown", onDocumentKeydown);
+        document.addEventListener("visibilitychange", onVisibilityChange);
+    });
+
+    onBeforeUnmount(() => {
+        if (refreshTimer != null) {
+            clearInterval(refreshTimer);
+            refreshTimer = null;
+        }
+        document.removeEventListener("mousedown", onDocumentMouseDown);
+        document.removeEventListener("keydown", onDocumentKeydown);
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+    });
+
+    // #endregion
+</script>

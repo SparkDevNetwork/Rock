@@ -27,13 +27,22 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 /** The Check-in Schedule Builder Options Bag */
 export type CheckInScheduleBuilderOptionsBag = {
     /** The list of Areas that can be chosen from */
-    areas?: Guid[] | null;
+    areas?: ListItemBag[] | null;
+
+    /**
+     * Maps each campus Guid to its root location Guid.
+     * Used by the client to scope the parent location picker when the campus context changes.
+     */
+    campusRootLocations?: Record<string, string> | null;
 
     /** The Default Schedule Category */
     defaultScheduleCategory?: ListItemBag | null;
 
     /** The list of GroupTypes that can be chosen from */
     groupTypes?: Guid[] | null;
+
+    /** Gets or sets whether the page has a valid check-in configuration parameter. */
+    hasValidCheckInConfigurationPageParam: boolean;
 
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;

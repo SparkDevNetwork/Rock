@@ -32,9 +32,9 @@
                     field="locationName"
                     sortField="locationSort"
                     width="250px"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     :filterValue="getLocationFilterValue"
-                    :quickFilterValue="getLocationFilterValue">
+                    :quickFilterValue="getLocationQuickFilterValue">
                 <template #format="{ row }">
                     <div>
                         <span>{{ row.locationName }}</span>
@@ -48,35 +48,38 @@
                         title="Schedule"
                         field="scheduleName"
                         width="250px"
-                        :filter="textValueFilter" />
+                        :filter="pickExistingValueFilter" />
 
             <BooleanColumn name="attendanceEntered"
                            title="Attendance Entered"
                            field="attendanceEntered"
+                           headerClass="text-nowrap"
                            :filter="booleanValueFilter" />
 
             <BooleanColumn name="didNotOccur"
                            title="Didn't Meet"
                            field="didNotOccur"
+                           headerClass="text-nowrap"
                            :filter="booleanValueFilter" />
 
-            <Column name="didAttendCount"
-                    title="Attendance Count"
-                    field="didAttendCount"
-                    :filter="numberValueFilter">
-                <template #format="{ row }">
-                    {{ formatCount(row.didAttendCount as number) }}
-                </template>
-            </Column>
+            <NumberColumn name="didAttendCount"
+                          title="Attendance Count"
+                          field="didAttendCount"
+                          headerClass="text-nowrap"
+                          :filter="numberValueFilter" />
 
             <Column name="attendanceRate"
                     title="Attendance Rate"
                     field="attendanceRate"
+                    :headerClass="'grid-column-header-number text-nowrap'"
+                    :itemClass="'justify-content-end text-right'"
                     :filter="numberValueFilter"
                     :filterValue="getAttendanceRateFilterValue"
                     :quickFilterValue="getAttendanceRateQuickFilterValue">
                 <template #format="{ row }">
-                    {{ formatPercent(row.attendanceRate as number) }}
+                    <template v-if="row.attendanceRate != null">
+                        {{ (row.attendanceRate as number).toLocaleString(undefined, { style: "percent", maximumFractionDigits: 0 }) }}
+                    </template>
                 </template>
             </Column>
 
@@ -97,6 +100,7 @@
                         name="attendanceType"
                         title="Attendance Type"
                         field="attendanceType"
+                        headerClass="text-nowrap"
                         :filter="textValueFilter" />
 
             <DeleteColumn v-if="config.isDeleteEnabled"
@@ -117,7 +121,7 @@
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
-    import Grid, { DateColumn, TextColumn, BooleanColumn, Column, DeleteColumn, textValueFilter, booleanValueFilter, numberValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { DateColumn, TextColumn, BooleanColumn, Column, NumberColumn, DeleteColumn, textValueFilter, booleanValueFilter, numberValueFilter, dateValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { deepEqual } from "@Obsidian/Utility/util";
@@ -202,42 +206,36 @@
     }
 
     /**
-     * Formats a decimal value as a percentage string.
-     */
-    function formatPercent(value: number | null | undefined): string {
-        if (value == null) {
-            return "";
-        }
-
-        return `${Math.round(value * 100)}%`;
-    }
-
-    /**
-     * Formats the attendance count with a thousands separator.
-     */
-    function formatCount(value: number | null | undefined): string {
-        if (value == null) {
-            return "";
-        }
-
-        return value.toLocaleString();
-    }
-
-    /**
-     * Gets the filter value for the location column (combines name and path).
+     * Gets the filter value for the Location column. Returns just the location name so
+     * the Pick Existing Value dropdown lists clean, distinct location names rather than
+     * long "name + path" strings.
      */
     function getLocationFilterValue(row: Record<string, unknown>): string {
+        return (row["locationName"] as string) ?? "";
+    }
+
+    /**
+     * Gets the quick-filter (free-text search) value for the Location column. Combines
+     * the location name with its parent path so searches against the grid's text box
+     * also match against parent location names shown beneath the location.
+     */
+    function getLocationQuickFilterValue(row: Record<string, unknown>): string {
         const name = row["locationName"] as string ?? "";
         const path = row["parentLocationPath"] as string ?? "";
         return `${name} ${path}`.trim();
     }
 
     /**
-     * Gets the filter value for the attendance rate column (numeric, for column filter).
+     * Gets the filter value for the Attendance Rate column. Returns a number so the
+     * numeric column filter (greater-than, less-than, etc.) can compare against it —
+     * returning a string causes numberFilterMatches to reject every row.
+     *
+     * The stored value is a 0-1 decimal (e.g., 0.42); surface it as the 0-100 percent
+     * shown in the cell so the user's filter input ("> 50") matches what they see.
      */
-    function getAttendanceRateFilterValue(row: Record<string, unknown>): string {
+    function getAttendanceRateFilterValue(row: Record<string, unknown>): number | undefined {
         const value = row["attendanceRate"] as number | null;
-        return value != null ? `${Math.round(value * 100)}` : "";
+        return value != null ? Math.round(value * 100) : undefined;
     }
 
     /**

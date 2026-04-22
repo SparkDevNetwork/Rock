@@ -5,13 +5,13 @@
          :class="{ 'cursor-not-allowed': disabled }"
          :style="`background-color: ${highlightColor}`">
         <i class="ti ti-circle-check"></i>
-        <span class="w-100 text-center overflow-ellipsis" :ref="(el) => addTooltipIfOverflow(el as HTMLElement, currentStatusName ?? '')">{{ currentStatusName }}</span>
+        <span class="w-100 font-size-sm text-center overflow-ellipsis" :ref="(el) => addTooltipIfOverflow(el as HTMLElement, currentStatusName ?? '')">{{ currentStatusName }}</span>
     </div>
     <div v-else
          class="cursor-pointer py-spacing-tiny px-spacing-xs rounded-huge text-semibold text-interface-softest d-flex align-items-center"
          :class="{ 'cursor-not-allowed': disabled }"
          :style="`background-color: ${highlightColor}`">
-        <span class="w-100 text-center overflow-ellipsis" :ref="(el) => addTooltipIfOverflow(el as HTMLElement, currentStatusName ?? '')">{{ currentStatusName }}</span>
+        <span class="w-100 font-size-sm text-center overflow-ellipsis" :ref="(el) => addTooltipIfOverflow(el as HTMLElement, currentStatusName ?? '')">{{ currentStatusName }}</span>
         <i class="ti ti-caret-down-filled text-right"></i>
     </div>
 </template>

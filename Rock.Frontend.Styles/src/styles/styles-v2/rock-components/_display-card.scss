@@ -38,6 +38,7 @@
 .displaycard-heading-icon .label {
     padding: var(--spacing-small);
     font-size: 100%;
+    height: unset; // Override the default height to allow the label to size based on its content
 }
 
 .displaycard-heading-icon i {

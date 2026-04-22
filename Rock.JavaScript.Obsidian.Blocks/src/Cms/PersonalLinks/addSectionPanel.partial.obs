@@ -1,0 +1,53 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="popover-panel w-100 js-bookmark-configuration js-bookmark-add-section">
+        <h3 class="popover-title">Personal Link Section</h3>
+        <div class="panel-body">
+            <RockForm v-model:submit="submit" @submit="onSubmit">
+                <TextBox v-model="sectionName" label="Name" rules="required" />
+            </RockForm>
+            <div class="actions">
+                <RockButton :btnType="BtnType.Primary" :btnSize="BtnSize.ExtraSmall" accessKey="s" title="Alt+s" @click="onSaveClick">Save</RockButton>
+                <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" accessKey="c" title="Alt+c" @click="onCancelClick">Cancel</RockButton>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+
+    const emit = defineEmits<{
+        (e: "save", name: string): void;
+        (e: "cancel"): void;
+    }>();
+
+    const sectionName = ref("");
+    const submit = ref(false);
+
+    /**
+     * Triggers the RockForm's submit/validation pipeline.
+     */
+    function onSaveClick(): void {
+        submit.value = true;
+    }
+
+    /**
+     * Emits cancel so the parent returns to the View panel.
+     */
+    function onCancelClick(): void {
+        emit("cancel");
+    }
+
+    /**
+     * Emits the section name once RockForm validation has passed.
+     */
+    function onSubmit(): void {
+        emit("save", sectionName.value);
+    }
+</script>

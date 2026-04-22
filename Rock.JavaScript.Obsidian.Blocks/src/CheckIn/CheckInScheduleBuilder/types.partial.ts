@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/groupLocationsBag";
+
 export const enum PreferenceKey {
     SelectedGroupType = "selected-group-type",
     SelectedArea = "selected-area",
@@ -22,10 +24,24 @@ export const enum PreferenceKey {
     SelectedParentLocation = "selected-parent-location"
 }
 
-export const enum PageParameterKey {
-    GroupTypeId = "GroupTypeId"
-}
-
 export const enum NavigationUrlKey {
     ParentPage = "ParentPage"
 }
+
+/** The grouped Group Locations Bag, grouped by area and group */
+export type GroupedGroupLocationsBag = {
+    /** The path to the area that contains the group. */
+    areaPath?: string | null;
+
+    /** The encrypted identifier of the group location to be modified. */
+    groupLocationId?: string | null;
+
+    /**
+     * The path to the group that should be scheduled. This includes
+     * any parent groups in the text.
+     */
+    groupPath?: string | null;
+
+    /** Nested group locations under this area and group. */
+    groupLocations: GroupLocationsBag[];
+};

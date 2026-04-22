@@ -53,8 +53,6 @@
     import { IContentSectionHolder } from "@Obsidian/Core/Controls/contentSection";
     import { usePersonPreferences } from "@Obsidian/Utility/block";
     import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
-    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
-    import { isNullish } from "@Obsidian/Utility/util";
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
 
     const props = defineProps({
@@ -74,9 +72,6 @@
 
     const autoCollapse = ref(asBooleanOrNull(preferences.getValue("contentsection-auto-collapse")) ?? true);
     const activeSectionId = ref(window.location.hash.replace("#", ""));
-
-    let headerOffsetPx: number | null = null;
-    let resizeObserver: ResizeObserver | null = null;
 
     // #endregion Values
 
@@ -104,86 +99,11 @@
 
         const element = document.getElementById(sectionId);
         if (element) {
-            const offset = getFixedHeaderOffsetPx();
-
-            // If the section is already fully visible (accounting for the fixed
-            // header offset), don't scroll.
-            if (isSectionFullyVisible(element, offset)) {
-                return;
-            }
-
-            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-            const offsetPosition = elementPosition - offset;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: "smooth"
+            element.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
             });
         }
-    }
-
-    /**
-     * Calculates the total offset height of any fixed headers so we can avoid
-     * them when scrolling to a section.
-     * @returns The total offset in pixels.
-     */
-    function getFixedHeaderOffsetPx(): number {
-        if (!isNullish(headerOffsetPx)) {
-            return headerOffsetPx;
-        }
-
-        let offset = 0;
-
-        // While this is not a perfect method of determining fixed header height,
-        // our goal is to get close enough for most scenarios without requiring
-        // additional configuration. This will scan the entire DOM for any
-        // elements that are fixed at or above the top of the viewport (that's
-        // actually in view, as determined by its bottom edge being below the
-        // top of the viewport) and sum their heights.
-        document.querySelectorAll("*").forEach(el => {
-            const style = getComputedStyle(el);
-
-            if (style.position === "fixed") {
-                const rect = el.getBoundingClientRect();
-                if (rect.top <= 0 && rect.bottom > 0) {
-                    offset += rect.height;
-                }
-            }
-        });
-
-        // Add extra padding to ensure the section header is fully visible.
-        var extraPaddingPx = parseInt(getCssVariableValue("--spacing-medium", "16"));
-
-        headerOffsetPx = offset + extraPaddingPx;
-
-        return headerOffsetPx;
-    }
-
-    /**
-     * Determines if a section element is fully visible within the viewport.
-     * @param element The section element to check.
-     * @param fixedHeaderOffset The offset in pixels for any fixed headers.
-     * @returns True if the section is fully visible; otherwise, false.
-     */
-    function isSectionFullyVisible(element: HTMLElement, fixedHeaderOffset: number): boolean {
-        const rect = element.getBoundingClientRect();
-        const visibleTop = fixedHeaderOffset;
-        const visibleBottom = window.innerHeight;
-
-        // Tiny tolerance in case of sub-pixel layout.
-        const epsilon = 1;
-
-        // Completely above visible area.
-        if (rect.bottom <= visibleTop + epsilon) {
-            return false;
-        }
-
-        // Completely below visible area.
-        if (rect.top >= visibleBottom - epsilon) {
-            return false;
-        }
-
-        return rect.top >= visibleTop - epsilon && rect.bottom <= visibleBottom + epsilon;
     }
 
     // #endregion Functions
@@ -309,31 +229,9 @@
 
     onMounted((): void => {
         window.addEventListener("hashchange", onHashChange);
-
-        if (window.ResizeObserver) {
-            const docEl = document.documentElement;
-            let lastWidth = docEl.clientWidth;
-
-            resizeObserver = new ResizeObserver(() => {
-                const newWidth = docEl.clientWidth;
-                if (newWidth !== lastWidth) {
-                    // Clear the cached header offset so it will be recalculated
-                    // on the next section selection.
-                    headerOffsetPx = null;
-                    lastWidth = newWidth;
-                }
-            });
-
-            resizeObserver.observe(docEl);
-        }
     });
 
     onBeforeUnmount((): void => {
         window.removeEventListener("hashchange", onHashChange);
-
-        if (resizeObserver) {
-            resizeObserver.disconnect();
-            resizeObserver = null;
-        }
     });
 </script>

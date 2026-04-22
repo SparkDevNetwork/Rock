@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, onMounted, onUnmounted, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
@@ -374,6 +374,12 @@
 
         if (result.isSuccess && result.data) {
             if (typeof result.data === "string") {
+                // In the admin-footer iframe, close the parent with 'PAGE_UPDATED' so
+                // modal.js reloads it; the URL redirect path is for non-modal hosts.
+                if (tryCloseParentModal("PAGE_UPDATED")) {
+                    return false;
+                }
+
                 return result.data;
             }
         }
@@ -392,6 +398,74 @@
 
         return false;
     }
+
+    interface IRockModalHost {
+        controls?: { modal?: { close?: (message: string) => void } };
+    }
+
+    /**
+     * Attempts to close the parent iframe modal (opened via Rock.controls.modal.show)
+     * with the supplied message. Returns true only when a parent modal was detected
+     * and close was invoked; false when rendered on a regular page.
+     */
+    function tryCloseParentModal(message: string): boolean {
+        if (window.parent === window) {
+            return false;
+        }
+
+        try {
+            const rock = window.parent["Rock"] as IRockModalHost | undefined;
+            const close = rock?.controls?.modal?.close;
+
+            if (typeof close === "function") {
+                close(message);
+                return true;
+            }
+        }
+        catch {
+            // Cross-origin parent — not the admin modal; fall through to redirect.
+        }
+
+        return false;
+    }
+
+    /*
+        4/20/26 - MSE
+
+        The admin-footer Page Properties modal hosts this block in an iframe using
+        the WebForms Dialog layout. Dialog's btnSave postback wipes the Obsidian
+        mount before our Save can run, so intercept the click and route it through
+        onSave — which then closes the parent with 'PAGE_UPDATED'. btnCancel already
+        closes the parent via its OnClientClick.
+
+        Reason: Admin-footer Page Properties modal wasn't saving changes.
+    */
+    function findDialogSaveButton(): HTMLElement | null {
+        return document.getElementById("btnSave")
+            ?? document.querySelector<HTMLElement>("[id$='_btnSave']");
+    }
+
+    function onDialogSaveClick(event: MouseEvent): void {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        void onSave();
+    }
+
+    // #endregion
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        if (enableFullEditMode.value) {
+            return;
+        }
+
+        findDialogSaveButton()?.addEventListener("click", onDialogSaveClick, true);
+    });
+
+    onUnmounted(() => {
+        findDialogSaveButton()?.removeEventListener("click", onDialogSaveClick, true);
+    });
 
     // #endregion
 

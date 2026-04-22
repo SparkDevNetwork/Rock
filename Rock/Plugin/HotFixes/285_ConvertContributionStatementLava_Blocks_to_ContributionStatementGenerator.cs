@@ -1,0 +1,362 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Converts legacy Contribution Statement Lava blocks to Contribution Statement Generator blocks.
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 285, "19.0" )]
+    public class ConvertContributionStatementLava_Blocks_to_ContributionStatementGenerator : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            NA_ConvertContributionStatementLavaBlocksToContributionStatementGeneratorUp();
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            // Down migrations are not yet supported in plug-in migrations.
+        }
+
+        /// <summary>
+        /// Converts legacy Contribution Statement Lava block instances to Contribution Statement Generator instances.
+        /// </summary>
+        private void NA_ConvertContributionStatementLavaBlocksToContributionStatementGeneratorUp()
+        {
+            Sql( @"
+DECLARE @Now DATETIME = GETDATE();
+DECLARE @BlockEntityTypeId INT = ( SELECT [Id] FROM [EntityType] WHERE [Guid] = 'D89555CA-9AE4-4D62-8AF1-E5E463C1EF65' );
+DECLARE @ContributionStatementLavaBlockTypeId INT = ( SELECT [Id] FROM [BlockType] WHERE [Guid] = 'AF986B72-ADD9-4E05-971F-1DE4EBED8667' );
+DECLARE @ContributionStatementGeneratorBlockTypeId INT = ( SELECT [Id] FROM [BlockType] WHERE [Guid] = 'E0A699C3-61AA-4522-9067-1FE56FA80972' );
+DECLARE @DefaultFinancialStatementTemplateId INT = ( SELECT [Id] FROM [FinancialStatementTemplate] WHERE [Guid] = '4B93657A-DD5F-4D8A-A13F-1B4E9ADBDAD0' );
+
+DECLARE @LegacyAllowPersonQuerystringAttributeId INT = (
+    SELECT [Id]
+    FROM [Attribute]
+    WHERE [EntityTypeId] = @BlockEntityTypeId
+        AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+        AND [EntityTypeQualifierValue] = CAST( @ContributionStatementLavaBlockTypeId AS NVARCHAR(200) )
+        AND [Key] = 'AllowPersonQuerystring'
+);
+
+DECLARE @LegacyDisplayPledgesAttributeId INT = (
+    SELECT [Id]
+    FROM [Attribute]
+    WHERE [EntityTypeId] = @BlockEntityTypeId
+        AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+        AND [EntityTypeQualifierValue] = CAST( @ContributionStatementLavaBlockTypeId AS NVARCHAR(200) )
+        AND [Key] = 'DisplayPledges'
+);
+
+DECLARE @LegacyAccountsAttributeId INT = (
+    SELECT [Id]
+    FROM [Attribute]
+    WHERE [EntityTypeId] = @BlockEntityTypeId
+        AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+        AND [EntityTypeQualifierValue] = CAST( @ContributionStatementLavaBlockTypeId AS NVARCHAR(200) )
+        AND [Key] = 'Accounts'
+);
+
+DECLARE @GeneratorAllowPersonQueryStringAttributeId INT = (
+    SELECT [Id]
+    FROM [Attribute]
+    WHERE [EntityTypeId] = @BlockEntityTypeId
+        AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+        AND [EntityTypeQualifierValue] = CAST( @ContributionStatementGeneratorBlockTypeId AS NVARCHAR(200) )
+        AND [Key] = 'AllowPersonQueryString'
+);
+
+DECLARE @GeneratorFinancialStatementTemplateAttributeId INT = (
+    SELECT [Id]
+    FROM [Attribute]
+    WHERE [EntityTypeId] = @BlockEntityTypeId
+        AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+        AND [EntityTypeQualifierValue] = CAST( @ContributionStatementGeneratorBlockTypeId AS NVARCHAR(200) )
+        AND [Key] = 'FinancialStatementTemplate'
+);
+
+IF @BlockEntityTypeId IS NULL
+    OR @ContributionStatementLavaBlockTypeId IS NULL
+    OR @ContributionStatementGeneratorBlockTypeId IS NULL
+    OR @DefaultFinancialStatementTemplateId IS NULL
+    OR @GeneratorAllowPersonQueryStringAttributeId IS NULL
+    OR @GeneratorFinancialStatementTemplateAttributeId IS NULL
+BEGIN
+    RETURN;
+END;
+
+IF OBJECT_ID( 'tempdb..#LegacyBlocks' ) IS NOT NULL
+BEGIN
+    DROP TABLE #LegacyBlocks;
+END;
+
+SELECT
+    b.[Id],
+    b.[Name]
+INTO #LegacyBlocks
+FROM [Block] b
+WHERE b.[BlockTypeId] = @ContributionStatementLavaBlockTypeId;
+
+IF NOT EXISTS ( SELECT 1 FROM #LegacyBlocks )
+BEGIN
+    RETURN;
+END;
+
+IF OBJECT_ID( 'tempdb..#LegacyBlockSettings' ) IS NOT NULL
+BEGIN
+    DROP TABLE #LegacyBlockSettings;
+END;
+
+SELECT
+    lb.[Id] AS [BlockId],
+    dp.[Value] AS [DisplayPledgesValue],
+    ac.[Value] AS [AccountsValue]
+INTO #LegacyBlockSettings
+FROM #LegacyBlocks lb
+OUTER APPLY
+(
+    SELECT TOP 1 av.[Value]
+    FROM [AttributeValue] av
+    WHERE av.[EntityId] = lb.[Id]
+        AND av.[AttributeId] = @LegacyDisplayPledgesAttributeId
+) dp
+OUTER APPLY
+(
+    SELECT TOP 1 av.[Value]
+    FROM [AttributeValue] av
+    WHERE av.[EntityId] = lb.[Id]
+        AND av.[AttributeId] = @LegacyAccountsAttributeId
+) ac;
+
+IF OBJECT_ID( 'tempdb..#BlockTemplateMap' ) IS NOT NULL
+BEGIN
+    DROP TABLE #BlockTemplateMap;
+END;
+
+CREATE TABLE #BlockTemplateMap
+(
+    [BlockId] INT NOT NULL,
+    [FinancialStatementTemplateId] INT NOT NULL,
+    [FinancialStatementTemplateGuid] UNIQUEIDENTIFIER NOT NULL
+);
+
+MERGE [FinancialStatementTemplate] AS target
+USING
+(
+    SELECT
+        lb.[Id] AS [BlockId],
+        lb.[Name] AS [BlockName],
+        fst.[IsActive],
+        fst.[ReportTemplate],
+        fst.[LogoBinaryFileId],
+        fst.[CreatedByPersonAliasId],
+        fst.[ModifiedByPersonAliasId],
+        fst.[ForeignId],
+        fst.[ForeignGuid],
+        fst.[ForeignKey],
+        fst.[ReportSettingsJson],
+        fst.[FooterSettingsJson]
+    FROM #LegacyBlocks lb
+    CROSS JOIN [FinancialStatementTemplate] fst
+    WHERE fst.[Id] = @DefaultFinancialStatementTemplateId
+) AS src
+ON 1 = 0
+WHEN NOT MATCHED THEN
+    INSERT
+    (
+        [Name],
+        [Description],
+        [IsActive],
+        [ReportTemplate],
+        [LogoBinaryFileId],
+        [CreatedDateTime],
+        [ModifiedDateTime],
+        [CreatedByPersonAliasId],
+        [ModifiedByPersonAliasId],
+        [Guid],
+        [ForeignId],
+        [ForeignGuid],
+        [ForeignKey],
+        [ReportSettingsJson],
+        [FooterSettingsJson]
+    )
+    VALUES
+    (
+        LEFT( '(' + CAST( src.[BlockId] AS NVARCHAR(20) ) + ') ' + ISNULL( src.[BlockName], '' ), 50 ),
+        'Created by conversion of the legacy ContributionStatementLava block',
+        src.[IsActive],
+        src.[ReportTemplate],
+        src.[LogoBinaryFileId],
+        @Now,
+        @Now,
+        src.[CreatedByPersonAliasId],
+        src.[ModifiedByPersonAliasId],
+        NEWID(),
+        src.[ForeignId],
+        src.[ForeignGuid],
+        src.[ForeignKey],
+        src.[ReportSettingsJson],
+        src.[FooterSettingsJson]
+    )
+OUTPUT
+    src.[BlockId],
+    inserted.[Id],
+    inserted.[Guid]
+INTO #BlockTemplateMap ( [BlockId], [FinancialStatementTemplateId], [FinancialStatementTemplateGuid] );
+
+DELETE av
+FROM [AttributeValue] av
+INNER JOIN #LegacyBlocks lb
+    ON lb.[Id] = av.[EntityId]
+WHERE av.[AttributeId] = @GeneratorAllowPersonQueryStringAttributeId;
+
+UPDATE av
+SET
+    av.[AttributeId] = @GeneratorAllowPersonQueryStringAttributeId,
+    av.[IsPersistedValueDirty] = 1,
+    av.[ValueAsBoolean] = CASE
+        WHEN LOWER( LTRIM( RTRIM( ISNULL( av.[Value], '' ) ) ) ) = 'true' THEN 1
+        WHEN LOWER( LTRIM( RTRIM( ISNULL( av.[Value], '' ) ) ) ) = 'false' THEN 0
+        ELSE av.[ValueAsBoolean]
+    END,
+    av.[ModifiedDateTime] = @Now
+FROM [AttributeValue] av
+INNER JOIN #LegacyBlocks lb
+    ON lb.[Id] = av.[EntityId]
+WHERE av.[AttributeId] = @LegacyAllowPersonQuerystringAttributeId;
+
+UPDATE fst
+SET fst.[ReportSettingsJson] = JSON_MODIFY(
+    fst.[ReportSettingsJson],
+    '$.PledgeSettings.AccountIds',
+    JSON_QUERY(
+        CASE
+            WHEN LOWER( LTRIM( RTRIM( ISNULL( lbs.[DisplayPledgesValue], '' ) ) ) ) = 'true' THEN
+                (
+                    SELECT
+                        ISNULL( '[' + STRING_AGG( CAST( fa.[Id] AS NVARCHAR(20) ), ',' ) + ']', '[]' )
+                    FROM [FinancialAccount] fa
+                    WHERE fa.[IsActive] = 1
+                )
+            ELSE '[]'
+        END
+    )
+)
+FROM [FinancialStatementTemplate] fst
+INNER JOIN #BlockTemplateMap btm
+    ON btm.[FinancialStatementTemplateId] = fst.[Id]
+INNER JOIN #LegacyBlockSettings lbs
+    ON lbs.[BlockId] = btm.[BlockId]
+WHERE lbs.[DisplayPledgesValue] IS NOT NULL;
+
+;WITH AccountSelections AS
+(
+    SELECT
+        btm.[FinancialStatementTemplateId],
+        '[' + STRING_AGG( CAST( fa.[Id] AS NVARCHAR(20) ), ',' ) + ']' AS [SelectedAccountIdsJson]
+    FROM #BlockTemplateMap btm
+    INNER JOIN #LegacyBlockSettings lbs
+        ON lbs.[BlockId] = btm.[BlockId]
+    CROSS APPLY STRING_SPLIT( ISNULL( lbs.[AccountsValue], '' ), ',' ) s
+    INNER JOIN [FinancialAccount] fa
+        ON fa.[Guid] = TRY_CONVERT( UNIQUEIDENTIFIER, LTRIM( RTRIM( s.[value] ) ) )
+    WHERE NULLIF( LTRIM( RTRIM( ISNULL( lbs.[AccountsValue], '' ) ) ), '' ) IS NOT NULL
+    GROUP BY btm.[FinancialStatementTemplateId]
+)
+UPDATE fst
+SET fst.[ReportSettingsJson] = JSON_MODIFY(
+        JSON_MODIFY( fst.[ReportSettingsJson], '$.TransactionSettings.AccountSelectionOption', 1 ),
+        '$.TransactionSettings.SelectedAccountIds',
+        JSON_QUERY( ISNULL( ac.[SelectedAccountIdsJson], '[]' ) )
+    )
+FROM [FinancialStatementTemplate] fst
+INNER JOIN #BlockTemplateMap btm
+    ON btm.[FinancialStatementTemplateId] = fst.[Id]
+INNER JOIN #LegacyBlockSettings lbs
+    ON lbs.[BlockId] = btm.[BlockId]
+LEFT JOIN AccountSelections ac
+    ON ac.[FinancialStatementTemplateId] = fst.[Id]
+WHERE NULLIF( LTRIM( RTRIM( ISNULL( lbs.[AccountsValue], '' ) ) ), '' ) IS NOT NULL;
+
+UPDATE av
+SET
+    av.[Value] = CONVERT( NVARCHAR(50), btm.[FinancialStatementTemplateGuid] ),
+    av.[IsPersistedValueDirty] = 1,
+    av.[ModifiedDateTime] = @Now
+FROM [AttributeValue] av
+INNER JOIN #BlockTemplateMap btm
+    ON btm.[BlockId] = av.[EntityId]
+WHERE av.[AttributeId] = @GeneratorFinancialStatementTemplateAttributeId;
+
+INSERT INTO [AttributeValue]
+(
+    [IsSystem],
+    [AttributeId],
+    [EntityId],
+    [Value],
+    [Guid],
+    [CreatedDateTime],
+    [ModifiedDateTime],
+    [IsPersistedValueDirty]
+)
+SELECT
+    0 AS [IsSystem],
+    @GeneratorFinancialStatementTemplateAttributeId AS [AttributeId],
+    btm.[BlockId] AS [EntityId],
+    CONVERT( NVARCHAR(50), btm.[FinancialStatementTemplateGuid] ) AS [Value],
+    NEWID() AS [Guid],
+    @Now AS [CreatedDateTime],
+    @Now AS [ModifiedDateTime],
+    1 AS [IsPersistedValueDirty]
+FROM #BlockTemplateMap btm
+WHERE NOT EXISTS
+(
+    SELECT 1
+    FROM [AttributeValue] av
+    WHERE av.[AttributeId] = @GeneratorFinancialStatementTemplateAttributeId
+        AND av.[EntityId] = btm.[BlockId]
+);
+
+UPDATE b
+SET
+    b.[BlockTypeId] = @ContributionStatementGeneratorBlockTypeId,
+    b.[ModifiedDateTime] = @Now
+FROM [Block] b
+INNER JOIN #LegacyBlocks lb
+    ON lb.[Id] = b.[Id]
+WHERE b.[BlockTypeId] = @ContributionStatementLavaBlockTypeId;
+
+DELETE bt
+FROM [BlockType] bt
+WHERE bt.[Guid] = 'AF986B72-ADD9-4E05-971F-1DE4EBED8667'
+    AND NOT EXISTS
+    (
+        SELECT 1
+        FROM [Block] b
+        WHERE b.[BlockTypeId] = bt.[Id]
+    );
+" );
+        }
+    }
+}

@@ -223,7 +223,8 @@ namespace Rock.Blocks.Group
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "64ECB2E0-218F-4EB4-8691-7DC94A767037" )]
-    [Rock.SystemGuid.BlockTypeGuid( "308DBA32-F656-418E-A019-9D18235027C1" )]
+    // Original Obsidian was [Rock.SystemGuid.BlockTypeGuid( "308DBA32-F656-418E-A019-9D18235027C1" )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUP_ATTENDANCE_DETAIL )]
     public class GroupAttendanceDetail : RockBlockType
     {
         #region Attribute Values
@@ -334,14 +335,6 @@ namespace Rock.Blocks.Group
             public const string Attended = "Attended";
 
             public const string Group = "Group";
-
-            [Obsolete( "Use 'GroupMembers' merge field instead.", false )]
-            [RockObsolete( "1.15.2" )]
-            public const string GroupMember = "GroupMember";
-
-            [Obsolete( "Use 'Roles' merge field instead.", false )]
-            [RockObsolete( "1.15.2" )]
-            public const string GroupRoleName = "GroupRoleName";
 
             public const string Person = "Person";
 
@@ -1863,10 +1856,6 @@ namespace Rock.Blocks.Group
             var mergeFields = this.RequestContext.GetCommonMergeFields();
             mergeFields.Add( MergeFieldKeys.Person, attendanceData.Person );
             mergeFields.Add( MergeFieldKeys.Attended, attendanceData.DidAttend );
-#pragma warning disable CS0618 // Type or member is obsolete
-            mergeFields.Add( MergeFieldKeys.GroupMember, attendanceData.GroupMembers?.FirstOrDefault() );
-            mergeFields.Add( MergeFieldKeys.GroupRoleName, string.Join( ", ", attendanceData.Roles?.Distinct() ?? Enumerable.Empty<string>() ) );
-#pragma warning restore CS0618 // Type or member is obsolete
             mergeFields.Add( MergeFieldKeys.GroupMembers, attendanceData.GroupMembers );
             mergeFields.Add( MergeFieldKeys.Roles, string.Join( ", ", attendanceData.Roles?.Distinct() ?? Enumerable.Empty<string>() ) );
 

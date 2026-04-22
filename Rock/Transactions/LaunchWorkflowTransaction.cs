@@ -167,8 +167,7 @@ namespace Rock.Transactions
     }
 
     /// <summary>
-    /// Writes any entity changes that are configured to be tracked
-    /// Or to use the Message Queue, use <seealso cref="Rock.Tasks.LaunchWorkflow" />
+    /// Writes any entity changes that are configured to be tracked.
     /// </summary>
     public class LaunchWorkflowTransaction<T> : LaunchWorkflowTransaction
     where T : Rock.Data.Entity<T>, new()

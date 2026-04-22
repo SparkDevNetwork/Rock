@@ -389,28 +389,33 @@ namespace Rock.Blocks.Engagement
             var delimitedBadgeGuids = GetAttributeValue( AttributeKey.Badges );
             options.BadgeGuids = delimitedBadgeGuids.SplitDelimitedValues().AsGuidList();
 
-            var manualWorkflows = new List<ConnectionWorkflow>();
-            var authorizedWorkflowItems = new List<ListItemBag>();
+            var manualWorkflows = new List<(ConnectionWorkflow Workflow, Guid? OpportunityGuid)>();
+            var authorizedWorkflowItems = new List<ConnectionWorkflowBag>();
 
             manualWorkflows.AddRange( connectionType.ConnectionWorkflows
                 .Where( w => w.TriggerType == ConnectionWorkflowTriggerType.Manual && ( w.WorkflowType.IsActive ?? true ) ) // Mirroring Webforms by setting IsActive to true by default.
+                .Select( w => ( w, ( Guid? ) null ) )
                 .ToList() );
 
             manualWorkflows.AddRange( connectionType.ConnectionOpportunities
-                .SelectMany( o => o.ConnectionWorkflows )
-                .Where( w => w.TriggerType == ConnectionWorkflowTriggerType.Manual && ( w.WorkflowType.IsActive ?? true ) ) // Mirroring Webforms by setting IsActive to true by default.
+                .SelectMany( o => o.ConnectionWorkflows.Select( w => (Workflow: w, OpportunityGuid: ( Guid? ) o.Guid) ) )
+                .Where( x => x.Workflow.TriggerType == ConnectionWorkflowTriggerType.Manual && ( x.Workflow.WorkflowType.IsActive ?? true ) ) // Mirroring Webforms by setting IsActive to true by default.
                 .ToList()
             );
 
             foreach ( var manualWorkflow in manualWorkflows )
             {
-                if ( manualWorkflow.WorkflowType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                if ( manualWorkflow.Workflow.WorkflowType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                 {
-                    authorizedWorkflowItems.Add( new ListItemBag
+                    authorizedWorkflowItems.Add( new ConnectionWorkflowBag
                     {
-                        Text = manualWorkflow.WorkflowType.Name,
-                        Value = manualWorkflow.Guid.ToString(),
-                        Category = manualWorkflow.ConnectionTypeId.HasValue ? "Connection Type Workflows" : "Connection Opportunity Workflows"
+                        ListItemBag = new ListItemBag
+                        {
+                            Text = manualWorkflow.Workflow.WorkflowType.Name,
+                            Value = manualWorkflow.Workflow.Guid.ToString(),
+                            Category = manualWorkflow.Workflow.ConnectionTypeId.HasValue ? "Connection Type Workflows" : "Connection Opportunity Workflows"
+                        },
+                        ConnectionOpportunityGuid = manualWorkflow.OpportunityGuid
                     } );
                 }
             }
@@ -530,6 +535,11 @@ namespace Rock.Blocks.Engagement
             tempConnectionRequest.LoadAttributes();
 
             options.ConnectionTypeRequestAttributes = tempConnectionRequest.GetPublicAttributesForEdit( RequestContext.CurrentPerson );
+
+            // Also include the pre-rendered edit values so that field types such as Matrix
+            // (whose edit value JSON is derived from their configuration) can render their
+            // inner attributes on a brand-new Connection Request that has no stored values.
+            options.ConnectionTypeRequestAttributeValues = tempConnectionRequest.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson );
 
             // The values should equal the field names for each respective column.
             options.GridDataToShowItems = new List<ListItemBag>
@@ -887,6 +897,11 @@ namespace Rock.Blocks.Engagement
         /// <returns>True if the Connection Request meets all criteria for the Connection Workflow; otherwise false.</returns>
         private bool IsEligibleForWorkflow( ConnectionWorkflow cw, ConnectionRequest request, List<int> includeIds, List<int> excludeIds )
         {
+            if ( cw.ConnectionOpportunityId.HasValue && cw.ConnectionOpportunityId != request.ConnectionOpportunityId )
+            {
+                return false;
+            }
+
             if ( cw.ManualTriggerFilterConnectionStatusId.HasValue && cw.ManualTriggerFilterConnectionStatusId != request.ConnectionStatusId )
             {
                 return false;
@@ -1276,7 +1291,12 @@ namespace Rock.Blocks.Engagement
                 ConnectorOptions = connectorOptionsBag,
                 PlacementGroups = placementGroups,
                 Campuses = campusItems,
-                ConnectionOpportunityRequestAttributes = tempConnectionRequest.GetPublicAttributesForEdit( RequestContext.CurrentPerson )
+                ConnectionOpportunityRequestAttributes = tempConnectionRequest.GetPublicAttributesForEdit( RequestContext.CurrentPerson ),
+
+                // Also include the pre-rendered edit values so that field types such as Matrix
+                // (whose edit value JSON is derived from their configuration) can render their
+                // inner attributes on a brand-new Connection Request that has no stored values.
+                ConnectionOpportunityRequestAttributeValues = tempConnectionRequest.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
             };
         }
 
@@ -2096,8 +2116,12 @@ namespace Rock.Blocks.Engagement
                 IsPendingMember = isPendingMember
             };
 
-            var builder = GetGridBuilder();
-            var row = builder.Build( new[] { newConnection } ).Rows[0];
+            IEnumerable<ConnectionRow> tempRequestEnumerable = new[] { newConnection };
+            var gridAttributes = GetGridAttributes();
+
+            GridAttributeLoader.LoadFor( tempRequestEnumerable, a => a.ConnectionRequest, gridAttributes, RockContext );
+
+            var row = GetGridBuilder().Build( tempRequestEnumerable ).Rows[0];
 
             return row;
         }
@@ -2333,6 +2357,7 @@ namespace Rock.Blocks.Engagement
                     IsDefaultStatus = connectionRequest.ConnectionStatus.IsDefault
                 } : null,
                 FollowUpDate = connectionRequest.FollowupDate?.ToRockDateTimeOffset(),
+                ConnectionOpportunityGuid = connectionRequest.ConnectionOpportunity.Guid,
                 ConnectionOpportunityName = connectionRequest.ConnectionOpportunity.Name,
                 ConnectionOpportunityIcon = connectionRequest.ConnectionOpportunity.IconCssClass,
                 Campus = connectionRequest.Campus?.Name,
@@ -3326,6 +3351,15 @@ WHERE 1 = 1" );
 
             var connectionRequests = new List<ConnectionRow>( sqlRows.Count );
 
+            // Resolve grid attributes once up front so we can build the minimal
+            // in-memory ConnectionRequest stubs alongside each ConnectionRow in
+            // the projection loop below, avoiding a second round-trip to the
+            // database to re-fetch full ConnectionRequest entities just for
+            // Attribute Value hydration.
+            var gridAttributes = GetGridAttributes();
+            var hasGridAttributes = gridAttributes.Count > 0;
+            var connectionTypeId = connectionType.Id;
+
             var photoUrlByPersonId = new Dictionary<int, string>();
             var connectorByPersonId = new Dictionary<int, (ListItemBag Item, string FullName, string PhotoUrl)>();
             var unassignedConnectorItem = new ListItemBag { Value = "unassigned", Text = "Unassigned" };
@@ -3461,33 +3495,23 @@ WHERE 1 = 1" );
                 request.DueStatusGrouping = GetGroupingKey( ( int ) dueStatus );
                 request.StateGrouping = connectionState.ToString();
 
-                connectionRequests.Add( request );
-            }
-
-            // Load attribute values for any grid-configured attributes. When the attribute
-            // list is empty this is a no-op. When attributes are present we fetch only the
-            // raw ConnectionRequest entities needed for Attribute Value hydration rather than
-            // re-running the full projection query.
-            var gridAttributes = GetGridAttributes();
-            if ( gridAttributes.Count > 0 )
-            {
-                var connectionRequestIds = connectionRequests
-                    .Select( r => r.ConnectionRequestId )
-                    .ToList();
-
-                var connectionRequestEntities = new ConnectionRequestService( RockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Where( cr => connectionRequestIds.Contains( cr.Id ) )
-                    .ToDictionary( cr => cr.Id );
-
-                foreach ( var request in connectionRequests )
+                if ( hasGridAttributes )
                 {
-                    if ( connectionRequestEntities.TryGetValue( request.ConnectionRequestId, out var entity ) )
+                    // Build a minimal, detached ConnectionRequest so GridAttributeLoader
+                    // can use Id to fetch Attribute Values and read the qualifier
+                    // columns (ConnectionTypeId, ConnectionOpportunityId, CampusId) via
+                    // reflection. This intentionally avoids a second round-trip that
+                    // would otherwise issue a WHERE IN clause with one entry per row.
+                    request.ConnectionRequest = new ConnectionRequest
                     {
-                        request.ConnectionRequest = entity;
-                    }
+                        Id = row.Id,
+                        ConnectionTypeId = connectionTypeId,
+                        ConnectionOpportunityId = row.ConnectionOpportunityId,
+                        CampusId = row.CampusId
+                    };
                 }
+
+                connectionRequests.Add( request );
             }
 
             GridAttributeLoader.LoadFor( connectionRequests, a => a.ConnectionRequest, gridAttributes, RockContext );
@@ -5927,7 +5951,7 @@ WHERE 1 = 1" );
             if ( _gridAttributes == null )
             {
                 var availableAttributes = new List<AttributeCache>();
-                var connectionTypeId = ConnectionTypeCache.Get( PageParameter( PageParameterKey.ConnectionType ), !PageCache.Layout.Site.DisablePredictableIds )?.Id;
+                var connectionTypeId = GetConnectionTypeCacheFromPageParameters()?.Id;
 
                 if ( connectionTypeId.HasValue )
                 {

@@ -43,14 +43,15 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular layout." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "b85c080a-f645-430a-b0d4-8eee689f4265" )]
-    [Rock.SystemGuid.BlockTypeGuid( "64c3b64a-cdb3-4e5f-bc54-0e3d50aac564" )]
+    [Rock.SystemGuid.BlockTypeGuid( "68B9D63D-D714-473A-89F2-62EB1602E00A" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "64c3b64a-cdb3-4e5f-bc54-0e3d50aac564" )]
     public class LayoutDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys

@@ -64,6 +64,18 @@
   border-bottom-left-radius: 0;
 }
 
+.input-group .form-control:not(.ant-select):last-child,
+.input-group-addon:last-child,
+.input-group-btn:last-child > .btn-group > .btn,
+.input-group-btn:last-child > .dropdown-toggle,
+.input-group-btn:first-child > .btn:not(:first-child),
+.input-group-btn:first-child > .btn-group:not(:first-child) > .btn {
+  padding-top:                6px;
+  padding-bottom:             6px;
+  height:                     100%;
+  box-shadow:                 var(--input-box-shadow);
+}
+
 // ===================== END INPUT-GROUP BUTTONS =====================
 
 // ===================== INPUT-GROUP WITH SELECT / DROPDOWN =====================

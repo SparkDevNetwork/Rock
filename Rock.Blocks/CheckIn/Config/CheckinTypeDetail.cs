@@ -961,9 +961,6 @@ namespace Rock.Blocks.CheckIn.Config
                 "core_checkin_SecurityCodeNumericRandom",
                 "core_checkin_AutoSelectDaysBack",
                 "core_checkin_AutoSelectOptions",
-#pragma warning disable CS0618 // Type or member is obsolete
-                Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT,
-#pragma warning restore CS0618 // Type or member is obsolete
                 Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER,
                 Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_REMOVE_FROM_FAMILY_KIOSK,
                 Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PROXIMITY_CHECKIN,

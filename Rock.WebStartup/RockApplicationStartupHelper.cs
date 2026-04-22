@@ -212,7 +212,7 @@ namespace Rock.WebStartup
             // To avoid the overhead of initializing the GlobalAttributesCache prior to LoadCacheObjects(), load these from the database instead.
             LogStartupMessage( "Configuring Date Settings" );
             RockDateTime.FirstDayOfWeek = new AttributeService( new RockContext() ).GetSystemSettingValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK ).ConvertToEnumOrNull<DayOfWeek>() ?? RockDateTime.DefaultFirstDayOfWeek;
-            InitializeRockGraduationDate();
+
             ShowDebugTimingMessage( "Initialize RockDateTime" );
 
             if ( runMigrationFileInfo.Exists )
@@ -431,25 +431,6 @@ namespace Rock.WebStartup
                     RockDateTime.Initialize( TimeZoneInfo.FindSystemTimeZoneById( orgTimeZoneSetting ) );
                 }
             }
-        }
-
-        /// <summary>
-        /// Initializes the rock graduation date.
-        /// </summary>
-        private static void InitializeRockGraduationDate()
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-
-            // To avoid the overhead of initializing the GlobalAttributesCache prior to LoadCacheObjects(), load GradeTransitionDate from the database instead.
-            var graduationDateWithCurrentYear = new AttributeService( new RockContext() ).GetGlobalAttribute( "GradeTransitionDate" )?.DefaultValue.MonthDayStringAsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
-            if ( graduationDateWithCurrentYear < RockDateTime.Today )
-            {
-                // if the graduation date already occurred this year, return next year' graduation date
-                RockDateTime.CurrentGraduationDate = graduationDateWithCurrentYear.AddYears( 1 );
-            }
-
-            RockDateTime.CurrentGraduationDate = graduationDateWithCurrentYear;
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
