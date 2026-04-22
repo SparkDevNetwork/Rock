@@ -19350,10 +19350,10 @@ iframe.file-browser {
 }
 
 .contentsection-container > .contentsection-nav {
-  height: 100%;
   flex: 0 0 20%;
   position: sticky;
-  top: calc(var(--spacing-medium) + var(--sticky-element-offset, 0));
+  top: calc(var(--spacing-medium) + var(--sticky-element-offset, 0px));
+  overflow-y: auto;
 }
 
 .full-work-surface .contentsection-container > .contentsection-nav {
