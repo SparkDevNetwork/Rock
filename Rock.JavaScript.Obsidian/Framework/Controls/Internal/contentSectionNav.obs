@@ -1,5 +1,5 @@
 <template>
-    <div class="list-group contentsection-nav">
+    <div class="list-group contentsection-nav" ref="navEl">
         <div class="contentsection-nav-header">
             <h5 class="contentsection-nav-header-title">Sections</h5>
 
@@ -53,6 +53,7 @@
     import { IContentSectionHolder } from "@Obsidian/Core/Controls/contentSection";
     import { usePersonPreferences } from "@Obsidian/Utility/block";
     import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
 
     const props = defineProps({
@@ -72,6 +73,11 @@
 
     const autoCollapse = ref(asBooleanOrNull(preferences.getValue("contentsection-auto-collapse")) ?? true);
     const activeSectionId = ref(window.location.hash.replace("#", ""));
+    const navEl = ref<HTMLElement | null>(null);
+
+    let pendingMaxHeightUpdateId: number | null = null;
+    let layoutObserver: ResizeObserver | null = null;
+    let scrollContainer: HTMLElement | Window | null = null;
 
     // #endregion Values
 
@@ -86,6 +92,63 @@
     // #endregion Computed Values
 
     // #region Functions
+
+    /**
+     * Walks up the DOM from the given element and returns the first ancestor
+     * whose computed overflow allows scrolling. Falls back to window if no
+     * scrollable ancestor is found.
+     *
+     * @param el The element to start from.
+     */
+    function findScrollContainer(el: HTMLElement): HTMLElement | Window {
+        let parent = el.parentElement;
+
+        while (parent && parent !== document.documentElement) {
+            const overflowY = getComputedStyle(parent).overflowY;
+
+            if (overflowY === "auto" || overflowY === "scroll") {
+                return parent;
+            }
+
+            parent = parent.parentElement;
+        }
+
+        return window;
+    }
+
+    /**
+     * Updates the nav's max-height so it never overflows the viewport bottom.
+     * Called on scroll and resize so it works correctly whether the nav is in
+     * its natural position or has become sticky.
+     */
+    function updateMaxHeight(): void {
+        if (pendingMaxHeightUpdateId !== null) {
+            return;
+        }
+
+        pendingMaxHeightUpdateId = requestAnimationFrame(() => {
+            pendingMaxHeightUpdateId = null;
+
+            if (!navEl.value) {
+                return;
+            }
+
+            const bottomPadding = parseInt(getCssVariableValue("--spacing-medium", "16px"), 10);
+
+            // The CSS sticky `top` value is the minimum the nav's top can ever
+            // be while visible. Clamping to it prevents two edge cases:
+            //  1. The container scrolls past the top of the viewport, pushing
+            //     getBoundingClientRect().top negative and making max-height
+            //     larger than the viewport (scrollbar disappears).
+            //  2. The nav de-sticks at the bottom of its container and drifts
+            //     to an unexpectedly low top value.
+            const stickyTop = parseFloat(getComputedStyle(navEl.value).top) || 0;
+            const navTop = Math.max(navEl.value.getBoundingClientRect().top, stickyTop);
+
+            const availableHeight = window.innerHeight - navTop - bottomPadding;
+            navEl.value.style.maxHeight = `${Math.max(availableHeight, 100)}px`;
+        });
+    }
 
     /**
      * Scrolls the page to the specified section, accounting for any fixed or
@@ -229,9 +292,39 @@
 
     onMounted((): void => {
         window.addEventListener("hashchange", onHashChange);
+        window.addEventListener("resize", updateMaxHeight, { passive: true });
+
+        // Watch for any document layout changes that could shift the nav's top
+        // position - e.g., dynamic content loading above the nav, sections
+        // expanding or collapsing, or the page header changing height. The
+        // `requestAnimationFrame()` guard inside updateMaxHeight ensures this
+        // stays efficient.
+        layoutObserver = new ResizeObserver(updateMaxHeight);
+        layoutObserver.observe(document.documentElement);
+
+        // Defer the initial height calculation until after Vue has flushed the
+        // current render pass. Sibling sections will be in the DOM by then, so
+        // getBoundingClientRect() returns the nav's true viewport position
+        // rather than its pre-content position near the top of the page.
+        nextTick(() => {
+            // Find the actual scroll container after the DOM has settled so we
+            // listen to the right element.
+            scrollContainer = navEl.value
+                ? findScrollContainer(navEl.value)
+                : window;
+
+            scrollContainer.addEventListener("scroll", updateMaxHeight, { passive: true } as EventListenerOptions);
+
+            updateMaxHeight();
+        });
     });
 
     onBeforeUnmount((): void => {
         window.removeEventListener("hashchange", onHashChange);
+        window.removeEventListener("resize", updateMaxHeight);
+        scrollContainer?.removeEventListener("scroll", updateMaxHeight);
+        scrollContainer = null;
+        layoutObserver?.disconnect();
+        layoutObserver = null;
     });
 </script>
