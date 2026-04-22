@@ -19,7 +19,7 @@
                   v-model:viewMode="selectedView"
                   ref="groupedPanel"
                   :title="box.options?.title ?? ''"
-                  :titleIconCssClass="`${box.options?.iconCssClass ?? ''} panel-icon`"
+                  :titleIconCssClass="`${box.options?.iconCssClass ?? ''} panel-icon d-inline-block`"
                   :isSelectedView="hasAnySelectedKeys"
                   :rows="gridData?.rows ?? []"
                   :filteredAndSortedRows="visibleRowsFilteredByGrid"
