@@ -201,9 +201,15 @@
                         title="Group"
                         field="group">
                     <template #format="{ row }">
-                        <div v-if="!!row.group">
-                            {{ row.group }}
-                        </div>
+                        <template v-if="!!row.group">
+                            <div v-if="row.isPendingMember" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
+                                {{ row.group }}
+                                <i class="ti ti-user-share text-interface-medium"></i>
+                            </div>
+                            <div v-else>
+                                {{ row.group }}
+                            </div>
+                        </template>
                         <div v-else>
                             <i class="ti ti-minus"></i>
                         </div>
@@ -529,11 +535,15 @@
                         field="group"
                         :filter="pickExistingValueFilter">
                     <template #format="{ row }">
-                        <div v-if="!!row.group"
-                             class="text-truncate"
-                             v-tooltip.overflow="row.group + (row.isPendingMember ? ' (Pending Member)' : '')">
-                            {{ row.group }}<span v-if="row.isPendingMember"> (Pending Member)</span>
-                        </div>
+                        <template v-if="!!row.group">
+                            <div v-if="row.isPendingMember" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
+                                {{ row.group }}
+                                <i class="ti ti-user-share text-interface-medium"></i>
+                            </div>
+                            <div v-else>
+                                {{ row.group }}
+                            </div>
+                        </template>
                         <div v-else>
                             <i class="ti ti-minus"></i>
                         </div>
