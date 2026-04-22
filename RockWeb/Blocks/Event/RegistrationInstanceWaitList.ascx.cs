@@ -829,8 +829,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowDetail()
         {
-            int? registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
-
             var registrationInstance = this.RegistrationInstance;
 
             if ( registrationInstance == null )

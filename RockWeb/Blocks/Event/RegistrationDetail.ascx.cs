@@ -78,6 +78,21 @@ namespace RockWeb.Blocks.Event
 
         #endregion Security Actions
 
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters. Both keys accept either a numeric Id
+        /// or an IdKey (hashed) value so that links from Obsidian blocks and
+        /// legacy numeric URLs both resolve.
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string RegistrationInstanceId = "RegistrationInstanceId";
+            public const string RegistrationId = "RegistrationId";
+        }
+
+        #endregion Page Parameter Keys
+
         #region Fields
 
         private Registration Registration
@@ -188,10 +203,10 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     var rockContext = new RockContext();
-                    var registrationInstanceId = this.PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+                    var registrationInstanceId = GetRegistrationInstanceIdFromPage();
                     if ( !registrationInstanceId.HasValue )
                     {
-                        var registrationId = this.PageParameter( "RegistrationId" ).AsIntegerOrNull();
+                        var registrationId = GetRegistrationIdFromPage();
                         if ( registrationId.HasValue )
                         {
                             registrationInstanceId = new RegistrationService( rockContext ).GetSelect( registrationId.Value, s => s.RegistrationInstanceId );
@@ -273,6 +288,30 @@ namespace RockWeb.Blocks.Event
         private List<RegistrantInfo> RegistrantsState { get; set; }
 
         #endregion Properties
+
+        #region Page Parameter Helpers
+
+        /// <summary>
+        /// Resolves the RegistrationInstanceId page parameter, accepting either a
+        /// numeric Id or an IdKey string. Returns null when neither form resolves.
+        /// </summary>
+        private int? GetRegistrationInstanceIdFromPage()
+        {
+            var key = PageParameter( PageParameterKey.RegistrationInstanceId );
+            return key.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( key );
+        }
+
+        /// <summary>
+        /// Resolves the RegistrationId page parameter, accepting either a numeric
+        /// Id or an IdKey string. Returns null when neither form resolves.
+        /// </summary>
+        private int? GetRegistrationIdFromPage()
+        {
+            var key = PageParameter( PageParameterKey.RegistrationId );
+            return key.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( key );
+        }
+
+        #endregion Page Parameter Helpers
 
         #region Control Methods
 
@@ -664,7 +703,7 @@ namespace RockWeb.Blocks.Event
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    int instanceId = PageParameter( "RegistrationInstanceId" ).AsInteger();
+                    int instanceId = GetRegistrationInstanceIdFromPage() ?? 0;
                     templateId = new RegistrationInstanceService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( i => i.Id == instanceId )
@@ -689,10 +728,14 @@ namespace RockWeb.Blocks.Event
         {
             var qryParams = new Dictionary<string, string>();
             var pageCache = PageCache.Get( RockPage.PageId );
-            var instanceId = Registration != null ? Registration.RegistrationInstanceId.ToString() : PageParameter( "RegistrationInstanceId" );
+
+            var instanceId = Registration != null
+                ? Registration.RegistrationInstanceId.ToString()
+                : GetRegistrationInstanceIdFromPage()?.ToString()
+                  ?? PageParameter( PageParameterKey.RegistrationInstanceId );
             if ( pageCache != null && pageCache.ParentPage != null )
             {
-                qryParams.Add( "RegistrationInstanceId", instanceId );
+                qryParams.Add( PageParameterKey.RegistrationInstanceId, instanceId );
                 NavigateToPage( pageCache.ParentPage.Guid, qryParams );
             }
         }
@@ -710,10 +753,10 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                string registrationId = PageParameter( "RegistrationId" );
-                if ( !string.IsNullOrWhiteSpace( registrationId ) )
+                var registrationId = GetRegistrationIdFromPage();
+                if ( registrationId.HasValue )
                 {
-                    ShowDetail( registrationId.AsInteger(), PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull() );
+                    ShowDetail( registrationId.Value, GetRegistrationInstanceIdFromPage() );
                 }
                 else
                 {
@@ -1428,8 +1471,8 @@ namespace RockWeb.Blocks.Event
             if ( !RegistrationInstanceId.HasValue )
             {
                 Title = "New Registration";
-                RegistrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
-                RegistrationId = PageParameter( "RegistrationId" ).AsIntegerOrNull();
+                RegistrationInstanceId = GetRegistrationInstanceIdFromPage();
+                RegistrationId = GetRegistrationIdFromPage();
 
                 var rockContext = new RockContext();
 

@@ -42,6 +42,23 @@ namespace RockWeb.Blocks.Event
     [Rock.SystemGuid.BlockTypeGuid( "ED56CD0A-0A8D-4758-A689-55B7BEC1B589" )]
     public partial class RegistrationInstancePaymentReminder : Rock.Web.UI.RockBlock
     {
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters.
+        /// </summary>
+        private static class PageParameterKey
+        {
+            /// <summary>
+            /// The registration instance identifier. Accepts either a numeric Id
+            /// or an IdKey (hashed) value so that links from Obsidian blocks and
+            /// legacy numeric URLs both resolve.
+            /// </summary>
+            public const string RegistrationInstanceId = "RegistrationInstanceId";
+        }
+
+        #endregion Page Parameter Keys
+
         #region Fields
 
         private RegistrationInstance _registrationInstance = null;
@@ -126,7 +143,7 @@ namespace RockWeb.Blocks.Event
             {
                 if ( _registrationInstance == null )
                 {
-                    int? registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+                    int? registrationInstanceId = GetRegistrationInstanceIdFromPage();
 
                     using ( RockContext rockContext = new RockContext() )
                     {
@@ -221,7 +238,7 @@ namespace RockWeb.Blocks.Event
                 ifEmailPreview.Visible = true;
 
                 // reload preview
-                int? registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+                int? registrationInstanceId = GetRegistrationInstanceIdFromPage();
 
                 if ( registrationInstanceId.HasValue )
                 {
@@ -261,11 +278,21 @@ namespace RockWeb.Blocks.Event
         #region Methods
 
         /// <summary>
+        /// Resolves the RegistrationInstanceId page parameter, accepting either a
+        /// numeric Id or an IdKey string. Returns null when neither form resolves.
+        /// </summary>
+        private int? GetRegistrationInstanceIdFromPage()
+        {
+            var key = PageParameter( PageParameterKey.RegistrationInstanceId );
+            return key.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( key );
+        }
+
+        /// <summary>
         /// Loads the registration.
         /// </summary>
         private void LoadData()
         {
-            int? registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+            int? registrationInstanceId = GetRegistrationInstanceIdFromPage();
 
             if ( registrationInstanceId.HasValue )
             {
@@ -332,7 +359,7 @@ namespace RockWeb.Blocks.Event
             {
                 if ( _registrationInstance == null )
                 {
-                    int? registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+                    int? registrationInstanceId = GetRegistrationInstanceIdFromPage();
 
                     _registrationInstance = new RegistrationInstanceService( rockContext )
                         .Queryable()
