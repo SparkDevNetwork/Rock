@@ -48,6 +48,9 @@ export type OptionsBag = {
     /** Gets or sets the supported filter values and defaults for the block. */
     filters?: FiltersBag | null;
 
+    /** Gets or sets a value indicating whether future follow-ups are enabled. */
+    isFutureFollowUpEnabled: boolean;
+
     /** Gets or sets the current snapshot of connection request state. */
     requestState?: RequestStateBag | null;
 
