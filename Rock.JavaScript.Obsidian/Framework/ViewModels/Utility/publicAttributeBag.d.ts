@@ -61,4 +61,10 @@ export type PublicAttributeBag = {
 
     /** Gets or sets the pre HTML. */
     preHtml?: string | null;
+
+    /**
+     * The token that will be used to grant access to API calls that the UI
+     * will need to make when editing the attribute value.
+     */
+    securityGrantToken?: string | null;
 };

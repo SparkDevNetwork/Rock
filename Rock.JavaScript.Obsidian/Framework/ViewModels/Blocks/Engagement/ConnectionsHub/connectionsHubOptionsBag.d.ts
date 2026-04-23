@@ -27,7 +27,6 @@ import { ConnectionOpportunityDetailBag } from "@Obsidian/ViewModels/Blocks/Enga
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
 import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionWorkflowBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The additional configuration options for the Connections Hub block. */
 export type ConnectionsHubOptionsBag = {
@@ -72,12 +71,6 @@ export type ConnectionsHubOptionsBag = {
 
     /** Gets or sets the encrypted identifier key of the Connection Type being viewed. */
     connectionTypeIdKey?: string | null;
-
-    /** Gets or sets the attributes for Connection Request attributes specified at the Connection Type level. */
-    connectionTypeRequestAttributes?: Record<string, PublicAttributeBag> | null;
-
-    /** Gets or sets the default, pre-rendered edit values for the Connection Type level request attributes. */
-    connectionTypeRequestAttributeValues?: Record<string, string> | null;
 
     /** Gets or sets the list of column options that control which data fields are displayed in the request grid. */
     gridDataToShowItems?: ListItemBag[] | null;
