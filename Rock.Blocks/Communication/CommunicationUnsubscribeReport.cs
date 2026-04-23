@@ -150,9 +150,9 @@ namespace Rock.Blocks.Communication
                 .AsNoTracking()
                 .Where( cr =>
                     cr.PersonAliasId.HasValue
-                    && cr.SendDateTime.HasValue
-                    && cr.SendDateTime >= sendDateTimeStart
-                    && cr.SendDateTime < sendDateTimeEnd
+                    && ( cr.SendDateTime.HasValue || cr.FirstSendAttemptDateTime.HasValue )
+                    && ( cr.SendDateTime ?? cr.FirstSendAttemptDateTime ) >= sendDateTimeStart
+                    && ( cr.SendDateTime ?? cr.FirstSendAttemptDateTime ) < sendDateTimeEnd
                     && cr.UnsubscribeDateTime.HasValue
                     && cr.UnsubscribeDateTime >= unsubscribeDateTimeStart
                     && cr.UnsubscribeDateTime < unsubscribeDateTimeEnd
@@ -180,7 +180,7 @@ namespace Rock.Blocks.Communication
                     RecipientPersonGender = cr.PersonAlias.Person.Gender,
                     RecipientPersonRecordTypeValueId = cr.PersonAlias.Person.RecordTypeValueId,
                     RecipientPersonAgeClassification = cr.PersonAlias.Person.AgeClassification,
-                    SendDateTime = ( DateTime ) cr.SendDateTime,
+                    SendDateTime = ( DateTime ) ( cr.SendDateTime ?? cr.FirstSendAttemptDateTime ),
                     UnsubscribeDateTime = ( DateTime ) cr.UnsubscribeDateTime,
                     UnsubscribeLevel = ( UnsubscribeLevel ) cr.UnsubscribeLevel,
                     CommunicationName = cr.Communication.Name,
