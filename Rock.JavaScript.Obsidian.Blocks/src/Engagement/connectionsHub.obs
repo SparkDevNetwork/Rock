@@ -709,7 +709,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { computed, reactive, ref, watch, nextTick } from "vue";
+    import { computed, reactive, ref, watch } from "vue";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
     import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns } from "@Obsidian/Controls/grid";
