@@ -146,18 +146,5 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the Connection Opportunity details resolved from the current filter state, used to populate the detail panel.
         /// </summary>
         public ConnectionOpportunityDetailBag ConnectionOpportunityDetailsFromFilter { get; set; }
-
-        /// <summary>
-        /// Gets or sets the attributes for Connection Request attributes specified at the Connection Type level.
-        /// </summary>
-        /// <value>
-        /// The attributes.
-        /// </value>
-        public Dictionary<string, PublicAttributeBag> ConnectionTypeRequestAttributes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the default, pre-rendered edit values for the Connection Type level request attributes.
-        /// </summary>
-        public Dictionary<string, string> ConnectionTypeRequestAttributeValues { get; set; }
     }
 }

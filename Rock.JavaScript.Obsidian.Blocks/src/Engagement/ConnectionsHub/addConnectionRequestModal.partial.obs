@@ -151,7 +151,7 @@
                 </ContentStack>
             </ContentSection>
             <AttributeValuesContainer v-model="connectionRequestAttributeValues"
-                                      :attributes="combinedRequestAttributes"
+                                      :attributes="requestAttributes"
                                       isEditMode
                                       :numberOfColumns="1"
                                       displayAsContentSection
@@ -167,7 +167,7 @@
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
-    import { ref, PropType, watch, computed, nextTick } from "vue";
+    import { PropType, watch, computed, nextTick } from "vue";
     import { propertyRef, updateRefValue, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ConnectionRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestBag";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
@@ -328,26 +328,21 @@
     const connectionStatusText = computed<string>(() => connectionStatusItems.value.find(s => s.value === connectionStatusGuid.value)?.text ?? "");
 
     /**
-     * Merges connection type and connection opportunity request attributes into a single object
-     * so they can be rendered and saved together in one AttributeValuesContainer.
+     * The request attributes. This ensures that we don't have to deal with
+     * any null values.
      */
-    const combinedRequestAttributes = computed(() => ({
-        ...(props.options?.connectionTypeRequestAttributes ?? {}),
-        ...(props.connectionOpportunityDetails?.connectionOpportunityRequestAttributes ?? {})
-    }));
+    const requestAttributes = computed(() => {
+        return props.connectionOpportunityDetails?.connectionOpportunityRequestAttributes ?? {};
+    });
 
     /**
-     * Merges server-provided default edit values for the combined connection type and connection
-     * opportunity request attributes. Some field types (e.g. Matrix) need their edit value JSON
-     * pre-populated from configuration in order to render; for a brand-new Connection Request we
+     * Some field types (e.g. Matrix) need their edit value JSON pre-populated
+     * from configuration in order to render; for a brand-new Connection Request we
      * have no saved values, so the server ships these defaults for us to seed the form with.
      */
-    const combinedRequestAttributeDefaultValues = computed<Record<string, string>>(() => ({
-        ...(props.options?.connectionTypeRequestAttributeValues ?? {}),
-        ...(props.connectionOpportunityDetails?.connectionOpportunityRequestAttributeValues ?? {})
-    }));
-
-    const hasCombinedRequestAttributes = computed<boolean>(() => Object.keys(combinedRequestAttributes.value).length > 0);
+    const requestAttributeDefaultValues = computed<Record<string, string>>(() => {
+        return props.connectionOpportunityDetails?.connectionOpportunityRequestAttributeValues ?? {};
+    });
 
     function onSave(): void {
         const newValue: ValidPropertiesBox<ConnectionRequestBag> = {
@@ -392,12 +387,10 @@
      */
     function pruneAndSeedAttributeValues(): void {
         const currentValues = connectionRequestAttributeValues.value ?? {};
-        const defaults = combinedRequestAttributeDefaultValues.value;
-        const connectionTypeAttributeKeys = Object.keys(props.options?.connectionTypeRequestAttributes ?? {});
+        const defaults = requestAttributeDefaultValues.value;
         const connectionOpportunityAttributeKeys = Object.keys(props.connectionOpportunityDetails?.connectionOpportunityRequestAttributes ?? {});
 
         const validKeys = new Set<string>([
-            ...connectionTypeAttributeKeys,
             ...connectionOpportunityAttributeKeys
         ]);
 
@@ -453,13 +446,6 @@
     watch(() => props.connectionOpportunityDetails, () => {
         pruneAndSeedAttributeValues();
     });
-
-    // Seed default attribute values for the initially available Connection Type level
-    // request attributes. This ensures field types (e.g. Matrix) that rely on configuration
-    // derived data in their edit value JSON render correctly before an opportunity is chosen.
-    watch(() => props.options?.connectionTypeRequestAttributes, () => {
-        pruneAndSeedAttributeValues();
-    }, { immediate: true });
 
     watch(() => props.connectionOpportunityDetails?.connectorOptions, async () => {
         // Wait to see if the Connector dropdown is cleared.

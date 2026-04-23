@@ -145,6 +145,15 @@ namespace Rock.Security
         }
 
         /// <summary>
+        /// Sets the amount of time that this security grant should be valid for.
+        /// </summary>
+        /// <param name="duration">The duration from the date and time the grant was created.</param>
+        internal void SetLifetime( TimeSpan duration )
+        {
+            ExpiresDateTime = CreatedDateTime.Add( duration );
+        }
+
+        /// <summary>
         /// Adds a new rule to the security grant.
         /// </summary>
         /// <param name="rule">The rule to be added to the grant.</param>

@@ -107,5 +107,11 @@ namespace Rock.ViewModels.Utility
         /// </summary>
         /// <value> The HTML string the is appended after the attribute's markup. </value>
         public string PostHtml { get; set; }
+
+        /// <summary>
+        /// The token that will be used to grant access to API calls that the UI
+        /// will need to make when editing the attribute value.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }
