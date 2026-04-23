@@ -2,9 +2,8 @@
     <Panel v-model:quickFilterValue="internalQuickFilterValue"
            :type="isBoardView ? 'block' : 'default'"
            :panelBodyCssClass="panelBodyCssClasses"
-           panelHeaderCssClass="flex-shrink-0"
-
-           :worksurfaceMode="isBoardView">
+           :worksurfaceMode="isBoardView"
+           panelHeaderCssClass="flex-shrink-0">
         <template #headerActions>
             <div v-if="groupingFields.length > 1" class="d-flex align-items-center gap-xs">
                 <RockLabel class="text-interface-stronger text-xs">
@@ -154,7 +153,6 @@
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { GroupedGrid } from "./GroupedPanel/types.partial";
 
-
     /** Items used by the view-mode toggle in the action toolbar. */
     type ViewModeItem = {
         text: string;
@@ -290,18 +288,27 @@
 
     const groupedListViewRef = ref<InstanceType<typeof GroupedListView> | null>(null);
 
+    /*
+        4/23/26 - KBH
+
+        This control is intended for use on Full Worksurface pages. It disables
+        "full worksurface" behavior when the user switches to List View or Grid
+        View, and re-enables it for Board View.
+
+        Rationale: The Full Worksurface layout is required for Board View to
+        render and function correctly. List View and Grid View do not need
+        (and are negatively affected by) this layout, so the control scopes
+        the behavior to Board View only.
+    */
     const isListView = computed(() => props.viewMode === "list");
     const isBoardView = computed(() => props.viewMode === "board");
     const isGridView = computed(() => props.viewMode === "grid");
 
     const panelBodyCssClasses = computed(() => {
-        // let bodyClass = "overflow-hidden";
-        // TODO - Need to fix row item dropdowns.
+        // Remove the panel body pading when in Grid View.
         if (isGridView.value) {
-            // bodyClass += " p-spacing-none";
             return "p-spacing-none";
         }
-        // return bodyClass;
     });
 
     // #region Grouping Computation

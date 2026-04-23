@@ -20,7 +20,7 @@ using System;
 namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
 {
     /// <summary>
-    /// The additional configuration options for the Connections Hub block.
+    /// The additional properties to display a campus label (short code)
     /// </summary>
     public class CampusLabelBag
     {
@@ -42,6 +42,6 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// <summary>
         /// Gets or sets the Campus Guid
         /// </summary>
-        public Guid guid { get; set; }
+        public Guid Guid { get; set; }
     }
 }

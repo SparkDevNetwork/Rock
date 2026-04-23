@@ -23,7 +23,7 @@
 
 import { Guid } from "@Obsidian/Types";
 
-/** The additional configuration options for the Connections Hub block. */
+/** The additional properties to display a campus label (short code) */
 export type CampusLabelBag = {
     /** Gets or sets the Campus Color */
     color?: string | null;

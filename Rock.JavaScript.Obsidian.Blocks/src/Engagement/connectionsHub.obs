@@ -1868,29 +1868,14 @@
         // so we never move cards the user didn't drag.
         const isGroupDrag = allSelectedKeys.value.length > 1 && allSelectedKeySet.value.has(idKey);
 
-        switch (selectedGrouping.value) {
-            case "connectorGrouping":
+        // This Block only supports status grouping, so a cross-column move
+        // always represents a status change. Other groupings (connector, state,
+        // opportunity, campus, due status) are not supported on the Block at this time.
+        selectedStatus.value = box.options?.connectionStatuses?.find(s => s.idKey === toGroupKey)?.guid;
 
-                break;
-            case "stateGrouping":
-
-                break;
-            case "statusGrouping":
-                selectedStatus.value = box.options?.connectionStatuses?.find(s => s.idKey === toGroupKey)?.guid;
-                // null = bulk (uses selectedRequestDetails); row = single card.
-                showChangeStatusModal(isGroupDrag ? null : row);
-
-                break;
-            case "opportunityGrouping":
-                // Maybe keep this
-                break;
-            case "campusGrouping":
-                // Need to add a block action if we want to keep this
-                break;
-            // Not including due status.
-            default:
-                break;
-        }
+        // Pass in null if the card was moved from a group drag, otherwise pass in the data row
+        // of the card that has been dragged.
+        showChangeStatusModal(isGroupDrag ? null : row);
     }
 
     // #endregion Board Functions

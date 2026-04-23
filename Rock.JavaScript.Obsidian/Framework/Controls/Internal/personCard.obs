@@ -39,7 +39,7 @@
 
 <style scoped>
 .gap-sm {
-    gap: var(--spacing-small)
+    gap: var(--spacing-small);
 }
 
 .gap-tiny {

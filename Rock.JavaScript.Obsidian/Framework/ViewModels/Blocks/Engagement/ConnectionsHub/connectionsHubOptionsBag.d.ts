@@ -27,8 +27,8 @@ import { CampusLabelBag } from "@Obsidian/ViewModels/Blocks/Engagement/Connectio
 import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionActivityTypeBag";
 import { ConnectionOpportunityDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionOpportunityDetailBag";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
-import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
 import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionWorkflowBag";
+import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Connections Hub block. */

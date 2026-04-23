@@ -381,7 +381,7 @@ namespace Rock.Blocks.Engagement
                     Name = c.Name,
                     ShortCode = c.ShortCode,
                     Color = c.GetAttributeValue( "core_CampusColor" ),
-                    guid = c.Guid
+                    Guid = c.Guid
                 } )
                 .ToList();
             options.CampusLabels = campusLabels;

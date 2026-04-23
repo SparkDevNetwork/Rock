@@ -214,7 +214,7 @@
         if (connectionsHubGridViewPageUrl.value && summary.isGridViewEnabled) {
             actions.push({
                 iconCssClass: "ti ti-table",
-                title: "Connection Board (Grid View)",
+                title: "Connection Grid",
                 type: "default",
                 handler: () => {
                     window.location.href = `${connectionsHubGridViewPageUrl.value!.replace("((Key))", summary.idKey!)}${campusPageParam.value}`;
