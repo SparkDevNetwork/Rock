@@ -237,6 +237,7 @@
                      textMode="multiline" />
         </ContentStack>
     </ContentSection>
+    <br>
     <ContentSection v-if="hasAttributes" title="Extended Attributes" icon="ti ti-adjustments-plus">
         <ContentStack>
             <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
@@ -262,6 +263,7 @@
     import { isNullish, isNotNullish } from "@Obsidian/Utility/util";
     import { Guid } from "@Obsidian/Types";
     import { emptyGuid, areEqual } from "@Obsidian/Utility/guid";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
