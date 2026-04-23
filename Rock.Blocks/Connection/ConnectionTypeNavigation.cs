@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Enums.Connection;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -59,31 +60,24 @@ namespace Rock.Blocks.Connection
         Order = 1,
         IsRequired = true )]
 
-    [LinkedPage( "Connections List Page",
-        Key = AttributeKey.ConnectionsListPage,
-        Description = "Select the page that the list button should open to view the connections list.",
-        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_LIST,
+    [LinkedPage( "Connections Hub Page",
+        Key = AttributeKey.ConnectionsHubPage,
+        Description = "Select the page that the list, board, and grid buttons should open to view the connections hub.",
+        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_HUB,
         Order = 2,
-        IsRequired = true )]
-
-    [LinkedPage( "Connection Board Page",
-        Key = AttributeKey.ConnectionBoardPage,
-        Description = "Select the page that the board and grid buttons should open to view the connection board in board or grid view.",
-        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_BOARD,
-        Order = 3,
         IsRequired = true )]
 
     [LinkedPage( "Operational Snapshot Page",
         Key = AttributeKey.OperationalSnapshotPage,
         Description = "Select the page that the snapshot button should open to view the operational snapshot.",
         DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_OPERATIONAL_SNAPSHOT,
-        Order = 4,
+        Order = 3,
         IsRequired = true )]
 
     [ConnectionTypesField( "Connection Types",
         Key = AttributeKey.ConnectionTypes,
         Description = "Optional list of connection types to limit the display to (All will be displayed by default).",
-        Order = 5,
+        Order = 4,
         IsRequired = false )]
 
     #endregion Block Attributes
@@ -98,8 +92,7 @@ namespace Rock.Blocks.Connection
         {
             public const string ConfigurationPage = "ConfigurationPage";
             public const string OpportunitiesPage = "OpportunitiesPage";
-            public const string ConnectionsListPage = "ConnectionsListPage";
-            public const string ConnectionBoardPage = "ConnectionBoardPage";
+            public const string ConnectionsHubPage = "ConnectionsHubPage";
             public const string OperationalSnapshotPage = "OperationalSnapshotPage";
             public const string ConnectionTypes = "ConnectionTypes";
         }
@@ -108,8 +101,9 @@ namespace Rock.Blocks.Connection
         {
             public const string ConfigurationPage = "ConfigurationPage";
             public const string OpportunitiesPage = "OpportunitiesPage";
-            public const string ConnectionsListPage = "ConnectionsListPage";
-            public const string ConnectionBoardPage = "ConnectionBoardPage";
+            public const string ConnectionsHubListViewPage = "ConnectionsHubListViewPage";
+            public const string ConnectionsHubBoardViewPage = "ConnectionsHubBoardViewPage";
+            public const string ConnectionsHubGridViewPage = "ConnectionsHubGridViewPage";
             public const string OperationalSnapshotPage = "OperationalSnapshotPage";
         }
 
@@ -357,12 +351,34 @@ namespace Rock.Blocks.Connection
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            // The list-view and board-view URLs resolve to the same Connections Hub
+            // page; they differ only in the SelectedView query parameter that
+            // tells the hub which view to open with.
+            var hubListViewQueryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.ConnectionType] = "((Key))",
+                ["SelectedView"] = EnabledViewFlags.List.ToString().ToLower()
+            };
+
+            var hubBoardViewQueryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.ConnectionType] = "((Key))",
+                ["SelectedView"] = EnabledViewFlags.Board.ToString().ToLower()
+            };
+
+            var hubGridViewQueryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.ConnectionType] = "((Key))",
+                ["SelectedView"] = EnabledViewFlags.Grid.ToString().ToLower()
+            };
+
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.ConfigurationPage] = this.GetLinkedPageUrl( AttributeKey.ConfigurationPage ),
                 [NavigationUrlKey.OpportunitiesPage] = this.GetLinkedPageUrl( AttributeKey.OpportunitiesPage, PageParameterKey.ConnectionType, "((Key))" ),
-                [NavigationUrlKey.ConnectionsListPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsListPage, PageParameterKey.ConnectionType, "((Key))" ),
-                [NavigationUrlKey.ConnectionBoardPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionBoardPage, PageParameterKey.ConnectionType, "((Key))" ),
+                [NavigationUrlKey.ConnectionsHubListViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, hubListViewQueryParams ),
+                [NavigationUrlKey.ConnectionsHubBoardViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, hubBoardViewQueryParams ),
+                [NavigationUrlKey.ConnectionsHubGridViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, hubGridViewQueryParams ),
                 [NavigationUrlKey.OperationalSnapshotPage] = this.GetLinkedPageUrl( AttributeKey.OperationalSnapshotPage, PageParameterKey.ConnectionType, "((Key))" )
             };
         }

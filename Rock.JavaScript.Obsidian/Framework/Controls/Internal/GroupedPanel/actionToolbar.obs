@@ -1,0 +1,82 @@
+<template>
+    <div class="action-toolbar"
+         :class="{ selected: isSelectedView }">
+        <template v-if="!isSelectedView">
+            <slot />
+        </template>
+        <template v-else>
+            <slot name="selectedActionToolbar" />
+        </template>
+    </div>
+</template>
+
+<style scoped>
+.action-toolbar {
+    padding: var(--spacing-xsmall) var(--spacing-large);
+    border-bottom: 1px solid var(--color-interface-soft);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    justify-content: space-between;
+}
+
+.action-toolbar.selected {
+    background-color: var(--color-info-soft);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+
+    /** Items used by the view-mode toggle button group. */
+    type ViewModeItem = {
+        text: string;
+        value: string;
+        iconCssClass?: string;
+    };
+
+    const props = defineProps({
+        groupingKey: {
+            type: String,
+            default: ""
+        },
+        groupingFields: {
+            type: Array as PropType<ListItemBag[]>,
+            default: []
+        },
+        isSelectedView: {
+            type: Boolean as PropType<boolean>,
+            required: false
+        },
+        /**
+         * The items shown in the view-mode toggle. The toggle is hidden when
+         * this array is empty or contains only a single item.
+         */
+        viewModeItems: {
+            type: Array as PropType<ViewModeItem[]>,
+            default: () => []
+        },
+        /**
+         * The currently selected view-mode value. Should match the `value` of
+         * the active item in `viewModeItems`.
+         */
+        viewMode: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:groupingKey", value: string): void;
+        (e: "update:viewMode", value: string): void;
+    }>();
+
+    const groupingKey = useVModelPassthrough(props, "groupingKey", emit);
+    const internalViewMode = useVModelPassthrough(props, "viewMode", emit);
+</script>

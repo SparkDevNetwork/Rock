@@ -304,7 +304,8 @@
                         :disableCollapse="true">
             <template #headerActions>
                 <DropDownContent v-model="isActivityFilterDropdownOpen"
-                                 enableFlip>
+                                 enableFlip
+                                 placement="bottom-end">
                     <template #anchor>
                         <div class="d-flex align-items-center gap-tiny text-primary cursor-pointer">
                             Show {{ selectedActivityFilter.text }}

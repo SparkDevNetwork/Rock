@@ -29,6 +29,9 @@ export type GroupingFieldBag = {
     /** The icon that should be displayed for this data group. */
     iconCssClass?: string | null;
 
+    /** The Icon style. Typically used to override the Icon color. */
+    iconStyle?: string | null;
+
     /** The unique key that identifies this data group. */
     key?: string | null;
 

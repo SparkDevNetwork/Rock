@@ -1,0 +1,472 @@
+<template>
+    <Panel v-model:quickFilterValue="internalQuickFilterValue"
+           :type="isBoardView ? 'block' : 'default'"
+           :panelBodyCssClass="panelBodyCssClasses"
+           :worksurfaceMode="isBoardView"
+           panelHeaderCssClass="flex-shrink-0">
+        <template #headerActions>
+            <div v-if="groupingFields.length > 1" class="d-flex align-items-center gap-xs">
+                <RockLabel class="text-interface-stronger text-xs">
+                    Group By
+                </RockLabel>
+                <ButtonDropDownList v-model="groupingKey"
+                                    :items="groupingFields"
+                                    :dropdownClass="viewModeItems.length > 1 ? 'dropdown-right' : ''"
+                                    :btnSize="BtnSize.ExtraSmall" />
+            </div>
+            <ButtonGroup v-if="viewModeItems.length > 1"
+                         v-model="internalViewMode"
+                         :items="viewModeItems"
+                         :btnSize="BtnSize.ExtraSmall" />
+            <HighlightLabel>
+                {{ countMessage }}
+            </HighlightLabel>
+        </template>
+        <template #postFilterHeaderActions>
+            <button v-if="props.onPanelSettingsClick"
+                    type="button"
+                    class="btn btn-panel-action"
+                    :class="{ active: panelSettingsActive }"
+                    title="Settings"
+                    @click.prevent.stop="props.onPanelSettingsClick">
+                <i class="ti ti-adjustments-horizontal"></i>
+            </button>
+            <button v-if="props.onAddItem"
+                    type="button"
+                    class="btn btn-add btn-panel-action"
+                    title="Add a new item. (Alt+N)"
+                    data-shortcut-key="n"
+                    @click.prevent.stop="props.onAddItem">
+                <i class="ti ti-square-plus"></i>
+            </button>
+        </template>
+        <template #preBody>
+            <transition name="action-toolbar-slide">
+                <div v-if="isSelectedView" class="action-toolbar-slide">
+                    <div class="action-toolbar-slide-inner">
+                        <ActionToolbar v-model:groupingKey="groupingKey"
+                                       v-model:viewMode="internalViewMode"
+                                       :viewModeItems="viewModeItems"
+                                       :groupingFields="groupingFields"
+                                       :isSelectedView="isSelectedView">
+                            <template #selectedActionToolbar>
+                                <slot name="selectedActionToolbar" />
+                            </template>
+                        </ActionToolbar>
+                    </div>
+                </div>
+            </transition>
+        </template>
+        <template v-if="rows.length > 0">
+            <GroupedListView v-if="isListView"
+                             ref="groupedListViewRef"
+                             :groups="filteredGroups"
+                             :totalGroupCounts="totalGroupCounts"
+                             :groupingKey="groupingKey"
+                             :isAutoCollapseEnabled="isAutoCollapseEnabled"
+                             :itemTerm="itemTerm">
+                <template #headerActions="slotProps">
+                    <slot name="headerActions" v-bind="slotProps" />
+                </template>
+                <template #grid="slotProps">
+                    <slot name="grid" v-bind="slotProps" />
+                </template>
+            </GroupedListView>
+            <GroupedBoardView v-else-if="isBoardView"
+                              :groups="filteredGroups"
+                              :canDropOnGroup="canDropOnGroup"
+                              :isGroupDrag="isGroupDrag"
+                              :selectedCount="selectedCount"
+                              @cardMoved="(idKey: string, from: string, to: string, beforeIdKey: string | null) => emit('cardMoved', idKey, from, to, beforeIdKey)">
+                <template #boardCard="slotProps">
+                    <slot name="boardCard" v-bind="slotProps" />
+                </template>
+                <template #emptyColumn>
+                    <slot name="emptyColumn" />
+                </template>
+            </GroupedBoardView>
+            <template v-if="isGridView">
+                <slot name="gridView" />
+            </template>
+        </template>
+        <template v-else>
+            <slot name="emptyView" />
+        </template>
+    </Panel>
+</template>
+
+<style scoped>
+:deep(.contentsection-list) {
+    gap: var(--spacing-medium);
+}
+
+.gap-xs {
+    gap: var(--spacing-xsmall);
+}
+
+/*
+    Animates to content size via grid-template-rows 0fr <-> 1fr, driven by
+    Vue's <Transition> enter/leave classes. Vue applies the enter-from class
+    atomically with DOM insertion, so the toolbar never paints at natural
+    height in the panel's fixed-height flex layout.
+
+    This is needed because the groupedBoardView renders the panel with a fixed
+    height, causing the standard TransitionVerticalCollapse pattern to not
+    function correctly
+*/
+.action-toolbar-slide {
+    display: grid;
+    grid-template-rows: 1fr;
+}
+
+.action-toolbar-slide-inner {
+    overflow: hidden;
+    min-height: 0;
+}
+
+.action-toolbar-slide-enter-active,
+.action-toolbar-slide-leave-active {
+    transition: grid-template-rows 0.2s ease-in-out;
+}
+
+.action-toolbar-slide-enter-from,
+.action-toolbar-slide-leave-to {
+    grid-template-rows: 0fr;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch, PropType } from "vue";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import HighlightLabel from "../highlightLabel.obs";
+    import Panel from "../panel.obs";
+    import ActionToolbar from "./GroupedPanel/actionToolbar.obs";
+    import GroupedListView from "./GroupedPanel/groupedListView.obs";
+    import GroupedBoardView from "./GroupedPanel/groupedBoardView.obs";
+    import ButtonGroup from "../buttonGroup.obs";
+    import RockLabel from "../rockLabel.obs";
+    import ButtonDropDownList from "../buttonDropDownList.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { GroupedGrid } from "./GroupedPanel/types.partial";
+
+    /** Items used by the view-mode toggle in the action toolbar. */
+    type ViewModeItem = {
+        text: string;
+        value: string;
+        iconCssClass?: string;
+    };
+
+    const props = defineProps({
+        groupingKey: {
+            type: String,
+            default: ""
+        },
+        groupingFields: {
+            type: Array as PropType<ListItemBag[]>,
+            default: []
+        },
+        isAutoCollapseEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        itemTerm: {
+            type: String,
+            default: "Item"
+        },
+        isSelectedView: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        rows: {
+            type: Object as PropType<Record<string, unknown>[]>,
+            required: true
+        },
+        filteredAndSortedRows: {
+            type: Object as PropType<Record<string, unknown>[]>,
+            required: true
+        },
+        panelSettingsActive: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        /**
+         * The current text being used for the quick filter search box.
+         * The quick filter will only be shown if this value is not undefined.
+         */
+        quickFilterValue: {
+            type: String as PropType<string | undefined>,
+            default: undefined
+        },
+        /**
+         * The items shown in the view-mode toggle. When empty or a single item,
+         * the toggle is hidden.
+         */
+        viewModeItems: {
+            type: Array as PropType<ViewModeItem[]>,
+            default: () => []
+        },
+        /**
+         * The current view-mode value used by the toggle button group. Should
+         * match the `value` of the active item in `viewModeItems`.
+         */
+        viewMode: {
+            type: String as PropType<string>,
+            required: true
+        },
+        /**
+         * The function to call in response to the settings button being clicked.
+         * Providing this function will automatically enable the settings button.
+         */
+        onPanelSettingsClick: {
+            type: Function as PropType<(() => void | Promise<void>)>,
+            required: false
+        },
+        /**
+         * The function to call in response to the add button being clicked.
+         * Providing this function will automatically enable the add button.
+         */
+        onAddItem: {
+            type: Function as PropType<(() => void | Promise<void>)>,
+            required: false
+        },
+        /**
+         * A dictionary of all available groups for each grouping dimension, keyed
+         * by grouping field name. When provided, the board view will show columns
+         * for all groups in the active dimension — even those with no data rows.
+         */
+        availableGroups: {
+            type: Object as PropType<Record<string, GroupedGrid[]>>,
+            required: false,
+            default: undefined
+        },
+
+        /**
+         * Optional callback that determines whether a card from
+         * sourceGroupKey can be dropped onto targetGroupKey. When
+         * undefined all columns accept drops (default behavior).
+         */
+        canDropOnGroup: {
+            type: Function as PropType<((sourceGroupKey: string, targetGroupKey: string) => boolean) | undefined>,
+            required: false,
+            default: undefined
+        },
+
+        /**
+         * Optional callback invoked at drag start to determine whether
+         * the card being dragged is part of a multi-card selection.
+         * Drives group-drag visual styling on the board view.
+         */
+        isGroupDrag: {
+            type: Function as PropType<((idKey: string) => boolean) | undefined>,
+            required: false,
+            default: undefined
+        },
+
+        /** Number of selected cards to display on the group-drag badge. */
+        selectedCount: {
+            type: Number,
+            required: false,
+            default: 0
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:quickFilterValue", value: string): void;
+        (e: "update:groupingKey", value: string): void;
+        (e: "update:orderedRequestKeys", value: string[]): void;
+        (e: "update:viewMode", value: string): void;
+        (e: "cardMoved", idKey: string, fromGroupKey: string, toGroupKey: string, beforeIdKey: string | null): void;
+    }>();
+
+    const internalQuickFilterValue = useVModelPassthrough(props, "quickFilterValue", emit);
+    const groupingKey = useVModelPassthrough(props, "groupingKey", emit);
+    const internalViewMode = useVModelPassthrough(props, "viewMode", emit);
+
+    const groupedListViewRef = ref<InstanceType<typeof GroupedListView> | null>(null);
+
+    /*
+        4/23/26 - KBH
+
+        This control is intended for use on Full Worksurface pages. It disables
+        "full worksurface" behavior when the user switches to List View or Grid
+        View, and re-enables it for Board View.
+
+        Rationale: The Full Worksurface layout is required for Board View to
+        render and function correctly. List View and Grid View do not need
+        (and are negatively affected by) this layout, so the control scopes
+        the behavior to Board View only.
+    */
+    const isListView = computed(() => props.viewMode === "list");
+    const isBoardView = computed(() => props.viewMode === "board");
+    const isGridView = computed(() => props.viewMode === "grid");
+
+    const panelBodyCssClasses = computed(() => {
+        // Remove the panel body pading when in Grid View.
+        if (isGridView.value) {
+            return "p-spacing-none";
+        }
+    });
+
+    // #region Grouping Computation
+
+    /**
+     * Builds a map of total (unfiltered) row counts per group key. This is used
+     * to show "X of Y Items" labels when a filter reduces the visible rows.
+     */
+    const totalGroupCounts = computed(() => {
+        const map = new Map<string, number>();
+
+        if (!groupingKey.value) {
+            map.set("all", props.rows.length);
+            return map;
+        }
+
+        for (const row of props.rows) {
+            const key = (row[groupingKey.value] as string) ?? "";
+
+            map.set(key, (map.get(key) ?? 0) + 1);
+        }
+
+        return map;
+    });
+
+    /**
+     * Builds a lookup from grouping key to GroupedGrid metadata for the
+     * active grouping dimension, sourced from the availableGroups prop.
+     */
+    const availableGroupsByKey = computed((): Map<string, GroupedGrid> => {
+        const map = new Map<string, GroupedGrid>();
+        const groups = props.availableGroups?.[groupingKey.value];
+
+        if (groups) {
+            for (const group of groups) {
+                if (group.key) {
+                    map.set(group.key, group);
+                }
+            }
+        }
+
+        return map;
+    });
+
+    /**
+     * Groups the filtered and sorted rows by the active grouping key. The
+     * resulting array is ordered with "unassigned" first, then by order, then
+     * alphabetically by label. When availableGroups is provided and the view
+     * is in board mode, empty groups are included so that all columns appear.
+     */
+    const filteredGroups = computed((): GroupedGrid[] => {
+        if (!groupingKey.value) {
+            return [{
+                key: "all",
+                label: "All",
+                gridData: { rows: props.filteredAndSortedRows }
+            }];
+        }
+
+        // Group rows by their string key value.
+        const dataGroups = Enumerable
+            .from(props.filteredAndSortedRows)
+            .groupBy(r => {
+                return (r[groupingKey.value] as string) ?? "";
+            })
+            .select(g => {
+                const rows = g.toArray();
+                const key = g.key;
+
+                // Look up display metadata from available groups.
+                const metadata = availableGroupsByKey.value.get(key);
+
+                return <GroupedGrid>{
+                    key,
+                    label: metadata?.label ?? key,
+                    iconCssClass: metadata?.iconCssClass,
+                    iconStyle: metadata?.iconStyle,
+                    textColorCssClass: metadata?.textColorCssClass,
+                    photoUrl: metadata?.photoUrl,
+                    type: metadata?.type,
+                    order: metadata?.order,
+                    gridData: { rows }
+                };
+            })
+            .toArray();
+
+        // In board mode, merge in any available groups that have no data rows.
+        if (isBoardView.value && availableGroupsByKey.value.size > 0) {
+            const existingKeys = new Set(dataGroups.map(g => g.key));
+
+            for (const [key, metadata] of availableGroupsByKey.value) {
+                if (!existingKeys.has(key)) {
+                    dataGroups.push({
+                        ...metadata,
+                        gridData: { rows: [] }
+                    });
+                }
+            }
+        }
+
+        return Enumerable
+            .from(dataGroups)
+            .orderBy(g => g.key === "unassigned" ? 0 : 1)
+            .thenOrderBy(g => g.order)
+            .thenOrderBy(g => g.label)
+            .toArray();
+    });
+
+    // #endregion
+
+    // #region Panel Header
+
+    const countMessage = computed(() => {
+        const totalCount = props.rows?.length ?? 0;
+        const filteredCount = props.filteredAndSortedRows.length;
+
+        if (filteredCount === totalCount) {
+            return `${asFormattedString(totalCount)} Total ${pluralize("Request", totalCount)}`;
+        }
+        else {
+            return `${asFormattedString(filteredCount)} of ${asFormattedString(totalCount)} Total ${pluralize("Request", totalCount)}`;
+        }
+    });
+
+    // #endregion
+
+    // #region Ordered Keys
+
+    const orderedRequestKeysAfterGrouping = computed(() =>
+        filteredGroups.value
+            .flatMap(g => g.gridData.rows)
+            .map(r => (r.idKey ?? "") as string)
+    );
+
+    watch(orderedRequestKeysAfterGrouping, (keys) => {
+        emit("update:orderedRequestKeys", keys);
+    }, { immediate: true });
+
+    // #endregion
+
+    // #region Exposed Methods
+
+    /** Clears selected keys on all registered grid instances (list view only). */
+    function clearSelectedKeys(): void {
+        groupedListViewRef.value?.clearSelectedKeys();
+    }
+
+    /** Expands all sections (list view only). */
+    function expandAll(): void {
+        groupedListViewRef.value?.expandAll();
+    }
+
+    /** Collapses all sections (list view only). */
+    function collapseAll(): void {
+        groupedListViewRef.value?.collapseAll();
+    }
+
+    defineExpose({ clearSelectedKeys, expandAll, collapseAll });
+
+    // #endregion
+</script>

@@ -19,7 +19,6 @@ using System;
 
 using Rock.Enums.Connection;
 using Rock.Model;
-using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
@@ -35,34 +34,34 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public string IdKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the grouping field data for the connection status column.
+        /// Gets or sets the grouping key for the connection status column.
         /// </summary>
-        public GroupingFieldBag StatusGrouping { get; set; }
+        public string StatusGrouping { get; set; }
 
         /// <summary>
-        /// Gets or sets the grouping field data for the connection state column.
+        /// Gets or sets the grouping key for the connection state column.
         /// </summary>
-        public GroupingFieldBag StateGrouping { get; set; }
+        public string StateGrouping { get; set; }
 
         /// <summary>
-        /// Gets or sets the grouping field data for the connector column.
+        /// Gets or sets the grouping key for the connector column.
         /// </summary>
-        public GroupingFieldBag ConnectorGrouping { get; set; }
+        public string ConnectorGrouping { get; set; }
 
         /// <summary>
-        /// Gets or sets the grouping field data for the connection opportunity column.
+        /// Gets or sets the grouping key for the connection opportunity column.
         /// </summary>
-        public GroupingFieldBag OpportunityGrouping { get; set; }
+        public string OpportunityGrouping { get; set; }
 
         /// <summary>
-        /// Gets or sets the grouping field data for the campus column.
+        /// Gets or sets the grouping key for the campus column.
         /// </summary>
-        public GroupingFieldBag CampusGrouping { get; set; }
+        public string CampusGrouping { get; set; }
 
         /// <summary>
-        /// Gets or sets the grouping field data for the due status column.
+        /// Gets or sets the grouping key for the due status column.
         /// </summary>
-        public GroupingFieldBag DueStatusGrouping { get; set; }
+        public string DueStatusGrouping { get; set; }
 
         /// <summary>
         /// Gets or sets the current connection status for this request.
@@ -118,6 +117,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the date from which this request is considered due soon.
         /// </summary>
         public DateTime? DueSoonDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sort order of the connection request within its status column.
+        /// </summary>
+        public int Order { get; set; }
     }
 }
 

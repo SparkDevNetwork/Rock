@@ -23,29 +23,17 @@
 
 import { Guid } from "@Obsidian/Types";
 
-/** Represents a connection status and its display properties for use in the Connections Hub. */
-export type ConnectionStatusBag = {
-    /** Gets or sets whether this status is disabled. (This is used when editing a request in sequential status mode) */
-    disabled: boolean;
+/** The additional properties to display a campus label (short code) */
+export type CampusLabelBag = {
+    /** Gets or sets the Campus Color */
+    color?: string | null;
 
-    /** Gets or sets the unique identifier of this connection status. */
+    /** Gets or sets the Campus Guid */
     guid: Guid;
 
-    /** Gets or sets the highlight color used to visually distinguish this status in the UI. */
-    highlightColor?: string | null;
-
-    /** Gets or sets the IdKey of the Connection Status */
-    idKey?: string | null;
-
-    /** Gets or sets a value indicating whether this status is the default status. */
-    isDefaultStatus: boolean;
-
-    /** Gets or sets a value indicating whether a note is required when completing a request with this status. */
-    isNoteRequiredOnCompletion: boolean;
-
-    /** Gets or sets the display name of this connection status. */
+    /** Gets or sets the Campus Name */
     name?: string | null;
 
-    /** Gets or sets the sort order of this connection status relative to others in the same Connection Type. */
-    order: number;
+    /** Gets or sets the Campus Short Code */
+    shortCode?: string | null;
 };

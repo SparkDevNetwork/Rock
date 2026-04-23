@@ -153,8 +153,9 @@
 
     const configurationPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConfigurationPage]);
     const opportunitiesPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunitiesPage]);
-    const connectionsListPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConnectionsListPage]);
-    const connectionBoardPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConnectionBoardPage]);
+    const connectionsHubListViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConnectionsHubListViewPage]);
+    const connectionsHubBoardViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConnectionsHubBoardViewPage]);
+    const connectionsHubGridViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConnectionsHubGridViewPage]);
     const operationalSnapshotPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OperationalSnapshotPage]);
 
     // #endregion Values
@@ -188,39 +189,37 @@
     function getPrimaryActions(summary: ConnectionTypeSummaryBag): MenuAction[] {
         const actions: MenuAction[] = [];
 
-        if (connectionsListPageUrl.value && summary.isListViewEnabled) {
+        if (connectionsHubListViewPageUrl.value && summary.isListViewEnabled) {
             actions.push({
                 iconCssClass: "ti ti-layout-list",
                 title: "Connections List",
                 type: "default",
                 handler: () => {
-                    window.location.href = connectionsListPageUrl.value!.replace("((Key))", summary.idKey!);
+                    window.location.href = connectionsHubListViewPageUrl.value!.replace("((Key))", summary.idKey!);
                 }
             });
         }
 
-        if (connectionBoardPageUrl.value) {
-            if (summary.isBoardViewEnabled) {
-                actions.push({
-                    iconCssClass: "ti ti-layout-cards",
-                    title: "Connection Board",
-                    type: "default",
-                    handler: () => {
-                        window.location.href = `${connectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}&IsCardViewMode=True${campusPageParam.value}`;
-                    }
-                });
-            }
+        if (connectionsHubBoardViewPageUrl.value && summary.isBoardViewEnabled) {
+            actions.push({
+                iconCssClass: "ti ti-layout-cards",
+                title: "Connection Board",
+                type: "default",
+                handler: () => {
+                    window.location.href = `${connectionsHubBoardViewPageUrl.value!.replace("((Key))", summary.idKey!)}${campusPageParam.value}`;
+                }
+            });
+        }
 
-            if (summary.isGridViewEnabled) {
-                actions.push({
-                    iconCssClass: "ti ti-table",
-                    title: "Connection Board (Grid View)",
-                    type: "default",
-                    handler: () => {
-                        window.location.href = `${connectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}&IsCardViewMode=False${campusPageParam.value}`;
-                    }
-                });
-            }
+        if (connectionsHubGridViewPageUrl.value && summary.isGridViewEnabled) {
+            actions.push({
+                iconCssClass: "ti ti-table",
+                title: "Connection Grid",
+                type: "default",
+                handler: () => {
+                    window.location.href = `${connectionsHubGridViewPageUrl.value!.replace("((Key))", summary.idKey!)}${campusPageParam.value}`;
+                }
+            });
         }
 
         if (operationalSnapshotPageUrl.value && summary.isSnapshotViewEnabled) {

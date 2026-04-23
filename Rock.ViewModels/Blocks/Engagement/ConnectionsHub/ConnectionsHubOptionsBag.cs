@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Enums.Connection;
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
@@ -98,6 +100,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public ListItemBag SelectedConnector { get; set; }
 
         /// <summary>
+        /// Gets or sets a list of Campus Labels
+        /// </summary>
+        public List<CampusLabelBag> CampusLabels { get; set; }
+
+        /// <summary>
         /// Gets or sets the GUIDs of the person profile badges to display on connection requests.
         /// </summary>
         public List<Guid> BadgeGuids { get; set; }
@@ -146,5 +153,33 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the Connection Opportunity details resolved from the current filter state, used to populate the detail panel.
         /// </summary>
         public ConnectionOpportunityDetailBag ConnectionOpportunityDetailsFromFilter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the enabled views for this connection type.
+        /// </summary>
+        public EnabledViewFlags EnabledViews { get; set; }
+
+        /// <summary>
+        /// Gets whether list view is enabled for this connection type.
+        /// </summary>
+        public bool IsListViewEnabled => EnabledViews.HasFlag( EnabledViewFlags.List );
+
+        /// <summary>
+        /// Gets whether board view is enabled for this connection type.
+        /// </summary>
+        public bool IsBoardViewEnabled => EnabledViews.HasFlag( EnabledViewFlags.Board );
+
+        /// <summary>
+        /// Gets whether grid view is enabled for this connection type.
+        /// </summary>
+        public bool IsGridViewEnabled => EnabledViews.HasFlag( EnabledViewFlags.Grid );
+
+        /// <summary>
+        /// Gets or sets the available groupings for each grouping dimension. The dictionary is keyed
+        /// by grouping field name (e.g., "statusGroupingKey") and contains the complete list of
+        /// possible <see cref="GroupingFieldBag"/> values for that dimension, including groups that
+        /// may not have any data rows.
+        /// </summary>
+        public Dictionary<string, List<GroupingFieldBag>> AvailableGroupings { get; set; }
     }
 }
