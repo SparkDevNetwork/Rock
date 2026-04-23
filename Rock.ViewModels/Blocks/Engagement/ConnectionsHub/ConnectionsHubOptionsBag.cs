@@ -175,24 +175,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public bool IsGridViewEnabled => EnabledViews.HasFlag( EnabledViewFlags.Grid );
 
         /// <summary>
-        /// Gets or sets the attributes for Connection Request attributes specified at the Connection Type level.
-        /// </summary>
-        /// <value>
-        /// The attributes.
-        /// </value>
-        public Dictionary<string, PublicAttributeBag> ConnectionTypeRequestAttributes { get; set; }
-
-        /// <summary>
         /// Gets or sets the available groupings for each grouping dimension. The dictionary is keyed
         /// by grouping field name (e.g., "statusGroupingKey") and contains the complete list of
         /// possible <see cref="GroupingFieldBag"/> values for that dimension, including groups that
         /// may not have any data rows.
         /// </summary>
         public Dictionary<string, List<GroupingFieldBag>> AvailableGroupings { get; set; }
-
-        /// <summary>
-        /// Gets or sets the default, pre-rendered edit values for the Connection Type level request attributes.
-        /// </summary>
-        public Dictionary<string, string> ConnectionTypeRequestAttributeValues { get; set; }
     }
 }

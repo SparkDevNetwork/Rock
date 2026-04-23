@@ -33,6 +33,47 @@ These patterns appear in WebForms code but must **not** be carried forward. Fix 
 
 ---
 
+## Comments in Converted Code
+
+The WebForms block is a requirements reference for **you**, the author — not a reference for future readers. The converted file should read as if it had been written from scratch against the current Rock/Obsidian patterns. Code comments are not a changelog.
+
+**Default: do not mention WebForms in any comment or XML doc.** A reader opening the Obsidian file a year from now will not have the `.ascx.cs` in front of them, and phrases like "matches WebForms", "mirrors the WebForms behavior", or "preserves NavigateToParentPage semantics" add no information — they just rot.
+
+### Forbidden phrasings (delete on sight)
+
+- `// matches the WebForms …`
+- `// mirrors the WebForms …`
+- `// preserves the WebForms … semantics`
+- `// (matches WebForms [SomeMethodName] behavior)`
+- `// replaces the WebForms lazy-loaded …`
+- `/// Matches the original WebForms condition.`
+- References to specific WebForms symbols: `btnSave_Click`, `ShowReadonlyDetails`, `_ppContact_SelectPerson`, `Page.IsValid`, `NavigateToParentPage`, `NavigateToCurrentPage`, `RegistrationInstanceEditor`, etc.
+- File-line citations of the original: `RegistrationInstanceDetail.ascx.cs:283-293`
+
+When you catch yourself writing any of these, rewrite the comment to explain the **intent** without the comparison. If you can't write a non-WebForms version that adds value, delete the comment entirely — most of these are narrating behavior that the code already expresses.
+
+### When referencing WebForms is OK
+
+Only mention WebForms when a future reader genuinely needs that context to understand the code. This is rare. Examples:
+
+- **Documented, surprising divergence.** "Returns null on missing key instead of seeding an Add form — matches the original's hidden-panel behavior. If you change this, update the Add-link callers that pass `RegistrationInstanceId=0`."
+- **Root-cause context for a bug fix carried into the conversion.** "The original had an N+1 here that crashed on instances with >1k registrations (issue #6722); this replacement query is intentionally different."
+- **A quirky business rule whose origin is non-obvious and not documented elsewhere.** Reference the original file and a one-line reason, or — better — move the explanation into the release-note commit.
+
+**In every other case, comment the intent, not the provenance.** Well-named methods, small functions, and direct code are the primary way to communicate; a WebForms reference is a worse substitute.
+
+### Before/after examples
+
+| Before (delete) | After (keep or drop entirely) |
+|---|---|
+| `// Sessions auto-enable when MaxAttendees is set — matches WebForms RegistrationInstanceEditor.GetValue().` | `// Session timeout auto-enables when MaxAttendees is set.` |
+| `/// Matches the original WebForms condition.` | *(delete — the method name already says what it returns)* |
+| `/// Replaces the WebForms lazy-loaded Registrations.Any(...) check with an explicit query.` | *(delete)* |
+| `// ParentPage URL carries RegistrationTemplateId (matches WebForms NavigateToParentPage).` | `// ParentPage URL carries RegistrationTemplateId so cancel/delete redirects stay scoped to the template.` |
+| `Reason: Preserves the WebForms Copy semantics using the bag layer instead of a deep entity clone.` | `Reason: Carry attributes + picker selections forward on Copy without the navigation-null trap of a deep entity clone.` |
+
+---
+
 ## Files Created Per Conversion
 
 1. `Rock.Blocks/[Category]/[BlockName].cs` — C# block logic (PascalCase filename)
@@ -281,3 +322,48 @@ var items = service.Queryable()
 ```
 
 `Value` should be a Guid or IdKey string. Use Guid for picker values unless IdKey is specifically required.
+
+---
+
+## PersonPicker — Emits a PersonAlias Guid, NOT a Person Guid
+
+**This has bitten us multiple times.** The `<PersonPicker>` control emits a `ListItemBag` whose `.value` is the selected person's **`PrimaryAliasGuid`** (i.e. a `PersonAlias.Guid`) — *not* the `Person.Guid`.
+
+Comparing the emitted value to `Person.Guid` on the server silently matches zero rows (no exception — it just filters everything out).
+
+### Correct server-side handling
+
+Resolve the alias guid to a `PersonId` first so the filter catches every registration/record the person is associated with, regardless of which `PersonAlias` was current at the time:
+
+```csharp
+var aliasGuid = FilterRegisteredBy?.Value.AsGuidOrNull();
+
+if ( aliasGuid.HasValue )
+{
+    var personId = new PersonAliasService( rockContext ).GetPersonId( aliasGuid.Value );
+
+    if ( personId.HasValue )
+    {
+        qry = qry.Where( r => r.PersonAlias != null && r.PersonAlias.PersonId == personId.Value );
+    }
+    else
+    {
+        // Selected person alias didn't resolve — no rows should match.
+        qry = qry.Where( _ => false );
+    }
+}
+```
+
+### Wrong (silently matches nothing)
+
+```csharp
+// BUG: PersonPicker emits PersonAlias.Guid, not Person.Guid.
+qry = qry.Where( r => r.PersonAlias.Person.Guid == aliasGuid.Value );
+```
+
+### Rules of thumb
+
+- **Never** compare a PersonPicker value to `Person.Guid`.
+- Prefer resolving to `PersonId` via `new PersonAliasService( rockContext ).GetPersonId( aliasGuid )` — catches all of the person's aliases.
+- If you only want to match the primary alias, compare against `PersonAlias.Guid` directly — but this is almost always narrower than intended.
+- The same rule applies to any control that emits `primaryAliasGuid` (e.g. pickers that wrap `PersonPicker`). When in doubt, check the control's `selectPerson` / emit path.

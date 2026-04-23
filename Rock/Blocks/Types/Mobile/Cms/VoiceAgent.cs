@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 
 using Rock.AI.Agent.Mcp;
 using Rock.Attribute;
+using Rock.Common.Mobile.Enums;
 using Rock.Common.Mobile.ViewModel;
 using Rock.Data;
 using Rock.Enums.Security;
@@ -34,21 +35,21 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
 
-    [TextField( "OpenAI API Key",
-        Description = "The API key obtained from the OpenAI developer portal.",
+    [TextField( "API Key",
+        Description = "The API key obtained from the OpenAI or xAI developer portal.",
         IsRequired = true,
         DefaultValue = "",
         Key = AttributeKeys.ApiKey,
         Order = 0 )]
 
     [TextField( "OpenAI Model",
-        Description = "The realtime OpenAI model used for audio interactions.",
-        IsRequired = true,
+        Description = "The realtime OpenAI model used for audio interactions. Leave blank when using xAI.",
+        IsRequired = false,
         DefaultValue = "gpt-realtime-mini",
         Key = AttributeKeys.Model,
         Order = 1 )]
 
-    [MemoField( "Instruction",
+    [MemoField( "Instructions",
         Description = "Instructions that define how the AI assistant should behave during conversations.",
         IsRequired = false,
         DefaultValue = @"
@@ -74,7 +75,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.StopAction,
         Order = 3 )]
 
-    [CustomDropdownListField( "Rock MCP",
+    [CustomDropdownListField( "Rock MCP (Model Context Protocol)",
         Description = "Select an MCP agent configured in Rock. This agent will be available to the AI assistant.",
         ListSource = "SELECT [Guid] AS [Value], [Name] AS [Text] FROM [AIAgent] WHERE [AgentType] = 1",
         IsRequired = false,
@@ -110,6 +111,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         #region Private Constants
 
         private const string OpenAiRealtimeClientSecretUrl = "https://api.openai.com/v1/realtime/client_secrets";
+        private const string xAiRealtimeClientSecretUrl = "https://api.x.ai/v1/realtime/client_secrets";
 
         #endregion
 
@@ -148,24 +150,37 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue( "Bearer", apiKey );
                     httpClient.DefaultRequestHeaders.Accept.Add( new MediaTypeWithQualityHeaderValue( "application/json" ) );
 
-                    var payload = new
-                    {
-                        expires_after = new
+                    var payload = GetProvider() == VoiceAgentProvider.OpenAi
+                        ? ( object ) new
                         {
-                            anchor = "created_at",
-                            seconds = 300
-                        },
-                        session = new
-                        {
-                            type = "realtime",
-                            model = model,
-                            instructions = instruction
+                            expires_after = new
+                            {
+                                anchor = "created_at",
+                                seconds = 300
+                            },
+                            session = new
+                            {
+                                type = "realtime",
+                                model = model,
+                                instructions = instruction
+                            }
                         }
-                    };
+                        : new
+                        {
+                            expires_after = new
+                            {
+                                anchor = "created_at",
+                                seconds = 300
+                            }
+                        };
                     var json = JsonConvert.SerializeObject( payload );
                     var content = new StringContent( json, Encoding.UTF8, "application/json" );
 
-                    var response = await httpClient.PostAsync( OpenAiRealtimeClientSecretUrl, content );
+                    var endpoint = GetProvider() == VoiceAgentProvider.OpenAi
+                        ? OpenAiRealtimeClientSecretUrl
+                        : xAiRealtimeClientSecretUrl;
+
+                    var response = await httpClient.PostAsync( endpoint, content );
                     var responseBody = await response.Content.ReadAsStringAsync();
 
                     if ( !response.IsSuccessStatusCode )
@@ -265,22 +280,54 @@ namespace Rock.Blocks.Types.Mobile.Cms
             }
 
             return apiKey;
+        }
 
+        /// Determines the voice agent provider based on the configured API key.
+        /// </summary>
+        /// <remarks>The method inspects the prefix of the API key to identify the provider. If the key
+        /// starts with "sk-", OpenAI is selected; if it starts with "xai-", xAi is selected. If the key does not match
+        /// any known prefix, OpenAI is returned by default.</remarks>
+        /// <returns>A value of the <see cref="VoiceAgentProvider"/> enumeration that indicates the detected provider. Returns
+        /// <see cref="VoiceAgentProvider.OpenAi"/> if the API key is not recognized.</returns>
+        private VoiceAgentProvider GetProvider()
+        {
+            var apiKey = GetAttributeValue( AttributeKeys.ApiKey );
+
+            // Default to OpenAI when the key is not configured so callers don't NRE on the prefix check.
+            if ( apiKey.IsNullOrWhiteSpace() )
+            {
+                return VoiceAgentProvider.OpenAi;
+            }
+
+            if ( apiKey.StartsWith( "sk-" ) )
+            {
+                return VoiceAgentProvider.OpenAi;
+            }
+
+            if ( apiKey.StartsWith( "xai-" ) )
+            {
+                return VoiceAgentProvider.xAi;
+            }
+
+            return VoiceAgentProvider.OpenAi;
         }
 
         #endregion
 
         #region Block Actions
 
-
-
         /// <summary>
         /// Gets the initial data for the block, including any configured MCP URLs.
         /// </summary>
-        /// <returns></returns>
         [BlockAction]
         public async Task<BlockActionResult> GetInitialData()
         {
+            var currentPerson = GetCurrentPerson();
+            if ( currentPerson == null )
+            {
+                return ActionUnauthorized( "You must be logged in to use the voice agent." );
+            }
+
             var urls = new List<string>();
 
             var aiAgentSlug = AIAgentCache.Get( GetAttributeValue( AttributeKeys.RockMcp ) )?
@@ -302,6 +349,28 @@ namespace Rock.Blocks.Types.Mobile.Cms
             return ActionOk( initialData );
         }
 
+        /// <summary>
+        /// Requests a new ephemeral token from the configured voice agent provider.
+        /// </summary>
+        /// <returns>A <see cref="BlockActionResult"/> containing the ephemeral token.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> GetEphemeralToken()
+        {
+            var currentPerson = GetCurrentPerson();
+            if ( currentPerson == null )
+            {
+                return ActionUnauthorized( "You must be logged in to use the voice agent." );
+            }
+
+            var ephemeralKey = await GetEphemeralKey();
+            if ( ephemeralKey.IsNullOrWhiteSpace() )
+            {
+                return ActionInternalServerError( "Unable to retrieve an ephemeral token." );
+            }
+
+            return ActionOk( ephemeralKey );
+        }
+
         #endregion
 
         /// <inheritdoc/>
@@ -312,6 +381,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 Model = GetAttributeValue( AttributeKeys.Model ),
                 Instruction = GetAttributeValue( AttributeKeys.Instruction ),
                 StopAction = GetAttributeValue( AttributeKeys.StopAction ).FromJsonOrNull<MobileNavigationActionViewModel>() ?? new MobileNavigationActionViewModel(),
+                VoiceAgentProvider = GetProvider(),
             };
         }
 
@@ -322,5 +392,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             public List<string> McpUrl { get; set; }
         }
+
     }
 }

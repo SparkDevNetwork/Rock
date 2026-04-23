@@ -1,10 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="config.options?.isVisible"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          :itemTerm="config?.options?.registrationInstanceName + ' Instances'"
+          :title="gridTitle"
+          :titleIconCssClass="config.options?.titleIconCssClass ?? ''"
+          itemTerm="Instance"
+          :exportTitle="config.options?.exportTitle ?? gridTitle"
           :entityTypeGuid="EntityType.RegistrationInstance"
+          markInactiveRows
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
@@ -29,13 +34,6 @@
                     field="endDate"
                     :filter="dateValueFilter"
                     visiblePriority="xs" />
-
-        <TextColumn v-if="shouldShowDetailsColumn()"
-                    name="details"
-                    title="Details"
-                    field="details"
-                    :filter="textValueFilter"
-                    visiblePriority="md" />
 
         <NumberColumn name="registrants"
                       title="Registrants"
@@ -62,7 +60,7 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <DeleteColumn v-if="config.isDeleteEnabled && config.isAddEnabled" @click="onDeleteClick" />
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
 
@@ -74,24 +72,19 @@
     import { RegistrationInstanceListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceList/registrationInstanceListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./RegistrationInstanceList/types.partial";
-    import { reactive, ref } from "vue";
+    import { computed, reactive, ref } from "vue";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
     const config = useConfigurationValues<ListBlockBox<RegistrationInstanceListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+
+    const gridTitle = computed(() => `${config.options?.registrationInstanceName ?? "Registration"} Instances`);
 
     /**
      * Gets whether the wait list should be shown.
      */
     function shouldShowWaitList(): boolean {
         return config.options?.showWaitList ?? false;
-    }
-
-    /**
-     * Gets whether the details column should be shown.
-     */
-    function shouldShowDetailsColumn(): boolean {
-        return config.options?.showDetailsColumn ?? false;
     }
 
     // All blocks auto reload when changing block settings unless there is an
@@ -185,7 +178,7 @@
 
     /**
      * Called when the Add button has been clicked by the individual.
-         */
+     */
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");

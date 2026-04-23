@@ -260,8 +260,9 @@ namespace Rock.Blocks.Engagement
                 ConnectionOpportunities = GetConnectionOpportunities(),
                 CompletionMetrics = GetCompletionMetrics(),
                 Filters = GetFilters(),
+                IsFutureFollowUpEnabled = ConnectionType?.EnableFutureFollowup == true,
                 RequestState = GetRequestState(),
-                RequestTimeline = GetRequestTimeline()
+                RequestTimeline = GetRequestTimeline(),
             };
         }
 
