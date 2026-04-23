@@ -272,7 +272,7 @@ namespace Rock.Blocks.Engagement
                     }
                 } );
 
-            var campusContext = RequestContext.GetContextEntity<Campus>();
+            var campusContext = GetCampusContextOrNull();
             if ( campusContext != null )
             {
                 queryable = queryable.Where( s => s.Step.CampusId == campusContext.Id );
@@ -281,6 +281,19 @@ namespace Rock.Blocks.Engagement
             queryable = FilterByDate( queryable );
 
             return queryable;
+        }
+
+        /// <summary>
+        /// Gets the campus context, returning <c>null</c> when there is no more
+        /// than one active campus. This prevents Steps that are associated with
+        /// an inactive campus — or no campus at all — from being filtered out
+        /// of the list by default.
+        /// </summary>
+        /// <returns>The campus context entity, or <c>null</c> when there is no
+        /// more than one active campus.</returns>
+        private Campus GetCampusContextOrNull()
+        {
+            return CampusCache.All( false ).Count > 1 ? RequestContext.GetContextEntity<Campus>() : null;
         }
 
         protected override IQueryable<StepParticipantRow> GetOrderedListQueryable( IQueryable<StepParticipantRow> queryable, RockContext rockContext )
