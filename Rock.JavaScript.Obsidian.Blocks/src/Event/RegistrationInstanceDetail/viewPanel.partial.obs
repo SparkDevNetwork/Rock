@@ -1,0 +1,133 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-4">
+                <ValueDetailList :modelValue="leftColumnValues" />
+            </div>
+            <div class="col-md-4">
+                <ValueDetailList :modelValue="middleColumnValues" />
+            </div>
+            <div class="col-md-4">
+                <div v-if="groupPlacements.length" class="form-group static-control">
+                    <label class="control-label">Group Placements</label>
+                    <ul class="list-unstyled">
+                        <li v-for="(placement, index) in groupPlacements" :key="placement.url ?? index">
+                            <a :href="placement.url ?? ''">{{ placement.name }}</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="detailsHtml" class="form-group static-control">
+            <label class="control-label">Details</label>
+            <div class="control-wrapper" v-html="detailsHtml"></div>
+        </div>
+
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { RegistrationInstanceBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceDetail/registrationInstanceBag";
+    import { RegistrationInstanceDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceDetail/registrationInstanceDetailOptionsBag";
+    import { RegistrationInstanceGroupPlacementBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceDetail/registrationInstanceGroupPlacementBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<RegistrationInstanceBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<RegistrationInstanceDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+    const groupPlacements = computed((): RegistrationInstanceGroupPlacementBag[] => {
+        return props.modelValue?.groupPlacements ?? [];
+    });
+
+    const detailsHtml = computed((): string => {
+        return props.modelValue?.details ?? "";
+    });
+
+    const leftColumnValues = computed((): ValueDetailListItem[] => {
+        const builder = new ValueDetailListItemBuilder();
+        const bag = props.modelValue;
+        if (!bag) {
+            return builder.build();
+        }
+
+        builder.addTextValue("Name", bag.name ?? "");
+
+        if (bag.maxAttendees !== null && bag.maxAttendees !== undefined) {
+            builder.addTextValue("Maximum Attendees", bag.maxAttendees.toLocaleString());
+        }
+
+        if (bag.registrationWorkflowType?.text) {
+            builder.addTextValue("Registration Workflow", bag.registrationWorkflowType.text);
+        }
+
+        if (bag.startDateTime) {
+            builder.addTextValue("Registration Starts", formatShortDate(bag.startDateTime));
+        }
+
+        return builder.build();
+    });
+
+    const middleColumnValues = computed((): ValueDetailListItem[] => {
+        const builder = new ValueDetailListItemBuilder();
+        const bag = props.modelValue;
+        if (!bag) {
+            return builder.build();
+        }
+
+        if (bag.isSetCostOnInstance) {
+            // Cost is always shown when the template allows per-instance pricing — even if
+            // the value is null — so the field's existence is visible to the user.
+            builder.addTextValue("Cost", bag.cost !== null && bag.cost !== undefined ? formatCurrency(bag.cost) : "");
+
+            if (bag.minimumInitialPayment !== null && bag.minimumInitialPayment !== undefined) {
+                builder.addTextValue("Minimum Initial Payment", formatCurrency(bag.minimumInitialPayment));
+            }
+
+            if (bag.defaultPayment !== null && bag.defaultPayment !== undefined) {
+                builder.addTextValue("Default Payment Amount", formatCurrency(bag.defaultPayment));
+            }
+        }
+
+        if (bag.account?.text) {
+            builder.addTextValue("Account", bag.account.text);
+        }
+
+        if (bag.endDateTime) {
+            builder.addTextValue("Registration Ends", formatShortDate(bag.endDateTime));
+        }
+
+        return builder.build();
+    });
+
+    function formatShortDate(iso: string | null | undefined): string {
+        if (!iso) {
+            return "";
+        }
+        return RockDateTime.parseISO(iso)?.toASPString("d") ?? "";
+    }
+
+    function formatCurrency(value: number): string {
+        return toCurrencyOrNull(value) ?? "";
+    }
+</script>
