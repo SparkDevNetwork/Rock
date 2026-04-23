@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Administration
                 if ( dialogPage != null )
                 {
                     dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
-                    dialogPage.SubTitle = $"Id: {page?.IdKey ?? "0"}";
+                    dialogPage.SubTitle = $"Id: {page?.Id.ToString() ?? "0"}, Id Key: {page?.IdKey ?? string.Empty}";
                 }
 
                 ddlMenuWhen.BindToEnum<DisplayInNavWhen>();
