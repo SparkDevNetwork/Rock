@@ -25,7 +25,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
-using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.RegistrationInstancePaymentList;
@@ -39,8 +38,8 @@ namespace Rock.Blocks.Event
     [DisplayName( "Registration Instance - Payment List" )]
     [Category( "Event" )]
     [Description( "Displays the payments related to an event registration instance." )]
-    [IconCssClass( "ti ti-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [IconCssClass( "ti ti-credit-card" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage(
         "Transaction Detail Page",
@@ -60,7 +59,8 @@ namespace Rock.Blocks.Event
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "3842853c-75b2-4568-8397-2b9e4409fd44" )]
-    [Rock.SystemGuid.BlockTypeGuid( "e804f6b4-e4c2-47e5-b1de-2147222bf3a2" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "e804f6b4-e4c2-47e5-b1de-2147222bf3a2" )]
+    [Rock.SystemGuid.BlockTypeGuid( "762BEE39-15DF-477C-9831-DB5AA73DCB24" )]
     public class RegistrationInstancePaymentList : RockEntityListBlockType<FinancialTransaction>
     {
         #region Keys
@@ -82,11 +82,6 @@ namespace Rock.Blocks.Event
             public const string RegistrationId = "RegistrationId";
         }
 
-        private static class PreferenceKey
-        {
-            public const string FilterPaymentDateRange = "filter-payment-date-range";
-        }
-
         #endregion Keys
 
         #region Fields
@@ -105,7 +100,7 @@ namespace Rock.Blocks.Event
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = false;
-            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            box.IsDeleteEnabled = false;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -131,11 +126,15 @@ namespace Rock.Blocks.Event
 
             var options = new RegistrationInstancePaymentListOptionsBag()
             {
-                RegistrationTemplateIdKey = registrationInstance?.RegistrationTemplate?.IdKey,
-                ExportFileName = $"{registrationInstance?.Name} RegistrationPayments",
-                ExportTitle = $"{registrationInstance?.Name} - Registration Payments",
                 CurrencyInfo = currencyInfoBag
             };
+
+            if ( registrationInstance != null )
+            {
+                options.ExportFileName = $"{registrationInstance.Name}RegistrationPayments";
+                options.ExportTitle = $"{registrationInstance.Name} - Registration Payments";
+            }
+
             return options;
         }
 
@@ -194,12 +193,11 @@ namespace Rock.Blocks.Event
             return new GridBuilder<FinancialTransaction>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "id", a => a.Id.ToString() )
                 .AddTextField( "person", a => a.AuthorizedPersonAlias?.Person?.FullNameReversed )
                 .AddDateTimeField( "transactionDateTime", a => a.TransactionDateTime )
                 .AddField( "totalAmount", a => a.TotalAmount )
-                .AddTextField( "paymentMethod", a => a.FinancialPaymentDetail.CurrencyAndCreditCardType )
-                .AddTextField( "account", a => a.FinancialPaymentDetail.AccountNumberMasked )
+                .AddTextField( "paymentMethod", a => a.FinancialPaymentDetail?.CurrencyAndCreditCardType )
+                .AddTextField( "account", a => a.FinancialPaymentDetail?.AccountNumberMasked )
                 .AddTextField( "transactionCode", a => a.TransactionCode )
                 .AddField( "registrarsHtml", a => GetRegistrarsHtml( a ) )
                 .AddField( "registrars", a => GetRegistrars( a ) )
@@ -247,7 +245,7 @@ namespace Rock.Blocks.Event
                 {
                     var qryParams = new Dictionary<string, string>
                     {
-                        { PageParameterKey.RegistrationId, registration.Id.ToString() }
+                        { PageParameterKey.RegistrationId, registration.IdKey }
                     };
                     string url = this.GetLinkedPageUrl( AttributeKey.RegistrationPage, qryParams );
                     registrars.Add( string.Format( "<a href='{0}'>{1}</a>", url, registration.PersonAlias.Person.FullName ) );
@@ -269,41 +267,28 @@ namespace Rock.Blocks.Event
             var registrars = _paymentRegistrations
                 .Where( r => registrationIds.Contains( r.Id ) )
                 .Where( registration => registration.PersonAlias?.Person != null )
-                .Select( registration => string.Format( registration.PersonAlias.Person.FullName ) )
+                .Select( registration => registration.PersonAlias.Person.FullName )
                 .ToList();
 
             return registrars;
         }
 
         /// <summary>
-        /// Gets the registration instance.
+        /// Gets the registration instance from the RegistrationInstanceId page
+        /// parameter, accepting an Id, IdKey, or Guid. The result is cached so
+        /// repeat calls within a single block request only hit the database once.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The registration instance, or null if the parameter was missing or did not resolve.</returns>
         private RegistrationInstance GetRegistrationInstance()
         {
             if ( _registrationInstance == null )
             {
-                var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+                var registrationInstanceKey = PageParameter( PageParameterKey.RegistrationInstanceId );
 
-                if ( registrationInstanceId.HasValue )
+                if ( registrationInstanceKey.IsNotNullOrWhiteSpace() )
                 {
                     _registrationInstance = new RegistrationInstanceService( RockContext )
-                        .Queryable()
-                        .Include( a => a.RegistrationTemplate )
-                        .Where( a => a.Id == registrationInstanceId.Value )
-                        .AsNoTracking()
-                        .FirstOrDefault();
-
-                    if ( _registrationInstance == null )
-                    {
-                        return null;
-                    }
-
-                    // Load the Registration Template.
-                    if ( _registrationInstance.RegistrationTemplate == null && _registrationInstance.RegistrationTemplateId > 0 )
-                    {
-                        _registrationInstance.RegistrationTemplate = new RegistrationTemplateService( RockContext ).Get( _registrationInstance.RegistrationTemplateId );
-                    }
+                        .Get( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds );
                 }
             }
 
@@ -334,42 +319,6 @@ namespace Rock.Blocks.Event
             }
 
             return _paymentRegistrations;
-        }
-
-        #endregion
-
-        #region Block Actions
-
-        /// <summary>
-        /// Deletes the specified entity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult Delete( string key )
-        {
-            var entityService = new FinancialTransactionService( RockContext );
-            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-            if ( entity == null )
-            {
-                return ActionBadRequest( $"{FinancialTransaction.FriendlyTypeName} not found." );
-            }
-
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( $"Not authorized to delete {FinancialTransaction.FriendlyTypeName}." );
-            }
-
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
-
-            return ActionOk();
         }
 
         #endregion
