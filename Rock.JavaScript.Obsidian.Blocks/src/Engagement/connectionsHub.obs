@@ -66,39 +66,35 @@
                         <i class="ti ti-circle-check"></i>
                         <span class="activity-btn-label">Complete</span>
                     </RockButton>
-                    <div v-if="canEditConnectionRequests" class="dropdown">
-                        <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown"></i>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <button type="button"
-                                        @click="showChangeStateModal(ConnectionState.Active)"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                    <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
-                                </button>
-                            </li>
-                            <li>
-                                <button type="button"
-                                        @click="showChangeStateModal(ConnectionState.Inactive)"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                    <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
-                                </button>
-                            </li>
-                            <li v-if="box.options?.isFutureFollowUpEnabled">
-                                <button type="button"
-                                        @click="showChangeStateModal(ConnectionState.FutureFollowUp)"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                    <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
-                                </button>
-                            </li>
-                            <li>
-                                <button type="button"
-                                        @click="showDeleteRequestModal()"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold text-danger">
-                                    <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
+                    <DropDownContent v-if="canEditConnectionRequests"
+                                     v-model="isDetailActionDropdownOpen"
+                                     enableFlip
+                                     placement="bottom-start"
+                                     preventAnchorClickPropagation>
+                        <template #anchor>
+                            <i class="ti ti-dots-vertical cursor-pointer"></i>
+                        </template>
+                        <div class="bg-interface-softest dropdown-content text-sm"
+                             @click="isDetailActionDropdownOpen = false">
+                            <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                 @click="showChangeStateModal(ConnectionState.Active)">
+                                <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
+                            </div>
+                            <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                 @click="showChangeStateModal(ConnectionState.Inactive)">
+                                <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
+                            </div>
+                            <div v-if="box.options?.isFutureFollowUpEnabled"
+                                 class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                 @click="showChangeStateModal(ConnectionState.FutureFollowUp)">
+                                <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
+                            </div>
+                            <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold text-danger"
+                                 @click="showDeleteRequestModal()">
+                                <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
+                            </div>
+                        </div>
+                    </DropDownContent>
                 </div>
             </div>
             <div class="right-actions d-flex align-items-center gap-spacing-md">
@@ -835,7 +831,12 @@
     overflow: visible;
 }
 
-/* The dropdown content within the List View needs to have a greater index then the grid column header (currently 3). */
+/* The dropdown content within the action-toolbar needs to have a greater z index then the grid column header (currently 3). */
+:deep(.action-toolbar .floating-dropdown) {
+    z-index: 4;
+}
+
+/* The dropdown content within the List View needs to have a greater z index then the grid column header (currently 3). */
 :deep(.grid-cell-overflow .floating-dropdown) {
     z-index: 4;
 }
@@ -843,10 +844,6 @@
 :deep(.grid-body) {
     border-bottom-left-radius: var(--rounded-medium);
     border-bottom-right-radius: var(--rounded-medium);
-}
-
-:deep(.grid-body > .grid-row:has(+ div) .grid-cell) {
-    border-bottom: none;
 }
 
 .activity-metric {
@@ -1171,6 +1168,7 @@
     const debouncedQuickFilter = ref(rawQuickFilter.value);
     const isAutoCollapseEnabled = ref<boolean>(asBoolean(preferences.getValue(PreferenceKey.IsAutoCollapseEnabled)));
     const openDropdownIndex = ref<string | null | undefined>();
+    const isDetailActionDropdownOpen = ref<boolean>(false);
     // Holds the raw grid data returned from the server
     const gridData = ref<GridDataBag>();
     const requestListErrorMessage = ref<string>("");
@@ -3126,7 +3124,7 @@
         Reason: Users expect an "outside click" to deselect, matching the
         mental model set by the multi-select UI and common kanban patterns.
     */
-    const ignoreOutsideClickSelectors = ".board-card-wrapper, .action-toolbar, .modal, .dropdown-menu, .popover";
+    const ignoreOutsideClickSelectors = ".board-card-wrapper, .action-toolbar, .modal, .floating-dropdown, .popover";
 
     function handleOutsideClick(event: MouseEvent): void {
         if (!hasAnySelectedKeys.value || selectedView.value !== "board") {
