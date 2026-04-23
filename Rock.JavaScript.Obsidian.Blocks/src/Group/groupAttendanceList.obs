@@ -53,25 +53,29 @@
             <BooleanColumn name="attendanceEntered"
                            title="Attendance Entered"
                            field="attendanceEntered"
-                           headerClass="text-nowrap"
+                           width="180px"
+                           headerClass="break-word"
                            :filter="booleanValueFilter" />
 
             <BooleanColumn name="didNotOccur"
                            title="Didn't Meet"
                            field="didNotOccur"
-                           headerClass="text-nowrap"
+                           width="160px"
+                           headerClass="break-word"
                            :filter="booleanValueFilter" />
 
             <NumberColumn name="didAttendCount"
                           title="Attendance Count"
                           field="didAttendCount"
-                          headerClass="text-nowrap"
+                          width="180px"
+                          headerClass="break-word"
                           :filter="numberValueFilter" />
 
             <Column name="attendanceRate"
                     title="Attendance Rate"
                     field="attendanceRate"
-                    :headerClass="'grid-column-header-number text-nowrap'"
+                    width="180px"
+                    :headerClass="'grid-column-header-number break-word'"
                     :itemClass="'justify-content-end text-right'"
                     :filter="numberValueFilter"
                     :filterValue="getAttendanceRateFilterValue"
@@ -100,7 +104,8 @@
                         name="attendanceType"
                         title="Attendance Type"
                         field="attendanceType"
-                        headerClass="text-nowrap"
+                        width="180px"
+                        headerClass="break-word"
                         :filter="textValueFilter" />
 
             <DeleteColumn v-if="config.isDeleteEnabled"
@@ -118,6 +123,15 @@
                            @close="onCloseGridSettings" />
     </template>
 </template>
+
+<style>
+/* Override the grid's default word-break: break-word on column headers so multi-word
+   titles like "Attendance Entered" wrap at the space rather than mid-word when the
+   column is squeezed on narrow viewports (e.g., the external Group Toolbox). */
+.break-word {
+    word-break: normal;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
