@@ -18,8 +18,9 @@
 export const enum NavigationUrlKey {
     ConfigurationPage = "ConfigurationPage",
     OpportunitiesPage = "OpportunitiesPage",
-    ConnectionsListPage = "ConnectionsListPage",
-    ConnectionBoardPage = "ConnectionBoardPage",
+    ConnectionsHubListViewPage = "ConnectionsHubListViewPage",
+    ConnectionsHubBoardViewPage = "ConnectionsHubBoardViewPage",
+    ConnectionsHubGridViewPage = "ConnectionsHubGridViewPage",
     OperationalSnapshotPage = "OperationalSnapshotPage"
 }
 

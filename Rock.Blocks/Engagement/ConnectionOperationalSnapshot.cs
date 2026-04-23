@@ -44,7 +44,7 @@ namespace Rock.Blocks.Engagement
 
     [LinkedPage( "Connections Hub Page",
         Key = AttributeKey.ConnectionsHubPage,
-        DefaultValue = SystemGuid.Page.CONNECTIONS_LIST,
+        DefaultValue = SystemGuid.Page.CONNECTIONS_HUB,
         Description = "The page to navigate to if a Connectors grid row is clicked.",
         IsRequired = true,
         Order = 0 )]

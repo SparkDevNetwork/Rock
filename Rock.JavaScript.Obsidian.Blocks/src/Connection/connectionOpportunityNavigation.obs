@@ -291,12 +291,13 @@
     const operationalSnapshotBtnText = ref("Operational Snapshot");
 
     // Connection Type-level URLs.
-    const typeConnectionsListPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeConnectionsListPage]);
+    const typeConnectionsHubListViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeConnectionsHubListViewPage]);
     const typeOperationalSnapshotPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeOperationalSnapshotPage]);
 
     // Connection Opportunity-level URLs.
-    const opportunityConnectionsListPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsListPage]);
-    const opportunityConnectionBoardPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionBoardPage]);
+    const opportunityConnectionsHubListViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubListViewPage]);
+    const opportunityConnectionsHubBoardViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubBoardViewPage]);
+    const opportunityConnectionsHubGridViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubGridViewPage]);
 
     syncRefsWithQueryParams([
         { param: "ConnectionType", ref: connectionTypeIdKey, type: "string" }
@@ -499,39 +500,37 @@
     function getPrimaryActions(summary: ConnectionOpportunitySummaryBag): MenuAction[] {
         const actions: MenuAction[] = [];
 
-        if (opportunityConnectionsListPageUrl.value && isListViewEnabled.value) {
+        if (opportunityConnectionsHubListViewPageUrl.value && isListViewEnabled.value) {
             actions.push({
                 iconCssClass: "ti ti-layout-list",
                 title: "Connections List",
                 type: "default",
                 handler: () => {
-                    window.location.href = opportunityConnectionsListPageUrl.value!.replace("((Key))", summary.idKey!);
+                    window.location.href = opportunityConnectionsHubListViewPageUrl.value!.replace("((Key))", summary.idKey!);
                 }
             });
         }
 
-        if (opportunityConnectionBoardPageUrl.value) {
-            if (isBoardViewEnabled.value) {
-                actions.push({
-                    iconCssClass: "ti ti-layout-cards",
-                    title: "Connection Board",
-                    type: "default",
-                    handler: () => {
-                        window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}`;
-                    }
-                });
-            }
+        if (opportunityConnectionsHubBoardViewPageUrl.value && isBoardViewEnabled.value) {
+            actions.push({
+                iconCssClass: "ti ti-layout-cards",
+                title: "Connection Board",
+                type: "default",
+                handler: () => {
+                    window.location.href = `${opportunityConnectionsHubBoardViewPageUrl.value!.replace("((Key))", summary.idKey!)}${campusPageParam.value}`;
+                }
+            });
+        }
 
-            if (isGridViewEnabled.value) {
-                actions.push({
-                    iconCssClass: "ti ti-table",
-                    title: "Connection Board (Grid View)",
-                    type: "default",
-                    handler: () => {
-                        window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}&IsCardViewMode=False${campusPageParam.value}`;
-                    }
-                });
-            }
+        if (opportunityConnectionsHubGridViewPageUrl.value && isGridViewEnabled.value) {
+            actions.push({
+                iconCssClass: "ti ti-table",
+                title: "Connection Grid",
+                type: "default",
+                handler: () => {
+                    window.location.href = `${opportunityConnectionsHubGridViewPageUrl.value!.replace("((Key))", summary.idKey!)}${campusPageParam.value}`;
+                }
+            });
         }
 
         return actions;
@@ -572,8 +571,8 @@
      * Navigates the individual to the connections list page for the connection type.
      */
     function onViewRequestsClick(): void {
-        if (typeConnectionsListPageUrl.value) {
-            window.location.href = typeConnectionsListPageUrl.value;
+        if (typeConnectionsHubListViewPageUrl.value) {
+            window.location.href = typeConnectionsHubListViewPageUrl.value;
         }
     }
 
@@ -592,20 +591,19 @@
      * (prioritizing the List View)
      */
     function onConnectionOpportunityClick(idKey: string): void {
-        if (opportunityConnectionsListPageUrl.value && isListViewEnabled.value) {
-            window.location.href = opportunityConnectionsListPageUrl.value!.replace("((Key))", idKey);
+        // Prefer List > Board > Grid when multiple views are enabled, falling
+        // back to the list URL as a last resort so the user always lands somewhere.
+        if (opportunityConnectionsHubListViewPageUrl.value && isListViewEnabled.value) {
+            window.location.href = opportunityConnectionsHubListViewPageUrl.value!.replace("((Key))", idKey);
         }
-        else if (opportunityConnectionBoardPageUrl.value && (isBoardViewEnabled.value || isGridViewEnabled.value)) {
-            if (isBoardViewEnabled.value) {
-                window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", idKey)}&IsCardViewMode=True${campusPageParam.value}`;
-            }
-            else {
-                window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", idKey)}&IsCardViewMode=False${campusPageParam.value}`;
-            }
+        else if (opportunityConnectionsHubBoardViewPageUrl.value && isBoardViewEnabled.value) {
+            window.location.href = `${opportunityConnectionsHubBoardViewPageUrl.value!.replace("((Key))", idKey)}${campusPageParam.value}`;
         }
-        // Navigate to Connections List if there are no enabled views and the page url is setup.
-        else if (opportunityConnectionsListPageUrl.value) {
-            window.location.href = opportunityConnectionsListPageUrl.value!.replace("((Key))", idKey);
+        else if (opportunityConnectionsHubGridViewPageUrl.value && isGridViewEnabled.value) {
+            window.location.href = `${opportunityConnectionsHubGridViewPageUrl.value!.replace("((Key))", idKey)}${campusPageParam.value}`;
+        }
+        else if (opportunityConnectionsHubListViewPageUrl.value) {
+            window.location.href = opportunityConnectionsHubListViewPageUrl.value!.replace("((Key))", idKey);
         }
     }
 

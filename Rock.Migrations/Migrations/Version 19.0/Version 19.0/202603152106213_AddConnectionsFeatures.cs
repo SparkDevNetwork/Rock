@@ -85,12 +85,12 @@ SET [EnabledFeatures] = 0
             // Add Page 
             //  Internal Name: Connections List
             //  Site: Rock RMS
-            RockMigrationHelper.AddPage( true, Rock.SystemGuid.Page.CONNECTION_OPPORTUNITY_SELECT, "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Connections List", "", Rock.SystemGuid.Page.CONNECTIONS_LIST, "" );
+            RockMigrationHelper.AddPage( true, Rock.SystemGuid.Page.CONNECTION_OPPORTUNITY_SELECT, "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Connections List", "", Rock.SystemGuid.Page.CONNECTIONS_HUB, "" );
 
             // Add Page Route
             //   Page:Connections List
             //   Route:people/connections/list
-            RockMigrationHelper.AddOrUpdatePageRoute( Rock.SystemGuid.Page.CONNECTIONS_LIST, "people/connections/list", "565DFC73-E223-4C52-9174-11BB65700B7B" );
+            RockMigrationHelper.AddOrUpdatePageRoute( Rock.SystemGuid.Page.CONNECTIONS_HUB, "people/connections/list", "565DFC73-E223-4C52-9174-11BB65700B7B" );
 
             // ----------------------------------
 
@@ -187,7 +187,7 @@ SET [EnabledFeatures] = 0
             //   BlockType: Connection Type Navigation
             //   Category: Connection
             //   Attribute: Connections List Page
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "23438CBC-105B-4ADB-8B9A-D5DDDCDD7643", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Connections List Page", "ConnectionsListPage", "Connections List Page", @"Select the page that the list button should open to view the connections list.", 2, Rock.SystemGuid.Page.CONNECTIONS_LIST, "A783108E-D015-49B1-AA86-B7F18F438BCA" );
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "23438CBC-105B-4ADB-8B9A-D5DDDCDD7643", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Connections List Page", "ConnectionsListPage", "Connections List Page", @"Select the page that the list button should open to view the connections list.", 2, Rock.SystemGuid.Page.CONNECTIONS_HUB, "A783108E-D015-49B1-AA86-B7F18F438BCA" );
 
             // Attribute for BlockType
             //   BlockType: Connection Type Navigation
@@ -232,7 +232,7 @@ SET [EnabledFeatures] = 0
             //   Attribute: Connections List Page
             /*   Attribute Value: 8b5f2875-0d36-4625-8ee4-b738ae8e12f5,565dfc73-e223-4c52-9174-11bb65700b7b */
             //   Skip If Already Exists: true
-            RockMigrationHelper.AddBlockAttributeValue( false, "340FBA54-FC54-4EA1-8DD2-301536405034", "A783108E-D015-49B1-AA86-B7F18F438BCA", $"{Rock.SystemGuid.Page.CONNECTIONS_LIST},565dfc73-e223-4c52-9174-11bb65700b7b" );
+            RockMigrationHelper.AddBlockAttributeValue( false, "340FBA54-FC54-4EA1-8DD2-301536405034", "A783108E-D015-49B1-AA86-B7F18F438BCA", $"{Rock.SystemGuid.Page.CONNECTIONS_HUB},565dfc73-e223-4c52-9174-11bb65700b7b" );
 
             // Add Block Attribute Value
             //   Block: Connection Type Navigation
@@ -270,7 +270,7 @@ SET [EnabledFeatures] = 0
             //   BlockType: Connection Opportunity Navigation
             //   Category: Connection
             //   Attribute: Connections List Page
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "91080C44-AFBF-4A02-AD0D-BD7E01F9D1DE", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Connections List Page", "ConnectionsListPage", "Connections List Page", @"Select the page that the ""View Requests"" and list buttons should open to view the connections list.", 0, Rock.SystemGuid.Page.CONNECTIONS_LIST, "D43E5BE5-3375-44E9-9FCC-93D5B7A5C7CC" );
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "91080C44-AFBF-4A02-AD0D-BD7E01F9D1DE", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Connections List Page", "ConnectionsListPage", "Connections List Page", @"Select the page that the ""View Requests"" and list buttons should open to view the connections list.", 0, Rock.SystemGuid.Page.CONNECTIONS_HUB, "D43E5BE5-3375-44E9-9FCC-93D5B7A5C7CC" );
 
             // Attribute for BlockType
             //   BlockType: Connection Opportunity Navigation
@@ -304,7 +304,7 @@ SET [EnabledFeatures] = 0
             //   Attribute: Connections List Page
             /*   Attribute Value: 8b5f2875-0d36-4625-8ee4-b738ae8e12f5,565dfc73-e223-4c52-9174-11bb65700b7b */
             //   Skip If Already Exists: true
-            RockMigrationHelper.AddBlockAttributeValue( false, "D5130BD5-92A1-4904-ACEB-5CC6D9E8CDA5", "D43E5BE5-3375-44E9-9FCC-93D5B7A5C7CC", $"{Rock.SystemGuid.Page.CONNECTIONS_LIST},565dfc73-e223-4c52-9174-11bb65700b7b" );
+            RockMigrationHelper.AddBlockAttributeValue( false, "D5130BD5-92A1-4904-ACEB-5CC6D9E8CDA5", "D43E5BE5-3375-44E9-9FCC-93D5B7A5C7CC", $"{Rock.SystemGuid.Page.CONNECTIONS_HUB},565dfc73-e223-4c52-9174-11bb65700b7b" );
 
             // Add Block Attribute Value
             //   Block: Connection Opportunity Navigation
@@ -494,7 +494,7 @@ END" );
             //  Internal Name: Connections List
             //  Site: Rock RMS
             //  Layout: Full Width
-            RockMigrationHelper.DeletePage( Rock.SystemGuid.Page.CONNECTIONS_LIST );
+            RockMigrationHelper.DeletePage( Rock.SystemGuid.Page.CONNECTIONS_HUB );
         }
 
         /// <summary>
@@ -634,7 +634,7 @@ WHERE [HighlightColor] IS NULL" );
             //   Attribute: Connections Hub Page
             /*   Attribute Value: 8b5f2875-0d36-4625-8ee4-b738ae8e12f5,565dfc73-e223-4c52-9174-11bb65700b7b */
             //   Skip If Already Exists: true
-            RockMigrationHelper.AddBlockAttributeValue( true, "BAD25336-28FF-4012-8078-C9C34C62FE7F", "0EA453F6-5984-4760-A6D3-B5DF513B1EEC", $@"{SystemGuid.Page.CONNECTIONS_LIST},565dfc73-e223-4c52-9174-11bb65700b7b" );
+            RockMigrationHelper.AddBlockAttributeValue( true, "BAD25336-28FF-4012-8078-C9C34C62FE7F", "0EA453F6-5984-4760-A6D3-B5DF513B1EEC", $@"{SystemGuid.Page.CONNECTIONS_HUB},565dfc73-e223-4c52-9174-11bb65700b7b" );
         }
 
         private void JMH_AddConnectionOperationalSnapshotBlock_Down()
