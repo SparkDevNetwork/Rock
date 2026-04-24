@@ -222,7 +222,7 @@
                             <div class="col-md-6">
                                 <Rock:NotificationBox ID="nbEligibilityAgeWarning" runat="server" CssClass="d-none" Visible="true" NotificationBoxType="Warning">
                                     <div><strong>Warning</strong></div>
-                                    To ensure this filter works correctly, include a birthdate field in your form.
+                                    To ensure this filter works correctly, include a Birthdate Person Field in your form.
                                 </Rock:NotificationBox>
                             </div>
                         </div>
@@ -243,7 +243,7 @@
                             <div class="col-md-6">
                                 <Rock:NotificationBox ID="nbEligibilityGradeWarning" runat="server" CssClass="d-none" Visible="true" NotificationBoxType="Warning">
                                     <div><strong>Warning</strong></div>
-                                    To ensure this filter works correctly, include a grade field in your form.
+                                    To ensure this filter works correctly, include a Grade Person Field in your form.
                                 </Rock:NotificationBox>
                             </div>
                         </div>
@@ -255,7 +255,7 @@
                             <div class="col-md-6">
                                 <Rock:NotificationBox ID="nbEligibilityGenderWarning" runat="server" CssClass="d-none" Visible="true" NotificationBoxType="Warning">
                                     <div><strong>Warning</strong></div>
-                                    To ensure this filter works correctly, include a gender field in your form.
+                                    To ensure this filter works correctly, include a Gender Person Field in your form.
                                 </Rock:NotificationBox>
                             </div>
                         </div>

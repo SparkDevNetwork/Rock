@@ -390,9 +390,10 @@
 
         const familyMembers = viewModel.value.familyMembers
             ?.filter(fm => fm.guid && !usedFamilyMemberGuids.includes(fm.guid))
-            ?.map(fm => ({
-                text: fm.fullName,
-                value: fm.guid
+            ?.map<ListItemBag>(fm => ({
+                text: fm.isIneligible ? `${fm.fullName} (Ineligible)` : fm.fullName,
+                value: fm.guid,
+                disabled: fm.isIneligible
             })) ?? [];
 
         let newFamilyMemberOption = {
