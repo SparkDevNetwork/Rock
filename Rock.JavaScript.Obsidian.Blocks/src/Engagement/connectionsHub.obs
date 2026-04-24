@@ -3694,6 +3694,7 @@
                     row.completedDateTime = updateBag.completedDateTime;
                     row.connectionOpportunity = updateBag.connectionOpportunity;
                     row.connectionOpportunityGuid = updateBag.connectionOpportunityGuid;
+                    row.connectionOpportunityIconCssClass = updateBag.connectionOpportunityIconCssClass;
                     row.campus = updateBag.campus;
                     row.campusGuid = updateBag.campusGuid;
                     row.lastActivityDateTime = updateBag.lastActivityDateTime;

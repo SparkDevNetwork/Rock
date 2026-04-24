@@ -134,6 +134,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public string ConnectionOpportunity { get; set; }
 
         /// <summary>
+        /// Gets or sets the Connection Opportunity CSS Class.
+        /// </summary>
+        public string ConnectionOpportunityIconCssClass { get; set; }
+
+        /// <summary>
         /// Gets or sets the Campus name, or null when none is assigned.
         /// </summary>
         public string Campus { get; set; }

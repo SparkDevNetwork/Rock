@@ -5365,6 +5365,7 @@ WHERE 1 = 1" );
                     CompletedDateTime = connectionRequest.ConnectedDateTime,
                     ConnectionOpportunity = newOpportunity.Name,
                     ConnectionOpportunityGuid = newOpportunity.Guid,
+                    ConnectionOpportunityIconCssClass = newOpportunity.IconCssClass,
                     Campus = campus?.Name,
                     CampusGuid = campus?.Guid,
                     LastActivityDateTime = RockDateTime.Now,

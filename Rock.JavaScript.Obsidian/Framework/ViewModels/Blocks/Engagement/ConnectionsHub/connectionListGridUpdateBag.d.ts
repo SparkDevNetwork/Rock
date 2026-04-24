@@ -32,11 +32,11 @@ export type ConnectionListGridUpdateBag = {
     /** Gets or sets the total number of activities logged against this request. */
     activityCount?: number | null;
 
-    /** Gets or sets the grouping key for the campus column. */
-    campusGrouping?: string | null;
-
     /** Gets or sets the Campus name, or null when none is assigned. */
     campus?: string | null;
+
+    /** Gets or sets the grouping key for the campus column. */
+    campusGrouping?: string | null;
 
     /** Gets or sets the Campus Guid, or null when none is assigned. */
     campusGuid?: Guid | null;
@@ -52,6 +52,9 @@ export type ConnectionListGridUpdateBag = {
 
     /** Gets or sets the ConnectionOpportunity Guid. */
     connectionOpportunityGuid?: Guid | null;
+
+    /** Gets or sets the Connection Opportunity CSS Class. */
+    connectionOpportunityIconCssClass?: string | null;
 
     /** Gets or sets the current connection state (e.g., Active, Inactive, Future Follow-up) for this request. */
     connectionState: ConnectionState;
