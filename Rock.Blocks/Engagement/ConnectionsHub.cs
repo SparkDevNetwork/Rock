@@ -4382,10 +4382,6 @@ WHERE 1 = 1" );
                 return ActionBadRequest( "A note is required." );
             }
 
-            // Save status history for previous status
-
-            var connectionRequestStatusHistoryService = new ConnectionRequestStatusHistoryService( RockContext );
-
             // Update to new status
             connectionRequest.ConnectionStatusId = connectionRequestStatus.Id;
             connectionRequest.ConnectionStatusHistoryNote = bag.Note;
@@ -4952,6 +4948,287 @@ WHERE 1 = 1" );
                 Bag = bag,
                 ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
             } );
+        }
+
+        [BlockAction]
+        public BlockActionResult GetBulkTransferDetails()
+        {
+            var connectionType = GetConnectionTypeCacheFromPageParameters();
+
+            if ( connectionType == null )
+            {
+                return ActionBadRequest( $"{Rock.Model.ConnectionType.FriendlyTypeName} not found." );
+            }
+
+            if ( !connectionType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to view transfer details for this connection type." );
+            }
+
+            var connectionOpportunities = new ConnectionOpportunityService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Include( "ConnectionOpportunityCampuses.Campus" )
+                .Where( o => o.ConnectionTypeId == connectionType.Id )
+                .ToList();
+
+            var transferDetailsBag = new TransferConnectionRequestDetailsBag
+            {
+                Statuses = connectionType.OrderedStatuses.ToListItemBagList(),
+                ConnectionOpportunities = new List<ConnectionOpportunityBag>(),
+            };
+
+            foreach ( var opportunity in connectionOpportunities )
+            {
+                var opportunityBag = new ConnectionOpportunityBag
+                {
+                    Name = opportunity.Name,
+                    Guid = opportunity.Guid,
+                    Campuses = opportunity.ConnectionOpportunityCampuses.Where( c => c.Campus != null && c.Campus.IsActive == true )
+                        .Select( c => c.Campus )
+                        .ToListItemBagList(),
+                    ShowCampusOnTransfer = opportunity.ShowCampusOnTransfer,
+                    ShowStatusOnTransfer = opportunity.ShowStatusOnTransfer,
+                };
+
+                transferDetailsBag.ConnectionOpportunities.Add( opportunityBag );
+            }
+
+            return ActionOk( transferDetailsBag );
+        }
+
+        [BlockAction]
+        public BlockActionResult BulkTransferConnectionRequests( List<string> connectionRequestIdKeys, TransferConnectionRequestBag bag )
+        {
+            ConnectionTypeCache connectionType = GetConnectionTypeCacheFromPageParameters();
+
+            if ( connectionType == null )
+            {
+                return ActionBadRequest( $"{Rock.Model.ConnectionType.FriendlyTypeName} not found." );
+            }
+
+            var canEditRequests = CanEditSpecifiedConnectionRequests( connectionType, connectionRequestIdKeys, out var connectionRequests, out var actionError, q => q.Include( r => r.ConnectionStatus ).Include( r => r.ConnectionRequestActivities ) );
+
+            if ( !canEditRequests )
+            {
+                return actionError;
+            }
+
+            var connectionActivityTypeService = new ConnectionActivityTypeService( RockContext );
+            var connectionRequestActivityService = new ConnectionRequestActivityService( RockContext );
+            var connectionStatusService = new ConnectionStatusService( RockContext );
+            var connectionOpportunityCampusService = new ConnectionOpportunityCampusService( RockContext );
+            var personAliasService = new PersonAliasService( RockContext );
+
+            Guid? newOpportunityGuid = bag.NewConnectionOpportunityGuid;
+            var newOpportunity = new ConnectionOpportunityService( RockContext ).Get( newOpportunityGuid.Value );
+            int? connectionStatusId = null;
+            int? campusId = null;
+            int? connectorPersonAliasId = null;
+            ListItemBag connectorItem = new ListItemBag
+            {
+                Value = "unassigned",
+                Text = "Unassigned"
+            };
+
+            if ( !newOpportunityGuid.HasValue )
+            {
+                return ActionBadRequest( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
+            }
+
+            if ( newOpportunity == null )
+            {
+                return ActionBadRequest( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
+            }
+
+            if ( newOpportunity.ShowStatusOnTransfer && bag.StatusGuid.HasValue )
+            {
+                connectionStatusId = connectionStatusService.Queryable()
+                    .Where( s => s.ConnectionTypeId == connectionType.Id && s.Guid == bag.StatusGuid.Value )
+                    .Select( s => s.Id )
+                    .FirstOrDefault();
+
+                if ( connectionStatusId == 0 )
+                {
+                    return ActionBadRequest( $"{Rock.Model.ConnectionStatus.FriendlyTypeName} not found." );
+                }
+            }
+
+            if ( newOpportunity.ShowCampusOnTransfer && bag.CampusGuid.HasValue )
+            {
+                var campus = CampusCache.Get( bag.CampusGuid.Value );
+
+                // Stricter check to verify that the selected campus is an option for the selected opportunity
+                campusId = connectionOpportunityCampusService.Queryable()
+                    .Where( c => c.ConnectionOpportunityId == newOpportunity.Id && c.CampusId == campus.Id )
+                    .Select( c => c.CampusId )
+                    .FirstOrDefault();
+
+                if ( campusId == 0 )
+                {
+                    return ActionBadRequest( $"{Rock.Model.ConnectionOpportunityCampus.FriendlyTypeName} not found." );
+                }
+            }
+
+            Rock.Model.Person newConnectorPerson = null;
+
+            // assign the connector based on the selected option
+            if ( bag.ConnectorOption == "default" )
+            {
+                connectorPersonAliasId = newOpportunity.GetDefaultConnectorPersonAliasId( campusId );
+                if ( connectorPersonAliasId.HasValue )
+                {
+                    newConnectorPerson = personAliasService.GetSelect( connectorPersonAliasId.Value, q => q.Person );
+                }
+            }
+            else if ( bag.ConnectorOption == "select" )
+            {
+                if ( !bag.ConnectorPersonAliasGuid.HasValue )
+                {
+                    return ActionBadRequest( "Connector not found." );
+                }
+
+                var connectorInfo = personAliasService.GetSelect( bag.ConnectorPersonAliasGuid.Value, q => new
+                {
+                    PersonAliasId = q.Id,
+                    Person = q.Person
+                } );
+
+                var newConnectorId = connectorInfo?.PersonAliasId;
+                newConnectorPerson = connectorInfo?.Person;
+
+                if ( !newConnectorId.HasValue )
+                {
+                    return ActionBadRequest( "Connector not found." );
+                }
+
+                connectorPersonAliasId = newConnectorId.Value;
+            }
+
+            // If we are assigning a new Connector Person then set the connectorItem for the grid row update.
+            if ( newConnectorPerson != null )
+            {
+                connectorItem.Value = newConnectorPerson.IdKey;
+                connectorItem.Text = newConnectorPerson.FullName;
+            }
+
+            foreach ( var connectionRequest in connectionRequests )
+            {
+                int? sourceConnectorPersonAliasId = connectionRequest.ConnectorPersonAliasId;
+                int sourceOpportunityId = connectionRequest.ConnectionOpportunityId;
+
+                // If the Opportunity has not "transferred" then return an error
+                if ( newOpportunity.Id == sourceOpportunityId )
+                {
+                    return ActionBadRequest( "One of the selected requests already belongs to the selected opportunity. Please choose a different opportunity to transfer to." );
+                }
+
+                connectionRequest.ConnectionOpportunityId = newOpportunity.Id;
+                connectionRequest.ConnectionTypeId = newOpportunity.ConnectionTypeId;
+
+                if ( newOpportunity.ShowStatusOnTransfer && connectionStatusId.HasValue )
+                {
+                    connectionRequest.ConnectionStatusId = connectionStatusId.Value;
+                }
+
+                if ( newOpportunity.ShowCampusOnTransfer )
+                {
+                    connectionRequest.CampusId = campusId;
+                }
+
+                if ( bag.ConnectorOption != "current" )
+                {
+                    connectionRequest.ConnectorPersonAliasId = connectorPersonAliasId;
+                }
+
+                // Clear anything related to placement groups on transfer.
+                connectionRequest.AssignedGroupId = null;
+                connectionRequest.AssignedGroupMemberRoleId = null;
+                connectionRequest.AssignedGroupMemberStatus = null;
+
+                // Prepare Activity
+                var activityTransferGuid = Rock.SystemGuid.ConnectionActivityType.TRANSFERRED.AsGuid();
+                var transferredActivityId = connectionActivityTypeService.Queryable()
+                    .Where( t => t.Guid == activityTransferGuid )
+                    .Select( t => t.Id )
+                    .FirstOrDefault();
+
+                if ( transferredActivityId > 0 )
+                {
+                    // Add a new request activity to log the transfer
+                    connectionRequestActivityService.Add( new ConnectionRequestActivity
+                    {
+                        ConnectionRequestId = connectionRequest.Id,
+                        ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId,
+                        ConnectionActivityTypeId = transferredActivityId,
+                        Note = bag.Note,
+                        ConnectorPersonAliasId = connectionRequest.ConnectorPersonAliasId
+                    } );
+                }
+            }
+
+            RockContext.SaveChanges();
+
+            // Prepare the Grid Update Bags after the SaveChanges to account for the Pre Save logic.
+            List<ConnectionListGridUpdateBag> gridUpdateBags = new List<ConnectionListGridUpdateBag>();
+            foreach( var connectionRequest in connectionRequests )
+            {
+                CampusCache campus = null;
+                if ( connectionRequest.CampusId.HasValue )
+                {
+                    campus = CampusCache.Get( connectionRequest.CampusId.Value );
+                }
+                var connectionRequestStatus = connectionRequest.ConnectionStatus;
+                var dueStatus = GetDueStatus( connectionRequest.DueDate, connectionRequest.DueSoonDate, connectionRequest.ConnectionState, connectionRequest.ConnectedDateTime );
+
+                var gridUpdateBag = new ConnectionListGridUpdateBag
+                {
+                    IdKey = connectionRequest.IdKey,
+                    OpportunityGrouping = GetGroupingFieldBag( newOpportunity.Id, "text", newOpportunity.Name, newOpportunity.Order, newOpportunity.IconCssClass ),
+                    CampusGrouping = GetGroupingFieldBag( campus?.Id, "text", campus?.Name, campus?.Order ),
+                    StateGrouping = new GroupingFieldBag
+                    {
+                        Key = connectionRequest.ConnectionState.ToString(),
+                        Type = "text",
+                        Label = connectionRequest.ConnectionState.GetDisplayName(),
+                        IconCssClass = GetStateIconCssClass( connectionRequest.ConnectionState ),
+                        Order = ( int ) connectionRequest.ConnectionState
+                    },
+                    StatusGrouping = GetGroupingFieldBag( connectionRequestStatus.Id, "text", connectionRequestStatus.Name, connectionRequestStatus.Order ),
+                    ConnectionStatusBag = new ConnectionStatusBag
+                    {
+                        Guid = connectionRequestStatus.Guid,
+                        Order = connectionRequestStatus.Order,
+                        Name = connectionRequestStatus.Name,
+                        HighlightColor = connectionRequestStatus.HighlightColor,
+                        IsNoteRequiredOnCompletion = connectionRequestStatus.IsNoteRequiredOnCompletion,
+                        IsDefaultStatus = connectionRequestStatus.IsDefault
+                    },
+                    ConnectionState = connectionRequest.ConnectionState,
+                    DueStatusGrouping = GetGroupingFieldBag( ( int ) dueStatus, "text", dueStatus.GetDisplayName(), dueStatus.GetOrder(), "ti ti-calendar", null, GetDueStatusTextColorCssClass( dueStatus ) ),
+                    DueStatus = dueStatus,
+                    DueDate = connectionRequest.DueDate,
+                    DueSoonDate = connectionRequest.DueSoonDate,
+                    FollowUpDate = connectionRequest.FollowupDate,
+                    CompletedDateTime = connectionRequest.ConnectedDateTime,
+                    ConnectionOpportunity = newOpportunity.Name,
+                    ConnectionOpportunityGuid = newOpportunity.Guid,
+                    Campus = campus?.Name,
+                    CampusGuid = campus?.Guid,
+                    LastActivityDateTime = RockDateTime.Now,
+                    ActivityCount = connectionRequest.ConnectionRequestActivities?.Count ?? 1
+                };
+
+                // If the ConnectorOption is not equal to current then we need to update the connector data.
+                if ( bag.ConnectorOption != "current" )
+                {
+                    gridUpdateBag.ConnectorGrouping = GetGroupingFieldBag( connectorPersonAliasId, "person", newConnectorPerson?.FullName, null, null, newConnectorPerson?.PhotoUrl );
+                    gridUpdateBag.ConnectorDetails = connectorItem;
+                }
+
+                gridUpdateBags.Add( gridUpdateBag );
+            }
+
+            return ActionOk( gridUpdateBags );
         }
 
         /// <summary>
