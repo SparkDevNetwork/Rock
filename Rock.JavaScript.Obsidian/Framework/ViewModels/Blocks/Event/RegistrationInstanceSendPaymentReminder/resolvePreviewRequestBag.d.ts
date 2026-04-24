@@ -21,11 +21,25 @@
 // </copyright>
 //
 
-/** Represents a single group placement link displayed on the registration instance view panel. */
-export type RegistrationInstanceGroupPlacementBag = {
-    /** Gets or sets the placement name shown as the link text. */
-    name?: string | null;
+/**
+ * Request payload posted when the user toggles the email body into
+ * Preview mode so the server can resolve its merge fields against a
+ * sample registration.
+ */
+export type ResolvePreviewRequestBag = {
+    /**
+     * Gets or sets the current Lava source entered in the message body
+     * editor. The server resolves this against a sample registration and
+     * returns the rendered HTML.
+     */
+    messageBody?: string | null;
 
-    /** Gets or sets the URL to navigate to when the placement link is clicked. */
-    url?: string | null;
+    /**
+     * Gets or sets the IdKey of the registration to use as the sample
+     * merge-field source. Supplied by the client from the first row of
+     * the grid so the server can avoid re-scanning the full outstanding-
+     * balance list on every preview toggle. When null or empty, the
+     * server falls back to discovering a sample registration itself.
+     */
+    sampleRegistrationKey?: string | null;
 };

@@ -31,6 +31,6 @@ export type StreakDetailOptionsBag = {
     /** The longest streak details text that needs to be displayed on the frontend */
     longestStreak?: string | null;
 
-    /** The person HTML to be displayed on the front end  */
+    /** The person HTML to be displayed on the front end */
     personHtml?: string | null;
 };

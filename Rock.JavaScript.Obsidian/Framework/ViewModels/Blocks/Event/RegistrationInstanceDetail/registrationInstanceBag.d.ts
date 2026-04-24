@@ -21,10 +21,11 @@
 // </copyright>
 //
 
+import { RegistrationInstanceGroupPlacementBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceDetail/registrationInstanceGroupPlacementBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-import { RegistrationInstanceGroupPlacementBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceDetail/registrationInstanceGroupPlacementBag";
 
+/** The bag that represents a registration instance for view and edit. */
 export type RegistrationInstanceBag = {
     /** Gets or sets the financial account to receive registration payments. */
     account?: ListItemBag | null;
@@ -128,7 +129,11 @@ export type RegistrationInstanceBag = {
     /** Gets or sets the registration instructions shown at the beginning of registration. */
     registrationInstructions?: string | null;
 
-    /** Gets or sets the registration template identifier key. Used to build the wizard's back-link URL. */
+    /**
+     * Gets or sets the registration template identifier key. The Save action reads this on a
+     * copied instance (where the page URL carries no RegistrationTemplateId parameter)
+     * to preserve the source instance's template scope on the new record.
+     */
     registrationTemplateIdKey?: string | null;
 
     /** Gets or sets the registration template name. Used for the wizard header label and the template highlight label. */

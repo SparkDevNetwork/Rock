@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Additional options for the RegistrationInstanceDetail block. */
 export type RegistrationInstanceDetailOptionsBag = {
     /** Gets or sets the URL for the configured Payment Reminder page. Null or empty when no page is configured. */
     paymentReminderPageUrl?: string | null;

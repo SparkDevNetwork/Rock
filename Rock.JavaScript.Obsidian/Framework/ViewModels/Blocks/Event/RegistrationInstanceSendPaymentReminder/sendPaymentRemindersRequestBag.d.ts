@@ -21,11 +21,26 @@
 // </copyright>
 //
 
-/** Represents a single group placement link displayed on the registration instance view panel. */
-export type RegistrationInstanceGroupPlacementBag = {
-    /** Gets or sets the placement name shown as the link text. */
-    name?: string | null;
+/** Request payload posted when the user clicks Send Reminders. */
+export type SendPaymentRemindersRequestBag = {
+    /** Gets or sets the "From Email" entered on the form. */
+    fromEmail?: string | null;
 
-    /** Gets or sets the URL to navigate to when the placement link is clicked. */
-    url?: string | null;
+    /** Gets or sets the "From Name" entered on the form. */
+    fromName?: string | null;
+
+    /**
+     * Gets or sets the message body (Lava source) entered on the form.
+     * Merge fields are resolved per-registration at send time.
+     */
+    messageBody?: string | null;
+
+    /**
+     * Gets or sets the registration IdKeys selected in the grid. Only
+     * registrations whose key is in this list will receive a reminder.
+     */
+    selectedKeys?: string[] | null;
+
+    /** Gets or sets the subject line entered on the form. */
+    subject?: string | null;
 };

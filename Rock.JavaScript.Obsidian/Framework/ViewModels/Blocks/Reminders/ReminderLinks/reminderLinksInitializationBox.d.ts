@@ -29,12 +29,10 @@
 export type ReminderLinksInitializationBox = {
     /**
      * Gets or sets a value indicating whether the Add Reminder menu item
-     * should render. Pre-computed server-side (true when a context entity
-     * resolves and the current person is authorized to use at least one
-     * reminder type for its entity type) so the Vue component can show or
-     * hide the menu item on the first dropdown open without waiting for
-     * the GetReminderLinksData round trip — eliminates the flicker the
-     * WebForms block had while its XHR probe resolved.
+     * should render. True when a context entity resolves and the current
+     * person is authorized to use at least one reminder type for its entity
+     * type. Pre-computed server-side so the menu item's visibility is
+     * correct on first dropdown open without a round trip.
      */
     canAddReminder: boolean;
 
@@ -48,8 +46,8 @@ export type ReminderLinksInitializationBox = {
 
     /**
      * Gets or sets the localStorage key used to cache reminder and notification
-     * counts across page navigations. Matches the WebForms key exactly so the
-     * bell stays warm across the cutover deploy.
+     * counts across page navigations. Matches the legacy key exactly so cached
+     * state survives the cutover deploy.
      */
     countsLocalStorageKey?: string | null;
 

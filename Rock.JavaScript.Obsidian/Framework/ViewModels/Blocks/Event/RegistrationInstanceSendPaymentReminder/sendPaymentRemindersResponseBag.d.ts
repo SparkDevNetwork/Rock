@@ -21,11 +21,19 @@
 // </copyright>
 //
 
-/** Represents a single group placement link displayed on the registration instance view panel. */
-export type RegistrationInstanceGroupPlacementBag = {
-    /** Gets or sets the placement name shown as the link text. */
-    name?: string | null;
+/** Response payload returned after the Send Reminders block action runs. */
+export type SendPaymentRemindersResponseBag = {
+    /**
+     * Gets or sets the human-readable summary string to render in the
+     * success notification (for example, "Payment reminders have been
+     * sent to 3 individuals.").
+     */
+    message?: string | null;
 
-    /** Gets or sets the URL to navigate to when the placement link is clicked. */
-    url?: string | null;
+    /**
+     * Gets or sets the number of registrations that received a reminder
+     * email. Registrations without a confirmation email are skipped and
+     * not included in this count.
+     */
+    sentCount: number;
 };

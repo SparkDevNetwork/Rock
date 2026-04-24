@@ -43,8 +43,8 @@ export type ExistingReminderBag = {
     note?: string | null;
 
     /**
-     * Gets or sets the reminder date pre-formatted as a short date string to
-     * match the WebForms display without requiring client-side date parsing.
+     * Gets or sets the reminder date pre-formatted server-side as a short
+     * date string.
      */
     reminderDate?: string | null;
 

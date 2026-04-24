@@ -21,11 +21,12 @@
 // </copyright>
 //
 
-/** Represents a single group placement link displayed on the registration instance view panel. */
-export type RegistrationInstanceGroupPlacementBag = {
-    /** Gets or sets the placement name shown as the link text. */
-    name?: string | null;
-
-    /** Gets or sets the URL to navigate to when the placement link is clicked. */
-    url?: string | null;
+/** Response payload returned by the preview-resolution block action. */
+export type ResolvePreviewResponseBag = {
+    /**
+     * Gets or sets the rendered HTML produced by resolving the supplied
+     * message body against a sample registration's merge fields. Bound
+     * directly to the preview iframe's srcdoc.
+     */
+    previewHtml?: string | null;
 };
