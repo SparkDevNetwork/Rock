@@ -37,6 +37,9 @@ export type RegistrationEntryFamilyMemberBag = {
     /** Gets or sets the unique identifier. */
     guid: Guid;
 
+    /** Gets or sets a value indicating whether the registrant does not meet eligibility requirements. */
+    isIneligible: boolean;
+
     /** Gets or sets a value indicating whether this family member is already a registrant in another registration for this registration instance. */
     isRegistrantInAnotherRegistration: boolean;
 };

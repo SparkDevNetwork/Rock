@@ -3955,7 +3955,7 @@ namespace Rock.Blocks.Event
                 .Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
 
             // Get family members.
-            // Exclude family members who do not meet Registrant Eligibility.
+            // Include ineligible family members in the list as disabled options with the appended text "(Ineligible)".
             // Do not exclude family members who have already registered. They will still be displayed in the dropdown but a warning will be displayed if they are selected.
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
             var registrationTemplate = registrationTemplateService.Get( context.RegistrationSettings.RegistrationTemplateId );
@@ -3971,13 +3971,13 @@ namespace Rock.Blocks.Event
                     } )
                     .DistinctBy( gm => gm.Person.Guid )
                     .ToList()
-                    .Where( gm => registrantEligibilityEvaluator.Evaluate( gm.Person ) )
                     .Select( gm => new RegistrationEntryFamilyMemberBag
                     {
                         Guid = gm.Person.Guid,
                         FamilyGuid = gm.FamilyGuid,
                         FullName = gm.Person.FullName,
-                        FieldValues = GetCurrentValueFieldValues( context, rockContext, gm.Person, null, formModels, false )
+                        FieldValues = GetCurrentValueFieldValues( context, rockContext, gm.Person, null, formModels, false ),
+                        IsIneligible = !registrantEligibilityEvaluator.Evaluate( gm.Person )
                     } )
                     .ToList() :
                     new List<RegistrationEntryFamilyMemberBag>();
