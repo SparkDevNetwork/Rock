@@ -9,79 +9,116 @@
                           :showBlankItem="false" />
         </ContextSlicer>
 
-        <Panel title="Connection Types">
-            <template v-if="config.showConfigureConnectionTypesButton" #headerActions>
-                <button type="button"
-                        class="btn btn-panel-action"
-                        @click="onConfigurationClick">
-                    <i class="ti ti-settings"></i>
-                </button>
-            </template>
+        <div class="connection-types-container row">
 
-            <template #default>
+            <div :class="connectionTypeListCssClass">
+                <Panel title="Connection Types">
+                    <template v-if="config.showConfigureConnectionTypesButton" #headerActions>
+                        <button type="button"
+                                class="btn btn-panel-action"
+                                @click="onConfigurationClick">
+                            <i class="ti ti-settings"></i>
+                        </button>
+                    </template>
 
-                <NotificationBox v-if="fetchConnectionTypeSummariesErrorMessage"
-                                 :alertType="AlertType.Warning"
-                                 v-html="fetchConnectionTypeSummariesErrorMessage"></NotificationBox>
+                    <template #default>
 
-                <NotificationBox v-if="!connectionTypeSummaries.length" :alertType="AlertType.Info">
-                    There are no connection types that match the current filters.
-                </NotificationBox>
+                        <NotificationBox v-if="fetchConnectionTypeSummariesErrorMessage"
+                                         :alertType="AlertType.Warning"
+                                         v-html="fetchConnectionTypeSummariesErrorMessage"></NotificationBox>
 
-                <DisplayCardContainer v-else>
+                        <NotificationBox v-if="!connectionTypeSummaries.length" :alertType="AlertType.Info">
+                            There are no connection types that match the current filters.
+                        </NotificationBox>
 
-                    <DisplayCard v-for="summary of connectionTypeSummaries"
-                                 :key="summary.idKey!"
-                                 :iconCssClass="summary.iconCssClass"
-                                 iconLabelType="default"
-                                 :title="summary.name"
-                                 :description="summary.description"
-                                 :primaryActions="getPrimaryActions(summary)"
-                                 @click="onConnectionTypeClick(summary.idKey!)">
+                        <DisplayCardContainer v-else>
 
-                        <template #prepend>
-                            <HighlightLabel iconCssClass="ti ti-user-circle"
-                                            labelType="info"
-                                            tooltip="Assigned to You"
-                                            tooltipPlacement="top">
-                                {{ asFormattedString(summary.assignedToYouRequestCount) }}
-                            </HighlightLabel>
-                        </template>
+                            <DisplayCard v-for="summary of connectionTypeSummaries"
+                                         :key="summary.idKey!"
+                                         :iconCssClass="summary.iconCssClass"
+                                         iconLabelType="default"
+                                         :title="summary.name"
+                                         :description="summary.description"
+                                         :primaryActions="getPrimaryActions(summary)"
+                                         @click="onConnectionTypeClick(summary.idKey!)">
 
-                        <template #rightMiddleSection>
-                            <div class="connection-type-navigation-request-counts">
-                                <HighlightLabel iconCssClass="ti ti-bolt"
-                                                labelType="success"
-                                                tooltip="Active Requests"
-                                                tooltipPlacement="top">
-                                    {{ asFormattedString(summary.activeRequestCount) }}
-                                </HighlightLabel>
-                                <HighlightLabel iconCssClass="ti ti-user-off"
-                                                labelType="default"
-                                                tooltip="Unassigned Requests"
-                                                tooltipPlacement="top">
-                                    {{ asFormattedString(summary.unassignedRequestCount) }}
-                                </HighlightLabel>
-                                <HighlightLabel iconCssClass="ti ti-calendar-due"
-                                                labelType="warning"
-                                                tooltip="Due Soon Requests"
-                                                tooltipPlacement="top">
-                                    {{ asFormattedString(summary.dueSoonRequestCount) }}
-                                </HighlightLabel>
-                                <HighlightLabel iconCssClass="ti ti-exclamation-circle"
-                                                labelType="danger"
-                                                tooltip="Overdue Requests"
-                                                tooltipPlacement="top">
-                                    {{ asFormattedString(summary.overdueRequestCount) }}
-                                </HighlightLabel>
+                                <template #prepend>
+                                    <HighlightLabel iconCssClass="ti ti-user-circle"
+                                                    labelType="info"
+                                                    tooltip="Assigned to You"
+                                                    tooltipPlacement="top">
+                                        {{ asFormattedString(summary.assignedToYouRequestCount) }}
+                                    </HighlightLabel>
+                                </template>
+
+                                <template #rightMiddleSection>
+                                    <div class="connection-type-navigation-request-counts">
+                                        <HighlightLabel iconCssClass="ti ti-bolt"
+                                                        labelType="success"
+                                                        tooltip="Active Requests"
+                                                        tooltipPlacement="top">
+                                            {{ asFormattedString(summary.activeRequestCount) }}
+                                        </HighlightLabel>
+                                        <HighlightLabel iconCssClass="ti ti-user-off"
+                                                        labelType="default"
+                                                        tooltip="Unassigned Requests"
+                                                        tooltipPlacement="top">
+                                            {{ asFormattedString(summary.unassignedRequestCount) }}
+                                        </HighlightLabel>
+                                        <HighlightLabel iconCssClass="ti ti-calendar-due"
+                                                        labelType="warning"
+                                                        tooltip="Due Soon Requests"
+                                                        tooltipPlacement="top">
+                                            {{ asFormattedString(summary.dueSoonRequestCount) }}
+                                        </HighlightLabel>
+                                        <HighlightLabel iconCssClass="ti ti-exclamation-circle"
+                                                        labelType="danger"
+                                                        tooltip="Overdue Requests"
+                                                        tooltipPlacement="top">
+                                            {{ asFormattedString(summary.overdueRequestCount) }}
+                                        </HighlightLabel>
+                                    </div>
+                                </template>
+
+                            </DisplayCard>
+
+                        </DisplayCardContainer>
+                    </template>
+                </Panel>
+            </div>
+
+            <div v-if="anyFavorites" class="connection-favorites col-md-3">
+                <Panel>
+                    <template #title>
+                        <div class="connection-favorites-title">
+                            Favorites
+                        </div>
+                    </template>
+
+                    <div class="connection-favorites-sections">
+                        <div v-for="group of favoriteGroups"
+                             :key="group.connectionTypeIdKey!"
+                             class="connection-favorites-section">
+                            <span class="section-header">{{ group.connectionTypeName }}</span>
+                            <div v-for="opportunity of group.opportunities"
+                                 :key="opportunity.idKey!"
+                                 class="connection-favorites-item">
+                                <a :href="getFavoriteOpportunityUrl(group, opportunity)"
+                                   class="list-group-item connection-favorites-link">
+                                    <i :class="opportunity.iconCssClass"></i>
+                                    <span>{{ opportunity.name }}</span>
+                                </a>
+                                <div @click="onUnfavoriteClick(group, opportunity)">
+                                    <Following :entityTypeGuid="EntityType.ConnectionOpportunity"
+                                               :entityKey="opportunity.idKey!" />
+                                </div>
                             </div>
-                        </template>
+                        </div>
+                    </div>
+                </Panel>
+            </div>
 
-                    </DisplayCard>
-
-                </DisplayCardContainer>
-            </template>
-        </Panel>
+        </div>
     </template>
 </template>
 
@@ -98,6 +135,45 @@
 :deep(.displaycard-heading-icon .label-default) {
     color: var(--color-interface-medium);
 }
+
+.connection-favorites-title {
+    height: 56px;
+    display: flex;
+    align-items: center;
+}
+
+.connection-favorites-sections {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+}
+
+.connection-favorites-section .section-header {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+    line-height: var(--line-height-tight);
+}
+
+.connection-favorites-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    margin-top: var(--spacing-tiny);
+}
+
+.connection-favorites-link {
+    border: none;
+    border-radius: var(--rounded-small);
+    background-color: transparent;
+    color: var(--color-interface-strong);
+    font-weight: var(--font-weight-semibold);
+    padding: var(--spacing-xsmall) var(--spacing-small);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    flex: 1;
+    min-width: 0;
+}
 </style>
 
 <script setup lang="ts">
@@ -108,6 +184,7 @@
     import DisplayCard from "@Obsidian/Controls/displayCard.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import Following from "@Obsidian/Controls/following.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
@@ -120,6 +197,8 @@
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { areEqual } from "@Obsidian/Utility/guid";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { ConnectionFavoriteOpportunityBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionTypeNavigation/connectionFavoriteOpportunityBag";
+    import { ConnectionFavoriteOpportunityGroupBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionTypeNavigation/connectionFavoriteOpportunityGroupBag";
     import { ConnectionTypeSummaryBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionTypeNavigation/connectionTypeSummaryBag";
     import { ConnectionTypeNavigationInitializationBox } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionTypeNavigation/connectionTypeNavigationInitializationBox";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -147,10 +226,15 @@
 
     const typeVisibility = ref(preferences.getValue(PreferenceKey.TypeVisibility) || "my-types");
 
+    const favoriteGroups = ref<ConnectionFavoriteOpportunityGroupBag[]>(
+        (config.favoriteOpportunityGroups ?? []).filter(g => !!g.opportunities?.length)
+    );
+
     const connectionTypeSummaries = ref<ConnectionTypeSummaryBag[]>(config.connectionTypeSummaries || []);
     const isFetchingConnectionTypeSummaries = ref(false);
     const fetchConnectionTypeSummariesErrorMessage = ref("");
 
+    // Connection Type-level URLs.
     const configurationPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConfigurationPage]);
     const opportunitiesPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunitiesPage]);
     const connectionsHubListViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConnectionsHubListViewPage]);
@@ -158,12 +242,42 @@
     const connectionsHubGridViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConnectionsHubGridViewPage]);
     const operationalSnapshotPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OperationalSnapshotPage]);
 
+    // Connection Opportunity-level URLs.
+    const opportunityConnectionsHubListViewPage = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubListViewPage]);
+    const opportunityConnectionsHubBoardViewPage = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubBoardViewPage]);
+    const opportunityConnectionsHubGridViewPage = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubGridViewPage]);
+
     // #endregion Values
 
     // #region Computed Values
 
+    /** Gets the campus page parameter for the current selection. */
     const campusPageParam = computed((): string => {
         return selectedCampus.value ? `&Campus=${selectedCampus.value.value}` : "";
+    });
+
+    /**
+     * Determines if there are any favorite groups with opportunities.
+     */
+    const anyFavorites = computed(() => {
+        return favoriteGroups.value.some(group => !!group.opportunities?.length);
+    });
+
+    /**
+     * Computes the CSS classes for the connection type list based on the
+     * presence of favorites.
+     */
+    const connectionTypeListCssClass = computed((): string[] => {
+        const classes = ["connection-type-list"];
+
+        if (anyFavorites.value) {
+            classes.push("col-md-9");
+        }
+        else {
+            classes.push("col-md-12");
+        }
+
+        return classes;
     });
 
     // #endregion Computed Values
@@ -258,9 +372,51 @@
         connectionTypeSummaries.value = result.data;
     }
 
+    /**
+     * Returns the best navigation URL for a favorited connection opportunity,
+     * applying the same view-priority logic used by the Connection Opportunity
+     * Navigation block: list view first, then board/grid, then list as fallback.
+     * @param group The favorite group (used to look up connection type view settings).
+     * @param opportunity The favorited connection opportunity.
+     */
+    function getFavoriteOpportunityUrl(group: ConnectionFavoriteOpportunityGroupBag, opportunity: ConnectionFavoriteOpportunityBag): string {
+        const idKey = opportunity.idKey!;
+        const typeIdKey = group.connectionTypeIdKey!;
+        const typeSummary = connectionTypeSummaries.value.find(s => s.idKey === typeIdKey);
+
+        const resolveUrl = (template: string): string =>
+            template.replace("((TypeKey))", typeIdKey).replace("((Key))", idKey);
+
+        // Prefer List > Board > Grid when multiple views are enabled, falling
+        // back to the list URL as a last resort so the user always lands somewhere.
+        if (opportunityConnectionsHubListViewPage.value && typeSummary?.isListViewEnabled) {
+            return resolveUrl(opportunityConnectionsHubListViewPage.value);
+        }
+        else if (opportunityConnectionsHubBoardViewPage.value && typeSummary?.isBoardViewEnabled) {
+            return resolveUrl(opportunityConnectionsHubBoardViewPage.value);
+        }
+        else if (opportunityConnectionsHubGridViewPage.value && typeSummary?.isGridViewEnabled) {
+            return resolveUrl(opportunityConnectionsHubGridViewPage.value);
+        }
+        else if (opportunityConnectionsHubListViewPage.value) {
+            return resolveUrl(opportunityConnectionsHubListViewPage.value);
+        }
+
+        return "#";
+    }
+
     // #endregion Functions
 
     // #region Event Handlers
+
+    /**
+     * Optimistically removes an un-favorited opportunity from the favorites panel.
+     * The Following control handles the actual API call internally.
+     */
+    function onUnfavoriteClick(group: ConnectionFavoriteOpportunityGroupBag, opportunity: ConnectionFavoriteOpportunityBag): void {
+        group.opportunities = group.opportunities?.filter(o => o.idKey !== opportunity.idKey) ?? [];
+        favoriteGroups.value = favoriteGroups.value.filter(g => !!g.opportunities?.length);
+    }
 
     /** Navigates to the configuration page. */
     function onConfigurationClick(): void {

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { ConnectionFavoriteOpportunityGroupBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionTypeNavigation/connectionFavoriteOpportunityGroupBag";
 import { ConnectionTypeSummaryBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionTypeNavigation/connectionTypeSummaryBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -34,6 +35,12 @@ export type ConnectionTypeNavigationInitializationBox = {
      * an error is preventing the block from being displayed.
      */
     errorMessage?: string | null;
+
+    /**
+     * Gets or sets the favorited connection opportunities for the current person,
+     * grouped by connection type and ordered by type order then opportunity name.
+     */
+    favoriteOpportunityGroups?: ConnectionFavoriteOpportunityGroupBag[] | null;
 
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
