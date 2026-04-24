@@ -451,6 +451,35 @@
         void onSave();
     }
 
+    /*
+        4/24/26 - MSE
+
+        Port into obsidian: https://github.com/SparkDevNetwork/Rock/commit/8ed9990fc50fa9f8b83ff0bf564849ec86654d33
+    */
+    function applyDialogSubtitle(): void {
+        // Only run inside Dialog.aspx's iframe. body id="dialog" is set by
+        // that layout and is the one DOM feature unique to it.
+        const dialogBody = document.getElementById("dialog");
+
+        if (!dialogBody) {
+            return;
+        }
+
+        const header = dialogBody.querySelector<HTMLElement>(".modal-content > .modal-header");
+
+        if (!header) {
+            return;
+        }
+
+        header.querySelector("small")?.remove();
+
+        const bag = pageViewBag.value;
+        const subtitle = document.createElement("small");
+
+        subtitle.textContent = `Id: ${bag?.pageId ?? 0}, Id Key: ${bag?.idKey ?? ""}`;
+        header.appendChild(subtitle);
+    }
+
     // #endregion
 
     // #region Lifecycle Hooks
@@ -461,6 +490,7 @@
         }
 
         findDialogSaveButton()?.addEventListener("click", onDialogSaveClick, true);
+        applyDialogSubtitle();
     });
 
     onUnmounted(() => {
