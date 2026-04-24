@@ -27,7 +27,7 @@
                                       label="Opportunity"
                                       :showBlankItem="false" />
                     </div>
-                    <div class="col-md-6 mb-spacing-md pl-spacing-none">
+                    <div v-if="!isBulkTransfer" class="col-md-6 mb-spacing-md pl-spacing-none">
                         <RockButton :btnType="BtnType.Default"
                                     @click="setSearchMode(true)"
                                     isSquare>
@@ -75,6 +75,10 @@
                                  label="Note" />
                     </div>
                 </div>
+                <RequestTable v-if="isBulkTransfer"
+                              :requestDetails="requestDetails"
+                              :viewOptions="viewOptions"
+                              isConnectorVisible />
             </template>
             <template v-else>
                 <ContentSectionContainer :sidebar="false">
@@ -134,6 +138,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
+    import RequestTable from "./requestTable.partial.obs";
     import { ref, PropType, watch, computed } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
@@ -148,8 +153,6 @@
     import { TransferConnectionRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/transferConnectionRequestBag";
     import { TransferConnectionRequestDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/transferConnectionRequestDetailsBag";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
@@ -157,6 +160,8 @@
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
     import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { BulkRequestViewBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/bulkRequestViewBag";
+    import { ViewOptions } from "./types.partial";
 
     const props = defineProps({
         modelValue: {
@@ -182,7 +187,22 @@
         errorMessage: {
             type: String as PropType<string>,
             required: true
-        }
+        },
+
+        isBulkTransfer: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        requestDetails: {
+            type: Array as PropType<BulkRequestViewBag[]>,
+            default: []
+        },
+
+        viewOptions: {
+            type: Object as PropType<ViewOptions>,
+            required: true
+        },
     });
 
     const emit = defineEmits<{
@@ -217,24 +237,27 @@
 
     const selectedOpportunityDetails = computed(() => props.transferDetails?.connectionOpportunities?.find(o => o.guid === selectedOpportunity.value));
 
-    const radioConnectorItems = computed(() => <ListItemBag[]>[
-        {
-            text: `Default Connector for ${selectedOpportunityDetails.value?.name}`,
-            value: "default"
-        },
-        {
-            text: `Current Connector: ${props.transferDetails?.currentConnectorName}`,
-            value: "current"
-        },
-        {
-            text: "Select Connector",
-            value: "select"
-        },
-        {
-            text: "No Connector",
-            value: "none"
-        }
-    ]);
+    const radioConnectorItems = computed(() => {
+        var currentConnectorText = props.isBulkTransfer ? "Current Connector" : `Current Connector: ${props.transferDetails?.currentConnectorName}`;
+        return <ListItemBag[]>[
+            {
+                text: `Default Connector for ${selectedOpportunityDetails.value?.name}`,
+                value: "default"
+            },
+            {
+                text: currentConnectorText,
+                value: "current"
+            },
+            {
+                text: "Select Connector",
+                value: "select"
+            },
+            {
+                text: "No Connector",
+                value: "none"
+            }
+        ];
+    });
 
     const filteredOpportunities = computed(() => {
         let opportunities = props.transferDetails?.connectionOpportunities ?? [];
@@ -351,9 +374,9 @@
     });
 
     watch(() => props.transferDetails, () => {
-        selectedOpportunity.value = props.transferDetails?.currentConnectionOpportunityGuid;
+        selectedOpportunity.value = props.transferDetails?.currentConnectionOpportunityGuid ?? opportunityItems.value?.[0]?.value;
         selectedStatus.value = props.transferDetails?.currentConnectionStatusGuid;
-        selectedCampus.value = props.transferDetails?.currentCampusGuid;
+        selectedCampus.value = props.transferDetails?.currentCampusGuid ?? "";
         selectedConnector.value = props.transferDetails?.currentConnectorPersonAliasGuid;
     });
 

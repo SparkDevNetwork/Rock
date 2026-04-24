@@ -23,6 +23,7 @@
 
 import { ConnectionState } from "@Obsidian/Enums/Connection/connectionState";
 import { DueStatus } from "@Obsidian/Enums/Connection/dueStatus";
+import { Guid } from "@Obsidian/Types";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
 import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -32,14 +33,26 @@ export type ConnectionListGridUpdateBag = {
     /** Gets or sets the total number of activities logged against this request. */
     activityCount?: number | null;
 
+    /** Gets or sets the Campus name, or null when none is assigned. */
+    campus?: string | null;
+
     /** Gets or sets the grouping field data for the campus column. */
     campusGrouping?: GroupingFieldBag | null;
+
+    /** Gets or sets the Campus Guid, or null when none is assigned. */
+    campusGuid?: Guid | null;
 
     /** Gets or sets the celebration text to display for this request, if applicable. */
     celebrationText?: string | null;
 
     /** Gets or sets the date by which this request was completed. */
     completedDateTime?: string | null;
+
+    /** Gets or sets the ConnectionOpportunity display name. */
+    connectionOpportunity?: string | null;
+
+    /** Gets or sets the ConnectionOpportunity Guid. */
+    connectionOpportunityGuid?: Guid | null;
 
     /** Gets or sets the current connection state (e.g., Active, Inactive, Future Follow-up) for this request. */
     connectionState: ConnectionState;

@@ -110,6 +110,10 @@
                         <i class="ti ti-activity"></i>
                         <span class="activity-btn-label">Add Activity</span>
                     </RockButton>
+                    <RockButton class="activity-btn" @click="showBulkTransferModal()" :disabled="!canEditConnectionRequests">
+                        <i class="ti ti-switch-3"></i>
+                        <span class="activity-btn-label">Transfer</span>
+                    </RockButton>
                     <div class="d-flex align-items-center gap-sm">
                         <i class="ti ti-x cursor-pointer" @click="clearAllSelections"></i>
                     </div>
@@ -593,10 +597,13 @@
                                     :transferDetails="transferRequestDetails"
                                     :isSaving="isModalSaving"
                                     :errorMessage="modalErrorMessage"
+                                    :isBulkTransfer="isBulkTransfer"
+                                    :requestDetails="requestDetailsForModal"
+                                    :viewOptions="viewOptions"
                                     @fetchConnectorOptions="fetchConnectorOptionsForTransfer"
                                     @dismissErrorMessage="onModalErrorMessageDismissed"
-                                    @close="onModalErrorMessageDismissed"
-                                    @transfer="transferRequest" />
+                                    @close="onTransferModalClose"
+                                    @transfer="selectTransferProcess" />
 </template>
 
 <style>
@@ -691,7 +698,7 @@
     padding-right: var(--spacing-tiny);
 }
 
-@media (max-width: 1290px) {
+@media (max-width: 1418px) {
     .right-actions .activity-btn-label {
         display: none;
     }
@@ -923,6 +930,7 @@
         dueFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterDueConnectionTypIdKey))),
     });
     const allPossibleConnectors = ref(box.options?.allPossibleConnectors ?? []);
+    const isBulkTransfer = ref<boolean>(false);
     // SMS and Email modal state
     const communicationRecipients = ref<CommunicationRecipientBag[] | null | undefined>();
     const smsFromSystemPhoneNumbers = ref<ListItemBag[]>([]);
@@ -1348,6 +1356,11 @@
 
     function onModalErrorMessageDismissed(): void {
         modalErrorMessage.value = "";
+    }
+
+    function onTransferModalClose(): void {
+        isBulkTransfer.value = false;
+        onModalErrorMessageDismissed();
     }
 
     // #endregioin Modal Functions
@@ -2554,6 +2567,97 @@
         }
     }
 
+    async function showBulkTransferModal(): Promise<void> {
+        prepareRequestDetailsForModal();
+        isBulkTransfer.value = true;
+        isTransferModalVisible.value = true;
+
+        areTransferDetailsLoading.value = true;
+
+        const result = await invokeBlockAction<TransferConnectionRequestDetailsBag>("GetBulkTransferDetails");
+
+        if (result.isSuccess && result.data) {
+            transferRequestDetails.value = result.data;
+        }
+        else {
+            modalErrorMessage.value = result.errorMessage ?? "An error occurred while getting transfer details.";
+        }
+
+        areTransferDetailsLoading.value = false;
+    }
+
+    function selectTransferProcess(bag: TransferConnectionRequestBag): void {
+        if (isBulkTransfer.value) {
+            bulkTransferRequests(bag);
+        }
+        else {
+            transferSingleRequest(bag);
+        }
+    }
+
+    async function bulkTransferRequests(bag: TransferConnectionRequestBag): Promise<void> {
+        try {
+            isModalSaving.value = true;
+
+            const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("BulkTransferConnectionRequests", {
+                connectionRequestIdKeys: allSelectedKeys.value,
+                bag
+            });
+
+            if (result.isSuccess && result.data) {
+                const rowsByIdKey = new Map(
+                    gridData.value?.rows?.map(r => [r.idKey, r])
+                );
+
+                for (const updateBag of result.data) {
+                    const row = rowsByIdKey.get(updateBag.idKey);
+                    if (!row) {
+                        continue;
+                    }
+
+                    row.opportunityGrouping = updateBag.opportunityGrouping;
+                    row.campusGrouping = updateBag.campusGrouping;
+                    row.stateGrouping = updateBag.stateGrouping;
+                    row.statusGrouping = updateBag.statusGrouping;
+                    row.stateGrouping = updateBag.stateGrouping;
+                    row.dueStatusGrouping = updateBag.dueStatusGrouping;
+                    row.statusGrouping = updateBag.statusGrouping;
+                    row.connectionStatus = updateBag.connectionStatusBag;
+                    row.connectionState = updateBag.connectionState;
+                    row.dueStatus = updateBag.dueStatus;
+                    row.dueDate = updateBag.dueDate;
+                    row.dueSoonDate = updateBag.dueSoonDate;
+                    row.followUpDate = updateBag.followUpDate;
+                    row.completedDateTime = updateBag.completedDateTime;
+                    row.connectionOpportunity = updateBag.connectionOpportunity;
+                    row.connectionOpportunityGuid = updateBag.connectionOpportunityGuid;
+                    row.campus = updateBag.campus;
+                    row.campusGuid = updateBag.campusGuid;
+                    row.lastActivityDateTime = updateBag.lastActivityDateTime;
+                    row.activityCount = updateBag.activityCount;
+
+                    // If the request's current connector was not preserved, then update the row data.
+                    if (bag.connectorOption !== "current") {
+                        row.connectorGrouping = updateBag.connectorGrouping;
+                        row.connectorDetails = updateBag.connectorDetails;
+                    }
+                }
+
+                // Need to validate the updated rows still meet server filter requirements.
+                applyServerFilters();
+
+                clearAllSelections();
+                isTransferModalVisible.value = false;
+            }
+            else {
+                modalErrorMessage.value = result.errorMessage ?? "An unknown error occurred while transferring the connection request.";
+            }
+        }
+        finally {
+            isModalSaving.value = false;
+        }
+    }
+
     async function onTransferClick(): Promise<void> {
         isTransferModalVisible.value = true;
         areTransferDetailsLoading.value = true;
@@ -2572,7 +2676,7 @@
         areTransferDetailsLoading.value = false;
     }
 
-    async function transferRequest(bag: TransferConnectionRequestBag): Promise<void> {
+    async function transferSingleRequest(bag: TransferConnectionRequestBag): Promise<void> {
         try {
             isModalSaving.value = true;
 
