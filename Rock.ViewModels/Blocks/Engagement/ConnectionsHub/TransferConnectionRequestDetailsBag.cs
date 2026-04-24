@@ -36,8 +36,9 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
 
         /// <summary>
         /// Gets or sets the GUID of the connection opportunity this request currently belongs to.
+        /// Null when initializing a bulk transfer, since the selected requests may span multiple opportunities.
         /// </summary>
-        public Guid CurrentConnectionOpportunityGuid { get; set; }
+        public Guid? CurrentConnectionOpportunityGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the connector currently assigned to this request.
@@ -56,8 +57,9 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
 
         /// <summary>
         /// Gets or sets the GUID of the connection status currently assigned to this request.
+        /// Null when initializing a bulk transfer, since the selected requests may span multiple statuses.
         /// </summary>
-        public Guid CurrentConnectionStatusGuid { get; set; }
+        public Guid? CurrentConnectionStatusGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the list of connection opportunities available as transfer targets.

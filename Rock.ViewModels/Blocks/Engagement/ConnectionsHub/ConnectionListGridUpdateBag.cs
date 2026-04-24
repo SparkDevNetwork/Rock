@@ -122,6 +122,26 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets the sort order of the connection request within its status column.
         /// </summary>
         public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ConnectionOpportunity Guid.
+        /// </summary>
+        public Guid? ConnectionOpportunityGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ConnectionOpportunity display name.
+        /// </summary>
+        public string ConnectionOpportunity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Campus name, or null when none is assigned.
+        /// </summary>
+        public string Campus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Campus Guid, or null when none is assigned.
+        /// </summary>
+        public Guid? CampusGuid { get; set; }
     }
 }
 
