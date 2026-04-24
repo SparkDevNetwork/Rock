@@ -427,8 +427,12 @@ namespace Rock.Blocks.Connection
                 .ThenBy( s => s.Name )
                 .ToList();
 
+            var currentPerson = GetCurrentPerson();
+            var followedOpportunityIds = GetFollowedConnectionOpportunityIds( currentPerson );
+
             summaries.ForEach( s =>
             {
+                s.IsFollowed = followedOpportunityIds.Contains( s.Id ?? 0 );
                 s.TranslateIdToIdKey();
 
                 // We might want to resolve merge fields on the Summary in the future, at which point we'll need to:
@@ -440,6 +444,35 @@ namespace Rock.Blocks.Connection
             } );
 
             return summaries;
+        }
+
+        /// <summary>
+        /// Gets the set of <see cref="ConnectionOpportunity"/> identifiers that the current person is following.
+        /// Returns an empty set if the person is not authenticated or the entity type cannot be resolved.
+        /// </summary>
+        /// <param name="currentPerson">The currently authenticated person.</param>
+        /// <returns>A <see cref="HashSet{T}"/> of followed <see cref="ConnectionOpportunity"/> IDs for O(1) lookup.</returns>
+        private HashSet<int> GetFollowedConnectionOpportunityIds( Person currentPerson )
+        {
+            if ( currentPerson == null )
+            {
+                return new HashSet<int>();
+            }
+
+            var connectionOpportunityEntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.CONNECTION_OPPORTUNITY.AsGuid() )?.Id;
+
+            if ( !connectionOpportunityEntityTypeId.HasValue )
+            {
+                return new HashSet<int>();
+            }
+
+            return new FollowingService( RockContext )
+                .Queryable()
+                .Where( f =>
+                    f.EntityTypeId == connectionOpportunityEntityTypeId.Value
+                    && f.PersonAlias.PersonId == currentPerson.Id )
+                .Select( f => f.EntityId )
+                .ToHashSet();
         }
 
         /// <summary>

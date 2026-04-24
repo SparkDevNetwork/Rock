@@ -74,5 +74,10 @@ namespace Rock.ViewModels.Blocks.Connection.ConnectionOpportunityNavigation
         /// Gets or sets the count of connection requests assigned to the current person for this connection opportunity.
         /// </summary>
         public int AssignedToYouRequestCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the current person is following (has favorited) this connection opportunity.
+        /// </summary>
+        public bool IsFollowed { get; set; }
     }
 }

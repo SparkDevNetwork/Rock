@@ -40,5 +40,11 @@ namespace Rock.ViewModels.Blocks.Connection.ConnectionTypeNavigation
         /// Gets or sets the list of connection type summaries to display.
         /// </summary>
         public List<ConnectionTypeSummaryBag> ConnectionTypeSummaries { get; set; }
+
+        /// <summary>
+        /// Gets or sets the favorited connection opportunities for the current person,
+        /// grouped by connection type and ordered by type order then opportunity name.
+        /// </summary>
+        public List<ConnectionFavoriteOpportunityGroupBag> FavoriteOpportunityGroups { get; set; }
     }
 }
