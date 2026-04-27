@@ -90,6 +90,11 @@
                             </template>
                         </ConditionalWell>
 
+                        <NotificationBox v-if="options?.areGroupPlacementsEnabled && isCurrentPlacementGroupInactiveOrArchived"
+                                         alertType="info">
+                            The current placement group is inactive or archived and is no longer available to select. Saving will remove the existing placement group assignment unless you choose a different group.
+                        </NotificationBox>
+
                         <div class="row" v-if="options?.areGroupPlacementsEnabled">
                             <div class="col-md-6">
                                 <DropDownList v-model="placementGroupGuid"
@@ -295,6 +300,8 @@
     const comments = propertyRef(props.modelValue.bag?.comments ?? "", "Comments");
     const requestSourceGuid = propertyRef(props.modelValue.bag?.requestSourceGuid ?? "", "RequestSourceGuid");
     const connectionRequestAttributeValues = propertyRef(props.modelValue.bag?.connectionRequestAttributeValues ?? {}, "ConnectionRequestAttributeValues");
+
+    const isCurrentPlacementGroupInactiveOrArchived = computed(() => props.modelValue.bag?.isCurrentPlacementGroupInactiveOrArchived ?? false);
 
     const originalConnectionStatusGuid = ref();
     const originalConnectionState = ref();
