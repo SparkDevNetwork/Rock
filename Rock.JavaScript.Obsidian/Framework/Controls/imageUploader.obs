@@ -1,6 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="fileGuid" formGroupClasses="image-uploader" name="imageuploader">
+    <RockFormField :modelValue="fileGuid"
+                   name="imageuploader"
+                   v-bind="fieldProps"
+                   :formGroupClasses="'image-uploader ' + (fieldProps.formGroupClasses ?? '')">
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <NotificationBox v-if="uploadErrorMessage" alertType="warning">
@@ -55,6 +58,7 @@
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { Guid } from "@Obsidian/Types";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import { resizeImageFileProcessor } from "@Obsidian/Utility/file";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { uploadBinaryFile } from "@Obsidian/Utility/http";
@@ -157,6 +161,8 @@
             type: Number,
             default: 0
         },
+
+        ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
@@ -169,6 +175,7 @@
     let cropper: Cropper | undefined | null;
     const securityGrantToken = useSecurityGrantToken();
     const cropBoxSize = 480;
+    const fieldProps = useStandardRockFormFieldProps(props);
 
     // #region Values
 
