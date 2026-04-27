@@ -292,6 +292,20 @@ namespace Rock.Blocks.Event
 
                 if ( isAutoApply && code.IsNullOrWhiteSpace() && ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() ) )
                 {
+                    // If a manual discount amount or percentage has already been applied to the registration
+                    // (without a discount code), return that manual discount instead of overriding it with an auto-applied one.
+                    if ( registration != null && ( registration.DiscountAmount > 0 || registration.DiscountPercentage > 0 ) )
+                    {
+                        return ActionOk( new
+                        {
+                            DiscountCode = registration.DiscountCode,
+                            RegistrationUsagesRemaining = ( int? ) null,
+                            DiscountAmount = registration.DiscountAmount,
+                            DiscountPercentage = registration.DiscountPercentage,
+                            DiscountMaxRegistrants = ( int? ) null
+                        } );
+                    }
+
                     // if no code is provided and there is no code already saved in the registration check for an auto apply discount, if there are none discount will be null which returns ActionNotFound
                     var registrationTemplateDiscountCodes = registrationTemplateDiscountService
                         .GetDiscountsForRegistrationInstance( registrationInstanceId )
