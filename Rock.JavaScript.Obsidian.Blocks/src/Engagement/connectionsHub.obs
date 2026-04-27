@@ -198,7 +198,7 @@
                         title="Group"
                         field="group">
                     <template #format="{ row }">
-                        <div v-if="!!row.group">
+                        <div v-if="!!row.group" :class="{ 'text-muted': !!row.isPlacementGroupInactiveOrArchived }">
                             {{ row.group }}
                         </div>
                         <div v-else>
