@@ -21,7 +21,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class UpdatespCrm_PersonMerge : Rock.Migrations.RockMigration
+    public partial class AnotherPersonMergeFix : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -34,9 +34,9 @@ IF EXISTS (SELECT * FROM sys.objects WHERE OBJECT_ID = OBJECT_ID(N'[dbo].[spCrm_
     DROP PROCEDURE [dbo].[spCrm_PersonMerge];
 " );
 
-            Sql( RockMigrationSQL._202512182358368_UpdatespCrm_PersonMerge );
+            Sql( RockMigrationSQL._202604272241483_AnotherPersonMergeFix_spCrm_PersonMerge );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
