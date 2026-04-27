@@ -3632,7 +3632,8 @@ WHERE 1 = 1" );
 
             var tempGroupMember = new Rock.Model.GroupMember
             {
-                GroupId = placementGroup.Id
+                GroupId = placementGroup.Id,
+                GroupTypeId = placementGroup.GroupTypeId
             };
 
             tempGroupMember.LoadAttributes();
@@ -3658,7 +3659,12 @@ WHERE 1 = 1" );
                     ),
 
 
-                GroupMemberAttributes = tempGroupMember.GetPublicAttributesForEdit( RequestContext.CurrentPerson )
+                GroupMemberAttributes = tempGroupMember.GetPublicAttributesForEdit( RequestContext.CurrentPerson ),
+
+                // Also include the pre-rendered edit values so that field types such as Matrix
+                // (whose edit value JSON is derived from their configuration) can render their
+                // inner attributes on a brand-new placement group member that has no stored values.
+                GroupMemberAttributeValues = tempGroupMember.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
             };
 
             return ActionOk( bag );
