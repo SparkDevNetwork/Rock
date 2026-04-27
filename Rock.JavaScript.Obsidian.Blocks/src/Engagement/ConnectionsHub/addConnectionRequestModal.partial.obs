@@ -415,6 +415,43 @@
         connectionRequestAttributeValues.value = nextValues;
     }
 
+    /**
+     * Prunes placement group member attribute values to only those whose attribute keys
+     * are still valid for the currently selected placement group, and seeds any missing
+     * keys from the server-provided default edit values.
+     *
+     * This is necessary because the shared AttributeValues object may contain stale entries
+     * left over from a previously selected placement group whose attribute schema differs.
+     * Seeding missing keys is also necessary for field types like Matrix whose edit value
+     * JSON is derived from configuration and must be present for the editor to render.
+     * A new object is assigned to ensure downstream components react to changes.
+     */
+    function pruneAndSeedPlacementGroupMemberAttributeValues(): void {
+        const currentValues = placementGroupMemberAttributeValues.value ?? {};
+        const defaults = props.placementGroupDetails?.groupMemberAttributeValues ?? {};
+        const validKeys = new Set<string>(Object.keys(props.placementGroupDetails?.groupMemberAttributes ?? {}));
+
+        const nextValues: Record<string, string> = {};
+
+        // Keep only values for keys that are still valid for the current schema.
+        for (const key of Object.keys(currentValues)) {
+            if (validKeys.has(key)) {
+                nextValues[key] = currentValues[key];
+            }
+        }
+
+        // Seed any valid keys that do not yet have a value from the server defaults.
+        for (const key of validKeys) {
+            if (nextValues[key] === undefined || nextValues[key] === null || nextValues[key] === "") {
+                if (defaults[key] !== undefined) {
+                    nextValues[key] = defaults[key];
+                }
+            }
+        }
+
+        placementGroupMemberAttributeValues.value = nextValues;
+    }
+
     function onConnectionOpportunityChanged(value: string | string[]): void {
         const guid = Array.isArray(value) ? value[0] ?? "" : value;
 
@@ -466,6 +503,10 @@
         groupMemberRoleGuid.value = "";
         groupMemberStatus.value = "";
         emit("fetchPlacementGroupDetails", connectionOpportunityGuid.value, placementGroupGuid.value);
+    });
+
+    watch(() => props.placementGroupDetails?.groupMemberAttributes, () => {
+        pruneAndSeedPlacementGroupMemberAttributeValues();
     });
 
     /**
