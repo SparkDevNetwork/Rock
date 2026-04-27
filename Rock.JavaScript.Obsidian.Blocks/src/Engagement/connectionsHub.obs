@@ -202,11 +202,11 @@
                         field="group">
                     <template #format="{ row }">
                         <template v-if="!!row.group">
-                            <div v-if="row.isPendingMember" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
+                            <div v-if="row.isPendingMember" :class="{ 'text-muted': !!row.isPlacementGroupInactiveOrArchived }" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
                                 {{ row.group }}
                                 <i class="ti ti-user-share text-interface-medium"></i>
                             </div>
-                            <div v-else>
+                            <div v-else :class="{ 'text-muted': !!row.isPlacementGroupInactiveOrArchived }">
                                 {{ row.group }}
                             </div>
                         </template>

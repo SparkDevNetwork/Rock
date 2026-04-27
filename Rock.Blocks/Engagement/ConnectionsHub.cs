@@ -339,10 +339,14 @@ namespace Rock.Blocks.Engagement
                 ignoredConnectionStates.Add( ConnectionState.FutureFollowUp );
             }
 
+            // Exclude inactive and archived connector groups. A global query filter sets the
+            // ConnectorGroup navigation to null for archived groups, so guard against null as well.
+            // Also exclude inactive/archived group members so they do not appear as connectors.
             var connectors = connectionType.ConnectionOpportunities
                 .Where( o => o.IsActive )
                 .SelectMany( o => o.ConnectionOpportunityConnectorGroups )
-                .SelectMany( g => g.ConnectorGroup.Members )
+                .Where( g => g.ConnectorGroup != null && g.ConnectorGroup.IsActive && !g.ConnectorGroup.IsArchived )
+                .SelectMany( g => g.ConnectorGroup.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived ) )
                 .DistinctBy( m => m.Person.PrimaryAlias.Guid )
                 .Select( m => new ListItemBag
                 {
@@ -1314,8 +1318,10 @@ namespace Rock.Blocks.Engagement
 
             // Apply campus filtering at the database level. A null campus on the connector group
             // means the connector is available to all campuses and is always included.
+            // Also exclude inactive and archived connector groups so their members do not appear as connectors.
             var connectorGroupQuery = new ConnectionOpportunityConnectorGroupService( RockContext ).Queryable()
-                .Where( g => g.ConnectionOpportunityId == connectionOpportunityId );
+                .Where( g => g.ConnectionOpportunityId == connectionOpportunityId )
+                .Where( g => g.ConnectorGroup != null && g.ConnectorGroup.IsActive && !g.ConnectorGroup.IsArchived );
 
             if ( selectedCampusGuid.HasValue )
             {
@@ -1326,7 +1332,7 @@ namespace Rock.Blocks.Engagement
             // Project one flat row per group member so the database returns a single result set.
             var memberRows = connectorGroupQuery
                 .SelectMany( g => g.ConnectorGroup.Members
-                    .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
+                    .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived )
                     .Select( m => new
                     {
                         m.Person,
@@ -1437,7 +1443,11 @@ namespace Rock.Blocks.Engagement
                 return null;
             }
 
-            var placementGroups = connectionOpportunity.ConnectionOpportunityGroups.Select( g => g.Group )
+            // Exclude inactive and archived placement groups. A global query filter sets the
+            // Group navigation property to null for archived groups, so guard against null as well.
+            var placementGroups = connectionOpportunity.ConnectionOpportunityGroups
+                .Where( g => g.Group != null && g.Group.IsActive && !g.Group.IsArchived )
+                .Select( g => g.Group )
                 .Where( g => !campusId.HasValue || !g.CampusId.HasValue || g.CampusId.Value == campusId.Value )
                 .Select( g => new ListItemBag
                 {
@@ -1479,6 +1489,14 @@ namespace Rock.Blocks.Engagement
             };
 
             var currentPerson = RequestContext.CurrentPerson;
+
+            // Detect whether the persisted placement group is inactive or archived so the edit UI
+            // can warn the user that saving will overwrite the assignment. The global Group query
+            // filter makes entity.AssignedGroup null for archived groups, so a null navigation
+            // with a set AssignedGroupId is an archived indicator; an explicit IsActive == false
+            // is an inactive indicator.
+            bag.IsCurrentPlacementGroupInactiveOrArchived = entity.AssignedGroupId.HasValue
+                && ( entity.AssignedGroup == null || !entity.AssignedGroup.IsActive );
 
             if ( entity.AssignedGroupMemberRoleId.HasValue && entity.AssignedGroupId.HasValue )
             {
@@ -1730,22 +1748,31 @@ namespace Rock.Blocks.Engagement
             {
                 if ( connectionOpportunity != null )
                 {
-                    // Checks if the current person is a connector for the specified Connection Opportunity.
+                    // Checks if the current person is an active connector for the specified Connection Opportunity.
+                    // Inactive/archived connector groups and inactive/archived members should not grant edit permission.
                     userCanEditConnectionRequests = new ConnectionOpportunityConnectorGroupService( RockContext )
                         .Queryable()
                         .Where( cg => cg.ConnectionOpportunityId == connectionOpportunity.Id )
+                        .Where( cg => cg.ConnectorGroup != null && cg.ConnectorGroup.IsActive && !cg.ConnectorGroup.IsArchived )
                         .SelectMany( cg => cg.ConnectorGroup.Members )
-                        .Any( m => m.PersonId == RequestContext.CurrentPerson.Id );
+                        .Any( m => m.PersonId == RequestContext.CurrentPerson.Id
+                                && m.GroupMemberStatus == GroupMemberStatus.Active
+                                && !m.IsArchived );
                 }
                 else
                 {
-                    // Checks if all Connection Opportunities for the Connection Type have the current person as a connector.
+                    // Checks if all Connection Opportunities for the Connection Type have the current person as an active connector.
                     var opportunityIds = connectionType.ConnectionOpportunities.Select( o => o.Id ).ToList();
 
                     userCanEditConnectionRequests = new ConnectionOpportunityConnectorGroupService( RockContext )
                         .Queryable()
                         .Where( cg => opportunityIds.Contains( cg.ConnectionOpportunityId )
-                                   && cg.ConnectorGroup.Members.Any( m => m.PersonId == RequestContext.CurrentPerson.Id ) )
+                                   && cg.ConnectorGroup != null
+                                   && cg.ConnectorGroup.IsActive
+                                   && !cg.ConnectorGroup.IsArchived
+                                   && cg.ConnectorGroup.Members.Any( m => m.PersonId == RequestContext.CurrentPerson.Id
+                                                                       && m.GroupMemberStatus == GroupMemberStatus.Active
+                                                                       && !m.IsArchived ) )
                         .Select( cg => cg.ConnectionOpportunityId )
                         .Distinct()
                         .Count() == opportunityIds.Count;
@@ -1845,9 +1872,12 @@ namespace Rock.Blocks.Engagement
                     .Where( g => opportunityIds.Contains( g.ConnectionOpportunityId ) )
                     .Where( g =>
                         g.ConnectorGroup != null &&
+                        g.ConnectorGroup.IsActive &&
+                        !g.ConnectorGroup.IsArchived &&
                         g.ConnectorGroup.Members.Any( m =>
                             m.PersonId == RequestContext.CurrentPerson.Id &&
-                            m.GroupMemberStatus == GroupMemberStatus.Active ) )
+                            m.GroupMemberStatus == GroupMemberStatus.Active &&
+                            !m.IsArchived ) )
                     .ToList()
                     .GroupBy( g => g.ConnectionOpportunityId )
                     .ToDictionary( g => g.Key, g => g.ToList() );
@@ -2262,7 +2292,9 @@ namespace Rock.Blocks.Engagement
                         grp => grp.Select( c => new { Role = c.GroupMemberRole, Status = c.GroupMemberStatus } ).ToList()
                     );
 
-                optionsBag.PlacementGroups = opportunityGroups.Where( g => configsByGroupTypeId.ContainsKey( g.Group.GroupTypeId ) )
+                optionsBag.PlacementGroups = opportunityGroups
+                    .Where( g => g.Group != null && g.Group.IsActive && !g.Group.IsArchived )
+                    .Where( g => configsByGroupTypeId.ContainsKey( g.Group.GroupTypeId ) )
                     .Select( g =>
                     {
                         var configs = configsByGroupTypeId[g.Group.GroupTypeId];
@@ -3178,6 +3210,8 @@ SELECT
     cam.[Order]                                     AS [CampusOrder],
     cr.[AssignedGroupId]                            AS [AssignedGroupId],
     ag.[Name]                                       AS [AssignedGroupName],
+    ag.[IsActive]                                   AS [AssignedGroupIsActive],
+    ag.[IsArchived]                                 AS [AssignedGroupIsArchived],
     cs.[Id]                                         AS [ConnectionStatusId],
     cs.[Guid]                                       AS [ConnectionStatusGuid],
     cs.[Name]                                       AS [ConnectionStatusName],
@@ -3390,6 +3424,8 @@ WHERE 1 = 1" );
                     HasPlacementGroup = row.AssignedGroupId.HasValue,
                     HasRequiredGroupRequirements = false,
                     IsPendingMember = row.IsPendingMember,
+                    IsPlacementGroupInactiveOrArchived = row.AssignedGroupId.HasValue
+                        && ( row.AssignedGroupIsActive == false || row.AssignedGroupIsArchived == true ),
                     ReminderCount = row.ReminderCount,
                     Order = row.Order,
                     ConnectionStatus = new ConnectionStatusBag
@@ -3671,7 +3707,10 @@ WHERE 1 = 1" );
             var connectionOpportunity = new ConnectionOpportunityService( RockContext ).Get( connectionOpportunityGuid.AsGuid() );
             var placementGroup = new GroupService( RockContext ).Get( placementGroupGuid.AsGuid() );
 
-            if ( connectionOpportunity == null || placementGroup == null )
+            // Reject inactive or archived placement groups. GroupService.Queryable already
+            // excludes archived via the global filter, but a defensive check here prevents
+            // a stale client reference from surfacing an inactive group.
+            if ( connectionOpportunity == null || placementGroup == null || !placementGroup.IsActive || placementGroup.IsArchived )
             {
                 return ActionNotFound();
             }
@@ -4434,6 +4473,28 @@ WHERE 1 = 1" );
                 return ActionBadRequest( "Invalid data." );
             }
 
+            // Reject saves that assign an inactive or archived placement group. The picker filters
+            // these out, so this is a guard against stale client state or direct API calls. Using
+            // GroupService.Queryable (not AsNoFilter) relies on the global archived filter to return
+            // null for archived groups, and an explicit IsActive check catches inactive ones.
+            if ( entity.AssignedGroupId.HasValue )
+            {
+                var assignedGroupInfo = new GroupService( RockContext ).Queryable()
+                    .Where( g => g.Id == entity.AssignedGroupId.Value )
+                    .Select( g => new { g.IsActive } )
+                    .FirstOrDefault();
+
+                if ( assignedGroupInfo == null )
+                {
+                    return ActionBadRequest( "The selected placement group is archived and cannot be assigned." );
+                }
+
+                if ( !assignedGroupInfo.IsActive )
+                {
+                    return ActionBadRequest( "The selected placement group is inactive and cannot be assigned." );
+                }
+            }
+
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();
@@ -4684,12 +4745,18 @@ WHERE 1 = 1" );
 
             var campaignConnectionItems = SystemSettings.GetValue( CampaignConnectionKey.CAMPAIGN_CONNECTION_CONFIGURATION ).FromJsonOrNull<List<CampaignItem>>() ?? new List<CampaignItem>();
 
-            // Gets a filtered list of opportunity guids for the current Connection Type where the Current Person is a Connector on the opportunity.
+            // Gets a filtered list of opportunity guids for the current Connection Type where the Current Person is an active Connector on the opportunity.
+            // Inactive/archived connector groups and inactive/archived group members should not qualify the person as a connector.
             var opportunityGuids = new ConnectionOpportunityService( RockContext ).Queryable()
                 .Where( o =>
                     o.ConnectionTypeId == connectionType.Id &&
                     o.ConnectionOpportunityConnectorGroups.Any( cg =>
-                        cg.ConnectorGroup.Members.Any( gm => gm.PersonId == RequestContext.CurrentPerson.Id )
+                        cg.ConnectorGroup != null &&
+                        cg.ConnectorGroup.IsActive &&
+                        !cg.ConnectorGroup.IsArchived &&
+                        cg.ConnectorGroup.Members.Any( gm => gm.PersonId == RequestContext.CurrentPerson.Id
+                                                          && gm.GroupMemberStatus == GroupMemberStatus.Active
+                                                          && !gm.IsArchived )
                     )
                 )
                 .Select( o => o.Guid )
@@ -6201,6 +6268,7 @@ WHERE 1 = 1" );
                 .AddField( "hasPlacementGroup", a => a.HasPlacementGroup )
                 .AddField( "hasRequiredGroupRequirements", a => a.HasRequiredGroupRequirements )
                 .AddField( "order", a => a.Order )
+                .AddField( "isPlacementGroupInactiveOrArchived", a => a.IsPlacementGroupInactiveOrArchived )
                 .AddAttributeFieldsFrom( a => a.ConnectionRequest, GetGridAttributes() );
         }
 
@@ -6328,6 +6396,13 @@ WHERE 1 = 1" );
             /// Gets or sets the sort order of the ConnectionRequest within a board column.
             /// </summary>
             public int Order { get; set; }
+
+            /// <summary>
+            /// Gets or sets whether the assigned placement group is inactive or archived.
+            /// Used to flag placements whose group is no longer available so the grid can
+            /// indicate the assignment needs attention.
+            /// </summary>
+            public bool IsPlacementGroupInactiveOrArchived { get; set; }
         }
 
 
@@ -6376,6 +6451,12 @@ WHERE 1 = 1" );
 
             /// <summary>Gets or sets the AssignedGroup name, or null when none is assigned.</summary>
             public string AssignedGroupName { get; set; }
+
+            /// <summary>Gets or sets whether the AssignedGroup is active. Null when no group is assigned.</summary>
+            public bool? AssignedGroupIsActive { get; set; }
+
+            /// <summary>Gets or sets whether the AssignedGroup is archived. Null when no group is assigned.</summary>
+            public bool? AssignedGroupIsArchived { get; set; }
 
             /// <summary>Gets or sets the ConnectionStatus Id.</summary>
             public int ConnectionStatusId { get; set; }
