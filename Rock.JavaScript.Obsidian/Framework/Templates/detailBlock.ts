@@ -14,13 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
-import { computed, defineComponent, onBeforeUnmount, PropType, ref, watch } from "vue";
+import {
+    computed,
+    defineComponent,
+    onBeforeUnmount,
+    PropType,
+    ref,
+    watch,
+} from "vue";
 import Panel from "@Obsidian/Controls/panel.obs";
 import Modal from "@Obsidian/Controls/modal.obs";
 import { Guid } from "@Obsidian/Types";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
-import { isPromise, PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
+import {
+    isPromise,
+    PromiseCompletionSource,
+} from "@Obsidian/Utility/promiseUtils";
 import { FollowingGetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingOptionsBag";
 import { FollowingGetFollowingResponseBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingResponseBag";
 import { FollowingSetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingSetFollowingOptionsBag";
@@ -37,7 +47,14 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { splitCase } from "@Obsidian/Utility/stringUtils";
 import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
-import { hideBlockRole, showBlockRole, useBlockBrowserBus, useEntityTypeGuid, useEntityTypeName, useReloadBlock } from "@Obsidian/Utility/block";
+import {
+    hideBlockRole,
+    showBlockRole,
+    useBlockBrowserBus,
+    useEntityTypeGuid,
+    useEntityTypeName,
+    useReloadBlock,
+} from "@Obsidian/Utility/block";
 import { BlockMessages } from "@Obsidian/Utility/browserBus";
 import { BlockRole } from "@Obsidian/Enums/Cms/blockRole";
 
@@ -54,21 +71,20 @@ export default defineComponent({
         RockButton,
         RockForm,
         RockSuspense,
-        BadgeList
+        BadgeList,
     },
 
     props: {
-
         /** If true then labels for the entity will be visible regardless of the panel mode. */
         alwaysShowLabels: {
             type: Boolean as PropType<boolean>,
-            default: false
+            default: false,
         },
 
         /** The name of the entity. This will be used to construct the panel title. */
         name: {
             type: String as PropType<string>,
-            required: false
+            required: false,
         },
 
         /**
@@ -77,61 +93,61 @@ export default defineComponent({
          */
         title: {
             type: String as PropType<string>,
-            required: false
+            required: false,
         },
 
         /** The unique identifier of the entity type that this detail block represents. */
         entityTypeGuid: {
             type: String as PropType<Guid>,
-            required: false
+            required: false,
         },
 
         /** The friendly name of the entity type that this block represents. */
         entityTypeName: {
             type: String as PropType<string>,
-            required: false
+            required: false,
         },
 
         /** The identifier key of the entity being displayed by this block. */
         entityKey: {
             type: String as PropType<string | null>,
-            required: false
+            required: false,
         },
 
         /** If true then entity tags will be displayed in view mode. */
         isTagsVisible: {
             type: Boolean as PropType<boolean>,
-            default: false
+            default: false,
         },
 
         /** If true then the following action will be displayed in view mode. */
         isFollowVisible: {
             type: Boolean as PropType<boolean>,
-            default: false
+            default: false,
         },
 
         /** If true then badges for the entity will be displayed in view mode. */
         isBadgesVisible: {
             type: Boolean as PropType<boolean>,
-            default: false
+            default: false,
         },
 
         /** If true then the entity audit information will not be available. */
         isAuditHidden: {
             type: Boolean as PropType<boolean>,
-            default: false
+            default: false,
         },
 
         /** If true then the entity security button will not be visible. */
         isSecurityHidden: {
             type: Boolean as PropType<boolean>,
-            default: false
+            default: false,
         },
 
         /** If true then the individual will be able to enter edit mode. */
         isEditVisible: {
             type: Boolean as PropType<boolean>,
-            default: false
+            default: false,
         },
 
         /**
@@ -140,7 +156,7 @@ export default defineComponent({
          */
         isDeleteVisible: {
             type: Boolean as PropType<boolean>,
-            default: false
+            default: false,
         },
 
         /**
@@ -148,19 +164,19 @@ export default defineComponent({
          */
         isFullScreenVisible: {
             type: Boolean as PropType<boolean>,
-            default: false
+            default: false,
         },
 
         /** The current display mode for the detail panel. */
         mode: {
             type: Number as PropType<DetailPanelMode>,
-            default: DetailPanelMode.View
+            default: DetailPanelMode.View,
         },
 
         /** Additional actions that should be displayed in the panel header. */
         headerActions: {
             type: Array as PropType<PanelAction[]>,
-            required: false
+            required: false,
         },
 
         /**
@@ -169,7 +185,7 @@ export default defineComponent({
          */
         headerSecondaryActions: {
             type: Array as PropType<PanelAction[]>,
-            required: false
+            required: false,
         },
 
         /**
@@ -178,7 +194,7 @@ export default defineComponent({
          */
         labels: {
             type: Array as PropType<PanelAction[]>,
-            required: false
+            required: false,
         },
 
         /**
@@ -188,7 +204,7 @@ export default defineComponent({
          */
         showLabelsInHeader: {
             type: Boolean as PropType<boolean>,
-            default: false
+            default: false,
         },
 
         /**
@@ -197,7 +213,7 @@ export default defineComponent({
          */
         footerActions: {
             type: Array as PropType<PanelAction[]>,
-            required: false
+            required: false,
         },
 
         /**
@@ -206,7 +222,7 @@ export default defineComponent({
          */
         footerSecondaryActions: {
             type: Array as PropType<PanelAction[]>,
-            required: false
+            required: false,
         },
 
         /**
@@ -217,8 +233,10 @@ export default defineComponent({
          * person will be redirected to that URL.
          */
         onCancelEdit: {
-            type: Function as PropType<() => boolean | string | PromiseLike<boolean | string>>,
-            required: false
+            type: Function as PropType<
+                () => boolean | string | PromiseLike<boolean | string>
+            >,
+            required: false,
         },
 
         /**
@@ -229,7 +247,7 @@ export default defineComponent({
          */
         onEdit: {
             type: Function as PropType<() => boolean | PromiseLike<boolean>>,
-            required: false
+            required: false,
         },
 
         /**
@@ -241,8 +259,10 @@ export default defineComponent({
          * entity to the server should be placed in this function.
          */
         onSave: {
-            type: Function as PropType<() => boolean | string | PromiseLike<boolean | string>>,
-            required: false
+            type: Function as PropType<
+                () => boolean | string | PromiseLike<boolean | string>
+            >,
+            required: false,
         },
 
         /**
@@ -252,8 +272,10 @@ export default defineComponent({
          * then return the URL. If the delete was aborted, return false.
          */
         onDelete: {
-            type: Function as PropType<() => false | string | PromiseLike<false | string>>,
-            required: false
+            type: Function as PropType<
+                () => false | string | PromiseLike<false | string>
+            >,
+            required: false,
         },
 
         /**
@@ -262,7 +284,7 @@ export default defineComponent({
          */
         additionalDeleteMessage: {
             type: String as PropType<string | null>,
-            required: false
+            required: false,
         },
 
         /**
@@ -273,7 +295,7 @@ export default defineComponent({
          */
         worksurfaceMode: {
             type: Boolean as PropType<boolean>,
-            default: false
+            default: false,
         },
 
         /**
@@ -281,13 +303,13 @@ export default defineComponent({
          */
         showExperienceMode: {
             type: Boolean as PropType<boolean>,
-            default: false
-        }
+            default: false,
+        },
     },
 
     emits: {
         "update:mode": (_value: DetailPanelMode) => true,
-        "update:isFullscreen": (_value: boolean) => true
+        "update:isFullscreen": (_value: boolean) => true,
     },
 
     setup(props, { emit }) {
@@ -306,14 +328,17 @@ export default defineComponent({
         const editForm = ref<InstanceType<typeof RockForm> | null>(null);
 
         let formSubmissionSource: PromiseCompletionSource | null = null;
-        let editModeReadyCompletionSource: PromiseCompletionSource | null = null;
+        let editModeReadyCompletionSource: PromiseCompletionSource | null =
+            null;
 
         // AutoEditMode means we go directly into edit mode and, usually, have a
         // custom return URL to use when leaving edit mode. This can be used
         // in cases where it doesn't make sense for the detail block to show
         // a read-only view.
         const params = new URLSearchParams(window.location.search);
-        const isAutoEditMode = ref(asBooleanOrNull(params.get("autoEdit")) ?? false);
+        const isAutoEditMode = ref(
+            asBooleanOrNull(params.get("autoEdit")) ?? false,
+        );
         const autoEditReturnUrl = params.get("returnUrl");
 
         // #endregion
@@ -324,7 +349,11 @@ export default defineComponent({
          * The entity type name for this block.
          */
         const entityTypeName = computed((): string => {
-            return props.entityTypeName ?? providedEntityTypeName ?? "EntityTypeNotConfigured";
+            return (
+                props.entityTypeName ??
+                providedEntityTypeName ??
+                "EntityTypeNotConfigured"
+            );
         });
 
         /**
@@ -384,11 +413,14 @@ export default defineComponent({
         const internalHeaderSecondaryActions = computed((): PanelAction[] => {
             const actions: PanelAction[] = [];
 
-            if (!props.isAuditHidden && internalMode.value !== DetailPanelMode.Add) {
+            if (
+                !props.isAuditHidden &&
+                internalMode.value !== DetailPanelMode.Add
+            ) {
                 actions.push({
                     type: "default",
                     title: "Audit Details",
-                    handler: onAuditClick
+                    handler: onAuditClick,
                 });
             }
 
@@ -408,12 +440,16 @@ export default defineComponent({
 
             // If the security button should be visible, we are in view mode and
             // we have a valid entity then show it.
-            if (!props.isSecurityHidden && isViewMode.value && props.entityKey) {
+            if (
+                !props.isSecurityHidden &&
+                isViewMode.value &&
+                props.entityKey
+            ) {
                 actions.push({
                     iconCssClass: "ti ti-lock",
                     title: "Edit Security",
                     type: "default",
-                    handler: onSecurityClick
+                    handler: onSecurityClick,
                 });
             }
 
@@ -429,12 +465,18 @@ export default defineComponent({
 
         /** True when we are in view mode. */
         const isViewMode = computed((): boolean => {
-            return internalMode.value === DetailPanelMode.View && !isAutoEditMode.value;
+            return (
+                internalMode.value === DetailPanelMode.View &&
+                !isAutoEditMode.value
+            );
         });
 
         /** True when we are in one of the edit modes (edit or add). */
         const isEditMode = computed((): boolean => {
-            return internalMode.value === DetailPanelMode.Edit || internalMode.value === DetailPanelMode.Add;
+            return (
+                internalMode.value === DetailPanelMode.Edit ||
+                internalMode.value === DetailPanelMode.Add
+            );
         });
 
         /** True when the edit button should be visible. */
@@ -449,15 +491,19 @@ export default defineComponent({
 
         /** The header actions that should be displayed in the panel title area. */
         const headerActions = computed((): PanelAction[] => {
-            const actions = [...props.headerActions ?? []];
+            const actions = [...(props.headerActions ?? [])];
 
             // Add in the follow action if we are in view mode and it has been requested.
             if (props.isFollowVisible && isViewMode.value) {
                 actions.push({
                     type: isEntityFollowed.value ? "primary" : "default",
-                    iconCssClass: isEntityFollowed.value ? "ti ti-star-filled" : "ti ti-star",
+                    iconCssClass: isEntityFollowed.value
+                        ? "ti ti-star-filled"
+                        : "ti ti-star",
                     handler: onFollowClick,
-                    title: isEntityFollowed.value ? `You are currently following ${props.name}.` : `Click to follow ${props.name}.`
+                    title: isEntityFollowed.value
+                        ? `You are currently following ${props.name}.`
+                        : `Click to follow ${props.name}.`,
                 });
             }
 
@@ -466,11 +512,17 @@ export default defineComponent({
 
         /** True if we have any labels to display and they should be visible. */
         const showLabels = computed((): boolean => {
-            return !!props.labels && props.labels.length > 0 && (!isEditMode.value || props.alwaysShowLabels === true);
+            return (
+                !!props.labels &&
+                props.labels.length > 0 &&
+                (!isEditMode.value || props.alwaysShowLabels === true)
+            );
         });
 
         /** True if we're not in Edit mode and the isTagsVisible prop is true.. */
-        const showTags = computed(() => !isEditMode.value && props.isTagsVisible === true);
+        const showTags = computed(
+            () => !isEditMode.value && props.isTagsVisible === true,
+        );
 
         // #endregion
 
@@ -485,7 +537,9 @@ export default defineComponent({
          * @returns A string that contains the CSS classes to apply to the DOM element.
          */
         const getClassForIconAction = (action: PanelAction): string => {
-            let cssClass = action.handler ? "btn btn-panel-action" : "btn btn-panel-action not-clickable";
+            let cssClass = action.handler
+                ? "btn btn-panel-action"
+                : "btn btn-panel-action not-clickable";
 
             if (action.type !== "default" && action.type !== "link") {
                 cssClass += ` text-${action.type}`;
@@ -507,8 +561,7 @@ export default defineComponent({
 
             if (action.type === "link") {
                 cssClass += " label-default";
-            }
-            else {
+            } else {
                 cssClass += ` label-${action.type}`;
             }
 
@@ -534,20 +587,26 @@ export default defineComponent({
          */
         const getEntityFollowedState = async (): Promise<void> => {
             // If we don't have an entity then mark the state as "unknown".
-            if (areEqual(entityTypeGuid.value, emptyGuid)
-                || !props.entityKey) {
+            if (areEqual(entityTypeGuid.value, emptyGuid) || !props.entityKey) {
                 isEntityFollowed.value = null;
                 return;
             }
 
             const data: FollowingGetFollowingOptionsBag = {
                 entityTypeGuid: entityTypeGuid.value,
-                entityKey: props.entityKey
+                entityKey: props.entityKey,
             };
 
-            const response = await http.post<FollowingGetFollowingResponseBag>("/api/v2/Controls/FollowingGetFollowing", undefined, data);
+            const response = await http.post<FollowingGetFollowingResponseBag>(
+                "/api/v2/Controls/FollowingGetFollowing",
+                undefined,
+                data,
+            );
 
-            isEntityFollowed.value = response.isSuccess && response.data && response.data.isFollowing;
+            isEntityFollowed.value =
+                response.isSuccess &&
+                response.data &&
+                response.data.isFollowing;
         };
 
         // #endregion
@@ -562,7 +621,11 @@ export default defineComponent({
          */
         const onSecurityClick = (): void => {
             if (props.entityKey) {
-                showSecurity(entityTypeGuid.value, props.entityKey, props.entityTypeName);
+                showSecurity(
+                    entityTypeGuid.value,
+                    props.entityKey,
+                    props.entityTypeName,
+                );
             }
         };
 
@@ -587,7 +650,8 @@ export default defineComponent({
                     isAutoEditMode.value = false;
 
                     if (autoEditReturnUrl) {
-                        window.location.href = makeUrlRedirectSafe(autoEditReturnUrl);
+                        window.location.href =
+                            makeUrlRedirectSafe(autoEditReturnUrl);
 
                         // Don't switch back to view mode.
                         return;
@@ -643,7 +707,9 @@ export default defineComponent({
 
             // Perform the final switch into edit mode.
             browserBus.publish(BlockMessages.BeginEdit);
-            internalMode.value = props.entityKey ? DetailPanelMode.Edit : DetailPanelMode.Add;
+            internalMode.value = props.entityKey
+                ? DetailPanelMode.Edit
+                : DetailPanelMode.Add;
             isEditModeLoading.value = false;
             editModeReadyCompletionSource = null;
 
@@ -693,7 +759,8 @@ export default defineComponent({
                         isAutoEditMode.value = false;
 
                         if (autoEditReturnUrl) {
-                            window.location.href = makeUrlRedirectSafe(autoEditReturnUrl);
+                            window.location.href =
+                                makeUrlRedirectSafe(autoEditReturnUrl);
 
                             // Don't switch back to view mode.
                             return;
@@ -712,8 +779,7 @@ export default defineComponent({
                 browserBus.publish(BlockMessages.EndEdit);
 
                 await showBlockRole(BlockRole.Secondary);
-            }
-            finally {
+            } finally {
                 if (formSubmissionSource !== null) {
                     formSubmissionSource.resolve();
                     formSubmissionSource = null;
@@ -727,7 +793,12 @@ export default defineComponent({
          */
         const onDeleteClick = async (): Promise<void> => {
             if (props.onDelete) {
-                if (!await confirmDelete(splitCase(entityTypeName.value), props.additionalDeleteMessage ?? "")) {
+                if (
+                    !(await confirmDelete(
+                        splitCase(entityTypeName.value),
+                        props.additionalDeleteMessage ?? "",
+                    ))
+                ) {
                     return;
                 }
 
@@ -766,25 +837,30 @@ export default defineComponent({
          */
         const onFollowClick = async (): Promise<void> => {
             // Shouldn't really happen, but just make sure we have everything.
-            if (isEntityFollowed.value === null
-                || areEqual(entityTypeGuid.value, emptyGuid)
-                || !props.entityKey) {
+            if (
+                isEntityFollowed.value === null ||
+                areEqual(entityTypeGuid.value, emptyGuid) ||
+                !props.entityKey
+            ) {
                 return;
             }
 
             const data: FollowingSetFollowingOptionsBag = {
                 entityTypeGuid: entityTypeGuid.value,
                 entityKey: props.entityKey,
-                isFollowing: !isEntityFollowed.value
+                isFollowing: !isEntityFollowed.value,
             };
 
-            const response = await http.post("/api/v2/Controls/FollowingSetFollowing", undefined, data);
+            const response = await http.post(
+                "/api/v2/Controls/FollowingSetFollowing",
+                undefined,
+                data,
+            );
 
             // If we got a 200 OK response then we can toggle our internal state.
             if (response.isSuccess) {
                 isEntityFollowed.value = !isEntityFollowed.value;
-            }
-            else {
+            } else {
                 await alert("Unable to update followed state.");
             }
         };
@@ -812,10 +888,11 @@ export default defineComponent({
             let isBackForward = event.persisted;
             if (!isBackForward) {
                 try {
-                    const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+                    const nav = performance.getEntriesByType(
+                        "navigation",
+                    )[0] as PerformanceNavigationTiming | undefined;
                     isBackForward = nav?.type === "back_forward";
-                }
-                catch {
+                } catch {
                     // Fail silently.
                 }
             }
@@ -827,27 +904,29 @@ export default defineComponent({
 
         // #endregion
 
-        watch(() => props.mode, () => {
-            if (props.mode === internalMode.value) {
-                return;
-            }
-
-            const wasEditMode = isEditMode.value;
-            internalMode.value = props.mode;
-            const newEditMode = isEditMode.value;
-
-            // If the edit mode state changed then we need to either hide or
-            // show the secondary blocks. This is rare but can happen if the
-            // parent component decides to manually change the mode.
-            if (wasEditMode !== newEditMode) {
-                if (newEditMode) {
-                    hideBlockRole(BlockRole.Secondary);
+        watch(
+            () => props.mode,
+            () => {
+                if (props.mode === internalMode.value) {
+                    return;
                 }
-                else {
-                    showBlockRole(BlockRole.Secondary);
+
+                const wasEditMode = isEditMode.value;
+                internalMode.value = props.mode;
+                const newEditMode = isEditMode.value;
+
+                // If the edit mode state changed then we need to either hide or
+                // show the secondary blocks. This is rare but can happen if the
+                // parent component decides to manually change the mode.
+                if (wasEditMode !== newEditMode) {
+                    if (newEditMode) {
+                        hideBlockRole(BlockRole.Secondary);
+                    } else {
+                        showBlockRole(BlockRole.Secondary);
+                    }
                 }
-            }
-        });
+            },
+        );
 
         watch(internalMode, () => {
             if (props.mode !== internalMode.value) {
@@ -857,11 +936,14 @@ export default defineComponent({
 
         // Watch for the isFollowVisible value to change, and if we haven't loaded
         // the initial followed state yet then begin loading it.
-        watch(() => props.isFollowVisible, () => {
-            if (props.isFollowVisible && isEntityFollowed.value === null) {
-                getEntityFollowedState();
-            }
-        });
+        watch(
+            () => props.isFollowVisible,
+            () => {
+                if (props.isFollowVisible && isEntityFollowed.value === null) {
+                    getEntityFollowedState();
+                }
+            },
+        );
 
         // If the following icon is visible then immediately get the followed state.
         if (props.isFollowVisible) {
@@ -872,8 +954,7 @@ export default defineComponent({
             isPanelVisible.value = false;
 
             onEditClick();
-        }
-        else if (isEditMode.value) {
+        } else if (isEditMode.value) {
             // If we are not in auto-edit mode but just starting in edit mode,
             // then make sure secondary blocks are hidden. This is usually the
             // case when adding a new entity.
@@ -912,7 +993,7 @@ export default defineComponent({
             onSaveSubmit,
             showAuditDetailsModal,
             showLabels,
-            showTags
+            showTags,
         };
     },
 
@@ -961,7 +1042,7 @@ export default defineComponent({
 
             <div v-if="showTags && showLabels && !showLabelsInHeader" style="width: 2px; background-color: #eaedf0; margin: 0px 12px;"></div>
 
-            <div v-if="showTags" class="flex-grow-1">
+            <div v-if="showTags" class="flex-grow-1 d-flex">
                 <EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
             </div>
         </div>
@@ -1022,5 +1103,5 @@ export default defineComponent({
 <Modal v-model="showAuditDetailsModal" title="Audit Details">
     <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
 </Modal>
-`
+`,
 });
