@@ -228,7 +228,7 @@ namespace Rock.Model
                 IsActive = true,
                 ClientId = metadata.ClientId,
                 ClientSecretHash = string.Empty,
-                Name = $"{metadata.ClientName} ({metadata.ClientUri})",
+                Name = metadata.ClientName,
                 AllowedClaims = new string[0].ToJson(),
                 AllowedScopes = AllowedDynamicScopes.ToJson(),
                 RedirectUri = metadata.RedirectUris != null ? string.Join( ",", metadata.RedirectUris ) : string.Empty,
