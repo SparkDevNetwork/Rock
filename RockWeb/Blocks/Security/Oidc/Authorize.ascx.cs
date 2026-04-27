@@ -32,7 +32,6 @@ using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Oidc.Authorization;
-using Rock.Utility;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security.Oidc
@@ -196,6 +195,8 @@ namespace RockWeb.Blocks.Security.Oidc
                 return;
             }
 
+            lNickName.Text = CurrentPerson.NickName;
+
             // Check if this client has already approved the scopes. We'll look for the cookie and check that the scopes have not changed.
             var scopesApprovalCookieValue = RockPage.GetCookie( AuthClientService.GetScopeCookieName( authClient, CurrentUser ) )?.Value;
             var scopesPreviouslyApproved = Rock.Security.Encryption.DecryptString( scopesApprovalCookieValue ) == authClient.AllowedScopes.ToString();
@@ -347,6 +348,15 @@ namespace RockWeb.Blocks.Security.Oidc
 
             scopes.AddRange( activeAllowedClientClaims.Select( ac => ac.Scope == ac.Claims ? ac.Scope : ac.Scope + " (" + ac.Claims + ")" ) );
 
+            var activeScopes = new AuthScopeService( rockContext )
+                .Queryable()
+                .Where( s => s.IsActive )
+                .Select( s => new
+                {
+                    s.Name,
+                    s.PublicName
+                } );
+
             // If the client requested a scope that is in the client's allowed
             // scopes, but not included in the active allowed claims, we should
             // still show that scope to the user.
@@ -354,7 +364,8 @@ namespace RockWeb.Blocks.Security.Oidc
             {
                 if ( !scopes.Contains( requestedScope ) && parsedAllowedClientScopes.Contains( requestedScope ) )
                 {
-                    scopes.Add( requestedScope );
+                    var scope = activeScopes.FirstOrDefault( s => s.Name == requestedScope );
+                    scopes.Add( scope.PublicName.IfEmpty( requestedScope ) );
                 }
             }
 
