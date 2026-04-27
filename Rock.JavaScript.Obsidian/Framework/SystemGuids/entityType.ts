@@ -45,7 +45,7 @@ export const EntityType = {
     AiAgentSession: "2415941A-8A3F-49FE-8039-DB27096B0EDF",
     /** The EntityType Guid for Rock.Model.AIAgentSessionAnchor  */
     AiAgentSessionAnchor: "3ED1476A-B7FC-40E2-BBAB-AF084C82D7F1",
-    /** The EntityType Guid for Rock.Model.AIAgentSessionHistory  */
+    /** The EntityType Guid for Rock.Model.AIAgentSessionHistory */
     AiAgentSessionHistory: "6AD212BE-F8D0-4C58-AB0E-D723ED5E2155",
     /** The EntityType Guid for Rock.Model.AIAgentSkill  */
     AiAgentSkill: "36DEDA2F-75BD-4BEE-AC36-46D20DCD1331",
@@ -437,6 +437,12 @@ export const EntityType = {
     InteractiveExperienceSchedule: "D23B4DCF-545A-490F-AEAD-BA78A8FB4028",
     /** The EntityType Guid for Rock.Model.InteractiveExperienceScheduleCampus */
     InteractiveExperienceScheduleCampus: "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11",
+    /** The EntityType Guid for Rock.Model.KnowledgeBase */
+    KnowledgeBase: "F4D119F4-E57C-49AD-9B6D-C000032BC554",
+    /** The EntityType Guid for Rock.Model.KnowledgeBaseDocument */
+    KnowledgeBaseDocument: "F22EF9B9-94B7-4A4E-A870-84F66711978E",
+    /** The EntityType Guid for Rock.Model.KnowledgeBaseFolder */
+    KnowledgeBaseFolder: "4551EB7A-23C4-493A-9B9E-E5E93A108F11",
     /** The EntityType Guid for Rock.Model.LavaApplication  */
     LavaApplication: "FFFE0DE1-B410-435E-9AA8-3A0B18AAF0F7",
     /** The EntityType Guid for Rock.Model.LavaEndpoint  */

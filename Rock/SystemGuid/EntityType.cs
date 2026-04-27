@@ -2194,8 +2194,23 @@ namespace Rock.SystemGuid
         public const string AI_AGENT_SESSION_ANCHOR = "3ED1476A-B7FC-40E2-BBAB-AF084C82D7F1";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.AIAgentSessionHistory"/> 
+        /// The EntityType Guid for <see cref="Rock.Model.AIAgentSessionHistory"/>
         /// </summary>
         public const string AI_AGENT_SESSION_HISTORY = "6AD212BE-F8D0-4C58-AB0E-D723ED5E2155";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.KnowledgeBase"/>
+        /// </summary>
+        public const string KNOWLEDGE_BASE = "F4D119F4-E57C-49AD-9B6D-C000032BC554";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.KnowledgeBaseFolder"/>
+        /// </summary>
+        public const string KNOWLEDGE_BASE_FOLDER = "4551EB7A-23C4-493A-9B9E-E5E93A108F11";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.KnowledgeBaseDocument"/>
+        /// </summary>
+        public const string KNOWLEDGE_BASE_DOCUMENT = "F22EF9B9-94B7-4A4E-A870-84F66711978E";
     }
 }
