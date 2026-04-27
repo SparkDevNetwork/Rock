@@ -445,4 +445,7 @@
   <data name="_202602251704362_Rollup_20260225_268_ImproveSyncListRecipientsPerformance_spCommunication_SynchronizeListRecipients" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Version 19.0\Version 19.0\202602251704362_Rollup_20260225_268_ImproveSyncListRecipientsPerformance_spCommunication_SynchronizeListRecipients.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_202604272241483_AnotherPersonMergeFix_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Version 19.0\Version 19.0\202604272241483_AnotherPersonMergeFix_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
 </root>
