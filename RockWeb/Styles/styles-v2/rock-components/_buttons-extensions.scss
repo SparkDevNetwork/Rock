@@ -15,6 +15,12 @@
 
 .btn {
   align-content: center;
+
+    &.btn-link:focus,
+    &.btn-link:hover {
+      text-decoration: none;
+    }
+
 }
 
 .dropdown > .btn-link.btn-overflow {

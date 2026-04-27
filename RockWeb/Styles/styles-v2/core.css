@@ -20111,6 +20111,9 @@ iframe.file-browser {
 .btn {
   align-content: center;
 }
+.btn.btn-link:focus, .btn.btn-link:hover {
+  text-decoration: none;
+}
 
 .dropdown > .btn-link.btn-overflow {
   color: var(--color-interface-medium);
