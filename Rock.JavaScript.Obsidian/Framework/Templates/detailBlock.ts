@@ -985,7 +985,7 @@ export default defineComponent({
 
             <div v-if="showTags && showLabels && !showLabelsInHeader" style="width: 2px; background-color: #eaedf0; margin: 0px 12px;"></div>
 
-            <div v-if="showTags" class="flex-grow-1">
+            <div v-if="showTags" class="flex-grow-1 d-flex">
                 <EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
             </div>
         </div>
