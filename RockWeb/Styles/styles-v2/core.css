@@ -19367,6 +19367,7 @@ iframe.file-browser {
   gap: var(--spacing-xlarge);
   height: auto;
   scroll-behavior: smooth;
+  width: 100%;
 }
 
 .contentsection-container.contentsection-nav-left {
