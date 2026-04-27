@@ -167,7 +167,7 @@
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
-    import { PropType, watch, computed, nextTick } from "vue";
+    import { PropType, watch, computed, nextTick, onMounted } from "vue";
     import { propertyRef, updateRefValue, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ConnectionRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestBag";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
@@ -506,4 +506,13 @@
         updateRefValue(requester, props.modelValue.bag?.requester ?? {});
     });
 
+    // Seed default attribute values on initial render so that field types
+    // (e.g. Matrix) that rely on configuration-derived data in their edit
+    // value JSON render correctly before the user selects an opportunity.
+    // The connectionOpportunityDetails watcher only fires after a selection,
+    // so without this the initial Connection Type level attributes would be
+    // missing their seeded defaults.
+    onMounted(() => {
+        pruneAndSeedAttributeValues();
+    });
 </script>
