@@ -366,7 +366,7 @@ namespace Rock.Blocks.Cms
                 // Auto-create a "Links" section to match the WebForms behavior
                 // when the user saves a link without picking a section.
                 var existingLinksSection = new PersonalLinkSectionService( RockContext )
-                    .GetOrderedPersonalLinkSectionsQuery( currentPerson )
+                    .Queryable()
                     .Where( s => !s.IsShared
                         && s.Name == "Links"
                         && s.PersonAliasId.HasValue

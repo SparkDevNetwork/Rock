@@ -158,7 +158,7 @@
                         title="Total Amount"
                         field="totalAmount"
                         :filter="numberValueFilter"
-                        width="165"
+                        width="165px"
                         visiblePriority="md">
             <template #format="{ row }">
                 {{ toCurrencyOrNull(row.totalAmount, config.options?.currencyInfo) }}
