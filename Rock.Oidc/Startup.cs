@@ -15,9 +15,12 @@
 // </copyright>
 
 using System;
+
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin;
+
 using Owin;
+
 using Rock.Model;
 using Rock.Oidc.Authorization;
 using Rock.Oidc.Configuration;
@@ -105,6 +108,8 @@ namespace Rock.Oidc
             } );
 
             app.UseOAuthValidation();
+
+            app.Use<DynamicRegistrationMiddleware>();
         }
     }
 }
