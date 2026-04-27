@@ -365,8 +365,23 @@ namespace Rock.Blocks.Cms
             {
                 // Auto-create a "Links" section to match the WebForms behavior
                 // when the user saves a link without picking a section.
-                var section = CreatePrivateSection( "Links", currentPerson );
-                sectionId = section.Id;
+                var existingLinksSection = new PersonalLinkSectionService( RockContext )
+                    .GetOrderedPersonalLinkSectionsQuery( currentPerson )
+                    .Where( s => !s.IsShared
+                        && s.Name == "Links"
+                        && s.PersonAliasId.HasValue
+                        && s.PersonAlias.PersonId == currentPerson.Id )
+                    .FirstOrDefault();
+
+                if ( existingLinksSection != null )
+                {
+                    sectionId = existingLinksSection.Id;
+                }
+                else
+                {
+                    var section = CreatePrivateSection( "Links", currentPerson );
+                    sectionId = section.Id;
+                }
             }
 
             var personalLinkService = new PersonalLinkService( RockContext );

@@ -9,7 +9,6 @@
                 <DropDownList v-model="selectedSectionValue"
                               label="Section"
                               :items="dropdownItems"
-                              :rules="isSectionRequired ? 'required' : ''"
                               :showBlankItem="hasSections" />
             </RockForm>
             <div class="actions">
@@ -50,10 +49,6 @@
 
     const hasSections = computed((): boolean => {
         return sectionItems.value.length > 0;
-    });
-
-    const isSectionRequired = computed((): boolean => {
-        return hasSections.value;
     });
 
     const dropdownItems = computed((): ListItemBag[] => {
