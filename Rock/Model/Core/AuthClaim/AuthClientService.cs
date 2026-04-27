@@ -165,6 +165,14 @@ namespace Rock.Model
                 return null;
             }
 
+            // Special case. If the client is a CIMD client, then we don't
+            // have a secret hash in the database, and it will also have an
+            // Id of 0 since it's not actually stored in the database.
+            if ( authClient.Id == 0 && authClient.ClientSecretHash.IsNullOrWhiteSpace() && clientSecret.IsNullOrWhiteSpace() )
+            {
+                return authClient;
+            }
+
             var entityTypeName = EntityTypeCache.Get<Security.Authentication.Database>().Name;
             var databaseAuth = AuthenticationContainer.GetComponent( entityTypeName ) as Security.Authentication.Database;
             var success = databaseAuth.IsBcryptMatch( authClient.ClientSecretHash, clientSecret );
