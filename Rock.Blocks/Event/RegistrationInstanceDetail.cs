@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.RegistrationInstanceDetail;
 using Rock.ViewModels.Utility;
@@ -132,8 +133,34 @@ namespace Rock.Blocks.Event
 
             box.Options = GetBoxOptions( entity );
             box.NavigationUrls = GetBoxNavigationUrls( entity );
+            box.SecurityGrantToken = GetSecurityGrantToken();
 
             return box;
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions. The
+        /// AssetAndFileManagerSecurityGrantRule grants are required for the
+        /// HtmlEditor's Image Browser and File Browser modals to load folder
+        /// and file data from the asset manager API.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</returns>
+        private string GetSecurityGrantToken()
+        {
+            var securityGrant = new SecurityGrant();
+
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+
+            return securityGrant.ToToken();
         }
 
         /// <summary>
