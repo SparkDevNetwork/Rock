@@ -239,7 +239,20 @@ namespace Rock.Transactions
                 }
                 catch ( Exception ex )
                 {
-                    errorHandler( new Exception( $"Unhandled exception in RockQueue.Drain(): {transaction.GetType().Name} {transaction.ToJson()}", ex ) );
+                    var transactionType = "Unknown";
+                    var transactionJson = "Unknown";
+
+                    try
+                    {
+                        transactionType = transaction.GetType().Name;
+                        transactionJson = transaction.ToJson();
+                    }
+                    catch
+                    {
+                        // Intentionally ignored, we just want to log the type if we can't get the JSON.
+                    }
+
+                    errorHandler( new Exception( $"Unhandled exception in RockQueue.Drain(): {transactionType} {transactionJson}", ex ) );
                 }
             }
         }

@@ -1176,8 +1176,29 @@ namespace RockWeb
             if ( !Global.QueueInUse )
             {
                 Global.QueueInUse = true;
-                RockQueue.Drain( ( ex ) => WriteErrorToRockLog( ex, "Rock.Transactions", null ) );
-                Global.QueueInUse = false;
+
+                /*
+                 * 2026-04-27 - DSH
+                 * 
+                 * Do not use a finally block here to turn QueueInUse back off.
+                 * There is a rare case with try/catch/finally where an exception
+                 * thrown inside a catch block can cause the finally block to not
+                 * execute under specific conditions, such as no exception handler
+                 * further upstream to catch the exception. This can lead to the
+                 * QueueInUse flag being left in the true state, which would prevent
+                 * the transaction queue from being processed until the application
+                 * is restarted.
+                 */
+                try
+                {
+                    RockQueue.Drain( ( ex ) => WriteErrorToRockLog( ex, "Rock.Transactions", null ) );
+                    Global.QueueInUse = false;
+                }
+                catch ( Exception ex )
+                {
+                    Global.QueueInUse = false;
+                    WriteErrorToRockLog( ex, "Rock.Transactions", "An error occurred while draining the transaction queue." );
+                }
             }
         }
 
