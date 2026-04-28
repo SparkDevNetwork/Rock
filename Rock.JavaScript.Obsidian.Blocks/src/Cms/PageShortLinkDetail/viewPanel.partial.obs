@@ -11,7 +11,7 @@
                     </div>
 
                     <div class="col-md-6" v-if="props.modelValue?.qrCodeSVG">
-                        <label style="font-size: var(--font-size-small); font-weight: var(--font-weight-regular); color: var(--color-interface-medium);">QR Code</label>
+                        <label class="muted-label">QR Code</label>
                         <div class="d-flex align-items-center">
                             <div>
                                 <div v-html="props.modelValue.qrCodeSVG" class="qr-code"></div>
@@ -26,6 +26,15 @@
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div v-if="scheduledRedirects.length > 0">
+                    <label class="muted-label">Scheduled Redirects</label>
+                    <div class="d-flex gap-5" v-for="sr in scheduledRedirects">
+                        <span class="scheduled-redirect-url">{{ sr.url }}</span>
+                        <span class="text-muted scheduled-redirect-schedule">{{ sr.scheduleText }}</span>
+                        <span class="text-muted scheduled-redirect-range">{{ sr.scheduleRangeText }}</span>
                     </div>
                 </div>
             </ContentSection>
@@ -45,11 +54,14 @@
 </template>
 
 <style scoped>
-:deep(.scheduled-redirect-list) {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(min-content, max-content));
-    column-gap: 16px;
-    text-wrap: nowrap;
+.muted-label {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-regular);
+    color: var(--color-interface-medium)
+}
+
+.scheduled-redirect-url {
+    overflow-wrap: anywhere;
 }
 
 /* Needed this to fire off chart js resize on ViewAnalytics */
@@ -73,15 +85,14 @@
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import ViewAnalytics from "./viewAnalytics.partial.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
     import { isNullish } from "@Obsidian/Utility/util";
     import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
+    import { ScheduledRedirectBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/scheduledRedirectBag";
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
@@ -99,7 +110,7 @@
         }
     });
 
-    const emits = defineEmits<{
+    defineEmits<{
         (e: "downloadPNG"): void;
         (e: "downloadSVG"): void;
     }>();
@@ -160,24 +171,6 @@
             valueBuilder.addTextValue("Category", props.modelValue.category.text);
         }
 
-        if (props.modelValue.scheduledRedirects && props.modelValue.scheduledRedirects.length > 0) {
-            let html = `<div class="scheduled-redirect-list">`;
-
-            for (const sr of props.modelValue.scheduledRedirects) {
-                html += `<span>${escapeHtml(sr.url ?? "")}</span>`;
-                html += `<span class="text-muted">${escapeHtml(sr.scheduleText ?? "")}</span>`;
-                html += `<span class="text-muted">${escapeHtml(sr.scheduleRangeText ?? "")}</span>`;
-            }
-
-            html += "</div>";
-
-            valueBuilder.addHtmlValue("Scheduled Redirects", html);
-        }
-
-        if (!props.modelValue) {
-            return valueBuilder.build();
-        }
-
         if (props.modelValue.token) {
             valueBuilder.addTextValue("Token", props.modelValue.token);
         }
@@ -190,6 +183,14 @@
         }
 
         return valueBuilder.build();
+    });
+
+    /** The scheduled redirects to display full-width below the main details row. */
+    const scheduledRedirects = computed((): ScheduledRedirectBag[] => {
+        return (props.modelValue?.scheduledRedirects ?? []).map(sr => ({
+            ...sr,
+            scheduleText: sr.scheduleText?.replace(/,(?! )/g, ", ") ?? null
+        }));
     });
 
     // #endregion
