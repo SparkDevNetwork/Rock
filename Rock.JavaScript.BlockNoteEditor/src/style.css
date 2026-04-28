@@ -53,6 +53,8 @@ html[theme="dark"] .bn-container {
   background-color: var(--color-interface-soft);
 }
 
+
+/* Formatting Toolbar */
 .bn-toolbar.bn-formatting-toolbar {
   background-color: var(--color-interface-softest);
   border: 1px solid var(--color-interface-softer);
@@ -72,11 +74,45 @@ html[theme="dark"] .bn-container {
   border-radius: 4px;
   font-size: 20px;
   padding: 2px;
+  display: flex;
+  gap: var(--spacing-xsmall);
+  align-items: center;
 }
 
 .bn-toolbar.bn-formatting-toolbar .bn-button.bn-active {
   background-color: var(--color-interface-strongest);
   color: var(--color-interface-softest);
+}
+
+.bn-toolbar.bn-formatting-toolbar .bn-block-type-button {
+  padding: 2px var(--spacing-xsmall);
+}
+
+.bn-toolbar.bn-formatting-toolbar .bn-block-type-button:hover {
+  background-color: var(--color-interface-soft);
+}
+
+.bn-toolbar.bn-formatting-toolbar .bn-block-type-button .bn-block-type-icon {
+  font-size: 20px;
+}
+
+.bn-toolbar.bn-formatting-toolbar .bn-block-type-button .bn-block-type-name {
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.bn-toolbar.bn-formatting-toolbar .bn-block-type-button .bn-block-type-chevron {
+  font-size: 12px;
+}
+
+.bn-menu .bn-block-type-menu-item {
+  display: flex;
+  gap: var(--spacing-small);
+}
+
+.bn-menu .bn-block-type-menu-item .bn-block-type-menu-item-state {
+  margin-left: auto;
+  width: 20px;
 }
 
 /* Table Styles */
@@ -266,7 +302,7 @@ html[theme="dark"] .bn-container {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
 }
 
 .bn-media-block-thumbnail-title {

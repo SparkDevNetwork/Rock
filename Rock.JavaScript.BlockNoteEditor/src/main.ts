@@ -3,7 +3,7 @@ import './style.css';
 import { BlockNoteEditor } from "@blocknote/core";
 import { SideMenu } from './sideMenu';
 import { TableHandles } from './table';
-import { FormattingToolbar, StyleToolbarButton } from './formattingToolbar';
+import { BlockTypeToolbarItem, FormattingToolbar, StyleToolbarButton } from './formattingToolbar';
 import { SuggestionMenu } from './suggestionMenu';
 import { FilePanel, uploadBinaryFile } from './filePanel';
 import { rockSchema, type RockPartialBlock } from './schema';
@@ -27,6 +27,7 @@ export function createEditor(container: HTMLElement, options?: BlockNoteOptions)
 
     new SideMenu(editor, container);
     new FormattingToolbar(editor, [
+        new BlockTypeToolbarItem(),
         new StyleToolbarButton("ti ti-bold", "bold"),
         new StyleToolbarButton("ti ti-italic", "italic"),
         new StyleToolbarButton("ti ti-underline", "underline"),
