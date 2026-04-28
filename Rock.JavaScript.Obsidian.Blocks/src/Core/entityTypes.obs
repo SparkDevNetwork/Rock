@@ -28,13 +28,15 @@
         <BooleanColumn name="isCommon"
                        title="Common"
                        field="isCommon"
+                       width="100px"
                        :filter="booleanValueFilter"
                        visiblePriority="xs" />
 
         <Column name="Security"
                 visiblePriority="xs"
+                width="60px"
                 columnType="security"
-                itemClass="grid-columncommand justify-content-end">
+                itemClass="grid-columncommand justify-content-center">
             <template #format="{ row }">
                 <button v-if="!row.isSecurityDisabled"
                         class="btn btn-security btn-sm"
