@@ -161,6 +161,7 @@
      * @param key The key of the row that was selected.
      */
     function onSelectItem(key: string): void {
+        console.log(config.navigationUrls);
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
         }
