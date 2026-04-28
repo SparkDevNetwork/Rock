@@ -28,7 +28,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            // Add [spSteps_StepFlow] (dropping it first if it already exists).
+            // Add [spCrm_PersonMerge] (dropping it first if it already exists).
             Sql( @"
 IF EXISTS (SELECT * FROM sys.objects WHERE OBJECT_ID = OBJECT_ID(N'[dbo].[spCrm_PersonMerge]') AND TYPE IN (N'P', N'PC'))
     DROP PROCEDURE [dbo].[spCrm_PersonMerge];

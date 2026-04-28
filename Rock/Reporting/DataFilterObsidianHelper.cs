@@ -91,6 +91,23 @@ namespace Rock.Reporting
         /// </summary>
         public static DataViewFilterBag ToBag( DataViewFilter filter, Type filteredEntityType, RockContext rockContext, RockRequestContext requestContext )
         {
+            return ToBag( new DataViewFilterEntityAdapter( filter ), filteredEntityType, rockContext, requestContext );
+        }
+
+        /// <summary>
+        /// Converts a <see cref="DataViewFilter"/> entity tree into an Obsidian bag tree.
+        /// </summary>
+        public static DataViewFilterBag ToBag( DataViewFilterCache filter, Type filteredEntityType, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return ToBag( new DataViewFilterCacheAdapter( filter ), filteredEntityType, rockContext, requestContext );
+        }
+
+        /// <summary>
+        /// Converts a <see cref="DataViewFilter"/> entity tree into an Obsidian bag tree.
+        /// </summary>
+        private static DataViewFilterBag ToBag<TSource, TAdapter>( IDataViewFilterAdapter<TSource, TAdapter> filter, Type filteredEntityType, RockContext rockContext, RockRequestContext requestContext )
+            where TAdapter : IDataViewFilterAdapter<TSource, TAdapter>
+        {
             if ( filter == null )
             {
                 return null;
@@ -185,6 +202,56 @@ namespace Rock.Reporting
             }
 
             return filter;
+        }
+
+        private interface IDataViewFilterAdapter<TSource, TAdapter> where TAdapter : IDataViewFilterAdapter<TSource, TAdapter>
+        {
+            TSource Source { get; }
+            Guid Guid { get; }
+            FilterExpressionType ExpressionType { get; }
+            string Selection { get; }
+            List<TAdapter> ChildFilters { get; }
+            int? EntityTypeId { get; }
+        }
+
+        private class DataViewFilterEntityAdapter : IDataViewFilterAdapter<DataViewFilter, DataViewFilterEntityAdapter>
+        {
+            public DataViewFilterEntityAdapter( DataViewFilter entity )
+            {
+                Source = entity;
+            }
+
+            public DataViewFilter Source { get; }
+
+            public Guid Guid => Source.Guid;
+
+            public FilterExpressionType ExpressionType => Source.ExpressionType;
+
+            public string Selection => Source.Selection;
+
+            public List<DataViewFilterEntityAdapter> ChildFilters => Source.ChildFilters?.Select( f => new DataViewFilterEntityAdapter( f ) ).ToList();
+
+            public int? EntityTypeId => Source.EntityTypeId;
+        }
+
+        private class DataViewFilterCacheAdapter : IDataViewFilterAdapter<DataViewFilterCache, DataViewFilterCacheAdapter>
+        {
+            public DataViewFilterCacheAdapter( DataViewFilterCache cache )
+            {
+                Source = cache;
+            }
+
+            public DataViewFilterCache Source { get; }
+
+            public Guid Guid => Source.Guid;
+
+            public FilterExpressionType ExpressionType => Source.ExpressionType;
+
+            public string Selection => Source.Selection;
+
+            public List<DataViewFilterCacheAdapter> ChildFilters => Source.ChildFilters?.Select( f => new DataViewFilterCacheAdapter( f ) ).ToList();
+
+            public int? EntityTypeId => Source.EntityTypeId;
         }
     }
 }

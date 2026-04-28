@@ -60,5 +60,10 @@ namespace Rock.ViewModels.Core.Grid
         /// ordering has been applied.
         /// </summary>
         public int? Order { get; set; }
+
+        /// <summary>
+        /// The Icon style. Typically used to override the Icon color.
+        /// </summary>
+        public string IconStyle { get; set; }
     }
 }

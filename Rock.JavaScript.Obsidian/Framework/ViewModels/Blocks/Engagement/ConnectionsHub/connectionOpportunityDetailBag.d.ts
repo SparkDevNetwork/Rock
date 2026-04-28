@@ -33,6 +33,9 @@ export type ConnectionOpportunityDetailBag = {
     /** Gets or sets the attributes for Connection Request attributes specified at the Connection Opportunity level. */
     connectionOpportunityRequestAttributes?: Record<string, PublicAttributeBag> | null;
 
+    /** Gets or sets the default, pre-rendered edit values for the Connection Opportunity level request attributes. */
+    connectionOpportunityRequestAttributeValues?: Record<string, string> | null;
+
     /** Gets or sets the connector options. */
     connectorOptions?: ConnectorOptionsBag | null;
 

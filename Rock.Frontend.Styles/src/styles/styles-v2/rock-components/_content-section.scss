@@ -350,10 +350,10 @@
 }
 
 .contentsection-container > .contentsection-nav {
-    height: 100%;
     flex: 0 0 20%;
     position: sticky;
-    top: calc(var(--spacing-medium) + var(--sticky-element-offset, 0)); // offset from top to account for fixed header
+    top: calc(var(--spacing-medium) + var(--sticky-element-offset, 0px)); // offset from top to account for fixed header
+    overflow-y: auto;
 }
 
 .full-work-surface .contentsection-container > .contentsection-nav {
@@ -367,6 +367,7 @@
     gap: var(--spacing-xlarge);
     height: auto;
     scroll-behavior: smooth;
+    width: 100%;
 }
 
 .contentsection-container.contentsection-nav-left {

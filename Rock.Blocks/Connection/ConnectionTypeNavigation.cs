@@ -20,8 +20,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Data;
+using Rock.Enums.Connection;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -59,31 +62,24 @@ namespace Rock.Blocks.Connection
         Order = 1,
         IsRequired = true )]
 
-    [LinkedPage( "Connections List Page",
-        Key = AttributeKey.ConnectionsListPage,
-        Description = "Select the page that the list button should open to view the connections list.",
-        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_LIST,
+    [LinkedPage( "Connections Hub Page",
+        Key = AttributeKey.ConnectionsHubPage,
+        Description = "Select the page that the list, board, and grid buttons should open to view the connections hub.",
+        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_HUB,
         Order = 2,
-        IsRequired = true )]
-
-    [LinkedPage( "Connection Board Page",
-        Key = AttributeKey.ConnectionBoardPage,
-        Description = "Select the page that the board and grid buttons should open to view the connection board in board or grid view.",
-        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_BOARD,
-        Order = 3,
         IsRequired = true )]
 
     [LinkedPage( "Operational Snapshot Page",
         Key = AttributeKey.OperationalSnapshotPage,
         Description = "Select the page that the snapshot button should open to view the operational snapshot.",
         DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_OPERATIONAL_SNAPSHOT,
-        Order = 4,
+        Order = 3,
         IsRequired = true )]
 
     [ConnectionTypesField( "Connection Types",
         Key = AttributeKey.ConnectionTypes,
         Description = "Optional list of connection types to limit the display to (All will be displayed by default).",
-        Order = 5,
+        Order = 4,
         IsRequired = false )]
 
     #endregion Block Attributes
@@ -98,24 +94,31 @@ namespace Rock.Blocks.Connection
         {
             public const string ConfigurationPage = "ConfigurationPage";
             public const string OpportunitiesPage = "OpportunitiesPage";
-            public const string ConnectionsListPage = "ConnectionsListPage";
-            public const string ConnectionBoardPage = "ConnectionBoardPage";
+            public const string ConnectionsHubPage = "ConnectionsHubPage";
             public const string OperationalSnapshotPage = "OperationalSnapshotPage";
             public const string ConnectionTypes = "ConnectionTypes";
         }
 
         private static class NavigationUrlKey
         {
+            // Connection Type-level URLs.
             public const string ConfigurationPage = "ConfigurationPage";
             public const string OpportunitiesPage = "OpportunitiesPage";
-            public const string ConnectionsListPage = "ConnectionsListPage";
-            public const string ConnectionBoardPage = "ConnectionBoardPage";
+            public const string ConnectionsHubListViewPage = "ConnectionsHubListViewPage";
+            public const string ConnectionsHubBoardViewPage = "ConnectionsHubBoardViewPage";
+            public const string ConnectionsHubGridViewPage = "ConnectionsHubGridViewPage";
             public const string OperationalSnapshotPage = "OperationalSnapshotPage";
+
+            // Connection Opportunity-level URLs.
+            public const string OpportunityConnectionsHubListViewPage = "OpportunityConnectionsHubListViewPage";
+            public const string OpportunityConnectionsHubBoardViewPage = "OpportunityConnectionsHubBoardViewPage";
+            public const string OpportunityConnectionsHubGridViewPage = "OpportunityConnectionsHubGridViewPage";
         }
 
         private static class PageParameterKey
         {
             public const string ConnectionType = "ConnectionType";
+            public const string ConnectionOpportunity = "ConnectionOpportunity";
         }
 
         private static class PersonPreferenceKey
@@ -187,13 +190,35 @@ namespace Rock.Blocks.Connection
         #region RockBlockType Implementation
 
         /// <inheritdoc/>
-        public override object GetObsidianBlockInitialization()
+        public override async Task<object> GetObsidianBlockInitializationAsync()
         {
+            // RequestContext and BlockPersonPreferences both rely on HttpContext.Current,
+            // which is unavailable on thread pool threads. Capture needed values here.
+            var currentPerson = GetCurrentPerson();
+            var authorizedConnectionTypeIds = GetAuthorizedConnectionTypeIds( currentPerson );
+            var campusId = RequestContext.GetContextEntity<Campus>()?.Id;
+            var typeVisibilityPreference = TypeVisibilityPreference;
+
+            var loadSummariesTask = Task.Run( () =>
+            {
+                using var rockContext = new RockContext();
+                return LoadConnectionTypeSummaries( rockContext, currentPerson, authorizedConnectionTypeIds, campusId, typeVisibilityPreference );
+            } );
+
+            var loadFavoritesTask = Task.Run( () =>
+            {
+                using var rockContext = new RockContext();
+                return LoadFavoriteOpportunityGroups( rockContext, currentPerson, authorizedConnectionTypeIds );
+            } );
+
+            await Task.WhenAll( loadSummariesTask, loadFavoritesTask );
+
             var box = new ConnectionTypeNavigationInitializationBox
             {
                 TypeVisibilityItems = TypeVisibilityItems,
                 ShowConfigureConnectionTypesButton = CanAdministrate,
-                ConnectionTypeSummaries = LoadConnectionTypeSummaries(),
+                ConnectionTypeSummaries = loadSummariesTask.Result,
+                FavoriteOpportunityGroups = loadFavoritesTask.Result,
                 NavigationUrls = GetBoxNavigationUrls()
             };
 
@@ -211,7 +236,11 @@ namespace Rock.Blocks.Connection
         [BlockAction]
         public BlockActionResult GetConnectionTypeSummaries()
         {
-            var response = LoadConnectionTypeSummaries();
+            var currentPerson = GetCurrentPerson();
+            var authorizedConnectionTypeIds = GetAuthorizedConnectionTypeIds( currentPerson );
+            var campusId = RequestContext.GetContextEntity<Campus>()?.Id;
+
+            var response = LoadConnectionTypeSummaries( RockContext, currentPerson, authorizedConnectionTypeIds, campusId, TypeVisibilityPreference );
 
             return ActionOk( response );
         }
@@ -221,29 +250,19 @@ namespace Rock.Blocks.Connection
         #region Private Methods
 
         /// <summary>
-        /// Loads <see cref="ConnectionType"/> data from the database and uses this data to build a list of
-        /// <see cref="ConnectionTypeSummaryBag"/>s.
+        /// Gets the list of <see cref="ConnectionType"/> identifiers the current person is authorized
+        /// to view or edit, optionally filtered by the block's Connection Types attribute.
+        /// Results are drawn from the in-memory cache and involve no database queries.
         /// </summary>
-        /// <returns>A list of <see cref="ConnectionTypeSummaryBag"/>s.</returns>
-        private List<ConnectionTypeSummaryBag> LoadConnectionTypeSummaries()
+        /// <param name="currentPerson">The currently authenticated person.</param>
+        /// <returns>A list of authorized <see cref="ConnectionType"/> identifiers.</returns>
+        private List<int> GetAuthorizedConnectionTypeIds( Person currentPerson )
         {
-            /*
-                1/27/2026 - JPH (Discussed with JME and KBH)
-
-                While the Connection Opportunity Select block had a much more complicated approach to data loading and
-                security, this block will instead follow Rock's traditional Entity-based security model while displaying
-                all connection types the individual is authorized to view [or edit], rather than digging deeper (e.g.,
-                into the type's connection opportunities and requests) to make these determinations.
-
-                Reason: Simplify data loading and follow Rock's traditional Entity-based security model.
-            */
-
             var connectionTypeFilterGuids = GetAttributeValue( AttributeKey.ConnectionTypes )
                 .SplitDelimitedValues()
                 .AsGuidList();
 
-            var currentPerson = GetCurrentPerson();
-            var authorizedConnectionTypeIds = ConnectionTypeCache.All()
+            return ConnectionTypeCache.All()
                 .Where( ct =>
                     ct.IsActive
                     && (
@@ -257,6 +276,30 @@ namespace Rock.Blocks.Connection
                 )
                 .Select( ct => ct.Id )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Loads <see cref="ConnectionType"/> data from the database and uses this data to build a list of
+        /// <see cref="ConnectionTypeSummaryBag"/>s.
+        /// </summary>
+        /// <param name="rockContext">The Rock context to use for database queries.</param>
+        /// <param name="currentPerson">The currently authenticated person.</param>
+        /// <param name="authorizedConnectionTypeIds">The pre-computed list of authorized connection type IDs.</param>
+        /// <param name="campusId">The optional campus context to filter requests by.</param>
+        /// <param name="typeVisibilityPreference">The current person's type visibility preference value.</param>
+        /// <returns>A list of <see cref="ConnectionTypeSummaryBag"/>s.</returns>
+        private List<ConnectionTypeSummaryBag> LoadConnectionTypeSummaries( RockContext rockContext, Person currentPerson, List<int> authorizedConnectionTypeIds, int? campusId, string typeVisibilityPreference )
+        {
+            /*
+                1/27/2026 - JPH (Discussed with JME and KBH)
+
+                While the Connection Opportunity Select block had a much more complicated approach to data loading and
+                security, this block will instead follow Rock's traditional Entity-based security model while displaying
+                all connection types the individual is authorized to view [or edit], rather than digging deeper (e.g.,
+                into the type's connection opportunities and requests) to make these determinations.
+
+                Reason: Simplify data loading and follow Rock's traditional Entity-based security model.
+            */
 
             if ( !authorizedConnectionTypeIds.Any() )
             {
@@ -264,11 +307,10 @@ namespace Rock.Blocks.Connection
             }
 
             var personId = currentPerson?.Id ?? 0;
-            var campusId = RequestContext.GetContextEntity<Campus>()?.Id;
             var today = RockDateTime.Today;
-            var limitToMyTypes = TypeVisibilityPreference == TypeVisibility.MyTypesValue;
+            var limitToMyTypes = typeVisibilityPreference == TypeVisibility.MyTypesValue;
 
-            var requestCountsQry = new ConnectionRequestService( RockContext )
+            var requestCountsQry = new ConnectionRequestService( rockContext )
                 .Queryable()
                 .Where( cr =>
                     cr.ConnectionState == ConnectionState.Active
@@ -306,7 +348,7 @@ namespace Rock.Blocks.Connection
                     )
                 } );
 
-            var summaries = new ConnectionTypeService( RockContext )
+            var summaries = new ConnectionTypeService( rockContext )
                 .Queryable()
                 .Where( ct =>
                     authorizedConnectionTypeIds.Contains( ct.Id )
@@ -352,18 +394,134 @@ namespace Rock.Blocks.Connection
         }
 
         /// <summary>
+        /// Loads the favorited connection opportunities for the current person, grouped by
+        /// connection type. Groups are ordered by connection type order; opportunities within
+        /// each group are ordered alphabetically. Only active opportunities belonging to
+        /// connection types the current person is authorized to view are included.
+        /// </summary>
+        /// <param name="rockContext">The Rock context to use for database queries.</param>
+        /// <param name="currentPerson">The currently authenticated person.</param>
+        /// <param name="authorizedConnectionTypeIds">The pre-computed list of authorized connection type IDs.</param>
+        /// <returns>A list of <see cref="ConnectionFavoriteOpportunityGroupBag"/>s.</returns>
+        private List<ConnectionFavoriteOpportunityGroupBag> LoadFavoriteOpportunityGroups( RockContext rockContext, Person currentPerson, List<int> authorizedConnectionTypeIds )
+        {
+            if ( currentPerson == null || !authorizedConnectionTypeIds.Any() )
+            {
+                return new List<ConnectionFavoriteOpportunityGroupBag>();
+            }
+
+            var connectionOpportunityEntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.CONNECTION_OPPORTUNITY.AsGuid() )?.Id;
+
+            if ( !connectionOpportunityEntityTypeId.HasValue )
+            {
+                return new List<ConnectionFavoriteOpportunityGroupBag>();
+            }
+
+            var followedOpportunityIdsQry = new FollowingService( rockContext )
+                .Queryable()
+                .Where( f =>
+                    f.EntityTypeId == connectionOpportunityEntityTypeId.Value
+                    && f.PersonAlias.PersonId == currentPerson.Id )
+                .Select( f => f.EntityId );
+
+            var opportunities = new ConnectionOpportunityService( rockContext )
+                .Queryable()
+                .Where( o =>
+                    o.IsActive
+                    && authorizedConnectionTypeIds.Contains( o.ConnectionTypeId )
+                    && followedOpportunityIdsQry.Contains( o.Id ) )
+                .Select( o => new
+                {
+                    o.Id,
+                    o.Name,
+                    o.IconCssClass,
+                    o.ConnectionTypeId,
+                    ConnectionTypeName = o.ConnectionType.Name,
+                    ConnectionTypeOrder = o.ConnectionType.Order
+                } )
+                .OrderBy( o => o.ConnectionTypeOrder )
+                .ThenBy( o => o.ConnectionTypeName )
+                .ThenBy( o => o.Name )
+                .ToList();
+
+            return opportunities
+                .GroupBy( o => new { o.ConnectionTypeId, o.ConnectionTypeName } )
+                .Select( g => new ConnectionFavoriteOpportunityGroupBag
+                {
+                    ConnectionTypeIdKey = g.Key.ConnectionTypeId.AsIdKey(),
+                    ConnectionTypeName = g.Key.ConnectionTypeName,
+                    Opportunities = g.Select( o => new ConnectionFavoriteOpportunityBag
+                    {
+                        IdKey = o.Id.AsIdKey(),
+                        Name = o.Name,
+                        IconCssClass = o.IconCssClass
+                    } ).ToList()
+                } )
+                .ToList();
+        }
+
+        /// <summary>
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            // The list-view and board-view URLs resolve to the same Connections Hub
+            // page; they differ only in the SelectedView query parameter that
+            // tells the hub which view to open with.
+            var hubListViewQueryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.ConnectionType] = "((Key))",
+                ["SelectedView"] = EnabledViewFlags.List.ToString().ToLower()
+            };
+
+            var hubBoardViewQueryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.ConnectionType] = "((Key))",
+                ["SelectedView"] = EnabledViewFlags.Board.ToString().ToLower()
+            };
+
+            var hubGridViewQueryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.ConnectionType] = "((Key))",
+                ["SelectedView"] = EnabledViewFlags.Grid.ToString().ToLower()
+            };
+
             return new Dictionary<string, string>
             {
+                // Connection Type-level URLs.
                 [NavigationUrlKey.ConfigurationPage] = this.GetLinkedPageUrl( AttributeKey.ConfigurationPage ),
                 [NavigationUrlKey.OpportunitiesPage] = this.GetLinkedPageUrl( AttributeKey.OpportunitiesPage, PageParameterKey.ConnectionType, "((Key))" ),
-                [NavigationUrlKey.ConnectionsListPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsListPage, PageParameterKey.ConnectionType, "((Key))" ),
-                [NavigationUrlKey.ConnectionBoardPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionBoardPage, PageParameterKey.ConnectionType, "((Key))" ),
-                [NavigationUrlKey.OperationalSnapshotPage] = this.GetLinkedPageUrl( AttributeKey.OperationalSnapshotPage, PageParameterKey.ConnectionType, "((Key))" )
+                [NavigationUrlKey.ConnectionsHubListViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, hubListViewQueryParams ),
+                [NavigationUrlKey.ConnectionsHubBoardViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, hubBoardViewQueryParams ),
+                [NavigationUrlKey.ConnectionsHubGridViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, hubGridViewQueryParams ),
+                [NavigationUrlKey.OperationalSnapshotPage] = this.GetLinkedPageUrl( AttributeKey.OperationalSnapshotPage, PageParameterKey.ConnectionType, "((Key))" ),
+
+                // Connection Opportunity-level URLs.
+                [NavigationUrlKey.OpportunityConnectionsHubListViewPage] = this.GetLinkedPageUrl(
+                    AttributeKey.ConnectionsHubPage,
+                    new Dictionary<string, string>( hubListViewQueryParams )
+                    {
+                        [PageParameterKey.ConnectionType] = "((TypeKey))",
+                        [PageParameterKey.ConnectionOpportunity] = "((Key))"
+                    }
+                ),
+                [NavigationUrlKey.OpportunityConnectionsHubBoardViewPage] = this.GetLinkedPageUrl(
+                    AttributeKey.ConnectionsHubPage,
+                    new Dictionary<string, string>( hubBoardViewQueryParams )
+                    {
+                        [PageParameterKey.ConnectionType] = "((TypeKey))",
+                        [PageParameterKey.ConnectionOpportunity] = "((Key))"
+                    }
+                ),
+                [NavigationUrlKey.OpportunityConnectionsHubGridViewPage] = this.GetLinkedPageUrl(
+                    AttributeKey.ConnectionsHubPage,
+                    new Dictionary<string, string>( hubGridViewQueryParams )
+                    {
+                        [PageParameterKey.ConnectionType] = "((TypeKey))",
+                        [PageParameterKey.ConnectionOpportunity] = "((Key))"
+                    }
+                )
             };
         }
 

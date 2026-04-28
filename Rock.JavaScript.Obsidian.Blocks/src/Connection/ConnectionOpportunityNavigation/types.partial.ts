@@ -17,12 +17,13 @@
 
 export const enum NavigationUrlKey {
     // Connection Type-level URLs.
-    TypeConnectionsListPage = "TypeConnectionsListPage",
+    TypeConnectionsHubListViewPage = "TypeConnectionsHubListViewPage",
     TypeOperationalSnapshotPage = "TypeOperationalSnapshotPage",
 
     // Connection Opportunity-level URLs.
-    OpportunityConnectionsListPage = "OpportunityConnectionsListPage",
-    OpportunityConnectionBoardPage = "OpportunityConnectionBoardPage"
+    OpportunityConnectionsHubListViewPage = "OpportunityConnectionsHubListViewPage",
+    OpportunityConnectionsHubBoardViewPage = "OpportunityConnectionsHubBoardViewPage",
+    OpportunityConnectionsHubGridViewPage = "OpportunityConnectionsHubGridViewPage"
 }
 
 export const enum PreferenceKey {

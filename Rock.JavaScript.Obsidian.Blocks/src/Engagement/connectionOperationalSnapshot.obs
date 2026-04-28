@@ -48,7 +48,8 @@
                                                   tooltipTitle="Current Status" />
                             </ChartPanel>
 
-                            <ChartPanel label="Upcoming Future Follow-Ups">
+                            <ChartPanel v-if="config.options?.isFutureFollowUpEnabled"
+                                        label="Upcoming Future Follow-Ups">
                                 <BarChart hideLegend
                                           :labels="upcomingFutureFollowUpsLabels"
                                           stack

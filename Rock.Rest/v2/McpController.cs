@@ -73,6 +73,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "{slug}" )]
         [Authenticate]
+        [RequiredScope( "mcp:invoke" )]
         [Secured( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK )]

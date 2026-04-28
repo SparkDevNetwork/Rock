@@ -277,7 +277,7 @@ namespace Rock.Blocks.Finance
 
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ViewPage] = this.GetLinkedPageUrl( AttributeKey.ViewPage, "FinancialScheduledTransactionId", "((Key))" ),
+                [NavigationUrlKey.ViewPage] = this.GetLinkedPageUrl( AttributeKey.ViewPage, "ScheduledTransactionId", "((Key))" ),
                 [NavigationUrlKey.AddPage] = addPageLinkedUrl
             };
         }

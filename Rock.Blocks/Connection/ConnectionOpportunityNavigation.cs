@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Constants;
+using Rock.Enums.Connection;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -45,25 +46,18 @@ namespace Rock.Blocks.Connection
 
     #region Block Attributes
 
-    [LinkedPage( "Connections List Page",
-        Key = AttributeKey.ConnectionsListPage,
-        Description = @"Select the page that the ""View Requests"" and list buttons should open to view the connections list.",
-        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_LIST,
+    [LinkedPage( "Connections Hub Page",
+        Key = AttributeKey.ConnectionsHubPage,
+        Description = @"Select the page that the ""View Requests"", list, board, and grid buttons should open to view the connections hub.",
+        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_HUB,
         Order = 0,
-        IsRequired = true )]
-
-    [LinkedPage( "Connection Board Page",
-        Key = AttributeKey.ConnectionBoardPage,
-        Description = "Select the page that the board and grid buttons should open to view the connection board in board or grid view.",
-        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_BOARD,
-        Order = 1,
         IsRequired = true )]
 
     [LinkedPage( "Operational Snapshot Page",
         Key = AttributeKey.OperationalSnapshotPage,
         Description = "Select the page that the snapshot button should open to view the operational snapshot.",
         DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_OPERATIONAL_SNAPSHOT,
-        Order = 2,
+        Order = 1,
         IsRequired = true )]
 
     #endregion Block Attributes
@@ -76,20 +70,20 @@ namespace Rock.Blocks.Connection
 
         private static class AttributeKey
         {
-            public const string ConnectionsListPage = "ConnectionsListPage";
-            public const string ConnectionBoardPage = "ConnectionBoardPage";
+            public const string ConnectionsHubPage = "ConnectionsHubPage";
             public const string OperationalSnapshotPage = "OperationalSnapshotPage";
         }
 
         private static class NavigationUrlKey
         {
             // Connection Type-level URLs.
-            public const string TypeConnectionsListPage = "TypeConnectionsListPage";
+            public const string TypeConnectionsHubListViewPage = "TypeConnectionsHubListViewPage";
             public const string TypeOperationalSnapshotPage = "TypeOperationalSnapshotPage";
 
             // Connection Opportunity-level URLs.
-            public const string OpportunityConnectionsListPage = "OpportunityConnectionsListPage";
-            public const string OpportunityConnectionBoardPage = "OpportunityConnectionBoardPage";
+            public const string OpportunityConnectionsHubListViewPage = "OpportunityConnectionsHubListViewPage";
+            public const string OpportunityConnectionsHubBoardViewPage = "OpportunityConnectionsHubBoardViewPage";
+            public const string OpportunityConnectionsHubGridViewPage = "OpportunityConnectionsHubGridViewPage";
         }
 
         private static class PageParameterKey
@@ -427,8 +421,12 @@ namespace Rock.Blocks.Connection
                 .ThenBy( s => s.Name )
                 .ToList();
 
+            var currentPerson = GetCurrentPerson();
+            var followedOpportunityIds = GetFollowedConnectionOpportunityIds( currentPerson );
+
             summaries.ForEach( s =>
             {
+                s.IsFollowed = followedOpportunityIds.Contains( s.Id ?? 0 );
                 s.TranslateIdToIdKey();
 
                 // We might want to resolve merge fields on the Summary in the future, at which point we'll need to:
@@ -440,6 +438,35 @@ namespace Rock.Blocks.Connection
             } );
 
             return summaries;
+        }
+
+        /// <summary>
+        /// Gets the set of <see cref="ConnectionOpportunity"/> identifiers that the current person is following.
+        /// Returns an empty set if the person is not authenticated or the entity type cannot be resolved.
+        /// </summary>
+        /// <param name="currentPerson">The currently authenticated person.</param>
+        /// <returns>A <see cref="HashSet{T}"/> of followed <see cref="ConnectionOpportunity"/> IDs for O(1) lookup.</returns>
+        private HashSet<int> GetFollowedConnectionOpportunityIds( Person currentPerson )
+        {
+            if ( currentPerson == null )
+            {
+                return new HashSet<int>();
+            }
+
+            var connectionOpportunityEntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.CONNECTION_OPPORTUNITY.AsGuid() )?.Id;
+
+            if ( !connectionOpportunityEntityTypeId.HasValue )
+            {
+                return new HashSet<int>();
+            }
+
+            return new FollowingService( RockContext )
+                .Queryable()
+                .Where( f =>
+                    f.EntityTypeId == connectionOpportunityEntityTypeId.Value
+                    && f.PersonAlias.PersonId == currentPerson.Id )
+                .Select( f => f.EntityId )
+                .ToHashSet();
         }
 
         /// <summary>
@@ -554,21 +581,46 @@ namespace Rock.Blocks.Connection
         {
             var connectionTypeKey = RequestContext.GetPageParameter( PageParameterKey.ConnectionType );
 
+            // The list-view and board-view URLs resolve to the same Connections Hub
+            // page; they differ only in the SelectedView query parameter that tells
+            // the hub which view to open with.
+            var typeListViewQueryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.ConnectionType] = connectionTypeKey,
+                ["SelectedView"] = EnabledViewFlags.List.ToString().ToLower()
+            };
+
             var opportunityQueryParams = new Dictionary<string, string>
             {
                 { PageParameterKey.ConnectionType, connectionTypeKey },
                 { PageParameterKey.ConnectionOpportunity, "((Key))" }
             };
 
+            var opportunityListViewQueryParams = new Dictionary<string, string>( opportunityQueryParams )
+            {
+                { "SelectedView", EnabledViewFlags.List.ToString().ToLower() }
+            };
+
+            var opportunityBoardViewQueryParams = new Dictionary<string, string>( opportunityQueryParams )
+            {
+                { "SelectedView", EnabledViewFlags.Board.ToString().ToLower() }
+            };
+
+            var opportunityGridViewQueryParams = new Dictionary<string, string>( opportunityQueryParams )
+            {
+                { "SelectedView", EnabledViewFlags.Grid.ToString().ToLower() }
+            };
+
             return new Dictionary<string, string>
             {
                 // Connection Type-level URLs.
-                [NavigationUrlKey.TypeConnectionsListPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsListPage, PageParameterKey.ConnectionType, connectionTypeKey ),
+                [NavigationUrlKey.TypeConnectionsHubListViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, typeListViewQueryParams ),
                 [NavigationUrlKey.TypeOperationalSnapshotPage] = this.GetLinkedPageUrl( AttributeKey.OperationalSnapshotPage, PageParameterKey.ConnectionType, connectionTypeKey ),
 
                 // Connection Opportunity-level URLs.
-                [NavigationUrlKey.OpportunityConnectionsListPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsListPage, opportunityQueryParams ),
-                [NavigationUrlKey.OpportunityConnectionBoardPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionBoardPage, opportunityQueryParams )
+                [NavigationUrlKey.OpportunityConnectionsHubListViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, opportunityListViewQueryParams ),
+                [NavigationUrlKey.OpportunityConnectionsHubBoardViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, opportunityBoardViewQueryParams ),
+                [NavigationUrlKey.OpportunityConnectionsHubGridViewPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionsHubPage, opportunityGridViewQueryParams )
             };
         }
 

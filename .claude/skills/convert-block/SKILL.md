@@ -10,7 +10,7 @@ description: >-
 argument-hint: "Category/BlockName (e.g. Core/ExceptionDetail or Security/ForgotUserName)"
 compatibility: Requires Claude Code CLI with Node.js for script execution (generate-guids.js, validate-conversion.js).
 metadata:
-  version: "1.9"
+  version: "1.11"
   author: "Maxwell Eley"
 ---
 
@@ -42,6 +42,8 @@ What to improve during conversion:
 - **Dead code** — do not carry forward commented-out code, unused variables, or WebForms-only plumbing (`ViewState`, `PostBack` checks, `UpdatePanel` logic)
 - **Obsidian controls** — use standard Obsidian controls (`TextBox`, `DropDownList`, `DatePicker`, etc.) instead of hand-rolling HTML that the WebForms block may have used
 - **Rock utilities** — use `RockDateTime`, `ListItemBag`, cache classes, and other Rock helpers instead of raw .NET equivalents
+
+**Do not mention WebForms in code comments.** The converted file should read as if written from scratch — phrases like "matches WebForms", "mirrors the WebForms behavior", or references to original methods (`btnSave_Click`, `ShowReadonlyDetails`, `NavigateToParentPage`, etc.) are forbidden. Only reference WebForms when a future reader genuinely needs that context (documented surprising divergence, carried-over bug-fix rationale). See `references/common-patterns.md` § "Comments in Converted Code".
 
 ---
 
@@ -274,7 +276,6 @@ If build errors or unexpected patterns occur, read `references/troubleshooting.m
 ### Next steps (after validation passes)
 - Inform the user to run **Rock.CodeGeneration** (WPF app at `Rock.CodeGeneration/`) to regenerate .d.ts files from C# ViewModels
 - Remind: when writing the migration to register this block, use `AddOrUpdateEntityBlockType()` — **never** `UpdateBlockTypeByGuid()` for Obsidian blocks (see `.claude/rules/data-model.md` § Block Type Methods)
-- Run `/push-conversion` to commit, push, and log in Asana
 ```
 
 ### Phase 3 Quality Gate

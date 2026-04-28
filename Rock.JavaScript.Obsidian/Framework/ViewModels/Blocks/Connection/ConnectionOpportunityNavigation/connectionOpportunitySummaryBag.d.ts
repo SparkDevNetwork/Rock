@@ -39,6 +39,9 @@ export type ConnectionOpportunitySummaryBag = {
 
     idKey?: string | null;
 
+    /** Gets or sets whether the current person is following (has favorited) this connection opportunity. */
+    isFollowed: boolean;
+
     /** Gets or sets the name for this connection opportunity. */
     name?: string | null;
 

@@ -46,11 +46,17 @@ export type TransferConnectionRequestDetailsBag = {
     /** Gets or sets the GUID of the campus currently assigned to this request. */
     currentCampusGuid?: Guid | null;
 
-    /** Gets or sets the GUID of the connection opportunity this request currently belongs to. */
-    currentConnectionOpportunityGuid: Guid;
+    /**
+     * Gets or sets the GUID of the connection opportunity this request currently belongs to.
+     * Null when initializing a bulk transfer, since the selected requests may span multiple opportunities.
+     */
+    currentConnectionOpportunityGuid?: Guid | null;
 
-    /** Gets or sets the GUID of the connection status currently assigned to this request. */
-    currentConnectionStatusGuid: Guid;
+    /**
+     * Gets or sets the GUID of the connection status currently assigned to this request.
+     * Null when initializing a bulk transfer, since the selected requests may span multiple statuses.
+     */
+    currentConnectionStatusGuid?: Guid | null;
 
     /** Gets or sets the name of the connector currently assigned to this request. */
     currentConnectorName?: string | null;

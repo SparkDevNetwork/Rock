@@ -614,10 +614,18 @@ namespace Rock.SystemGuid
         public const string CONNECTIONS_OPPORTUNITIES = "F8B0E0CE-76A3-4449-B4EB-28DD9A42D71F";
 
 		/// <summary>
+        /// Gets the Connections Hub page guid.
+        /// ParentPage: Connections
+        /// </summary>
+        public const string CONNECTIONS_HUB = "8B5F2875-0D36-4625-8EE4-B738AE8E12F5";
+
+        /// <summary>
         /// Gets the Connections List page guid.
         /// ParentPage: Connections
         /// </summary>
-        public const string CONNECTIONS_LIST = "8B5F2875-0D36-4625-8EE4-B738AE8E12F5";
+        [RockObsolete( "20.0" )]
+        [Obsolete( "Use CONNECTIONS_HUB instead." )]
+        public const string CONNECTIONS_LIST = CONNECTIONS_HUB;
 
         /// <summary>
         /// Gets the Connections Operational Snapshot page guid.

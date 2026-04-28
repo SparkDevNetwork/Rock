@@ -1104,6 +1104,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
     color: #ffffff;
     padding: 4px 18px;
     font-size: 10px;
+    font-family: var(--font-family-sans);
     border-radius: 9999px;
     pointer-events: none;
     line-height: 1;

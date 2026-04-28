@@ -32,6 +32,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public Guid Guid { get; set; }
 
         /// <summary>
+        /// Gets or sets the IdKey of the Connection Status
+        /// </summary>
+        public string IdKey { get; set; }
+
+        /// <summary>
         /// Gets or sets the sort order of this connection status relative to others in the same Connection Type.
         /// </summary>
         public int Order { get; set; }

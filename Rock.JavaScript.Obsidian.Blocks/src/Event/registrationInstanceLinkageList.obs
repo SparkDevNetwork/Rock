@@ -38,6 +38,7 @@
 
         <Column name="group"
                 title="Group"
+                field="group"
                 visiblePriority="md">
 
             <template #format="{ row }">
@@ -205,13 +206,12 @@
     }
 
     function makeKeyUniqueToRegistrationTemplate(key: string): string {
+        if (config.options?.registrationTemplateIdKey) {
+            return `${config.options.registrationTemplateIdKey}-${key}`;
+        }
 
-if (config.options?.registrationTemplateIdKey) {
-    return `${config.options?.registrationTemplateIdKey}-${key}`;
-}
-
-return key;
-}
+        return key;
+    }
 
     // #endregion
 

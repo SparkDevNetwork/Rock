@@ -15,6 +15,7 @@
 //  + SMS Pipeline - Used for managing SMS communications
 //  + Active Users - Used for displaying active users on internal homepage
 //  + Library Viewer
+//  + Lava Shortcode List
 // =============================================================
 
 
@@ -1181,3 +1182,12 @@ ul.activeusers {
 }
 
 // ==================== END LIBRARY VIEWER =====================
+
+// ==================== LAVA SHORTCODE LIST =====================
+
+.lava-shortcode-documentation pre {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+// ===================== END LAVA SHORTCODE LIST =====================

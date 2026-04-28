@@ -47,7 +47,7 @@
 
         <TextColumn v-if="showWebColumns"
                     name="domain"
-                    title="Domains"
+                    title="Domain(s)"
                     field="domain"
                     :filter="textValueFilter"
                     visiblePriority="md"

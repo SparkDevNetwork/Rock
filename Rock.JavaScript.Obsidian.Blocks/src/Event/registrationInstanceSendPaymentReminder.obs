@@ -1,0 +1,301 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Block title="Send Payment Reminders" iconCssClass="ti ti-bell">
+        <NotificationBox v-if="!config.hasOutstandingBalances"
+                         alertType="info"
+                         v-html="config.emptyStateMessage ?? ''" />
+
+        <template v-else-if="isComplete">
+            <NotificationBox alertType="success">
+                <p class="mb-0">{{ completionMessage }}</p>
+                <a v-if="config.registrationInstancePageUrl"
+                   :href="config.registrationInstancePageUrl"
+                   class="btn btn-link btn-xs padding-l-none">
+                    Return to Registration Instance
+                </a>
+            </NotificationBox>
+        </template>
+
+        <RockForm v-else @submit="onSendClick">
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox label="From Name" v-model="fromName" rules="required" />
+                    <TextBox label="From Email" v-model="fromEmail" rules="required" />
+                    <TextBox label="Subject" v-model="subject" rules="required" />
+                </div>
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-between align-items-center margin-b-sm">
+                        <label class="mb-0">Message</label>
+                        <Toggle v-model="isPreviewMode"
+                                trueText="Preview"
+                                falseText="Source"
+                                onButtonActiveCssClass="btn-info"
+                                offButtonActiveCssClass="btn-info"
+                                btnSize="xs" />
+                    </div>
+                    <iframe v-if="isPreviewMode"
+                            :srcdoc="previewHtml"
+                            class="email-preview-frame" />
+                    <CodeEditor v-else
+                                v-model="messageBody"
+                                mode="lava"
+                                :editorHeight="400" />
+                </div>
+            </div>
+
+            <hr />
+            <h4>Outstanding Balances</h4>
+            <div v-html="config.instructionsHtml ?? ''"></div>
+
+            <Grid :data="gridData"
+                  keyField="idKey"
+                  itemTerm="Registration"
+                  :exportTitle="exportTitle"
+                  :markInactiveRows="true"
+                  disablePaging
+                  @onLoad="onGridLoad"
+                  @selectedKeysChanged="onSelectedKeysChanged">
+                <SelectColumn />
+                <TextColumn name="name"
+                            title="Name"
+                            field="name"
+                            :sortValue="nameSortValue"
+                            :filter="textValueFilter"
+                            visiblePriority="xs" />
+                <DateColumn name="registeredDateTime"
+                            title="Date Registered"
+                            field="registeredDateTime"
+                            :filter="dateValueFilter"
+                            visiblePriority="md" />
+                <TextColumn name="email"
+                            title="Email"
+                            field="email"
+                            width="20%"
+                            :filter="textValueFilter"
+                            visiblePriority="md" />
+                <TextColumn name="lastReminder"
+                            title="Last Reminder Sent"
+                            field="lastReminderText"
+                            :sortValue="lastReminderSortValue"
+                            visiblePriority="md" />
+                <CurrencyColumn name="cost"
+                                title="Cost"
+                                field="cost"
+                                visiblePriority="md" />
+                <CurrencyColumn name="paid"
+                                title="Amount Paid"
+                                field="paid"
+                                visiblePriority="md" />
+                <CurrencyColumn name="balanceDue"
+                                title="Balance Due"
+                                field="balanceDue"
+                                :filter="numberValueFilter"
+                                visiblePriority="xs" />
+            </Grid>
+
+            <RockButton btnType="primary"
+                        class="margin-t-md"
+                        :isLoading="isSending"
+                        type="submit">
+                Send Reminders
+            </RockButton>
+        </RockForm>
+    </Block>
+</template>
+
+<style scoped>
+.email-preview-frame {
+    width: 100%;
+    height: 400px;
+    border: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import Block from "@Obsidian/Templates/block";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import Grid, { CurrencyColumn, DateColumn, SelectColumn, TextColumn, dateValueFilter, numberValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import { RegistrationInstanceSendPaymentReminderInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceSendPaymentReminder/registrationInstanceSendPaymentReminderInitializationBox";
+    import { ResolvePreviewRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceSendPaymentReminder/resolvePreviewRequestBag";
+    import { ResolvePreviewResponseBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceSendPaymentReminder/resolvePreviewResponseBag";
+    import { SendPaymentRemindersRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceSendPaymentReminder/sendPaymentRemindersRequestBag";
+    import { SendPaymentRemindersResponseBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceSendPaymentReminder/sendPaymentRemindersResponseBag";
+
+    const config = useConfigurationValues<RegistrationInstanceSendPaymentReminderInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const fromName = ref(config.fromName ?? "");
+    const fromEmail = ref(config.fromEmail ?? "");
+    const subject = ref(config.subject ?? "");
+    const messageBody = ref(config.messageBody ?? "");
+    const previewHtml = ref(config.previewHtml ?? "");
+
+    const isPreviewMode = ref(true);
+    const isSending = ref(false);
+    const isComplete = ref(false);
+    const completionMessage = ref("");
+
+    const selectedKeys = ref<string[]>([...(config.preSelectedKeys ?? [])]);
+    const hasSeededGridSelection = ref(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const gridData = computed<GridDataBag>(() => ({
+        rows: config.registrations ?? []
+    }));
+
+    /**
+     * Scopes the Excel export filename to the specific registration instance
+     * so downloaded workbooks don't collide when an admin pulls balances for
+     * multiple events in a row.
+     */
+    const exportTitle = computed<string>(() => {
+        const name = config.registrationInstanceName?.trim();
+        return name ? `${name} - Outstanding Balances` : "Outstanding Balances";
+    });
+
+    /**
+     * Sorts the "Last Reminder Sent" column by the underlying ISO date so the
+     * displayed humanized text ("Today" / "5 days" / "Unknown") doesn't drive
+     * an alphabetical ASCII sort. Never-reminded rows (no date) fall to the
+     * oldest end, matching the pre-selected "include them" intent.
+     */
+    function lastReminderSortValue(row: Record<string, unknown>): number {
+        const iso = row.lastReminderDateTime as string | null | undefined;
+        return iso ? new Date(iso).getTime() : 0;
+    }
+
+    /**
+     * Sorts the Name column by the last-name portion only. The server returns
+     * rows ordered by LastName ASC, FirstName ASC, and JavaScript Array.sort
+     * is stable, so sorting on last-name alone preserves FirstName-ASC as the
+     * tiebreaker in BOTH directions — matching the original WebForms behavior
+     * (OrderByDescending(LastName).ThenBy(FirstName) on the descending case).
+     */
+    function nameSortValue(row: Record<string, unknown>): string {
+        const name = (row.name as string | null | undefined) ?? "";
+        const commaIndex = name.indexOf(",");
+        return commaIndex >= 0 ? name.substring(0, commaIndex) : name;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Seeds the grid's selection from `selectedKeys` the first time the grid mounts.
+     * `selectedKeys` is the single source of truth for what will be posted on Send,
+     * so we reuse it here instead of re-reading `config.preSelectedKeys`.
+     */
+    function onGridLoad(state: IGridState): void {
+        if (hasSeededGridSelection.value) {
+            return;
+        }
+
+        state.selectedKeys = [...selectedKeys.value];
+        hasSeededGridSelection.value = true;
+    }
+
+    /**
+     * Mirrors the grid's selection into our local `selectedKeys` ref so the
+     * Send Reminders button can post the current selection without re-reading
+     * the grid state.
+     */
+    function onSelectedKeysChanged(state: IGridState): void {
+        selectedKeys.value = [...state.selectedKeys];
+    }
+
+    /**
+     * Invokes the SendReminders block action and switches the block to its
+     * success state. The enclosing RockForm has already enforced the From
+     * Name / Email / Subject required rules (with red outlines and a scroll
+     * to the offending field) before this handler fires, so the only extra
+     * check left is that at least one registration is selected.
+     */
+    async function onSendClick(): Promise<void> {
+        if (selectedKeys.value.length === 0) {
+            await alert("Select at least one registration before sending reminders.");
+            return;
+        }
+
+        if (!messageBody.value) {
+            await alert("Message body is required.");
+            return;
+        }
+
+        isSending.value = true;
+
+        try {
+            const result = await invokeBlockAction<SendPaymentRemindersResponseBag>("SendReminders", {
+                request: {
+                    selectedKeys: selectedKeys.value,
+                    fromName: fromName.value,
+                    fromEmail: fromEmail.value,
+                    subject: subject.value,
+                    messageBody: messageBody.value
+                } as SendPaymentRemindersRequestBag
+            });
+
+            if (result.isSuccess && result.data) {
+                completionMessage.value = result.data.message ?? "Payment reminders have been sent.";
+                isComplete.value = true;
+                window.scrollTo(0, 0);
+            }
+            else {
+                await alert(result.errorMessage ?? "Unable to send reminders.");
+            }
+        }
+        finally {
+            isSending.value = false;
+        }
+    }
+
+    // #endregion
+
+    /**
+     * Re-resolves merge fields against a sample registration when the user
+     * switches into Preview mode so the iframe reflects the latest edits.
+     * The sample IdKey is forwarded from the first grid row so the server
+     * can avoid re-scanning the outstanding-balance list on every toggle.
+     */
+    watch(isPreviewMode, async (newValue) => {
+        if (!newValue) {
+            return;
+        }
+
+        if (!messageBody.value) {
+            previewHtml.value = "";
+            return;
+        }
+
+        const result = await invokeBlockAction<ResolvePreviewResponseBag>("ResolvePreview", {
+            request: {
+                messageBody: messageBody.value,
+                sampleRegistrationKey: config.registrations?.[0]?.idKey
+            } as ResolvePreviewRequestBag
+        });
+
+        if (result.isSuccess && result.data) {
+            previewHtml.value = result.data.previewHtml ?? "";
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to render the preview.");
+        }
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

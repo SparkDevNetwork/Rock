@@ -54,6 +54,13 @@ export type EntryFormFieldBag = {
     sectionId?: string | null;
 
     /**
+     * A string that contains the security grant required for this form
+     * field to function. If null or empty then the default security grant
+     * from the block will be used.
+     */
+    securityGrantToken?: string | null;
+
+    /**
      * The main rule that describes if this field should be visible or not
      * depending on the values of other fields.
      */

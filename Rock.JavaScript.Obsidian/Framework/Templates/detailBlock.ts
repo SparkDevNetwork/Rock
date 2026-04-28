@@ -182,6 +182,16 @@ export default defineComponent({
         },
 
         /**
+         * When true, the `labels` render inside the panel header (next to the
+         * title) rather than in the default sub-header row. Opt-in so existing
+         * blocks keep their current placement.
+         */
+        showLabelsInHeader: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
          * Additional actions to display in the footer of the panel. These are
          * currently displayed as full buttons on the left of the footer.
          */
@@ -955,18 +965,27 @@ export default defineComponent({
         </span>
     </template>
 
-    <template v-if="showLabels || showTags" #subheaderLeft>
+    <template v-if="showLabels && showLabelsInHeader" #panelLabels>
+        <div class="label-group">
+            <span v-for="action in labels" :class="getClassForLabelAction(action)" @click="onActionClick(action, $event)">
+                <template v-if="action.title">{{ action.title }}</template>
+                <i v-else :class="action.iconCssClass"></i>
+            </span>
+        </div>
+    </template>
+
+    <template v-if="(showLabels && !showLabelsInHeader) || showTags" #subheaderLeft>
         <div class="d-flex">
-            <div v-if="showLabels" class="label-group">
+            <div v-if="showLabels && !showLabelsInHeader" class="label-group">
                 <span v-for="action in labels" :class="getClassForLabelAction(action)" @click="onActionClick(action, $event)">
                     <template v-if="action.title">{{ action.title }}</template>
                     <i v-else :class="action.iconCssClass"></i>
                 </span>
             </div>
 
-            <div v-if="showTags && showLabels" style="width: 2px; background-color: #eaedf0; margin: 0px 12px;"></div>
+            <div v-if="showTags && showLabels && !showLabelsInHeader" style="width: 2px; background-color: #eaedf0; margin: 0px 12px;"></div>
 
-            <div v-if="showTags" class="flex-grow-1">
+            <div v-if="showTags" class="flex-grow-1 d-flex">
                 <EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
             </div>
         </div>
@@ -1009,6 +1028,9 @@ export default defineComponent({
         <v-style>
             .panel-flex .label-group > .label + * {
                 margin-left: 8px;
+            }
+            .panel-flex > .panel-header > .panel-labels {
+                margin-right: 8px;
             }
         </v-style>
 

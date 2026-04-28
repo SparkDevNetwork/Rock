@@ -1,0 +1,139 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="reminders.length > 0" class="mb-4">
+        <h4 class="mt-0">Existing Reminders</h4>
+
+        <p>
+            {{ existingReminderText }}
+            <a v-if="showViewAllLink" href="#" @click.prevent="onViewAllClick">See your reminders settings for a complete list</a>
+        </p>
+
+        <DisplayCardContainer>
+            <DisplayCard v-for="(reminder, index) in displayedReminders"
+                         :key="reminder.idKey ?? index"
+                         class="reminder-card"
+                         :style="reminder.highlightColor ? { '--reminder-type-color': reminder.highlightColor } : undefined"
+                         :title="reminder.reminderTypeName ?? ''"
+                         :description="reminder.note ?? ''"
+                         :iconCssClass="reminder.highlightColor ? 'ti ti-circle-filled' : undefined"
+                         iconLabelType="reminder-type-dot"
+                         :asideIconCssClass="reminder.isRenewing ? 'ti ti-clock' : undefined"
+                         :primaryActions="getPrimaryActions(reminder)"
+                         :secondaryActions="getSecondaryActions(reminder)">
+                <template #prepend>
+                    <span class="label label-default">{{ reminder.reminderDate ?? '' }}</span>
+                </template>
+            </DisplayCard>
+        </DisplayCardContainer>
+    </div>
+</template>
+
+<style scoped>
+.reminder-card :deep(.reminder-type-dot) {
+    background: transparent;
+    padding: 0;
+    border: 0;
+}
+
+.reminder-card :deep(.reminder-type-dot i) {
+    color: var(--reminder-type-color, currentColor);
+    font-size: 1.25em;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { ExistingReminderBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderLinks/existingReminderBag";
+
+    const props = defineProps({
+        reminders: {
+            type: Array as PropType<ExistingReminderBag[]>,
+            default: () => []
+        },
+        existingReminderText: {
+            type: String,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "markComplete", idKey: string): void;
+        (e: "cancelReoccurrence", idKey: string): void;
+        (e: "edit", idKey: string): void;
+        (e: "delete", idKey: string): void;
+        (e: "viewAll"): void;
+    }>();
+
+    /** The two most recent reminders to render as cards. */
+    const displayedReminders = computed((): ExistingReminderBag[] => props.reminders.slice(0, 2));
+
+    /** True when the query returned more than two reminders, so a "see all" link is useful. */
+    const showViewAllLink = computed((): boolean => props.reminders.length > 2);
+
+    /** Mark-Complete is the quick inline action on each card. */
+    function getPrimaryActions(reminder: ExistingReminderBag): MenuAction[] {
+        return [
+            {
+                title: "Mark Complete",
+                iconCssClass: "ti ti-check",
+                type: "default",
+                handler: () => {
+                    if (reminder.idKey) {
+                        emit("markComplete", reminder.idKey);
+                    }
+                }
+            }
+        ];
+    }
+
+    /** Edit / Cancel Reoccurrence (only when renewing) / Delete are behind the kebab. */
+    function getSecondaryActions(reminder: ExistingReminderBag): MenuAction[] {
+        const actions: MenuAction[] = [
+            {
+                title: "Edit",
+                iconCssClass: "ti ti-edit",
+                type: "default",
+                handler: () => {
+                    if (reminder.idKey) {
+                        emit("edit", reminder.idKey);
+                    }
+                }
+            }
+        ];
+
+        if (reminder.isRenewing) {
+            actions.push({
+                title: "Cancel Reoccurrence",
+                iconCssClass: "ti ti-ban",
+                type: "default",
+                handler: () => {
+                    if (reminder.idKey) {
+                        emit("cancelReoccurrence", reminder.idKey);
+                    }
+                }
+            });
+        }
+
+        actions.push({
+            title: "Delete",
+            iconCssClass: "ti ti-trash",
+            type: "danger",
+            handler: () => {
+                if (reminder.idKey) {
+                    emit("delete", reminder.idKey);
+                }
+            }
+        });
+
+        return actions;
+    }
+
+    /** Emits viewAll when the "see all" link is clicked. */
+    function onViewAllClick(): void {
+        emit("viewAll");
+    }
+</script>
+

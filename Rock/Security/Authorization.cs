@@ -199,6 +199,12 @@ namespace Rock.Security
         public const string EXECUTE = "Execute";
 
         /// <summary>
+        /// Authorization to register (add/edit registrations) on an
+        /// event Registration Instance or Registration.
+        /// </summary>
+        public const string REGISTER = "Register";
+
+        /// <summary>
         /// Authorization to view the lists of the entity type.
         /// </summary>
         public const string VIEW_LIST = "ViewList";

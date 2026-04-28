@@ -15,6 +15,10 @@
                     </slot>
                 </h1>
 
+                <div v-if="$slots.panelLabels" class="panel-labels">
+                    <slot name="panelLabels" />
+                </div>
+
                 <div class="panel-header-actions">
 
                     <slot name="headerActions" />

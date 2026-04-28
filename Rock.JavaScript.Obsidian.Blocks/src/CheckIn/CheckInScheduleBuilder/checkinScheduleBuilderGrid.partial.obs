@@ -1,0 +1,318 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="schedule-grid"
+         :class="{ 'schedule-grid-overflow': isOverflow }"
+         :style="`--schedule-count: ${schedules.length}`"
+         ref="contentEl">
+
+        <div class="schedule-grid-header" :class="{ 'schedule-grid-header-sticky': !isOverflow }">
+            <div class="schedule-grid-header-group">Group</div>
+            <div class="schedule-grid-header-location">Location</div>
+            <div v-for="schedule in schedules"
+                 :key="schedule.value ?? ''"
+                 class="schedule-grid-header-schedule">
+                <p v-html="getScheduleHtml(schedule)"></p>
+                <a href="#"
+                   style="display: inline; color: inherit"
+                   :class="getScheduleHeaderCheckboxCssClass(schedule)"
+                   @click.prevent="onScheduleColumnClick(schedule.value ?? '')">
+                </a>
+            </div>
+        </div>
+
+        <div v-for="groupedGroupLocation in groupedGroupLocations"
+             :key="getGroupedGroupLocationsKey(groupedGroupLocation)"
+             class="schedule-row">
+
+            <div class="schedule-col-group"
+                 :style="`grid-row: 1 / span ${groupedGroupLocation.groupLocations.length * 2 - 1}`">
+                <h5>{{ groupedGroupLocation.groupPath }}</h5>
+                <div class="schedule-context">{{ groupedGroupLocation.areaPath }}</div>
+            </div>
+
+            <template v-for="(groupLocation, locationIndex) in groupedGroupLocation.groupLocations"
+                      :key="getGroupLocationKey(groupedGroupLocation, groupLocation)">
+                <div v-if="locationIndex > 0" class="schedule-location-separator"></div>
+                <div class="schedule-col-location-details">
+                    <div>{{ groupLocation.locationName }}</div>
+                    <div class="schedule-context">{{ groupLocation.areaPath }}</div>
+                </div>
+                <div v-for="schedule in schedules"
+                     :key="schedule.value ?? ''"
+                     class="schedule-col">
+                    <CheckBox label=""
+                              :modelValue="isScheduleEnabled(groupLocation, schedule)"
+                              :disabled="disabled"
+                              @change="onScheduleClick(groupLocation, schedule)" />
+                </div>
+            </template>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+    import { GroupedGroupLocationsBag } from "./types.partial";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/groupLocationsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        groupLocations: {
+            type: Array as PropType<GroupLocationsBag[]>,
+            required: true
+        },
+
+        schedules: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    // These mirror the `minmax()` minimums and column `repeat()` widths in the
+    // CSS `grid-template-columns` rule. If either value changes in CSS, update
+    // it here too.
+    const minTextColWidth = 120;
+    const scheduleColWidth = 80;
+
+    let resizeObserver: ResizeObserver | null = null;
+
+    // #region Values
+
+    const contentEl = ref<HTMLElement | null>(null);
+    const isOverflow = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Groups the provided group locations by their areaPath and groupPath. */
+    const groupedGroupLocations = computed((): GroupedGroupLocationsBag[] => {
+        if (!props.groupLocations.length) {
+            return [];
+        }
+
+        // We're assuming the server has performed the sort and returned the
+        // group locations to us in the expected display order.
+        // A Map object is needed to maintain sort order.
+        const groupedGroupLocations = new Map<string, GroupedGroupLocationsBag>();
+        props.groupLocations
+            .filter(gl => !!(gl.areaPath && gl.groupPath))
+            .forEach(gl => {
+                const key = `${gl.areaPath}|${gl.groupPath}`;
+                let grouped = groupedGroupLocations.get(key);
+
+                if (!grouped) {
+                    grouped = {
+                        areaPath: gl.areaPath,
+                        groupPath: gl.groupPath,
+                        groupLocationId: gl.groupLocationId,
+                        groupLocations: []
+                    };
+                    groupedGroupLocations.set(key, grouped);
+                }
+
+                grouped.groupLocations?.push(gl);
+            });
+
+        return Array.from(groupedGroupLocations.values());
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Generates a unique key for a grouped group locations object. */
+    function getGroupedGroupLocationsKey(groupedGroupLocations: GroupedGroupLocationsBag): string {
+        return `${groupedGroupLocations.areaPath}|${groupedGroupLocations.groupPath}`;
+    }
+
+    /** Generates a unique key for a group location within a grouped group locations context. */
+    function getGroupLocationKey(groupedGroupLocations: GroupedGroupLocationsBag, groupLocation: GroupLocationsBag): string {
+        return `${groupedGroupLocations.areaPath}|${groupedGroupLocations.groupPath}|${groupLocation.groupLocationId}`;
+    }
+
+    /** Gets the CSS classes for the schedule header checkbox. */
+    function getScheduleHeaderCheckboxCssClass(schedule: ListItemBag): string[] {
+        const classes = ["ti"];
+
+        if (isColumnEnabled(schedule.value ?? "")) {
+            classes.push("ti-square-check");
+        }
+        else {
+            classes.push("ti-square");
+        }
+
+        if (props.disabled) {
+            classes.push("disabled");
+        }
+
+        return classes;
+    }
+
+    /**
+     * Determines if a schedule column is enabled for all group locations.
+     * A column is considered enabled if the scheduleIdKey is present in the
+     * scheduleIds for every group location.
+     *
+     * @param scheduleIdKey - The key of the schedule to check.
+     * @returns `true` if the scheduleIdKey is present in all
+     * filteredGroupLocations, and false otherwise.
+     */
+    function isColumnEnabled(scheduleIdKey: string): boolean {
+        return props.groupLocations
+            .filter(g =>
+                g.scheduleIds?.includes(scheduleIdKey)
+            ).length === props.groupLocations.length
+            && props.groupLocations.length > 0;
+    }
+
+    /**
+     * Selects or deselects all scheduels in a given schedule column
+     *
+     * @param scheduleIdKey  the unique identifier for the schedule column
+     */
+    function onScheduleColumnClick(scheduleIdKey: string): void {
+        if (props.disabled) {
+            return;
+        }
+
+        if (props.groupLocations.length === 0) {
+            return;
+        }
+
+        const isCurrentlyEnabled = isColumnEnabled(scheduleIdKey);
+
+        for (const groupLocation of props.groupLocations) {
+            let scheduleIds = groupLocation.scheduleIds || [];
+
+            if (isCurrentlyEnabled) {
+                scheduleIds = scheduleIds.filter(id => id !== scheduleIdKey);
+            }
+            else if (!scheduleIds.includes(scheduleIdKey)) {
+                scheduleIds = [...scheduleIds, scheduleIdKey];
+            }
+
+            groupLocation.scheduleIds = scheduleIds;
+        }
+    }
+
+    /**
+     * Gets the HTML string to display that represents the name of the schedule.
+     *
+     * @param schedule The schedule whose name will be displayed.
+     */
+    function getScheduleHtml(schedule: ListItemBag): string {
+        // Replace spaces with <br> to save horizontal space.
+        return escapeHtml(schedule.text ?? "").replace(/ /g, "<br>");
+    }
+
+    /**
+     * Determines if the group location is currently enabled for the
+     * specified schedule. This provides the state of the checkbox for a cell.
+     *
+     * @param groupLocation The group location.
+     * @param schedule The schedule.
+     *
+     * @returns `true` if the cell checkbox should be checked.
+     */
+    function isScheduleEnabled(groupLocation: GroupLocationsBag, schedule: ListItemBag): boolean {
+        if (!groupLocation.scheduleIds || !schedule.value) {
+            return false;
+        }
+
+        return groupLocation.scheduleIds.includes(schedule.value);
+    }
+
+    /**
+     * Toggles the enabled state of a schedule for a location.
+     *
+     * @param scheduledLocation The scheduled location row.
+     * @param schedule The schedule column.
+     */
+    function onScheduleClick(scheduledLocation: GroupLocationsBag, schedule: ListItemBag): void {
+        if (!scheduledLocation.scheduleIds || !schedule.value) {
+            return;
+        }
+
+        if (scheduledLocation.scheduleIds.includes(schedule.value)) {
+            scheduledLocation.scheduleIds = scheduledLocation.scheduleIds.filter(id => id !== schedule.value);
+        }
+        else {
+            scheduledLocation.scheduleIds = [...scheduledLocation.scheduleIds, schedule.value];
+        }
+    }
+
+    /**
+     * Checks if the grid needs horizontal scrolling by calculating the minimum
+     * required width and comparing it to the available space.
+     */
+    function updateOverflow(): void {
+        if (!contentEl.value) {
+            return;
+        }
+
+        const header = contentEl.value.querySelector<HTMLElement>(".schedule-grid-header");
+
+        if (!header) {
+            isOverflow.value = false;
+            return;
+        }
+
+        // Use the schedule grid's visible width as the available space.
+        const gridStyle = getComputedStyle(contentEl.value);
+        const availableWidth = contentEl.value.offsetWidth
+            - parseFloat(gridStyle.paddingLeft)
+            - parseFloat(gridStyle.paddingRight);
+
+        const headerStyle = getComputedStyle(header);
+        const gap = parseFloat(headerStyle.columnGap) || 0;
+        const paddingH = parseFloat(headerStyle.paddingLeft) + parseFloat(headerStyle.paddingRight);
+        const numScheduleCols = props.schedules.length;
+
+        // Minimum width for one grid row: 2 text columns (min 120px each) + N
+        // schedule columns (80px each) + (N+1) column gaps + the row's
+        // horizontal padding.
+        const minWidth = minTextColWidth * 2
+            + scheduleColWidth * numScheduleCols
+            + gap * (1 + numScheduleCols)
+            + paddingH;
+
+        isOverflow.value = minWidth > availableWidth;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Re-check after the DOM updates when schedules change, since more columns
+    // may push the grid wider.
+    watch(() => props.schedules, updateOverflow, { flush: "post" });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        if (!contentEl.value) {
+            return;
+        }
+
+        updateOverflow();
+        resizeObserver = new ResizeObserver(updateOverflow);
+        resizeObserver.observe(contentEl.value);
+    });
+
+    onUnmounted(() => {
+        resizeObserver?.disconnect();
+        resizeObserver = null;
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

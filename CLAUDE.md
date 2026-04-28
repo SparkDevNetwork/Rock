@@ -15,6 +15,18 @@ Rock RMS is an open-source church management system. The codebase is C# (.NET) +
 
 ---
 
+## When the Request Is Ambiguous
+
+Before implementing, if the request has multiple reasonable interpretations, **stop and ask**. Don't silently pick.
+
+- State assumptions you're making so the user can correct them.
+- If you see two or more ways to read the task (e.g., "make it faster" could mean latency, throughput, or perceived UX), present the options and ask which one matters.
+- If a simpler approach than what was asked fits the goal, say so before coding it the long way.
+
+This does **not** apply to questions already settled by Rock conventions (rules, skills, or memory). Ask about **goals and scope**, not about conventions — looking up the answer yourself is faster than a round-trip.
+
+---
+
 ## Project Architecture
 
 | What you're creating | Where it goes |

@@ -93,6 +93,7 @@ When the WebForms grid has a column bound to a person (e.g., `CreatedByPersonAli
 | `List<int>` | `"1|2|3"` | `.SplitDelimitedValues().Select(...)` | `.split("|").filter(...)` |
 | `ListItemBag` | JSON string | `.FromJsonOrNull<ListItemBag>()` | `safeParseJson(...)` — **never** use `JSON.parse` (throws on bad data) |
 | `SlidingDateRange` | Framework string | `.ToSlidingDateRangeBagOrNull()` | `parseSlidingDateRangeString(...)` |
+| `PersonPicker` value | `ListItemBag` JSON string | `.FromJsonOrNull<ListItemBag>()` — **resolve the alias guid** (see below) | `safeParseJson<ListItemBag>(...)` |
 
 Key rules:
 - Define `PreferenceKey` constants using kebab-case strings.
@@ -100,6 +101,7 @@ Key rules:
 - Only apply a `.Where()` clause when the filter has a value — never filter on empty/null.
 - The gridSettingsModal emits `update:modelValue` only when values actually changed (use `deepEqual`).
 - **gridSettings initialization:** Use `safeParseJson` (from `@Obsidian/Utility/stringUtils`) for JSON values, `asBooleanOrNull` / `asTrueOrFalseString` (from `@Obsidian/Utility/booleanUtils`) for booleans. Never hand-roll `JSON.parse(... || "null")` or `=== "True"` comparisons.
+- **`PersonPicker` emits a `PersonAlias` Guid, not a `Person` Guid.** Comparing it to `Person.Guid` silently matches zero rows. Always resolve to `PersonId` via `new PersonAliasService( rockContext ).GetPersonId( aliasGuid )` before filtering. See `common-patterns.md` § *PersonPicker — Emits a PersonAlias Guid, NOT a Person Guid* for the full pattern.
 
 **Reference:** `Rock.Blocks/Communication/CommunicationList.cs` + `Rock.JavaScript.Obsidian.Blocks/src/Communication/CommunicationList/`
 

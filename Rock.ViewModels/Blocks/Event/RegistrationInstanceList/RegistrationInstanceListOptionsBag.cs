@@ -23,6 +23,14 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceList
     public class RegistrationInstanceListOptionsBag
     {
         /// <summary>
+        /// Whether the grid should render. Mirrors the WebForms
+        /// <c>pnlContent.Visible = _canView</c> gate: the grid only appears
+        /// when a RegistrationTemplate has been resolved from the
+        /// RegistrationTemplateId page parameter.
+        /// </summary>
+        public bool IsVisible { get; set; }
+
+        /// <summary>
         /// Whether to show the wait list column.
         /// </summary>
         public bool ShowWaitList { get; set; }
@@ -33,8 +41,13 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceList
         public string RegistrationInstanceName { get; set; }
 
         /// <summary>
-        /// Whether to show the details list column.
+        /// The title used for CSV exports (becomes the exported file name).
         /// </summary>
-        public bool ShowDetailsColumn { get; set; }
+        public string ExportTitle { get; set; }
+
+        /// <summary>
+        /// The CSS class for the icon displayed next to the grid title.
+        /// </summary>
+        public string TitleIconCssClass { get; set; }
     }
 }

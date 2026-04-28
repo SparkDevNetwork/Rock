@@ -67,6 +67,14 @@ export type ConnectionRequestBag = {
     /** Gets or sets the encrypted identifier key of this connection request. */
     idKey?: string | null;
 
+    /**
+     * Gets or sets whether the currently persisted placement group on this request is
+     * inactive or archived. When true, the edit UI should warn the user that saving with
+     * a different selection will overwrite an assignment to a group that is no longer
+     * available in the picker.
+     */
+    isCurrentPlacementGroupInactiveOrArchived?: boolean | null;
+
     /** Gets or sets the GUID of the placement group assigned to this request. */
     placementGroupGuid?: string | null;
 

@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
@@ -166,14 +167,20 @@ namespace Rock.Blocks.Cms
         {
             var siteType = GetAttributeValue( AttributeKey.SiteType ).SplitDelimitedValues().Select( a => a.ConvertToEnumOrNull<SiteType>() ).ToList();
 
-            var qry = base.GetListQueryable( rockContext );
+            var queryable = base.GetListQueryable( rockContext ).Include( s => s.SiteDomains );
             if ( siteType.Count() > 0 )
             {
                 // Filter by block setting Site type
-                qry = qry.Where( s => siteType.Contains( s.SiteType ) );
+                queryable = queryable.Where( s => siteType.Contains( s.SiteType ) );
             }
 
-            return qry;
+            return queryable;
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<Site> GetOrderedListQueryable( IQueryable<Site> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( s => s.Name );
         }
 
         /// <inheritdoc/>
@@ -187,7 +194,7 @@ namespace Rock.Blocks.Cms
                 .AddTextField( "description", a => a.Description )
                 .AddTextField( "theme", a => a.Theme )
                 .AddTextField( "domain", p => p.SiteDomains
-                    .Select( a => a.Domain ).JoinStringsWithCommaAnd() )
+                    .Select( a => a.Domain ).JoinStrings( ", " ) )
                 .AddTextField( "siteIconUrl", p => GetSiteIconUrl( p ) )
                 .AddField( "isActive", a => a.IsActive )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
@@ -206,58 +213,72 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new SiteService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new SiteService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{Site.FriendlyTypeName} not found." );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete {Site.FriendlyTypeName}." );
-                }
-
-                var sitePages = new List<int> {
-                    entity.DefaultPageId ?? -1,
-                    entity.LoginPageId ?? -1,
-                    entity.RegistrationPageId ?? -1,
-                    entity.PageNotFoundPageId ?? -1
-                };
-
-                var pageService = new PageService( rockContext );
-                foreach ( var page in pageService.Queryable( "Layout" )
-                    .Where( t => !t.IsSystem && ( t.Layout.SiteId == entity.Id || sitePages.Contains( t.Id ) ) ) )
-                {
-                    if ( pageService.CanDelete( page, out string deletePageErrorMessage ) )
-                    {
-                        return ActionBadRequest( deletePageErrorMessage );
-                    }
-
-                    pageService.Delete( page );
-                }
-
-                var layoutService = new LayoutService( rockContext );
-                var layoutQry = layoutService.Queryable()
-                    .Where( l =>
-                    l.SiteId == entity.Id );
-                layoutService.DeleteRange( layoutQry );
-
-                rockContext.SaveChanges( true );
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{Site.FriendlyTypeName} not found." );
             }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {Site.FriendlyTypeName}." );
+            }
+
+            var sitePages = new List<int> {
+                entity.DefaultPageId ?? -1,
+                entity.LoginPageId ?? -1,
+                entity.RegistrationPageId ?? -1,
+                entity.PageNotFoundPageId ?? -1
+            };
+
+            var pageService = new PageService( RockContext );
+            foreach ( var page in pageService.Queryable( "Layout" )
+                .Where( t => !t.IsSystem && ( t.Layout.SiteId == entity.Id || sitePages.Contains( t.Id ) ) ) )
+            {
+                if ( !pageService.CanDelete( page, out string deletePageErrorMessage ) )
+                {
+                    return ActionBadRequest( deletePageErrorMessage );
+                }
+
+                pageService.Delete( page );
+            }
+
+            var layoutService = new LayoutService( RockContext );
+            var layoutQry = layoutService.Queryable()
+                .Where( l => l.SiteId == entity.Id );
+            layoutService.DeleteRange( layoutQry );
+
+            RockContext.SaveChanges( true );
+
+            // includeSecondLvl catches sites referenced as the DefaultPage / LoginPage /
+            // RegistrationPage / PageNotFoundPage of another site — matches WebForms.
+            if ( !entityService.CanDelete( entity, out var errorMessage, includeSecondLvl: true ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            // Capture the ApiKey UserLogin (if any) before deleting the Site so we can
+            // clean it up alongside the site — prevents orphaned UserLogin records.
+            var additionalSettings = entity.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>() ?? new AdditionalSiteSettings();
+            UserLogin apiKeyUserLogin = null;
+            if ( additionalSettings.ApiKeyId.HasValue )
+            {
+                apiKeyUserLogin = new UserLoginService( RockContext ).Get( additionalSettings.ApiKeyId.Value );
+            }
+
+            RockContext.WrapTransaction( () =>
+            {
+                entityService.Delete( entity );
+                if ( apiKeyUserLogin != null )
+                {
+                    new UserLoginService( RockContext ).Delete( apiKeyUserLogin );
+                }
+                RockContext.SaveChanges();
+            } );
+
+            return ActionOk();
         }
 
         /// <summary>
