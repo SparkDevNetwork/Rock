@@ -15,6 +15,7 @@
             <div class="col-md-6">
                 <DropDownList v-model="gridSettingsForm.filterProcessed"
                               :items="enumToListItemBag(ProcessedDescription)"
+                              :showBlankItem="false"
                               label="Processed" />
             </div>
 
@@ -66,7 +67,7 @@
                 <CampusPicker v-model="gridSettingsForm.filterCampus"
                               :forceVisible="true"
                               :includeInactive="true"
-                              :showBlankItem="true" ,
+                              :showBlankItem="true"
                               label="Campus" />
             </div>
         </div>

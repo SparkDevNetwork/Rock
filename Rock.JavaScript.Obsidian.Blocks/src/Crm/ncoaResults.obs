@@ -15,73 +15,94 @@
             <h3 class="pl-0">{{ family.familyName || family.ncoaItems?.[0]?.individualName?.split(' ')?.[1] }} Family</h3>
 
             <div v-for="(row, rowIdx) in family.ncoaItems" :key="row.idKey ?? rowIdx">
-                <div class="displaycard">
-                    <div class="ncoa-group">
-                        <div v-if="row.type?.toLowerCase() === 'move'">
-                            <h4 class="mt-0">
-                                <span class="label label-success">
-                                    {{ row.familyMembers?.trim() ? "Family" : "Individual" }}
-                                </span>
-                            </h4>
-                            <div class="d-flex flex-column" v-if="row.moveDate">
-                                <label class="text-muted font-weight-normal">Move Date</label>
-                                <span>{{ row.moveDate }}</span>
+                <div class="well">
+                    <div class="row">
+                        <div class="col-md-4 col-xs-12">
+                            <div class="row">
+                                <div class="col-lg-6 col-md-12">
+                                    <h4 v-if="row.type?.toLowerCase() === 'move'">
+                                        <span class="label label-success">
+                                            {{ row.familyMembers?.trim() ? "Family" : "Individual" }}
+                                        </span>
+                                    </h4>
+                                    <h4 v-else-if="row.type?.toLowerCase() === 'month48move'">
+                                        <span class="label label-info">48 Month Move</span>
+                                    </h4>
+                                    <h4 v-else-if="row.addressStatus?.toLowerCase() === 'invalid'">
+                                        <span class="label label-warning">Invalid Address</span>
+                                    </h4>
+                                    <dl v-if="row.moveDate">
+                                        <dt>Move Date</dt>
+                                        <dd>{{ row.moveDate }}</dd>
+                                    </dl>
+                                </div>
+                                <div class="col-lg-6 col-md-12">
+                                    <dl>
+                                        <dt>{{ row.familyMembers?.trim() ? "Family Members" : "Individual" }}</dt>
+                                        <dd v-for="(member, i) in (row.familyMembers?.trim()
+                                            ? row.familyMembers.split(',').map(m => m.trim())
+                                            : [row.individualName])"
+                                            :key="i">
+                                            {{ member }}
+                                            <a v-if="i === 0" :href="'/Person/' + row.individualIdKey" target="_blank">
+                                                <i class="ti ti-users"></i>
+                                            </a>
+                                        </dd>
+                                    </dl>
+                                </div>
                             </div>
                         </div>
-                        <h4 class="mt-spacing-none" v-else-if="row.type?.toLowerCase() === 'month48move'">
-                            <span class="label label-info">48 Month Move</span>
-                        </h4>
-                        <h4 class="mt-spacing-none" v-else-if="row.addressStatus?.toLowerCase() === 'invalid'">
-                            <span class="label label-warning">Invalid Address</span>
-                        </h4>
-
-                        <dl>
-                            <dt>{{ row.familyMembers?.trim() ? "Family Members" : "Individual" }}</dt>
-                            <dd v-for="(member, i) in (row.familyMembers?.trim()
-                                ? row.familyMembers.split(',').map(m => m.trim())
-                                : [row.individualName])"
-                                :key="i">
-                                {{ member }}
-                                <a v-if="i === 0" :href="'/Person/' + row.individualIdKey" target="_blank">
-                                    <i class="ti ti-users"></i>
-                                </a>
-                            </dd>
-                        </dl>
+                        <div class="col-md-4 col-xs-12">
+                            <div class="row">
+                                <div class="col-lg-6 col-md-12">
+                                    <dl>
+                                        <dt>Original Address</dt>
+                                        <dd v-html="row.originalAddress"></dd>
+                                    </dl>
+                                </div>
+                                <div class="col-lg-6 col-md-12">
+                                    <dl v-if="row.type?.toLowerCase() === 'move'">
+                                        <dt>New Address</dt>
+                                        <dd v-html="row.newAddress"></dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-xs-12">
+                            <div class="row">
+                                <div class="col-lg-5 col-md-12">
+                                    <dl v-if="row.moveDistance">
+                                        <dt>Move Distance</dt>
+                                        <dd>{{ row.moveDistance }}</dd>
+                                    </dl>
+                                </div>
+                                <div class="col-lg-7 col-md-12">
+                                    <label v-if="row.processStatus"
+                                           class="label label-default margin-b-sm"
+                                           :class="{ 'label-success': row.processStatus.toLowerCase() === 'processed' }">
+                                        {{ row.processStatus }}
+                                    </label>
+                                    <div>
+                                        <RockButton v-if="row.type?.toLocaleLowerCase() === 'move' && row.processStatus?.toLocaleLowerCase() === 'not processed'"
+                                                    @click="markNcoaHistoryItem(row.idKey ?? '', true)">
+                                            Mark Processed
+                                        </RockButton>
+                                        <RockButton v-else-if="(row.addressStatus?.toLocaleLowerCase() === 'invalid' || row.type?.toLocaleLowerCase() === 'month48move') && row.processStatus?.toLocaleLowerCase() === 'not processed'"
+                                                    @click="markNcoaHistoryItem(row.idKey ?? '', false)">
+                                            Mark Address As Previous
+                                        </RockButton>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="ncoa-group">
-                        <dl>
-                            <dt>Original Address</dt>
-                            <dd>{{ row.originalAddress }}</dd>
-                        </dl>
-                        <dl v-if="row.type?.toLowerCase() === 'move'">
-                            <dt>New Address</dt>
-                            <dd>{{ row.newAddress }}</dd>
-                        </dl>
-                    </div>
-                    <div class="ncoa-group">
-                        <dl v-if="row.moveDistance">
-                            <dt>Move Distance</dt>
-                            <dd>{{ row.moveDistance }}</dd>
-                        </dl>
-                        <div v-if="row.processStatus" class="d-flex flex-column" style="width: fit-content;">
-                            <label class="label label-default" style="width: fit-content;"
-                                   :class="{ 'label-success': row.processStatus.toLowerCase() == 'processed' }">
-                                {{ row.processStatus }}
-                            </label>
-                            <RockButton v-if="(row.addressStatus?.toLocaleLowerCase() === 'invalid' || row.type?.toLocaleLowerCase() === 'month48move') && row.processStatus.toLocaleLowerCase() == 'not processed'"
-                                        @click="markNcoaHistoryItem(row.idKey ?? '', false)">
-                                Mark Address As Previous
-                            </RockButton>
-                            <RockButton v-if="row.type?.toLocaleLowerCase() === 'move' && row.processStatus.toLocaleLowerCase() == 'not processed'"
-                                        @click="markNcoaHistoryItem(row.idKey ?? '', true)">
-                                Mark Processed
-                            </RockButton>
-                            <div class="alert alert-warning font-size-sm mt-2" v-if="warnings[row.idKey ?? '']">
+                    <div v-if="warnings[row.idKey ?? '']" class="row">
+                        <div class="col-xs-12">
+                            <div class="alert alert-warning font-size-sm">
                                 <p>{{ warnings[row.idKey ?? ''] }}</p>
                             </div>
                         </div>
                     </div>
-
                 </div>
                 <hr>
             </div>
@@ -113,6 +134,7 @@
     import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { NcoaFamilyGroupBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaFamilyGroupBag";
+    import { Processed } from "@Obsidian/Enums/Core/processed";
 
     const config = useConfigurationValues<ListBlockBox<NcoaResultsOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -130,7 +152,7 @@
     const isGridSettingsVisible = ref(false);
 
     const gridSettings = ref<GridSettingsOptions>({
-        filterProcessed: safeParseJson(preferences.getValue(PreferenceKey.FilterProcessed)) ?? "",
+        filterProcessed: safeParseJson(preferences.getValue(PreferenceKey.FilterProcessed)) ?? Processed.ManualUpdateRequiredOrNotProcessed.toString(),
         filterMoveDate: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterMoveDate)) ?? null,
         filterNcoaProcessedDate: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterNcoaProcessedDate)) ?? null,
         filterMoveType: preferences.getValue(PreferenceKey.FilterMoveType),
@@ -201,7 +223,7 @@
     );
 
     const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.filterProcessed.length
+        return (!!gridSettings.value.filterProcessed.length && gridSettings.value.filterProcessed !== Processed.ManualUpdateRequiredOrNotProcessed.toString())
             || !!gridSettings.value.filterMoveDate
             || !!gridSettings.value.filterNcoaProcessedDate
             || !!gridSettings.value.filterMoveType.length
@@ -263,41 +285,3 @@
         { deep: true }
     );
 </script>
-
-<style scoped>
-.displaycard {
-    display: flex;
-    flex-direction: row;
-    gap: var(--spacing-large);
-    padding: var(--spacing-large);
-    border-radius: var(--rounded-xsmall);
-    border: 1px solid var(--color-interface-soft);
-    transition: background-color 0.15s ease-in-out;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    background-color: var(--base-interface-softer);
-}
-
-.ncoa-group {
-    flex: 1 1 30%;
-    min-width: 200px;
-}
-
-@media (min-width: 1200px) {
-    .displaycard {
-        display: flex;
-        justify-content: space-between;
-    }
-
-    .ncoa-group {
-        display: contents;
-        justify-content: space-between;
-    }
-}
-
-@media (max-width: 767px) {
-    .ncoa-group {
-        flex: 1 1 100%;
-    }
-}
-</style>

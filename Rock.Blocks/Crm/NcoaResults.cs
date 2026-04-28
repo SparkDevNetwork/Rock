@@ -113,7 +113,7 @@ namespace Rock.Blocks.Crm
 
         private Processed? FilterProcessed => PersonPreferences
             .GetValue( PreferenceKey.FilterProcessed )
-            .ConvertToEnumOrNull<Processed>();
+            .ConvertToEnumOrNull<Processed>() ?? Processed.ManualUpdateRequiredOrNotProcessed;
 
         private MoveType? FilterMoveType => PersonPreferences
             .GetValue( PreferenceKey.FilterMoveType )
@@ -210,34 +210,30 @@ namespace Rock.Blocks.Crm
 
 
         /// <summary>
-        /// Formats the address.
+        /// Formats the provided address components into a single address string.
         /// </summary>
-        /// <param name="street1">The street1.</param>
-        /// <param name="street2">The street2.</param>
+        /// <param name="street1">The first street line.</param>
+        /// <param name="street2">The second street line.</param>
         /// <param name="city">The city.</param>
         /// <param name="state">The state.</param>
         /// <param name="postalCode">The postal code.</param>
-        /// <returns>The formated address</returns>
+        /// <returns>The formatted address, or an empty string if no meaningful address data exists.</returns>
         private string FormattedAddress( string street1, string street2, string city, string state, string postalCode )
         {
-            if ( string.IsNullOrWhiteSpace( street1 ) &&
-            string.IsNullOrWhiteSpace( street2 ) &&
-            string.IsNullOrWhiteSpace( city ) )
+            var isAddressEmpty = string.IsNullOrWhiteSpace( street1 )
+                && string.IsNullOrWhiteSpace( street2 )
+                && string.IsNullOrWhiteSpace( city );
+
+            if ( isAddressEmpty )
             {
                 return string.Empty;
             }
 
-            string result = string.Format( "{0} {1} {2}, {3} {4}",
-              street1, street2, city, state, postalCode ).ReplaceWhileExists( "  ", " " );
-
-            while ( result.Contains( Environment.NewLine + Environment.NewLine ) )
-            {
-                result = result.Replace( Environment.NewLine + Environment.NewLine, Environment.NewLine );
-            }
-            while ( result.Contains( "\x0A\x0A" ) )
-            {
-                result = result.Replace( "\x0A\x0A", "\x0A" );
-            }
+            var result = string.Format( "{0} {1} {2}, {3} {4}",
+                street1, street2, city, state, postalCode )
+                .ReplaceWhileExists( "  ", " " )
+                .ReplaceWhileExists( Environment.NewLine + Environment.NewLine, Environment.NewLine )
+                .ReplaceWhileExists( "\x0A\x0A", "\x0A" );
 
             if ( string.IsNullOrWhiteSpace( result.Replace( ",", string.Empty ) ) )
             {
@@ -255,7 +251,8 @@ namespace Rock.Blocks.Crm
             var families = groupMemberService.Queryable()
                 .Where( gm =>
                     familyIds.Contains( gm.GroupId ) &&
-                    gm.Group.GroupType.Guid == familyGroupTypeGuid )
+                    gm.Group.GroupType.Guid == familyGroupTypeGuid &&
+                    !gm.Person.IsDeceased )
                 .Select( gm => new
                 {
                     gm.GroupId,
@@ -339,7 +336,7 @@ namespace Rock.Blocks.Crm
 
                 if ( dateRange.End.HasValue )
                 {
-                    ncoaQuery = ncoaQuery.Where( i => i.MoveDate <= dateRange.End );
+                    ncoaQuery = ncoaQuery.Where( i => i.MoveDate < dateRange.End );
                 }
             }
 
