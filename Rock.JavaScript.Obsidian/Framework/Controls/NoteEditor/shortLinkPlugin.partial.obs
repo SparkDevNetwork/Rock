@@ -133,7 +133,7 @@
      * (/script)
      */
     import { computed, PropType, ref, watch } from "vue";
-    import { getToolbarButton, usePluginHelper } from "./utils.partial";
+    import { getToolbarButton, usePluginHelper } from "../Internal/NoteEditor/utils";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";

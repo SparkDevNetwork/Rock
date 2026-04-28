@@ -1,0 +1,172 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="View Options"
+           saveText="Save"
+           @save="onSave">
+        <ContentSectionContainer :sidebar="false">
+            <ContentSection title="View" icon="ti ti-eye" disableCollapse>
+                <ContentStack>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DropDownList v-model="sortBy"
+                                          :items="sortByItems"
+                                          label="Sort By" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <DropDownList v-model="gridDataToShow"
+                                          :items="props.gridDataToShowItems"
+                                          label="Grid Data to Show"
+                                          multiple />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <CheckBox v-model="isRequestSourceShown"
+                                      label=""
+                                      text="Show Source of Request" />
+                        </div>
+                    </div>
+                </ContentStack>
+            </ContentSection>
+            <ContentSection title="Filter" icon="ti ti-filter" disableCollapse>
+                <ContentStack>
+                    <CheckBoxList v-model="stateFilter"
+                                  :items="props.connectionStates"
+                                  label="State" />
+                    <CheckBoxList v-model="statusFilter"
+                                  :items="connectionStatusItems"
+                                  label="Status" />
+                    <CheckBoxList v-model="dueFilter"
+                                  :items="dueStatusItems"
+                                  label="Due" />
+                </ContentStack>
+            </ContentSection>
+            <!-- TODO - come back to attributes at the end. -->
+        </ContentSectionContainer>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { ref, PropType, watch, computed } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ViewOptions } from "./types.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { DueStatusDescription } from "@Obsidian/Enums/Connection/dueStatus";
+    import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ViewOptions>,
+            required: true
+        },
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        gridDataToShowItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+        connectionStates: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+        connectionStatuses: {
+            type: Array as PropType<ConnectionStatusBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ViewOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const sortBy = ref(props.modelValue.sortBy ?? "DueDateAsc");
+    const gridDataToShow = ref(props.modelValue.gridDataToShow ?? []);
+    const isRequestSourceShown = ref(props.modelValue.isRequestSourceShown);
+    const stateFilter = ref(props.modelValue.stateFilter ?? []);
+    const statusFilter = ref(props.modelValue.statusFilter ?? []);
+    const dueFilter = ref(props.modelValue.dueFilter ?? []);
+
+    const dueStatusItems = enumToListItemBag(DueStatusDescription);
+
+    const sortByItems = [
+        {
+            text: "Date Added (Oldest First)",
+            value: "DateAddedAsc"
+        },
+        {
+            text: "Date Added (Newest First)",
+            value: "DateAddedDesc"
+        },
+        {
+            text: "Due Date (Soonest First)",
+            value: "DueDateDesc"
+        },
+        {
+            text: "Due Date (Latest First)",
+            value: "DueDateAsc"
+        },
+        {
+            text: "Requester (A-Z)",
+            value: "RequesterAsc"
+        },
+        {
+            text: "Requester (Z-A)",
+            value: "RequesterDesc"
+        },
+        {
+            text: "Last Activity (Oldest First)",
+            value: "LastActivityAsc"
+        },
+        {
+            text: "Last Activity (Newest First)",
+            value: "LastActivityDesc"
+        }
+    ];
+
+    const connectionStatusItems = computed<ListItemBag[]>(() => {
+        return (
+            props.connectionStatuses?.map(s => ({
+                value: s.guid,
+                text: s.name
+            })) ?? []
+        );
+    });
+
+    function onSave(): void {
+        const value: ViewOptions = {
+            sortBy: sortBy.value,
+            gridDataToShow: gridDataToShow.value,
+            isRequestSourceShown: isRequestSourceShown.value,
+            stateFilter: stateFilter.value,
+            statusFilter: statusFilter.value,
+            dueFilter: dueFilter.value
+        };
+
+        emit("update:modelValue", value);
+
+        isVisible.value = false;
+    }
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+</script>

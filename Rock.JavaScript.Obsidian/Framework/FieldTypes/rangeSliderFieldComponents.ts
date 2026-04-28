@@ -19,7 +19,7 @@ import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
-import { ConfigurationValueKey } from "./rangeSliderField.partial";
+import { ConfigurationKey } from "./rangeSliderField.partial";
 
 export const EditComponent = defineComponent({
     name: "RangeSliderField.Edit",
@@ -38,12 +38,12 @@ export const EditComponent = defineComponent({
     },
     computed: {
         minValue(): number {
-            const minValueConfig = this.configurationValues[ConfigurationValueKey.MinValue];
+            const minValueConfig = this.configurationValues[ConfigurationKey.MinValue];
 
             return toNumberOrNull(minValueConfig) || 0;
         },
         maxValue(): number {
-            const maxValueConfig = this.configurationValues[ConfigurationValueKey.MaxValue];
+            const maxValueConfig = this.configurationValues[ConfigurationKey.MaxValue];
 
             return toNumberOrNull(maxValueConfig) || 100;
         },
@@ -112,12 +112,12 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.MinValue] = minValue.value?.toString() ?? "";
-            newValue[ConfigurationValueKey.MaxValue] = maxValue.value?.toString() ?? "";
+            newValue[ConfigurationKey.MinValue] = minValue.value?.toString() ?? "";
+            newValue[ConfigurationKey.MaxValue] = maxValue.value?.toString() ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.MinValue] !== (props.modelValue[ConfigurationValueKey.MinValue] ?? "")
-                || newValue[ConfigurationValueKey.MaxValue] !== (props.modelValue[ConfigurationValueKey.MaxValue] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.MinValue] !== (props.modelValue[ConfigurationKey.MinValue] ?? "")
+                || newValue[ConfigurationKey.MaxValue] !== (props.modelValue[ConfigurationKey.MaxValue] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -144,8 +144,8 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            minValue.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.MinValue]);
-            maxValue.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.MaxValue]);
+            minValue.value = toNumberOrNull(props.modelValue[ConfigurationKey.MinValue]);
+            maxValue.value = toNumberOrNull(props.modelValue[ConfigurationKey.MaxValue]);
         }, {
             immediate: true
         });
@@ -161,8 +161,8 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(minValue, () => maybeUpdateConfiguration(ConfigurationValueKey.MinValue, minValue.value?.toString() ?? ""));
-        watch(maxValue, () => maybeUpdateConfiguration(ConfigurationValueKey.MaxValue, maxValue.value?.toString() ?? ""));
+        watch(minValue, () => maybeUpdateConfiguration(ConfigurationKey.MinValue, minValue.value?.toString() ?? ""));
+        watch(maxValue, () => maybeUpdateConfiguration(ConfigurationKey.MaxValue, maxValue.value?.toString() ?? ""));
 
         return {
             minValue,

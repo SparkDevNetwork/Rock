@@ -53,7 +53,7 @@
      * (/script)
      */
     import { computed, PropType, ref, watch } from "vue";
-    import { getToolbarButton, usePluginHelper } from "./utils.partial";
+    import { getToolbarButton, usePluginHelper } from "../Internal/NoteEditor/utils";
     import Badge from "@Obsidian/Controls/badge.obs";
     import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";

@@ -41,6 +41,45 @@ namespace RockWeb.Blocks.Event
     [Rock.SystemGuid.BlockTypeGuid( "D72A1A61-43D1-4D5D-92EC-BAECA02EAC43" )]
     public partial class RegistrantDetail : RockBlock
     {
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters. Both keys accept either a numeric Id
+        /// or an IdKey (hashed) value so that links from Obsidian blocks and
+        /// legacy numeric URLs both resolve.
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string RegistrantId = "RegistrantId";
+            public const string RegistrationId = "RegistrationId";
+        }
+
+        #endregion Page Parameter Keys
+
+        #region Page Parameter Helpers
+
+        /// <summary>
+        /// Resolves the RegistrantId page parameter, accepting either a numeric
+        /// Id or an IdKey string. Returns null when neither form resolves.
+        /// </summary>
+        private int? GetRegistrantIdFromPage()
+        {
+            var key = PageParameter( PageParameterKey.RegistrantId );
+            return key.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( key );
+        }
+
+        /// <summary>
+        /// Resolves the RegistrationId page parameter, accepting either a numeric
+        /// Id or an IdKey string. Returns null when neither form resolves.
+        /// </summary>
+        private int? GetRegistrationIdFromPage()
+        {
+            var key = PageParameter( PageParameterKey.RegistrationId );
+            return key.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( key );
+        }
+
+        #endregion Page Parameter Helpers
+
         #region Properties
 
         private RegistrationTemplate RegistrationTemplate
@@ -223,6 +262,7 @@ namespace RockWeb.Blocks.Event
                 var registrationTemplateFeeService = new RegistrationTemplateFeeService( rockContext );
                 var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
                 RegistrationRegistrant registrant = null;
+
                 if ( RegistrantState.Id > 0 )
                 {
                     registrant = registrantService.Get( RegistrantState.Id );
@@ -362,48 +402,66 @@ namespace RockWeb.Blocks.Event
                     if ( signatureDocumentId.HasValue )
                     {
                         document = documentService.Get( signatureDocumentId.Value );
+                        if ( registrant.SignatureDocument == null )
+                        {
+                            registrant.SignatureDocument = document;
+                        }
                     }
 
                     if ( document == null && binaryFileId.HasValue )
                     {
-                        var instance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
+                        document = CreateNewSignatureDocumentForThisRegistant( documentService, registrant, person, binaryFileId );
+                    }
+                    else if ( document == null && !binaryFileId.HasValue )
+                    {
+                        // If there is no document tied to this registrant, then look for an existing, valid signature document to connect to this registrant
+                        var existingSignatureDocumentId = registrantService.GetValidSignatureDocument( person.Id, this.RegistrationTemplate.RequiredSignatureDocumentTemplate )
+                            .Select( d => ( int? ) d.Id )
+                            .FirstOrDefault();
 
-                        document = new SignatureDocument();
-                        document.SignatureDocumentTemplateId = this.RegistrationTemplate.RequiredSignatureDocumentTemplate.Id;
-                        document.AppliesToPersonAliasId = registrant.PersonAliasId.Value;
-                        document.AssignedToPersonAliasId = registrant.PersonAliasId.Value;
-                        document.Name = string.Format(
-                            "{0}_{1}",
-                            instance != null ? instance.Name : this.RegistrationTemplate.Name,
-                            person != null ? person.FullName.RemoveSpecialCharacters() : string.Empty );
-                        document.Status = SignatureDocumentStatus.Signed;
-                        document.LastStatusDate = RockDateTime.Now;
-                        documentService.Add( document );
+                        if ( existingSignatureDocumentId != null )
+                        {
+                            registrant.SignatureDocumentId = existingSignatureDocumentId;
+                        }
                     }
 
-                    if ( document != null )
+                    // If there is an existing document AND a new file was just uploaded (and differs from the document's current file), then we either:
+                    //    A) create a new signature document if the existing one is shared with other registrants.
+                    //    B) OR replace (or set) the file on the existing signature document.
+                    if ( document != null && binaryFileId.HasValue && document.BinaryFileId != binaryFileId.Value )
                     {
-                        int? origBinaryFileId = document.BinaryFileId;
-                        document.BinaryFileId = binaryFileId;
+                        var registrantsUsingSignatureDocument = registrantService.GetRegistrantsUsingSignatureDocument( document.Id );
 
-                        if ( origBinaryFileId.HasValue && origBinaryFileId.Value != document.BinaryFileId )
+                        if ( registrantsUsingSignatureDocument.Count() > 1 )
                         {
-                            // if a new the binaryFile was uploaded, mark the old one as Temporary so that it gets cleaned up
-                            var oldBinaryFile = binaryFileService.Get( origBinaryFileId.Value );
-                            if ( oldBinaryFile != null && !oldBinaryFile.IsTemporary )
-                            {
-                                oldBinaryFile.IsTemporary = true;
-                            }
+                            document = CreateNewSignatureDocumentForThisRegistant( documentService, registrant, person, binaryFileId );
                         }
-
-                        // ensure the IsTemporary is set to false on binaryFile associated with this document
-                        if ( document.BinaryFileId.HasValue )
+                        else
                         {
-                            var binaryFile = binaryFileService.Get( document.BinaryFileId.Value );
-                            if ( binaryFile != null && binaryFile.IsTemporary )
+                            // Get the original binaryFileId (if any) before setting the document to use the new one.
+                            int? origBinaryFileId = document.BinaryFileId;
+
+                            // Mark the old one as Temporary so that it gets cleaned up (only if there was an old file).
+                            if ( origBinaryFileId.HasValue )
                             {
-                                binaryFile.IsTemporary = false;
+                                var oldBinaryFile = binaryFileService.Get( origBinaryFileId.Value );
+                                if ( oldBinaryFile != null && !oldBinaryFile.IsTemporary )
+                                {
+                                    oldBinaryFile.IsTemporary = true;
+                                }
                             }
+
+                            document.BinaryFileId = binaryFileId;
+                        }
+                    }
+
+                    // ensure the IsTemporary is set to FALSE on binaryFile associated with this document
+                    if ( document != null && document.BinaryFileId.HasValue )
+                    {
+                        var binaryFile = binaryFileService.Get( document.BinaryFileId.Value );
+                        if ( binaryFile != null && binaryFile.IsTemporary )
+                        {
+                            binaryFile.IsTemporary = false;
                         }
                     }
                 }
@@ -443,13 +501,13 @@ namespace RockWeb.Blocks.Event
                         rockContext.SaveChanges();
 
                         registrant.LoadAttributes();
-                    // NOTE: We will only have Registration Attributes displayed and editable on Registrant Detail.
-                    // To Edit Person or GroupMember Attributes, they will have to go the PersonDetail or GroupMemberDetail blocks
-                    foreach ( var field in this.RegistrationTemplate.Forms
-                            .SelectMany( f => f.Fields
-                                .Where( t =>
-                                    t.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
-                                    t.AttributeId.HasValue ) ) )
+                        // NOTE: We will only have Registration Attributes displayed and editable on Registrant Detail.
+                        // To Edit Person or GroupMember Attributes, they will have to go the PersonDetail or GroupMemberDetail blocks
+                        foreach ( var field in this.RegistrationTemplate.Forms
+                                .SelectMany( f => f.Fields
+                                    .Where( t =>
+                                        t.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
+                                        t.AttributeId.HasValue ) ) )
                         {
                             var attribute = AttributeCache.Get( field.AttributeId.Value );
                             if ( attribute != null )
@@ -483,7 +541,7 @@ namespace RockWeb.Blocks.Event
                                     registrant.SetAttributeValue( attribute.Key, fieldValue.ToString() );
                                 }
                             }
-                        }
+                         }
 
                         registrant.SaveAttributeValues( rockContext );
                     } );
@@ -582,6 +640,26 @@ namespace RockWeb.Blocks.Event
             }
 
             NavigateToRegistration();
+        }
+
+        private SignatureDocument CreateNewSignatureDocumentForThisRegistant( SignatureDocumentService documentService, RegistrationRegistrant registrant, Person person, int? binaryFileId )
+        {
+            var document = new SignatureDocument();
+            document.SignatureDocumentTemplateId = this.RegistrationTemplate.RequiredSignatureDocumentTemplate.Id;
+            document.AppliesToPersonAliasId = registrant.PersonAliasId.Value;
+            document.AssignedToPersonAliasId = registrant.PersonAliasId.Value;
+            document.Name = string.Format(
+                "{0} ({1})",
+                person != null ? person.FullName.ReplaceSpecialCharacters(" ") : string.Empty,
+                registrant.Registration.RegistrationInstance != null ? registrant.Registration.RegistrationInstance.Name : this.RegistrationTemplate.Name
+            );
+            document.Status = SignatureDocumentStatus.Signed;
+            document.LastStatusDate = RockDateTime.Now;
+            document.SignedDateTime = RockDateTime.Now;
+            document.BinaryFileId = binaryFileId;
+            documentService.Add( document );
+            registrant.SignatureDocument = document;
+            return document;
         }
 
         /// <summary>
@@ -726,8 +804,9 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void LoadState()
         {
-            int? registrantId = PageParameter( "RegistrantId" ).AsIntegerOrNull();
-            int? registrationId = PageParameter( "RegistrationId" ).AsIntegerOrNull();
+            nbFoundExistingSignatureDocument.Visible = false;
+            int? registrantId = GetRegistrantIdFromPage();
+            int? registrationId = GetRegistrationIdFromPage();
 
             if ( RegistrantState == null )
             {
@@ -834,20 +913,22 @@ namespace RockWeb.Blocks.Event
 
                     if ( ppPerson.PersonId.HasValue )
                     {
-                        var signatureDocument = new SignatureDocumentService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( d =>
-                                d.SignatureDocumentTemplateId == this.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
-                                d.AppliesToPersonAlias != null &&
-                                d.AppliesToPersonAlias.PersonId == ppPerson.PersonId &&
-                                d.LastStatusDate.HasValue &&
-                                d.Status == SignatureDocumentStatus.Signed &&
-                                d.BinaryFile != null )
-                            .OrderByDescending( d => d.LastStatusDate.Value )
-                            .FirstOrDefault();
+                        var signatureDocument = registrant.SignatureDocument;
+
+                        if ( signatureDocument == null )
+                        {
+                            var registrantService = new RegistrationRegistrantService( rockContext );
+                            signatureDocument = registrantService.GetValidSignatureDocument( ppPerson.PersonId.Value, this.RegistrationTemplate.RequiredSignatureDocumentTemplate )
+                                .FirstOrDefault();
+                            if ( signatureDocument != null )
+                            {
+                                nbFoundExistingSignatureDocument.Visible = true;
+                            }
+                        }
 
                         if ( signatureDocument != null )
                         {
+                            RegistrantState.SignatureDocumentId = signatureDocument.Id;
                             hfSignedDocumentId.Value = signatureDocument.Id.ToString();
                             fuSignedDocument.BinaryFileId = signatureDocument.BinaryFileId;
                         }

@@ -22,7 +22,24 @@ namespace Rock.Attribute
     /// </summary>
     public class SiteFieldAttribute : FieldAttribute
     {
+        private const string MOBILE_SITES_ONLY = "mobileSitesOnly";
         private const string SHORTENING_SITES_ONLY = "shorteningSitesOnly";
+
+        /// <summary>
+        /// Gets or sets a value indicating whether only mobile sites should be displayed.
+        /// </summary>
+        public bool MobileSitesOnly
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( MOBILE_SITES_ONLY ).AsBoolean();
+            }
+            set
+            {
+                var configurationValue = new Field.ConfigurationValue( value.ToString() );
+                FieldConfigurationValues.AddOrReplace( MOBILE_SITES_ONLY, configurationValue );
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether only sites that are enabled for shortening should be displayed.

@@ -24,6 +24,7 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -269,6 +270,86 @@ namespace Rock.Web.Cache
             return $"[{ExpressionType}] DataViewId={DataViewId}, Selection={Selection}";
         }
 
+        #endregion
+
+        #region ISecured
+
+        /*
+             3/12/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                if ( DataViewId.HasValue )
+                {
+                    var dataView = DataViewCache.Get( DataViewId.Value );
+                    if ( dataView != null )
+                    {
+                        return dataView;
+                    }
+                }
+                return base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the person is authorized for the DataViewFilter and Child filters
+        /// </summary>
+        /// <param name="action">A <see cref="System.String" /> containing the action that is being performed.</param>
+        /// <param name="person">the <see cref="Rock.Model.Person" /> who is trying to perform the action.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            // First check if user is authorized for model
+            bool authorized = base.IsAuthorized( action, person );
+
+            if ( !authorized )
+            {
+                return false;
+            }
+
+            // If viewing, make sure user is authorized to view the component that filter is using
+            // and all the child models/components
+            if ( string.Compare( action, Authorization.VIEW, true ) == 0 )
+            {
+                if ( EntityTypeId.HasValue )
+                {
+                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityTypeCache.Get( this.EntityTypeId.Value )?.Name );
+                    if ( filterComponent != null )
+                    {
+                        authorized = filterComponent.IsAuthorized( action, person );
+                    }
+                }
+
+                if ( !authorized )
+                {
+                    return false;
+                }
+
+                foreach ( var childFilter in ChildFilters )
+                {
+                    if ( !childFilter.IsAuthorized( action, person ) )
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return authorized;
+        }
+
         /// <summary>
         /// Determines whether the specified action is authorized but instead of traversing child 
         /// filters (an expensive query), a list of all filters can be passed in and this will be 
@@ -324,7 +405,7 @@ namespace Rock.Web.Cache
             return authorized;
         }
 
-        #endregion
+        #endregion ISecured
 
         #region IDataViewFilterDefinition implementation
 

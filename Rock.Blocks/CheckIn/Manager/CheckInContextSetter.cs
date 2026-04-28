@@ -24,6 +24,7 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Enums.Cms;
 using Rock.Model;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.CheckIn.Manager.CheckInContextSetter;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -98,6 +99,11 @@ namespace Rock.Blocks.CheckIn.Manager
             public const string DefaultCampus = "DefaultCampus";
             public const string CampusTypes = "CampusTypes";
             public const string CampusStatuses = "CampusStatuses";
+        }
+
+        private static class PageParameterKey
+        {
+            public const string LocationId = "LocationId";
         }
 
         #endregion
@@ -189,8 +195,8 @@ namespace Rock.Blocks.CheckIn.Manager
 
             InitializeCampusOptions( options );
 
-            var location = RequestContext.GetContextEntity<Location>();
-            options.SelectedLocation = RequestContext.GetContextEntity<Location>()?.ToListItemBag();
+            var location = GetContextLocation();
+            options.SelectedLocation = location?.ToListItemBag();
             options.SelectedSchedule = RequestContext.GetContextEntity<Schedule>()?.ToListItemBag();
             options.Schedules = location != null ? GetScheduleBagsByLocation( location.Guid ) : new List<ListItemBag>();
 
@@ -292,12 +298,12 @@ namespace Rock.Blocks.CheckIn.Manager
                 .Queryable()
                 .Where( gl => gl.Location.Guid == locationGuid && gl.Schedules.Any() )
                 .SelectMany( gl => gl.Schedules )
+                .Where( s => !string.IsNullOrEmpty( s.Name ) && s.IsActive )
                 .Select( s => new
                 {
                     s.Guid,
                     s.Name
                 } )
-                .Where( s => !string.IsNullOrEmpty( s.Name ) )
                 .Distinct()
                 .Select( s => new ListItemBag
                 {
@@ -305,6 +311,46 @@ namespace Rock.Blocks.CheckIn.Manager
                     Text = s.Name
                 } )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Get the context location, taking into account that the query string
+        /// might have provided a custom location that should be used instead.
+        /// </summary>
+        /// <returns>An instance of <see cref="Location"/> or <c>null</c>.</returns>
+        private Location GetContextLocation()
+        {
+            var location = RequestContext.GetContextEntity<Location>();
+            var locationIdParameter = RequestContext.GetPageParameter( PageParameterKey.LocationId );
+
+            if ( locationIdParameter.IsNullOrWhiteSpace() )
+            {
+                return location;
+            }
+
+            int? locationId = IdHasher.Instance.GetId( locationIdParameter );
+
+            if ( !locationId.HasValue && !PageCache.Layout.Site.DisablePredictableIds )
+            {
+                locationId = locationIdParameter.AsIntegerOrNull();
+            }
+
+            if ( !locationId.HasValue )
+            {
+                return location;
+            }
+
+            if ( location == null || location.Id != locationId )
+            {
+                location = new LocationService( RockContext ).Get( locationId.Value );
+
+                if ( location != null )
+                {
+                    RequestContext.SetContextEntity( location, pageSpecific: false );
+                }
+            }
+
+            return location;
         }
 
         #endregion

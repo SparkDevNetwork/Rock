@@ -26,6 +26,7 @@ using Moq;
 
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Shared
@@ -218,6 +219,19 @@ namespace Rock.Tests.Shared
             var app = CreateRockApp( connectionString, configureApp );
 
             return new RockAppScope( app );
+        }
+
+        /// <summary>
+        /// Creates a new scoped RockApp instance with a mock database configuration.
+        /// The database can be accessed via the IRockContextFactory service.
+        /// </summary>
+        /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
+        public static RockAppScope CreateScopedRockAppWithMockDatabase()
+        {
+            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
+
+            return CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
         }
 
         /// <summary>

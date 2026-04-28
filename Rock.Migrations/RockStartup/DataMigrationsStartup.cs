@@ -138,6 +138,7 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_180_MIGRATE_ERA_DATA_TO_STEPS.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_181_ADD_INDEXES_FOR_COMMUNICATION_PREP.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_190_ADD_COMMUNICATION_UNSUBSCRIBE_REPORT_INDEX.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_200_ADD_EXCEPTION_LIST_INDEX.AsGuid(),
         };
 
         /// <summary>

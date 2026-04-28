@@ -206,7 +206,6 @@ namespace Rock.Blocks.Example
         /// <param name="declaringType">The type that owns this property, used to detect inheritance.</param>
         private ModelMapPropertyBag BuildPropertyBag( PropertyInfo p, Type declaringType )
         {
-#pragma warning disable CS0618 // LavaIncludeAttribute is obsolete
             var property = new ModelMapPropertyBag
             {
                 Id = p.MetadataToken,
@@ -214,8 +213,7 @@ namespace Rock.Blocks.Example
                 Comments = GetComments( p ),
                 IsInherited = p.DeclaringType != declaringType,
                 IsVirtual = p.GetGetMethod( true )?.IsVirtual == true && !p.GetGetMethod( true ).IsFinal,
-                IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) ||
-                                p.IsDefined( typeof( LavaVisibleAttribute ) ) ||
+                IsLavaInclude = p.IsDefined( typeof( LavaVisibleAttribute ) ) ||
                                 p.IsDefined( typeof( DataMemberAttribute ) ),
                 IsAttributeQualifier = p.IsDefined( typeof( EnableAttributeQualificationAttribute ) ),
                 IsObsolete = p.IsDefined( typeof( ObsoleteAttribute ) ) || p.IsDefined( typeof( RockObsolete ) ),
@@ -225,7 +223,6 @@ namespace Rock.Blocks.Example
                 IsEnum = p.PropertyType.IsEnum || Nullable.GetUnderlyingType( p.PropertyType )?.IsEnum == true,
                 IsDefinedValue = p.Name.EndsWith( "ValueId" ) && p.IsDefined( typeof( DefinedValueAttribute ) )
             };
-#pragma warning restore CS0618
 
             if ( property.IsEnum )
             {

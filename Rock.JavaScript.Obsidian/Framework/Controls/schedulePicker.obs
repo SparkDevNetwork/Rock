@@ -55,10 +55,29 @@
 
     // #region Values
 
-    const internalValue = ref(props.modelValue ?? null);
+    const internalValue = ref(normalizeModelValue(props.modelValue));
     const includeInactive = ref(false);
     const securityGrantToken = useSecurityGrantToken();
     const itemProvider = ref<ScheduleTreeItemProvider>();
+
+    // Treat invalid bag-shaped values like {} as no selection so TreeItemPicker
+    // doesn't convert them into an empty-string selection.
+    function normalizeModelValue(value: ListItemBag | ListItemBag[] | null | undefined): ListItemBag | ListItemBag[] | null {
+        if (!value) {
+            return null;
+        }
+
+        if (Array.isArray(value)) {
+            return value;
+        }
+
+        // Is it a ListItemBag?
+        if ("value" in value || "text" in value) {
+            return value;
+        }
+
+        return null;
+    }
 
     // Configure the item provider with our settings.
     function refreshItemProvider(): void {
@@ -91,7 +110,7 @@
     });
 
     watch(() => props.modelValue, () => {
-        updateRefValue(internalValue, props.modelValue ?? null);
+        updateRefValue(internalValue, normalizeModelValue(props.modelValue));
     });
 
     // #endregion

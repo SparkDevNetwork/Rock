@@ -243,7 +243,8 @@
                 "--spacing-tiny",
                 "--spacing-xsmall",
                 "--spacing-medium",
-                "--spacing-large"
+                "--spacing-large",
+                "--font-family-sans"
             ];
 
             for (const cssVariableName of cssVariableNames) {

@@ -1,0 +1,498 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage"
+                     :alertType="AlertType.Warning"
+                     v-html="config.errorMessage" />
+
+    <NotificationBox v-if="clearAllExceptionsErrorMessage"
+                     :alertType="AlertType.Warning"
+                     v-html="clearAllExceptionsErrorMessage" />
+
+    <BreakpointObserver v-else @breakpointHelper="breakpointHelper = $event">
+        <ContentSection class="margin-b-lg" light disableCollapse>
+            <div class="exception-list-chart">
+
+                <NotificationBox v-if="showNoDataNotification" :alertType="AlertType.Info">
+                    No Data Found
+                </NotificationBox>
+
+                <BarChart v-else-if="showBarChart"
+                          :labels="barChartLabels"
+                          :series="barChartSeries"
+                          :hideLegend="!showChartLegend"
+                          :legendAlign="legendAlign"
+                          :legendPosition="legendPosition"
+                          :categoryShowGridLines="true"
+                          :valueSuggestedMax="barChartValueSuggestedMax"
+                          :valueTickCount="barChartValueTickCount"
+                          :valuePrecision="barChartValuePrecision"
+                          type="number" />
+
+                <LineChart v-else-if="showLineChart"
+                           :labels="lineChartLabels"
+                           :series="lineChartSeries"
+                           :hideLegend="!showChartLegend"
+                           :legendAlign="legendAlign"
+                           :legendPosition="legendPosition"
+                           :categoryShowGridLines="true"
+                           :valueSuggestedMax="lineChartValueSuggestedMax"
+                           :valueTickCount="lineChartValueTickCount"
+                           :valuePrecision="lineChartValuePrecision"
+                           type="number" />
+            </div>
+        </ContentSection>
+
+        <Grid :definition="config.gridDefinition ?? undefined"
+              :data="gridDataSource"
+              keyField="idKey"
+              itemTerm="Exception Type"
+              title="Exception Log Summary"
+              stickyHeader
+              gridSettings
+              :gridSettingsActive="hasSettingsFilters"
+              @gridSettingsClick="isGridSettingsVisible = true">
+
+            <template v-if="showClearAllExceptionsButton" #gridHeaderBadges>
+                <div class="exception-list-clear-all">
+                    <RockButton :btnType="BtnType.Link"
+                                :loading="isClearingAllExceptions"
+                                @click="onClearAllExceptionsClick">
+                        <i class="ti ti-repeat"></i> Clear <span v-if="breakpointHelper?.isSmOrLarger">All Exceptions</span>
+                    </RockButton>
+                </div>
+            </template>
+
+            <DateTimeColumn name="lastExceptionDate"
+                            field="lastExceptionDate"
+                            title="Last Date"
+                            width="200"
+                            :filter="dateValueFilter" />
+
+            <TextColumn name="exceptionTypeName"
+                        field="exceptionTypeName"
+                        title="Type"
+                        width="250"
+                        :filter="pickExistingValueFilter" />
+
+            <TextColumn name="description"
+                        field="description"
+                        title="Description" />
+
+            <NumberColumn name="totalCount"
+                          field="totalCount"
+                          title="Total Count"
+                          width="125" />
+
+            <NumberColumn name="subsetCount"
+                          field="subsetCount"
+                          :title="subsetCountColumnTitle"
+                          width="125" />
+
+            <ButtonColumn name="viewDetail"
+                          iconClass="ti ti-file"
+                          excludeFromExport
+                          @click="onViewDetailClick" />
+
+        </Grid>
+
+        <GridSettingsModal v-model="gridSettings"
+                           v-model:visible="isGridSettingsVisible" g
+                           :siteItems="siteItems"
+                           :defaultSlidingDateRange="defaultSlidingDateRange" />
+    </BreakpointObserver>
+
+</template>
+
+<style scoped>
+.exception-list-chart {
+    flex: 1 0 auto;
+    height: 280px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.exception-list-clear-all {
+    margin-right: var(--spacing-medium);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, reactive, ref, watch } from "vue";
+    import BreakpointObserver from "./ExceptionList/breakpointObserver.partial.obs";
+    import GridSettingsModal from "./ExceptionList/gridSettingsModal.partial.obs";
+    import { BreakpointHelper, GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./ExceptionList/types.partial";
+    import BarChart from "@Obsidian/Controls/barChart.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import Grid, { ButtonColumn, DateTimeColumn, dateValueFilter, NumberColumn, TextColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import LineChart from "@Obsidian/Controls/lineChart.obs";
+    import { BarSeries, LegendAlign, LegendPosition, LineSeries } from "@Obsidian/Core/Controls/chart";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
+    import { pluralConditional, safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ExceptionCountsPerDayBag } from "@Obsidian/ViewModels/Blocks/Core/ExceptionList/exceptionCountsPerDayBag";
+    import { ExceptionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ExceptionList/exceptionListOptionsBag";
+    import { ExceptionListSummaryDataBag } from "@Obsidian/ViewModels/Blocks/Core/ExceptionList/exceptionListSummaryDataBag";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<ListBlockBox<ExceptionListOptionsBag>>();
+    const preferences = usePersonPreferences().blockPreferences;
+    const breakpointHelper = ref<BreakpointHelper>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // We'll enforce a default date range of the last 6 months - to be applied
+    // if the individual doesn't have a preference - as the [ExceptionLog] table
+    // can have a large number of rows.
+    const defaultSlidingDateRange: SlidingDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Month,
+        timeValue: 6
+    };
+
+    // #region Values
+
+    const hasCompletedInitialLoad = ref(false);
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const exceptionCountsPerDay = ref<ExceptionCountsPerDayBag | null>(null);
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        site: preferences.getValue(PreferenceKey.FilterSite),
+        page: safeParseJson(preferences.getValue(PreferenceKey.FilterPage)),
+        person: safeParseJson(preferences.getValue(PreferenceKey.FilterPerson)),
+        exceptionTypeName: preferences.getValue(PreferenceKey.FilterExceptionTypeName),
+        dateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterDateRange)) ?? defaultSlidingDateRange,
+    });
+
+    const isClearingAllExceptions = ref(false);
+    const clearAllExceptionsErrorMessage = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** `true` if the "Clear All Exceptions" button should be shown. */
+    const showClearAllExceptionsButton = computed((): boolean => {
+        return config.options?.showClearAllExceptionsButton ?? false;
+    });
+
+    /** The title for the subset count column, based on the configured number of days. */
+    const subsetCountColumnTitle = computed((): string => {
+        var subsetCountDays = config.options?.subsetCountDays ?? 7;
+        return `Last ${subsetCountDays} ${pluralConditional(subsetCountDays, "Day", "Days")}`;
+    });
+
+    /** `true` if any grid settings filters are active. */
+    const hasSettingsFilters = computed((): boolean => {
+        const s = gridSettings.value;
+
+        return !!s.site
+            || !!s.page
+            || !!s.person
+            || !!s.exceptionTypeName
+            || !!s.dateRange;
+    });
+
+    /** The site items for the filter dropdown. */
+    const siteItems = computed((): ListItemBag[] => {
+        return config.options?.siteItems ?? [];
+    });
+
+    /** The chart legend position based on the block settings. */
+    const legendPosition = computed((): LegendPosition | undefined => {
+        const position = config.options?.chartLegendPosition;
+
+        switch (position) {
+            case "nw":
+            case "ne":
+                return LegendPosition.Top;
+
+            case "sw":
+            case "se":
+                return LegendPosition.Bottom;
+
+            default:
+                return undefined;
+        }
+    });
+
+    /** The chart legend alignment based on the block settings. */
+    const legendAlign = computed((): LegendAlign | undefined => {
+        switch (config.options?.chartLegendPosition) {
+            case "nw":
+            case "sw":
+                return LegendAlign.Start;
+
+            case "ne":
+            case "se":
+                return LegendAlign.End;
+
+            default:
+                return undefined;
+        }
+    });
+
+    /** `true` if the chart legend should be shown. */
+    const showChartLegend = computed((): boolean => {
+        return config.options?.showChartLegend ?? true;
+    });
+
+    /** The raw ISO labels represented by the visible chart data set. */
+    const visibleChartLabels = computed((): string[] => {
+        const labels = exceptionCountsPerDay.value?.dateLabels ?? [];
+        const totalExceptionCounts = exceptionCountsPerDay.value?.totalExceptionCounts ?? [];
+        const uniqueExceptionCounts = exceptionCountsPerDay.value?.uniqueExceptionCounts ?? [];
+
+        const isValid = !!(
+            labels.length > 0
+            && totalExceptionCounts.length === labels.length
+            && uniqueExceptionCounts.length === labels.length
+        );
+
+        if (!isValid) {
+            return [];
+        }
+
+        return labels;
+    });
+
+    /** The total exception counts represented by the chart data set. */
+    const totalExceptionCounts = computed((): number[] => {
+        const counts = exceptionCountsPerDay.value?.totalExceptionCounts ?? [];
+        return counts.length === visibleChartLabels.value.length ? counts : [];
+    });
+
+    /** The unique exception counts represented by the chart data set. */
+    const uniqueExceptionCounts = computed((): number[] => {
+        const counts = exceptionCountsPerDay.value?.uniqueExceptionCounts ?? [];
+        return counts.length === visibleChartLabels.value.length ? counts : [];
+    });
+
+    /** `true` if any chart data exists. */
+    const hasChartData = computed((): boolean => {
+        return visibleChartLabels.value.length > 0;
+    });
+
+    /** `true` if the "No Data Found" notification should be shown. */
+    const showNoDataNotification = computed((): boolean => {
+        return hasCompletedInitialLoad.value && !hasChartData.value;
+    });
+
+    /** `true` if the chart should be rendered as a bar chart. */
+    const showBarChart = computed((): boolean => {
+        return hasCompletedInitialLoad.value && visibleChartLabels.value.length === 1;
+    });
+
+    /** `true` if the chart should be rendered as a line chart. */
+    const showLineChart = computed((): boolean => {
+        return hasCompletedInitialLoad.value && visibleChartLabels.value.length > 1;
+    });
+
+    /** The formatted labels for the line chart. */
+    const lineChartLabels = computed((): string[] => {
+        return visibleChartLabels.value.map(label => {
+            return RockDateTime.parseISO(label)?.toASPString("MMM d") ?? label;
+        });
+    });
+
+    /** The labels for the single-day bar chart. */
+    const barChartLabels = computed((): string[] => {
+        return [
+            "Total Exceptions",
+            "Unique Exceptions"
+        ];
+    });
+
+    /** The suggested maximum value for the single-day bar chart. */
+    const barChartValueSuggestedMax = computed((): number => {
+        const maxValue = Math.max(
+            totalExceptionCounts.value[0] ?? 0,
+            uniqueExceptionCounts.value[0] ?? 0
+        );
+
+        return Math.max(Math.ceil(maxValue * 1.1), 1);
+    });
+
+    /** The desired tick count for the single-day bar chart. */
+    const barChartValueTickCount = computed((): number => {
+        return barChartValueSuggestedMax.value + 1;
+    });
+
+    /** The desired value precision for the single-day bar chart. */
+    const barChartValuePrecision = computed((): number => {
+        return 0;
+    });
+
+    /** The line chart series derived from the compact server data. */
+    const lineChartSeries = computed((): LineSeries[] => {
+        if (!hasChartData.value) {
+            return [];
+        }
+
+        return [
+            {
+                label: "Total Exceptions",
+                data: totalExceptionCounts.value,
+                color: getCssVariableValue("--color-metric-primary", "#8B8BA7")
+            },
+            {
+                label: "Unique Exceptions",
+                data: uniqueExceptionCounts.value,
+                color: getCssVariableValue("--color-positive-primary", "#8B8BA7")
+            }
+        ];
+    });
+
+    /** The suggested maximum value for the line chart. */
+    const lineChartValueSuggestedMax = computed((): number => {
+        const maxValue = Math.max(
+            ...totalExceptionCounts.value,
+            ...uniqueExceptionCounts.value,
+            0
+        );
+
+        return Math.max(Math.ceil(maxValue * 1.1), 1);
+    });
+
+    /** The desired tick count for the line chart. */
+    const lineChartValueTickCount = computed((): number | undefined => {
+        const maxValue = Math.max(
+            ...totalExceptionCounts.value,
+            ...uniqueExceptionCounts.value,
+            0
+        );
+
+        if (maxValue < 10) {
+            return lineChartValueSuggestedMax.value + 1;
+        }
+
+        return undefined;
+    });
+
+    /** The desired value precision for the line chart. */
+    const lineChartValuePrecision = computed((): number => {
+        return 0;
+    });
+
+    /** The bar chart series derived from the compact server data. */
+    const barChartSeries = computed((): BarSeries[] => {
+        if (!showBarChart.value) {
+            return [];
+        }
+
+        return [
+            {
+                label: "Total Exceptions",
+                data: [totalExceptionCounts.value[0] ?? 0, null],
+                color: getCssVariableValue("--color-metric-primary", "#8B8BA7")
+            },
+            {
+                label: "Unique Exceptions",
+                data: [null, uniqueExceptionCounts.value[0] ?? 0],
+                color: getCssVariableValue("--color-positive-primary", "#8B8BA7")
+            }
+        ];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Called when new summary data needs to be loaded.
+     */
+    async function loadSummaryData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<ExceptionListSummaryDataBag>("GetSummaryData");
+
+        hasCompletedInitialLoad.value = true;
+
+        if (result.isSuccess && result.data?.gridDataBag) {
+            gridData = reactive(result.data.gridDataBag);
+            exceptionCountsPerDay.value = result.data.exceptionCountsPerDay ?? null;
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while tring to load summary data.");
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the "View Detail" button is clicked for a given row,
+     * navigating the individual to the detail page for that exception type.
+     *
+     * @param idKey The idKey of the exception type whose detail should be viewed.
+     */
+    function onViewDetailClick(idKey: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", idKey);
+        }
+    }
+
+    /**
+     * Called when the "Clear All Exceptions" button is clicked.
+     */
+    async function onClearAllExceptionsClick(): Promise<void> {
+        if (isClearingAllExceptions.value) {
+            return;
+        }
+
+        if (!await confirm("Are you sure you want to clear all exceptions?")) {
+            return;
+        }
+
+        isClearingAllExceptions.value = true;
+        clearAllExceptionsErrorMessage.value = "";
+
+        const result = await invokeBlockAction("ClearAllExceptions");
+        isClearingAllExceptions.value = false;
+
+        if (!result.isSuccess) {
+            clearAllExceptionsErrorMessage.value = result.errorMessage ?? "Unknown error while trying to clear all exceptions.";
+            return;
+        }
+
+        gridDataSource.value = loadSummaryData();
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(gridSettings, async () => {
+        const s = gridSettings.value;
+        const dateRangeString = s.dateRange
+            ? slidingDateRangeToString(s.dateRange)
+            : slidingDateRangeToString(defaultSlidingDateRange);
+
+        preferences.setValue(PreferenceKey.FilterSite, s.site);
+        preferences.setValue(PreferenceKey.FilterPage, s.page ? JSON.stringify(s.page) : "");
+        preferences.setValue(PreferenceKey.FilterPerson, s.person ? JSON.stringify(s.person) : "");
+        preferences.setValue(PreferenceKey.FilterExceptionTypeName, s.exceptionTypeName);
+        preferences.setValue(PreferenceKey.FilterDateRange, dateRangeString);
+
+        await preferences.save();
+
+        gridDataSource.value = loadSummaryData();
+    });
+
+    // #endregion Watchers
+
+    gridDataSource.value = loadSummaryData();
+</script>

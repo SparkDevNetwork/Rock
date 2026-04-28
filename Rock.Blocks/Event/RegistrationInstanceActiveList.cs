@@ -25,10 +25,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
-using Rock.UniversalSearch.IndexModels;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.RegistrationInstanceActiveList;
-using Rock.Web.Cache;
 
 namespace Rock.Blocks.Event
 {
@@ -39,15 +37,16 @@ namespace Rock.Blocks.Event
     [DisplayName( "Registration Instance Active List" )]
     [Category( "Event" )]
     [Description( "Displays a list of registration instances." )]
-    [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [IconCssClass( "ti ti-file" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the registration instance details.",
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "3951453c-e9fc-4f43-8b7b-794c5acfcabe" )]
-    [Rock.SystemGuid.BlockTypeGuid( "5e899ccb-3c24-4f7d-9843-2f1cb00aed8f" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "5e899ccb-3c24-4f7d-9843-2f1cb00aed8f" )]
+    [Rock.SystemGuid.BlockTypeGuid( "CFE8CAFA-587B-4EF2-A457-18047AC6BA39" )]
     [CustomizedGrid]
     public class RegistrationInstanceActiveList : RockEntityListBlockType<RegistrationInstance>
     {
@@ -79,8 +78,8 @@ namespace Rock.Blocks.Event
             var box = new ListBlockBox<RegistrationInstanceActiveListOptionsBag>();
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            box.IsAddEnabled = false;
+            box.IsDeleteEnabled = false;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -96,19 +95,8 @@ namespace Rock.Blocks.Event
         private RegistrationInstanceActiveListOptionsBag GetBoxOptions()
         {
             var options = new RegistrationInstanceActiveListOptionsBag();
-            options.IsGridVisible = PageParameter( PageParameterKey.CategoryId )?.Length == 0 && PageParameter( PageParameterKey.RegistrationTemplateId )?.Length == 0;
+            options.IsGridVisible = PageParameter( PageParameterKey.CategoryId ).IsNullOrWhiteSpace() && PageParameter( PageParameterKey.RegistrationTemplateId ).IsNullOrWhiteSpace();
             return options;
-        }
-
-        /// <summary>
-        /// Determines if the add button should be enabled in the grid.
-        /// <summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
-        {
-            var entity = new RegistrationInstance();
-
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -148,12 +136,9 @@ namespace Rock.Blocks.Event
         {
             var listItems = base.GetListItems( queryable, rockContext );
 
-            var securedAttendanceItems = listItems
-                .AsEnumerable()
-                .Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+            return listItems
+                .Where( i => i.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                 .ToList();
-            
-            return listItems;
         }
 
         /// <inheritdoc/>
@@ -169,45 +154,6 @@ namespace Rock.Blocks.Event
                 .AddField( "registrantsCount", a => a.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Count() )
                 .AddField( "isActive", a => a.IsActive )
                 .AddAttributeFields( GetGridAttributes() );
-        }
-
-        #endregion
-
-        #region Block Actions
-
-        /// <summary>
-        /// Deletes the specified entity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult Delete( string key )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var entityService = new RegistrationInstanceService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{RegistrationInstance.FriendlyTypeName} not found." );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete {RegistrationInstance.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
-            }
         }
 
         #endregion

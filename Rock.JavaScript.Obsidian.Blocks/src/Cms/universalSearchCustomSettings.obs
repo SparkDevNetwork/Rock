@@ -1,0 +1,209 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isModalOpen"
+           title="Universal Search Configuration"
+           :saveText="saveButtonText"
+           @save="onSave">
+
+        <NotificationBox v-if="errorMessage"
+                         v-text="errorMessage"
+                         alertType="warning" />
+
+        <LoadingIndicator v-else-if="isLoading" :delay="500" />
+
+        <div v-else>
+            <div class="row">
+                <div class="col-md-6">
+                    <DropDownList v-model="searchType"
+                                  label="Search Type"
+                                  :items="searchTypeItems"
+                                  rules="required"
+                                  :showBlankItem="false" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <NumberBox v-model="resultsPerPage"
+                               label="Results Per Page"
+                               class="input-width-sm"
+                               rules="required|gte:1" />
+                    <CheckBox v-model="showRefinedSearch"
+                              label="Show Refined Search Options" />
+
+                    <CheckBox v-model="showScores"
+                              label="Show Scores"
+                              help="Enables the display of scores for help with debugging." />
+
+                    <CheckBox v-model="useCustomResults"
+                              label="Use Custom Results Template"
+                              help="Determines if the custom Lava results template should be used." />
+
+                    <CheckBox v-model="showFilters"
+                              label="Show Model Filter" />
+                </div>
+
+                <div class="col-md-6">
+                    <TextBox v-model="baseFieldFilters"
+                             label="Base Field Filters"
+                             help="These field filters will always be enabled and will not be changeable by the individual. Uses the same syntax as the lava command." />
+
+                    <CheckBoxList v-model="enabledModels"
+                                  label="Enabled Models"
+                                  :items="enabledModelItems"
+                                  :repeatColumns="1" />
+                </div>
+            </div>
+
+            <CodeEditor v-model="lavaResultTemplate"
+                        label="Custom Results Template"
+                        mode="lava" />
+
+            <CheckBoxList v-model="customResultsCommands"
+                          label="Custom Results Lava Commands"
+                          :items="lavaCommandItems"
+                          horizontal
+                          :repeatColumns="4" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <CodeEditor v-model="preHtml"
+                                label="Search Input Pre-HTML"
+                                help="Custom Lava to place before the search input (for styling)."
+                                mode="lava" />
+                </div>
+
+                <div class="col-md-6">
+                    <CodeEditor v-model="postHtml"
+                                label="Search Input Post-HTML"
+                                help="Custom Lava to place after the search input (for styling)."
+                                mode="lava" />
+                </div>
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
+    import { CustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Cms/UniversalSearch/customSettingsBag";
+    import { CustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/UniversalSearch/customSettingsOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const emit = defineEmits<{
+        (e: "close"): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(null);
+    const reloadBlock = useReloadBlock();
+
+    const errorMessage = ref("");
+    const isLoading = ref(true);
+    const isModalOpen = ref(true);
+
+    const searchType = ref("");
+    const resultsPerPage = ref<number | null>(null);
+    const showRefinedSearch = ref(false);
+    const showScores = ref(false);
+    const useCustomResults = ref(false);
+    const showFilters = ref(false);
+    const baseFieldFilters = ref("");
+    const enabledModels = ref<string[]>([]);
+    const lavaResultTemplate = ref("");
+    const customResultsCommands = ref<string[]>([]);
+    const preHtml = ref("");
+    const postHtml = ref("");
+
+    const searchTypeItems = ref<ListItemBag[]>([]);
+    const enabledModelItems = ref<ListItemBag[]>([]);
+    const lavaCommandItems = ref<ListItemBag[]>([]);
+
+    const saveButtonText = computed((): string => {
+        return errorMessage.value || !isLoading.value ? "Save" : "";
+    });
+
+    /**
+     * Loads the current settings and available option values.
+     */
+    async function startLoading(): Promise<void> {
+        const result = await invokeBlockAction<CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag>>("GetCustomSettings");
+
+        if (result.isSuccess && result.data?.settings && result.data.options) {
+            searchType.value = result.data.settings.searchType ?? "";
+            resultsPerPage.value = result.data.settings.resultsPerPage ?? null;
+            showRefinedSearch.value = result.data.settings.showRefinedSearch;
+            showScores.value = result.data.settings.showScores;
+            useCustomResults.value = result.data.settings.useCustomResults;
+            showFilters.value = result.data.settings.showFilters;
+            baseFieldFilters.value = result.data.settings.baseFieldFilters ?? "";
+            enabledModels.value = result.data.settings.enabledModels ?? [];
+            lavaResultTemplate.value = result.data.settings.lavaResultTemplate ?? "";
+            customResultsCommands.value = result.data.settings.customResultsCommands ?? [];
+            preHtml.value = result.data.settings.preHtml ?? "";
+            postHtml.value = result.data.settings.postHtml ?? "";
+
+            securityGrant.updateToken(result.data.securityGrantToken);
+            searchTypeItems.value = result.data.options.searchTypeItems ?? [];
+            enabledModelItems.value = result.data.options.enabledModelItems ?? [];
+            lavaCommandItems.value = result.data.options.lavaCommandItems ?? [];
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";
+        }
+
+        isLoading.value = false;
+    }
+
+    /**
+     * Saves the current custom settings values.
+     */
+    async function onSave(): Promise<void> {
+        const box: CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag> = {};
+
+        setCustomSettingsBoxValue(box, "searchType", searchType.value);
+        setCustomSettingsBoxValue(box, "resultsPerPage", resultsPerPage.value);
+        setCustomSettingsBoxValue(box, "showRefinedSearch", showRefinedSearch.value);
+        setCustomSettingsBoxValue(box, "showScores", showScores.value);
+        setCustomSettingsBoxValue(box, "useCustomResults", useCustomResults.value);
+        setCustomSettingsBoxValue(box, "showFilters", showFilters.value);
+        setCustomSettingsBoxValue(box, "baseFieldFilters", baseFieldFilters.value);
+        setCustomSettingsBoxValue(box, "enabledModels", enabledModels.value);
+        setCustomSettingsBoxValue(box, "lavaResultTemplate", lavaResultTemplate.value);
+        setCustomSettingsBoxValue(box, "customResultsCommands", customResultsCommands.value);
+        setCustomSettingsBoxValue(box, "preHtml", preHtml.value);
+        setCustomSettingsBoxValue(box, "postHtml", postHtml.value);
+
+        const result = await invokeBlockAction("SaveCustomSettings", { box });
+
+        if (result.isSuccess) {
+            isModalOpen.value = false;
+            reloadBlock();
+        }
+        else {
+            alert(result.errorMessage || "Unable to save block settings.");
+        }
+    }
+
+    provideSecurityGrant(securityGrant);
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            emit("close");
+        }
+    });
+
+    startLoading();
+</script>

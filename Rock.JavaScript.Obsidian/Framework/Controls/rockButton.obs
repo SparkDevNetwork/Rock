@@ -125,8 +125,15 @@
     });
 
     watch([element, () => props.title], () => {
-        if (props.title && element.value) {
+        if (!element) {
+            return;
+        }
+
+        if (props.title) {
             tooltip(element.value);
+        }
+        else {
+            destroyTooltip(element.value);
         }
     });
 

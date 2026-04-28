@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using Rock.Attribute;
 using Rock.Model;
@@ -30,5 +32,19 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_STATE )]
     public class ConnectionStateFieldType : EnumFieldType<ConnectionState>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionStateFieldType"/> class.
+        /// </summary>
+        public ConnectionStateFieldType()
+        {
+            var values = new Dictionary<ConnectionState, string>();
+
+            foreach ( var enumValue in Enum.GetValues( typeof( ConnectionState ) ).Cast<ConnectionState>() )
+            {
+                values.Add( enumValue, enumValue.GetDisplayName() );
+            }
+
+            base.SetAvailableValues( values );
+        }
     }
 }

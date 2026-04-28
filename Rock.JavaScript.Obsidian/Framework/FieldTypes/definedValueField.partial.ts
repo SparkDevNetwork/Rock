@@ -38,7 +38,7 @@ export const enum ConfigurationPropertyKey {
 /**
  * The configuration value keys used by the configuraiton and edit controls.
  */
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     /** The unique identifier of the defined type currently selected. */
     DefinedType = "definedtype",
 
@@ -115,8 +115,8 @@ export class DefinedValueFieldType extends FieldTypeBase {
             const clientValue = JSON.parse(value ?? "") as ClientValue;
 
             try {
-                const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
-                const displayDescription = asBoolean(configurationValues[ConfigurationValueKey.DisplayDescription]);
+                const values = JSON.parse(configurationValues[ConfigurationKey.Values] ?? "[]") as ValueItem[];
+                const displayDescription = asBoolean(configurationValues[ConfigurationKey.DisplayDescription]);
                 const rawValues = clientValue.value.split(",");
 
                 return values.filter(v => rawValues.includes(v.value))
@@ -148,8 +148,8 @@ export class DefinedValueFieldType extends FieldTypeBase {
         try {
             const clientValue = JSON.parse(value.value ?? "") as ClientValue;
 
-            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
-            const useDescription = asBoolean(configurationValues?.[ConfigurationValueKey.DisplayDescription]);
+            const values = JSON.parse(configurationValues?.[ConfigurationKey.Values] ?? "[]") as ValueItem[];
+            const useDescription = asBoolean(configurationValues?.[ConfigurationKey.DisplayDescription]);
             const rawValues = clientValue.value.split(",");
 
             const text = values.filter(v => rawValues.includes(v.value))
@@ -164,7 +164,7 @@ export class DefinedValueFieldType extends FieldTypeBase {
     }
 
     public override getFilterComponent(configurationValues: Record<string, string>): Component {
-        if (asBoolean(configurationValues[ConfigurationValueKey.AllowMultiple])) {
+        if (asBoolean(configurationValues[ConfigurationKey.AllowMultiple])) {
             return getStandardFilterComponent(this.getSupportedComparisonTypes(), filterComponent);
         }
         else {

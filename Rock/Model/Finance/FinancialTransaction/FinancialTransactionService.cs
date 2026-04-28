@@ -665,19 +665,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the giving automation monthly account giving history that was stored as JSON in an attribute. This is used for the
-        /// Giving Overview block's monthly bar chart and also yearly summary.
-        /// </summary>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use GetGivingAutomationMonthlyAccountGivingHistory instead" )]
-        public static List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistoryFromJson( string json )
-        {
-            var monthlyAccountGivingHistoryList = json.FromJsonOrNull<List<MonthlyAccountGivingHistory>>();
-            return monthlyAccountGivingHistoryList ?? new List<MonthlyAccountGivingHistory>();
-        }
-
-        /// <summary>
         /// Populates transaction details from account allocations, optionally applying fee coverage
         /// (penny-safe distribution) and optionally stamping entity type/id.
         /// </summary>

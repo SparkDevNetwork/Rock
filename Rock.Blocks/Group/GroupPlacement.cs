@@ -506,7 +506,7 @@ namespace Rock.Blocks.Group
                 foreach ( var field in fields )
                 {
                     var attribute = AttributeCache.Get( field.AttributeId.Value );
-                    if ( attribute != null )
+                    if ( attribute != null && attribute.IsActive )
                     {
                         listItems.Add( new ListItemBag
                         {
@@ -2008,6 +2008,7 @@ namespace Rock.Blocks.Group
             if ( placementConfiguration.SourceAttributesToDisplay?.Any() == true )
             {
                 displayedSourceAttributeIds = GetAttributeIdsFromGuids( placementConfiguration.SourceAttributesToDisplay );
+                bool? entityAuthorized = null;
 
                 if ( sourceGroupId.HasValue && sourceGroupTypeId.HasValue )
                 {
@@ -2019,7 +2020,8 @@ namespace Rock.Blocks.Group
 
                     fakeSourceGroupMember.LoadAttributes();
 
-                    attributeFiltersBag.SourceAttributesForFilter = fakeSourceGroupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) );
+                    attributeFiltersBag.SourceAttributesForFilter = fakeSourceGroupMember.GetPublicAttributesForEdit( GetCurrentPerson(), false, a => displayedSourceAttributeIds.Contains( a.Id )
+                        && Rock.ExtensionMethods.IsAttributeAuthorized( fakeSourceGroupMember, ref entityAuthorized, a, Authorization.VIEW, RequestContext.CurrentPerson ) );
                 }
                 else if ( registrationTemplateId.HasValue )
                 {
@@ -2030,22 +2032,26 @@ namespace Rock.Blocks.Group
 
                     fakeRegistrant.LoadAttributes();
 
-                    attributeFiltersBag.SourceAttributesForFilter = fakeRegistrant.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedSourceAttributeIds.Contains( a.Id ) );
+                    attributeFiltersBag.SourceAttributesForFilter = fakeRegistrant.GetPublicAttributesForEdit( GetCurrentPerson(), false, a => displayedSourceAttributeIds.Contains( a.Id )
+                        && Rock.ExtensionMethods.IsAttributeAuthorized( fakeRegistrant, ref entityAuthorized, a, Authorization.VIEW, RequestContext.CurrentPerson ) );
                 }
             }
 
             if ( placementConfiguration.DestinationGroupAttributesToDisplay?.Any() == true && fakeDestinationGroup != null )
             {
                 groupAttributeIds = GetAttributeIdsFromGuids( placementConfiguration.DestinationGroupAttributesToDisplay );
+                bool? entityAuthorized = null;
 
                 fakeDestinationGroup.LoadAttributes();
 
-                attributeFiltersBag.DestinationGroupAttributesForFilter = fakeDestinationGroup.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => groupAttributeIds.Contains( a.Id ) );
+                attributeFiltersBag.DestinationGroupAttributesForFilter = fakeDestinationGroup.GetPublicAttributesForEdit( GetCurrentPerson(), false, a => groupAttributeIds.Contains( a.Id )
+                    && Rock.ExtensionMethods.IsAttributeAuthorized( fakeDestinationGroup, ref entityAuthorized, a, Authorization.VIEW, RequestContext.CurrentPerson ) );
             }
 
             if ( placementConfiguration.DestinationGroupMemberAttributesToDisplay?.Any() == true && fakeDestinationGroup != null )
             {
                 groupMemberAttributeIds = GetAttributeIdsFromGuids( placementConfiguration.DestinationGroupMemberAttributesToDisplay );
+                bool? entityAuthorized = null;
 
                 var fakeDestinationGroupMember = new GroupMember
                 {
@@ -2054,7 +2060,8 @@ namespace Rock.Blocks.Group
 
                 fakeDestinationGroupMember.LoadAttributes();
 
-                attributeFiltersBag.DestinationGroupMemberAttributesForFilter = fakeDestinationGroupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => groupMemberAttributeIds.Contains( a.Id ) );
+                attributeFiltersBag.DestinationGroupMemberAttributesForFilter = fakeDestinationGroupMember.GetPublicAttributesForEdit( GetCurrentPerson(), false, a => groupMemberAttributeIds.Contains( a.Id )
+                    && Rock.ExtensionMethods.IsAttributeAuthorized( fakeDestinationGroupMember, ref entityAuthorized, a, Authorization.VIEW, RequestContext.CurrentPerson ) );
             }
 
             if ( placementConfiguration.AreFeesDisplayed && registrationTemplateId.HasValue )

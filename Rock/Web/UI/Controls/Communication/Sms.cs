@@ -93,19 +93,6 @@ namespace Rock.Web.UI.Controls.Communication
 
             var smsFromSystemPhoneNumberId = communication.SmsFromSystemPhoneNumberId;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            // Check the legacy defined value setting.
-            if ( !smsFromSystemPhoneNumberId.HasValue && communication.SMSFromDefinedValueId.HasValue )
-            {
-                var fromDefinedValue = DefinedValueCache.Get( communication.SMSFromDefinedValueId.Value );
-
-                if ( fromDefinedValue != null )
-                {
-                    smsFromSystemPhoneNumberId = SystemPhoneNumberCache.Get( fromDefinedValue.Guid )?.Id;
-                }
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
-
             var valueItem = dvpFrom.Items.FindByValue( smsFromSystemPhoneNumberId.ToString() );
             if ( valueItem == null && smsFromSystemPhoneNumberId.HasValue )
             {
@@ -130,20 +117,6 @@ namespace Rock.Web.UI.Controls.Communication
 
             communication.SmsFromSystemPhoneNumberId = dvpFrom.SelectedValueAsId();
             communication.SMSMessage = tbMessage.Text;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            // Update the legacy values.
-            communication.SMSFromDefinedValueId = null;
-            if ( communication.SmsFromSystemPhoneNumberId.HasValue )
-            {
-                var systemPhoneNumber = SystemPhoneNumberCache.Get( communication.SmsFromSystemPhoneNumberId.Value );
-
-                if ( systemPhoneNumber != null )
-                {
-                    communication.SMSFromDefinedValueId = DefinedValueCache.Get( systemPhoneNumber.Guid )?.Id;
-                }
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         #endregion

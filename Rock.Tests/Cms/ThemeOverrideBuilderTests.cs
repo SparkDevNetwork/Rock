@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -167,7 +168,7 @@ namespace Rock.Tests.Cms
 
             var content = builder.Build( string.Empty );
 
-            Assert.AreEqual( $"@charset \"UTF-8\";{Environment.NewLine}", content );
+            Assert.IsEmpty( content );
         }
 
         [TestMethod]
@@ -415,13 +416,9 @@ namespace Rock.Tests.Cms
         {
             using ( TestHelper.CreateScopedRockApp() )
             {
-                var tablerPath = RockApp.Current.MapPath( "~/Styles/styles-v2/icons/tabler-icon.css" );
-                var tablerHash = System.IO.File.ReadAllText( tablerPath ).XxHash();
-
-                var expectedContent = $@"@charset ""UTF-8"";
-{ThemeOverrideBuilder.TopOverrideStartMarker}
+                var expectedContent = $@"{ThemeOverrideBuilder.TopOverrideStartMarker}
 @import url('on.css');
-@import url('/Styles/styles-v2/icons/tabler-icon.css?v={tablerHash}');
+@import url('/Styles/styles-v2/icons/tabler-icon.css');
 {ThemeOverrideBuilder.TopOverrideEndMarker}
 
 
@@ -449,6 +446,12 @@ div {{ display: none; }}
                 builder.AddCustomContent( "div { display: none; }" );
 
                 var content = builder.Build( string.Empty ).Trim();
+
+                // The builder adds a version hash to the tabler icons import,
+                // but only if the file exists. Depending on the state of the
+                // cloned repository, it may or may not exist. If it does, just
+                // strip it out.
+                content = Regex.Replace( content, @"tabler-icon\.css\?v=[^']+", "tabler-icon.css" );
 
                 Assert.AreEqual( expectedContent, content );
             }

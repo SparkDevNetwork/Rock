@@ -1,0 +1,157 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="View Options"
+           saveText="Save"
+           @save="onSave">
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="site"
+                              label="Site"
+                              :items="siteItemsWithAll" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <PagePicker v-model="page"
+                            label="Page" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <PersonPicker v-model="user"
+                              label="User"
+                              :enableSelfSelection="true" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <SlidingDateRangePicker v-model="dateRange"
+                                        label="Date Range"
+                                        :enabledSlidingDateRangeUnits="enabledDateRangeTypes" />
+            </div>
+        </div>
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { RangeType, SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        siteItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const site = ref(props.modelValue.site ?? "");
+    const page = ref(toPageRouteValueBag(props.modelValue.page));
+    const user = ref(props.modelValue.user ?? undefined);
+    const dateRange = ref<SlidingDateRange | null>(props.modelValue.dateRange ?? null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The site items with an "All" option prepended. */
+    const siteItemsWithAll = computed((): ListItemBag[] => {
+        return [
+            { value: "", text: "All" },
+            ...props.siteItems
+        ];
+    });
+
+    /** The date range types available for the sliding date range picker. Excludes Next and Upcoming since exceptions only occur in the past. */
+    const enabledDateRangeTypes: RangeType[] = [RangeType.Current, RangeType.Previous, RangeType.Last, RangeType.DateRange];
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Converts a ListItemBag to a PageRouteValueBag for the PagePicker. */
+    function toPageRouteValueBag(value: ListItemBag | null | undefined): PageRouteValueBag | undefined {
+        return value ? { page: value } : undefined;
+    }
+
+    /** Converts a PageRouteValueBag back to a ListItemBag for preference storage. */
+    function toListItemBag(value: PageRouteValueBag | null | undefined): ListItemBag | null {
+        return value?.page ?? null;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the save button is clicked.
+     */
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            site: site.value,
+            page: toListItemBag(page.value),
+            user: user.value ?? null,
+            dateRange: dateRange.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        site.value = props.modelValue.site ?? "";
+        page.value = toPageRouteValueBag(props.modelValue.page);
+        user.value = props.modelValue.user ?? undefined;
+        dateRange.value = props.modelValue.dateRange ?? null;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+</script>

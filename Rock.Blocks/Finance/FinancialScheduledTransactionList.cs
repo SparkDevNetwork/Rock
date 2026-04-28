@@ -43,7 +43,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays a list of financial scheduled transactions." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "View Page",
         DefaultValue = "",
@@ -84,7 +84,8 @@ namespace Rock.Blocks.Finance
 
 
     [Rock.SystemGuid.EntityTypeGuid( "946127ec-adec-46c9-8181-a405c137a8a3" )]
-    [Rock.SystemGuid.BlockTypeGuid( "2db92ea3-f3b3-496e-a1f0-8eebd8dc928a" )]
+    [Rock.SystemGuid.BlockTypeGuid( "694FF260-8C6F-4A59-93C9-CF3793FE30E6" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "2db92ea3-f3b3-496e-a1f0-8eebd8dc928a" )]
     [CustomizedGrid]
     [Rock.Web.UI.ContextAware]
     public class FinancialScheduledTransactionList : RockListBlockType<FinancialScheduledTransactionData>
@@ -126,6 +127,11 @@ namespace Rock.Blocks.Finance
         {
             public const string ViewPage = "ViewPage";
             public const string AddPage = "AddPage";
+        }
+
+        private static class PageParameterKey
+        {
+            public const string Person = "Person";
         }
 
         private static class PreferenceKey
@@ -263,7 +269,7 @@ namespace Rock.Blocks.Finance
 
                     if ( personKey.IsNotNullOrWhiteSpace() )
                     {
-                        addScheduledTransactionPage.QueryString["Person"] = personKey;
+                        addScheduledTransactionPage.QueryString[PageParameterKey.Person] = personKey;
                         addPageLinkedUrl = addScheduledTransactionPage.BuildUrl();
                     }
                 }
@@ -271,7 +277,7 @@ namespace Rock.Blocks.Finance
 
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ViewPage] = this.GetLinkedPageUrl( AttributeKey.ViewPage, "FinancialScheduledTransactionId", "((Key))" ),
+                [NavigationUrlKey.ViewPage] = this.GetLinkedPageUrl( AttributeKey.ViewPage, "ScheduledTransactionId", "((Key))" ),
                 [NavigationUrlKey.AddPage] = addPageLinkedUrl
             };
         }

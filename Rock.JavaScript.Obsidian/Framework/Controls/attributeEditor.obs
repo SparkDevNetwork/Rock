@@ -122,12 +122,14 @@
             <TextBox v-model="preHtml"
                      label="Pre-HTML"
                      help="HTML that should be rendered before the attribute's edit control."
-                     textMode="multiline" />
+                     textMode="multiline"
+                     allowHtml />
 
             <TextBox v-model="postHtml"
                      label="Post-HTML"
                      help="HTML that should be rendered before the attribute's edit control."
-                     textMode="multiline" />
+                     textMode="multiline"
+                     allowHtml />
         </Panel>
     </fieldset>
 </template>

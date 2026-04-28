@@ -26,7 +26,8 @@
         </ContentSection>
 
         <ContentSection title="General"
-                        icon="ti ti-settings">
+                        icon="ti ti-settings"
+                        :order="1">
             <ContentStack title="Campus Profile"
                           description="Key details about the campus, including status, type, dates, and leadership.">
 
@@ -96,7 +97,8 @@
         </ContentSection>
 
         <ContentSection title="Schedules"
-                        icon="ti ti-calendar">
+                        icon="ti ti-calendar"
+                        :order="2">
             <ContentStack>
                 <Grid :data="scheduleGridData"
                       light
@@ -114,7 +116,8 @@
 
         <ContentSection v-if="store.state.trailblazerMode"
                         title="Topics"
-                        icon="ti ti-message-2-exclamation">
+                        icon="ti ti-message-2-exclamation"
+                        :order="3">
             <ContentStack>
                 <Grid :data="topicGridData"
                       light
@@ -133,7 +136,8 @@
 
         <ContentSection v-if="hasAttributes"
                         title="Attributes"
-                        icon="ti ti-binary-tree-2">
+                        icon="ti ti-binary-tree-2"
+                        :order="4">
             <ContentStack title="Campus Attributes"
                           description="Configure custom attributes for this campus.">
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="1" />
@@ -141,7 +145,8 @@
         </ContentSection>
 
         <ContentSection title="Legacy"
-                        icon="ti ti-file-settings">
+                        icon="ti ti-file-settings"
+                        :order="5">
             <ContentStack title="Service Times"
                           description="Note: The Service Times setting will be removed in an upcoming release. Please begin transitioning to the new Campus Schedules feature, which provides improved flexibility and long-term support.">
                 <KeyValueList v-model="serviceTimes"

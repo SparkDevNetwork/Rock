@@ -15,17 +15,45 @@
 // </copyright>
 //
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Core;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
+using Rock.Web.Cache.Entities;
 
 namespace Rock.Model
 {
     public partial class ContentChannelItem : IHasLinkageSummary
     {
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return ContentChannelItemCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            ContentChannelItemSlugCache.FlushCachedSlugs( this.Id, dbContext );
+            ContentChannelItemAssociationCache.FlushCachedAssociations( this.Id, dbContext );
+            ContentChannelItemCache.UpdateCachedEntity( this.Id, entityState );
+            ContentChannelCache.FlushItem( this.ContentChannelId );
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets the parent authority.
         /// </summary>

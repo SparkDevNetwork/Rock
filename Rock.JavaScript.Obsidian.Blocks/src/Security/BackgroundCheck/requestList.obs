@@ -1,0 +1,255 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Request"
+          title="Requests"
+          :entityTypeGuid="EntityType.BackgroundCheck"
+          stickyHeader
+          liveUpdates
+          @selectItem="onSelectItem">
+
+        <PersonColumn name="name"
+                      field="name"
+                      title="Name"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonFilterValue"
+                      :quickFilterValue="getPersonFilterValue"
+                      visiblePriority="xs"
+                      width="15%" />
+
+        <DateColumn name="requestDate"
+                    field="requestDate"
+                    title="Requested"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <DateColumn name="responseDate"
+                    field="responseDate"
+                    title="Completed"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <Column name="isRecordFound"
+                field="isRecordFound"
+                title="Record Found"
+                headerClass="text-center"
+                :filter="pickExistingValueFilter"
+                :filterValue="getRecordFoundFilterValue"
+                :quickFilterValue="getRecordFoundFilterValue"
+                visiblePriority="xs"
+                width="5%"
+                itemClass="justify-content-center">
+            <template #format="{ row }">
+                <span v-if="row.isRecordFound === true" class="label label-warning">Yes</span>
+                <span v-else-if="row.isRecordFound === false" class="label label-success">No</span>
+            </template>
+        </Column>
+
+        <Column name="report"
+                title="Report"
+                :excludeFromExport="true"
+                visiblePriority="xs"
+                headerClass="text-center"
+                sortValue="{{ row.hasResponseDocument }}"
+                width="5%"
+                itemClass="grid-columncommand justify-content-center">
+            <template #format="{ row }">
+                <a v-if="row.hasResponseDocument && row.responseDocumentUrl"
+                   :href="row.responseDocumentUrl"
+                   class="btn btn-default text-info"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   title="View Report"
+                   @click.stop>
+                    <i class="ti ti-file-description ti-lg"></i>
+                </a>
+            </template>
+        </Column>
+
+        <Column name="log"
+                title="Log"
+                :excludeFromExport="true"
+                visiblePriority="md"
+                headerClass="text-center"
+                sortValue="{{ row.hasResponseData }}"
+                width="5%"
+                itemClass="grid-columncommand justify-content-center">
+            <template #format="{ row }">
+                <button v-if="row.hasResponseData"
+                        type="button"
+                        class="btn btn-default"
+                        title="View Response Log"
+                        @click.stop="onViewResponseData(row.idKey)">
+                    <i class="ti ti-file-code ti-lg"></i>
+                </button>
+            </template>
+        </Column>
+
+        <Column name="workflow"
+                title="Workflow"
+                :excludeFromExport="true"
+                :sortValue="getWorkflowRowSortValue"
+                visiblePriority="sm"
+                headerClass="text-center"
+                width="5%"
+                itemClass="grid-columncommand justify-content-center">
+            <template #format="{ row }">
+                <button v-if="row.hasWorkflow"
+                        type="button"
+                        class="btn btn-default btn-sm"
+                        title="View Workflow"
+                        :disabled="!row.hasWorkflow"
+                        @click.stop="onViewWorkflow(row.idKey)">
+                    <i class="ti ti-settings-cog ti-lg"></i>
+                </button>
+            </template>
+        </Column>
+    </Grid>
+
+    <Modal v-model="isResponseModalVisible" title="Request/Response Log" hideCancel>
+        <RockTextBox v-model="responseData"
+                     label="Log"
+                     textMode="MultiLine"
+                     :rows="20"
+                     :isReadOnly="true" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { PersonColumn, DateColumn, Column, pickExistingValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { RequestListOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/BackgroundCheck/RequestList/requestListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { reactive, ref } from "vue";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockTextBox from "@Obsidian/Controls/textBox.obs";
+
+    const config = useConfigurationValues<ListBlockBox<RequestListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isResponseModalVisible = ref(false);
+    const responseData = ref("");
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Gets the filter value for the person column.
+     */
+    function getPersonFilterValue(row: Record<string, unknown>): string {
+        const person = row.name as PersonFieldBag;
+        return person ? `${person.nickName} ${person.lastName}` : "";
+    }
+
+    /**
+     * Gets the filter value for the record found column.
+     */
+    function getRecordFoundFilterValue(row: Record<string, unknown>): string {
+        if (row.isRecordFound === true) {
+            return "Yes";
+        }
+
+        if (row.isRecordFound === false) {
+            return "No";
+        }
+
+        return "";
+    }
+
+    /**
+     * Gets the sort value text to use for the workflow column.
+     *
+     * @param row The row to be sorted.
+     */
+    const getWorkflowRowSortValue = (row: Record<string, unknown>): string => {
+        return `${row.hasWorkflow}`;
+    };
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row is selected. Navigates to the person page.
+     */
+    function onSelectItem(key: string): void {
+        if (!gridData?.rows) {
+            return;
+        }
+
+        const row = gridData.rows.find(r => r["idKey"] === key);
+        if (row) {
+            const person = row["name"] as PersonFieldBag;
+            if (person) {
+                window.location.href = `/Person/${person.idKey}`;
+            }
+        }
+    }
+
+    /**
+     * Called when the response data button is clicked. Fetches the raw
+     * request/response log and displays it in a modal dialog.
+     */
+    async function onViewResponseData(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("GetResponseData", { key });
+
+        if (result.isSuccess && result.data !== undefined) {
+            responseData.value = result.data ?? "";
+            isResponseModalVisible.value = true;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to retrieve the request/response log.");
+        }
+    }
+
+    /**
+     * Called when the workflow button is clicked. Fetches the workflow page URL
+     * and navigates to it.
+     */
+    async function onViewWorkflow(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("GetWorkflowPageUrl", { key });
+
+        if (result.isSuccess && result.data) {
+            window.location.href = result.data;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to navigate to the workflow.");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    gridDataSource.value = loadGridData();
+</script>

@@ -541,7 +541,7 @@ iframe {
             removeTemporaryClasses(clonedDoc);
 
             const sanitizedHtml = clonedDoc.documentElement.outerHTML ?? "";
-            const finalHtml = decodeLavaEntityWhereFilters(sanitizedHtml);
+            const finalHtml = decodeLavaEncodedEntities(sanitizedHtml);
 
             const html = `${doctypeText}\n${finalHtml}`;
 
@@ -567,34 +567,41 @@ iframe {
     }
 
     /**
-     * Decodes browser-encoded Lava `where:'...'` filters inside `{% %}` blocks.
+     * Decodes browser-encoded entities inside Lava tags that contain
+     * conditional logic or Rock Entity `where:'...'` filters.
      *
-     * Browsers automatically encode `&` as `&amp;` in the HTML editor.
-     * This turns logical operators like `&&` into `&amp;&amp;`, which breaks
-     * Rock Entity `where:` filters during server-side Lava parsing.
+     * Browsers automatically encode characters like `&`, `>` and `<`
+     * in the HTML editor. That breaks Lava conditions such as:
      *
-     * Example: `where:'IsActive == true && CampusId == 1'`
+     * `{% if Total > Threshold %}`
      *
-     * Becomes: `where:'IsActive == true &amp;&amp; CampusId == 1'`
+     * which becomes:
      *
-     * We decode HTML entities inside the quoted `where:'...'` value.
-     * Although the original issue was `&amp;&amp;`, this intentionally
-     * decodes all entities (e.g. `&gt;`, `&lt;`, `&quot;`) to restore
-     * the filter logic exactly as authored.
+     * `{% if Total &gt; Threshold %}`
+     *
+     * It also breaks Rock Entity filters like:
+     *
+     * `where:'IsActive == true && CampusId == 1'`
+     *
+     * which becomes:
+     *
+     * `where:'IsActive == true &amp;&amp; CampusId == 1'`
      *
      * This runs on the final HTML string, not DOM nodes, because modifying
-     * the DOM would cause the browser to re-encode `&` back to `&amp;`.
+     * the DOM would cause the browser to re-encode these characters.
      *
      * Scope is intentionally narrow:
      * - Only processes `{% %}` blocks
-     * - Only decodes the quoted `where:'...'` value
+     * - Decodes quoted `where:'...'` values
+     * - Decodes conditional Lava tags such as `if`, `elsif`, and `unless`
      * - Leaves all other HTML and Lava content untouched
      */
-    function decodeLavaEntityWhereFilters(html: string): string {
+    function decodeLavaEncodedEntities(html: string): string {
         const lavaTagRegex = /{%[\s\S]*?%}/g;
 
         // Used only for fast detection, avoids allocating lowercase strings.
         const whereTestRegex = /\bwhere:\s*'/i;
+        const conditionalTagRegex = /{%\s*(if|elsif|unless)\b/i;
 
         // Case-insensitive replacement of where clause values.
         const whereReplaceRegex = /\bwhere:\s*'([^']*)'/gi;
@@ -603,23 +610,34 @@ iframe {
         // instead of hand-rolled replacements.
         const template = document.createElement("template");
 
+        const decodeEntities = (value: string): string => {
+            if (!value.includes("&")) {
+                return value;
+            }
+
+            template.innerHTML = value;
+            const decoded = template.content.textContent ?? "";
+            template.innerHTML = ""; // Reset to avoid retaining references.
+
+            return decoded;
+        };
+
         return html.replace(lavaTagRegex, (tag) => {
             // Skip tags that clearly don't need processing.
-            if (!tag.includes("&") || !whereTestRegex.test(tag)) {
+            if (!tag.includes("&")) {
+                return tag;
+            }
+
+            if (conditionalTagRegex.test(tag)) {
+                return decodeEntities(tag);
+            }
+
+            if (!whereTestRegex.test(tag)) {
                 return tag;
             }
 
             return tag.replace(whereReplaceRegex, (_, whereValue) => {
-                // Only decode if the where value actually contains entities.
-                if (!whereValue.includes("&")) {
-                    return `where:'${whereValue}'`;
-                }
-
-                template.innerHTML = whereValue;
-                const decoded = template.content.textContent ?? "";
-                template.innerHTML = ""; // Reset to avoid retaining references.
-
-                return `where:'${decoded}'`;
+                return `where:'${decodeEntities(whereValue)}'`;
             });
         });
     }
@@ -1086,6 +1104,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
     color: #ffffff;
     padding: 4px 18px;
     font-size: 10px;
+    font-family: var(--font-family-sans);
     border-radius: 9999px;
     pointer-events: none;
     line-height: 1;
@@ -1093,10 +1112,12 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
 `;
         iFrameDocument.head.appendChild(style);
 
-        // If the body does not contain a structure-dropzone, then add one automatically.
+        // If the body does not contain a structure-dropzone, then add one automatically inside a row component.
         if (!iFrameDocument.querySelector(".structure-dropzone")) {
             const dropzone = iFrameDocument.createElement("div");
             dropzone.classList.add("structure-dropzone");
+            const baseRow = createComponentElement(iFrameDocument, "row");
+            dropzone.appendChild(baseRow);
             iFrameDocument.body.append(dropzone);
         }
 

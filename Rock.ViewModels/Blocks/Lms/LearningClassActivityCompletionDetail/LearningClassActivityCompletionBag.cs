@@ -98,7 +98,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail
         /// <summary>
         /// Indicates whether or not the activity is due within a week.
         /// </summary>
-        public bool IsDueSoon => DueDate.HasValue && DueDate >= DateTime.Now && DueDate.Value <= DateTime.Now.AddDays( 7 );
+        public bool IsDueSoon { get; set; }
 
         /// <summary>
         /// Indicates whether or not the grade is a passing grade.
@@ -119,6 +119,12 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail
         /// Indicates whether or not the related activity instance has been completed by the student.
         /// </summary>
         public bool IsStudentCompleted { get; set; }
+
+        /// <summary>
+        /// Indicates whether or not the related activity instance has been completed by the party (student or facilitator)
+        /// who's actually responsible for completing it based on the activity's "assigned to" value.
+        /// </summary>
+        public bool IsCompleted { get; set; }
 
         /// <summary>
         /// Gets or sets the IdKey of the <see cref="ClassActivityBag"/>.

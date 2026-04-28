@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Event
                     EventCalendarId = eventCalendarService.Get( PageParameter( PageParameterKey.EventCalendarId ), IsAllowingPredictableIds )?.Id;
 
                     // Load objects necessary to display names
-                    ContentChannelItem contentItem = null;
+                    ContentChannelItemCache contentItem = null;
                     EventItemOccurrence eventItemOccurrence = null;
                     EventItem eventItem = null;
                     EventCalendar eventCalendar = null;
@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Event
                     if ( ContentItemId.HasValue && ContentItemId.Value > 0 )
                     {
                         PageNumber = 5;
-                        contentItem = contentChannelItemService.Get( ContentItemId.Value );
+                        contentItem = ContentChannelItemCache.Get( ContentItemId.Value );
                     }
 
                     if ( EventItemOccurrenceId.HasValue && EventItemOccurrenceId.Value > 0 )

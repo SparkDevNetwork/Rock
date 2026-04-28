@@ -140,34 +140,6 @@ namespace Rock.SystemKey
         public const string START_DAY_OF_WEEK = "core_StartDayOfWeek";
 
         /// <summary>
-        /// (Obsolete) Enable a redis cache cluster
-        /// </summary>
-        [Obsolete( "No longer needed since we no longer support Redis." )]
-        [RockObsolete( "1.15" )]
-        public const string REDIS_ENABLE_CACHE_CLUSTER = "EnableRedisCacheCluster";
-
-        /// <summary>
-        /// (Obsolete) Comma separated list of Redis endpoints (e.g. server.com:6379)
-        /// </summary>
-        [Obsolete( "No longer needed since we no longer support Redis." )]
-        [RockObsolete( "1.15" )]
-        public const string REDIS_ENDPOINT_LIST = "RedisEndpointList";
-
-        /// <summary>
-        /// (Obsolete) The redis password
-        /// </summary>
-        [Obsolete( "No longer needed since we no longer support Redis." )]
-        [RockObsolete( "1.15" )]
-        public const string REDIS_PASSWORD = "RedisPassword";
-
-        /// <summary>
-        /// (Obsolete) The redis database index number
-        /// </summary>
-        [Obsolete( "No longer needed since we no longer support Redis." )]
-        [RockObsolete( "1.15" )]
-        public const string REDIS_DATABASE_NUMBER = "RedisDatabaseNumber";
-
-        /// <summary>
         /// Settings for Spark Data NCOA
         /// </summary>
         public const string SPARK_DATA_NCOA = "core_SparkDataNcoa";
@@ -319,11 +291,15 @@ namespace Rock.SystemKey
         /// <summary>
         /// The Captcha site key.
         /// </summary>
+        [Obsolete( "Cloudflare Turnstile is no longer supported in Rock. It has been replaced by a built-in CAPTCHA system in v19." )]
+        [RockObsolete( "19.0" )]
         public const string CAPTCHA_SITE_KEY = "core_CaptchaSiteKey";
 
         /// <summary>
         /// The Captcha secret key.
         /// </summary>
+        [Obsolete( "Cloudflare Turnstile is no longer supported in Rock. It has been replaced by a built-in CAPTCHA system in v19." )]
+        [RockObsolete( "19.0" )]
         public const string CAPTCHA_SECRET_KEY = "core_CaptchaSecretKey";
 
         /// <summary>

@@ -32,6 +32,11 @@
             default: []
         },
 
+        excludeEntityTypeGuids: {
+            type: Array as PropType<Guid[]>,
+            default: []
+        },
+
         ...standardAsyncPickerProps
     });
 
@@ -88,7 +93,8 @@
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
         const options: EntityTypePickerGetEntityTypesOptionsBag = {
-            entityTypeGuids: props.entityTypeGuids
+            entityTypeGuids: props.entityTypeGuids,
+            excludedEntityTypeGuids: props.excludeEntityTypeGuids
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/EntityTypePickerGetEntityTypes", undefined, options);
 

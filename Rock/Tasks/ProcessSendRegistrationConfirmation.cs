@@ -36,9 +36,24 @@ namespace Rock.Tasks
         {
             using ( var rockContext = new RockContext() )
             {
+                /*
+                     3/12/2026 - NA
+
+                     Do not add AsNoTracking() to this query. The returned entities are used by a Lava
+                     template during the merge/render process. The template may access related navigation
+                     properties which are retrieved through lazy loading. Lazy loading requires the
+                     DbContext to track the entity. If AsNoTracking() is added, the context cannot
+                     retrieve those navigation properties and the Lava merge may fail.
+
+                     A common error that appears when this occurs is:
+
+                     "Lava Error: When an object is returned with a NoTracking merge option, Load can
+                     only be called when the EntityCollection or EntityReference does not contain objects."
+
+                     Reason: Lazy loading of navigation properties is required for the Lava merge process.
+                */
                 var registration = new RegistrationService( rockContext )
                     .Queryable( "RegistrationInstance.RegistrationTemplate" )
-                    .AsNoTracking()
                     .FirstOrDefault( r => r.Id == message.RegistrationId );
 
                 if ( registration != null &&

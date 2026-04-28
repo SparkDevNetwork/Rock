@@ -451,7 +451,7 @@ namespace Rock.CodeGeneration.Pages
         /// Reports the rock code warnings
         /// and returns true if there are warnings.
         /// </summary>
-        public bool ReportRockCodeWarnings()
+        public bool ReportRockCodeWarnings()    
         {
             bool hasWarnings = false;
             StringBuilder rockObsoleteWarnings = new StringBuilder();

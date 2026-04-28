@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentSectionContainer sidebar>
-        <ContentSection :disableCollapse="true">
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection light>
             <ContentStack>
                 <div class="row">
                     <div class="col-md-6">
@@ -33,73 +33,49 @@
             </ContentStack>
         </ContentSection>
 
-        <!-- Previous Activity -->
-        <ContentSection title="Previous Activity" icon="ti ti-user">
-            <ContentStack>
-                <CheckBoxList v-model="previousActivityTypes" :items="previousActivityItems" label="Visitor Type" :horizontal="true" :repeatColumns="4" />
+        <ContentSection title="Visitor Context" icon="ti ti-user" disableCollapse>
+            <ContentStack title="Activity & Device" headerLocation="top" description="Filters visitors based on prior visit status and device type.">
+                <CheckBoxList v-model="previousActivityTypes" :items="previousActivityItems" label="Visitor Type" help="Filters visitors based on whether this is their first visit or a return visit." :horizontal="false" :repeatColumns="0" />
+                <CheckBoxList v-model="deviceTypes" :items="deviceTypeItems" label="Device Type" help="Filters visitors by the type of device used for the request." :horizontal="false" :repeatColumns="0" />
             </ContentStack>
-        </ContentSection>
-
-        <!-- Device Types -->
-        <ContentSection title="Device Types" icon="ti ti-devices">
-            <ContentStack>
-                <CheckBoxList v-model="deviceTypes" :items="deviceTypeItems" label="Device Type" :horizontal="true" :repeatColumns="4" />
-            </ContentStack>
-        </ContentSection>
-
-        <!-- Query String Filters -->
-        <ContentSection title="Query String Filter" icon="ti ti-key">
-            <ContentStack>
-                <QueryStringFilter v-model="queryStringFilter" />
-            </ContentStack>
-        </ContentSection>
-
-        <!-- Cookie Filters -->
-        <ContentSection title="Cookie" icon="ti ti-cookie">
-            <ContentStack>
-                <CookieFilter v-model="cookieFilter" />
-            </ContentStack>
-        </ContentSection>
-
-        <!-- Browser Filters -->
-        <ContentSection title="Browser" icon="ti ti-brand-safari">
-            <ContentStack>
+            <ContentStack title="Browser" headerLocation="top" description="These filters evaluate the visitor's browser type and version.">
                 <BrowserFilter v-model="browserFilter" />
             </ContentStack>
         </ContentSection>
 
-        <!-- Ip Address Filters -->
-        <ContentSection title="IP Addresses" icon="ti ti-server">
-            <ContentStack>
-                <IpAddressFilter v-model="ipAddressFilter" />
+        <ContentSection title="Location & Timing" icon="ti ti-calendar-time" disableCollapse>
+            <ContentStack title="Time Conditions" headerLocation="top" description="These filters evaluate the day of the week and time of day of the request.">
+                <CheckBoxList v-model="daysOfWeek" :items="daysOfWeekItems" label="Days of Week" :horizontal="true" :repeatColumns="2" />
+                <div class="form-group">
+                    <label class="control-label">Time of Day</label>
+                    <div class="form-control-group">
+                        <div class="form-row">
+                            <TimePicker v-model="beginningTimeOfDay" />
+                            <div class="input-group form-control-static">to</div>
+                            <TimePicker v-model="endingTimeOfDay" />
+                        </div>
+                    </div>
+                </div>
             </ContentStack>
-        </ContentSection>
-
-        <!-- Geolocation Filters -->
-        <ContentSection title="Geolocation" icon="ti ti-world">
-            <ContentStack>
+            <ContentStack title="Geolocation" headerLocation="top" description="These filters evaluate the visitor's geographic location.">
                 <GeolocationFilter v-model="geolocationFilter" />
             </ContentStack>
         </ContentSection>
 
-        <!-- Environment -->
-        <ContentSection title="Environment" icon="ti ti-calendar-time">
-            <ContentStack>
-                <CheckBoxList v-model="daysOfWeek" :items="daysOfWeekItems" label="Days of Week" :horizontal="true" :repeatColumns="7" />
-                <label class="control-label">Time of Day</label>
-                <div class="form-control-group">
-                    <div class="form-row">
-                        <TimePicker v-model="beginningTimeOfDay" />
-                        <div class="input-group form-control-static">to</div>
-                        <TimePicker v-model="endingTimeOfDay" />
-                    </div>
-                </div>
+        <ContentSection title="Request Signals" icon="ti ti-key" disableCollapse>
+            <ContentStack title="Query String Filter" headerLocation="top" description="These filters evaluate the query string parameters present in the request URL.">
+                <QueryStringFilter v-model="queryStringFilter" />
+            </ContentStack>
+            <ContentStack title="Cookies" headerLocation="top" description="These filters evaluate the cookies present in the visitor's browser.">
+                <CookieFilter v-model="cookieFilter" />
+            </ContentStack>
+            <ContentStack title="IP Addresses" headerLocation="top" description="These filters evaluate whether the visitor's IP address falls within a specified range.">
+                <IpAddressFilter v-model="ipAddressFilter" />
             </ContentStack>
         </ContentSection>
 
-        <!-- Attributes -->
-        <ContentSection v-if="hasAttributes" title="Extended Attributes" icon="ti ti-adjustments-plus">
-            <ContentStack>
+        <ContentSection v-if="hasAttributes" title="Extended Criteria" icon="ti ti-adjustments-plus" disableCollapse>
+            <ContentStack title="Extended Attributes" headerLocation="top">
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
             </ContentStack>
         </ContentSection>
@@ -166,20 +142,20 @@
     const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
     const requestFilterKey = propertyRef(props.modelValue.bag?.requestFilterKey ?? "", "RequestFilterKey");
     const siteValue = propertyRef(props.modelValue.bag?.site?.value ?? "", "Site");
+
     const siteItems = ref<ListItemBag[]>(props.options?.sites ?? []);
     const previousActivityItems = enumToListItemBag(PreviousActivityTypeDescription);
     const deviceTypeItems = enumToListItemBag(DeviceTypeDescription);
     const daysOfWeekItems = enumToListItemBag(DayOfWeekDescription);
     const additionalFilterConfiguration = propertyRef(props.modelValue.bag?.additionalFilterConfiguration as AdditionalFilterConfigurationBag ?? "", "AdditionalFilterConfiguration");
 
-    // The properties that are being edited. This should only contain
-    // objects returned by propertyRef().
     const propRefs = [isActive, name, requestFilterKey, siteValue, additionalFilterConfiguration];
 
     // #endregion Values
 
     // #region Computed Values
 
+    /** The selected previous activity types, mapped to/from the additional filter configuration. */
     const previousActivityTypes = computed<string[]>({
         get() {
             return (additionalFilterConfiguration.value?.previousActivityRequestFilter?.previousActivityTypes ?? []).map((n: number) => n.toString());
@@ -192,6 +168,7 @@
         }
     });
 
+    /** The selected device types, mapped to/from the additional filter configuration. */
     const deviceTypes = computed<string[]>({
         get() {
             return (additionalFilterConfiguration.value.deviceTypeRequestFilter?.deviceTypes ?? []).map((n: number) => n.toString());
@@ -204,6 +181,7 @@
         }
     });
 
+    /** The query string filter configuration, mapped to/from the additional filter configuration. */
     const queryStringFilter = computed({
         get() {
             return {
@@ -220,6 +198,7 @@
         }
     });
 
+    /** The cookie filter configuration, mapped to/from the additional filter configuration. */
     const cookieFilter = computed({
         get() {
             return {
@@ -236,6 +215,7 @@
         }
     });
 
+    /** The browser filter configuration, mapped to/from the additional filter configuration. */
     const browserFilter = computed({
         get() {
             return {
@@ -250,6 +230,7 @@
         }
     });
 
+    /** The IP address filter configuration, mapped to/from the additional filter configuration. */
     const ipAddressFilter = computed({
         get() {
             return {
@@ -264,6 +245,7 @@
         }
     });
 
+    /** The geolocation filter configuration, mapped to/from the additional filter configuration. */
     const geolocationFilter = computed({
         get() {
             return {
@@ -278,6 +260,7 @@
         }
     });
 
+    /** The selected days of week, mapped to/from the additional filter configuration. */
     const daysOfWeek = computed({
         get() {
             return (additionalFilterConfiguration.value?.environmentRequestFilter?.daysOfWeek ?? []).map((n: number) => n.toString());
@@ -293,6 +276,7 @@
         }
     });
 
+    /** The beginning time of day, mapped to/from the additional filter configuration. */
     const beginningTimeOfDay = computed({
         get() {
             return additionalFilterConfiguration.value?.environmentRequestFilter?.beginningTimeOfDay as TimePickerValue ?? {};
@@ -308,6 +292,7 @@
         }
     });
 
+    /** The ending time of day, mapped to/from the additional filter configuration. */
     const endingTimeOfDay = computed({
         get() {
             return additionalFilterConfiguration.value?.environmentRequestFilter?.endingTimeOfDay as TimePickerValue ?? {};

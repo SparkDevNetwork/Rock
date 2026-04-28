@@ -30,6 +30,14 @@
                          :items="enumToListItemBag(PersonNoteCreationBehaviorDescription)"
                          help="Choose whether a Person Note should be created when this activity is added to a connection request." />
 
+        <ConditionalWell v-if="personNoteCreationBehaviorValue !== PersonNoteCreationBehavior.DoNotCreatePersonNote.toString()">
+            <div class="row">
+                <div class="col-md-6">
+                    <DropDownList v-model="personNoteType" :items="props.personNoteTypeItems" label="Note Type" rules="required" />
+                </div>
+            </div>
+        </ConditionalWell>
+
         <div class="row">
             <div class="col-md-6">
                 <AttributeValuesContainer v-model="activityAttributeValues"
@@ -51,6 +59,8 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -62,6 +72,7 @@
     import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionWorkflowBag";
     import { ConnectionWorkflowTriggerType } from "@Obsidian/Enums/Connection/connectionWorkflowTriggerType";
     import { EntityKey } from "./types.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         /**
@@ -69,6 +80,11 @@
          */
         activityTypes: {
             type: Array as PropType<ConnectionActivityTypeBag[]>,
+            required: true
+        },
+
+        personNoteTypeItems: {
+            type: Array as PropType<ListItemBag[]>,
             required: true
         },
 
@@ -134,6 +150,15 @@
         }
     });
 
+    const personNoteType = computed({
+        get(): string {
+            return theActivity.value.personNoteType?.value ?? "";
+        },
+        set(value: string) {
+            theActivity.value.personNoteType = props.personNoteTypeItems.find(i => i.value === value) ?? null;
+        }
+    });
+
     const activityAttributeValues = computed({
         get(): Record<string, string> {
             return theActivity.value.attributeValues ?? {};
@@ -156,6 +181,7 @@
             name: "",
             isActive: true,
             personNoteCreationBehavior: PersonNoteCreationBehavior.DoNotCreatePersonNote,
+            personNoteType: {},
             attributes: {},
             attributeValues: {}
         };

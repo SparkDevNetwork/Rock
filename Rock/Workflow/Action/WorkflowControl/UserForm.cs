@@ -517,19 +517,13 @@ namespace Rock.Workflow.Action
                 }
             }
 
-            // Get current marital status or default to Married if this will
-            // be a new person.
-            var maritalStatusGuid = personEntryPerson != null
-                ? personEntryPerson.MaritalStatusValue?.Guid
-                : Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
-
             return new PersonEntryValuesBag
             {
                 Address = address,
                 CampusGuid = personEntryPerson?.PrimaryCampusId != null
                     ? CampusCache.Get( personEntryPerson.PrimaryCampusId.Value, rockContext )?.Guid
                     : null,
-                MaritalStatusGuid = maritalStatusGuid,
+                MaritalStatusGuid = personEntryPerson?.MaritalStatusValue?.Guid,
                 Person = GetPersonBag( formSettings, personEntryPerson, rockContext ),
                 Spouse = GetPersonBag( formSettings, personEntrySpouse, rockContext )
             };
@@ -726,6 +720,22 @@ namespace Rock.Workflow.Action
                 {
                     formField.Attribute.FieldTypeGuid = Guid.Empty;
                     formField.Attribute.ConfigurationValues = null;
+                }
+                else
+                {
+                    var fieldType = FieldTypeCache.Get( attribute.FieldTypeId, rockContext );
+
+                    // If this field type implements ISecurityGrantFieldType
+                    // then we need to construct a security grant for the field
+                    // and include that in the field details we send to the
+                    // client. The UI will then use this security grant when
+                    // rendering the just this one field.
+                    if ( fieldType.Field is ISecurityGrantFieldType grantFieldType )
+                    {
+                        var securityGrant = new Rock.Security.SecurityGrant();
+                        grantFieldType.AddRulesToSecurityGrant( securityGrant, attribute.ConfigurationValues );
+                        formField.SecurityGrantToken = securityGrant.ToToken( true );
+                    }
                 }
 
                 fields.Add( formField );

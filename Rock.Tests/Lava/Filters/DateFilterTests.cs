@@ -1164,6 +1164,20 @@ END:VCALENDAR
                 var expectedStartDateTime = LocalExpected( timeZone, expectedStartDateTimeString );
                 var expectedEndDateTime = LocalExpected( timeZone, expectedEndDateTimeString );
 
+                /* This test is only valid if the current time zone's time is not already PAST the expected start date time
+                 * on the DATE of the expected test's start datetime value, and not a year in the future.
+                 */
+                DateTime currentLocalTime = TimeZoneInfo.ConvertTimeFromUtc( DateTime.UtcNow, timeZone );
+
+                bool sameDateAndAlreadyPastStart = currentLocalTime.Date == expectedStartDateTime.Date && currentLocalTime > expectedStartDateTime;
+                bool expectedStartIsMoreThanOneYearInFuture = expectedStartDateTime.Date >= currentLocalTime.Date.AddYears( 1 );
+
+                if ( sameDateAndAlreadyPastStart || expectedStartIsMoreThanOneYearInFuture )
+                {
+                    // Skip this test.
+                    return;
+                }
+
                 var schedule = new Rock.Model.Schedule();
                 schedule.iCalendarContent = iCalString;
 

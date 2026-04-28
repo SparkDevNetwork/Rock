@@ -487,38 +487,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the age.
-        /// </summary>
-        /// <param name="birthDate">The birth date.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use GetAge( birthDate, deceasedDate ) instead." )]
-        public static int? GetAge( DateTime? birthDate )
-        {
-            if ( birthDate.HasValue && birthDate.Value.Year != DateTime.MinValue.Year )
-            {
-                DateTime today = RockDateTime.Today;
-                int age = today.Year - birthDate.Value.Year;
-                if ( birthDate.Value > today.AddYears( -age ) )
-                {
-                    // their birthdate is after today's date, so they aren't a year older yet
-                    age--;
-                }
-
-                return age;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Formats the age with unit (year, month, day) suffix depending on the age of the individual.
         /// </summary>
         /// <param name="condensed">if set to <c>true</c> age in years is returned without a unit suffix.</param>
         /// <returns></returns>
         public string FormatAge( bool condensed = false )
         {
-            if (BirthDate > DateTime.Now)
+            if (BirthDate > RockDateTime.Now)
             {
                 return string.Empty;
             }

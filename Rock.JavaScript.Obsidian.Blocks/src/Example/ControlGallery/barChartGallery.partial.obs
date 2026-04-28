@@ -1,54 +1,86 @@
 <template>
     <GalleryAndResult :value="{ series: series, labels: labels }" hasMultipleValues :importCode="importCode" :exampleCode="exampleCode">
-
-        <div style="height: 300px">
-            <BarChart :labels="labels"
-                      :series="series"
-                      :barLabels="barLabels"
-                      :categoryLabel="categoryLabel"
-                      :categoryMaxTickCount="categoryMaxTickCount"
-                      :categoryShowAllTicks="categoryShowAllTicks"
-                      :categoryShowGridLines="categoryShowGridLines"
-                      :hideLegend="isLegendHidden"
-                      :horizontal="isHorizontal"
-                      :labelDateFormat="labelDateFormat"
-                      :legendAlign="legendAlign"
-                      :legendPosition="legendPosition"
-                      :overlap="isOverlapped"
-                      :stack="isStacked"
-                      :title="title"
-                      :tooltip="tooltip"
-                      :tooltipTitle="tooltipTitle"
-                      :type="isPercent ? 'percent' : isPercent === false ? 'number' : undefined"
-                      :unfilled="isUnfilled"
-                      :valueHideGridLines="valueHideGridLines"
-                      :valueLabel="valueLabel"
-                      :valueMaxTickCount="valueMaxTickCount"
-                      :valuePrecision="valuePrecision"
-                      :valueSuggestedMax="valueSuggestedMax"
-                      :valueSuggestedMin="valueSuggestedMin"
-                      :valueTickCount="valueTickCount"
-                      @click="onBarChartClicked" />
-        </div>
+        <BarChart :appearance="appearance"
+                  :labels="labels"
+                  :series="series"
+                  :barBorderRadius="barBorderRadius"
+                  :barLabels="barLabels"
+                  :categoryLabel="categoryLabel"
+                  :categoryHideAxisLabels="categoryHideAxisLabels"
+                  :categoryHideAxisLine="categoryHideAxisLine"
+                  :categoryMaxTickCount="categoryMaxTickCount"
+                  :categoryShowAllTicks="categoryShowAllTicks"
+                  :categoryShowGridLines="categoryShowGridLines"
+                  :height="height || '300px'"
+                  :hideLegend="isLegendHidden"
+                  :horizontal="isHorizontal"
+                  :labelDateFormat="labelDateFormat"
+                  :legendAlign="legendAlign"
+                  :legendPosition="legendPosition"
+                  :minBarLength="minBarLength"
+                  :overlap="isOverlapped"
+                  :stack="isStacked"
+                  :title="title"
+                  :titleAlign="titleAlign"
+                  :tooltip="tooltip"
+                  :tooltipTitle="tooltipTitle"
+                  :type="isPercent ? 'percent' : isPercent === false ? 'number' : undefined"
+                  :unfilled="isUnfilled"
+                  :valueHideGridLines="valueHideGridLines"
+                  :valueHideAxisLabels="valueHideAxisLabels"
+                  :valueHideAxisLine="valueHideAxisLine"
+                  :valueLabel="valueLabel"
+                  :valueMaxTickCount="valueMaxTickCount"
+                  :valuePrecision="valuePrecision"
+                  :valueSuggestedMax="valueSuggestedMax"
+                  :valueSuggestedMin="valueSuggestedMin"
+                  :valueTickCount="valueTickCount"
+                  :width="width"
+                  @click="onBarChartClicked" />
 
         <template #settings>
             <div class="settings">
                 <ContentSection title="Settings">
                     <ContentStack title="General">
-                        <div class="autolayout">
-                            <TextBox :modelValue="title ?? ''"
-                                     label="Chart Title"
-                                     @update:modelValue="title = $event" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <TextBox :modelValue="title ?? ''"
+                                         label="Title"
+                                         @update:modelValue="title = $event" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <DropDownList :modelValue="titleAlign ?? ''"
+                                              :items="titleAlignItems"
+                                              label="Title Alignment"
+                                              @update:modelValue="titleAlign = <TitleAlign>$event" />
+                            </div>
                         </div>
-                        <div class="autolayout">
-                            <TextBox :modelValue="height ?? ''"
-                                     label="Chart Container Height"
-                                     help="CSS size value (e.g., '300px' or '50%')."
-                                     @update:modelValue="height = $event" />
-                            <TextBox :modelValue="width ?? ''"
-                                     label="Chart Container Width"
-                                     help="CSS size value (e.g., '300px' or '50%')."
-                                     @update:modelValue="width = $event" />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <TextBox :modelValue="height ?? ''"
+                                         label="Height"
+                                         help="CSS size value (e.g., '300px' or '50%')."
+                                         @update:modelValue="height = $event" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <TextBox :modelValue="width ?? ''"
+                                         label="Width"
+                                         help="CSS size value (e.g., '300px' or '50%')."
+                                         @update:modelValue="width = $event" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <DropDownList v-model="appearance"
+                                              :items="appearanceItems"
+                                              help="Applies predefined visual styling such as stacking, axis visibility, and grid display. All presets can be further customized with the other settings on this page."
+                                              label="Appearance"
+                                              :showBlankItem="false" />
+                            </div>
                         </div>
                     </ContentStack>
 
@@ -70,23 +102,31 @@
                                        label="Precision"
                                        :maximumValue="20" />
 
+                            <NumberBox v-model="minBarLength"
+                                       help="The minimum length in pixels that a bar should be drawn regardless of its value. This can be used to ensure that very small values are still visible on the chart, including zeroes. Note that this may cause misalignment between the ends of some bars and value axis."
+                                       label="Minimum Bar Length" />
+
+                            <NumberBox v-model="barBorderRadius"
+                                       help="Sets the border radius of the bars in pixels."
+                                       label="Bar Border Radius" />
+
                             <Switch :modelValue="isPercent ?? false"
                                     help="For 'percent', the data must be in decimal form (e.g., 0.1 for 10%)."
                                     label="Percent"
                                     @update:modelValue="isPercent = $event" />
 
                             <Switch :modelValue="isStacked ?? false"
-                                    help="Stack bars from different series on top of each other instead of side-by-side or overlapping."
+                                    help="Stack bars from different series on top of each other instead of side-by-side or overlapping.<br>Stacked bars cannot be unfilled."
                                     label="Stack"
                                     @update:modelValue="isStacked = $event" />
 
                             <Switch :modelValue="isOverlapped ?? false"
-                                    help="Show bars from different series over each other instead of side-by-side or stacked. The 'unfilled' option is recommended to ensure visibility of overlapping data points."
+                                    help="Show bars from different series over each other instead of side-by-side or stacked.<br>This will automatically use unfilled bars so that overlapping data points remain visible."
                                     label="Overlap"
                                     @update:modelValue="isOverlapped = $event" />
 
                             <Switch :modelValue="isUnfilled ?? false"
-                                    help="Unfilled bars are not filled with color, which could be useful to ensure visibility of overlapping data points when using 'overlap'."
+                                    help="Unfilled bars are not filled with color.<br>Not applicable when stacking is enabled. When overlap is enabled, bars will be unfilled automatically to ensure all data points remain visible, but this setting can be used to disable unfilled bars if that is desired, although it is recommended to sort the series in that case so that smaller data points are not hidden behind larger data points."
                                     label="Unfilled"
                                     @update:modelValue="isUnfilled = $event" />
 
@@ -156,6 +196,14 @@
                             <Switch :modelValue="categoryShowGridLines ?? false"
                                     label="Show Grid Lines"
                                     @update:modelValue="categoryShowGridLines = $event" />
+
+                            <Switch :modelValue="categoryHideAxisLabels ?? false"
+                                    label="Hide Axis Labels"
+                                    @update:modelValue="categoryHideAxisLabels = $event" />
+
+                            <Switch :modelValue="categoryHideAxisLine ?? false"
+                                    label="Hide Axis Line"
+                                    @update:modelValue="categoryHideAxisLine = $event" />
                         </div>
                     </ContentStack>
 
@@ -181,6 +229,14 @@
                             <Switch :modelValue="valueHideGridLines ?? false"
                                     label="Hide Grid Lines"
                                     @update:modelValue="valueHideGridLines = $event" />
+
+                            <Switch :modelValue="valueHideAxisLabels ?? false"
+                                    label="Hide Axis Labels"
+                                    @update:modelValue="valueHideAxisLabels = $event" />
+
+                            <Switch :modelValue="valueHideAxisLine ?? false"
+                                    label="Hide Axis Line"
+                                    @update:modelValue="valueHideAxisLine = $event" />
                         </div>
                     </ContentStack>
                 </ContentSection>
@@ -220,10 +276,26 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { BarSeries, LabelDateFormat, LegendAlign, LegendPosition, LabelDateFormatDescription, LegendAlignDescription, LegendPositionDescription, BarChartClickEvent, BarLabelContext, BarLabelsConfig, TooltipCallback } from "@Obsidian/Core/Controls/chart";
+    import {
+        BarChartAppearanceType,
+        BarChartClickEvent,
+        BarLabelContext,
+        BarLabelsConfig,
+        BarSeries,
+        LabelDateFormat,
+        LabelDateFormatDescription,
+        LegendAlign,
+        LegendAlignDescription,
+        LegendPosition,
+        LegendPositionDescription,
+        TitleAlign,
+        TitleAlignDescription,
+        TooltipCallback
+    } from "@Obsidian/Core/Controls/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const importCode = getSfcControlImportPath("barChart");
     const legendPositionItems = [
@@ -237,6 +309,11 @@
         { text: LegendAlignDescription[LegendAlign.Center], value: LegendAlign.Center },
         { text: LegendAlignDescription[LegendAlign.End], value: LegendAlign.End }
     ];
+    const titleAlignItems = [
+        { text: TitleAlignDescription[TitleAlign.Start], value: TitleAlign.Start },
+        { text: TitleAlignDescription[TitleAlign.Center], value: TitleAlign.Center },
+        { text: TitleAlignDescription[TitleAlign.End], value: TitleAlign.End }
+    ];
     const labelDateFormatItems = [
         { text: LabelDateFormatDescription[LabelDateFormat.Auto], value: LabelDateFormat.Auto },
         { text: LabelDateFormatDescription[LabelDateFormat.Day], value: LabelDateFormat.Day },
@@ -244,14 +321,19 @@
         { text: LabelDateFormatDescription[LabelDateFormat.Month], value: LabelDateFormat.Month },
         { text: LabelDateFormatDescription[LabelDateFormat.Year], value: LabelDateFormat.Year }
     ];
-    const labels = [
-        "2024-12-01T00:00:00",
-        "2025-01-01T00:00:00",
-        "2025-02-01T00:00:00"
+
+    const appearanceItems: ListItemBag[] = [
+        { text: "Default", value: "default" },
+        { text: "Stylized", value: "stylized" }
     ];
 
     // #region Values
 
+    const labels = ref<string[]>([
+        "2024-12-01T00:00:00",
+        "2025-01-01T00:00:00",
+        "2025-02-01T00:00:00"
+    ]);
     const series = ref<BarSeries[]>([
         {
             label: "Small Group",
@@ -262,9 +344,15 @@
             data: [11, 44, 47],
         }
     ]);
+    const appearance = ref<BarChartAppearanceType>("default");
+    const barBorderRadius = ref<number | undefined>();
     const minValue = ref<number>(0);
     const maxValue = ref<number>(100);
     const categoryShowGridLines = ref<boolean | undefined>();
+    const categoryHideAxisLabels = ref<boolean | undefined>();
+    const categoryHideAxisLine = ref<boolean | undefined>();
+    const valueHideAxisLine = ref<boolean | undefined>();
+    const valueHideAxisLabels = ref<boolean | undefined>();
     const valueHideGridLines = ref<boolean | undefined>();
     const categoryMaxTickCount = ref<number | undefined>();
     const categoryShowAllTicks = ref<boolean | undefined>();
@@ -275,16 +363,18 @@
     const isOverlapped = ref<boolean | undefined>();
     const isStacked = ref<boolean | undefined>();
     const seriesCount = ref<number>(series.value.length);
-    const legendPosition = ref<LegendPosition | undefined>();
     const legendAlign = ref<LegendAlign | undefined>();
+    const legendPosition = ref<LegendPosition | undefined>();
     const isLegendHidden = ref<boolean | undefined>();
     const isHorizontal = ref<boolean | undefined>();
     const labelDateFormat = ref<LabelDateFormat | undefined>(LabelDateFormat.Auto);
     const isPercent = ref<boolean | undefined>();
+    const minBarLength = ref<number | undefined>();
     const valueTickCount = ref<number | undefined>();
     const categoryLabel = ref<string | undefined>("Category Label");
     const valueLabel = ref<string | undefined>("Value Label");
     const title = ref<string | undefined>("Chart Title");
+    const titleAlign = ref<TitleAlign | undefined>();
     const valuePrecision = ref<number | undefined>();
     const valueSuggestedMin = ref<number | undefined>();
     const valueSuggestedMax = ref<number | undefined>();
@@ -298,11 +388,20 @@
     // #region Computed Values
 
     const exampleCode = computed<string>(() => {
-        let barChartProps: string[] = [
-            `:labels="labels"`,
-            `:series="series"`
-        ];
+        const barChartProps: string[] = [];
 
+        if (appearance.value && appearance.value !== "default") {
+            barChartProps.push(`appearance="${appearance.value}"`);
+        }
+        if (!isNullish(barBorderRadius.value)) {
+            barChartProps.push(`:barBorderRadius="${barBorderRadius.value}"`);
+        }
+        if (!isNullish(categoryHideAxisLabels.value)) {
+            barChartProps.push(`:categoryHideAxisLabels="${categoryHideAxisLabels.value}"`);
+        }
+        if (!isNullish(categoryHideAxisLine.value)) {
+            barChartProps.push(`:categoryHideAxisLine="${categoryHideAxisLine.value}"`);
+        }
         if (categoryLabel.value) {
             barChartProps.push(`categoryLabel="${categoryLabel.value}"`);
         }
@@ -315,11 +414,8 @@
         if (!isNullish(categoryShowGridLines.value)) {
             barChartProps.push(`:categoryShowGridLines="${categoryShowGridLines.value}"`);
         }
-        if (!isNullish(height.value)) {
+        if (height.value) {
             barChartProps.push(`height="${height.value}"`);
-        }
-        if (!isNullish(width.value)) {
-            barChartProps.push(`width="${width.value}"`);
         }
         if (!isNullish(isLegendHidden.value)) {
             barChartProps.push(`:hideLegend="${isLegendHidden.value}"`);
@@ -327,23 +423,31 @@
         if (!isNullish(isHorizontal.value)) {
             barChartProps.push(`:horizontal="${isHorizontal.value}"`);
         }
-        if (!isNullish(labelDateFormat.value)) {
+        if (labelDateFormat.value) {
             barChartProps.push(`labelDateFormat="${labelDateFormat.value}"`);
         }
-        if (!isNullish(legendAlign.value)) {
+        barChartProps.push(`:labels="labels"`);
+        if (legendAlign.value) {
             barChartProps.push(`legendAlign="${legendAlign.value}"`);
         }
-        if (!isNullish(legendPosition.value)) {
+        if (legendPosition.value) {
             barChartProps.push(`legendPosition="${legendPosition.value}"`);
+        }
+        if (!isNullish(minBarLength.value)) {
+            barChartProps.push(`:minBarLength="${minBarLength.value}"`);
         }
         if (!isNullish(isOverlapped.value)) {
             barChartProps.push(`:overlap="${isOverlapped.value}"`);
         }
+        barChartProps.push(`:series="series"`);
         if (!isNullish(isStacked.value)) {
             barChartProps.push(`:stack="${isStacked.value}"`);
         }
         if (title.value) {
             barChartProps.push(`title="${title.value}"`);
+        }
+        if (titleAlign.value) {
+            barChartProps.push(`titleAlign="${titleAlign.value}"`);
         }
         if (!isNullish(isPercent.value)) {
             if (isPercent.value) {
@@ -354,7 +458,13 @@
             }
         }
         if (!isNullish(isUnfilled.value)) {
-            barChartProps.push(`":unfilled="${isUnfilled.value}"`);
+            barChartProps.push(`:unfilled="${isUnfilled.value}"`);
+        }
+        if (!isNullish(valueHideAxisLabels.value)) {
+            barChartProps.push(`:valueHideAxisLabels="${valueHideAxisLabels.value}"`);
+        }
+        if (!isNullish(valueHideAxisLine.value)) {
+            barChartProps.push(`:valueHideAxisLine="${valueHideAxisLine.value}"`);
         }
         if (!isNullish(valueHideGridLines.value)) {
             barChartProps.push(`:valueHideGridLines="${valueHideGridLines.value}"`);
@@ -376,6 +486,9 @@
         }
         if (!isNullish(valueTickCount.value)) {
             barChartProps.push(`:valueTickCount="${valueTickCount.value}"`);
+        }
+        if (width.value) {
+            barChartProps.push(`width="${width.value}"`);
         }
 
         const prefix = "<BarChart ";
@@ -418,7 +531,7 @@
     function generateOneSeries(i: number): BarSeries {
         const min = Math.min(minValue.value, maxValue.value);
         const max = Math.max(minValue.value, maxValue.value);
-        let data = generateRandomBarData(labels.length, min, max, true);
+        let data = generateRandomBarData(labels.value.length, min, max, true);
 
         if (isPercent.value) {
             data = Enumerable.from(data).select(n => typeof n === "number" ? n / 100 : n).toArray();
@@ -486,7 +599,7 @@
 
     function onRandomizeOpacityClicked(): void {
         opacity.value = Enumerable
-            .from(labels)
+            .from(labels.value)
             .withIndex()
             .select(([_label, _index]) => (Math.random() > 0.5 ? 0.25 : 1))
             .toArray();
@@ -505,7 +618,7 @@
             .toArray();
 
         const newOpacity = Enumerable
-            .from(labels)
+            .from(labels.value)
             .withIndex()
             .select<number>(([_label, index]) => {
                 if (clickedLabelIndexes.includes(index)) {
@@ -531,7 +644,7 @@
 
                     if (targetsWithThisSeries.length) {
                         const opacities = Enumerable
-                            .from(labels)
+                            .from(labels.value)
                             .withIndex()
                             .select<number>(([_label, labelIndex]) => {
                                 if (Enumerable.from(targetsWithThisSeries).any(t => t.labelIndex === labelIndex)) {
@@ -591,7 +704,7 @@
             .select(s => {
                 return {
                     ...s,
-                    data: generateRandomBarData(labels.length, min, max, true)
+                    data: generateRandomBarData(labels.value.length, min, max, true)
                 };
             })
             .toArray();
@@ -634,6 +747,21 @@
                 })
                 .toArray();
         }
+    });
+
+    watch(appearance, () => {
+        // When appearance changes,
+        // reset all settings that are affected by the appearance presets to undefined so that they will fall back to the preset values. This allows the user to see the difference
+        // in presets and then customize from there if they choose.
+        if (!categoryShowGridLines.value) categoryShowGridLines.value = undefined;
+        if (!categoryHideAxisLabels.value) categoryHideAxisLabels.value = undefined;
+        if (!categoryHideAxisLine.value) categoryHideAxisLine.value = undefined;
+        if (!valueHideAxisLine.value) valueHideAxisLine.value = undefined;
+        if (!valueHideAxisLabels.value) valueHideAxisLabels.value = undefined;
+        if (!valueHideGridLines.value) valueHideGridLines.value = undefined;
+        if (!isStacked.value) isStacked.value = undefined;
+        if (!isOverlapped.value) isOverlapped.value = undefined;
+        if (!isUnfilled.value) isUnfilled.value = undefined;
     });
 
     // #endregion Watchers

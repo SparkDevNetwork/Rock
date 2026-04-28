@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { App, Component, createApp, defineComponent, Directive, h, markRaw, onMounted, provide, reactive, ref, VNode } from "vue";
+import { App, Component, createApp, defineComponent, Directive, h, markRaw, onMounted, provide, reactive, ref, VNode, withDirectives } from "vue";
 import DynamicComponent from "@Obsidian/Controls/dynamicComponent.obs";
 import RockBlock from "./rockBlock.partial";
 import { useStore } from "@Obsidian/PageState";
@@ -30,9 +30,10 @@ import { BasicSuspenseProvider, provideSuspense } from "@Obsidian/Utility/suspen
 import { alert } from "@Obsidian/Utility/dialogs";
 import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
 import { doApiCall, doStreamingApiCall, provideHttp } from "@Obsidian/Utility/http";
-import { createInvokeBlockAction, createInvokeStreamingBlockAction, provideBlockGuid, provideBlockTypeGuid } from "@Obsidian/Utility/block";
+import { createInvokeBlockAction, createInvokeStreamingBlockAction, provideBlockGuid, provideBlockTypeGuid, useStaticContent } from "@Obsidian/Utility/block";
 import { safeParseJson } from "@Obsidian/Utility/stringUtils";
 import { Guid } from "@Obsidian/Types";
+import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
 
 type DebugTimingConfig = {
     elementId: string;
@@ -40,6 +41,7 @@ type DebugTimingConfig = {
 };
 
 const store = useStore();
+const pageReadySource = new PromiseCompletionSource<void>();
 
 /**
  * This is a special use component that allows developers to include style
@@ -127,11 +129,14 @@ const contentDirective: Directive<Element, Node[] | Node | string | null | undef
 * @param blockComponent
 */
 export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<App> {
+    // Wait for the page to be ready, otherwise our page state won't be initialized.
+    await pageReadySource.promise;
+
     const blockPath = `${config.blockFileUrl}.js`;
     let blockComponent: Component | null = null;
     let errorMessage = "";
 
-    if (!config || !config.blockFileUrl || !config.blockGuid || !config.rootElementId) {
+    if (!config || !config.blockGuid || !config.rootElementId) {
         console.error("Invalid block configuration:", config);
         throw "Could not initialize Obsidian block because the configuration is invalid.";
     }
@@ -143,20 +148,38 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
         throw "Could not initialize Obsidian block because the root element was not found.";
     }
 
-    try {
-        const blockComponentModule = await import(blockPath);
-        blockComponent = blockComponentModule ?
-            (blockComponentModule.default || blockComponentModule) :
-            null;
+    if (config.blockFileUrl) {
+        try {
+            const blockComponentModule = await import(blockPath);
+            blockComponent = blockComponentModule ?
+                (blockComponentModule.default || blockComponentModule) :
+                null;
+        }
+        catch (e) {
+            // Log the error, but continue setting up the app so the UI will show the user an error
+            console.error(e);
+            errorMessage = `${e}`;
+        }
     }
-    catch (e) {
-        // Log the error, but continue setting up the app so the UI will show the user an error
-        console.error(e);
-        errorMessage = `${e}`;
+    else {
+        // Define a default block component that just renders the static content.
+        // This allows blocks that would otherwise not need any custom UI to
+        // still make use of things like block/page reload on settings changed.
+        blockComponent = {
+            setup() {
+                const staticContent = useStaticContent();
+
+                return () => {
+                    return withDirectives(h("div", {}), [
+                        [contentDirective, staticContent]
+                    ]);
+                };
+            }
+        };
     }
 
     const startTimeMs = RockDateTime.now().toMilliseconds();
-    const name = `Root${config.blockFileUrl.replace(/\//g, ".")}`;
+    const name = config.blockFileUrl ? `Root${config.blockFileUrl.replace(/\//g, ".")}` : `Root${config.blockGuid}`;
     const staticContent = ref<Node[]>([]);
 
     while (wrapperElement.firstChild !== null) {
@@ -632,8 +655,10 @@ export async function showCustomBlockAction(actionFileUrl: string, pageGuid: str
  *
  * @param {object} pageConfig
  */
-export async function initializePage(pageConfig: PageConfig): Promise<void> {
-    await store.initialize(pageConfig);
+export function initializePage(pageConfig: PageConfig): void {
+    store.initialize(pageConfig);
+
+    pageReadySource.resolve();
 }
 
 /**

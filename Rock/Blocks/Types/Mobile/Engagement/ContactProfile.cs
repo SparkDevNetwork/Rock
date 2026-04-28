@@ -109,9 +109,11 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 AnniversaryDay = contact.WeddingDay,
                 AnniversaryMonth = contact.WeddingMonth,
                 AnniversaryYear = contact.WeddingYear,
+                HasAcceptedJesus = contact.HasAcceptedJesus.HasValue ? contact.HasAcceptedJesus : false,
                 SalvationDay = contact.SalvationDay,
                 SalvationMonth = contact.SalvationMonth,
                 SalvationYear = contact.SalvationYear,
+                Baptized = contact.HasBeenBaptized.HasValue ? contact.HasBeenBaptized : false,
                 BaptismDay = contact.BaptismDay,
                 BaptismMonth = contact.BaptismMonth,
                 BaptismYear = contact.BaptismYear,
@@ -122,10 +124,9 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 XProfileUrl = contact.XProfileUrl,
                 PrayerCadence = contact.PrayerCadence.ToMobile(),
                 ConnectionCadence = contact.ConnectionCadence.ToMobile(),
-                PrayerNote = contact.PrayerNote,
+                ContactNote = contact.ContactNote,
                 TotalCompletedPrayersCount = GetTouchpointCount( contact.Id, TouchpointType.Prayer ),
                 CompletedPrayersLast30DaysCount = GetTouchpointCount( contact.Id, TouchpointType.Prayer, 30 ),
-                ConnectionNote = contact.ConnectionNote,
                 TotalCompletedConnectionsCount = GetTouchpointCount( contact.Id, TouchpointType.Connection ),
                 CompletedConnectionsLast30DaysCount = GetTouchpointCount( contact.Id, TouchpointType.Connection, 30 ),
             };
@@ -220,9 +221,11 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 contact.WeddingDay = contactProfileBag.AnniversaryDay;
                 contact.WeddingMonth = contactProfileBag.AnniversaryMonth;
                 contact.WeddingYear = contactProfileBag.AnniversaryYear;
+                contact.HasAcceptedJesus = contactProfileBag.HasAcceptedJesus;
                 contact.SalvationDay = contactProfileBag.SalvationDay;
                 contact.SalvationMonth = contactProfileBag.SalvationMonth;
                 contact.SalvationYear = contactProfileBag.SalvationYear;
+                contact.HasBeenBaptized = contactProfileBag.Baptized;
                 contact.BaptismDay = contactProfileBag.BaptismDay;
                 contact.BaptismMonth = contactProfileBag.BaptismMonth;
                 contact.BaptismYear = contactProfileBag.BaptismYear;
@@ -233,9 +236,6 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 contact.TikTokProfileUrl = contactProfileBag.TikTokProfileUrl;
                 contact.InstagramProfileUrl = contactProfileBag.InstagramProfileUrl;
                 contact.XProfileUrl = contactProfileBag.XProfileUrl;
-
-                contact.HasBeenBaptized = contactProfileBag.BaptismDay.HasValue && contactProfileBag.BaptismMonth.HasValue;
-                contact.HasAcceptedJesus = contactProfileBag.SalvationDay.HasValue && contactProfileBag.SalvationMonth.HasValue;
 
                 RockContext.SaveChanges();
             } );
@@ -259,8 +259,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             }
 
             // Only update the fields that were included in the request
-            contact.PrayerNote = bag.PrayerNote != null ? bag.PrayerNote : contact.PrayerNote;
-            contact.ConnectionNote = bag.ConnectionNote != null ? bag.ConnectionNote : contact.ConnectionNote;
+            contact.ContactNote = bag.ContactNote != null ? bag.ContactNote : contact.ContactNote;
             contact.PrayerCadence = bag.PrayerCadence != null ? bag.PrayerCadence.Value.ToNative() : contact.PrayerCadence;
             contact.ConnectionCadence = bag.ConnectionCadence != null ? bag.ConnectionCadence.Value.ToNative() : contact.ConnectionCadence;
 

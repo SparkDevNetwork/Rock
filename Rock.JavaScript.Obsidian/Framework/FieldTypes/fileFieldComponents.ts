@@ -18,7 +18,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader.obs";
-import { ConfigurationValueKey, ConfigurationPropertyKey } from "./fileField.partial";
+import { ConfigurationKey, ConfigurationPropertyKey } from "./fileField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { updateRefValue } from "@Obsidian/Utility/component";
 
@@ -47,11 +47,11 @@ export const EditComponent = defineComponent({
         */
         const binaryFileType = computed((): string => {
             try {
-                const fileType = JSON.parse(props.configurationValues[ConfigurationValueKey.BinaryFileType] || "{}") as ListItemBag;
+                const fileType = JSON.parse(props.configurationValues[ConfigurationKey.BinaryFileType] || "{}") as ListItemBag;
                 return fileType.value ?? "";
             }
             catch {
-                return props.configurationValues[ConfigurationValueKey.BinaryFileType] ?? "";
+                return props.configurationValues[ConfigurationKey.BinaryFileType] ?? "";
             }
         });
 
@@ -125,10 +125,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.BinaryFileType] = fileType.value ?? "";
+            newValue[ConfigurationKey.BinaryFileType] = fileType.value ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.BinaryFileType] !== (props.modelValue[ConfigurationValueKey.BinaryFileType] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.BinaryFileType] !== (props.modelValue[ConfigurationKey.BinaryFileType] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -155,7 +155,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            fileType.value = props.modelValue[ConfigurationValueKey.BinaryFileType];
+            fileType.value = props.modelValue[ConfigurationKey.BinaryFileType];
         }, {
             immediate: true
         });
@@ -171,7 +171,7 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(fileType, () => maybeUpdateConfiguration(ConfigurationValueKey.BinaryFileType, fileType.value ?? ""));
+        watch(fileType, () => maybeUpdateConfiguration(ConfigurationKey.BinaryFileType, fileType.value ?? ""));
 
         return {
             fileType,

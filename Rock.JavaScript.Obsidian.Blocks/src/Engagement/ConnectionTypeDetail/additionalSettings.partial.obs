@@ -22,11 +22,10 @@
                   headerLocation="top">
         <div class="row">
             <div class="col-md-6">
-                <DropDownList v-model="communicationTemplateGuidValue"
-                              label="Communication Templates Category"
-                              :items="communicationTemplateOptions"
-                              :showBlankItem="true"
-                              :multiple="false" />
+                <CategoryPicker v-model="communicationTemplateCategoryValue"
+                                label="Communication Templates Category"
+                                :entityTypeGuid="EntityType.CommunicationTemplate"
+                                :multiple="false" />
             </div>
         </div>
 
@@ -43,10 +42,30 @@
     <ContentStack v-if="store.state.trailblazerMode && props.hasActiveAIProvider" title="AI Insights Prompt"
                   description="Use this to tell the AI what to focus on when generating the summary shown on the Connection Request Detail page. If left blank, this feature will be hidden."
                   headerLocation="top">
-        <TextBox v-model="aiInsightsPromptValue"
-                 textMode="multiline"
-                 :rows="4"
-                 placeholder="Example: Summarize the current status of the request, recent activity, and any signs of engagement or concern. Highlight next steps if applicable." />
+        <div class="form-group">
+            <TextBox v-model="aiInsightsPromptValue"
+                     textMode="multiline"
+                     :rows="4"
+                     placeholder="Example: Summarize the current status of the request, recent activity, and any signs of engagement or concern. Highlight next steps if applicable." />
+        </div>
+
+        <RadioButtonList v-model="aiSummaryTriggerValue"
+                         label="AI Summary Trigger"
+                         :items="enumToListItemBag(AISummaryTriggerModeDescription)"
+                         :disabled="isAiInsightsPromptEmpty"
+                         help="Choose when the AI summary is generated for connection requests. Generating on load provides instant insights but uses more AI credits, while manual generation gives you control over when credits are used." />
+
+        <NumberBox v-model="aiSummaryCacheDurationValue"
+                   label="AI Summary Cache Duration"
+                   inputGroupClasses="input-width-xl"
+                   :decimalCount="0"
+                   :minimumValue="0"
+                   :disabled="isAiInsightsPromptEmpty"
+                   help="Set the number of minutes to cache generated summaries before they expire.">
+            <template #inputGroupAppend>
+                <span class="input-group-addon">mins</span>
+            </template>
+        </NumberBox>
     </ContentStack>
 
     <Modal v-model="isModalVisible"
@@ -94,12 +113,14 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { AISummaryTriggerMode, AISummaryTriggerModeDescription } from "@Obsidian/Enums/Connection/aiSummaryTriggerMode";
     import { ConnectionState, ConnectionStateDescription } from "@Obsidian/Enums/Connection/connectionState";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
@@ -115,14 +136,6 @@
          */
         additionalSettings: {
             type: Object as PropType<ConnectionTypeAdditionalSettingsBag>,
-            required: true
-        },
-
-        /**
-         * The available communication template category options to show in the Communication Templates Category dropdown.
-         */
-        communicationTemplateOptions: {
-            type: Array as PropType<ListItemBag[]>,
             required: true
         },
 
@@ -203,16 +216,25 @@
         }
     });
 
-    const communicationTemplateGuidValue = computed({
-        get(): string {
-            return additionalSettings.value.communicationSettings?.communicationTemplateCategoryGuid ?? "";
+    const communicationTemplateCategoryValue = computed({
+        get(): ListItemBag | null {
+            const guid = additionalSettings.value.communicationSettings?.communicationTemplateCategoryGuid;
+
+            if (!guid) {
+                return null;
+            }
+
+            return {
+                value: guid,
+                text: ""
+            };
         },
-        set(value: string) {
+        set(value: ListItemBag | null) {
             additionalSettings.value = {
                 ...additionalSettings.value,
                 communicationSettings: {
                     ...(additionalSettings.value.communicationSettings ?? {}),
-                    communicationTemplateCategoryGuid: value || null
+                    communicationTemplateCategoryGuid: value?.value ?? null
                 }
             };
         }
@@ -252,6 +274,37 @@
                 aiInsightsPrompt: value
             };
         }
+    });
+
+    const aiSummaryTriggerValue = computed({
+        get(): string {
+            return (additionalSettings.value.aiSummaryTrigger ?? AISummaryTriggerMode.Manual).toString();
+        },
+        set(value: string) {
+            additionalSettings.value = {
+                ...additionalSettings.value,
+                aiSummaryTrigger: parseInt(value, 10) as AISummaryTriggerMode
+            };
+        }
+    });
+
+    const aiSummaryCacheDurationValue = computed({
+        get(): number | null {
+            return additionalSettings.value.aiSummaryCacheDurationMinutes ?? 5;
+        },
+        set(value: number | null) {
+            additionalSettings.value = {
+                ...additionalSettings.value,
+                aiSummaryCacheDurationMinutes: value ?? 0
+            };
+        }
+    });
+
+    /**
+     * Whether the AI Insights Prompt is empty, used to disable dependent fields.
+     */
+    const isAiInsightsPromptEmpty = computed((): boolean => {
+        return !aiInsightsPromptValue.value;
     });
 
     /**

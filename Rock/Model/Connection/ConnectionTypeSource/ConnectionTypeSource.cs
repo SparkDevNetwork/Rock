@@ -63,6 +63,21 @@ namespace Rock.Model
         public virtual ConnectionType ConnectionType { get; set; }
 
         #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion
     }
 
     #region Entity Configuration
@@ -77,7 +92,7 @@ namespace Rock.Model
         /// </summary>
         public ConnectionTypeSourceConfiguration()
         {
-            this.HasRequired( p => p.ConnectionType ).WithMany().HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.ConnectionType ).WithMany( ct => ct.ConnectionTypeSources ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( true );
         }
     }
 

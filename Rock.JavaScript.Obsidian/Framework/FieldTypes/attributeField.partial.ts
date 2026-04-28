@@ -20,7 +20,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     ClientValues = "values",
     Entitytype = "entitytype",
     AllowMultiple = "allowmultiple",

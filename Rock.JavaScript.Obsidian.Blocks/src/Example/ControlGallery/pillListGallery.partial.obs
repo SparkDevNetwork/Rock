@@ -1,0 +1,162 @@
+<template>
+    <GalleryAndResult :value="values"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <RockForm @submit="onSubmit">
+            <PillList v-model="values"
+                      :addDisabled="addDisabled"
+                      :canAdd="canAdd"
+                      :canExpand="canExpand"
+                      :canRemove="canRemove"
+                      :disabled="disabled"
+                      :expandedMaxHeight="expandedMaxHeight"
+                      :label="label"
+                      :rules="isRequired ? 'required' : undefined"
+                      @add="onAdd"
+                      @remove="onRemove">
+                <template #itemContent="{ item, emptyValue }">{{ item.value || emptyValue }}</template>
+            </PillList>
+
+            <RockButton btnType="primary"
+                        type="submit">Submit Form</RockButton>
+        </RockForm>
+
+        <template #settings>
+            <div class="settings">
+                <div class="autolayout">
+                    <Switch v-model="canExpand"
+                            label="Can Expand?"
+                            help="Shows an expand or collapse button when items overflow." />
+
+                    <Switch v-model="canAdd"
+                            label="Can Add?"
+                            help="Shows an add button that emits the add event." />
+
+                    <Switch v-model="canRemove"
+                            label="Can Remove?"
+                            help="Shows a remove button on each pill. When clicked, emits the remove event." />
+                    <Switch v-model="disabled"
+                            label="Is Disabled?"
+                            help="Disables all interaction with the pill list except for the expand/collapse button." />
+
+                    <Switch v-model="addDisabled"
+                            label="Is Add Disabled?"
+                            help="Only disables the add button. Useful in scenarios where adding items is temporarily not allowed." />
+
+                    <Switch v-model="isRequired"
+                            label="Is Required?"
+                            help="Makes the control required." />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <TextBox v-model="label"
+                                 label="Label"
+                                 help="The label to display above the pill list." />
+                    </div>
+
+                    <div class="col-md-4">
+                        <NumberBox v-model="expandedMaxHeightPx"
+                                   label="Max Height When Expanded"
+
+                                   help="The maximum height of the expanded list before scrolling is enabled. This should be a CSS value compatible with the 'max-height' property. This example uses pixels. Leave blank to use the default value.">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">px</span>
+                            </template>
+                        </NumberBox>
+                    </div>
+                </div>
+
+                <ListItems v-model="valuesAsString"
+                           fullWidth
+                           label="Values" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<style scoped>
+.settings {
+    max-height: 350px;
+    overflow: auto;
+}
+
+.autolayout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    column-gap: var(--spacing-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import ListItems from "@Obsidian/Controls/listItems.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import PillList from "@Obsidian/Controls/pillList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const values = ref<KeyValueItem[]>([
+        createItem("Worship Team"),
+        createItem("Small Groups"),
+        createItem("Youth Ministry")
+    ]);
+
+    function createItem(text: string): KeyValueItem {
+        return {
+            key: newGuid(),
+            value: text
+        };
+    }
+
+    const canAdd = ref<boolean>(false);
+    const canExpand = ref<boolean>(false);
+    const canRemove = ref<boolean>(false);
+    const disabled = ref<boolean>(false);
+    const addDisabled = ref<boolean>(false);
+    const expandedMaxHeightPx = ref<number | null>();
+    const label = ref<string>("Connection Opportunities");
+    const isRequired = ref<boolean>(false);
+
+    const importCode = getSfcControlImportPath("pillList");
+    const exampleCode = `<PillList v-model="values" :canAdd="canAdd" :canExpand="canExpand" :canRemove="canRemove" :disabled="disabled" :addDisabled="addDisabled" />`;
+
+    const valuesAsString = computed<string>({
+        get(): string {
+            return JSON.stringify(values.value);
+        },
+        set(value: string) {
+            values.value = JSON.parse(value) as KeyValueItem[];
+        }
+    });
+
+    const expandedMaxHeight = computed<string | undefined>(() => {
+        if (!isNullish(expandedMaxHeightPx.value)) {
+            return `${expandedMaxHeightPx.value}px`;
+        }
+
+        return undefined;
+    });
+
+    function onAdd(): void {
+        values.value = [...values.value, createItem("New Opportunity")];
+    }
+
+    function onRemove(_item: KeyValueItem, index: number): void {
+        if (index >= 0) {
+            values.value = [...values.value.slice(0, index), ...values.value.slice(index + 1)];
+        }
+    }
+
+    function onSubmit(): void {
+        alert("Form submitted!");
+    }
+</script>

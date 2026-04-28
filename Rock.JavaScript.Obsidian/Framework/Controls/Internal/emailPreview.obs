@@ -8,6 +8,11 @@
 <style scoped>
 .email-body {
     display: flex;
+    background: var(--color-interface-softest);
+}
+
+html[theme="dark"] .email-body {
+    background: var(--color-interface-strongest);
 }
 
 .email-body iframe {

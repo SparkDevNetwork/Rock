@@ -11,7 +11,7 @@
                     <span class="input-group-addon">
                         <i class="ti ti-mail"></i>
                     </span>
-                    <input v-model="internalValue" :id="uniqueId" class="form-control" v-bind="field" :type="computedType" />
+                    <input v-model="internalValue" :id="uniqueId" class="form-control" v-bind="field" :type="computedType" autocomplete="email" />
                 </div>
             </div>
         </template>

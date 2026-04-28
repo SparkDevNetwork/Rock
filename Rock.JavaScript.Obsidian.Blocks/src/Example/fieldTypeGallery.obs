@@ -172,6 +172,9 @@
         getFieldTypeGalleryComponent("GroupRole", "2", FieldTypeGuids.GroupRole, {
         }),
 
+        getFieldTypeGalleryComponent("Image", "", FieldTypeGuids.Image, {
+        }),
+
         getFieldTypeGalleryComponent("Integer", "20", FieldTypeGuids.Integer, {
         }),
 
@@ -220,16 +223,19 @@
             max: "5"
         }),
 
-        getFieldTypeGalleryComponent("Schedule", "2", FieldTypeGuids.Schedule, {
+        getFieldTypeGalleryComponent("Schedule", "null", FieldTypeGuids.Schedule, {
         }),
 
-        getFieldTypeGalleryComponent("Schedules", "2", FieldTypeGuids.Schedules, {
+        getFieldTypeGalleryComponent("Schedules", "null", FieldTypeGuids.Schedules, {
         }),
 
         getFieldTypeGalleryComponent("SingleSelect", "pizza", FieldTypeGuids.SingleSelect, {
             repeatColumns: "4",
             fieldtype: "rb",
             values: '[{"value": "pizza", "text": "Pizza"}, {"value": "sub", "text": "Sub"}, {"value": "bagel", "text": "Bagel"}]'
+        }),
+
+        getFieldTypeGalleryComponent("Site", "null", FieldTypeGuids.Site, {
         }),
 
         getFieldTypeGalleryComponent("SSN", "123456789", FieldTypeGuids.Ssn, {

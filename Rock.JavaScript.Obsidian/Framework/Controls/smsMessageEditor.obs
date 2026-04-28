@@ -66,6 +66,8 @@
                              :getPageId="shortLinkGetPageId"
                              :sites="shortLinkSites"
                              :tokenMinLength="shortLinkTokenMinLength" />
+
+            <slot name="plugins"></slot>
         </template>
     </RockFormField>
 </template>
@@ -128,7 +130,7 @@
     import ToolbarCountDownPlugin from "./NoteEditor/toolbarCountDownPlugin.partial.obs";
     import ToolbarLabelPlugin from "./NoteEditor/toolbarLabelPlugin.partial.obs";
     import ToolbarSpacerPlugin from "./NoteEditor/toolbarSpacerPlugin.partial.obs";
-    import { providePluginsFeature } from "./NoteEditor/utils.partial";
+    import { providePluginsFeature } from "./Internal/NoteEditor/utils";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { tinymce, Editor, EditorEvent, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";

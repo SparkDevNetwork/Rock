@@ -20,7 +20,7 @@ import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./mediaSelectorField.partial";
+import { ConfigurationKey } from "./mediaSelectorField.partial";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
@@ -65,7 +65,7 @@ export const EditComponent = defineComponent({
         /** The options to choose from */
         options(): KeyValueItem[] {
             try {
-                const ds = JSON.parse(this.configurationValues[ConfigurationValueKey.MediaItems] ?? "[]") as KeyValueItem[];
+                const ds = JSON.parse(this.configurationValues[ConfigurationKey.MediaItems] ?? "[]") as KeyValueItem[];
                 return ds.map(v => {
                     return {
                         key: v.key,
@@ -78,11 +78,11 @@ export const EditComponent = defineComponent({
             }
         },
         itemWidth(): string {
-            return this.configurationValues[ConfigurationValueKey.ItemWidth] ?? "";
+            return this.configurationValues[ConfigurationKey.ItemWidth] ?? "";
         },
         mode(): MediaSelectorMode {
             try {
-                return parseMediaSelectorMode(this.configurationValues[ConfigurationValueKey.Mode]);
+                return parseMediaSelectorMode(this.configurationValues[ConfigurationKey.Mode]);
             }
             catch {
                 return MediaSelectorMode.Image;
@@ -157,14 +157,14 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.ItemWidth] = itemWidth.value ?? "";
-            newValue[ConfigurationValueKey.Mode] = mode.value?.toString() ?? "0";
-            newValue[ConfigurationValueKey.MediaItems] = JSON.stringify(mediaItems.value ?? []);
+            newValue[ConfigurationKey.ItemWidth] = itemWidth.value ?? "";
+            newValue[ConfigurationKey.Mode] = mode.value?.toString() ?? "0";
+            newValue[ConfigurationKey.MediaItems] = JSON.stringify(mediaItems.value ?? []);
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.ItemWidth] !== (props.modelValue[ConfigurationValueKey.ItemWidth] ?? "")
-                || newValue[ConfigurationValueKey.Mode] !== (props.modelValue[ConfigurationValueKey.Mode])
-                || newValue[ConfigurationValueKey.MediaItems] !== (props.modelValue[ConfigurationValueKey.MediaItems] ?? []);
+            const anyValueChanged = newValue[ConfigurationKey.ItemWidth] !== (props.modelValue[ConfigurationKey.ItemWidth] ?? "")
+                || newValue[ConfigurationKey.Mode] !== (props.modelValue[ConfigurationKey.Mode])
+                || newValue[ConfigurationKey.MediaItems] !== (props.modelValue[ConfigurationKey.MediaItems] ?? []);
 
 
             // If any value changed then emit the new model value.
@@ -192,17 +192,17 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            mode.value = props.modelValue[ConfigurationValueKey.Mode] ?? "0";
-            mediaItems.value = parseKeyValueItemValue(props.modelValue[ConfigurationValueKey.MediaItems]);
-            itemWidth.value = props.modelValue[ConfigurationValueKey.ItemWidth] ?? "";
+            mode.value = props.modelValue[ConfigurationKey.Mode] ?? "0";
+            mediaItems.value = parseKeyValueItemValue(props.modelValue[ConfigurationKey.MediaItems]);
+            itemWidth.value = props.modelValue[ConfigurationKey.ItemWidth] ?? "";
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(mode, () => maybeUpdateConfiguration(ConfigurationValueKey.Mode, mode.toString() ?? MediaSelectorMode.Image));
-        watch(mediaItems, () => maybeUpdateConfiguration(ConfigurationValueKey.MediaItems, JSON.stringify(mediaItems.value) ?? ""), { deep: true });
-        watch(itemWidth, () => maybeUpdateConfiguration(ConfigurationValueKey.ItemWidth, itemWidth.value ?? "50px"));
+        watch(mode, () => maybeUpdateConfiguration(ConfigurationKey.Mode, mode.toString() ?? MediaSelectorMode.Image));
+        watch(mediaItems, () => maybeUpdateConfiguration(ConfigurationKey.MediaItems, JSON.stringify(mediaItems.value) ?? ""), { deep: true });
+        watch(itemWidth, () => maybeUpdateConfiguration(ConfigurationKey.ItemWidth, itemWidth.value ?? "50px"));
 
         return {
             mediaItems,

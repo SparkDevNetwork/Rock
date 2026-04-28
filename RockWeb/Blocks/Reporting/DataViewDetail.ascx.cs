@@ -195,15 +195,12 @@ $(document).ready(function() {
         {
             if ( !Page.IsPostBack )
             {
-                string dataViewId = PageParameter( PageParameterKey.DataViewId ).AsIntegerOrNull()?.ToString() ?? string.Empty;
-                if ( string.IsNullOrEmpty( dataViewId ) )
-                {
-                    dataViewId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.DataViewId ) ).ToStringSafe();
-                }
+                string dataViewId = PageParameter( PageParameterKey.DataViewId );
+                var dataView = new DataViewService( new RockContext() ).Get( dataViewId, !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( !string.IsNullOrWhiteSpace( dataViewId ) )
+                if ( dataView != null || dataViewId == "0" )
                 {
-                    ShowDetail( dataViewId.AsInteger(), PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull() );
+                    ShowDetail( dataView != null ? dataView.Id : 0, PageParameter( PageParameterKey.ParentCategoryId ) );
                 }
                 else
                 {
@@ -253,7 +250,7 @@ $(document).ready(function() {
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             var service = new DataViewService( new RockContext() );
-            var item = service.Get( int.Parse( hfDataViewId.Value ) );
+            var item = service.Get( hfDataViewId.Value, true );
             BindReadOnlyContextControls( service.ReadOnlyContextEnabled, item.DisableUseOfReadOnlyContext );
             ShowEditDetails( item );
         }
@@ -481,7 +478,7 @@ $(document).ready(function() {
 
             var qryParams = new Dictionary<string, string>();
             var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
-            qryParams[PageParameterKey.DataViewId] = dataView.Id.ToString();
+            qryParams[PageParameterKey.DataViewId] = dataView.IdKey;
             qryParams[PageParameterKey.ParentCategoryId] = null;
             if ( expandedIds.IsNotNullOrWhiteSpace() )
             {
@@ -514,12 +511,18 @@ $(document).ready(function() {
 
             if ( dataViewId == 0 )
             {
-                int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
-                if ( parentCategoryId.HasValue )
+                var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId );
+                if ( !string.IsNullOrEmpty( parentCategoryId ) )
                 {
                     // Canceling on Add, and we know the parentCategoryId, so we are probably in TreeView mode, so navigate to the current page
+                    var parentCategory = CategoryCache.Get( parentCategoryId, !PageCache.Layout.Site.DisablePredictableIds );
                     var qryParams = new Dictionary<string, string>();
-                    qryParams[PageParameterKey.CategoryId] = parentCategoryId.ToString();
+
+                    if ( parentCategory != null )
+                    {
+                        qryParams[PageParameterKey.CategoryId] = parentCategory.IdKey;
+                    }
+
                     qryParams[PageParameterKey.DataViewId] = null;
                     qryParams[PageParameterKey.ParentCategoryId] = null;
                     NavigateToPage( RockPage.Guid, qryParams );
@@ -548,7 +551,7 @@ $(document).ready(function() {
         {
             var rockContext = new RockContext();
             var dataViewService = new DataViewService( rockContext );
-            var dataView = dataViewService.Get( int.Parse( hfDataViewId.Value ) );
+            var dataView = dataViewService.Get( hfDataViewId.Value, true );
             if ( dataView == null )
             {
                 return;
@@ -562,7 +565,7 @@ $(document).ready(function() {
             }
             else
             {
-                var categoryId = dataView.CategoryId;
+                var category = dataView.Category;
 
                 // delete this DataView's DataViewFilter
                 try
@@ -580,9 +583,9 @@ $(document).ready(function() {
 
                 // reload page, selecting the deleted data view's parent
                 var qryParams = new Dictionary<string, string>();
-                if ( categoryId != null )
+                if ( category != null )
                 {
-                    qryParams[PageParameterKey.CategoryId] = categoryId.ToString();
+                    qryParams[PageParameterKey.CategoryId] = category.IdKey;
                 }
 
                 qryParams[PageParameterKey.DataViewId] = null;
@@ -602,7 +605,11 @@ $(document).ready(function() {
             queryParams.Add( PageParameterKey.ReportId, "0" );
             if ( hfDataViewId.ValueAsInt() != default( int ) )
             {
-                queryParams.Add( PageParameterKey.DataViewId, hfDataViewId.ValueAsInt().ToString() );
+                var dataView = DataViewCache.Get( hfDataViewId.Value, true );
+                if ( dataView != null )
+                {
+                    queryParams.Add( PageParameterKey.DataViewId, dataView.IdKey );
+                }
             }
 
             NavigateToLinkedPage( AttributeKey.ReportDetailPage, queryParams );
@@ -696,7 +703,7 @@ $(document).ready(function() {
         /// </summary>
         /// <param name="dataViewId">The data view identifier.</param>
         /// <param name="parentCategoryId">The parent category id.</param>
-        public void ShowDetail( int dataViewId, int? parentCategoryId )
+        public void ShowDetail( int dataViewId, string parentCategoryId )
         {
             pnlDetails.Visible = false;
 
@@ -704,6 +711,9 @@ $(document).ready(function() {
 
             var dataViewService = new DataViewService( rockContext );
             DataView dataView = null;
+
+            var categoryService = new CategoryService( rockContext );
+            var parentCategory = categoryService.Get( parentCategoryId, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( !dataViewId.Equals( 0 ) )
             {
@@ -713,7 +723,7 @@ $(document).ready(function() {
 
             if ( dataView == null )
             {
-                dataView = new DataView { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
+                dataView = new DataView { Id = 0, IsSystem = false, CategoryId = parentCategory?.Id };
                 dataView.Name = string.Empty;
 
                 // hide the panel drawer that show created and last modified dates
@@ -1006,7 +1016,7 @@ $(document).ready(function() {
                 {
                     var dataViewDetailQueryParams = new Dictionary<string, string>()
                     {
-                        { PageParameterKey.DataViewId, relatedDataView.Id.ToString() }
+                        { PageParameterKey.DataViewId, relatedDataView.IdKey }
                     };
 
                     var dataViewDetailPageUrl = LinkedPageUrl( AttributeKey.DataViewDetailPage, dataViewDetailQueryParams );
@@ -1038,7 +1048,7 @@ $(document).ready(function() {
                 {
                     var reportDetailQueryParams = new Dictionary<string, string>()
                     {
-                        { PageParameterKey.ReportId, report.Id.ToString() }
+                        { PageParameterKey.ReportId, report.IdKey }
                     };
 
                     var reportDetailPageUrl = LinkedPageUrl( AttributeKey.ReportDetailPage, reportDetailQueryParams );
@@ -1078,11 +1088,11 @@ $(document).ready(function() {
                         groupSync.Group != null ? groupSync.Group.Name : "(Id: " + groupSync.GroupId.ToStringSafe() + ")",
                         groupSync.GroupTypeRole.Name );
 
-                    if ( !string.IsNullOrWhiteSpace( groupDetailPage ) )
+                    if ( !string.IsNullOrWhiteSpace( groupDetailPage ) && groupSync.Group != null )
                     {
                         var groupDetailPageParameters = new Dictionary<string, string>()
                         {
-                            { PageParameterKey.GroupId, groupSync.GroupId.ToString() }
+                            { PageParameterKey.GroupId, groupSync.Group.IdKey }
                         };
 
                         var groupDetailPageUrl = LinkedPageUrl( AttributeKey.GroupDetailPage, groupDetailPageParameters );

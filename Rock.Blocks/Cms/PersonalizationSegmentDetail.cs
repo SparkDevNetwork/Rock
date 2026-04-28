@@ -417,7 +417,7 @@ namespace Rock.Blocks.Cms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${PersonalizationSegment.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {PersonalizationSegment.FriendlyTypeName}." );
                 return false;
             }
 

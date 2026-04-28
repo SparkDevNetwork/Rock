@@ -1991,6 +1991,10 @@ export class GridState implements IGridState {
             else if (b.value === undefined) {
                 return order;
             }
+            else if (typeof a.value === "string" && typeof b.value === "string") {
+                const comparison = a.value.localeCompare(b.value, undefined, { sensitivity: "base" });
+                return comparison * order;
+            }
             else if (a.value < b.value) {
                 return -order;
             }

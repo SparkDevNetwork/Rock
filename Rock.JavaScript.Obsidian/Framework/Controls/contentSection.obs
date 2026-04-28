@@ -2,13 +2,18 @@
     <div :id="section.anchor.value"
          class="contentsection"
          :class="additionalSectionClasses">
-        <div v-if="title"
+        <div v-if="hasTitle"
              class="contentsection-header"
              @click="onSectionHeaderClick">
             <div class="contentsection-header-title-and-description">
                 <h5 class="contentsection-header-title">
-                    <i v-if="icon" :class="icon"></i>
-                    {{ title }}
+                    <template v-if="title">
+                        <i v-if="icon" :class="icon"></i>
+                        {{ title }}
+                    </template>
+                    <template v-else>
+                        <slot name="title" />
+                    </template>
                 </h5>
                 <div v-if="$slots.description" class="contentsection-header-description">
                     <slot name="description" />
@@ -33,52 +38,98 @@
             </div>
         </div>
 
+        <template v-if="$slots.preBody">
+            <slot name="preBody" />
+        </template>
+
         <TransitionVerticalCollapse :isAnimationDisabled="isAnimationDisabled"
                                     @transitionStart="onSectionTransitionStart"
                                     @transitionEnd="onSectionTransitionEnd">
-            <div v-show="disableCollapse || !section.isCollapsed.value">
-                <div class="contentsection-body">
-                    <slot />
-                </div>
-
-                <div v-if="$slots.overflow"
-                     class="contentsection-body-overflow"
-                     :class="additionalSectionBodyOverflowClasses">
-                    <div class="contentsection-body-overflow-toggle">
-                        <button type="button"
-                                class="btn btn-link"
-                                @click="isOverflowCollapsed = !isOverflowCollapsed">
-                            <span>{{ overflowText || "Show More" }}</span>
-                            <i class="ti ti-chevron-up"></i>
-                        </button>
-                    </div>
-
-                    <TransitionVerticalCollapse>
-                        <div v-show="!isOverflowCollapsed" class="contentsection-body-overflow-content">
-                            <slot name="overflow" />
+            <template v-if="unmountOnCollapse">
+                <div v-show="isVisible">
+                    <template v-if="isRendered">
+                        <div class="contentsection-body">
+                            <slot />
                         </div>
-                    </TransitionVerticalCollapse>
-                </div>
 
-                <div v-if="$slots.footerActions || $slots.footerSecondaryActions" class="contentsection-footer">
-                    <div class="contentsection-footer-actions">
-                        <slot name="footerActions" />
+                        <div v-if="$slots.overflow"
+                             class="contentsection-body-overflow"
+                             :class="additionalSectionBodyOverflowClasses">
+                            <div class="contentsection-body-overflow-toggle">
+                                <button type="button"
+                                        class="btn btn-link"
+                                        @click="isOverflowCollapsed = !isOverflowCollapsed">
+                                    <span>{{ overflowText || "Show More" }}</span>
+                                    <i class="ti ti-chevron-up"></i>
+                                </button>
+                            </div>
+
+                            <TransitionVerticalCollapse>
+                                <div v-show="!isOverflowCollapsed" class="contentsection-body-overflow-content">
+                                    <slot name="overflow" />
+                                </div>
+                            </TransitionVerticalCollapse>
+                        </div>
+
+                        <div v-if="$slots.footerActions || $slots.footerSecondaryActions" class="contentsection-footer">
+                            <div class="contentsection-footer-actions">
+                                <slot name="footerActions" />
+                            </div>
+
+                            <div class="contentsection-footer-secondary-actions">
+                                <slot name="footerSecondaryActions" />
+                            </div>
+
+                        </div>
+                    </template>
+                </div>
+            </template>
+            <template v-else>
+                <div v-show="disableCollapse || !section.isCollapsed.value">
+                    <div class="contentsection-body">
+                        <slot />
                     </div>
 
-                    <div class="contentsection-footer-secondary-actions">
-                        <slot name="footerSecondaryActions" />
+                    <div v-if="$slots.overflow"
+                         class="contentsection-body-overflow"
+                         :class="additionalSectionBodyOverflowClasses">
+                        <div class="contentsection-body-overflow-toggle">
+                            <button type="button"
+                                    class="btn btn-link"
+                                    @click="isOverflowCollapsed = !isOverflowCollapsed">
+                                <span>{{ overflowText || "Show More" }}</span>
+                                <i class="ti ti-chevron-up"></i>
+                            </button>
+                        </div>
+
+                        <TransitionVerticalCollapse>
+                            <div v-show="!isOverflowCollapsed" class="contentsection-body-overflow-content">
+                                <slot name="overflow" />
+                            </div>
+                        </TransitionVerticalCollapse>
                     </div>
 
+                    <div v-if="$slots.footerActions || $slots.footerSecondaryActions" class="contentsection-footer">
+                        <div class="contentsection-footer-actions">
+                            <slot name="footerActions" />
+                        </div>
+
+                        <div class="contentsection-footer-secondary-actions">
+                            <slot name="footerSecondaryActions" />
+                        </div>
+
+                    </div>
                 </div>
-            </div>
+            </template>
         </TransitionVerticalCollapse>
     </div>
 </template>
 
 <script setup lang="ts">
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
-    import { createSection, useSectionContainer } from "@Obsidian/Core/Controls/contentSection";
-    import { computed, onBeforeUnmount, PropType, ref } from "vue";
+    import { createSection, IContentSectionHolder, useSectionContainer } from "@Obsidian/Core/Controls/contentSection";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { computed, onBeforeUnmount, PropType, ref, useSlots, watch, nextTick, onMounted } from "vue";
 
     const props = defineProps({
         /**
@@ -140,10 +191,22 @@
         order: {
             type: Number as PropType<number>,
             default: 0
+        },
+
+        unmountOnCollapse: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
+    const emit = defineEmits<{
+        (e: "onSectionTransition", v: boolean): void;
+        (e: "onSectionHeaderClick", v: IContentSectionHolder);
+    }>();
+
     // #region Values
+
+    const slots = useSlots();
 
     const title = computed((): string | undefined => props.title);
     const icon = computed((): string | undefined => props.icon);
@@ -152,12 +215,17 @@
     const order = ref(props.order);
     const isOverflowCollapsed = ref(true);
 
+    const isVisible = ref(false);
+    const isRendered = ref(false);
+
     const section = createSection(title, icon, isCollapsed, isAnimationDisabled, order);
     const sectionContainer = useSectionContainer();
 
     // #endregion
 
     // #region Computed Values
+
+    const hasTitle = computed((): boolean => !isNullOrWhiteSpace(props.title) || !!slots.title?.().length);
 
     /**
      * Additional classes to apply to the section based on its state and
@@ -211,6 +279,10 @@
      */
     function onSectionTransitionEnd(): void {
         sectionContainer.onSectionTransitionEnd?.(section);
+
+        if (!isVisible.value) {
+            isRendered.value = false;
+        }
     }
 
     /**
@@ -226,9 +298,34 @@
         }
 
         section.isCollapsed.value = !section.isCollapsed.value;
+
+        emit("onSectionTransition", section.isCollapsed.value);
+        emit("onSectionHeaderClick", section);
     }
 
     // #endregion
+
+    watch(() => props.disableCollapse || section.isCollapsed.value, async (isCollapsed) => {
+        if (!isCollapsed) {
+            isRendered.value = true;
+            await nextTick();
+            isVisible.value = true;
+        }
+        else {
+            isVisible.value = false;
+        }
+    });
+
+    onMounted(async () => {
+        if (!section.isCollapsed.value) {
+            isRendered.value = true;
+            await nextTick();
+            isVisible.value = true;
+        }
+        else {
+            isVisible.value = false;
+        }
+    });
 
     onBeforeUnmount((): void => {
         sectionContainer.removeSection(section);

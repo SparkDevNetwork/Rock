@@ -134,6 +134,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.ApiKey = source.ApiKey;
             target.ApiKeyPurpose = source.ApiKeyPurpose;
+            target.Description = source.Description;
             target.EntityTypeId = source.EntityTypeId;
             target.FailedPasswordAttemptCount = source.FailedPasswordAttemptCount;
             target.FailedPasswordAttemptWindowStartDateTime = source.FailedPasswordAttemptWindowStartDateTime;

@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentSectionContainer sidebar>
-        <ContentSection :disableCollapse="true">
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection light>
             <ContentStack>
                 <div class="row">
                     <div class="col-md-6">
@@ -9,7 +9,7 @@
                                  label="Name"
                                  rules="required" />
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-6">
                         <CheckBox v-model="isActive"
                                   label="Active" />
                     </div>
@@ -40,7 +40,7 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Persistence Schedule" icon="ti ti-database-export">
+        <ContentSection class="persistence-schedule-section" title="Persistence Schedule" icon="ti ti-database-export" disableCollapse>
             <ContentStack>
                 <div class="panel panel-waterfall">
                     <div class="panel-body">
@@ -48,27 +48,31 @@
                             <div class="col-md-3">
                                 <RadioButtonList v-model="persistenceType"
                                                  label="Type"
+                                                 help="Determines how long a person remains in the segment based on a fixed interval or a defined schedule."
                                                  :items="persistenceTypeOptions" />
                             </div>
                             <div v-if="persistenceType === 'Schedule'" class="col-md-3">
                                 <RadioButtonList v-model="persistenceScheduleType"
                                                  label="Persistence Schedule"
+                                                 help="Specifies whether to use a custom schedule or select from a predefined schedule."
                                                  :items="persistedScheduleTypeOptions" />
                             </div>
                             <div v-if="persistenceType === 'Schedule'" class="col-md-6">
                                 <SchedulePicker v-if="persistenceScheduleType === 'Named'"
                                                 label="Named"
+                                                help="A predefined schedule that can be reused across segments."
                                                 v-model="persistedSchedule"
                                                 :multiple="false"
                                                 :includeCategoryGuids="[Category.SchedulePersonalizationSegments]" />
                                 <ScheduleBuilder v-else-if="persistenceScheduleType === 'Unique'"
                                                  label="Unique"
+                                                 help="A custom schedule defined specifically for this segment."
                                                  v-model="uniqueScheduleICalendarContent"
                                                  :hideStartDateTime="false"
                                                  :hideDuration="false" />
                             </div>
                             <div v-if="persistenceType === 'Interval'" class="col-md-9">
-                                <IntervalPicker v-model="persistenceInterval" label="Persistence Interval" />
+                                <IntervalPicker v-model="persistenceInterval" label="Persistence Interval" help="The amount of time a person remains in the segment after meeting the criteria." />
                             </div>
                         </div>
                     </div>
@@ -76,48 +80,47 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Person Filters" icon="ti ti-user">
-            <ContentStack>
-                <div class="row">
-                    <div class="col-md-12">
-                        <NotificationBox alertType="info">
-                            Adding a Data View to the segment will exclude anonymous visitors.
-                        </NotificationBox>
-                    </div>
-                </div>
+        <ContentSection title="Filters" icon="ti ti-filter" disableCollapse>
+            <ContentStack title="Person Filters"
+                          headerLocation="top"
+                          description="Defines which known individuals are included in this segment. Applying a data view excludes anonymous visitors.">
                 <div class="row">
                     <div class="col-md-6">
-                        <DataViewPicker label="Filter Data View" v-model="filterDataView" :displayOnlyPersisted="true" />
+                        <DataViewPicker label="Filter Data View" help="The data view used to define which known individuals are included in the segment." v-model="filterDataView" :displayOnlyPersisted="true" />
                     </div>
                 </div>
             </ContentStack>
-        </ContentSection>
-
-        <ContentSection title="Session Filters" icon="ti ti-world-code">
-            <ContentStack>
+            <ContentStack title="Session Filters"
+                          headerLocation="top"
+                          description="Defines the session activity used to include visitors in this segment.">
                 <SessionFilter v-model="sessionCountSegmentFilter" :sites="sites" />
             </ContentStack>
-        </ContentSection>
-
-        <ContentSection title="Page View Filters" icon="ti ti-sitemap">
-            <ContentStack>
+            <ContentStack title="Page View Filters"
+                          headerLocation="top"
+                          description="Defines the page view activity used to include visitors in this segment.">
                 <PageViewFilter v-model="pageViewSegmentFilter" :sites="sites" />
             </ContentStack>
-        </ContentSection>
-
-        <ContentSection title="Interaction Filters" icon="ti ti-hand-click">
-            <ContentStack>
+            <ContentStack title="Interaction Filters"
+                          headerLocation="top"
+                          description="Defines the interaction activity used to include visitors in this segment.">
                 <InteractionFilter v-model="interactionSegmentFilter" />
             </ContentStack>
         </ContentSection>
 
-        <ContentSection v-if="hasAttributes" title="Attributes" icon="ti ti-adjustments-plus">
+        <ContentSection v-if="hasAttributes" title="Attributes" icon="ti ti-adjustments-plus" disableCollapse>
             <ContentStack>
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
             </ContentStack>
         </ContentSection>
     </ContentSectionContainer>
 </template>
+
+<style scoped>
+.persistence-schedule-section :deep(.contentsection-body) {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
@@ -127,8 +130,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import IntervalPicker from "@Obsidian/Controls/intervalPicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
-    import { TimeIntervalBag } from "@Obsidian/ViewModels/Utility/timeIntervalBag";
-    import { TimeIntervalUnit } from "@Obsidian/Enums/Core/timeIntervalUnit";
+
     import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
     import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
@@ -148,8 +150,7 @@
     import PageViewFilter from "./pageViewFilter.partial.obs";
     import InteractionFilter from "./interactionFilter.partial.obs";
     import { InteractionSegmentFilter, PageViewSegmentFilter, SessionCountSegmentFilter } from "./types.partial";
-    import { isNullish } from "@Obsidian/Utility/util";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { minutesToIntervalBag, intervalBagToMinutes } from "./utilities.partial";
 
     const props = defineProps({
         modelValue: {
@@ -178,22 +179,24 @@
     const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
     const segmentKey = propertyRef(props.modelValue.bag?.segmentKey ?? "", "SegmentKey");
     const filterDataView = propertyRef(props.modelValue.bag?.filterDataView, "FilterDataView");
-
     const persistenceType = propertyRef(props.modelValue.bag?.persistenceType ?? "Interval", "PersistenceType");
     const persistenceScheduleType = propertyRef(props.modelValue.bag?.persistenceScheduleType ?? "Named", "PersistenceScheduleType");
     const uniqueScheduleICalendarContent = propertyRef(props.modelValue.bag?.uniqueScheduleICalendarContent ?? "", "UniqueScheduleICalendarContent");
     const persistedSchedule = propertyRef(props.modelValue.bag?.persistedSchedule ?? null, "PersistedSchedule");
-    const persistedScheduleIntervalMinutes = propertyRef(props.modelValue.bag?.persistedScheduleIntervalMinutes ?? 1440, "PersistenceInterval");
-    const persistenceInterval = ref(minutesToIntervalBag(persistedScheduleIntervalMinutes.value) ?? null);
-
+    const persistedScheduleIntervalMinutes = propertyRef(props.modelValue.bag?.persistedScheduleIntervalMinutes ?? 1440, "PersistedScheduleIntervalMinutes");
+    const persistenceInterval = ref(minutesToIntervalBag(persistedScheduleIntervalMinutes.value));
     const additionalFilterConfiguration = propertyRef(props.modelValue.bag?.additionalFilterConfiguration as AdditionalFilterConfigurationBag ?? "", "AdditionalFilterConfiguration");
 
+    /** The available sites for use in filter configuration. */
     const sites = props.options.sites ?? [];
+
+    /** The options for the persistence type radio button list. */
     const persistenceTypeOptions = [
         { value: "Interval", text: "Interval" },
         { value: "Schedule", text: "Schedule" }
     ];
 
+    /** The options for the persistence schedule type radio button list. */
     const persistedScheduleTypeOptions = [
         { value: "Unique", text: "Unique" },
         { value: "Named", text: "Named" }
@@ -212,6 +215,7 @@
         return Object.keys(attributes.value).length > 0;
     });
 
+    /** The session count segment filter, mapped to/from the additional filter configuration. */
     const sessionCountSegmentFilter = computed<SessionCountSegmentFilter>({
         get() {
             return {
@@ -228,6 +232,7 @@
         }
     });
 
+    /** The page view segment filter, mapped to/from the additional filter configuration. */
     const pageViewSegmentFilter = computed<PageViewSegmentFilter>({
         get() {
             return {
@@ -244,6 +249,7 @@
         }
     });
 
+    /** The interaction segment filter, mapped to/from the additional filter configuration. */
     const interactionSegmentFilter = computed<InteractionSegmentFilter>({
         get() {
             return {
@@ -264,49 +270,6 @@
 
     // #region Functions
 
-    function minutesToIntervalBag(minutes: number): TimeIntervalBag {
-        if (minutes <= 0) {
-            return { unit: TimeIntervalUnit.Days, value: 1 };
-        }
-
-        let value = minutes;
-        let unit;
-
-        if (minutes % 1440 === 0) {
-            value = minutes / 1440;
-            unit = TimeIntervalUnit.Days;
-        }
-        else if (minutes % 60 === 0) {
-            value = minutes / 60;
-            unit = TimeIntervalUnit.Hours;
-        }
-        else {
-            value = minutes;
-            unit = TimeIntervalUnit.Minutes;
-        }
-
-        return { unit, value };
-    }
-
-    function intervalBagToMinutes(bag: TimeIntervalBag | null): number {
-        if (isNullish(bag) || isNullish(bag.value)) {
-            return 0;
-        }
-
-        const value = bag.value;
-
-        switch (bag.unit) {
-            case TimeIntervalUnit.Days:
-                return value * 1440;
-            case TimeIntervalUnit.Hours:
-                return value * 60;
-            case TimeIntervalUnit.Minutes:
-                return value;
-            default:
-                return 1440;
-        }
-    }
-
     // #endregion Functions
 
     // #region Watchers
@@ -324,7 +287,7 @@
         updateRefValue(persistenceScheduleType, props.modelValue.bag?.persistenceScheduleType ?? "Named");
         updateRefValue(uniqueScheduleICalendarContent, props.modelValue.bag?.uniqueScheduleICalendarContent ?? "");
         updateRefValue(persistedSchedule, props.modelValue.bag?.persistedSchedule ?? null);
-        updateRefValue(persistedScheduleIntervalMinutes, props.modelValue.bag?.persistedScheduleIntervalMinutes ?? 0);
+        updateRefValue(persistedScheduleIntervalMinutes, props.modelValue.bag?.persistedScheduleIntervalMinutes ?? 1440);
         updateRefValue(filterDataView, props.modelValue.bag?.filterDataView);
 
         updateRefValue(additionalFilterConfiguration, props.modelValue.bag?.additionalFilterConfiguration as AdditionalFilterConfigurationBag ?? {});
@@ -336,6 +299,7 @@
     });
 
     watch(persistenceInterval, () => persistedScheduleIntervalMinutes.value = intervalBagToMinutes(persistenceInterval.value));
+    watch(persistedScheduleIntervalMinutes, () => updateRefValue(persistenceInterval, minutesToIntervalBag(persistedScheduleIntervalMinutes.value)));
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.

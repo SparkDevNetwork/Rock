@@ -24,7 +24,7 @@
                     name="site"
                     title="Site"
                     field="site"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     width="45%"
                     visiblePriority="md" />
 
@@ -42,7 +42,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, DeleteColumn, TextColumn, textValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, DeleteColumn, TextColumn, textValueFilter, booleanValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { RequestFilterListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/RequestFilterList/requestFilterListOptionsBag";

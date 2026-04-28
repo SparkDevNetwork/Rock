@@ -18,7 +18,7 @@ import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 
-export const ConfigurationValueKey = {
+export const ConfigurationKey = {
     CompletionPercentage: "completionPercentage",
     AutoResumeInDays: "autoResumeInDays",
     MaxWidth: "maxWidth",

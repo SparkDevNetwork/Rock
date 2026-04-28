@@ -51,47 +51,6 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Returns LavaTemplate object from cache.  If template does not already exist in cache, it
-        /// will be read and added to cache
-        /// </summary>
-        /// <param name="engine">The key.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="content">The content.</param>
-        /// <returns></returns>
-        [Obsolete]
-        [RockObsolete( "1.15.1" )]
-        public WebsiteLavaTemplateCache Get( ILavaEngine engine, string key, string content )
-        {
-            WebsiteLavaTemplateCache template;
-
-            var fromCache = true;
-            template = WebsiteLavaTemplateCache.GetOrAddExisting( key, () =>
-            {
-                fromCache = false;
-
-                var parseResult = CompileLavaTemplate( engine, content );
-
-                var cacheEntry = new WebsiteLavaTemplateCache
-                {
-                    Template = parseResult.Template
-                };
-
-                return cacheEntry;
-            } );
-
-            if ( fromCache )
-            {
-                Interlocked.Increment( ref _cacheHits );
-            }
-            else
-            {
-                Interlocked.Increment( ref _cacheMisses );
-            }
-
-            return template;
-        }
-
-        /// <summary>
         /// Gets a flag indicating if the cache contains the specified template.
         /// </summary>
         /// <param name="key"></param>

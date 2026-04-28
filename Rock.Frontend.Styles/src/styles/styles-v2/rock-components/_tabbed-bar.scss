@@ -1,0 +1,103 @@
+// Tabbed Nav Bar (Rock Component)
+
+
+// =============================================================
+// Table of Content
+//  + Base style
+//  + Pills style
+//  + Drop Down Menu button overrides
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+
+.tabbed-bar {
+    border-bottom: 6px solid var(--color-interface-soft);
+    padding: 0 var(--spacing-large);
+
+    > .toolbar-nav {
+        display: flex;
+        margin: 0 0 -6px;
+        padding: 0;
+        list-style-type: none;
+
+        > li {
+            display: inline-block;
+            padding: var(--spacing-xsmall) var(--spacing-small);
+            border-bottom: 6px solid transparent;
+            white-space: nowrap;
+            transition: border-bottom-color 0.25s ease;
+
+            &:hover {
+                border-bottom-color: var(--color-interface-medium);
+            }
+
+            &.active {
+                border-bottom-color: var(--color-primary, #a8a8a8);
+            }
+
+            .title {
+                display: inline-block;
+                padding: var(--spacing-tiny) 6px;
+                cursor: pointer;
+                font-weight: var(--font-weight-semibold);
+            }
+
+            > a {
+                color: var(--color-interface-stronger);
+            }
+
+            &.more-items {
+                font-weight: initial;
+
+                > .dropdown > .btn {
+                    padding: 0;
+                }
+
+                .ti {
+                    margin-left: 8px;
+                }
+            }
+        }
+    }
+}
+
+// ====================== END BASE STYLE ======================
+
+// ======================== PILLS STYLE ========================
+
+.tabbed-bar.pills {
+    margin-bottom: 0;
+    border-bottom: 0;
+
+    > .toolbar-nav > li {
+        padding: 0 6px;
+        border-bottom: 0;
+
+        .title {
+            padding: 6px var(--spacing-small);
+            border-radius: var(--rounded-xsmall);
+            transition: background-color 0.25s ease, color 0.25s ease;
+            background-color: var(--color-interface-softer);
+        }
+
+        &:hover .title,
+        &.active .title {
+            background-color: var(--color-primary-soft);
+            color: var(--color-primary);
+        }
+    }
+}
+
+// ====================== END PILLS STYLE ======================
+
+// ======================== DROP DOWN MENU button overrides ========================
+
+.tabbed-bar
+.tabbed-bar > .toolbar-nav > li.more-items .btn-overflow {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+// ======================== DROP DOWN MENU button overrides ========================

@@ -2,9 +2,14 @@
 <!-- 
   ║▌║█║▌│║▌▌│║▌█
   This file format is intended for internal use only.  There is no DTD which defines its 
-  specification yet.  It's purpose is to give us a way to quickly load some sample/play
-  data using the SampleData block.  The data in this file and it's specification is
+  specification yet.  Its purpose is to give us a way to quickly load some sample/play
+  data using the SampleData block.  The data in this file and its specification is
   not only subject to change, it will certainly change quite often.
+  
+  When updating this data file, be sure to upload it to the cloud storage provider
+  where it is hosted, otherwise no one will get the change.
+  Once uploaded, the host may take several minutes to propagate the update
+  before the SampleData block can download the updated version.                                                                                 
 -->
 <data>
   <families>
@@ -151,7 +156,11 @@
           email="jim.simmons@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/simmons_jim.jpg"
-          homePhone="" mobilePhone="6238881212" workPhone=""/>
+          homePhone="" mobilePhone="6238881212" workPhone="">
+          <logins>
+            <login userName="jsimmons"/>
+          </logins>
+        </person>
 
         <person guid="FC6B9819-EF2E-44C9-93DB-05571B39E58F"
           firstName="Sarah" nickName="Sarah" lastName="Simmons" birthDate="5/3/1989" age="34" gender="female"
@@ -270,7 +279,11 @@
          email="bill.marble@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
          photoUrl="http://storage.rockrms.com/sampledata/person-images/marble_bill.jpg"
-         homePhone="" mobilePhone="" workPhone=""/>
+         homePhone="" mobilePhone="" workPhone="">
+          <logins>
+            <login userName="bmarble"/>
+          </logins>
+        </person>
 
       </members>
 
@@ -729,6 +742,9 @@
             <attribute SecondVisit="4/1/2014" />
           </attributes>
           <notes />
+          <logins>
+            <login userName="asong"/>
+          </logins>
         </person>
       </members>
     </family>

@@ -85,5 +85,15 @@ namespace Rock.SystemGuid
         /// The note to use for quick notes, which often have no associated entity.
         /// </summary>
         public const string QUICK_NOTE = "A3F5982F-C4D0-4345-8021-EB38C4C9AA18";
+
+        /// <summary>
+        /// The note type to use for connection request notes.
+        /// </summary>
+        public const string CONNECTION_REQUEST_NOTE = "9F1BD01D-44E8-427A-8D8A-AD4D3C380775";
+
+        /// <summary>
+        /// The note type to use for connection celebrations.
+        /// </summary>
+        public const string CELEBRATION_NOTE = "A480E95A-F941-473E-B200-50D2658C9417";
     }
 }

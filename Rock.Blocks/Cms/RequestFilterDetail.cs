@@ -44,7 +44,8 @@ namespace Rock.Blocks.Cms
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "0E340E27-D6D9-4870-9835-401545C44801" )]
-    [Rock.SystemGuid.BlockTypeGuid( "59E6D50E-70A8-4695-97A4-2DE33DD09ECF" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "59E6D50E-70A8-4695-97A4-2DE33DD09ECF" )]
+    [Rock.SystemGuid.BlockTypeGuid( "0CE221F6-EECE-46F9-A703-FCD09DEBC653" )]
     public class RequestFilterDetail : RockEntityDetailBlockType<RequestFilter, RequestFilterBag>
     {
         #region Keys
@@ -208,7 +209,7 @@ namespace Rock.Blocks.Cms
             return bag;
         }
 
-        //// <inheritdoc/>
+        /// <inheritdoc/>
         protected override RequestFilterBag GetEntityBagForEdit( RequestFilter entity )
         {
             if ( entity == null )
@@ -311,7 +312,7 @@ namespace Rock.Blocks.Cms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${RequestFilter.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {RequestFilter.FriendlyTypeName}." );
                 return false;
             }
 

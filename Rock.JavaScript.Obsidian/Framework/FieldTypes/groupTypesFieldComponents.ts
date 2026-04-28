@@ -21,7 +21,7 @@ import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { ConfigurationValueKey } from "./groupTypesField.partial";
+import { ConfigurationKey } from "./groupTypesField.partial";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { updateRefValue } from "@Obsidian/Utility/component";
@@ -43,7 +43,7 @@ export const EditComponent = defineComponent({
         /** The options to choose from in the drop down list */
         const options = computed((): ListItemBag[] => {
             try {
-                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                return JSON.parse(props.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
             }
             catch {
                 return [];
@@ -51,11 +51,11 @@ export const EditComponent = defineComponent({
         });
 
         const enhance = computed(() => {
-            return props.configurationValues[ConfigurationValueKey.EnhancedSelection] === "True";
+            return props.configurationValues[ConfigurationKey.EnhancedSelection] === "True";
         });
 
         const repeatColumns = computed(() => {
-            const repeatColumnsConfig = props.configurationValues[ConfigurationValueKey.RepeatColumns];
+            const repeatColumnsConfig = props.configurationValues[ConfigurationKey.RepeatColumns];
 
             return toNumberOrNull(repeatColumnsConfig) ?? 4;
         });
@@ -118,13 +118,13 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.EnhancedSelection] = asTrueFalseOrNull(enhancedSelection.value) ?? "False";
-            newValue[ConfigurationValueKey.RepeatColumns] = numberOfColumns.value?.toString() ?? "";
-            newValue[ConfigurationValueKey.Values] = props.modelValue[ConfigurationValueKey.Values] ?? "";
+            newValue[ConfigurationKey.EnhancedSelection] = asTrueFalseOrNull(enhancedSelection.value) ?? "False";
+            newValue[ConfigurationKey.RepeatColumns] = numberOfColumns.value?.toString() ?? "";
+            newValue[ConfigurationKey.Values] = props.modelValue[ConfigurationKey.Values] ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.EnhancedSelection] !== (props.modelValue[ConfigurationValueKey.EnhancedSelection] ?? "False")
-                || newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.EnhancedSelection] !== (props.modelValue[ConfigurationKey.EnhancedSelection] ?? "False")
+                || newValue[ConfigurationKey.RepeatColumns] !== (props.modelValue[ConfigurationKey.RepeatColumns] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -151,8 +151,8 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            enhancedSelection.value = asBoolean(props.modelValue[ConfigurationValueKey.EnhancedSelection]);
-            numberOfColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
+            enhancedSelection.value = asBoolean(props.modelValue[ConfigurationKey.EnhancedSelection]);
+            numberOfColumns.value = toNumberOrNull(props.modelValue[ConfigurationKey.RepeatColumns]);
         }, {
             immediate: true
         });
@@ -166,8 +166,8 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(enhancedSelection, () => maybeUpdateConfiguration(ConfigurationValueKey.EnhancedSelection, asTrueFalseOrNull(enhancedSelection.value) ?? "False"));
-        watch(numberOfColumns, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatColumns, numberOfColumns.value?.toString() ?? ""));
+        watch(enhancedSelection, () => maybeUpdateConfiguration(ConfigurationKey.EnhancedSelection, asTrueFalseOrNull(enhancedSelection.value) ?? "False"));
+        watch(numberOfColumns, () => maybeUpdateConfiguration(ConfigurationKey.RepeatColumns, numberOfColumns.value?.toString() ?? ""));
 
         return {
             enhancedSelection,

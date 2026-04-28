@@ -1,0 +1,109 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <h4 v-if="showSiteName && siteName">{{ siteName }}</h4>
+
+    <div v-if="errorMessage" class="alert alert-warning">
+        {{ errorMessage }}
+    </div>
+
+    <template v-else>
+        <ul v-if="activeUsers.length > 0" class="activeusers">
+            <li v-for="(user, index) in activeUsers"
+                :key="index"
+                class="active-user"
+                :class="user.isRecent ? 'recent' : 'not-recent'">
+                <i class="ti ti-circle-filled"></i>
+                <a v-if="user.profileUrl"
+                   :href="user.profileUrl"
+                   v-tooltip.html="getUserTooltip(user)">{{ user.fullName }}</a>
+                <span v-else v-tooltip.html="getUserTooltip(user)">{{ user.fullName }}</span>
+            </li>
+        </ul>
+
+        <p v-if="emptyMessage" :class="{ 'margin-b-md': hasGuests }">
+            {{ emptyMessage }}
+        </p>
+
+        <p v-if="hasGuests" class="margin-l-sm js-current-guests">
+            Current Guests:
+            <span v-if="recentGuestCount > 0"
+                  class="badge badge-success"
+                  v-tooltip="'Users active in the past 5 minutes.'">
+                {{ recentGuestCount }}
+            </span>
+            <span v-if="inactiveGuestCount > 0"
+                  class="badge badge-warning"
+                  v-tooltip="'Users active in the past 15 minutes.'">
+                {{ inactiveGuestCount }}
+            </span>
+        </p>
+    </template>
+</template>
+
+<style scoped>
+.active-user,
+.js-current-guests {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.active-user.recent i {
+    color: var(--color-success-strong);
+}
+
+.active-user.not-recent i {
+    color: var(--color-warning-strong);
+}
+</style>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { ActiveUsersInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/ActiveUsers/activeUsersInitializationBox";
+    import { ActiveUserBag } from "@Obsidian/ViewModels/Blocks/Cms/ActiveUsers/activeUserBag";
+
+    const config = useConfigurationValues<ActiveUsersInitializationBox>();
+
+    // #region Values
+
+    const showSiteName = config.showSiteName ?? false;
+    const siteName = config.siteName ?? "";
+    const errorMessage = config.errorMessage ?? "";
+    const emptyMessage = config.emptyMessage ?? "";
+    const activeUsers = config.activeUsers ?? [];
+    const showTooltip = config.showTooltip ?? false;
+    const recentGuestCount = config.recentGuestCount ?? 0;
+    const inactiveGuestCount = config.inactiveGuestCount ?? 0;
+
+    const hasGuests = (config.showGuestVisitors ?? false)
+        && (recentGuestCount > 0 || inactiveGuestCount > 0);
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Builds the HTML tooltip content for a user entry. Returns an empty
+     * string when tooltips are disabled or the user has no recent titles,
+     * which prevents the tooltip directive from rendering.
+     */
+    function getUserTooltip(user: ActiveUserBag): string {
+        if (!showTooltip) {
+            return "";
+        }
+
+        const titles = user.pageTitles ?? [];
+        if (titles.length === 0) {
+            return "";
+        }
+
+        return titles.map(title => escapeHtml(title ?? "")).join("<br> ");
+    }
+
+    // #endregion Functions
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

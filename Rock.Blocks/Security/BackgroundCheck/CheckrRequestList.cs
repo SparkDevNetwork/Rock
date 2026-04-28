@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Security.BackgroundCheck.CheckrRequestList;
 using Rock.Web.Cache;
@@ -178,7 +179,7 @@ namespace Rock.Blocks.Security.BackgroundCheck
 
             var queryParams = new Dictionary<string, string>
             {
-                { "WorkflowId", entity.WorkflowId.Value.ToString() }
+                { "WorkflowId", IdHasher.Instance.GetHash( entity.WorkflowId.Value ) }
             };
 
             var url = this.GetLinkedPageUrl( AttributeKey.WorkflowDetailPage, queryParams );

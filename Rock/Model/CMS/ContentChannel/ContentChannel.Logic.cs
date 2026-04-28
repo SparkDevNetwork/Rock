@@ -16,7 +16,10 @@
 //
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Linq;
+
 using Rock.Cms;
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -41,10 +44,30 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
+            ContentChannelItemCache.FlushCachedItems( this.Id, dbContext );
             ContentChannelCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion ICacheable
+
+        #region ISecured
+
+        /*
+             3/12/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             ModelCache<T>.SetFromEntity() only snapshots SupportedActions. Security
+             methods such as ParentAuthority, ParentAuthorityPre, IsAuthorized, and
+             IsAllowedByDefault are NOT copied automatically. If the cache does not
+             override them, it will fall back to ModelCache defaults and may evaluate
+             permissions differently than the model.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
 
         /// <summary>
         /// Gets the parent authority.
@@ -60,6 +83,8 @@ namespace Rock.Model
                 return this.ContentChannelType != null ? this.ContentChannelType : base.ParentAuthority;
             }
         }
+
+        #endregion ISecured
 
         /// <summary>
         /// Gets or sets the content library configuration.

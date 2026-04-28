@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using Rock.Enums;
+
 namespace Rock
 {
     /// <summary>
@@ -110,6 +112,23 @@ namespace Rock
             if ( attr != null )
             {
                 return attr.Description;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the enum order. Returns null if the enum doesn't have a <see cref="EnumOrderAttribute"/>.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static int? GetOrder( this Enum value )
+        {
+            var attr = GetAttribute<EnumOrderAttribute>( value );
+
+            if ( attr != null )
+            {
+                return attr.Order;
             }
 
             return null;

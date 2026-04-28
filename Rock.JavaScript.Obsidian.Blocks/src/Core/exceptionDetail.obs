@@ -1,0 +1,70 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning">
+        {{ config.errorMessage }}
+    </NotificationBox>
+
+    <template v-else-if="config.bag">
+        <Panel title="Main Exception" type="block">
+            <template #headerActions>
+                <HighlightLabel labelType="default">Exception Id: {{ config.bag.rootException?.id }}</HighlightLabel>
+            </template>
+
+            <ContentSectionContainer :sidebar="false">
+                <ExceptionItem v-if="config.bag.rootException"
+                               :exception="config.bag.rootException"
+                               isRootException />
+
+                <ContentSection v-if="config.bag.cookies"
+                                title="Cookies"
+                                icon="ti ti-device-laptop"
+                                :isCollapsed="true">
+                    <div v-html="config.bag.cookies"></div>
+                </ContentSection>
+
+                <ContentSection v-if="config.bag.serverVariables"
+                                title="Server Variables"
+                                icon="ti ti-server-2"
+                                :isCollapsed="true">
+                    <div v-html="config.bag.serverVariables"></div>
+                </ContentSection>
+            </ContentSectionContainer>
+        </Panel>
+
+        <Panel v-if="config.bag.innerExceptions && config.bag.innerExceptions.length"
+               v-model="isInnerExceptionsPanelOpen"
+               title="Inner Exceptions"
+               type="block"
+               :hasCollapse="true">
+            <ContentSectionContainer :sidebar="false">
+                <ExceptionItem v-for="item in config.bag.innerExceptions"
+                               :key="item.id"
+                               :exception="item" />
+            </ContentSectionContainer>
+        </Panel>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ExceptionItem from "./ExceptionDetail/exceptionItem.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { ExceptionDetailBag } from "@Obsidian/ViewModels/Blocks/Core/ExceptionDetail/exceptionDetailBag";
+    import { ExceptionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ExceptionDetail/exceptionDetailOptionsBag";
+
+    const config = useConfigurationValues<CustomBlockBox<ExceptionDetailBag, ExceptionDetailOptionsBag>>();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    const isInnerExceptionsPanelOpen = ref(true);
+</script>

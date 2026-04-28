@@ -1,0 +1,306 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Universal Search"
+           type="block">
+        <template #headerActions>
+            <span class="label" :class="statusLabelClass">{{ config.bag?.indexStatus?.componentName ?? 'Disabled' }}</span>
+        </template>
+
+        <NotificationBox v-if="config.bag?.indexStatus?.warningMessage"
+                         :alertType="AlertType.Warning"
+                         v-html="config.bag?.indexStatus?.warningMessage" />
+
+        <div class="row" v-if="config.bag?.indexStatus?.isSearchEnabled">
+            <div class="col-md-6">
+                <dl>
+                    <dt>Index Location</dt>
+                    <dd>{{ config.bag?.indexStatus?.indexLocation }}</dd>
+                </dl>
+            </div>
+        </div>
+    </Panel>
+
+    <Panel title="Smart Search Settings"
+           type="block">
+        <!-- View Mode -->
+        <template v-if="!isSmartSearchEditing">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl>
+                        <dt>Entities</dt>
+                        <dd>{{ smartSearchSettings?.selectedEntityNames }}</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl>
+                        <dt>Search Type</dt>
+                        <dd>{{ smartSearchSettings?.searchTypeText }}</dd>
+                    </dl>
+                    <dl>
+                        <dt>Filter Criteria</dt>
+                        <dd>{{ smartSearchSettings?.fieldCriteria }}</dd>
+                    </dl>
+                </div>
+            </div>
+            <div class="actions">
+                <button type="button" class="btn btn-primary" @click="onSmartSearchEdit">Edit</button>
+            </div>
+        </template>
+
+        <!-- Edit Mode -->
+        <template v-else>
+            <div class="row">
+                <div class="col-md-6">
+                    <CheckBoxList label="Search Entities"
+                                  v-model="editSmartSearchEntityIds"
+                                  :items="config.options?.indexableEntityOptions ?? []"
+                                  help="Select the entities you would like to be searched via the Smart Search feature. If no value is selected all entities will be searched." />
+                </div>
+                <div class="col-md-6">
+                    <DropDownList label="Search Type"
+                                  v-model="editSmartSearchType"
+                                  :items="config.options?.searchTypeOptions ?? []"
+                                  :showBlankItem="false" />
+                    <TextBox label="Field Criteria"
+                             v-model="editSmartSearchFieldCriteria"
+                             help="The field criteria to apply to Smart Search search. This field uses the same syntax as the 'search' Lava command (field^value|field^value1,value2)." />
+                </div>
+            </div>
+            <div class="actions">
+                <button type="button" class="btn btn-primary" @click="onSmartSearchSave">Save</button>
+                <button type="button" class="btn btn-link" @click="onSmartSearchCancel">Cancel</button>
+            </div>
+        </template>
+    </Panel>
+
+    <Panel title="Indexable Entities"
+           type="block"
+           hasNoBodyPadding>
+        <Grid :data="gridData"
+              keyField="idKey"
+              itemTerm="Entity"
+              light
+              disablePaging
+              isTitleHidden
+              @selectItem="onEntityRowSelect">
+            <TextColumn name="name"
+                        title="Entity Name"
+                        field="name"
+                        width="80%"
+                        :filter="textValueFilter" />
+
+            <BooleanColumn name="isIndexingEnabled"
+                           title="Indexing Enabled"
+                           field="isIndexingEnabled" />
+
+            <Column name="bulkLoad"
+                    title="Bulk Load Documents"
+                    headerClass="justify-content-center text-center"
+                    itemClass="grid-columncommand justify-content-center"
+                    :excludeFromExport="true"
+                    width="130px">
+                <template #format="{ row }">
+                    <a v-if="row.allowsInteractiveBulkIndexing"
+                       class="btn btn-default btn-sm"
+                       title="Bulk Load Documents"
+                       @click.stop.prevent="onBulkLoadClick(row.idKey)">
+                        <i class="ti ti-download"></i>
+                    </a>
+                </template>
+            </Column>
+
+            <Column name="recreateIndex"
+                    title="Recreate Index"
+                    headerClass="justify-content-center text-center"
+                    itemClass="grid-columncommand justify-content-center"
+                    :excludeFromExport="true"
+                    width="130px">
+                <template #format="{ row }">
+                    <a v-if="row.isIndexingEnabled"
+                       class="btn btn-default btn-sm"
+                       title="Recreate Index"
+                       @click.stop.prevent="onRecreateIndexClick(row.idKey)">
+                        <i class="ti ti-refresh"></i>
+                    </a>
+                </template>
+            </Column>
+        </Grid>
+    </Panel>
+
+    <Modal v-model="isEntityModalVisible"
+           :title="entityModalTitle"
+           saveText="Save"
+           @save="onEntityModalSave">
+        <CheckBox label="Enable Indexing"
+                  v-model="editEntityIsIndexingEnabled" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { UniversalSearchControlPanelBag } from "@Obsidian/ViewModels/Blocks/Core/UniversalSearchControlPanel/universalSearchControlPanelBag";
+    import { UniversalSearchControlPanelOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/UniversalSearchControlPanel/universalSearchControlPanelOptionsBag";
+    import { SmartSearchSettingsBag } from "@Obsidian/ViewModels/Blocks/Core/UniversalSearchControlPanel/smartSearchSettingsBag";
+    import { IndexableEntityBag } from "@Obsidian/ViewModels/Blocks/Core/UniversalSearchControlPanel/indexableEntityBag";
+    import { SaveSmartSearchSettingsRequestBag } from "@Obsidian/ViewModels/Blocks/Core/UniversalSearchControlPanel/saveSmartSearchSettingsRequestBag";
+    import Grid, { BooleanColumn, Column, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<UniversalSearchControlPanelBag, UniversalSearchControlPanelOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // Smart Search state
+    const smartSearchSettings = ref<SmartSearchSettingsBag | null | undefined>(config.bag?.smartSearchSettings);
+    const isSmartSearchEditing = ref(false);
+    const editSmartSearchEntityIds = ref<string[]>([]);
+    const editSmartSearchType = ref("");
+    const editSmartSearchFieldCriteria = ref("");
+
+    // Indexable Entities state
+    const indexableEntities = ref<IndexableEntityBag[]>(config.bag?.indexableEntities ?? []);
+
+    // Entity modal state
+    const isEntityModalVisible = ref(false);
+    const entityModalTitle = ref("");
+    const editEntityIsIndexingEnabled = ref(false);
+    const selectedEntityIdKey = ref<string | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const statusLabelClass = (() => {
+        const indexStatus = config.bag?.indexStatus;
+        if (!indexStatus?.isSearchEnabled) {
+            return "label-danger";
+        }
+        return indexStatus.isConnected ? "label-success" : "label-warning";
+    })();
+
+    /**
+     * Grid rows for the indexable entities list.
+     */
+    const gridData = computed(() => {
+        const rows = (indexableEntities.value ?? []).map(e => ({
+            idKey: e.idKey,
+            name: e.name ?? "",
+            isIndexingEnabled: e.isIndexingEnabled,
+            allowsInteractiveBulkIndexing: e.allowsInteractiveBulkIndexing
+        }));
+
+        return { rows };
+    });
+
+    // #endregion Computed Values
+
+    // #region Smart Search Functions
+
+    /** Cancels editing and returns to view mode. */
+    function onSmartSearchCancel(): void {
+        isSmartSearchEditing.value = false;
+    }
+
+    /** Enters edit mode for smart search settings, populating form fields with current values. */
+    function onSmartSearchEdit(): void {
+        editSmartSearchEntityIds.value = smartSearchSettings.value?.selectedEntityIds ?? [];
+        editSmartSearchType.value = smartSearchSettings.value?.searchType ?? "";
+        editSmartSearchFieldCriteria.value = smartSearchSettings.value?.fieldCriteria ?? "";
+        isSmartSearchEditing.value = true;
+    }
+
+    /** Saves the smart search settings and returns to view mode. */
+    async function onSmartSearchSave(): Promise<void> {
+        const result = await invokeBlockAction<SmartSearchSettingsBag>("SaveSmartSearchSettings", {
+            bag: {
+                entityIds: editSmartSearchEntityIds.value,
+                searchType: editSmartSearchType.value,
+                fieldCriteria: editSmartSearchFieldCriteria.value
+            } as SaveSmartSearchSettingsRequestBag
+        });
+
+        if (result.isSuccess && result.data) {
+            smartSearchSettings.value = result.data;
+            isSmartSearchEditing.value = false;
+        }
+        else {
+            await alert(result.errorMessage ?? "An error occurred saving smart search settings.");
+        }
+    }
+
+    // #endregion Smart Search Functions
+
+    // #region Entity Grid Functions
+
+    /** Opens the entity type configuration modal when a row is selected. */
+    function onEntityRowSelect(key: string): void {
+        const entity = indexableEntities.value.find(e => e.idKey === key);
+        if (!entity) {
+            return;
+        }
+
+        selectedEntityIdKey.value = entity.idKey ?? null;
+        editEntityIsIndexingEnabled.value = entity.isIndexingEnabled ?? false;
+        entityModalTitle.value = `${entity.name} Configuration`;
+        isEntityModalVisible.value = true;
+    }
+
+    /** Saves the entity indexing toggle and refreshes the grid. */
+    async function onEntityModalSave(): Promise<void> {
+        if (!selectedEntityIdKey.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<IndexableEntityBag[]>("EnableEntityIndexing", {
+            key: selectedEntityIdKey.value,
+            isEnabled: editEntityIsIndexingEnabled.value
+        });
+
+        if (result.isSuccess && result.data) {
+            indexableEntities.value = result.data;
+            isEntityModalVisible.value = false;
+        }
+        else {
+            await alert(result.errorMessage ?? "An error occurred updating entity indexing.");
+        }
+    }
+
+    /** Sends a bulk index request for the specified entity type. */
+    async function onBulkLoadClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("BulkLoadDocuments", { key });
+
+        if (result.isSuccess) {
+            await alert(result.data ?? "Bulk indexing request sent.");
+        }
+        else {
+            await alert(result.errorMessage ?? "An error occurred launching the bulk index request.");
+        }
+    }
+
+    /** Recreates the index for the specified entity type. */
+    async function onRecreateIndexClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("RecreateIndex", { key });
+
+        if (result.isSuccess) {
+            await alert(result.data ?? "Index has been re-created.");
+        }
+        else {
+            await alert(result.errorMessage ?? "An error occurred recreating the index.");
+        }
+    }
+
+    // #endregion Entity Grid Functions
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

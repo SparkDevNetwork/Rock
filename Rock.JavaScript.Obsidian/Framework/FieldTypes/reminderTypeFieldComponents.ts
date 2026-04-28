@@ -18,7 +18,7 @@ import { defineComponent, computed } from "vue";
 import { getFieldEditorProps } from "./utils";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey, ReminderTypeFieldItem } from "./reminderTypeField.partial";
+import { ConfigurationKey, ReminderTypeFieldItem } from "./reminderTypeField.partial";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
 export const EditComponent = defineComponent({
@@ -40,7 +40,7 @@ export const EditComponent = defineComponent({
         /** The options to choose from in the drop down list */
         const options = computed((): ListItemBag[] => {
             try {
-                const items = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ReminderTypeFieldItem[];
+                const items = JSON.parse(props.configurationValues[ConfigurationKey.Values] ?? "[]") as ReminderTypeFieldItem[];
                 return items.map(rt => ({ value: rt.guid, text: `${rt.name} (${rt.entityTypeName})` }));
             }
             catch {

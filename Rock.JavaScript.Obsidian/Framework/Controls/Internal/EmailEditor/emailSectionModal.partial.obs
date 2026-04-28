@@ -229,6 +229,8 @@
 
                 // Save the email section.
                 const bag: EmailEditorEmailSectionBag = {
+                    canDelete: true,
+                    canEdit: true,
                     guid: emailSectionGuid.value,
                     category: emailSectionCategory.value,
                     isSystem: false,
@@ -284,6 +286,8 @@
 
                 // Save the email section.
                 const bag: EmailEditorEmailSectionBag = {
+                    canEdit: true,
+                    canDelete: true,
                     guid: newGuid(),
                     category: emailSectionCategory.value,
                     isSystem: false,

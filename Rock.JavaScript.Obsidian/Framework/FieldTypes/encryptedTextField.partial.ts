@@ -20,7 +20,7 @@ import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     IsPassword = "ispassword",
     NumberOfRows = "numberofrows",
     AllowHtml = "allowhtml",

@@ -174,9 +174,6 @@ achieve our mission.  We are so grateful for your commitment.
 
         private static class PageParameterKey
         {
-            [RockObsolete( "1.13.1" )]
-            [Obsolete( "Pass the GUID instead using the key ScheduledTransactionGuid.")]
-            public const string ScheduledTransactionId = "ScheduledTransactionId";
             public const string ScheduledTransactionGuid = "ScheduledTransactionGuid";
         }
 
@@ -668,18 +665,9 @@ achieve our mission.  We are so grateful for your commitment.
         {
             var financialScheduledTransactionGuid = PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull();
 
-#pragma warning disable CS0618
-            var financialScheduledTransactionId = PageParameter( PageParameterKey.ScheduledTransactionId ).AsIntegerOrNull();
-#pragma warning restore CS0618
-
             if ( financialScheduledTransactionGuid.HasValue )
             {
                 return financialScheduledTransactionGuid.Value;
-            }
-
-            if ( financialScheduledTransactionId.HasValue )
-            {
-                return new FinancialScheduledTransactionService( new RockContext() ).GetGuid( financialScheduledTransactionId.Value );
             }
 
             return null;

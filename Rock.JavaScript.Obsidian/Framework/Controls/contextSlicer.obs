@@ -4,7 +4,7 @@
      If you add other slot-driven controls, you must provide custom `isVisible` logic
      at template level to prevent the slicer from displaying when those slots are empty. -->
 <template>
-    <div v-show="($slots.default && $slots.default().length > 0) || isCampusPickerVisible" class="contextslicer">
+    <div ref="slicerEl" v-show="($slots.default && $slots.default().length > 0) || isCampusPickerVisible" class="contextslicer">
         <div class="contextslicer-title">{{ props.title }}</div>
 
         <div class="contextslicer-content">
@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
     import CampusContextPicker from "./campusContextPicker.obs";
-    import { PropType, ref } from "vue";
+    import { PropType, ref, onMounted, onBeforeUnmount } from "vue";
     import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
@@ -102,4 +102,39 @@
     });
 
     const isCampusPickerVisible = ref<boolean>(props.showCampus);
+
+    const slicerEl = ref<HTMLElement | null>(null);
+
+    /**
+     * Updates the --context-slicer-height CSS custom property on the
+     * document element so that downstream layout calculations (e.g. the
+     * FullWorksurface layout) can subtract the slicer's height.
+     */
+    function updateSlicerHeightProperty(): void {
+        const height = slicerEl.value?.offsetHeight ?? 0;
+        // Include the slicer's bottom margin in the measurement.
+        const marginBottom = slicerEl.value
+            ? parseFloat(getComputedStyle(slicerEl.value).marginBottom) || 0
+            : 0;
+        document.documentElement.style.setProperty(
+            "--context-slicer-height",
+            `${height + marginBottom}px`
+        );
+    }
+
+    let resizeObserver: ResizeObserver | undefined;
+
+    onMounted(() => {
+        updateSlicerHeightProperty();
+
+        if (slicerEl.value) {
+            resizeObserver = new ResizeObserver(updateSlicerHeightProperty);
+            resizeObserver.observe(slicerEl.value);
+        }
+    });
+
+    onBeforeUnmount(() => {
+        resizeObserver?.disconnect();
+        document.documentElement.style.removeProperty("--context-slicer-height");
+    });
 </script>

@@ -46,5 +46,21 @@ namespace Rock.Field
         /// </summary>
         /// <value>The persisted condensed HTML value.</value>
         public string CondensedHtmlValue { get; set; }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="PersistedValues"/> with all
+        /// properties set to empty strings.
+        /// </summary>
+        /// <returns>A new instance of <see cref="PersistedValues"/>.</returns>
+        public static PersistedValues Empty()
+        {
+            return new PersistedValues
+            {
+                TextValue = string.Empty,
+                CondensedTextValue = string.Empty,
+                HtmlValue = string.Empty,
+                CondensedHtmlValue = string.Empty,
+            };
+        }
     }
 }

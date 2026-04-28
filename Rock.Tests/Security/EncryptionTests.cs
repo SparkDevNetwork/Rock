@@ -7,8 +7,6 @@ namespace Rock.Tests.Security
     [TestClass]
     public class EncryptionTests
     {
-        private string _dataEncryptionKey1 = "uEr6E60giN7XWSQq7iysuRo98s01Ko51z+vxkB/j40u+zb4nxqgts+/i7Q7LlMgF+Ho8lbDWSrxZs1ZL4Uj7WUBR0tdxqBQenAkbtxg5D6ae+F9t62bmcbfbssXG4J4rUSTcJS8XzbBlIWnH6TWHsme5norJg7IkQq6HxLGaqy8=";
-
         /* 09/04/2021 MDP
           
         We used to test our OldKeys feature ( old keys specified in Web.config).
@@ -51,17 +49,6 @@ namespace Rock.Tests.Security
             string decryptedPlainText = Encryption.DecryptString( encryptedPlainText );
 
             Assert.AreEqual( _plainText3, decryptedPlainText );
-        }
-
-        [TestMethod]
-        public void EncryptStringWithLegacyMethodAndDecryptWithNewMethod()
-        {
-#pragma warning disable CS0618
-            var oldMethodEncryptedString = Encryption.EncryptString( _plainText2, _dataEncryptionKey1 );
-#pragma warning restore CS0618
-            var decryptedOldMethodStringWithNewMethod = Encryption.DecryptString( oldMethodEncryptedString );
-
-            Assert.AreEqual( decryptedOldMethodStringWithNewMethod, _plainText2 );
         }
 
         [TestMethod]

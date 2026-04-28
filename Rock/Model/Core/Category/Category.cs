@@ -197,6 +197,15 @@ namespace Rock.Model
                                 supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
                                 return supportedActions;
                             }
+                        case "Rock.Model.WorkflowType":
+                            {
+                                var supportedActions = new Dictionary<string, string>();
+                                supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                                supportedActions.Add( Authorization.VIEW_LIST, "The roles and/or users that have access to view the workflow lists of this type." );
+                                supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                                supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                                return supportedActions;
+                            }
                     }
                 }
 

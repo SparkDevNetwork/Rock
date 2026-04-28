@@ -189,7 +189,7 @@ namespace Rock.Blocks.Cms
                     .Count( i =>
                         ( i.StartDateTime.CompareTo( now ) < 0 ) &&
                         ( !i.ExpireDateTime.HasValue || i.ExpireDateTime.Value.CompareTo( now ) > 0 ) &&
-                        ( i.ApprovedByPersonAliasId.HasValue || !c.RequiresApproval )
+                        ( i.Status == ContentChannelItemStatus.Approved || !c.RequiresApproval || c.ContentChannelType.DisableStatus )
                 )
             } ).AsQueryable();
 

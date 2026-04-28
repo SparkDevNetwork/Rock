@@ -21,6 +21,13 @@
 // </copyright>
 //
 
+import { SearchFilterBag } from "@Obsidian/ViewModels/Blocks/Core/SmartSearch/searchFilterBag";
+
 /** The additional configuration options for the Smart Search block. */
 export type SmartSearchOptionsBag = {
+    /**
+     * Gets or sets the available search filters.
+     * The list preserves the server-side iteration order.
+     */
+    searchFilters?: SearchFilterBag[] | null;
 };

@@ -16,7 +16,7 @@
 
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import { ConfigurationValueKey } from "./communicationTemplateField.partial";
+import { ConfigurationKey } from "./communicationTemplateField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
@@ -37,7 +37,7 @@ export const EditComponent = defineComponent({
         // The CommunicationTemplate options.
         // The available options to choose from.
         const options = computed((): ListItemBag[] => {
-            const options = JSON.parse(props.configurationValues[ConfigurationValueKey.ClientValues] || "[]") as ListItemBag[];
+            const options = JSON.parse(props.configurationValues[ConfigurationKey.ClientValues] || "[]") as ListItemBag[];
             return options;
         });
         // Watch for changes from the parent component and update the text editor.
@@ -90,12 +90,12 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.IncludeInactive] = asTrueFalseOrNull(includeInactive.value) ?? "False";
+            newValue[ConfigurationKey.IncludeInactive] = asTrueFalseOrNull(includeInactive.value) ?? "False";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.IncludeInactive] !== (props.modelValue[ConfigurationValueKey.IncludeInactive]);
+            const anyValueChanged = newValue[ConfigurationKey.IncludeInactive] !== (props.modelValue[ConfigurationKey.IncludeInactive]);
 
-                // If any value changed then emit the new model value.
+            // If any value changed then emit the new model value.
             if (anyValueChanged) {
                 emit("update:modelValue", newValue);
                 return true;
@@ -120,7 +120,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            includeInactive.value = asBoolean(props.modelValue[ConfigurationValueKey.IncludeInactive]);
+            includeInactive.value = asBoolean(props.modelValue[ConfigurationKey.IncludeInactive]);
         }, {
             immediate: true
         });
@@ -134,7 +134,7 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationValueKey.IncludeInactive, asTrueFalseOrNull(includeInactive.value) ?? "False"));
+        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationKey.IncludeInactive, asTrueFalseOrNull(includeInactive.value) ?? "False"));
 
         return {
             includeInactive,

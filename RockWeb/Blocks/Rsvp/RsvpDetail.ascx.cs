@@ -83,9 +83,63 @@ namespace RockWeb.Blocks.RSVP
         /// </summary>
         private string LocationTypeTab { get; set; }
 
+        private bool IsAllowingPredictableIds => !PageCache.Layout.Site.DisablePredictableIds;
+
+
+        // Handle Id Key with newly converted RSVP List Obsidian Block
+        private int? _occurrenceId;
+
+        protected int OccurrenceId
+        {
+            get
+            {
+                if ( !_occurrenceId.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
+
+                        _occurrenceId = attendanceOccurrenceService.GetQueryableByKey(
+                                PageParameter( PageParameterKey.OccurrenceId ),
+                                IsAllowingPredictableIds )
+                            .Select( io => ( int? ) io.Id )
+                            .FirstOrDefault() ?? 0;
+                    }
+                }
+
+                return _occurrenceId.Value;
+            }
+        }
+
+        private int? _groupId;
+
+        protected int GroupId
+        {
+            get
+            {
+                if ( !_groupId.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var groupService = new GroupService( rockContext );
+
+                        _groupId = groupService.GetQueryableByKey(
+                                PageParameter( PageParameterKey.GroupId ),
+                                IsAllowingPredictableIds )
+                            .Select( io => ( int? ) io.Id )
+                            .FirstOrDefault() ?? 0;
+                    }
+                }
+
+                return _groupId.Value;
+            }
+        }
         #endregion
 
         #region Control Methods
+
+
+
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -117,7 +171,7 @@ namespace RockWeb.Blocks.RSVP
             if ( newLocationId != null )
             {
                 // If a new location was created, pass the value to the page to show it after reloading.
-                NavigateToCurrentPageReference( new Dictionary<string, string> { { PageParameterKey.OccurrenceId, newLocationId.Value.ToString() } } );
+                NavigateToCurrentPageReference( new Dictionary<string, string> { { OccurrenceId.ToString(), newLocationId.Value.ToString() } } );
                 return;
             }
             NavigateToCurrentPageReference();
@@ -129,7 +183,7 @@ namespace RockWeb.Blocks.RSVP
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            int? groupId = GroupId;
             if ( !Page.IsPostBack )
             {
                 if ( groupId == null )
@@ -141,15 +195,8 @@ namespace RockWeb.Blocks.RSVP
                     var rockContext = new RockContext();
                     var group = new GroupService( rockContext ).Get( groupId.Value );
                     lHeading.Text = "RSVP Detail " + group.Name;
-
-                    int? occurrenceId = PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull();
-                    if ( occurrenceId == null )
-                    {
-                        occurrenceId = 0;
-                    }
-
                     // Display Occurrence
-                    ShowDetails( rockContext, occurrenceId.Value, group );
+                    ShowDetails( rockContext, OccurrenceId, group );
                 }
             }
 
@@ -189,7 +236,7 @@ namespace RockWeb.Blocks.RSVP
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
-            int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            int? groupId = GroupId;
             if ( groupId != null )
             {
                 if ( SaveRSVPData() )
@@ -204,7 +251,7 @@ namespace RockWeb.Blocks.RSVP
         /// </summary>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
-            int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            int? groupId = GroupId;
             if ( groupId != null )
             {
                 NavigateToParentPage( new Dictionary<string, string> { { PageParameterKey.GroupId, groupId.Value.ToString() } } );
@@ -298,7 +345,7 @@ namespace RockWeb.Blocks.RSVP
         /// </summary>
         protected void lbSaveOccurrence_Click( object sender, EventArgs e )
         {
-            int? occurrenceId = PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull();
+            int? occurrenceId = OccurrenceId;
             if ( ( occurrenceId == null ) || ( occurrenceId == 0 ) )
             {
                 // If the query string is 0, check to see if a new occurrence was already created.
@@ -386,7 +433,7 @@ namespace RockWeb.Blocks.RSVP
 
             GetAllDeclineReasons();
             List<DefinedValue> values = new List<DefinedValue>();
-            int? occurrenceId = PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull();
+            int? occurrenceId = OccurrenceId;
             if ( ( occurrenceId == null ) || ( occurrenceId == 0 ) )
             {
                 occurrenceId = hfNewOccurrenceId.Value.AsIntegerOrNull();
@@ -666,7 +713,7 @@ namespace RockWeb.Blocks.RSVP
         {
             using ( var rockContext = new RockContext() )
             {
-                int? occurrenceId = PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull();
+                int? occurrenceId = OccurrenceId;
                 if ( ( occurrenceId == null ) || ( occurrenceId == 0 ) )
                 {
                     occurrenceId = hfNewOccurrenceId.Value.AsIntegerOrNull();
@@ -728,7 +775,7 @@ namespace RockWeb.Blocks.RSVP
             List<RSVPAttendee> result = new List<RSVPAttendee>();
             List<int> existingAttendanceRecords = new List<int>();
 
-            int? occurrenceId = PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull();
+            int? occurrenceId = OccurrenceId;
             if ( ( occurrenceId != null ) && ( occurrenceId != 0 ) )
             {
                 // Add RSVP responses for anyone who has an attendance record, already.
@@ -874,8 +921,8 @@ var dnutChart = new Chart(dnutCtx, {{
 
                 AttendanceOccurrence occurrence = null;
 
-                int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
-                int? occurrenceId = PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull();
+                int? groupId = GroupId;
+                int? occurrenceId = OccurrenceId;
 
                 if ( ( occurrenceId == null ) || ( occurrenceId == 0 ) )
                 {
@@ -976,7 +1023,7 @@ var dnutChart = new Chart(dnutCtx, {{
         {
             using ( var rockContext = new RockContext() )
             {
-                int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+                int? groupId = GroupId;
                 var group = new GroupService( rockContext ).Get( groupId.Value );
 
                 //Create new occurrence.
@@ -1053,7 +1100,7 @@ var dnutChart = new Chart(dnutCtx, {{
         {
             using ( var rockContext = new RockContext() )
             {
-                int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+                int? groupId = GroupId;
                 var group = new GroupService( rockContext ).Get( groupId.Value );
 
                 var occurrenceService = new AttendanceOccurrenceService( rockContext );

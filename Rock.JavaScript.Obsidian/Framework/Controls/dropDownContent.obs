@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <span ref="anchorElement" @click.prevent="onAnchorClick">
+    <span ref="anchorElement" @click.prevent="(e) => onAnchorClick(e)">
         <slot name="anchor">
-            <i class="ti ti-dots-vertical"></i>
+            <i class="ti ti-dots-vertical cursor-pointer"></i>
         </slot>
     </span>
 
@@ -15,6 +15,24 @@
         </div>
     </div>
 </template>
+
+<style>
+/* Global styles that can be used on any implementation of the Control. */
+.dropdown-content {
+    min-width: 200px;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+}
+
+.dropdown-content-item {
+    cursor: pointer;
+    border-radius: var(--rounded-small);
+}
+
+.dropdown-content-item:hover {
+    background-color: var(--color-interface-softer);
+}
+</style>
 
 <style scoped>
 .floating-dropdown {
@@ -44,7 +62,8 @@
 </style>
 
 <script setup lang="ts">
-    import { arrow, autoUpdate, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+    import { arrow, autoUpdate, flip, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+    import type { Placement } from "@Obsidian/Libs/floating-ui";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { PropType, ref, watch } from "vue";
 
@@ -69,6 +88,23 @@
         preventOverflowClipping: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        enableFlip: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The preferred placement of the floating dropdown relative to the anchor. Accepts any floating-ui Placement value (e.g. "bottom", "bottom-end"). */
+        placement: {
+            type: String as PropType<Placement>,
+            default: "bottom" as Placement
+        },
+
+        /** If true, clicks on the anchor element will not bubble up to parent elements. Useful when the dropdown is inside a clickable container. */
+        preventAnchorClickPropagation: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -84,6 +120,7 @@
     const isDropDownOpen = useVModelPassthrough(props, "modelValue", emit);
 
     const { floatingStyles, middlewareData } = useFloating(anchorElement, dropdownElement, {
+        placement: props.placement,
         middleware: [
             shift({
                 // Add 1 pixel padding to handle partial DPI zoom jitter.
@@ -93,6 +130,7 @@
                 // then the scroll bar vanishes and we adjust position again.
                 padding: 1
             }),
+            ...(props.enableFlip ? [flip()] : []),
             arrow({
                 element: arrowElement
             })
@@ -128,7 +166,11 @@
     /**
      * Event handler for when the drop down anchor element has been clicked.
      */
-    function onAnchorClick(): void {
+    function onAnchorClick(event: MouseEvent): void {
+        if (props.preventAnchorClickPropagation) {
+            event.stopPropagation();
+        }
+
         isDropDownOpen.value = !isDropDownOpen.value;
     }
 

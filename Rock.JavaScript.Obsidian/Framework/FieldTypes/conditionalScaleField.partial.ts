@@ -21,7 +21,7 @@ import { Guid } from "@Obsidian/Types";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { numericComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     ConfigurationJSON = "ConfigurationJSON"
 }
 

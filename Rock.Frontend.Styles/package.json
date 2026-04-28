@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "obsidian-build",
+    "watch": "obsidian-build --watch",
+    "clean": "rimraf dist"
+  },
+  "overrides": {
+    "sass": "1.77.6"
+  },
+  "dependencies": {
+    "@sparkdevnetwork/obsidian-build-tools": "^1.0.9"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.10"
+  }
+}

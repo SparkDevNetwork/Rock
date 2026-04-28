@@ -393,6 +393,13 @@ namespace Rock.Blocks.Group
 
             var bag = GetCommonEntityBag( entity );
 
+            if ( entity.Attributes == null )
+            {
+                entity.LoadAttributes( RockContext );
+            }
+
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
+
             return bag;
         }
 

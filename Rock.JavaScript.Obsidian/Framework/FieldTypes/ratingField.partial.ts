@@ -23,7 +23,7 @@ import { FieldTypeBase } from "./fieldType";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     MaxRating = "max"
 }
 
@@ -57,7 +57,7 @@ export class RatingFieldType extends FieldTypeBase {
             ratingValue = null;
         }
         const rating = ratingValue?.value ?? 0;
-        const maxRating = toNumberOrNull(configurationValues[ConfigurationValueKey.MaxRating]) ?? 5;
+        const maxRating = toNumberOrNull(configurationValues[ConfigurationKey.MaxRating]) ?? 5;
         let html = "";
         for (let i = 0; i < rating && i < maxRating; i++) {
             html += `<i class="ti ti-star-filled"></i>`;

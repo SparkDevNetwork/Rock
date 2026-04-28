@@ -1,0 +1,305 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+    <NotificationBox v-if="successMessage" alertType="success">{{ successMessage }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 ref="detailBlockRef"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :titleIconCssClass="options?.stepTypeIconCssClass"
+                 :entityKey="entityKey"
+                 entityTypeName="Step"
+                 :isAuditHidden="isNew"
+                 :isBadgesVisible="false"
+                 :isDeleteVisible="isEditable"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
+                 :editFooterActions="editFooterActions"
+                 :formResetKey="formResetKey"
+                 @cancelEdit="onCancelEdit"
+                 @delete="onDelete"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template v-if="panelMode === DetailPanelMode.View" #headerActions>
+            <span v-if="stepViewBag?.campus?.text && !options?.isSingleCampus"
+                  class="label label-campus">
+                {{ stepViewBag.campus.text }}
+            </span>
+            <span v-if="stepViewBag?.stepStatus?.text"
+                  class="label label-default"
+                  :style="statusLabelStyle">
+                {{ stepViewBag.stepStatus.text }}
+            </span>
+        </template>
+
+        <template #view>
+            <ViewPanel :modelValue="stepViewBag"
+                       :options="options"
+                       @launchWorkflow="onLaunchWorkflow" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="stepEditBag"
+                       :options="options"
+                       @propertyChanged="baseBlock.onPropertyChanged" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import EditPanel from "./StepEntry/editPanel.partial.obs";
+    import ViewPanel from "./StepEntry/viewPanel.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock, useReloadBlock } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./StepEntry/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { StepEntryBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepEntry/stepEntryBag";
+    import { StepEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepEntry/stepEntryOptionsBag";
+    import { StepEntryLaunchWorkflowResultBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepEntry/stepEntryLaunchWorkflowResultBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const config = useConfigurationValues<DetailBlockBox<StepEntryBag, StepEntryOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+    const successMessage = ref("");
+    const isSavingAndAdding = ref(false);
+    const detailBlockRef = ref<InstanceType<typeof DetailBlock> | null>(null);
+    const formResetKey = ref("");
+
+    const stepViewBag = ref(config.entity);
+    const stepEditBag = ref<ValidPropertiesBox<StepEntryBag>>({
+        bag: {} as StepEntryBag
+    });
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: stepEditBag
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const panelName = computed((): string => {
+        return options.value?.stepTypeName ?? "Step";
+    });
+
+    const entityKey = computed((): string => {
+        return stepViewBag.value?.idKey ?? "";
+    });
+
+    const isNew = computed((): boolean => {
+        return !stepViewBag.value?.idKey;
+    });
+
+    const statusLabelStyle = computed((): Record<string, string> => {
+        const color = stepViewBag.value?.stepStatusColor;
+
+        if (color) {
+            return { backgroundColor: color, color: "#fff" };
+        }
+
+        return {};
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): StepEntryOptionsBag => {
+        return config.options ?? {} as StepEntryOptionsBag;
+    });
+
+    /** Footer actions shown in the panel. "Save & Add Another" is only available when adding a new step with a selectable person. */
+    const editFooterActions = computed((): PanelAction[] => {
+        if (panelMode.value !== DetailPanelMode.Add || !options.value?.isPersonSelectable) {
+            return [];
+        }
+
+        return [{
+            title: "Save Then Add",
+            type: BtnType.Link,
+            disabled: isSavingAndAdding.value,
+            handler: onSaveThenAdd
+        }];
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onCancelEdit(): Promise<boolean | string> {
+        // If creating a new step, navigate to the success page.
+        if (!stepEditBag.value?.bag?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.SuccessPage]) {
+                return config.navigationUrls[NavigationUrlKey.SuccessPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    async function onDelete(): Promise<false | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key: stepViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete step.";
+            return false;
+        }
+    }
+
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<StepEntryBag>>("Edit", {
+            key: stepViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            stepEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+        successMessage.value = "";
+
+        const result = await invokeBlockAction<string>("Save", {
+            box: stepEditBag.value
+        });
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save step.";
+            return false;
+        }
+
+        // When invoked via Save Then Add, reset the form for a new entry and
+        // stay in edit mode instead of redirecting to the success page.
+        if (isSavingAndAdding.value) {
+            successMessage.value = "Step saved successfully. Add another person below.";
+
+            stepEditBag.value = {
+                bag: {
+                    ...stepEditBag.value.bag,
+                    idKey: "",
+                    personAlias: undefined
+                } as StepEntryBag,
+                validProperties: stepEditBag.value.validProperties
+            };
+
+            // Bump the form reset key so RockForm clears its submit count and
+            // visible errors. Without this, the now-blank (but required) Person
+            // picker stays highlighted in its error state from the submit that
+            // just completed.
+            formResetKey.value = newGuid();
+
+            return false;
+        }
+
+        // Normal Save — server returns the success page URL to redirect to.
+        return result.data ?? false;
+    }
+
+    /** Saves the current step and resets the form for a new entry, keeping all values except the person. */
+    async function onSaveThenAdd(): Promise<void> {
+        errorMessage.value = "";
+        successMessage.value = "";
+        isSavingAndAdding.value = true;
+
+        try {
+            /*
+                4/15/26 - MSE
+
+                Route through the DetailBlock save pipeline (onSaveClick ->
+                RockForm.submitForm) so existing validation runs before the Save action.
+
+                Previously, calling the Save action directly bypassed validation,
+                allowing steps to be created without a Status, Start Date, or required attributes.
+
+                Save Then Add must follow the same required-field rules as the main Save button.
+            */
+            await detailBlockRef.value?.onSaveClick();
+        }
+        finally {
+            isSavingAndAdding.value = false;
+        }
+    }
+
+    async function onLaunchWorkflow(guid: string): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<StepEntryLaunchWorkflowResultBag>("LaunchWorkflow", {
+            guid
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.data.redirectUrl) {
+                window.location.href = makeUrlRedirectSafe(result.data.redirectUrl);
+            }
+            else if (result.data.message) {
+                await alert(result.data.message);
+                // Refresh the view panel after a successful workflow launch.
+                reloadBlock();
+            }
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to launch workflow.";
+        }
+    }
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    onConfigurationValuesChanged(reloadBlock);
+
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified step could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        stepEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

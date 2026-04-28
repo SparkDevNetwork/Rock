@@ -591,17 +591,16 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             }
 
             var workflowEntryBlockType = BlockTypeCache.Get( Rock.SystemGuid.BlockType.WORKFLOW_ENTRY );
-            var obsidianWorkflowEntryBlockType = BlockTypeCache.Get( Rock.SystemGuid.BlockType.OBSIDIAN_WORKFLOW_ENTRY );
 
             var pages = PageCache.All()
-                .Where( p => p.Blocks.Any( b => b.BlockTypeId == workflowEntryBlockType.Id || b.BlockTypeId == obsidianWorkflowEntryBlockType.Id ) )
+                .Where( p => p.Blocks.Any( b => b.BlockTypeId == workflowEntryBlockType.Id ) )
                 .ToList();
 
             var filteredPages = new List<PageCache>();
 
             foreach ( var page in pages.Where( p => p.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ) )
             {
-                var workflowEntryBlocks = page.Blocks.Where( b => b.BlockTypeId == workflowEntryBlockType.Id || b.BlockTypeId == obsidianWorkflowEntryBlockType.Id ).ToList();
+                var workflowEntryBlocks = page.Blocks.Where( b => b.BlockTypeId == workflowEntryBlockType.Id ).ToList();
 
                 // Only show pages with a "Workflow Entry" block on them that are not configured to show a single specific workflow type.
                 foreach ( var block in workflowEntryBlocks )

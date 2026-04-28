@@ -1,0 +1,225 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <teleport :to="teleportTarget" v-if="props.modelValue">
+        <div ref="flyoutEl"
+             class="flyout"
+             :style="style"
+             @mouseenter="onFlyoutEnter"
+             @mouseleave="onFlyoutLeave">
+            <div v-if="hasHeader"
+                 class="flyout-header">
+                <slot name="header" />
+            </div>
+            <RockForm @submit="onSubmit"
+                      :hideErrors="true">
+                <div class="flyout-body">
+                    <slot />
+                </div>
+                <div v-if="$slots.footer"
+                     class="flyout-footer">
+                    <slot name="footer" />
+                </div>
+            </RockForm>
+        </div>
+    </teleport>
+</template>
+
+<style scoped>
+.flyout {
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-large);
+    /* TODO - UI Team needs to look at width */
+    width: 400px;
+    box-shadow: var(--box-shadow-strong);
+    overflow: hidden;
+}
+
+.flyout-header {
+    padding: var(--spacing-xsmall) var(--spacing-large);
+    border-bottom: 1px solid var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
+}
+
+.flyout-body {
+    padding: var(--spacing-large);
+    background-color: var(--color-interface-softest);
+}
+
+.flyout-footer {
+    padding: var(--spacing-xsmall) var(--spacing-large);
+    border-top: 1px solid var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, onMounted, onBeforeUnmount, watch, computed, useSlots, PropType, nextTick } from "vue";
+    import RockForm from "./rockForm.obs";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        anchorEl: {
+            type: Object as PropType<HTMLElement | null>,
+            required: true
+        },
+
+        onSave: {
+            type: Function as PropType<(() => void | PromiseLike<void>)>,
+            required: false
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "flyoutEnter"): void;
+        (e: "flyoutLeave"): void;
+    }>();
+
+    // const showFlyout = ref(props.modelValue);
+    const slots = useSlots();
+    const flyoutEl = ref<HTMLElement | null>(null);
+    const style = ref<Record<string, string>>({});
+    let resizeObserver: ResizeObserver | null = null;
+
+    const hasHeader = computed(() => !!slots.header);
+    const fullscreenElement = ref<Element | null>(null);
+    const teleportTarget = computed(() => fullscreenElement.value ?? document.body);
+
+    function updatePosition(): void {
+        if (!props.anchorEl || !flyoutEl.value) {
+            return;
+        }
+
+        const anchorRect = props.anchorEl.getBoundingClientRect();
+        const flyoutRect = flyoutEl.value.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = document.documentElement.clientWidth;
+
+        const spaceBelow = viewportHeight - anchorRect.bottom;
+        const spaceAbove = anchorRect.top;
+        const flyoutGap = 8;
+
+        let top: number;
+
+        // Prefer bottom
+        if (spaceBelow >= flyoutRect.height + flyoutGap) {
+            top = anchorRect.bottom + flyoutGap;
+        }
+        // Flip to top
+        else if (spaceAbove >= flyoutRect.height - flyoutGap) {
+            top = anchorRect.top - flyoutRect.height - flyoutGap;
+        }
+        // Fallback: clamp inside viewport
+        else {
+            top = Math.max(
+                flyoutGap,
+                viewportHeight - flyoutRect.height - flyoutGap
+            );
+        }
+
+        style.value = {
+            position: "fixed",
+            top: `${top}px`,
+            right: `${viewportWidth - anchorRect.right}px`,
+            zIndex: "1060" // Needs to be above 1050 because the flyout can appear in the docked panel.
+        };
+    }
+
+    /**
+     * Called when the individual mouses over the flyout.
+     */
+    function onFlyoutEnter(): void {
+        emit("flyoutEnter");
+    }
+
+    /**
+     * Called when the individual mouses out of the flyout.
+     */
+    function onFlyoutLeave(): void {
+        emit("flyoutLeave");
+    }
+
+    function close(): void {
+        emit("update:modelValue", false);
+    }
+
+    function onDocumentClick(event: MouseEvent): void {
+        const path = event.composedPath();
+
+        // If click happened inside the flyout then ignore
+        if (flyoutEl.value && path.includes(flyoutEl.value)) {
+            return;
+        }
+
+        // If click happened on the anchor button then ignore
+        if (props.anchorEl && path.includes(props.anchorEl)) {
+            return;
+        }
+
+        // Otherwise close
+        close();
+    }
+
+    function onFullscreenChange(): void {
+        fullscreenElement.value = document.fullscreenElement;
+    }
+
+    /**
+     * Event handler for when the form has been submitted.
+     */
+    async function onSubmit(): Promise<void> {
+        if (props.onSave) {
+            const result = props.onSave();
+
+            if (isPromise(result)) {
+                await result;
+            }
+        }
+    }
+
+    watch(() => props.modelValue, (isOpen) => {
+        if (isOpen) {
+            document.addEventListener("click", onDocumentClick);
+            window.addEventListener("scroll", updatePosition, true);
+            window.addEventListener("resize", updatePosition);
+            nextTick(() => updatePosition());
+        }
+        else {
+            document.removeEventListener("click", onDocumentClick);
+            window.removeEventListener("scroll", updatePosition, true);
+            window.removeEventListener("resize", updatePosition);
+        }
+    }, { immediate: true });
+
+    watch(() => props.anchorEl, () => {
+        nextTick(() => updatePosition());
+    });
+
+    watch(flyoutEl, (newEl) => {
+        resizeObserver?.disconnect();
+        resizeObserver = null;
+
+        if (newEl) {
+            resizeObserver = new ResizeObserver(() => updatePosition());
+            resizeObserver.observe(newEl);
+        }
+    });
+
+    onMounted(() => {
+        document.addEventListener("fullscreenchange", onFullscreenChange);
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("click", onDocumentClick);
+        window.removeEventListener("scroll", updatePosition, true);
+        window.removeEventListener("resize", updatePosition);
+        document.removeEventListener("fullscreenchange", onFullscreenChange);
+        resizeObserver?.disconnect();
+    });
+
+</script>

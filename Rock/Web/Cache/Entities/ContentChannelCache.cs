@@ -308,25 +308,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        public override ISecured ParentAuthority
-        {
-            get
-            {
-                using ( var rockContext = RockApp.Current.CreateRockContext() )
-                {
-                    var contentChannelType = new ContentChannelTypeService( rockContext ).Get( ContentChannelTypeId );
-                    return contentChannelType ?? base.ParentAuthority;
-                }
-
-            }
-        }
-
-        /// <summary>
         /// Gets the content channel type cache.
         /// </summary>
         /// <value>
@@ -362,6 +343,63 @@ namespace Rock.Web.Cache
         /// </value>
         public ContentLibraryConfiguration ContentLibraryConfiguration { get; set; }
 
+        /// <summary>
+        /// Gets the content channel items.
+        /// </summary>
+        /// <remarks>
+        /// If this channel's items are manually ordered, this collection will be sorted according to the
+        /// order specified in the database. If not, they will be sorted by their start date/time.
+        /// </remarks>
+        public List<ContentChannelItemCache> ContentChannelItems
+        {
+            get
+            {
+                var contentChannelItems = new List<ContentChannelItemCache>();
+
+                if ( _contentChannelItemIds == null )
+                {
+                    lock ( _obj )
+                    {
+                        if ( _contentChannelItemIds == null )
+                        {
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
+                            {
+                                var qry = new ContentChannelItemService( rockContext )
+                                    .Queryable()
+                                    .Where( i => i.ContentChannelId == Id );
+
+                                if ( ItemsManuallyOrdered )
+                                {
+                                    qry = qry.OrderBy( i => i.Order );
+                                }
+                                else
+                                {
+                                    qry = qry.OrderBy( i => i.StartDateTime );
+                                }
+
+                                _contentChannelItemIds = qry
+                                    .Select( c => c.Id )
+                                    .ToList();
+                            }
+                        }
+                    }
+                }
+
+                foreach ( var id in _contentChannelItemIds )
+                {
+                    var contentChannelItem = ContentChannelItemCache.Get( id );
+                    if ( contentChannelItem != null )
+                    {
+                        contentChannelItems.Add( contentChannelItem );
+                    }
+                }
+
+                return contentChannelItems;
+            }
+        }
+
+        private List<int> _contentChannelItemIds = null;
+
         #endregion
 
         #region Public Methods
@@ -394,6 +432,8 @@ namespace Rock.Web.Cache
             EnablePersonalization = contentChannel.EnablePersonalization;
             CategoryIds = contentChannel.Categories.Select( c => c.Id ).ToList();
             ContentLibraryConfigurationJson = contentChannel.ContentLibraryConfigurationJson;
+
+            _contentChannelItemIds = null;
         }
 
         /// <summary>
@@ -408,6 +448,24 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
+        #region ISecured
+
+        /*
+             3/12/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
+        /// <inheritdoc />
+        public override ISecured ParentAuthority => ContentChannelType ?? base.ParentAuthority;
+
+        #endregion ISecured
 
     }
 }

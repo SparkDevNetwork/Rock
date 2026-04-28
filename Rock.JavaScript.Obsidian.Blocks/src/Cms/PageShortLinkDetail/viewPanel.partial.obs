@@ -3,23 +3,44 @@
     <fieldset>
         <ValueDetailList :modelValue="topValues" />
 
-        <div class="row">
-            <div class="col-md-6">
-                <ValueDetailList :modelValue="leftSideValues" />
-            </div>
+        <ContentSectionContainer :sidebar="false">
+            <ContentSection :light="true" :disableCollapse="true">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ValueDetailList :modelValue="leftSideValues" />
+                    </div>
 
-            <div class="col-md-6">
-                <ValueDetailList :modelValue="rightSideValues" />
-            </div>
-        </div>
+                    <div class="col-md-6" v-if="props.modelValue?.qrCodeSVG">
+                        <label style="font-size: var(--font-size-small); font-weight: var(--font-weight-regular); color: var(--color-interface-medium);">QR Code</label>
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <div v-html="props.modelValue.qrCodeSVG" class="qr-code"></div>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-link p-0 d-block text-start" @click="$emit('downloadPNG')">
+                                    Download PNG
+                                </button>
 
-        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+                                <button type="button" class="btn btn-link p-0 d-block text-start" @click="$emit('downloadSVG')">
+                                    Download SVG
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ContentSection>
 
-        <SectionHeader title="Usage Analytics"
-                       description="Monitor your Rock shortlinks with usage analytics to see clicks, traffic sources and user interactions." />
+            <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
 
-        <ViewAnalytics v-if="modelValue?.idKey"
-                       :shortLinkId="modelValue.idKey" />
+            <ContentSection :disableCollapse="true" title="Usage Analytics" icon="ti ti-settings">
+                <ContentStack>
+
+                    <ViewAnalytics
+                                   v-if="modelValue?.idKey"
+                                   :shortLinkId="modelValue.idKey" />
+                </ContentStack>
+            </ContentSection>
+        </ContentSectionContainer>
     </fieldset>
 </template>
 
@@ -29,6 +50,23 @@
     grid-template-columns: repeat(3, minmax(min-content, max-content));
     column-gap: 16px;
     text-wrap: nowrap;
+}
+
+/* Needed this to fire off chart js resize on ViewAnalytics */
+:deep(.contentsection-list) {
+    width: 100%;
+    min-width: 0;
+}
+
+.analytics-wrapper {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.qr-code :deep(svg) {
+    width: 132px;
+    height: 132px;
 }
 </style>
 
@@ -45,6 +83,9 @@
     import { isNullish } from "@Obsidian/Utility/util";
     import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
 
     const props = defineProps({
         modelValue: {
@@ -57,6 +98,11 @@
             required: true
         }
     });
+
+    const emits = defineEmits<{
+        (e: "downloadPNG"): void;
+        (e: "downloadSVG"): void;
+    }>();
 
     // #region Values
 
@@ -127,13 +173,6 @@
 
             valueBuilder.addHtmlValue("Scheduled Redirects", html);
         }
-
-        return valueBuilder.build();
-    });
-
-    /** The values to display at half-width on the left side of the block. */
-    const rightSideValues = computed((): ValueDetailListItem[] => {
-        const valueBuilder = new ValueDetailListItemBuilder();
 
         if (!props.modelValue) {
             return valueBuilder.build();

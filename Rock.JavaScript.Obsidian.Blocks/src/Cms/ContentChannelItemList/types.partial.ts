@@ -15,8 +15,34 @@
 // </copyright>
 //
 
+import { ContentChannelItemStatus } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
+
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage",
     NewItemPage = "NewItemPage",
-    LibraryDownloadPage = "LibraryDownloadPage"
+    LibraryDownloadPage = "LibraryDownloadPage",
+    MediaElementPage = "MediaElementPage"
 }
+
+export type GridRowItem = {
+    id: string,
+    idKey: string,
+    contentChannelId: number,
+    title: string,
+    startDateTime: string,
+    expireDateTime: string,
+    isScheduled: boolean,
+    occurrences: boolean,
+    status: ContentChannelItemStatus,
+    priority: number,
+    isContentLibraryOwner: boolean | null,
+    contentLibrarySourceIdentifier: boolean | null,
+    isDownloadedFromContentLibrary: boolean,
+    isUploadedToContentLibrary: boolean,
+    contentLibraryLicenseTypeGuid: string | null,
+    isSecurityDisabled: boolean,
+    allTimeViewsCount?: number | null,
+    last28DaysViewsCount?: number | null,
+    itemUrl?: string | null,
+    hasLinkedMediaElements: boolean
+};

@@ -386,12 +386,12 @@
 
     // #region Folder List
 
+    const selectedFolderArray = ref<string[]>([]);
+    const selectedFolder = computed<string | null>(() => decodeURIComponent(selectedFolderArray.value[0] ?? "") || null);
+
     const itemProvider = ref(initializeTreeProvider());
     const openFolders = computed(() => Array.from(itemProvider.value?.openFolders ?? []));
     const folders = ref<AssetManagerTreeItemBag[]>([]);
-
-    const selectedFolderArray = ref<string[]>([]);
-    const selectedFolder = computed<string | null>(() => decodeURIComponent(selectedFolderArray.value[0] ?? "") || null);
     const selectedFolderBag = computed(() => findFolder(folders.value, selectedFolder.value).folder);
     const selectedFolderSubPath = computed(() => {
         let path = parseFolderName(selectedFolder.value ?? "").subPath;
@@ -754,10 +754,10 @@
         }
     }
 
-    function initializeTreeProvider(): AssetManagerTreeItemProvider {
+    function initializeTreeProvider(openFolders?: Set<string>): AssetManagerTreeItemProvider {
         const provider = new AssetManagerTreeItemProvider();
-        provider.openFolders = itemProvider?.value?.openFolders ?? new Set(props.openFolders);
-        provider.selectedFolder = selectedFolder?.value ?? props.selectedFolder;
+        provider.openFolders = openFolders ?? new Set(props.openFolders);
+        provider.selectedFolder = selectedFolder.value;
         provider.enableAssetManager = props.enableAssetManager;
         provider.enableFileManager = props.enableFileManager;
         provider.encryptedRootFolder = props.encryptedRootFolder || "";
@@ -812,7 +812,7 @@
     });
 
     watch(() => [props.enableAssetManager, props.enableFileManager, props.encryptedRootFolder, props.userSpecificRoot], () => {
-        itemProvider.value = initializeTreeProvider();
+        itemProvider.value = initializeTreeProvider(itemProvider.value?.openFolders);
     });
 
     // Sync v-model: selectedFolder

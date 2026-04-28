@@ -27,11 +27,6 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
     public class ConnectionTypeDetailOptionsBag
     {
         /// <summary>
-        /// Gets or sets the communication template options.
-        /// </summary>
-        public List<ListItemBag> CommunicationTemplateOptions { get; set; }
-
-        /// <summary>
         /// Gets or sets the connection type options.
         /// </summary>
         public List<ListItemBag> ConnectionTypeOptions { get; set; }
@@ -40,5 +35,10 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
         /// Gets or sets a value indicating whether active AI providers exist.
         /// </summary>
         public bool HasActiveAIProvider { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Note Type Items to be used when creating Connection Activity Types
+        /// </summary>
+        public List<ListItemBag> PersonNoteTypeItems { get; set; }
     }
 }

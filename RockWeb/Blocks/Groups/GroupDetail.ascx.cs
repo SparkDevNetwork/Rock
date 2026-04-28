@@ -198,6 +198,8 @@ namespace RockWeb.Blocks.Groups
             public const string ExpandedIds = "ExpandedIds";
             public const string EventItemOccurrenceId = "EventItemOccurrenceId";
             public const string ParentGroupId = "ParentGroupId";
+            public const string AutoEdit = "autoEdit";
+            public const string ReturnUrl = "returnUrl";
         }
 
         private static class AttributeKey
@@ -732,6 +734,13 @@ namespace RockWeb.Blocks.Groups
         /// <param name="parentGroupId">The parent group identifier.</param>
         private void NavigateAfterDeleteOrArchive( int? parentGroupId )
         {
+            var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            {
+                Response.Redirect( returnUrl );
+                return;
+            }
+
             // reload page, selecting the deleted group's parent
             var qryParams = new Dictionary<string, string>();
             if ( parentGroupId != null )
@@ -1426,11 +1435,19 @@ namespace RockWeb.Blocks.Groups
                 Rock.CheckIn.KioskDevice.Clear();
             }
 
-            var qryParams = new Dictionary<string, string>();
-            qryParams[PageParameterKey.GroupId] = group.Id.ToString();
-            qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+            var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            {
+                Response.Redirect( returnUrl );
+            }
+            else
+            {
+                var qryParams = new Dictionary<string, string>();
+                qryParams[PageParameterKey.GroupId] = group.Id.ToString();
+                qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
 
-            NavigateToPage( RockPage.Guid, qryParams );
+                NavigateToPage( RockPage.Guid, qryParams );
+            }
         }
 
         /// <summary>
@@ -1440,6 +1457,13 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
+            var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            {
+                Response.Redirect( returnUrl );
+                return;
+            }
+
             if ( hfGroupId.Value.Equals( "0" ) )
             {
                 int? parentGroupId = PageParameter( PageParameterKey.ParentGroupId ).AsIntegerOrNull();
@@ -1839,7 +1863,14 @@ namespace RockWeb.Blocks.Groups
                 btnEdit.Visible = true;
                 if ( group.Id > 0 )
                 {
-                    ShowReadonlyDetails( group );
+                    if ( PageParameter( PageParameterKey.AutoEdit ).AsBoolean() )
+                    {
+                        ShowEditDetails( group );
+                    }
+                    else
+                    {
+                        ShowReadonlyDetails( group );
+                    }
                 }
                 else
                 {

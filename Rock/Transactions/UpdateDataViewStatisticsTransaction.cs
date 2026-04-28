@@ -26,7 +26,6 @@ namespace Rock.Transactions
 {
     /// <summary>
     /// Updates the DataView statistics of a DataView that has been run.
-    /// Use this instead of <see cref="Rock.Tasks.UpdateDataViewStatistics"/> since it updates all the DataViews in a batch.
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
     public class UpdateDataViewStatisticsTransaction : ITransaction

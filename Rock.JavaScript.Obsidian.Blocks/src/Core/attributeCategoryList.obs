@@ -1,0 +1,335 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!isEntityTypeFiltered && !isNotificationDismissed" :alertType="AlertType.Info" :dismissible="true" @dismiss="isNotificationDismissed = true">
+        <strong>Note:</strong> Select an entity type using the grid filter to enable category reordering.
+    </NotificationBox>
+
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Category"
+          title="Attribute Categories"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="isEntityTypeFiltered"
+          @gridSettingsClick="onGridSettingClick"
+          :showLaunchWorkflow="false"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <ReorderColumn v-if="isEntityTypeFiltered" @orderChanged="onOrderChanged" />
+
+        <TextColumn name="name"
+                    title="Category"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="entityTypeName"
+                    title="Entity Type"
+                    field="entityTypeName"
+                    visiblePriority="xs" />
+
+        <TextColumn name="iconCssClass"
+                    title="Icon Class"
+                    field="iconCssClass"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <Modal v-model="isModalOpen"
+           title="Category"
+           saveText="Save"
+           @save="onSave">
+        <TextBox v-model="name"
+                 label="Name"
+                 rules="required" />
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline"
+                 :rows="4" />
+
+        <EntityTypePicker v-model="entityType"
+                          label="Entity Type"
+                          :includeGlobalOption="true"
+                          :excludeEntityTypeGuids="excludedEntityTypeGuids"
+                          enhanceForLongLists
+                          rules="required" />
+
+        <IconPicker v-model="iconCssClass"
+                    label="Icon CSS Class" />
+
+        <ColorPicker v-model="highlightColor"
+                     label="Highlight Color" />
+    </Modal>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :entityTypeGuids="availableEntityTypeGuids" />
+</template>
+
+<script setup lang="ts">
+    import { onMounted, reactive, ref, watch } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import Grid, { TextColumn, DeleteColumn, ReorderColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import GridSettingsModal from "./AttributeCategoryList/gridSettingsModal.partial.obs";
+    import { GridSettingsOptions, PreferenceKey } from "./AttributeCategoryList/types.partial";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { AttributeCategoryListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AttributeCategoryList/attributeCategoryListOptionsBag";
+    import { AttributeCategoryBag } from "@Obsidian/ViewModels/Blocks/Core/AttributeCategoryList/attributeCategoryBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<ListBlockBox<AttributeCategoryListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // Block and ServiceJob categories are controlled through code attribute
+    // decorations and should not be manually created.
+    const excludedEntityTypeGuids = [
+        EntityType.Block,
+        EntityType.ServiceJob
+    ];
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isModalOpen = ref(false);
+    const isGridSettingsVisible = ref(false);
+    const isNotificationDismissed = ref(false);
+
+    const gridSettings = ref<GridSettingsOptions>({
+        entityType: safeParseJson(preferences.getValue(PreferenceKey.FilterEntityType)) ?? null
+    });
+
+    const idKey = ref("");
+    const name = ref("");
+    const description = ref("");
+    const entityType = ref<ListItemBag | null>(null);
+    const iconCssClass = ref("");
+    const highlightColor = ref("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid is currently filtered by an entity type. */
+    const isEntityTypeFiltered = ref(!!gridSettings.value.entityType);
+
+    /** The distinct entity type GUIDs from all attribute categories, for the filter picker. */
+    const availableEntityTypeGuids = ref<string[]>([]);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Loads the distinct entity type GUIDs from all attribute categories
+     * (unfiltered) to populate the grid settings entity type picker.
+     */
+    async function loadAvailableEntityTypeGuids(): Promise<void> {
+        const result = await invokeBlockAction<string[]>("GetAvailableEntityTypeGuids");
+
+        if (result.isSuccess && result.data) {
+            availableEntityTypeGuids.value = result.data;
+        }
+    }
+
+    /**
+     * Resets the modal form values to their defaults.
+     */
+    function resetModal(): void {
+        idKey.value = "";
+        name.value = "";
+        description.value = "";
+        entityType.value = null;
+        iconCssClass.value = "";
+        highlightColor.value = "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    *
+    */
+    function onGridSettingClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    async function onSelectItem(key: string): Promise<void> {
+        const result = await invokeBlockAction<AttributeCategoryBag>("Edit", {
+            key
+        });
+
+        if (result.isSuccess && result.data) {
+            idKey.value = result.data.idKey ?? "";
+            name.value = result.data.name ?? "";
+            description.value = result.data.description ?? "";
+            entityType.value = result.data.entityType ?? null;
+            iconCssClass.value = result.data.iconCssClass ?? "";
+            highlightColor.value = result.data.highlightColor ?? "";
+
+            isModalOpen.value = true;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to edit category.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    async function onAddItem(): Promise<void> {
+        await onSelectItem("");
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+
+            loadAvailableEntityTypeGuids();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete category.");
+        }
+    }
+
+    /**
+     * Called when a row has been dragged from one position to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the first item was dropped before.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
+    }
+
+    /**
+     * Called when the Save button is clicked in the modal.
+     */
+    async function onSave(): Promise<void> {
+        const bag: AttributeCategoryBag = {
+            idKey: idKey.value,
+            name: name.value,
+            description: description.value,
+            entityType: entityType.value,
+            iconCssClass: iconCssClass.value,
+            highlightColor: highlightColor.value
+        };
+
+        const result = await invokeBlockAction<string>("Save", {
+            bag
+        });
+
+        if (result.isSuccess) {
+            gridDataSource.value = loadGridData();
+            loadAvailableEntityTypeGuids();
+            isModalOpen.value = false;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to save category.");
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            resetModal();
+        }
+    });
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterEntityType, JSON.stringify(gridSettings.value.entityType ?? null));
+        await preferences.save();
+
+        /*
+            3/23/2026 - MSE
+
+            isEntityTypeFiltered is a ref (not computed) and is updated here only after
+            the grid data reload completes. It controls a v-if on the ReorderColumn,
+            which must not render until filtered data is fully loaded.
+
+            If it updated immediately from gridSettings, the column could render
+            before the data is ready, causing an exception during the grid transition.
+
+            Reason: Prevent errors from rendering a conditional column before
+            filtered data is available.
+        */
+        gridDataSource.value = loadGridData();
+        await gridDataSource.value;
+
+        isEntityTypeFiltered.value = !!gridSettings.value.entityType;
+    });
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+
+    onMounted(() => {
+        loadAvailableEntityTypeGuids();
+    });
+</script>

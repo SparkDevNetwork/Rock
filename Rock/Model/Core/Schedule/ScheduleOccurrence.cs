@@ -22,6 +22,8 @@ namespace Rock.Model
     /// Helper class for grouping attendance records associated into logical occurrences based on
     /// a given schedule
     /// </summary>
+    [Obsolete( "This class is no longer used and will be removed in a future release." )]
+    [RockObsolete( "19.0" )]
     public class ScheduleOccurrence
     {
         /// <summary>

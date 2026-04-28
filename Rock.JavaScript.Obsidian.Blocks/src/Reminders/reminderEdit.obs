@@ -1,0 +1,184 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Block :title="blockTitle">
+
+        <NotificationBox v-if="errorMessage" alertType="danger">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <RockForm v-else @submit="onSave">
+            <NotificationBox v-if="saveErrorMessage" alertType="danger">
+                {{ saveErrorMessage }}
+            </NotificationBox>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <DatePicker v-model="reminderDate"
+                                label="Reminder Date"
+                                :disallowPastDateSelection="true"
+                                rules="required" />
+                </div>
+                <div class="col-md-6">
+                    <CheckBox v-if="isExistingReminder"
+                              v-model="isComplete"
+                              label="Complete"
+                              help="Determines if the reminder should be considered complete." />
+                </div>
+            </div>
+
+            <TextBox v-model="note"
+                     label="Note"
+                     textMode="multiline" />
+
+            <DropDownList v-model="reminderType"
+                          label="Reminder Type"
+                          :items="reminderTypeItems"
+                          rules="required"
+                          :showBlankItem="false" />
+
+            <PersonPicker v-model="person"
+                          label="Assign Reminder To"
+                          rules="required"
+                          :enableSelfSelection="true" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <NumberBox v-model="renewPeriodDays"
+                               label="Repeat Every"
+                               help="Will repeat the reminder the provided number of days after the completion."
+                               :minimumValue="0">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">days</span>
+                        </template>
+                    </NumberBox>
+                </div>
+                <div class="col-md-6">
+                    <NumberBox v-model="renewMaxCount"
+                               label="Number of Times to Repeat"
+                               help="The number of times to repeat. Leave blank to repeat indefinitely."
+                               :minimumValue="0">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">times</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </div>
+
+            <div class="actions">
+                <RockButton :btnType="BtnType.Primary"
+                            :disabled="isSaving"
+                            type="submit">
+                    Save
+                </RockButton>
+                <RockButton :btnType="BtnType.Link"
+                            :disabled="isSaving"
+                            @click="onCancel">
+                    Cancel
+                </RockButton>
+            </div>
+        </RockForm>
+    </Block>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import Block from "@Obsidian/Templates/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { ReminderEditBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderEdit/reminderEditBag";
+    import { ReminderEditOptionsBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderEdit/reminderEditOptionsBag";
+    import { ReminderEditSaveBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderEdit/reminderEditSaveBag";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<ReminderEditBag, ReminderEditOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const errorMessage = config.errorMessage ?? "";
+    const blockTitle = config.bag?.entityDescription ? `Reminder for ${config.bag.entityDescription}` : "Reminder";
+    const isExistingReminder = config.bag?.isExistingReminder ?? false;
+    const reminderTypeItems = config.options?.reminderTypes ?? [];
+    const parentPageUrl = config.options?.parentPageUrl ?? "";
+
+    const reminderDate = ref(config.bag?.reminderDate ?? "");
+    const isComplete = ref(config.bag?.isComplete ?? false);
+    const note = ref(config.bag?.note ?? "");
+    const reminderType = ref(config.bag?.reminderType?.value ?? "");
+    const person = ref<ListItemBag | undefined>(config.bag?.personAlias ?? undefined);
+    const renewPeriodDays = ref<number | null>(config.bag?.renewPeriodDays ?? null);
+    const renewMaxCount = ref<number | null>(config.bag?.renewMaxCount ?? null);
+
+    const saveErrorMessage = ref("");
+    const isSaving = ref(false);
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Navigates to the parent page. Falls back to browser back if no URL is configured.
+     */
+    function navigateToParent(): void {
+        if (parentPageUrl) {
+            window.location.href = parentPageUrl;
+        }
+        else {
+            window.history.back();
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Handles the Save button click. Sends the form data to the server
+     * and navigates to the parent page on success.
+     */
+    async function onSave(): Promise<void> {
+        isSaving.value = true;
+        saveErrorMessage.value = "";
+
+        const saveBag: ReminderEditSaveBag = {
+            reminderTypeGuid: reminderType.value ?? "",
+            reminderDate: reminderDate.value,
+            isComplete: isComplete.value,
+            note: note.value,
+            personAliasGuid: person.value?.value ?? "",
+            renewPeriodDays: renewPeriodDays.value,
+            renewMaxCount: renewMaxCount.value
+        };
+
+        const result = await invokeBlockAction("Save", { bag: saveBag });
+
+        if (result.isSuccess) {
+            navigateToParent();
+        }
+        else {
+            saveErrorMessage.value = result.errorMessage ?? "An error occurred while saving the reminder.";
+            isSaving.value = false;
+        }
+    }
+
+    /**
+     * Handles the Cancel button click. Navigates to the parent page.
+     */
+    function onCancel(): void {
+        navigateToParent();
+    }
+
+    // #endregion Event Handlers
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

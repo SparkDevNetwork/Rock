@@ -24,6 +24,7 @@ using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
@@ -180,6 +181,48 @@ namespace Rock.Rest.Controllers
         {
             var connectionRequestService = Service as ConnectionRequestService;
             return connectionRequestService.DoesStatusChangeCauseWorkflows( connectionOpportunityId, fromStatusId, toStatusId );
+        }
+
+        /// <summary>
+        /// Is the status change allowed?
+        /// </summary>
+        /// <param name="connectionRequestId">The connection request identifier.</param>
+        /// <param name="toStatusId">To status identifier.</param>
+        /// <returns>Whether the status change is allowed.</returns>
+        /// <exception cref="HttpResponseException"></exception>
+        [Authenticate, Secured, HttpGet]
+        [System.Web.Http.Route( "api/ConnectionRequests/IsStatusChangeAllowed/{connectionRequestId}/{toStatusId}" )]
+        [Rock.SystemGuid.RestActionGuid( "065A042C-2492-4A76-BC2A-19B38AFA2D3D" )]
+        public bool IsStatusChangeAllowed( int connectionRequestId, int toStatusId )
+        {
+            var connectionRequestService = Service as ConnectionRequestService;
+            var currentStatus = connectionRequestService
+                .Queryable()
+                .Where( cr => cr.Id == connectionRequestId )
+                .Select( cr => new
+                {
+                    cr.ConnectionStatusId,
+                    cr.ConnectionOpportunity.ConnectionTypeId
+                } )
+                .FirstOrDefault();
+
+            if ( currentStatus == null )
+            {
+                return false;
+            }
+
+            var connectionTypeCache = ConnectionTypeCache.Get( currentStatus.ConnectionTypeId );
+            if ( connectionTypeCache == null )
+            {
+                return false;
+            }
+
+            if ( !connectionTypeCache.IsSequentialStatusEnforced )
+            {
+                return true;
+            }
+
+            return connectionTypeCache.IsNextSequentialActiveStatus( currentStatus.ConnectionStatusId, toStatusId );
         }
 
         /// <summary>

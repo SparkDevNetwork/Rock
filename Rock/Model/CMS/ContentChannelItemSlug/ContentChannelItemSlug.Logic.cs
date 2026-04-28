@@ -15,12 +15,40 @@
 // </copyright>
 //
 
+using System.Data.Entity;
+
 using Rock.Security;
+using Rock.Web.Cache;
+using Rock.Web.Cache.Entities;
 
 namespace Rock.Model
 {
     public partial class ContentChannelItemSlug
     {
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return ContentChannelItemSlugCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            ContentChannelItemSlugCache.UpdateCachedEntity( this.Id, entityState );
+            ContentChannelItemCache.FlushItem( this.ContentChannelItemId );
+        }
+
+        #endregion
+
         #region ISecured
 
         /// <inheritdoc/>

@@ -78,7 +78,7 @@ namespace Rock.Blocks.Communication
         {
             public const string DetailPage = "DetailPage";
             [RockObsolete( "18.0" )]
-            [Obsolete( "This will be removed in v19.0 when the legacy detail page is removed", error: false )]
+            [Obsolete( "This will be removed in v20.0 when the legacy detail page is removed", error: false )]
             public const string LegacyDetailPage = "LegacyDetailPage";
         }
 
@@ -537,7 +537,7 @@ WHERE (@RecipientCountLower IS NULL OR counts.[RecipientCount] >= @RecipientCoun
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, PageParameterKey.Communication, "((Key))" ),
-                // Remove this in v19.0 when the legacy detail page is removed.
+                // Remove this in v20.0 when the legacy detail page is removed.
                 [NavigationUrlKey.LegacyDetailPage] = GetLegacyCommunicationUrl( new Dictionary<string, string>()
                 {
                     [PageParameterKey.Communication] = "((Key))"
@@ -551,7 +551,7 @@ WHERE (@RecipientCountLower IS NULL OR counts.[RecipientCount] >= @RecipientCoun
         /// <param name="pageParams">A dictionary of parameters to include in the URL.</param>
         /// <returns>A string representing the constructed URL if the page ID is valid; otherwise, <see langword="null"/>.</returns>
         [RockObsolete( "18.0" )]
-        [Obsolete( "This will be removed in v19.0 when the legacy detail page is removed", error: false )]
+        [Obsolete( "This will be removed in v20.0 when the legacy detail page is removed", error: false )]
         private string GetLegacyCommunicationUrl( IDictionary<string, string> pageParams )
         {
             var pageReference = new Rock.Web.PageReference(
@@ -782,7 +782,7 @@ WHERE (@RecipientCountLower IS NULL OR counts.[RecipientCount] >= @RecipientCoun
             /// Gets or sets a value indicating whether the communication protocol is considered legacy.
             /// </summary>
             [RockObsolete( "18.0" )]
-            [Obsolete( "This will be removed in v19.0 when the legacy detail page is removed", error: false )]
+            [Obsolete( "This will be removed in v20.0 when the legacy detail page is removed", error: false )]
             public bool IsLegacyCommunication { get; set; }
         }
 

@@ -5,7 +5,7 @@
           keyField="idKey"
           title="Payments"
           itemTerm="Payment"
-          :exportTitle="config.options?.exportFileName ?? 'Payments'"
+          :exportTitle="config.options?.exportTitle ?? 'Payments'"
           :entityTypeGuid="EntityType.FinancialTransaction"
           stickyHeader
           liveUpdates
@@ -57,12 +57,13 @@
                 title="Registrar"
                 field="registrars"
                 :filter="pickExistingValueFilter"
-                :quickFilterValue="getRegistrantsFilterValue"
+                :quickFilterValue="getRegistrarsFilterValue"
                 :filterValue="getRegistrarsFilterValue"
+                :excludeFromExport="true"
                 visiblePriority="md">
 
             <template #format="{ row }">
-                <div v-for="registrar in row.registrarsHtml">
+                <div v-for="(registrar, index) in row.registrarsHtml" :key="index">
                     <span v-html="registrar"></span><br />
                 </div>
             </template>
@@ -81,7 +82,7 @@
                 visiblePriority="xs">
 
             <template #format="{ row }">
-                <div v-for="registrant in row.registrants">
+                <div v-for="(registrant, index) in row.registrants" :key="index">
                     <span>{{ registrant }}</span><br />
                 </div>
             </template>

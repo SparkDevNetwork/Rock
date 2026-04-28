@@ -489,6 +489,14 @@ namespace Rock.Model
                 return;
             }
 
+            var isOptOutMessage = IsOptOutMessage( message.Message );
+            if ( isOptOutMessage )
+            {
+                // This particular opt-out tracking should not be driven by configuration, as we always want to try
+                // and identify which communication prompted the person to opt out.
+                new IdentifySmsOptOutCommunicationRecipientTransaction( fromNumber ).Enqueue();
+            }
+
             if ( !message.DisableSmsOptInOutTracking.HasValue )
             {
                 var systemPhoneNumber = Sms.FindRockSmsSystemPhoneNumber( toNumber );
@@ -518,7 +526,7 @@ namespace Rock.Model
 
                 var shouldSaveChanges = false;
 
-                if ( IsOptOutMessage( message.Message ) )
+                if ( isOptOutMessage )
                 {
                     foreach ( var phoneNumber in GetMatchingPhoneNumbers() )
                     {

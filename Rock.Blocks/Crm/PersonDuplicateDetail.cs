@@ -23,7 +23,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
-using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.PersonDuplicateDetail;
 using Rock.Web.Cache;
@@ -80,13 +79,6 @@ namespace Rock.Blocks.Crm
     [CustomizedGrid]
     public class PersonDuplicateDetail : RockListBlockType<PersonDuplicateWrapper>
     {
-        #region Fields
-
-        // PersonIds, MatchCount
-        Dictionary<int, int> _matchCounts = new Dictionary<int, int>();
-
-        #endregion Fields
-
         #region Keys
 
         private static class AttributeKey
@@ -95,12 +87,6 @@ namespace Rock.Blocks.Crm
             public const string ConfidenceScoreLow = "ConfidenceScoreLow";
             public const string IncludeInactive = "IncludeInactive";
             public const string IncludeBusinesses = "IncludeBusinesses";
-            public const string DetailPage = "DetailPage";
-        }
-
-        private static class NavigationUrlKey
-        {
-            public const string DetailPage = "DetailPage";
         }
 
         private static class PageParameterKey
@@ -123,7 +109,6 @@ namespace Rock.Blocks.Crm
             box.IsAddEnabled = false;
             box.IsDeleteEnabled = false;
             box.ExpectedRowCount = null;
-            box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
             box.GridDefinition = builder.BuildDefinition();
 
@@ -138,25 +123,13 @@ namespace Rock.Blocks.Crm
         {
             var options = new PersonDuplicateDetailOptionsBag();
 
-            options.ConfidenceScoreHigh = GetAttributeValue( AttributeKey.ConfidenceScoreHigh ).AsInteger();
-            options.ConfidenceScoreLow = GetAttributeValue( AttributeKey.ConfidenceScoreLow ).AsInteger();
+            options.ConfidenceScoreHigh = GetAttributeValue( AttributeKey.ConfidenceScoreHigh ).AsDouble();
+            options.ConfidenceScoreLow = GetAttributeValue( AttributeKey.ConfidenceScoreLow ).AsDouble();
             options.IncludeInactive = GetAttributeValue( AttributeKey.IncludeInactive ).AsBoolean();
             options.IncludeBusinesses = GetAttributeValue( AttributeKey.IncludeBusinesses ).AsBoolean();
             options.HasMultipleCampuses = CampusCache.All().Count( c => c.IsActive ?? true ) > 1;
 
             return options;
-        }
-
-        /// <summary>
-        /// Gets the box navigation URLs required for the page to operate.
-        /// </summary>
-        /// <returns>A dictionary of key names and URL values.</returns>
-        private Dictionary<string, string> GetBoxNavigationUrls()
-        {
-            return new Dictionary<string, string>
-            {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "PersonId", "((Key))" )
-            };
         }
 
         #endregion Initialization Methods
@@ -169,24 +142,26 @@ namespace Rock.Blocks.Crm
             var recordStatusInactiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
             var recordTypeBusinessId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
-            var personDuplicateService = new PersonDuplicateService( RockContext );
+            // The WebForms block pulled addresses from all families (Person.GetFamilies()),
+            // not just the primary one, so that duplicate candidates who share a secondary
+            // family still show their matching addresses.
+            var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
-            var pageParameterPersonId = RequestContext.GetPageParameter( PageParameterKey.PersonId );
-            var isPersonIdHashed = !int.TryParse( pageParameterPersonId, out int personId );
-            if ( isPersonIdHashed )
+            var personDuplicateService = new PersonDuplicateService( rockContext );
+
+            var personId = RequestContext.PageParameterAsId( PageParameterKey.PersonId );
+            if ( personId == 0 )
             {
-                var unhashedKey = Rock.Utility.IdHasher.Instance.GetId( pageParameterPersonId );
-
-                if ( !unhashedKey.HasValue )
-                {
-                    return Enumerable.Empty<PersonDuplicateWrapper>().AsQueryable();
-                }
-                personId = unhashedKey.Value;
+                return Enumerable.Empty<PersonDuplicateWrapper>().AsQueryable();
             }
 
             //// Take duplicates that aren't confirmed as NotDuplicate and aren't IgnoreUntilScoreChanges.
+            //// Exclude rows where both aliases resolve to the same Person.
             var query = personDuplicateService.Queryable()
-                .Where( pd => pd.PersonAlias.PersonId == personId && !pd.IsConfirmedAsNotDuplicate && !pd.IgnoreUntilScoreChanges );
+                .Where( pd => pd.PersonAlias.PersonId == personId
+                    && pd.PersonAlias.PersonId != pd.DuplicatePersonAlias.PersonId
+                    && !pd.IsConfirmedAsNotDuplicate
+                    && !pd.IgnoreUntilScoreChanges );
 
             // Don't include records where both the Person and Duplicate are inactive
             if ( this.GetAttributeValue( AttributeKey.IncludeInactive ).AsBoolean() == false )
@@ -220,20 +195,6 @@ namespace Rock.Blocks.Crm
                     {
                         DuplicateRecordId = pd.Id,
                         ConfidenceScore = pd.ConfidenceScore,
-                        Person = new PersonProjection
-                        {
-                            PersonId = pd.PersonAlias.Person.Id,
-                            PersonCampus = pd.PersonAlias.Person.PrimaryCampus.Name,
-                            PersonAccountProtectionProfile = ( int ) pd.PersonAlias.Person.AccountProtectionProfile,
-                            PersonRecordSourceValueId = pd.PersonAlias.Person.RecordSourceValueId,
-                            PersonNickName = pd.PersonAlias.Person.NickName,
-                            PersonLastName = pd.PersonAlias.Person.LastName,
-                            PersonSuffixValueId = pd.PersonAlias.Person.SuffixValueId,
-                            PersonRecordTypeValueId = pd.PersonAlias.Person.RecordTypeValueId,
-                            PersonEmail = pd.PersonAlias.Person.Email,
-                            PersonGender = ( int ) pd.PersonAlias.Person.Gender,
-                            PersonAge = pd.PersonAlias.Person.Age,
-                        },
                         DuplicatePerson = new PersonProjection
                         {
                             PersonId = pd.DuplicatePersonAlias.Person.Id,
@@ -248,37 +209,19 @@ namespace Rock.Blocks.Crm
                             PersonGender = ( int ) pd.DuplicatePersonAlias.Person.Gender,
                             PersonAge = pd.DuplicatePersonAlias.Person.Age,
                         },
-                        PersonGroupLocations = pd.PersonAlias.Person.PrimaryFamily.GroupLocations
+                        DuplicatePersonGroupLocations = pd.DuplicatePersonAlias.Person.Members
+                            .Where( gm => gm.Group.GroupTypeId == familyGroupTypeId )
+                            .SelectMany( gm => gm.Group.GroupLocations )
+                            .OrderByDescending( gl => gl.IsMappedLocation )
+                            .ThenBy( gl => gl.Id )
                             .Select( gl => new GroupLocationProjection
                             {
                                 GroupLocationTypeValue = gl.GroupLocationTypeValue != null ? gl.GroupLocationTypeValue.Value : string.Empty,
-                                Street1 = gl.Location != null ? gl.Location.Street1 : string.Empty,
-                                Street2 = gl.Location != null ? gl.Location.Street2 : string.Empty,
-                                City = gl.Location != null ? gl.Location.City : string.Empty,
-                                State = gl.Location != null ? gl.Location.State : string.Empty,
-                                PostalCode = gl.Location != null ? gl.Location.PostalCode : string.Empty
-                            } )
-                            .ToList(),
-                        DuplicatePersonGroupLocations = pd.DuplicatePersonAlias.Person.PrimaryFamily.GroupLocations
-                            .Select( gl => new GroupLocationProjection
-                            {
-                                GroupLocationTypeValue = gl.GroupLocationTypeValue != null ? gl.GroupLocationTypeValue.Value : string.Empty,
-                                Street1 = gl.Location != null ? gl.Location.Street1 : string.Empty,
-                                Street2 = gl.Location != null ? gl.Location.Street2 : string.Empty,
-                                City = gl.Location != null ? gl.Location.City : string.Empty,
-                                State = gl.Location != null ? gl.Location.State : string.Empty,
-                                PostalCode = gl.Location != null ? gl.Location.PostalCode : string.Empty
-                            } )
-                            .ToList(),
-                        PersonPhoneNumbers = pd.PersonAlias.Person.PhoneNumbers
-                            .Select( pn => new PhoneNumberProjection
-                            {
-                                PhoneNumberTypeValue = pn.NumberTypeValue != null ? pn.NumberTypeValue.Value : string.Empty,
-                                PhoneNumber = pn.NumberFormatted != null ? pn.NumberFormatted : string.Empty
+                                Location = gl.Location
                             } )
                             .ToList(),
                         DuplicatePersonPhoneNumbers = pd.DuplicatePersonAlias.Person.PhoneNumbers
-                            .Select( pn => new PhoneNumberProjection
+                            .Select( pn => new PhoneNumberDto
                             {
                                 PhoneNumberTypeValue = pn.NumberTypeValue != null ? pn.NumberTypeValue.Value : string.Empty,
                                 PhoneNumber = pn.NumberFormatted != null ? pn.NumberFormatted : string.Empty
@@ -294,13 +237,10 @@ namespace Rock.Blocks.Crm
         /// <inheritdoc/>
         protected override IQueryable<PersonDuplicateWrapper> GetOrderedListQueryable( IQueryable<PersonDuplicateWrapper> query, RockContext rockContext )
         {
-            if ( !query.Any() )
-            {
-                return query;
-            }
-
             return query
-                   .OrderBy( x => x.Projection.ConfidenceScore );
+                .OrderByDescending( x => x.Projection.ConfidenceScore )
+                .ThenBy( x => x.Projection.DuplicatePerson.PersonLastName )
+                .ThenBy( x => x.Projection.DuplicatePerson.PersonNickName );
         }
 
         /// <inheritdoc/>
@@ -308,101 +248,129 @@ namespace Rock.Blocks.Crm
         {
             var wrappers = queryable.ToList();
 
-            if ( !wrappers.Any() )
-            {
-                return wrappers;
-            }
-
-            PersonDuplicateProjection projection;
             foreach ( var wrapper in wrappers )
             {
-                var dto = new PersonDuplicateDetailDto();
-                projection = wrapper.Projection;
-
-                // Replace lines 320-330 in GetListItems with the following:
-
-                dto.DuplicateRecordIdKey = projection.DuplicateRecordIdKey;
-                dto.PersonIdKey = projection.DuplicatePerson.PersonIdKey;
-                dto.IsDuplicateRow = true;
-                dto.ConfidenceScore = projection.ConfidenceScore ?? 0.0;
-                dto.Campus = projection.DuplicatePerson.PersonCampus;
-                dto.AccountProtectionProfile = projection.DuplicatePerson.PersonAccountProtectionProfile;
-                dto.RecordSource = GetRecordSourceValue( projection.DuplicatePerson.PersonRecordSourceValueId );
-                dto.FullName = GetPersonFullName( projection.DuplicatePerson );
-                dto.Email = projection.DuplicatePerson.PersonEmail;
-                dto.Gender = projection.DuplicatePerson.PersonGender == 0 ? "" : ( ( Gender ) projection.DuplicatePerson.PersonGender ).ToStringSafe();
-                dto.Age = projection.DuplicatePerson.PersonAge.ToStringSafe();
-
-                foreach ( var groupLocation in projection.DuplicatePersonGroupLocations )
+                var projection = wrapper.Projection;
+                wrapper.Dto = new PersonDuplicateDetailDto
                 {
-                    var addressDto = new AddressDto
+                    DuplicateRecordIdKey = projection.DuplicateRecordIdKey,
+                    PersonIdKey = projection.DuplicatePerson.PersonIdKey,
+                    IsDuplicateRow = true,
+                    ConfidenceScore = projection.ConfidenceScore ?? 0.0,
+                    Campus = projection.DuplicatePerson.PersonCampus,
+                    AccountProtectionProfile = projection.DuplicatePerson.PersonAccountProtectionProfile,
+                    RecordSource = GetRecordSourceValue( projection.DuplicatePerson.PersonRecordSourceValueId ),
+                    FullName = GetPersonFullName( projection.DuplicatePerson ),
+                    Email = projection.DuplicatePerson.PersonEmail,
+                    Gender = projection.DuplicatePerson.PersonGender == 0 ? "" : ( ( Gender ) projection.DuplicatePerson.PersonGender ).ToStringSafe(),
+                    Age = projection.DuplicatePerson.PersonAge,
+                    Addresses = projection.DuplicatePersonGroupLocations.Select( gl => new AddressDto
                     {
-                        GroupLocationTypeValue = groupLocation.GroupLocationTypeValue != null ? groupLocation.GroupLocationTypeValue : string.Empty,
-                        Street1 = groupLocation.Street1,
-                        Street2 = groupLocation.Street2,
-                        City = groupLocation.City,
-                        State = groupLocation.State,
-                        PostalCode = groupLocation.PostalCode
-                    };
-                    if ( dto.Addresses == null )
-                    {
-                        dto.Addresses = new List<AddressDto>();
-                    }
-                    dto.Addresses.Add( addressDto );
-                }
-
-                foreach ( var phoneNumber in projection.DuplicatePersonPhoneNumbers )
-                {
-                    var phoneDto = new PhoneNumberDto
-                    {
-                        PhoneNumberTypeValue = phoneNumber.PhoneNumberTypeValue != null ? phoneNumber.PhoneNumberTypeValue : string.Empty,
-                        PhoneNumber = phoneNumber.PhoneNumber
-                    };
-                    if ( dto.PhoneNumbers == null )
-                    {
-                        dto.PhoneNumbers = new List<PhoneNumberDto>();
-                    }
-                    dto.PhoneNumbers.Add( phoneDto );
-                }
-
-                wrapper.DTO = dto;
+                        GroupLocationTypeValue = gl.GroupLocationTypeValue ?? string.Empty,
+                        FormattedHtmlAddress = gl.Location?.FormattedHtmlAddress ?? string.Empty
+                    } ).ToList(),
+                    PhoneNumbers = projection.DuplicatePersonPhoneNumbers.ToList()
+                };
             }
 
-            var personRecord = new PersonDuplicateWrapper();
-            projection = wrappers.First().Projection;
-            personRecord.DTO = new PersonDuplicateDetailDto
+            // Build the primary person row independently so that it always renders —
+            // even when the target person has zero potential duplicates.
+            var assembledList = new List<PersonDuplicateWrapper>();
+            var primaryRow = BuildPrimaryPersonRow( rockContext );
+            if ( primaryRow != null )
             {
-                DuplicateRecordIdKey = "PRIMARY_PERSON",
-                PersonIdKey = projection.Person.PersonIdKey,
-                IsDuplicateRow = false,
-                ConfidenceScore = 0d,
-                Campus = projection.Person.PersonCampus,
-                AccountProtectionProfile = projection.Person.PersonAccountProtectionProfile,
-                RecordSource = GetRecordSourceValue( projection.Person.PersonRecordSourceValueId ),
-                FullName = GetPersonFullName( projection.Person ),
-                Email = projection.Person.PersonEmail,
-                Gender = projection.Person.PersonGender == 0 ? "" : ( ( Gender ) projection.Person.PersonGender ).ToStringSafe(),
-                Age = projection.Person.PersonAge.ToStringSafe(),
-                Addresses = projection.PersonGroupLocations.Select( gl => new AddressDto
-                {
-                    GroupLocationTypeValue = gl.GroupLocationTypeValue != null ? gl.GroupLocationTypeValue : string.Empty,
-                    Street1 = gl.Street1,
-                    Street2 = gl.Street2,
-                    City = gl.City,
-                    State = gl.State,
-                    PostalCode = gl.PostalCode
-                } ).ToList(),
-                PhoneNumbers = projection.PersonPhoneNumbers.Select( pn => new PhoneNumberDto
-                {
-                    PhoneNumberTypeValue = pn.PhoneNumberTypeValue != null ? pn.PhoneNumberTypeValue : string.Empty,
-                    PhoneNumber = pn.PhoneNumber
-                } ).ToList()
-            };
-
-            var assembledList = new List<PersonDuplicateWrapper> { personRecord };
-            assembledList.AddRange( wrappers.OrderByDescending( w => w.DTO.ConfidenceScore ) );
+                assembledList.Add( primaryRow );
+            }
+            assembledList.AddRange( wrappers );
 
             return assembledList;
+        }
+
+        /// <summary>
+        /// Builds a synthesized wrapper representing the target person (the person
+        /// whose duplicates are being viewed). This row is pinned at the top of the
+        /// grid and is always included in selection so merge/communication actions
+        /// operate against the target person.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <returns>The wrapper for the primary person, or <c>null</c> if the person cannot be resolved.</returns>
+        private PersonDuplicateWrapper BuildPrimaryPersonRow( RockContext rockContext )
+        {
+            var personId = RequestContext.PageParameterAsId( PageParameterKey.PersonId );
+            if ( personId == 0 )
+            {
+                return null;
+            }
+
+            // Mirror the duplicate-query behavior — addresses come from every family
+            // the person belongs to, ordered so the mapped location surfaces first.
+            var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+
+            var primaryProjection = new PersonService( rockContext ).Queryable()
+                .Where( p => p.Id == personId )
+                .Select( p => new
+                {
+                    Person = new PersonProjection
+                    {
+                        PersonId = p.Id,
+                        PersonCampus = p.PrimaryCampus.Name,
+                        PersonAccountProtectionProfile = ( int ) p.AccountProtectionProfile,
+                        PersonRecordSourceValueId = p.RecordSourceValueId,
+                        PersonNickName = p.NickName,
+                        PersonLastName = p.LastName,
+                        PersonSuffixValueId = p.SuffixValueId,
+                        PersonRecordTypeValueId = p.RecordTypeValueId,
+                        PersonEmail = p.Email,
+                        PersonGender = ( int ) p.Gender,
+                        PersonAge = p.Age,
+                    },
+                    GroupLocations = p.Members
+                        .Where( gm => gm.Group.GroupTypeId == familyGroupTypeId )
+                        .SelectMany( gm => gm.Group.GroupLocations )
+                        .OrderByDescending( gl => gl.IsMappedLocation )
+                        .ThenBy( gl => gl.Id )
+                        .Select( gl => new GroupLocationProjection
+                        {
+                            GroupLocationTypeValue = gl.GroupLocationTypeValue != null ? gl.GroupLocationTypeValue.Value : string.Empty,
+                            Location = gl.Location
+                        } ).ToList(),
+                    PhoneNumbers = p.PhoneNumbers.Select( pn => new PhoneNumberDto
+                    {
+                        PhoneNumberTypeValue = pn.NumberTypeValue != null ? pn.NumberTypeValue.Value : string.Empty,
+                        PhoneNumber = pn.NumberFormatted != null ? pn.NumberFormatted : string.Empty
+                    } ).ToList()
+                } )
+                .FirstOrDefault();
+
+            if ( primaryProjection == null )
+            {
+                return null;
+            }
+
+            var person = primaryProjection.Person;
+            return new PersonDuplicateWrapper
+            {
+                Dto = new PersonDuplicateDetailDto
+                {
+                    DuplicateRecordIdKey = "PRIMARY_PERSON",
+                    PersonIdKey = person.PersonIdKey,
+                    IsDuplicateRow = false,
+                    ConfidenceScore = 0d,
+                    Campus = person.PersonCampus,
+                    AccountProtectionProfile = person.PersonAccountProtectionProfile,
+                    RecordSource = GetRecordSourceValue( person.PersonRecordSourceValueId ),
+                    FullName = GetPersonFullName( person ),
+                    Email = person.PersonEmail,
+                    Gender = person.PersonGender == 0 ? "" : ( ( Gender ) person.PersonGender ).ToStringSafe(),
+                    Age = person.PersonAge,
+                    Addresses = primaryProjection.GroupLocations.Select( gl => new AddressDto
+                    {
+                        GroupLocationTypeValue = gl.GroupLocationTypeValue ?? string.Empty,
+                        FormattedHtmlAddress = gl.Location?.FormattedHtmlAddress ?? string.Empty
+                    } ).ToList(),
+                    PhoneNumbers = primaryProjection.PhoneNumbers.ToList()
+                }
+            };
         }
 
         /// <inheritdoc/>
@@ -410,19 +378,19 @@ namespace Rock.Blocks.Crm
         {
             return new GridBuilder<PersonDuplicateWrapper>()
                 .WithBlock( this )
-                .AddTextField( "idKey", a => a.DTO.DuplicateRecordIdKey )
-                .AddTextField( "personIdKey", a => a.DTO.PersonIdKey )
-                .AddField( "isDuplicateRow", a => a.DTO.IsDuplicateRow )
-                .AddField( "confidenceScore", a => a.DTO.ConfidenceScore )
-                .AddTextField( "campus", a => a.DTO.Campus )
-                .AddField( "accountProtectionProfile", a => a.DTO.AccountProtectionProfile )
-                .AddTextField( "recordSource", a => a.DTO.RecordSource )
-                .AddTextField( "fullName", a => a.DTO.FullName )
-                .AddTextField( "email", a => a.DTO.Email )
-                .AddTextField( "gender", a => a.DTO.Gender )
-                .AddTextField( "age", a => a.DTO.Age )
-                .AddField( "addresses", a => a.DTO.Addresses )
-                .AddField( "phoneNumbers", a => a.DTO.PhoneNumbers );
+                .AddTextField( "idKey", a => a.Dto.DuplicateRecordIdKey )
+                .AddTextField( "personIdKey", a => a.Dto.PersonIdKey )
+                .AddField( "isDuplicateRow", a => a.Dto.IsDuplicateRow )
+                .AddField( "confidenceScore", a => a.Dto.ConfidenceScore )
+                .AddTextField( "campus", a => a.Dto.Campus )
+                .AddField( "accountProtectionProfile", a => a.Dto.AccountProtectionProfile )
+                .AddTextField( "recordSource", a => a.Dto.RecordSource )
+                .AddTextField( "fullName", a => a.Dto.FullName )
+                .AddTextField( "email", a => a.Dto.Email )
+                .AddTextField( "gender", a => a.Dto.Gender )
+                .AddField( "age", a => a.Dto.Age )
+                .AddField( "addresses", a => a.Dto.Addresses )
+                .AddField( "phoneNumbers", a => a.Dto.PhoneNumbers );
         }
 
         /// <summary>
@@ -461,48 +429,33 @@ namespace Rock.Blocks.Crm
         [BlockAction]
         public virtual BlockActionResult MarkNotDuplicate( string personDuplicateIdKey )
         {
-            if ( BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
-              || BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            var personDuplicateService = new PersonDuplicateService( RockContext );
+            var personDuplicate = personDuplicateService.Get( personDuplicateIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( personDuplicate == null )
             {
-                var personDuplicateService = new PersonDuplicateService( RockContext );
-                var personDuplicate = personDuplicateService.Get( personDuplicateIdKey, true );
-                personDuplicate.IsConfirmedAsNotDuplicate = true;
-                if ( RockContext.SaveChanges() > 0 )
-                {
-                    return ActionOk();
-                }
-                else
-                {
-                    return ActionBadRequest( $"Failed to mark IsConfirmedAsNotDuplicate for PersonDuplicate with idKey of '{personDuplicateIdKey}'" );
-                }
+                return ActionNotFound();
             }
 
-            var requesterName = $"{RequestContext.CurrentPerson.NickName} {RequestContext.CurrentPerson.LastName}";
-            return ActionForbidden( $"{requesterName} does not have block edit permission, " +
-                                     "which is needed to mark duplicate as not a duplicate." );
+            personDuplicate.IsConfirmedAsNotDuplicate = true;
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         [BlockAction]
         public virtual BlockActionResult MarkIgnoreDuplicate( string personDuplicateIdKey )
         {
-            if ( BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
-              || BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            var personDuplicateService = new PersonDuplicateService( RockContext );
+            var personDuplicate = personDuplicateService.Get( personDuplicateIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( personDuplicate == null )
             {
-                var personDuplicateService = new PersonDuplicateService( RockContext );
-                var personDuplicate = personDuplicateService.Get( personDuplicateIdKey, true );
-                personDuplicate.IgnoreUntilScoreChanges = true;
-                if ( RockContext.SaveChanges() > 0 )
-                {
-                    return ActionOk();
-                }
-                else
-                {
-                    return ActionBadRequest( $"Failed to mark IgnoreUntilScoreChanges for PersonDuplicate with idKey of '{personDuplicateIdKey}'" );
-                }
+                return ActionNotFound();
             }
 
-            var requesterName = $"{RequestContext.CurrentPerson.NickName} {RequestContext.CurrentPerson.LastName}";
-            return ActionForbidden( $"{requesterName} does not have block edit permission, which is needed to ignore duplicates." );
+            personDuplicate.IgnoreUntilScoreChanges = true;
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         #endregion Block Actions
@@ -523,21 +476,19 @@ namespace Rock.Blocks.Crm
         /// <summary>
         /// Gets or sets the projection containing detailed information about the person duplicate.
         /// </summary>
-        public PersonDuplicateProjection Projection = new PersonDuplicateProjection();
+        public PersonDuplicateProjection Projection { get; set; } = new PersonDuplicateProjection();
 
         /// <summary>
         /// Gets or sets the data transfer object (DTO) containing formatted details for the person duplicate.
         /// </summary>
-        public PersonDuplicateDetailDto DTO = new PersonDuplicateDetailDto();
+        public PersonDuplicateDetailDto Dto { get; set; } = new PersonDuplicateDetailDto();
     }
 
     /// <summary>
-    /// Represents a projection of a potential duplicate person record, including details about the original and
-    /// duplicate person.
+    /// Represents a projection of a potential duplicate person record, carrying the
+    /// confidence score and the detail fields needed to render the duplicate side of
+    /// a row in the grid.
     /// </summary>
-    /// <remarks>This class is used to store and manage information about a person and their potential
-    /// duplicate, including identifiers, personal details, and contact information. It provides properties for both the
-    /// original person and the duplicate, allowing for comparison and analysis of potential duplicates.</remarks>
     public class PersonDuplicateProjection
     {
         /// <summary>
@@ -555,14 +506,10 @@ namespace Rock.Blocks.Crm
         /// </summary>
         public double? ConfidenceScore { get; set; }
 
-        public PersonProjection Person { get; set; }
-
-        public PersonProjection DuplicatePerson { get; set; }
-
         /// <summary>
-        /// Gets or sets the collection of group locations associated with the original person.
+        /// Gets or sets the duplicate person details.
         /// </summary>
-        public ICollection<GroupLocationProjection> PersonGroupLocations { get; set; }
+        public PersonProjection DuplicatePerson { get; set; }
 
         /// <summary>
         /// Gets or sets the collection of group locations associated with the duplicate person.
@@ -570,14 +517,9 @@ namespace Rock.Blocks.Crm
         public ICollection<GroupLocationProjection> DuplicatePersonGroupLocations { get; set; }
 
         /// <summary>
-        /// Gets or sets the collection of phone numbers associated with the original person.
-        /// </summary>
-        public ICollection<PhoneNumberProjection> PersonPhoneNumbers { get; set; }
-
-        /// <summary>
         /// Gets or sets the collection of phone numbers associated with the duplicate person.
         /// </summary>
-        public ICollection<PhoneNumberProjection> DuplicatePersonPhoneNumbers { get; set; }
+        public ICollection<PhoneNumberDto> DuplicatePersonPhoneNumbers { get; set; }
     }
 
     /// <summary>
@@ -651,11 +593,12 @@ namespace Rock.Blocks.Crm
     }
 
     /// <summary>
-    /// Represents a projection of a group location, including address details and location type.
+    /// Represents a projection of a group location, carrying the full
+    /// <see cref="Rock.Model.Location"/> entity so callers can access the
+    /// locale-aware <see cref="Rock.Model.Location.FormattedHtmlAddress"/>
+    /// (which honors the country-specific AddressFormat Lava template and any
+    /// Location attribute values the template references).
     /// </summary>
-    /// <remarks>This class provides properties to store and retrieve information about a group's location,
-    /// such as the type of location, street address, city, state, and postal code. It is useful for applications that
-    /// need to manage or display group location data.</remarks>
     public class GroupLocationProjection
     {
         /// <summary>
@@ -664,47 +607,9 @@ namespace Rock.Blocks.Crm
         public string GroupLocationTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the first line of the street address.
+        /// Gets or sets the materialized Location entity for this group location.
         /// </summary>
-        public string Street1 { get; set; }
-
-        /// <summary>
-        /// Gets or sets the second line of the street address.
-        /// </summary>
-        public string Street2 { get; set; }
-
-        /// <summary>
-        /// Gets or sets the city of the address.
-        /// </summary>
-        public string City { get; set; }
-
-        /// <summary>
-        /// Gets or sets the state or province of the address.
-        /// </summary>
-        public string State { get; set; }
-
-        /// <summary>
-        /// Gets or sets the postal code of the address.
-        /// </summary>
-        public string PostalCode { get; set; }
-    }
-
-    /// <summary>
-    /// Represents a projection of a phone number with its associated type.
-    /// </summary>
-    /// <remarks>This class is used to encapsulate a phone number and its type, allowing for easy manipulation
-    /// and storage of phone number data in applications.</remarks>
-    public class PhoneNumberProjection
-    {
-        /// <summary>
-        /// Gets or sets the defined value representing the type of phone number.
-        /// </summary>
-        public string PhoneNumberTypeValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the phone number in string format.
-        /// </summary>
-        public string PhoneNumber { get; set; }
+        public Rock.Model.Location Location { get; set; }
     }
 
     /// <summary>
@@ -755,9 +660,9 @@ namespace Rock.Blocks.Crm
         /// </summary>
         public string Gender { get; set; }
         /// <summary>
-        /// Gets or sets the age of the person as a string.
+        /// Gets or sets the age of the person.
         /// </summary>
-        public string Age { get; set; }
+        public int? Age { get; set; }
         /// <summary>
         /// Gets or sets the list of addresses associated with the person.
         /// </summary>
@@ -777,34 +682,16 @@ namespace Rock.Blocks.Crm
     public class AddressDto
     {
         /// <summary>
-        /// Gets or sets the defined value representing the type of number.
+        /// Gets or sets the defined value representing the type of group location (e.g. Home, Work).
         /// </summary>
         public string GroupLocationTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the phone number in string format.
+        /// Gets or sets the locale-aware HTML-formatted address. Rendered to the
+        /// client as-is via <c>v-html</c>; sourced server-side from
+        /// <see cref="Rock.Model.Location.FormattedHtmlAddress"/>.
         /// </summary>
-        public string Street1 { get; set; }
-
-        /// <summary>
-        /// Gets or sets the phone number in string format.
-        /// </summary>
-        public string Street2 { get; set; }
-
-        /// <summary>
-        /// Gets or sets the phone number in string format.
-        /// </summary>
-        public string City { get; set; }
-
-        /// <summary>
-        /// Gets or sets the phone number in string format.
-        /// </summary>
-        public string State { get; set; }
-
-        /// <summary>
-        /// Gets or sets the phone number in string format.
-        /// </summary>
-        public string PostalCode { get; set; }
+        public string FormattedHtmlAddress { get; set; }
     }
 
     /// <summary>

@@ -18,7 +18,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
-import { ConfigurationValueKey } from "./connectionStateField.partial";
+import { ConfigurationKey } from "./connectionStateField.partial";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -35,11 +35,11 @@ export const EditComponent = defineComponent({
         // The internal value used by the text editor.
         const internalValue = ref<string>("");
         // The connection state options
-        const options = JSON.parse(props.configurationValues[ConfigurationValueKey.Options] ?? "[]") as ListItemBag[];
+        const options = JSON.parse(props.configurationValues[ConfigurationKey.Options] ?? "[]") as ListItemBag[];
 
         // The repeat columns configuration value.
         const repeatColumns = computed((): number => {
-            const repeatColumns = toNumberOrNull(props.configurationValues[ConfigurationValueKey.RepeatColumns]);
+            const repeatColumns = toNumberOrNull(props.configurationValues[ConfigurationKey.RepeatColumns]);
             return repeatColumns ?? 4;
         });
 
@@ -95,10 +95,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
+            newValue[ConfigurationKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns]);
+            const anyValueChanged = newValue[ConfigurationKey.RepeatColumns] !== (props.modelValue[ConfigurationKey.RepeatColumns]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -125,13 +125,13 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
+            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationKey.RepeatColumns]);
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
+        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
 
         return {
             repeatColumns,

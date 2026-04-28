@@ -42,7 +42,7 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="General Settings" icon="ti ti-settings">
+        <ContentSection title="General Settings" icon="ti ti-settings" :order="1">
             <ContentStack title="Step Configuration" description="Define the type and purpose of this step, and specify if any other steps must be completed first.">
                 <RadioButtonList label="Engagement Type"
                                  v-model="engagementType"
@@ -97,14 +97,14 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection v-if="hasAttributes" title="Type Attributes" icon="ti ti-binary-tree-2">
+        <ContentSection v-if="hasAttributes" title="Type Attributes" icon="ti ti-binary-tree-2" :order="2">
             <ContentStack title="Step Type Attributes"
                           description="Set the values for the Step Type Attributes configured from the Step Program level.">
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="3" />
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Step Attributes" icon="ti ti-route-2">
+        <ContentSection title="Step Attributes" icon="ti ti-route-2" :order="3">
             <ContentStack>
                 <Grid :definition="props.modelValue.bag?.stepTypeAttributesGridDefinition ?? undefined"
                       :data="attributesGridDataSource"
@@ -153,7 +153,7 @@
             </Modal>
         </ContentSection>
 
-        <ContentSection title="Workflows" icon="ti ti-settings-cog">
+        <ContentSection v-if="store.state.trailblazerMode" title="Workflows" icon="ti ti-settings-cog" :order="4">
             <ContentStack>
                 <Grid :definition="props.modelValue.bag?.workflowTriggerGridDefinition ?? undefined"
                       :data="workflowTriggersGridDataSource"
@@ -210,7 +210,7 @@
             </Modal>
         </ContentSection>
 
-        <ContentSection title="Advanced Settings" icon="ti ti-adjustments-cog">
+        <ContentSection v-if="store.state.trailblazerMode" title="Advanced Settings" icon="ti ti-adjustments-cog" :order="5">
             <ContentStack title="Advanced Settings" description="Configure advanced features for this Step Type. Use these settings to define how step data is auto-completed, customize the display content with Lava templates, and control whether manual edits are allowed.">
                 <div class="row">
                     <div class="col-md-6">
@@ -229,7 +229,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-12">
-                        <CodeEditor v-model="cardLavaTemplate"
+                        <CodeEditor v-if="store.state.trailblazerMode" v-model="cardLavaTemplate"
                                     :editorHeight="200"
                                     mode="lava"
                                     label="Card Content Lava Template"
@@ -245,6 +245,7 @@
 </template>
 <script setup lang="ts">
     import { PropType, ref, watch, computed, reactive } from "vue";
+    import { useStore } from "@Obsidian/PageState";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
@@ -298,7 +299,7 @@
     }>();
 
     // #region Values
-
+    const store = useStore();
     const attributes = ref(props.modelValue.bag?.attributes ?? {});
     const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");

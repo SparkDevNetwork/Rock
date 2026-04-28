@@ -1,0 +1,383 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Transfer Request"
+           :isSaveButtonDisabled="isSaving"
+           saveText="Save"
+           @save="onSave">
+        <Loading v-if="isLoading" :isLoading="isLoading" />
+        <template v-else>
+            <NotificationBox v-if="warningMessage"
+                             alertType="warning"
+                             dismissible
+                             @dismiss="warningMessage = null">
+                {{ warningMessage }}
+            </NotificationBox>
+            <NotificationBox v-if="!isNullOrWhiteSpace(errorMessage)"
+                             alertType="danger"
+                             dismissible
+                             @dismiss="emit('dismissErrorMessage')">
+                {{ errorMessage }}
+            </NotificationBox>
+            <template v-if="!isInSearchMode">
+                <div class="row d-flex align-items-end">
+                    <div class="col-md-6">
+                        <DropDownList v-model="selectedOpportunity"
+                                      :items="opportunityItems"
+                                      label="Opportunity"
+                                      :showBlankItem="false" />
+                    </div>
+                    <div v-if="!isBulkTransfer" class="col-md-6 mb-spacing-md pl-spacing-none">
+                        <RockButton :btnType="BtnType.Default"
+                                    @click="setSearchMode(true)"
+                                    isSquare>
+                            <i class="ti ti-search"></i>
+                        </RockButton>
+                    </div>
+                </div>
+                <div v-if="selectedOpportunityDetails?.showCampusOnTransfer" class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="selectedCampus"
+                                      :items="selectedOpportunityDetails?.campuses ?? []"
+                                      label="Campus" />
+                    </div>
+                </div>
+                <div v-if="selectedOpportunityDetails?.showStatusOnTransfer" class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="selectedStatus"
+                                      :items="transferDetails?.statuses ?? []"
+                                      label="Status"
+                                      :showBlankItem="false" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <RadioButtonList v-model="selectedConnectorOption"
+                                         :items="radioConnectorItems"
+                                         label="Connector" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ConditionalWell v-if="selectedConnectorOption === 'select'">
+                            <DropDownList v-model="selectedConnector"
+                                          :items="transferDetails?.connectorItems ?? []"
+                                          label="Select Connector"
+                                          :showBlankItem="false"
+                                          :enhanceForLongLists="true" />
+                        </ConditionalWell>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <TextBox v-model="note"
+                                 textMode="multiline"
+                                 label="Note" />
+                    </div>
+                </div>
+                <RequestTable v-if="isBulkTransfer"
+                              :requestDetails="requestDetails"
+                              :viewOptions="viewOptions"
+                              isConnectorVisible />
+            </template>
+            <template v-else>
+                <ContentSectionContainer :sidebar="false">
+                    <ContentSection light
+                                    overflowText="Show Filters">
+                        <ContentStack>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <TextBox v-model="searchFilter"
+                                             label="Search"
+                                             isClearable />
+                                </div>
+                            </div>
+                        </ContentStack>
+                        <template #overflow>
+                            <CheckBoxList v-model="selectedCampusFilter"
+                                          :items="transferDetails?.campuses ?? []"
+                                          label="Campus" />
+                            <AttributeValuesContainer v-model="selectedAttributeValueFilters"
+                                                      :attributes="transferDetails?.attributes ?? {}"
+                                                      isEditMode
+                                                      :numberOfColumns="1" />
+                        </template>
+                    </ContentSection>
+                    <template v-for="opportunity in filteredOpportunities">
+                        <ContentSection :title="opportunity.name ?? ''"
+                                        :icon="opportunity.iconCssClass ?? ''"
+                                        :disableCollapse="!!transferDetails?.connectionOpportunities && transferDetails.connectionOpportunities.length <= 3">
+                            <template #headerActions>
+                                <RockButton :btnType="BtnType.Default"
+                                            @click="onSelectOpportunity(opportunity.guid)">
+                                    <i class="ti ti-circle-check"></i> Select
+                                </RockButton>
+                            </template>
+                            <ContentStack>
+                                <template #header>
+                                    <img class="rounded" :src="opportunity.photoUrl ?? ''" width="200" height="200" />
+                                </template>
+                                <h5>Opportunity Description</h5>
+                                <div v-html="opportunity.description"></div>
+                            </ContentStack>
+                        </ContentSection>
+                    </template>
+                </ContentSectionContainer>
+            </template>
+        </template>
+    </Modal>
+</template>
+
+<style scoped>
+.gap-xs {
+    gap: var(--spacing-xsmall)
+}
+</style>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import RequestTable from "./requestTable.partial.obs";
+    import { ref, PropType, watch, computed } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { TransferConnectionRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/transferConnectionRequestBag";
+    import { TransferConnectionRequestDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/transferConnectionRequestDetailsBag";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { BulkRequestViewBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/bulkRequestViewBag";
+    import { ViewOptions } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isLoading: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        transferDetails: {
+            type: Object as PropType<TransferConnectionRequestDetailsBag | undefined>,
+            required: true
+        },
+
+        isSaving: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        errorMessage: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        isBulkTransfer: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        requestDetails: {
+            type: Array as PropType<BulkRequestViewBag[]>,
+            default: []
+        },
+
+        viewOptions: {
+            type: Object as PropType<ViewOptions>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "fetchConnectorOptions", connectionOpportunityGuid: string, campusGuid: string): void;
+        (e: "transfer", value: TransferConnectionRequestBag): void;
+        (e: "close"): void;
+        (e: "dismissErrorMessage"): void;
+    }>();
+
+    const warningMessage = ref();
+    const isInSearchMode = ref<boolean>(false);
+
+    const selectedOpportunity = ref();
+    const selectedStatus = ref();
+    const selectedCampus = ref();
+    const selectedConnectorOption = ref<string>("default");
+    const selectedConnector = ref();
+    const note = ref<string>("");
+
+    // Filters
+    const searchFilter = ref();
+    const selectedCampusFilter = ref();
+    const selectedAttributeValueFilters = ref();
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+
+    const opportunityItems = computed(() => props.transferDetails?.connectionOpportunities?.map(o => <ListItemBag>{
+        text: o.name,
+        value: o.guid
+    }));
+
+    const selectedOpportunityDetails = computed(() => props.transferDetails?.connectionOpportunities?.find(o => o.guid === selectedOpportunity.value));
+
+    const radioConnectorItems = computed(() => {
+        var currentConnectorText = props.isBulkTransfer ? "Current Connector" : `Current Connector: ${props.transferDetails?.currentConnectorName}`;
+        return <ListItemBag[]>[
+            {
+                text: `Default Connector for ${selectedOpportunityDetails.value?.name}`,
+                value: "default"
+            },
+            {
+                text: currentConnectorText,
+                value: "current"
+            },
+            {
+                text: "Select Connector",
+                value: "select"
+            },
+            {
+                text: "No Connector",
+                value: "none"
+            }
+        ];
+    });
+
+    const filteredOpportunities = computed(() => {
+        let opportunities = props.transferDetails?.connectionOpportunities ?? [];
+
+        if (!isNullOrWhiteSpace(searchFilter.value)) {
+            const filter = searchFilter.value.toLowerCase();
+            opportunities = opportunities.filter(o => o.name?.toLowerCase().includes(filter));
+        }
+
+        const selectedCampuses = selectedCampusFilter.value;
+        if (selectedCampuses && selectedCampuses.length > 0) {
+            opportunities = opportunities.filter(o => o.campuses?.some(c => selectedCampuses.includes(c.value ?? "")));
+        }
+
+        const selectedAttributeValues = selectedAttributeValueFilters.value as Record<string, string> | undefined;
+        if (selectedAttributeValues && props.transferDetails?.attributes) {
+            opportunities = opportunities.filter(o =>
+                areAttributeFiltersMet(props.transferDetails!.attributes!, selectedAttributeValues, o.attributeValues ?? {})
+            );
+        }
+
+        return opportunities;
+    });
+
+    function onSelectOpportunity(value: string): void {
+        selectedOpportunity.value = value;
+        setSearchMode(false);
+    }
+
+    /**
+     * Checks if all attribute filters match the entity's values.
+     *
+     * @param attributes Attribute definitions.
+     * @param attributeValuesFromFilter Filter values.
+     * @param attributeValuesFromEntity Entity values to check.
+     * @returns True if all filters are matched.
+     */
+    function areAttributeFiltersMet(attributes: Record<string, PublicAttributeBag>, attributeValuesFromFilter: Record<string, string>, attributeValuesFromEntity: Record<string, string>): boolean {
+        return Object.keys(attributeValuesFromFilter).every(attributeKey => {
+            // If we can't find the key in attributes, then it is not being displayed and the filter should not be triggered.
+            if (!attributes[attributeKey]) {
+                return true;
+            }
+
+            const fieldType = getFieldType(attributes[attributeKey].fieldTypeGuid);
+
+            if (!fieldType) {
+                return false;
+            }
+
+            if (!attributeValuesFromFilter[attributeKey]) {
+                return true;
+            }
+
+            const comparisonValue: ComparisonValue = {
+                value: attributeValuesFromFilter[attributeKey],
+                comparisonType: ComparisonType.EqualTo
+            };
+
+            // TODO - Forcing equality comparison does not work on several field types. I'll come back to this if I have time at the end. (This did not work at all in Webforms)
+
+            var result = fieldType.doesValueMatchFilter(attributeValuesFromEntity[attributeKey], comparisonValue, attributes[attributeKey].configurationValues ?? {});
+            return result;
+        });
+    }
+
+    function onSave(): void {
+        if (selectedOpportunity.value === props.transferDetails?.currentConnectionOpportunityGuid) {
+            warningMessage.value = "This request already belongs to the selected opportunity. Please choose a different opportunity to transfer to.";
+            return;
+        }
+
+        const bag: TransferConnectionRequestBag = {
+            campusGuid: selectedCampus.value,
+            newConnectionOpportunityGuid: selectedOpportunity.value,
+            connectionRequestIdKey: props.transferDetails?.connectionRequestIdKey,
+            statusGuid: selectedStatus.value,
+            connectorOption: selectedConnectorOption.value,
+            connectorPersonAliasGuid: selectedConnector.value,
+            note: note.value
+        };
+
+        emit("transfer", bag);
+    }
+
+    function setSearchMode(value: boolean): void {
+        isInSearchMode.value = value;
+    }
+
+    function resetModal(): void {
+        warningMessage.value = undefined;
+        selectedConnectorOption.value = "default";
+        note.value = "";
+
+        isInSearchMode.value = false;
+        searchFilter.value = undefined;
+        selectedCampusFilter.value = undefined;
+        selectedAttributeValueFilters.value = undefined;
+    }
+
+    watch([selectedOpportunity, selectedCampus], () => {
+        let campus = props.transferDetails?.currentCampusGuid;
+        if (selectedOpportunityDetails.value?.showCampusOnTransfer) {
+            campus = selectedCampus.value;
+        }
+        emit("fetchConnectorOptions", selectedOpportunity.value ?? "", campus ?? "");
+    });
+
+    watch(isVisible, (visible) => {
+        if (!visible) {
+            resetModal();
+            emit("close");
+        }
+    });
+
+    watch(() => props.transferDetails, () => {
+        selectedOpportunity.value = props.transferDetails?.currentConnectionOpportunityGuid ?? opportunityItems.value?.[0]?.value;
+        selectedStatus.value = props.transferDetails?.currentConnectionStatusGuid;
+        selectedCampus.value = props.transferDetails?.currentCampusGuid ?? "";
+        selectedConnector.value = props.transferDetails?.currentConnectorPersonAliasGuid;
+    });
+
+</script>

@@ -139,7 +139,15 @@ namespace Rock.Blocks.Cms
                 // Existing entity was found, prepare for view mode by default.
                 if ( isViewable )
                 {
-                    box.Entity = GetEntityBagForView( entity );
+                    if ( IsThemeFound( entity ) )
+                    {
+                        box.Entity = GetEntityBagForView( entity );
+                    }
+                    else
+                    {
+                        box.ErrorMessage = $"The theme file ({entity.RootPath}/theme.json) is missing.";
+
+                    }
                 }
                 else
                 {
@@ -471,6 +479,19 @@ namespace Rock.Blocks.Cms
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Determines whether the specified theme is present by checking for the existence of its configuration file.
+        /// </summary>
+        /// <param name="entity">The theme entity to check for.</param>
+        /// <returns>true if the theme's configuration file exists in the expected location; otherwise, false.</returns>
+        private bool IsThemeFound( Theme entity )
+        {
+            var webRoot = RockApp.Current.HostingSettings.WebRootPath;
+            var relRoot = ( entity.RootPath ?? "" ).TrimStart( '\\', '/' ).Replace( '/', '\\' ); // prevent rooted path ignoring webRoot
+            var filePath = Path.Combine( webRoot, relRoot, "theme.json" );
+            return File.Exists( filePath );
         }
 
         /// <summary>

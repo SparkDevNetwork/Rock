@@ -37,7 +37,7 @@ namespace Rock.AI.Agent
     /// - Properties are marked <see langword="internal"/> but included in JSON via <see cref="JsonIncludeAttribute"/> to minimize public surface area.
     /// - This class should not be made public, instead make the IAgentToolResult public.
     /// </remarks>
-    internal sealed class AgentToolResult : IAgentToolResult
+    internal sealed class AgentToolResult
     {
         #region Properties
 
@@ -117,8 +117,8 @@ namespace Rock.AI.Agent
         /// then it will be assigned to <see cref="Results"/>; otherwise to <see cref="Content"/>.
         /// </summary>
         /// <param name="payload">The value to include in the result.</param>
-        /// <returns>A new <see cref="IAgentToolResult"/> instance.</returns>
-        internal static IAgentToolResult Success( object payload )
+        /// <returns>A new <see cref="AgentToolResult"/> instance.</returns>
+        internal static AgentToolResult Success( object payload )
         {
             var result = new AgentToolResult { Status = ToolStatus.Success };
 
@@ -133,8 +133,8 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Creates a <see cref="ToolStatus.Success"/> result with no payload.
         /// </summary>
-        /// <returns>A new <see cref="IAgentToolResult"/> instance.</returns>
-        internal static IAgentToolResult Success()
+        /// <returns>A new <see cref="AgentToolResult"/> instance.</returns>
+        internal static AgentToolResult Success()
         {
             return new AgentToolResult
             {
@@ -146,8 +146,8 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Creates a <see cref="ToolStatus.NoData"/> result with no payload.
         /// </summary>
-        /// <returns>A new <see cref="IAgentToolResult"/> instance.</returns>
-        internal static IAgentToolResult NoData() =>
+        /// <returns>A new <see cref="AgentToolResult"/> instance.</returns>
+        internal static AgentToolResult NoData() =>
             new AgentToolResult
             {
                 Status = ToolStatus.NoData,
@@ -157,8 +157,8 @@ namespace Rock.AI.Agent
         /// Creates a <see cref="ToolStatus.Error"/> result with a single error message.
         /// </summary>
         /// <param name="message">The error message. If <c>null</c> or whitespace, an empty string is added.</param>
-        /// <returns>A new <see cref="IAgentToolResult"/> instance.</returns>
-        internal static IAgentToolResult Error( string message ) =>
+        /// <returns>A new <see cref="AgentToolResult"/> instance.</returns>
+        internal static AgentToolResult Error( string message ) =>
             new AgentToolResult
             {
                 Status = ToolStatus.Error,
@@ -169,8 +169,8 @@ namespace Rock.AI.Agent
         /// Creates a <see cref="ToolStatus.Error"/> result with one or more error messages.
         /// </summary>
         /// <param name="messages">The collection of error messages.</param>
-        /// <returns>A new <see cref="IAgentToolResult"/> instance.</returns>
-        internal static IAgentToolResult Error( IEnumerable<string> messages ) =>
+        /// <returns>A new <see cref="AgentToolResult"/> instance.</returns>
+        internal static AgentToolResult Error( IEnumerable<string> messages ) =>
             new AgentToolResult
             {
                 Status = ToolStatus.Error,
@@ -181,8 +181,13 @@ namespace Rock.AI.Agent
 
         #region Fluent API
 
-        /// <inheritdoc/>
-        public IAgentToolResult WithInstructions( string instructions )
+        /// <summary>
+        /// Adds optional, model-facing guidance to this result and returns the
+        /// same instance. Multiple instructions can be added to a single result.
+        /// </summary>
+        /// <param name="instructions">The guidance text to include.</param>
+        /// <returns>The same <see cref="AgentToolResult"/> instance for further chaining.</returns>
+        public AgentToolResult WithInstructions( string instructions )
         {
             if ( Instructions == null )
             {
@@ -194,10 +199,29 @@ namespace Rock.AI.Agent
             return this;
         }
 
-        /// <inheritdoc/>
-        public IAgentToolResult WithReferenceRoute( IAgentRequestContext context, string text, string route, bool secured = true )
+        /// <summary>
+        /// Adds a reference URL to this result, optionally performing security checks
+        /// before including it. Useful for attaching “learn more” or follow-up links
+        /// to the tool’s response.
+        /// </summary>
+        /// <param name="context">
+        /// The agent request context, used for authorization checks if <paramref name="checkSecurity"/> is true.
+        /// </param>
+        /// <param name="text">
+        /// The display text to show for the reference link (e.g. “View Profile”).
+        /// </param>
+        /// <param name="route">
+        /// The absolute or relative URL of the reference.
+        /// </param>
+        /// <param name="checkSecurity">
+        /// If true, the URL is only included if the current user is authorized for the route.  
+        /// </param>
+        /// <returns>
+        /// The same <see cref="AgentToolResult"/> instance for fluent chaining.
+        /// </returns>
+        public AgentToolResult WithReferenceRoute( AgentRequestContext context, string text, string route, bool checkSecurity = true )
         {
-            bool allowed = !secured || IsAuthorizedForRoute( context, route );
+            bool allowed = !checkSecurity || IsAuthorizedForRoute( context, route );
 
             if ( allowed )
             {
@@ -211,22 +235,35 @@ namespace Rock.AI.Agent
             return this;
         }
 
-        /// <inheritdoc/>
-        public IAgentToolResult WithContent( object payload )
+        /// <summary>
+        /// Sets the content of the result and returns the updated <see cref="AgentToolResult"/> instance.
+        /// </summary>
+        /// <param name="payload">The content to set. This can be any object representing the result's content.</param>
+        /// <returns>The current <see cref="AgentToolResult"/> instance with the updated content.</returns>
+        public AgentToolResult WithContent( object payload )
         {
             SetContent( this, payload );
             return this;
         }
 
-        /// <inheritdoc/>
-        public IAgentToolResult WithHistoryKey( string key )
+        /// <summary>
+        /// Sets the history content key on this result and returns the same instance.
+        /// </summary>
+        /// <param name="key">The key to apply to the history content.</param>
+        /// <returns>The current <see cref="AgentToolResult"/> instance with the updated content.</returns>
+        public AgentToolResult WithHistoryKey( string key )
         {
             HistoryContentKey = key;
             return this;
         }
 
-        /// <inheritdoc/>
-        public IAgentToolResult WithHistoryContent( object value, string key = "" )
+        /// <summary>
+        /// Sets non-serialized history content on this result and returns the same instance.
+        /// </summary>
+        /// <param name="value">The value to store in chat history only.</param>
+        /// <param name="key">The key of the history content.</param>
+        /// <returns>The same <see cref="AgentToolResult"/> instance for further chaining.</returns>
+        public AgentToolResult WithHistoryContent( object value, string key = "" )
         {
             HistoryContent = value;
             HistoryContentKey = key;
@@ -234,22 +271,35 @@ namespace Rock.AI.Agent
             return this;
         }
 
-        /// <inheritdoc/>
-        public IAgentToolResult WithoutHistoryContent()
+        /// <summary>
+        /// Sets the history content to <c>null</c> so that nothing is added to chat history.
+        /// </summary>
+        /// <returns>The same <see cref="AgentToolResult"/> instance for further chaining.</returns>
+        public AgentToolResult WithoutHistoryContent()
         {
             HistoryContent = null;
             return this;
         }
 
-        /// <inheritdoc/>
-        public IAgentToolResult WithMetadata( Dictionary<string, object> meta )
+        /// <summary>
+        /// Attaches metadata to this result and returns the same instance.
+        /// Replaces any existing metadata dictionary.
+        /// </summary>
+        /// <param name="meta">The metadata dictionary to attach.</param>
+        /// <returns>The same <see cref="AgentToolResult"/> instance for further chaining.</returns>
+        public AgentToolResult WithMetadata( Dictionary<string, object> meta )
         {
             Meta = meta;
             return this;
         }
 
-        /// <inheritdoc/>
-        public IAgentToolResult WithMetadata( string key, object value )
+        /// <summary>
+        /// Adds a single metadata entry to this result, creating the dictionary if needed.
+        /// </summary>
+        /// <param name="key">The metadata key.</param>
+        /// <param name="value">The metadata value.</param>
+        /// <returns>The same <see cref="AgentToolResult"/> instance for further chaining.</returns>
+        public AgentToolResult WithMetadata( string key, object value )
         {
             if ( Meta == null )
             {
@@ -277,7 +327,7 @@ namespace Rock.AI.Agent
         /// <param name="context">The context of the current request.</param>
         /// <param name="route">The route to be checked.</param>
         /// <returns><c>true</c> if the route was found and the requesting person is authorized; otherwise, <c>false</c>.</returns>
-        private static bool IsAuthorizedForRoute( IAgentRequestContext context, string route )
+        private static bool IsAuthorizedForRoute( AgentRequestContext context, string route )
         {
             try
             {
@@ -324,7 +374,7 @@ namespace Rock.AI.Agent
         /// <param name="context">The context of the current request.</param>
         /// <param name="url">The URL to ben resolved.</param>
         /// <returns>A new string resolved to the proper domain.</returns>
-        private static string ResolveRockUrlIncludeRoot( IAgentRequestContext context, string url )
+        private static string ResolveRockUrlIncludeRoot( AgentRequestContext context, string url )
         {
             var virtualPath = context.ResolveRockUrl( url );
 
@@ -345,11 +395,11 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Sets the content of this result based on the provided payload.
         /// </summary>
-        /// <param name="result">The <see cref="IAgentToolResult"/> to modify.</param>
+        /// <param name="result">The <see cref="AgentToolResult"/> to modify.</param>
         /// <param name="payload">The payload to set as the content.</param>
         private static void SetContent( AgentToolResult result, object payload )
         {
-            if ( IsEnumerablePayload( payload ) )
+            if ( IsArrayTypePayload( payload ) )
             {
                 result.Results = ( IEnumerable ) payload;
             }
@@ -364,13 +414,22 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="payload">The payload to check.</param>
         /// <returns><c>true</c> if the payload implements <see cref="IEnumerable"/> and is not a <see cref="string"/>; otherwise <c>false</c>.</returns>
-        private static bool IsEnumerablePayload( object payload )
+        private static bool IsArrayTypePayload( object payload )
         {
             if ( payload == null )
             {
                 return false;
             }
-            if ( payload is string ) { return false; }
+
+            if ( payload is string )
+            {
+                return false;
+            }
+
+            if ( payload is IDictionary )
+            {
+                return false;
+            }
 
             return payload is IEnumerable;
         }

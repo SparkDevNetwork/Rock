@@ -25,6 +25,7 @@ import { Guid } from "@Obsidian/Types";
 import { CommunicationEntryWizardCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationBag";
 import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
 import { CommunicationEntryWizardCommunicationTemplateListItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateListItemBag";
+import { CommunicationEntryWizardCustomTextBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCustomTextBag";
 import { CommunicationEntryWizardRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardRecipientBag";
 import { SmsFromNumberListItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/smsFromNumberListItemBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -51,6 +52,9 @@ export type CommunicationEntryWizardInitializationBox = {
 
     /** Gets or sets the communication topic values. */
     communicationTopicValues?: ListItemBag[] | null;
+
+    /** Gets or sets the custom text content used by the communication entry wizard. */
+    customText?: CommunicationEntryWizardCustomTextBag | null;
 
     /**
      * Gets or sets the error message. A non-empty value indicates that

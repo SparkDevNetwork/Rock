@@ -85,6 +85,8 @@ export async function isImage(filename: string): Promise<boolean> {
  * the image will be resized accordingly.
  *
  * @param {object} [options] - The resizing options (optional).
+ * @param {number} [options.minWidth] - The minimum allowed width for the image (optional).
+ * @param {number} [options.minHeight] - The minimum allowed height for the image (optional).
  * @param {number} [options.maxWidth] - The maximum allowed width for the image (optional).
  * @param {number} [options.maxHeight] - The maximum allowed height for the image (optional).
  * @returns {(file: File) => File | Promise<File>} A function that processes the given file and returns either the original file or a resized version.
@@ -94,9 +96,16 @@ export async function isImage(filename: string): Promise<boolean> {
  * const resizedFile = await processor(imageFile);
  */
 export function resizeImageFileProcessor({
+    minWidth,
+    minHeight,
     maxWidth,
     maxHeight
-}: { maxWidth?: number; maxHeight?: number } = {}): (file: File) => File | Promise<File> {
+}: {
+    minWidth?: number;
+    minHeight?: number;
+    maxWidth?: number;
+    maxHeight?: number;
+} = {}): (file: File) => File | Promise<File> {
     return (file: File): File | Promise<File> => {
         if (!file.type.startsWith("image/")) {
             // File is not an image.
@@ -105,20 +114,43 @@ export function resizeImageFileProcessor({
 
         return new Promise<File>((resolve, reject) => {
             const img = new Image();
-            img.src = URL.createObjectURL(file);
+            const objectUrl = URL.createObjectURL(file);
+            img.src = objectUrl;
             img.onload = () => {
+                URL.revokeObjectURL(objectUrl);
                 const { width, height } = img;
 
-                if (!maxWidth && !maxHeight) {
+                if (!maxWidth && !maxHeight && !minWidth && !minHeight) {
                     // No constraints provided, return original file.
                     resolve(file);
                     return;
                 }
 
                 // Determine scaling factor to maintain aspect ratio
-                const widthScale = maxWidth ? maxWidth / width : 1;
-                const heightScale = maxHeight ? maxHeight / height : 1;
-                const scaleFactor = Math.min(widthScale, heightScale, 1); // Never upscale
+
+                // Scale needed to meet minimums (may upscale)
+                const minScale = Math.max(
+                    minWidth ? minWidth / width : 0,
+                    minHeight ? minHeight / height : 0,
+                    0
+                );
+
+                // Scale needed to meet maximums (downscale only)
+                const maxScale = Math.min(
+                    maxWidth ? maxWidth / width : Infinity,
+                    maxHeight ? maxHeight / height : Infinity,
+                    1
+                );
+
+                let scaleFactor = 1;
+
+                // Decide which constraint applies
+                if (minScale > 1) {
+                    scaleFactor = minScale;
+                }
+                else if (maxScale < 1) {
+                    scaleFactor = maxScale;
+                }
 
                 if (scaleFactor === 1) {
                     // No resizing needed
@@ -139,6 +171,9 @@ export function resizeImageFileProcessor({
                     return;
                 }
 
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = "high";
+
                 ctx.drawImage(img, 0, 0, newWidth, newHeight);
                 canvas.toBlob(blob => {
                     if (!blob) {
@@ -152,7 +187,10 @@ export function resizeImageFileProcessor({
                 }, file.type);
             };
 
-            img.onerror = () => reject(new Error("Failed to load image"));
+            img.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                reject(new Error("Failed to load image"));
+            };
         });
     };
 }

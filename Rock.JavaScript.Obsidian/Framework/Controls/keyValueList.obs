@@ -12,7 +12,10 @@
                     <span class="key-value-rows">
                         <div v-for="(value, valueIndex) in internalValues" :class="rowClasses">
                             <template v-if="!displayValueFirst">
-                                <input v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
+                                <select v-if="hasKeyOptions" v-model="value.key" :class="keyInputClasses">
+                                    <option v-for="option in keyOptions" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
+                                </select>
+                                <input v-else v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
 
                                 <select v-if="hasValues" v-model="value.value" :class="valueInputClasses">
                                     <option v-for="option in options" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
@@ -25,7 +28,10 @@
                                 </select>
                                 <input v-else v-model="value.value" :class="valueInputClasses" type="text" :placeholder="valuePlaceholder">
 
-                                <input v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
+                                <select v-if="hasKeyOptions" v-model="value.key" :class="keyInputClasses">
+                                    <option v-for="option in keyOptions" :value="option.value" :key="option.value ?? undefined">{{ option.text }}</option>
+                                </select>
+                                <input v-else v-model="value.key" :class="keyInputClasses" type="text" :placeholder="keyPlaceholder">
                             </template>
 
                             <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="ti ti-x"></i></a>
@@ -53,6 +59,11 @@
     const props = defineProps({
         modelValue: {
             type: Array as PropType<KeyValueItem[]>,
+            required: false
+        },
+
+        keyOptions: {
+            type: Array as PropType<ListItemBag[]>,
             required: false
         },
 
@@ -98,7 +109,11 @@
     /** The options to choose from in the drop down list */
     const options = computed((): ListItemBag[] => props.valueOptions ?? []);
 
+    const keyOptions = computed((): ListItemBag[] => props.keyOptions ?? []);
+
     const hasValues = computed((): boolean => options.value.length > 0);
+
+    const hasKeyOptions = computed((): boolean => keyOptions.value.length > 0);
 
     const rowClasses = computed((): string => {
         let classes = "controls controls-row form-control-group";

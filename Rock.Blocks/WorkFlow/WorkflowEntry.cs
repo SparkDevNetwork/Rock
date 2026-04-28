@@ -194,9 +194,16 @@ namespace Rock.Blocks.Workflow
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "02D2DBA8-5300-4367-B15B-E37DFB3F7D1E" )]
-    [Rock.SystemGuid.BlockTypeGuid( SystemGuid.BlockType.OBSIDIAN_WORKFLOW_ENTRY )]
+    [Rock.SystemGuid.BlockTypeGuid( "A8BD05C8-6F89-4628-845B-059E686F089A" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( SystemGuid.BlockType.OBSIDIAN_WORKFLOW_ENTRY )]
     public class WorkflowEntry : RockBlockType, IBreadCrumbBlock
     {
+        #region Properties
+
+        private bool IsAllowingPredictableIds => !PageCache.Layout.Site.DisablePredictableIds;
+
+        #endregion Properties
+
         #region Keys
 
         /// <summary>
@@ -308,9 +315,10 @@ namespace Rock.Blocks.Workflow
 
         private string WorkflowTypePageParameter => PageParameter( PageParameterKey.WorkflowType );
 
-        private int? WorkflowTypeIdPageParameter =>
-            PageParameter( PageParameterKey.WorkflowType ).AsIntegerOrNull()
-            ?? PageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
+        private string WorkflowTypeIdPageParameter =>
+            !string.IsNullOrEmpty( PageParameter( PageParameterKey.WorkflowType ) ) ?
+                PageParameter( PageParameterKey.WorkflowType ) :
+                PageParameter( PageParameterKey.WorkflowTypeId );
 
         private Guid? WorkflowTypeGuidPageParameter =>
             PageParameter( PageParameterKey.WorkflowType ).AsGuidOrNull()
@@ -346,7 +354,15 @@ namespace Rock.Blocks.Workflow
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var workflowId = PageParameter( PageParameterKey.WorkflowId ).AsIntegerOrNull();
+            string workflowIdParam = PageParameter( PageParameterKey.WorkflowId );
+
+            var workflowId = workflowIdParam != "0" ?
+                new WorkflowService( RockContext ).GetSelect(
+                    workflowIdParam,
+                    w => ( int? ) w.Id,
+                    IsAllowingPredictableIds ) :
+                0;
+
             var workflowGuid = PageParameter( PageParameterKey.WorkflowGuid ).AsGuidOrNull();
             var workflow = LoadWorkflow( workflowId, workflowGuid, out var errorMessage );
 
@@ -377,7 +393,11 @@ namespace Rock.Blocks.Workflow
                 this.RequestContext.Response.SetPageTitle( workflow.WorkflowTypeCache.Name );
             }
 
-            var actionId = RequestContext.GetPageParameter( PageParameterKey.ActionId ).AsIntegerOrNull();
+            var actionId = new WorkflowActionService( RockContext ).GetSelect(
+                RequestContext.GetPageParameter( PageParameterKey.ActionId ),
+                wa => ( int? ) wa.Id,
+                IsAllowingPredictableIds );
+
             var initialAction = ProcessWorkflow( workflow, actionId, null, null, null );
 
             return new WorkflowEntryOptionsBag
@@ -404,9 +424,10 @@ namespace Rock.Blocks.Workflow
             {
                 return WorkflowTypeCache.Get( workflowTypeGuidPageParam.Value, this.RockContext );
             }
-            else if ( workflowTypeIdPageParam.HasValue && allowPassingWorkflowTypeId )
+            else if ( !string.IsNullOrEmpty( workflowTypeIdPageParam ) && allowPassingWorkflowTypeId )
             {
-                return WorkflowTypeCache.Get( workflowTypeIdPageParam.Value, this.RockContext );
+                var cacheByKey = WorkflowTypeCache.Get( workflowTypeIdPageParam, IsAllowingPredictableIds );
+                return cacheByKey != null ? WorkflowTypeCache.Get( cacheByKey.Id, this.RockContext ) : null;
             }
             else if ( workflowTypeSlugPageParam.IsNotNullOrWhiteSpace() )
             {
@@ -618,16 +639,22 @@ namespace Rock.Blocks.Workflow
         /// <returns>An instance of <see cref="IEntity"/> if one is available; otherwise <c>null</c>.</returns>
         private IEntity GetInitialWorkflowEntity()
         {
-            var personId = RequestContext.GetPageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
-            var groupId = RequestContext.GetPageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            var person = new PersonService( RockContext ).Get(
+                RequestContext.GetPageParameter( PageParameterKey.PersonId ),
+                IsAllowingPredictableIds );
 
-            if ( personId.HasValue )
+            if ( person != null )
             {
-                return new PersonService( RockContext ).Get( personId.Value );
+                return person;
             }
-            else if ( groupId.HasValue )
+
+            var group = new GroupService( RockContext ).Get(
+                RequestContext.GetPageParameter( PageParameterKey.GroupId ),
+                IsAllowingPredictableIds );
+
+            if ( group != null )
             {
-                return new GroupService( RockContext ).Get( groupId.Value );
+                return group;
             }
 
             return null;
@@ -993,7 +1020,7 @@ namespace Rock.Blocks.Workflow
 
                 if ( !GetAttributeValue( AttributeKey.DisablePassingWorkflowId ).AsBoolean() )
                 {
-                    pageParams.TryAdd( PageParameterKey.WorkflowId, workflow.Id.ToString() );
+                    pageParams.TryAdd( PageParameterKey.WorkflowId, workflow.IdKey );
                 }
 
                 pageParams.TryAdd( PageParameterKey.WorkflowGuid, workflow.Guid.ToString() );
@@ -1341,18 +1368,6 @@ namespace Rock.Blocks.Workflow
                 mobileAddress = familyLocation != null ? Rock.Mobile.MobileHelper.GetMobileAddress( familyLocation ) : null;
             }
 
-            Guid? maritalStatusGuid;
-
-            if ( personEntryPerson != null )
-            {
-                maritalStatusGuid = personEntryPerson.MaritalStatusValue?.Guid;
-            }
-            else
-            {
-                // default to Married if this is a new person
-                maritalStatusGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
-            }
-
             return new WorkflowFormPersonEntry
             {
                 PreHtml = form.PersonEntryPreHtml.ResolveMergeFields( mergeFields ),
@@ -1371,7 +1386,7 @@ namespace Rock.Blocks.Workflow
                     Person = mobilePerson,
                     Spouse = mobileSpouse,
                     Address = mobileAddress,
-                    MaritalStatusGuid = maritalStatusGuid
+                    MaritalStatusGuid = personEntryPerson?.MaritalStatusValue?.Guid
                 }
             };
         }

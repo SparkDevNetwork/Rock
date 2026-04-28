@@ -21,7 +21,7 @@ import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-enum ConfigurationValueKey {
+enum ConfigurationKey {
     ColorControlType = "selectiontype",
     ColorPicker = "Color Picker",
     NamedColor = "Named Color"
@@ -77,7 +77,7 @@ export const EditComponent = defineComponent({
         });
 
         const isNamedPicker = computed((): boolean => {
-            return props.configurationValues[ConfigurationValueKey.ColorControlType] === ConfigurationValueKey.NamedColor;
+            return props.configurationValues[ConfigurationKey.ColorControlType] === ConfigurationKey.NamedColor;
         });
 
         return {
@@ -107,8 +107,8 @@ export const ConfigurationComponent = defineComponent({
         // Define the properties that will hold the current selections.
         const colorControlType = ref("");
         const typeList = [
-            { text: ConfigurationValueKey.ColorPicker, value: ConfigurationValueKey.ColorPicker },
-            { text: ConfigurationValueKey.NamedColor, value: ConfigurationValueKey.NamedColor }
+            { text: ConfigurationKey.ColorPicker, value: ConfigurationKey.ColorPicker },
+            { text: ConfigurationKey.NamedColor, value: ConfigurationKey.NamedColor }
         ];
 
         /**
@@ -124,10 +124,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.ColorControlType] = colorControlType.value ?? ConfigurationValueKey.ColorPicker;
+            newValue[ConfigurationKey.ColorControlType] = colorControlType.value ?? ConfigurationKey.ColorPicker;
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.ColorControlType] !== (props.modelValue[ConfigurationValueKey.ColorControlType] ?? ConfigurationValueKey.ColorPicker);
+            const anyValueChanged = newValue[ConfigurationKey.ColorControlType] !== (props.modelValue[ConfigurationKey.ColorControlType] ?? ConfigurationKey.ColorPicker);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -154,7 +154,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            colorControlType.value = props.modelValue[ConfigurationValueKey.ColorControlType] ?? ConfigurationValueKey.ColorPicker;
+            colorControlType.value = props.modelValue[ConfigurationKey.ColorControlType] ?? ConfigurationKey.ColorPicker;
         }, {
             immediate: true
         });
@@ -170,7 +170,7 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(colorControlType, () => maybeUpdateConfiguration(ConfigurationValueKey.ColorControlType, colorControlType.value || ConfigurationValueKey.ColorPicker));
+        watch(colorControlType, () => maybeUpdateConfiguration(ConfigurationKey.ColorControlType, colorControlType.value || ConfigurationKey.ColorPicker));
 
         return {
             colorControlType,

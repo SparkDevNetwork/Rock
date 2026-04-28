@@ -17,6 +17,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -64,7 +65,7 @@ namespace Rock.Model
             int? contentChannelId = null;
             if ( contentChannelItemId != null )
             {
-                var contentChannelItem = new ContentChannelItemService( ( RockContext ) this.Context ).Get( contentChannelItemId.Value );
+                var contentChannelItem = ContentChannelItemCache.Get( contentChannelItemId.Value );
                 contentChannelId = contentChannelItem?.ContentChannelId;
             }
 

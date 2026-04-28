@@ -334,6 +334,7 @@ namespace Rock.Model
                 Cost = registrant.Cost;
                 DiscountApplies = registrant.DiscountApplies;
                 OnWaitList = registrant.OnWaitList;
+                SignatureDocumentId = registrant.SignatureDocumentId;
 
                 Person person = null;
                 Group family = null;

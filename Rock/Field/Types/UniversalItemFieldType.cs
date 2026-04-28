@@ -356,27 +356,19 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public sealed override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues );
+            return GetTextValue( privateValue, privateConfigurationValues ).EncodeHtml();
         }
 
         /// <inheritdoc/>
         public sealed override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues );
+            return GetTextValue( privateValue, privateConfigurationValues ).EncodeHtml();
         }
 
         /// <inheritdoc/>
         public sealed override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
         {
-            var textValue = GetTextValue( privateValue, privateConfigurationValues );
-
-            return new PersistedValues
-            {
-                TextValue = textValue,
-                HtmlValue = textValue,
-                CondensedTextValue = textValue,
-                CondensedHtmlValue = textValue
-            };
+            return GetSimpleTextPersistedValues( privateValue, privateConfigurationValues );
         }
 
         /// <inheritdoc/>

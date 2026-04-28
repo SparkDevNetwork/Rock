@@ -3,6 +3,8 @@
     <Grid v-if="config.options?.isGridVisible" :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
+          title="Active Registration Instance List"
+          titleIconCssClass="ti ti-file"
           itemTerm="Active Registration Instance"
           :entityTypeGuid="EntityType.RegistrationInstance"
           stickyHeader

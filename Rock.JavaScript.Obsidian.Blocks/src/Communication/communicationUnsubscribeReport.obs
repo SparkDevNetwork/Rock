@@ -17,7 +17,8 @@
 
         <PersonColumn name="recipientPerson"
                       field="recipientPerson"
-                      title="Recipient" />
+                      title="Recipient"
+                      :showAsLink="true" />
 
         <DateColumn name="sendDateTime"
                     field="sendDateTime"

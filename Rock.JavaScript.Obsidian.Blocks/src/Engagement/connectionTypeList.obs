@@ -18,11 +18,13 @@
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
+                    width="20%"
                     visiblePriority="xs" />
 
         <TextColumn name="description"
                     title="Description"
                     field="description"
+                    width="50%"
                     :filter="textValueFilter"
                     visiblePriority="lg" />
 
@@ -30,11 +32,13 @@
                       title="Opportunity Count"
                       field="opportunityCount"
                       :filter="numberValueFilter"
+                      width="20%"
                       visiblePriority="xs" />
 
         <BooleanColumn name="isActive"
-                       title="Is Active"
+                       title="Active"
                        field="isActive"
+                       width="10%"
                        visiblePriority="xs" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />

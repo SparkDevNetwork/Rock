@@ -1,0 +1,157 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           :title="title"
+           :isSaveButtonDisabled="isSaving"
+           saveText="Save"
+           @save="onSave">
+        <Loading v-if="isLoading" :isLoading="isLoading" />
+        <template v-else>
+            <NotificationBox v-if="!isNullOrWhiteSpace(errorMessage)"
+                             alertType="danger"
+                             dismissible
+                             @dismiss="emit('dismissErrorMessage')">
+                {{ errorMessage }}
+            </NotificationBox>
+            <div v-if="connectionState === ConnectionState.FutureFollowUp" class="row">
+                <div class="col-md-3">
+                    <DatePicker v-model="followUpDate"
+                                label="Follow-Up Date"
+                                rules="required"
+                                :disallowPastDateSelection="true" />
+                </div>
+            </div>
+            <div v-else class="mb-spacing-sm">
+                {{ bodyText }}
+            </div>
+            <RequestTable v-if="requestDetails.length > 0"
+                          :requestDetails="requestDetails"
+                          :viewOptions="viewOptions"
+                          isConnectorVisible />
+
+            <template v-if="failingRequestDetails.length > 0">
+                <div class="mt-spacing-xs">
+                    <RockLabel class="mt-spacing-xs">
+                        <i class="ti ti-circle-filled text-primary pr-spacing-tiny"></i>The requests below do not meet Placement Group requirements and will not be completed.
+                    </RockLabel>
+                </div>
+                <RequestTable :requestDetails="failingRequestDetails"
+                              :viewOptions="viewOptions"
+                              :isLabelVisible="false"
+                              isConnectorVisible />
+            </template>
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import RequestTable from "./requestTable.partial.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { ref, PropType, watch, computed } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { BulkRequestViewBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/bulkRequestViewBag";
+    import { ViewOptions } from "./types.partial";
+    import { ConnectionState, ConnectionStateDescription } from "@Obsidian/Enums/Connection/connectionState";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { UpdateConnectionRequestStatesBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/updateConnectionRequestStatesBag";
+
+    const props = defineProps({
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isLoading: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isSaving: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        connectionState: {
+            type: Number as PropType<ConnectionState>,
+            required: true
+        },
+
+        requestDetails: {
+            type: Array as PropType<BulkRequestViewBag[]>,
+            default: []
+        },
+
+        failingRequestDetails: {
+            type: Array as PropType<BulkRequestViewBag[]>,
+            default: []
+        },
+
+        viewOptions: {
+            type: Object as PropType<ViewOptions>,
+            required: true
+        },
+
+        errorMessage: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:visible", value: boolean): void;
+        (e: "updateState", value: UpdateConnectionRequestStatesBag): void;
+        (e: "close"): void;
+        (e: "dismissErrorMessage"): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const followUpDate = ref<string>("");
+
+    const title = computed(() => {
+        switch (props.connectionState) {
+            case ConnectionState.Active:
+                return "Set as Active";
+            case ConnectionState.Inactive:
+                return "Set as Inactive";
+            case ConnectionState.FutureFollowUp:
+                return "Future Follow-Up";
+            case ConnectionState.Connected:
+                return `Complete ${pluralize("Request", props.requestDetails.length)}`;
+        }
+    });
+
+    const bodyText = computed(() => {
+        if (props.connectionState === ConnectionState.Connected) {
+            return `Are you sure you want to mark the following ${pluralize("request", props.requestDetails.length)} as Complete?`;
+        }
+        return `Are you sure you want to set the following ${pluralize("request", props.requestDetails.length)} to ${ConnectionStateDescription[props.connectionState]}?`;
+    });
+
+    function onSave(): void {
+        const bag: UpdateConnectionRequestStatesBag = {
+            connectionRequestIdKeys: props.requestDetails.map(r => r.idKey ?? ""),
+            connectionState: props.connectionState,
+            followUpDate: followUpDate.value
+        };
+
+        emit("updateState", bag);
+    }
+
+    function resetModal(): void {
+        followUpDate.value = "";
+    }
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            resetModal();
+            emit("close");
+        }
+    });
+
+</script>

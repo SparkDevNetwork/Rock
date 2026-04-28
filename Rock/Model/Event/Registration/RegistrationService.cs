@@ -118,19 +118,6 @@ namespace Rock.Model
         /// Gets the generic context about the registration.
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
-        /// <param name="errorMessage">The error result.</param>
-        /// <returns></returns>
-        [RockObsolete("1.14.1")]
-        [Obsolete( "Use GetRegistrationContext( int registrationInstanceId, int? registrationId, out string errorMessage )" )]
-        public RegistrationContext GetRegistrationContext( int registrationInstanceId, out string errorMessage )
-        {
-            return GetRegistrationContext( registrationInstanceId, null, out errorMessage );
-        }
-
-        /// <summary>
-        /// Gets the generic context about the registration.
-        /// </summary>
-        /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <param name="registrationId">The registration identifier.</param>
         /// <param name="errorMessage">The error result.</param>
         /// <returns></returns>
@@ -597,6 +584,8 @@ namespace Rock.Model
             }
 
             RegistrantEligibilitySettings = template.GetRegistrantEligibilitySettingsOrNull();
+
+            AreDuplicateRegistrantsPrevented = template.AreDuplicateRegistrantsPrevented;
         }
 
         /// <summary>
@@ -1006,5 +995,12 @@ namespace Rock.Model
         /// Gets the eligibility settings that determine which registrants are allowed to register using this template.
         /// </summary>
         public RegistrationTemplate.RegistrantEligibilitySettings RegistrantEligibilitySettings { get; private set; }
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether duplicate registrants are prevented.
+        /// When <see langword="true"/>, a Person may only be associated once with a given Registration Instance.
+        /// When <see langword="false"/>, duplicate registrants are allowed.
+        /// </summary>
+        public bool AreDuplicateRegistrantsPrevented { get; private set; }
     }
 }

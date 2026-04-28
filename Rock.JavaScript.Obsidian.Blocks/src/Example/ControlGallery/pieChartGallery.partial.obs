@@ -1,36 +1,51 @@
 <template>
     <GalleryAndResult :value="{ series: series, labels: labels }" hasMultipleValues :importCode="importCode" :exampleCode="exampleCode">
-
-        <div style="height: 300px;">
-            <PieChart :labels="labels"
-                      :series="series"
-                      :hideLegend="isLegendHidden"
-                      :legendAlign="legendAlign"
-                      :legendPosition="legendPosition"
-                      :title="title"
-                      :tooltip="tooltip"
-                      :tooltipTitle="tooltipTitle"
-                      :type="isPercent ? 'percent' : isPercent === false ? 'number' : undefined" />
-        </div>
+        <PieChart :labels="labels"
+                  :series="series"
+                  :height="height || '300px'"
+                  :hideLegend="isLegendHidden"
+                  :legendAlign="legendAlign"
+                  :legendPosition="legendPosition"
+                  :title="title"
+                  :titleAlign="titleAlign"
+                  :tooltip="tooltip"
+                  :tooltipTitle="tooltipTitle"
+                  :type="isPercent ? 'percent' : isPercent === false ? 'number' : undefined"
+                  :width="width" />
 
         <template #settings>
             <div class="settings">
                 <ContentSection title="Settings">
                     <ContentStack title="General">
-                        <div class="autolayout">
-                            <TextBox :modelValue="title ?? ''"
-                                     label="Chart Title"
-                                     @update:modelValue="title = $event" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <TextBox :modelValue="title ?? ''"
+                                         label="Title"
+                                         @update:modelValue="title = $event" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <DropDownList :modelValue="titleAlign ?? ''"
+                                              :items="titleAlignItems"
+                                              label="Title Alignment"
+                                              @update:modelValue="titleAlign = <TitleAlign>$event" />
+                            </div>
                         </div>
-                        <div class="autolayout">
-                            <TextBox :modelValue="height ?? ''"
-                                     label="Chart Container Height"
-                                     help="CSS size value (e.g., '300px' or '50%')."
-                                     @update:modelValue="height = $event" />
-                            <TextBox :modelValue="width ?? ''"
-                                     label="Chart Container Width"
-                                     help="CSS size value (e.g., '300px' or '50%')."
-                                     @update:modelValue="width = $event" />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <TextBox :modelValue="height ?? ''"
+                                         label="Height"
+                                         help="CSS size value (e.g., '300px' or '50%')."
+                                         @update:modelValue="height = $event" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <TextBox :modelValue="width ?? ''"
+                                         label="Width"
+                                         help="CSS size value (e.g., '300px' or '50%')."
+                                         @update:modelValue="width = $event" />
+                            </div>
                         </div>
                     </ContentStack>
 
@@ -110,7 +125,16 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { LegendAlign, LegendPosition, LegendAlignDescription, LegendPositionDescription, PieSeries, TooltipCallback } from "@Obsidian/Core/Controls/chart";
+    import {
+        LegendAlign,
+        LegendAlignDescription,
+        LegendPosition,
+        LegendPositionDescription,
+        PieSeries,
+        TitleAlign,
+        TitleAlignDescription,
+        TooltipCallback
+    } from "@Obsidian/Core/Controls/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -133,6 +157,11 @@
         { text: LegendAlignDescription[LegendAlign.Center], value: LegendAlign.Center },
         { text: LegendAlignDescription[LegendAlign.End], value: LegendAlign.End }
     ];
+    const titleAlignItems = [
+        { text: TitleAlignDescription[TitleAlign.Start], value: TitleAlign.Start },
+        { text: TitleAlignDescription[TitleAlign.Center], value: TitleAlign.Center },
+        { text: TitleAlignDescription[TitleAlign.End], value: TitleAlign.End }
+    ];
 
     // #region Values
 
@@ -151,6 +180,7 @@
     const isLegendHidden = ref<boolean | undefined>();
     const isPercent = ref<boolean | undefined>();
     const title = ref<string | undefined>("Chart Title");
+    const titleAlign = ref<TitleAlign | undefined>();
 
     // #endregion Values
 
@@ -179,6 +209,9 @@
         }
         if (title.value) {
             pieChartProps.push(`title="${title.value}"`);
+        }
+        if (!isNullish(titleAlign.value)) {
+            pieChartProps.push(`titleAlign="${titleAlign.value}"`);
         }
         if (!isNullish(isPercent.value)) {
             if (isPercent.value) {

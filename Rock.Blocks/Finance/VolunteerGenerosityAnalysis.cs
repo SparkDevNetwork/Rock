@@ -216,7 +216,7 @@ namespace Rock.Blocks.Finance
                 PersistedDatasetCache.UpdateCachedEntity( dataset.Id, Microsoft.EntityFrameworkCore.EntityState.Modified );
 #endif
 
-                var lastUpdated = DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss" );
+                var lastUpdated = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss" );
                 var estimatedRefreshTime = dataset.TimeToBuildMS.HasValue ? Math.Round( dataset.TimeToBuildMS.Value / 1000.0, 2 ) : 0.0; // Convert to seconds and round to 2 decimal places
 
                 return ActionOk( new { LastUpdated = lastUpdated, EstimatedRefreshTime = estimatedRefreshTime } );

@@ -487,9 +487,11 @@ namespace Rock.Blocks.Engagement
                 return null;
             }
 
-            var connectionType = GetConnectionType();
+            var connectionType = new ConnectionTypeService( RockContext ).Get( entity.ConnectionTypeId );
             string connectionTypeName = null;
             string connectionTypeUrl = null;
+            int? requestDueDateOffsetInDays = entity.RequestDueDateOffsetInDays;
+            int? requestDueSoonOffsetInDays = entity.RequestDueSoonOffsetInDays;
             if ( connectionType != null )
             {
                 connectionTypeName = connectionType.Name;
@@ -514,6 +516,16 @@ namespace Rock.Blocks.Engagement
                         ["autoEdit"] = "true"
                     } );
                 }
+
+                var additionalSettings = connectionType.GetConnectionTypeAdditionalSettings();
+                if ( !requestDueDateOffsetInDays.HasValue || requestDueDateOffsetInDays.Value <= 0 )
+                {
+                    requestDueDateOffsetInDays = additionalSettings?.DefaultOpportunityDueDateOffsetInDays;
+                }
+                if ( !requestDueSoonOffsetInDays.HasValue || requestDueSoonOffsetInDays.Value <= 0)
+                {
+                    requestDueSoonOffsetInDays = additionalSettings?.DefaultOpportunityDueSoonOffsetInDays;
+                }
             }
 
             return new ConnectionOpportunityBag
@@ -530,8 +542,8 @@ namespace Rock.Blocks.Engagement
                 ShowCampusOnTransfer = entity.ShowCampusOnTransfer,
                 ShowStatusOnTransfer = entity.ShowStatusOnTransfer,
                 Summary = entity.Summary,
-                RequestDueDateOffsetInDays = entity.RequestDueDateOffsetInDays,
-                RequestDueSoonOffsetInDays = entity.RequestDueSoonOffsetInDays
+                RequestDueDateOffsetInDays = requestDueDateOffsetInDays,
+                RequestDueSoonOffsetInDays = requestDueSoonOffsetInDays
             };
         }
 

@@ -145,7 +145,7 @@
                                 return true;
                             }
 
-                            return `must be ${GenderDescription[eligibleGender]}`;
+                            return `must be ${GenderDescription[eligibleGender]} due to eligibility requirements`;
                         }
                     ];
                 }
@@ -168,13 +168,13 @@
                         const formatAge = (age: number): string => age.toLocaleString(undefined, { maximumFractionDigits: 1 });
 
                         if (latestBirthdate && earliestBirthdate) {
-                            return `must be between ${formatDate(earliestBirthdate)} and ${formatDate(latestBirthdate)} (between ${formatAge(minimumAge!)} and ${formatAge(maximumAge!)} years old)`;
+                            return `must be between ${formatDate(earliestBirthdate)} and ${formatDate(latestBirthdate)} (between ${formatAge(minimumAge!)} and ${formatAge(maximumAge!)} years old) due to eligibility requirements`;
                         }
                         else if (latestBirthdate) {
-                            return `must be on or before ${formatDate(latestBirthdate)} (${formatAge(minimumAge!)} years old or older)`;
+                            return `must be on or before ${formatDate(latestBirthdate)} (${formatAge(minimumAge!)} years old or older) due to eligibility requirements`;
                         }
                         else if (earliestBirthdate) {
-                            return `must be on or after ${formatDate(earliestBirthdate)} (${formatAge(maximumAge!)} years old or younger)`;
+                            return `must be on or after ${formatDate(earliestBirthdate)} (${formatAge(maximumAge!)} years old or younger) due to eligibility requirements`;
                         }
                         else {
                             // Should not ever hit this but required for type safety.
@@ -255,7 +255,7 @@
                                 return true;
                             }
 
-                            return `must be one of the following: ${asCommaAnd(eligibleGrades.map(g => gradeItems.find(grade => areEqual(grade.value, g))?.text).filter(g => !!g) as string[], "or")}`;
+                            return `must be one of the following: ${asCommaAnd(eligibleGrades.map(g => gradeItems.find(grade => areEqual(grade.value, g))?.text).filter(g => !!g) as string[], "or")} due to eligibility requirements`;
                         }
                     ];
                 }

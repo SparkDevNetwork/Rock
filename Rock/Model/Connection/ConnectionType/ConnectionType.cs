@@ -281,6 +281,36 @@ namespace Rock.Model
             public string AIInsightsPrompt { get; set; }
 
             /// <summary>
+            /// Gets or sets the AI summary trigger mode.
+            /// </summary>
+            public AISummaryTriggerMode? AISummaryTrigger { get; set; }
+
+            /// <summary>
+            /// Gets or sets the AI summary cache duration in minutes.
+            /// </summary>
+            public int? AISummaryCacheDurationMinutes { get; set; }
+
+            /// <summary>
+            /// Gets or sets the default value for <see cref="Rock.Model.ConnectionOpportunity.RequestDueDateOffsetInDays">Connection Opportunity Request Due Date Offset In Days</see>.
+            /// </summary>
+            public int? DefaultOpportunityDueDateOffsetInDays { get; set; }
+
+            /// <summary>
+            /// Gets or sets the default value for <see cref="Rock.Model.ConnectionOpportunity.RequestDueSoonOffsetInDays">Connection Opportunity Request Due Soon Offset In Days</see>.
+            /// </summary>
+            public int? DefaultOpportunityDueSoonOffsetInDays { get; set; }
+
+            /// <summary>
+            /// Gets or sets the default value for <see cref="Rock.Model.ConnectionStatus.RequestStatusDueDateOffsetInDays">Request Status Due Date Offset In Days</see>.
+            /// </summary>
+            public int? DefaultStatusDueDateOffsetInDays { get; set; }
+
+            /// <summary>
+            /// Gets or sets the default value for <see cref="Rock.Model.ConnectionStatus.RequestStatusDueSoonOffsetInDays">Request Status Due Soon Offset In Days</see>.
+            /// </summary>
+            public int? DefaultStatusDueSoonOffsetInDays { get; set; }
+
+            /// <summary>
             /// Defines a single "Additional Requests to Show" filter row.
             /// </summary>
             /// <remarks>
@@ -453,6 +483,21 @@ namespace Rock.Model
         public virtual Category SnippetCategory { get; set; }
 
         private ICollection<ConnectionOpportunity> _connectionOpportunities;
+
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionTypeSource">ConnectionTypeSources</see> that are associated with the ConnectionType.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionTypeSource">ConnectionTypeSources</see> that are associated with the ConnectionType.
+        /// </value>
+        [LavaVisible]
+        public virtual ICollection<ConnectionTypeSource> ConnectionTypeSources
+        {
+            get { return _connectionTypeSources ?? ( _connectionTypeSources = new Collection<ConnectionTypeSource>() ); }
+            set { _connectionTypeSources = value; }
+        }
+
+        private ICollection<ConnectionTypeSource> _connectionTypeSources;
 
         #endregion
 

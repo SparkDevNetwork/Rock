@@ -534,6 +534,8 @@ namespace Rock.Model
 
                 if ( existingCompletion != null )
                 {
+                    existingCompletion.LearningClassActivity = activity;
+                    existingCompletion.LearningClassActivityId = activity.Id;
                     completions.Add( existingCompletion );
                 }
                 else

@@ -67,7 +67,7 @@ namespace Rock.Blocks.Communication
 
     [CustomDropdownListField( "Communication Access Mode",
         Key = AttributeKey.CommunicationAccessMode,
-        Description = @"Controls the level of visibility filtering applied to the communication. ""Lax"" allows all individuals to view all communications. ""Moderate"" only shows communications where the individual has ""View"" rights to the associated communication template or system communication. ""Strict"" limits visibility to communications the individual authored or is listed as the sender, unless they have ""View All"" security on this block.",
+        Description = @"Controls how communication visibility is filtered. ""Lax"" shows all communications to everyone. ""Moderate"" limits visibility to communications where the individual has ""View"" rights to the associated template or system communication. ""Strict"" limits visibility to communications the individual authored or sent, unless they have ""View All"" security on this block.",
         ListSource = "lax^Lax,moderate^Moderate,strict^Strict",
         DefaultValue = "strict",
         Order = 1,

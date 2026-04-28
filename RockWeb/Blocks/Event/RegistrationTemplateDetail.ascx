@@ -101,8 +101,18 @@
                                             <asp:ListItem Value="3" Text="Use Logged In Person" />
                                         </Rock:RockDropDownList>
                                         <Rock:RockCheckBox ID="cbShowSmsOptIn" runat="server" Label="Show SMS Opt-In" Help="When enabled a checkbox will be shown next to each mobile phone number for registrants allowing the registrar to enable SMS messaging for this number." />
-                                        <Rock:RockCheckBox ID="cbPreventDuplicateRegistrants" runat="server" Label="Prevent Duplicate Registrants" Help="When enabled, this prevents the same database record (same Person ID) from being added to the event multiple times. This setting does not resolve or detect separate records that may represent the same individual." />
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <Rock:RockCheckBox ID="cbPreventDuplicateRegistrants" runat="server" Label="Prevent Duplicate Registrants" Help="When enabled, this prevents the same database record (same Person ID) from being added to the event multiple times. This setting does not resolve or detect separate records that may represent the same individual." />
+                                <div ID="divPreventDuplicateRegistrantsWarning" runat="server">
+                                    <Rock:NotificationBox ID="nbPreventDuplicateRegistrantsWarning" runat="server" Visible="true" NotificationBoxType="Warning">
+                                        <div><strong>Before enabling duplicate detection:</strong></div>
+                                        This feature can unintentionally expose attendee information. If someone knows a registrant's name plus their email, phone, or birthdate, they may be able to determine that person is attending this event. Consider whether your event requires this level of privacy protection before proceeding.
+                                    </Rock:NotificationBox>
                                 </div>
                             </div>
                         </div>
@@ -186,16 +196,8 @@
                                             not be allowed to change any of the registrant information and attributes." />
                             </div>
                             <div class="col-md-6">
-                                <div class="row">
-                                    <div class="col-xs-6">
-                                        <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Required Signature Document" AutoPostBack="true"
-                                            Help="A document that needs to be signed for registrations of this type." OnSelectedIndexChanged="ddlSignatureDocumentTemplate_SelectedIndexChanged" />
-                                    </div>
-                                    <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbDisplayInLine" runat="server" Label="In-Line Signature" Visible="false"
-                                            Help="When registering for this type of event, should the Required Signature Document be displayed during the registration steps? If not, a request will be sent after the registration is completed." />
-                                    </div>
-                                </div>
+                                <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Required Signature Document" AutoPostBack="true"
+                                    Help="A document that needs to be signed for registrations of this type." OnSelectedIndexChanged="ddlSignatureDocumentTemplate_SelectedIndexChanged" />
                             </div>
                         </div>
                     </Rock:PanelWidget>
@@ -220,7 +222,7 @@
                             <div class="col-md-6">
                                 <Rock:NotificationBox ID="nbEligibilityAgeWarning" runat="server" CssClass="d-none" Visible="true" NotificationBoxType="Warning">
                                     <div><strong>Warning</strong></div>
-                                    To ensure this filter works correctly, include a birthdate field in your form.
+                                    To ensure this filter works correctly, include a Birthdate Person Field in your form.
                                 </Rock:NotificationBox>
                             </div>
                         </div>
@@ -241,7 +243,7 @@
                             <div class="col-md-6">
                                 <Rock:NotificationBox ID="nbEligibilityGradeWarning" runat="server" CssClass="d-none" Visible="true" NotificationBoxType="Warning">
                                     <div><strong>Warning</strong></div>
-                                    To ensure this filter works correctly, include a grade field in your form.
+                                    To ensure this filter works correctly, include a Grade Person Field in your form.
                                 </Rock:NotificationBox>
                             </div>
                         </div>
@@ -253,7 +255,7 @@
                             <div class="col-md-6">
                                 <Rock:NotificationBox ID="nbEligibilityGenderWarning" runat="server" CssClass="d-none" Visible="true" NotificationBoxType="Warning">
                                     <div><strong>Warning</strong></div>
-                                    To ensure this filter works correctly, include a gender field in your form.
+                                    To ensure this filter works correctly, include a Gender Person Field in your form.
                                 </Rock:NotificationBox>
                             </div>
                         </div>
@@ -765,6 +767,19 @@
                     });
                 }
 
+                // Prevention
+                var $preventDuplicateRegistrants = $("#<%=cbPreventDuplicateRegistrants.ClientID %>");
+                var $divPreventDuplicateRegistrantsWarning = $("#<%=divPreventDuplicateRegistrantsWarning.ClientID %>");
+
+                $preventDuplicateRegistrants.on("change", function (event) {
+                    if (event.target.checked) {
+                        $divPreventDuplicateRegistrantsWarning.slideDown();
+                    }
+                    else {
+                        $divPreventDuplicateRegistrantsWarning.slideUp();
+                    }
+                });
+
                 // Eligibility
                 var $eligibilityAgeRangeLower = $("#<%=nreEligibilityAgeRange.ClientID %> .js-number-range-lower");
                 var $eligibilityAgeRangeUpper = $("#<%=nreEligibilityAgeRange.ClientID %> .js-number-range-upper");
@@ -779,7 +794,6 @@
                         var values = [$eligibilityAgeRangeLower.val(), $eligibilityAgeRangeUpper.val(), $eligibilityAgeClassification.val()];
                         var hasAgeValue = values.some(v => !!v);
                         var hasBirthDateField = $eligibilityHasBirthDate.val() === "<%=true.ToString() %>";
-                        console.debug("yo ho yo ho");
                         <%
                             // If this logic changes (i.e., adding/removing these specific CSS classes)
                             // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
@@ -803,7 +817,6 @@
                         var values = [$eligibilityGradeOffsetMax.val(), $eligibilityGradeOffsetMin.val()];
                         var hasEligibilityValue = values.some(v => !!v);
                         var hasRequiredField = $eligibilityHasGradeField.val() === "<%=true.ToString() %>";
-                        console.debug("a pirate's life");
 
                         <%
                             // If this logic changes (i.e., adding/removing these specific CSS classes)
@@ -826,7 +839,6 @@
                         var values = [$eligibilityGender.val()];
                         var hasEligibilityValue = values.some(v => !!v);
                         var hasRequiredField = $eligibilityHasGenderField.val() === "<%=true.ToString() %>";
-                        console.debug("for me");
 
                         <%
                             // If this logic changes (i.e., adding/removing these specific CSS classes)

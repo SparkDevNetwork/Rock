@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 using Rock.AI.Agent;
@@ -33,7 +34,7 @@ namespace Rock.Lava
         /// <param name="input">The input that describes the state of the result. Must be either 'Success' or 'Error'.</param>
         /// <param name="payloadOrMessage">The payload or message to include in the result.</param>
         /// <param name="key">An optional key for the history content.</param>
-        /// <returns>The <see cref="AI.Agent.IAgentToolResult"/> instance.</returns>
+        /// <returns>The <see cref="AI.Agent.AgentToolResult"/> instance.</returns>
         public static object AgentToolResult( ILavaRenderContext context, object input, object payloadOrMessage = null, string key = null )
         {
             if ( !( context.GetInternalField( "ProxyFunction", null ) is Dictionary<string, object> proxyFunctionResponse ) )
@@ -42,17 +43,46 @@ namespace Rock.Lava
             }
 
             var inputString = input.ToStringSafe();
-            IAgentToolResult toolResult;
+            AgentToolResult toolResult;
 
             if ( inputString.Equals( "Success", StringComparison.OrdinalIgnoreCase ) )
             {
                 if ( payloadOrMessage != null )
                 {
-                    toolResult = AI.Agent.AgentToolResult.Success( payloadOrMessage );
+                    if ( payloadOrMessage is string payloadString )
+                    {
+                        toolResult = AI.Agent.AgentToolResult.Success( payloadString );
+                    }
+                    else if ( payloadOrMessage is IDictionary dictionaryPayload )
+                    {
+                        if ( dictionaryPayload.Count > 0 )
+                        {
+                            toolResult = AI.Agent.AgentToolResult.Success( dictionaryPayload );
+                        }
+                        else
+                        {
+                            toolResult = AI.Agent.AgentToolResult.NoData();
+                        }
+                    }
+                    else if ( payloadOrMessage is IEnumerable enumerablePayload )
+                    {
+                        if ( enumerablePayload.Cast<object>().Any() )
+                        {
+                            toolResult = AI.Agent.AgentToolResult.Success( enumerablePayload );
+                        }
+                        else
+                        {
+                            toolResult = AI.Agent.AgentToolResult.NoData();
+                        }
+                    }
+                    else
+                    {
+                        toolResult = AI.Agent.AgentToolResult.Success( payloadOrMessage );
+                    }
                 }
                 else
                 {
-                    toolResult = AI.Agent.AgentToolResult.Success();
+                    toolResult = AI.Agent.AgentToolResult.NoData();
                 }
             }
             else if ( inputString.Equals( "Error", StringComparison.OrdinalIgnoreCase ) )
@@ -91,9 +121,9 @@ namespace Rock.Lava
         /// Adds instructions that will be returned to the AI agent.
         /// </summary>
         /// <param name="context">The current Lava execution context.</param>
-        /// <param name="input">The input parameter for the filter. This must be the <see cref="AI.Agent.IAgentToolResult"/> instance.</param>
+        /// <param name="input">The input parameter for the filter. This must be the <see cref="AI.Agent.AgentToolResult"/> instance.</param>
         /// <param name="instructions">The instructions to add to the result.</param>
-        /// <returns>The <see cref="AI.Agent.IAgentToolResult"/> object.</returns>
+        /// <returns>The <see cref="AI.Agent.AgentToolResult"/> object.</returns>
         public static object AgentToolInstructions( ILavaRenderContext context, object input, string instructions )
         {
             if ( !TryGetRockToolResult( context, input, out var rockToolResult ) )
@@ -109,10 +139,10 @@ namespace Rock.Lava
         /// returned to the AI agent.
         /// </summary>
         /// <param name="context">The current Lava execution context.</param>
-        /// <param name="input">The input parameter for the filter. This must be the <see cref="AI.Agent.IAgentToolResult"/> instance.</param>
+        /// <param name="input">The input parameter for the filter. This must be the <see cref="AI.Agent.AgentToolResult"/> instance.</param>
         /// <param name="content">The content to use for the history that will be available to later chat messages.</param>
         /// <param name="key">An optional key for the history content.</param>
-        /// <returns>The <see cref="AI.Agent.IAgentToolResult"/> object.</returns>
+        /// <returns>The <see cref="AI.Agent.AgentToolResult"/> object.</returns>
         public static object AgentToolHistoryContent( ILavaRenderContext context, object input, object content, string key = null )
         {
             if ( !TryGetRockToolResult( context, input, out var rockToolResult ) )
@@ -127,10 +157,10 @@ namespace Rock.Lava
         /// Adds metadata that will be returned to the AI agent.
         /// </summary>
         /// <param name="context">The current Lava execution context.</param>
-        /// <param name="input">The input parameter for the filter. This must be the <see cref="AI.Agent.IAgentToolResult"/> instance.</param>
+        /// <param name="input">The input parameter for the filter. This must be the <see cref="AI.Agent.AgentToolResult"/> instance.</param>
         /// <param name="keyOrDictionary">Either a string key name or a dictionary of keys and values.</param>
         /// <param name="value">If <paramref name="keyOrDictionary"/> is a string, this is the value to set for the specified key.</param>
-        /// <returns>The <see cref="AI.Agent.IAgentToolResult"/> object.</returns>
+        /// <returns>The <see cref="AI.Agent.AgentToolResult"/> object.</returns>
         public static object AgentToolMetadata( ILavaRenderContext context, object input, object keyOrDictionary, object value = null )
         {
             if ( !TryGetRockToolResult( context, input, out var rockToolResult ) )
@@ -164,11 +194,11 @@ namespace Rock.Lava
         /// AI agent.
         /// </summary>
         /// <param name="context">The current Lava execution context.</param>
-        /// <param name="input">The input parameter for the filter. This must be the <see cref="AI.Agent.IAgentToolResult"/> instance.</param>
+        /// <param name="input">The input parameter for the filter. This must be the <see cref="AI.Agent.AgentToolResult"/> instance.</param>
         /// <param name="text">The display text to show for the reference link, such as 'View Results'.</param>
         /// <param name="route">The route to the resource, such as '/person/123'.</param>
         /// <param name="secured">If false, the route will only be included if the current person has access to view the page. Defaults to true.</param>
-        /// <returns>The <see cref="AI.Agent.IAgentToolResult"/> object.</returns>
+        /// <returns>The <see cref="AI.Agent.AgentToolResult"/> object.</returns>
         public static object AgentToolReferenceRoute( ILavaRenderContext context, object input, string text, string route, object secured = null )
         {
             if ( !TryGetRockToolResult( context, input, out var rockToolResult ) )
@@ -176,7 +206,7 @@ namespace Rock.Lava
                 throw new LavaToolException( rockToolResult );
             }
 
-            if ( !( context.GetMergeField( "AgentContext" ) is IAgentRequestContext agentContext ) )
+            if ( !( context.GetMergeField( "AgentContext" ) is AgentRequestContext agentContext ) )
             {
                 throw new LavaToolException( CreateAgentToolTemplateError( "The AgentToolReferenceRoute filter can only be used within the context of an AI Agent Tool." ) );
             }
@@ -189,8 +219,8 @@ namespace Rock.Lava
         /// the AI agent.
         /// </summary>
         /// <param name="context">The current Lava execution context.</param>
-        /// <param name="input">The input parameter for the filter. This must be the <see cref="AI.Agent.IAgentToolResult"/> instance.</param>
-        /// <returns>The <see cref="AI.Agent.IAgentToolResult"/> object.</returns>
+        /// <param name="input">The input parameter for the filter. This must be the <see cref="AI.Agent.AgentToolResult"/> instance.</param>
+        /// <returns>The <see cref="AI.Agent.AgentToolResult"/> object.</returns>
         public static object AgentToolNoHistory( ILavaRenderContext context, object input )
         {
             if ( !TryGetRockToolResult( context, input, out var rockToolResult ) )
@@ -207,31 +237,31 @@ namespace Rock.Lava
         /// Creates a standardized error result for issues with the Lava Tool Template.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        /// <returns>An instance of <see cref="AI.Agent.IAgentToolResult"/> that contains the error message.</returns>
-        private static IAgentToolResult CreateAgentToolTemplateError( string message )
+        /// <returns>An instance of <see cref="AI.Agent.AgentToolResult"/> that contains the error message.</returns>
+        private static AgentToolResult CreateAgentToolTemplateError( string message )
         {
             return AI.Agent.AgentToolResult.Error( $"Invalid Lava Tool Template. {message}" )
                 .WithInstructions( "An internal error has occurred. The error message should be displayed so the user can diagnose the problem." );
         }
 
         /// <summary>
-        /// Attempts to extract a <see cref="AI.Agent.IAgentToolResult"/> from the current
+        /// Attempts to extract a <see cref="AI.Agent.AgentToolResult"/> from the current
         /// Lava context and input object. This will produce an error result if
         /// either the context or input are invalid.
         /// </summary>
         /// <param name="context">The current lava execution context.</param>
         /// <param name="input">The input parameter to the filter.</param>
-        /// <param name="rockToolResult">On return contains the <see cref="AI.Agent.IAgentToolResult"/> object.</param>
+        /// <param name="rockToolResult">On return contains the <see cref="AI.Agent.AgentToolResult"/> object.</param>
         /// <param name="filterName">The name of the filter.</param>
         /// <returns><c>true</c> if the <paramref name="rockToolResult"/> contains the current result; <c>false</c> if it contains the error that should be returned.</returns>
-        private static bool TryGetRockToolResult( ILavaRenderContext context, object input, out IAgentToolResult rockToolResult, [CallerMemberName] string filterName = null )
+        private static bool TryGetRockToolResult( ILavaRenderContext context, object input, out AgentToolResult rockToolResult, [CallerMemberName] string filterName = null )
         {
             if ( !( context.GetInternalField( "ProxyFunction", null ) is Dictionary<string, object> ) )
             {
                 throw new LavaToolException( "The 'AgentToolResult' filter can only be used within the context of an AI Agent Tool." );
             }
 
-            if ( input is IAgentToolResult result )
+            if ( input is AgentToolResult result )
             {
                 rockToolResult = result;
                 return true;

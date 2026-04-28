@@ -198,6 +198,32 @@ namespace Rock.Oidc.Authorization
         }
 
         /// <summary>
+        /// Narrows the requested scopes to approved scopes.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="authClient">The authentication client that contains the allowed scopes.</param>
+        /// <param name="requestedScopes">The requested scopes.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">
+        /// </exception>
+        public static IEnumerable<string> NarrowRequestedScopesToApprovedScopes( RockContext rockContext, AuthClient authClient, IEnumerable<string> requestedScopes )
+        {
+            if ( authClient == null )
+            {
+                throw new ArgumentException( $"{nameof( authClient )} cannot be null." );
+            }
+
+            if ( requestedScopes == null || requestedScopes.Count() == 0 )
+            {
+                return new List<string>();
+            }
+
+            var allowedScopes = GetAllowedClientScopes( rockContext, authClient);
+
+            return requestedScopes.Intersect( allowedScopes );
+        }
+
+        /// <summary>
         /// Gets the allowed client scopes.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -232,6 +258,40 @@ namespace Rock.Oidc.Authorization
             }
 
             var parsedClientScopes = enabledClientScopes.FromJsonOrNull<List<string>>();
+            if ( parsedClientScopes == null )
+            {
+                return emptyScopeList;
+            }
+
+            var activeClientScopes = GetActiveAuthScopes( rockContext );
+
+            return parsedClientScopes.Intersect( activeClientScopes );
+        }
+
+        /// <summary>
+        /// Gets the allowed client scopes.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="authClient">The authentication client that contains the allowed scopes.</param>
+        /// <returns>A list of allowed scopes.</returns>
+        /// <exception cref="ArgumentException">
+        /// </exception>
+        public static IEnumerable<string> GetAllowedClientScopes( RockContext rockContext, AuthClient authClient )
+        {
+            if ( authClient == null )
+            {
+                throw new ArgumentException( $"{nameof( authClient )} cannot be null." );
+            }
+
+            // The OpenId is required and should always be allowed.
+            var emptyScopeList = new List<string> { };
+
+            if ( authClient.AllowedScopes.IsNullOrWhiteSpace() )
+            {
+                return emptyScopeList;
+            }
+
+            var parsedClientScopes = authClient.AllowedScopes.FromJsonOrNull<List<string>>();
             if ( parsedClientScopes == null )
             {
                 return emptyScopeList;
@@ -287,6 +347,49 @@ namespace Rock.Oidc.Authorization
             var allowedClaimList = new Dictionary<string, string>();
             var authClientService = new AuthClientService( rockContext );
             var allowedClaims = authClientService.Queryable().Where( ac => ac.ClientId == clientId ).Select( ac => ac.AllowedClaims ).FirstOrDefault();
+            if ( allowedClaims.IsNullOrWhiteSpace() )
+            {
+                return allowedClaimList;
+            }
+
+            var parsedClaims = allowedClaims.FromJsonOrNull<List<string>>();
+            if ( parsedClaims == null )
+            {
+                return allowedClaimList;
+            }
+
+            return new AuthClaimService( rockContext )
+                .Queryable()
+                .Where( ac => parsedClaims.Contains( ac.Name ) )
+                .Where( ac => ac.IsActive )
+                .Where( ac => allowedClientScopes.Contains( ac.Scope.Name ) )
+                .Where( ac => ac.Scope.IsActive )
+                .ToDictionary( vc => vc.Name, vc => vc.Value );
+        }
+
+        /// <summary>
+        /// Gets the allowed client claims.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="authClient">The auth client.</param>
+        /// <param name="allowedClientScopes">The allowed client scopes.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">
+        /// </exception>
+        public static IDictionary<string, string> GetAllowedClientClaims( RockContext rockContext, AuthClient authClient, IEnumerable<string> allowedClientScopes )
+        {
+            if ( rockContext == null )
+            {
+                throw new ArgumentException( $"{nameof( rockContext )} cannot be null." );
+            }
+
+            if ( authClient == null )
+            {
+                throw new ArgumentException( $"{nameof( authClient )} cannot be null." );
+            }
+
+            var allowedClaimList = new Dictionary<string, string>();
+            var allowedClaims = authClient.AllowedClaims;
             if ( allowedClaims.IsNullOrWhiteSpace() )
             {
                 return allowedClaimList;

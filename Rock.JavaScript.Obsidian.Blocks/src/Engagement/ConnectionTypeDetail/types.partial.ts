@@ -28,5 +28,6 @@ export const enum EntityKey {
     ActivityType = "ActivityType",
     Status = "Status",
     ConnectionStatusAutomation = "ConnectionStatusAutomation",
-    ConnectionWorkflow = "ConnectionWorkflow"
+    ConnectionWorkflow = "ConnectionWorkflow",
+    ConnectionTypeSource = "ConnectionTypeSource"
 }

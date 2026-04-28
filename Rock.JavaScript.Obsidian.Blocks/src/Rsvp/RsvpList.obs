@@ -1,0 +1,230 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="keyField"
+          title="RSVP Occurrences"
+          itemTerm="RSVP Occurrence"
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <DateColumn name="date"
+                    title="Date"
+                    field="date"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="schedule"
+                    title="Schedule"
+                    field="schedule"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="location"
+                    title="Location"
+                    field="location"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <Column
+                name="progressBar"
+                columnType="custom"
+                visiblePriority="xs"
+                width="5%">
+            <template #format="{ row }">
+                <div class="progress" style="width: 100%;">
+                    <!-- Accepted -->
+                    <div
+                         class="progress-bar progress-bar-success"
+                         role="progressbar"
+                         :style="{ width: row.acceptedPercentage + '%' }"></div>
+
+                    <!-- Declined -->
+                    <div
+                         class="progress-bar progress-bar-danger"
+                         role="progressbar"
+                         :style="{ width: row.declinedPercentage + '%' }"></div>
+                </div>
+            </template>
+        </Column>
+
+        <NumberColumn name="invited"
+                      title="Invited"
+                      field="invited"
+                      headerClass="text-left"
+                      itemClass="justify-content-start text-left"
+                      :filter="textValueFilter"
+                      width="5%"
+                      visiblePriority="xs" />
+
+        <NumberColumn name="accepted"
+                      title="Accepted"
+                      field="accepted"
+                      headerClass="text-left"
+                      itemClass="justify-content-start text-left"
+                      :filter="textValueFilter"
+                      width="5%"
+                      visiblePriority="xs" />
+
+        <NumberColumn name="declined"
+                      title="Declined"
+                      field="declined"
+                      headerClass="text-left"
+                      itemClass="justify-content-start text-left"
+                      :filter="textValueFilter"
+                      width="5%"
+                      visiblePriority="xs" />
+
+        <NumberColumn name="noResponse"
+                      title="No Response"
+                      field="noResponse"
+                      headerClass="text-left"
+                      itemClass="justify-content-start text-left"
+                      :filter="textValueFilter"
+                      width="5%"
+                      visiblePriority="xs" />
+
+    </Grid>
+    <GridSettingsModal v-model="gridSettings" v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, usePersonPreferences } from "@Obsidian/Utility/block";
+    import Grid, { TextColumn, DateColumn, dateValueFilter, textValueFilter, NumberColumn, Column } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { RsvpListOptionsBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpList/rsvpListOptionsBag";
+    import { GetOccurrenceIdBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpList/getOccurrenceIdBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./RsvpList/types.partial";
+    import { reactive, ref, watch, computed } from "vue";
+    import GridSettingsModal from "./RsvpList/gridSettingsModal.partial.obs";
+    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+
+    const config = useConfigurationValues<ListBlockBox<RsvpListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (!result.isSuccess || !result.data) {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+        gridData = reactive(result.data);
+
+        if (!gridData.rows || gridData.rows.length === 0) {
+            if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+                window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+            }
+            return {
+                ...gridData,
+                rows: []
+            };
+        }
+        return gridData;
+    }
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        filterDateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterDateRange)) ?? null,
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // This is used to prevent multiple simultaneous attempts to select an item which adds row to database if it doesn't already exist.
+    let isSelectingItem = ref(false);
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    async function onSelectItem(key: string): Promise<void> {
+        if (isSelectingItem.value === true) {
+            return;
+        }
+
+        if (gridData?.rows == null) return;
+
+        const selectedOccurrence = gridData?.rows.find(r => r.keyField === key);
+        if (!selectedOccurrence) return;
+
+        // Of the occurence has not been created, get an id for it
+        if (selectedOccurrence.id === 0) {
+            isSelectingItem.value = true;
+            const result = await invokeBlockAction<string>("GetOccurrenceId", {
+                bag: {
+                    occurrenceDate: selectedOccurrence.date,
+                    scheduleId: selectedOccurrence.scheduleId,
+                    locationId: selectedOccurrence.locationId
+                } as GetOccurrenceIdBag
+            });
+            if (!result.isSuccess || !result.data) {
+                isSelectingItem.value = false;
+                return;
+            }
+            key = result.data;
+            isSelectingItem.value = false;
+        }
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+
+    // #endregion
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.filterDateRange;
+    });
+
+
+    watch(gridSettings, async () => {
+        const filterDateRangeString = gridSettings.value.filterDateRange
+            ? slidingDateRangeToString(gridSettings.value.filterDateRange)
+            : "";
+
+        preferences.setValue(PreferenceKey.FilterDateRange, filterDateRangeString);
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

@@ -34,10 +34,27 @@ namespace Rock.Blocks.Types.Mobile.Engagement
     [Description( "Recent Activity allows you to view recent touchpoints." )]
     [SupportedSiteTypes( SiteType.Mobile )]
 
+    [LinkedPage( "Contact Profile",
+        Description = "The page to open when someone taps on the person recent activity",
+        IsRequired = false,
+        Key = AttributeKeys.ContactProfile,
+        Order = 0 )]
+
     [SystemGuid.EntityTypeGuid( SystemGuid.EntityType.MOBILE_OUTREACH_OUTREACH_RECENT_ACTIVITY_BLOCK_TYPE )]
     [SystemGuid.BlockTypeGuid( SystemGuid.BlockType.MOBILE_OUTREACH_OUTREACH_RECENT_ACTIVITY )]
     public class OutreachRecentActivity : RockBlockType
     {
+        #region Constants
+
+        private static class AttributeKeys
+        {
+            public const string ContactProfile = "ContactProfile";
+        }
+
+        #endregion
+
+        #region Block Actions
+
         /// <summary>
         /// Get the recent activity.
         /// </summary>
@@ -68,31 +85,41 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 .Take( 5 )
                 .Select( tp => new
                 {
-                    tp.Contact.PhotoId,
-                    tp.Contact.FirstName,
-                    tp.Contact.LastName,
+                    tp.Contact,
                     tp.Type,
                     tp.CompletedDateTime,
-                    tp.Contact.Gender
                 } )
                 .ToList()
                 .Select( tp =>
                 {
-                    var profileURL = tp.PhotoId.HasValue
-                        ? MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( tp.PhotoId.Value, new GetImageUrlOptions { Width = 256, Height = 256 } ) )
+                    var profileURL = tp.Contact.PhotoId.HasValue
+                        ? MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( tp.Contact.PhotoId.Value, new GetImageUrlOptions { Width = 256, Height = 256 } ) )
                         : "";
                     return new RecentActivity
                     {
+                        ContactIdKey = tp.Contact.IdKey,
                         ProfileURL = profileURL,
-                        contactName = tp.FirstName,
-                        LastName = tp.LastName,
-                        Gender = tp.Gender.ToMobile(),
+                        contactName = tp.Contact.FirstName,
+                        LastName = tp.Contact.LastName,
+                        Gender = tp.Contact.Gender.ToMobile(),
                         TouchpointType = tp.Type.ToMobile(),
                         CompletedDate = tp.CompletedDateTime.Value
                     };
                 } ).ToList();
 
             return ActionOk( recentActivities );
+        }
+
+        #endregion
+
+
+        /// <inheritdoc/>
+        public override object GetMobileConfigurationValues()
+        {
+            return new Rock.Common.Mobile.Blocks.Engagement.OutreachRecentActivity.Configuration
+            {
+                ContactProfilePageGuid = GetAttributeValue( AttributeKeys.ContactProfile ).AsGuidOrNull()
+            };
         }
     }
 }

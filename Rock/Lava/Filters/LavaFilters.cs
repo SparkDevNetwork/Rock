@@ -2720,6 +2720,21 @@ namespace Rock.Lava
                             modelCacheType = typeof( ContentChannelCache );
                             break;
                         }
+                    case "ContentChannelItem":
+                        {
+                            modelCacheType = typeof( ContentChannelItemCache );
+                            break;
+                        }
+                    case "ContentChannelItemAssociation":
+                        {
+                            modelCacheType = typeof( ContentChannelItemAssociationCache );
+                            break;
+                        }
+                    case "ContentChannelItemSlug":
+                        {
+                            modelCacheType = typeof( ContentChannelItemSlugCache );
+                            break;
+                        }
                     default:
                         {
                             return $"Cache type {cacheType} not supported.";

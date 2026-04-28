@@ -282,7 +282,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 }
             }
 
-            var attendanceQry = CheckInDirector.GetCurrentAttendanceQuery( now, RockContext );
+            var attendanceQry = CheckInDirector.GetDailyAttendanceQuery( now, RockContext );
 
             if ( campusId.HasValue )
             {
@@ -384,7 +384,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             var now = campus?.CurrentDateTime ?? RockDateTime.Now;
 
             // Load only the required properties for the current attendance.
-            return CheckInDirector.GetCurrentAttendance( now, locationIds, RockContext )
+            var attendance = CheckInDirector.GetCurrentAttendance( now, locationIds, RockContext );
+
+            return CheckInDirector.FilterToCurrentlyCheckedIn( attendance, RockContext )
                 .Select( a => new ActiveAttendanceBag
                 {
                     Id = a.AttendanceId,

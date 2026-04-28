@@ -183,5 +183,10 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// Gets or sets a value indicating whether the template should be applied to the communication on load.
         /// </summary>
         public bool ShouldApplyTemplateToCommunication { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom text content used by the communication entry wizard.
+        /// </summary>
+        public CommunicationEntryWizardCustomTextBag CustomText { get; set; }
     }
 }

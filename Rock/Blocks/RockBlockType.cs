@@ -439,8 +439,8 @@ namespace Rock.Blocks
             var rootElementStyle = "";
             var rootElementClasses = "obsidian-block-loading";
             var placeholderContent = GetPlaceholderContent( RockClientType.Web );
-            var initialContent = GetInitialHtmlContent() ?? string.Empty;
             var config = await GetConfigBagAsync( rootElementId );
+            var initialContent = GetInitialHtmlContent() ?? string.Empty;
 
             if ( !IsBrowserSupported() )
             {

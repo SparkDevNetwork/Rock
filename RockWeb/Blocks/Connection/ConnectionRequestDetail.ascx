@@ -78,6 +78,7 @@
                                 <div id="divPhoto" runat="server" class="request-photo mb-1"></div>
                             </div>
                             <div class="col-sm-10">
+                                <asp:Literal ID="lRequestViewModeStatusIndicators" runat="server" />
                                 <asp:HyperLink ID="lbProfilePage" runat="server" CssClass="small pull-right">
                                 <i class="ti ti-user"></i>
                                 Person Profile
@@ -114,6 +115,7 @@
                                     </div>
                                     <div class="col-sm-12 col-md-3 text-left text-md-right mb-3">
                                         <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" />
+                                        <Rock:RockLiteral ID="lDueDate" runat="server" Label="Due Date" />
                                         <Rock:RockLiteral ID="lPlacementGroup" runat="server" Label="Placement Group" />
                                         <Rock:DynamicPlaceholder ID="phGroupMemberAttributesView" runat="server" />
                                     </div>
@@ -170,7 +172,10 @@
                             <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="lbEdit_Click"></asp:LinkButton>
                             <asp:LinkButton ID="lbTransfer" runat="server" Text="Transfer" CssClass="btn btn-link" CausesValidation="false" OnClick="lbTransfer_Click"></asp:LinkButton>
                             <div class="pull-right">
-                                <asp:LinkButton ID="lbConnect" runat="server" Text="Connect" CssClass="btn btn-success" CausesValidation="false" OnClick="lbConnect_Click"></asp:LinkButton>
+                                <asp:LinkButton ID="lbConnect" runat="server" CssClass="btn btn-success" CausesValidation="false" OnClick="lbConnect_Click">
+                                    <i class="ti ti-circle-check"></i>
+                                    Complete
+                                </asp:LinkButton>
                             </div>
                         </div>
 
@@ -202,7 +207,13 @@
 
                         <Rock:RockTextBox ID="tbComments" Label="Comments" runat="server" TextMode="MultiLine" Rows="4" ValidateRequestMode="Disabled" />
 
-                        <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
+                        <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" RepeatDirection="Horizontal" CssClass="js-request-add-edit-mode-status" />
+
+                        <asp:Panel ID="pnlRequestModalAddModeSequentialStatus" runat="server" Visible="false">
+                            <Rock:RockControlWrapper ID="rcwRequestModalAddModeSequentialStatus" runat="server" Label="Status">
+                                <asp:Literal ID="lRequestModalAddModeSequentialStatus" runat="server" />
+                            </Rock:RockControlWrapper>
+                        </asp:Panel>
 
                         <div class="row">
                             <div class="col-md-6">
@@ -413,6 +424,28 @@
                     });
 
                     $("#<%=ddlTransferOpportunityConnector.ClientID%>").toggle($('#<%=rbTransferSelectConnector.ClientID%>').is(":checked"));
+
+                    var $thisBlock = $('#<%= upDetail.ClientID %>');
+
+                    function addDisabledStatusTooltips() {
+                        var $addEditModeStatus = $thisBlock.find('.js-request-add-edit-mode-status');
+                        if (!$addEditModeStatus) {
+                            return;
+                        }
+
+                        $addEditModeStatus
+                            .find('input[disabled]')
+                            .closest('label')
+                            .each(function () {
+                                $(this).css('cursor', 'not-allowed');
+                                $(this).attr('title', 'Sequential status mode is enabled for this connection type, so you can only change this request to the next status.');
+                                $(this).tooltip({
+                                    container: 'body'
+                                });
+                            });
+                    }
+
+                    addDisabledStatusTooltips();
                 })
             </script>
         </asp:Panel>

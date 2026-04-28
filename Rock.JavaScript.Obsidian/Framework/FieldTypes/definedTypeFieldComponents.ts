@@ -15,9 +15,9 @@
 // </copyright>
 
 import { computed, defineComponent, ref, watch } from "vue";
-import {  getFieldEditorProps } from "./utils";
+import { getFieldEditorProps } from "./utils";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import { ConfigurationValueKey } from "./definedTypeField.partial";
+import { ConfigurationKey } from "./definedTypeField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const EditComponent = defineComponent({
@@ -35,7 +35,7 @@ export const EditComponent = defineComponent({
 
         // The available options to choose from.
         const options = computed((): ListItemBag[] => {
-            const options = JSON.parse(props.configurationValues[ConfigurationValueKey.ClientValues] || "[]") as ListItemBag[];
+            const options = JSON.parse(props.configurationValues[ConfigurationKey.ClientValues] || "[]") as ListItemBag[];
             return options;
         });
 

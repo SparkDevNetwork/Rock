@@ -276,6 +276,16 @@ namespace Rock.Model
         /// </summary>
         public string RequestAttributes { get; set; }
 
+        /// <summary>
+        /// Gets or sets the due date for this instance.
+        /// </summary>
+        public DateTime? DueDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date when this instance becomes considered due soon.
+        /// </summary>
+        public DateTime? DueSoonDate { get; set; }
+
         #endregion Properties
 
         #region Computed
@@ -442,7 +452,7 @@ namespace Rock.Model
                 }
 
                 return string.Format(
-                    @"<span class=""badge badge-info font-weight-normal"" title=""{0}"">{1}</span>",
+                    @"<span class=""label label-default"" title=""{0}"">{1}</span>",
                     CampusName,
                     CampusCode );
             }
@@ -596,6 +606,152 @@ namespace Rock.Model
                 }
 
                 return GroupName;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether this request is overdue.
+        /// </summary>
+        public bool IsOverdue
+        {
+            get
+            {
+                return ConnectionState == ConnectionState.Active
+                    && DueDate.HasValue
+                    && DueDate.Value.Date < RockDateTime.Today;
+            }
+        }
+
+        /// <summary>
+        /// Gets the count of days by which this request is overdue.
+        /// </summary>
+        public int? OverdueDays
+        {
+            get
+            {
+                if ( !IsOverdue )
+                {
+                    return null;
+                }
+
+                return ( RockDateTime.Today - DueDate.Value.Date ).Days;
+            }
+        }
+
+        /// <summary>
+        /// Gets the overdue days text.
+        /// </summary>
+        public string OverdueDaysText
+        {
+            get
+            {
+                var overdueDays = OverdueDays;
+                if ( !overdueDays.HasValue )
+                {
+                    return string.Empty;
+                }
+
+                return $"{overdueDays:N0} {"day".PluralizeIf( overdueDays > 1 )}";
+            }
+        }
+
+        /// <summary>
+        /// Gets the "Overdue" HTML that can be used in tooltips, Etc.
+        /// </summary>
+        public string OverdueHtml
+        {
+            get
+            {
+                var overdueDaysText = OverdueDaysText;
+                if ( overdueDaysText.IsNullOrWhiteSpace() )
+                {
+                    return string.Empty;
+                }
+
+                return $"Overdue:<br>By {overdueDaysText}";
+            }
+        }
+
+        /// <summary>
+        /// Gets the count of days within which this request is due.
+        /// </summary>
+        public int? DueInDays
+        {
+            get
+            {
+                if ( !DueDate.HasValue || IsOverdue )
+                {
+                    return null;
+                }
+
+                return ( DueDate.Value.Date - RockDateTime.Today ).Days;
+            }
+        }
+
+        /// <summary>
+        /// Gets the due in days text.
+        /// </summary>
+        public string DueInDaysText
+        {
+            get
+            {
+                var dueInDays = DueInDays;
+                if ( !dueInDays.HasValue )
+                {
+                    return string.Empty;
+                }
+                else if ( dueInDays == 0 )
+                {
+                    return "Today";
+                }
+                else
+                {
+                    return $"{dueInDays:N0} {"day".PluralizeIf( dueInDays > 1 )}";
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets whether this request is considered due soon.
+        /// </summary>
+        public bool IsDueSoon
+        {
+            get
+            {
+                return !IsOverdue
+                    && ConnectionState == ConnectionState.Active
+                    && DueSoonDate.HasValue
+                    && DueSoonDate.Value.Date <= RockDateTime.Today;
+            }
+        }
+
+        /// <summary>
+        /// Gets the "Due Soon" HTML that can be used in tooltips, Etc.
+        /// </summary>
+        public string DueSoonHtml
+        {
+            get
+            {
+                if ( !IsDueSoon )
+                {
+                    return string.Empty;
+                }
+
+                var prefix = "Due Soon";
+
+                var dueInDays = DueInDays;
+                if ( !dueInDays.HasValue )
+                {
+                    return prefix;
+                }
+                else if ( dueInDays == 0 )
+                {
+                    return $"{prefix}:<br>Today";
+                }
+                else
+                {
+                    return $"{prefix}:<br>In {dueInDays:N0} {"day".PluralizeIf( dueInDays > 1 )}";
+                }
             }
         }
 

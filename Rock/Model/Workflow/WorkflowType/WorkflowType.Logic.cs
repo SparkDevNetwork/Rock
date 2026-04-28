@@ -28,7 +28,7 @@ namespace Rock.Model
     /// </summary>
     public partial class WorkflowType
     {
-        #region Properties
+        #region ISecured
         /// <summary>
         /// Gets the parent security authority for the DataView which is its Category
         /// </summary>
@@ -47,6 +47,10 @@ namespace Rock.Model
                 return base.ParentAuthority;
             }
         }
+
+        #endregion ISecured
+
+        #region Properties
 
         /// <summary>
         /// Gets a value indicating whether this instance has active forms.

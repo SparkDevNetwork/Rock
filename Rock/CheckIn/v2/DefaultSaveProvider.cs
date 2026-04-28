@@ -675,10 +675,10 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <param name="sessionRequest">The attendance session details.</param>
         /// <param name="request">The attendance request.</param>
-        /// <param name="currentAttendances">The current attendance records that we know about.</param>
+        /// <param name="existingAttendances">The existing attendance records that we know about.</param>
         /// <param name="newAttendances">The new attendance records that will be created.</param>
         /// <returns><c>true</c> if the location is at or over capacity; <c>false</c> otherwise.</returns>
-        protected virtual bool IsLocationOverCapacity( AttendanceSessionRequest sessionRequest, PreparedAttendanceRequest request, IReadOnlyCollection<RecentAttendance> currentAttendances, IReadOnlyCollection<Attendance> newAttendances )
+        protected virtual bool IsLocationOverCapacity( AttendanceSessionRequest sessionRequest, PreparedAttendanceRequest request, IReadOnlyCollection<RecentAttendance> existingAttendances, IReadOnlyCollection<Attendance> newAttendances )
         {
             int? threshold;
 
@@ -698,11 +698,10 @@ namespace Rock.CheckIn.v2
             }
 
             // Current attendence records in the database.
-            var count = currentAttendances
+            var attendedLocation = existingAttendances
                 .Where( a => a.LocationId == request.Location.IdKey
-                    && a.DidAttend
-                    && !a.EndDateTime.HasValue )
-                .Count();
+                    && a.DidAttend );
+            var count = CheckInDirector.FilterToCurrentlyCheckedIn( attendedLocation, Session.RockContext ).Count();
 
             // New records we have created but not written yet.
             count += newAttendances

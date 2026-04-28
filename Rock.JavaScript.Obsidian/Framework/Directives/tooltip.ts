@@ -43,10 +43,9 @@ type TooltipData = {
     observer: MutationObserver;
 
     /**
-     * The number of elements related to the tooltip that are currently
-     * being hovered.
+     * The state of the hover. Bit 0 = target element, Bit 1 = tooltip element.
      */
-    hoverCount: number;
+    hoverState: number;
 
     /** The current state of the tooltip. */
     state: "none" | "enter-waiting" | "entering" | "entered" | "leave-waiting" | "leaving";
@@ -240,9 +239,15 @@ function onMouseEnter(event: MouseEvent): void {
         }
     }
 
-    data.hoverCount++;
+    const oldHoverState = data.hoverState;
+    if (event.currentTarget === data.element) {
+        data.hoverState |= 1;
+    }
+    else {
+        data.hoverState |= 2;
+    }
 
-    if (data.hoverCount > 1) {
+    if (oldHoverState !== 0) {
         return;
     }
 
@@ -298,9 +303,15 @@ function onMouseLeave(event: MouseEvent): void {
     // Don't bother checking for overflow here since if the tooltip was shown,
     // then the content must have been overflowing.
 
-    data.hoverCount--;
+    const oldHoverState = data.hoverState;
+    if (event.currentTarget === data.element) {
+        data.hoverState &= ~1;
+    }
+    else {
+        data.hoverState &= ~2;
+    }
 
-    if (data.hoverCount > 0) {
+    if (oldHoverState === 0) {
         return;
     }
 
@@ -312,6 +323,7 @@ function onMouseLeave(event: MouseEvent): void {
             data.observer.disconnect();
 
             data.floatingElement.remove();
+            data.hoverState = 0;
         }
     }
     else if (data.state === "entering") {
@@ -326,6 +338,7 @@ function onMouseLeave(event: MouseEvent): void {
             data.state = "none";
             data.observer.disconnect();
             data.floatingElement.remove();
+            data.hoverState = 0;
             data.timer = undefined;
         }, animationDuration);
     }
@@ -340,6 +353,7 @@ function onMouseLeave(event: MouseEvent): void {
                 data.state = "none";
                 data.observer.disconnect();
                 data.floatingElement.remove();
+                data.hoverState = 0;
                 data.timer = undefined;
             }, animationDuration);
         }, data.immediate ? 0 : data.config.hideDelay ?? defaultHideDelay);
@@ -419,7 +433,7 @@ export const vTooltip: Directive<HTMLElement, TooltipContent | (() => TooltipCon
             contentElement,
             arrowElement,
             observer: new MutationObserver(() => onContentMutated(data)),
-            hoverCount: 0,
+            hoverState: 0,
             state: "none",
             config,
             html: binding.modifiers.html ?? config.html ?? false,
@@ -460,6 +474,7 @@ export const vTooltip: Directive<HTMLElement, TooltipContent | (() => TooltipCon
                 }
 
                 data.floatingElement.remove();
+                data.hoverState = 0;
                 data.state = "none";
             }
         }
@@ -469,6 +484,7 @@ export const vTooltip: Directive<HTMLElement, TooltipContent | (() => TooltipCon
         const data = el[tooltipDataSymbol] as TooltipData;
 
         data.floatingElement.remove();
+        data.hoverState = 0;
 
         if (data.timer !== undefined) {
             window.clearTimeout(data.timer);

@@ -31,7 +31,7 @@ namespace Rock.AI.Agent
         /// when a new user message is added. This only applies to persisted
         /// sessions.
         /// </summary>
-        public int AutoSummarizeThreshold { get; set; } = 2_000;
+        public int AutoSummarizeThreshold { get; set; } = 60_000;
 
         /// <summary>
         /// Determines if system skills are excluded from this agent. These are

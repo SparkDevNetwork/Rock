@@ -44,39 +44,6 @@ namespace Rock.Communication
         }
 
         /// <summary>
-        /// Gets or sets from number.
-        /// </summary>
-        /// <value>
-        /// From number.
-        /// </value>
-        [Obsolete( "Use FromSystemPhoneNumber instead." )]
-        [RockObsolete( "1.15" )]
-        public DefinedValueCache FromNumber
-        {
-            get
-            {
-                if ( !_fromSystemPhoneNumberId.HasValue )
-                {
-                    return null;
-                }
-
-                var systemPhoneNumberCache = SystemPhoneNumberCache.Get( _fromSystemPhoneNumberId.Value );
-
-                if ( systemPhoneNumberCache == null )
-                {
-                    return null;
-                }
-
-                return DefinedValueCache.Get( systemPhoneNumberCache.Guid );
-            }
-
-            set
-            {
-                _fromSystemPhoneNumberId = SystemPhoneNumberCache.Get( value.Guid )?.Id;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets system phone number that will be used to send this message.
         /// </summary>
         /// <value>

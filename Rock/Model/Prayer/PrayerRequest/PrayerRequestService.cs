@@ -580,7 +580,7 @@ namespace Rock.Model
                 )
                 // Where the request is this current person, the interaction date time is within our filtered minutes, and where the operation is Prayed.
                 .Where( a => a.PersonId == personId
-                    && a.InteractionDateTime >= System.Data.Entity.DbFunctions.AddMinutes( DateTime.Now, minutes * -1 )
+                    && a.InteractionDateTime >= System.Data.Entity.DbFunctions.AddMinutes( RockDateTime.Now, minutes * -1 )
                     && a.Operation == "Prayed" )
                 .Select( a => a.EntityId );
 

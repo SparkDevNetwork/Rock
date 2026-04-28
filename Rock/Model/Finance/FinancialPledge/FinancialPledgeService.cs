@@ -239,31 +239,5 @@ namespace Rock.Model
 
             return result;
         }
-
-        /// <summary>
-        /// Gets the pledge analytics.
-        /// </summary>
-        /// <param name="accountId">The account identifier.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="end">The end.</param>
-        /// <param name="minAmountPledged">The minimum amount pledged.</param>
-        /// <param name="maxAmountPledged">The maximum amount pledged.</param>
-        /// <param name="minComplete">The minimum complete.</param>
-        /// <param name="maxComplete">The maximum complete.</param>
-        /// <param name="minAmountGiven">The minimum amount given.</param>
-        /// <param name="maxAmountGiven">The maximum amount given.</param>
-        /// <param name="includePledges">if set to <c>true</c> [include pledges].</param>
-        /// <param name="includeGifts">if set to <c>true</c> [include gifts].</param>
-        /// <returns>DataSet.</returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use non-static GetPledgeAnalyticsDataSet instead" )]
-        public static DataSet GetPledgeAnalytics( int accountId, DateTime? start, DateTime? end,
-            decimal? minAmountPledged, decimal? maxAmountPledged, decimal? minComplete, decimal? maxComplete, decimal? minAmountGiven, decimal? maxAmountGiven,
-            bool includePledges, bool includeGifts )
-        {
-            var rockContext = new RockContext();
-            rockContext.Database.SetCommandTimeout( 180 );
-            return new FinancialPledgeService( rockContext ).GetPledgeAnalyticsDataSet( accountId, start, end, minAmountPledged, maxAmountPledged, minComplete, maxComplete, minAmountGiven, maxAmountGiven, includePledges, includeGifts );
-        }
     }
 }

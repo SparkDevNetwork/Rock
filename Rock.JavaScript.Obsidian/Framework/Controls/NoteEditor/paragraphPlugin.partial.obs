@@ -47,7 +47,7 @@
      * (/script)
      */
     import { ref, watch } from "vue";
-    import { getToolbarButton, usePluginHelper } from "./utils.partial";
+    import { getToolbarButton, usePluginHelper } from "../Internal/NoteEditor/utils";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
 
     const id = "rockparagraph" as const;

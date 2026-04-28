@@ -21,7 +21,7 @@ import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 
-const enum ConfigurationValueKey {
+const enum ConfigurationKey {
     HideUnknownGender = "hideUnknownGender"
 }
 
@@ -44,7 +44,7 @@ export const EditComponent = defineComponent({
 
     computed: {
         dropDownListOptions(): ListItemBag[] {
-            const hideUnknownGenderConfig = this.configurationValues[ConfigurationValueKey.HideUnknownGender];
+            const hideUnknownGenderConfig = this.configurationValues[ConfigurationKey.HideUnknownGender];
             const hideUnknownGender = hideUnknownGenderConfig?.toLowerCase() === "true";
 
             if (hideUnknownGender === false) {
@@ -53,7 +53,7 @@ export const EditComponent = defineComponent({
                     { text: "Male", value: "1" },
                     { text: "Female", value: "2" }
                 ] as ListItemBag[];
-                }
+            }
             else {
                 return [
                     { text: "Male", value: "1" },
@@ -109,10 +109,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.HideUnknownGender] = asTrueFalseOrNull(hideUnknownGender.value) ?? "False";
+            newValue[ConfigurationKey.HideUnknownGender] = asTrueFalseOrNull(hideUnknownGender.value) ?? "False";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.HideUnknownGender] !== (props.modelValue[ConfigurationValueKey.HideUnknownGender] ?? "False");
+            const anyValueChanged = newValue[ConfigurationKey.HideUnknownGender] !== (props.modelValue[ConfigurationKey.HideUnknownGender] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -139,7 +139,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            hideUnknownGender.value = asBoolean(props.modelValue[ConfigurationValueKey.HideUnknownGender]);
+            hideUnknownGender.value = asBoolean(props.modelValue[ConfigurationKey.HideUnknownGender]);
         }, {
             immediate: true
         });
@@ -155,7 +155,7 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(hideUnknownGender, () => maybeUpdateConfiguration(ConfigurationValueKey.HideUnknownGender, asTrueFalseOrNull(hideUnknownGender.value) ?? "False"));
+        watch(hideUnknownGender, () => maybeUpdateConfiguration(ConfigurationKey.HideUnknownGender, asTrueFalseOrNull(hideUnknownGender.value) ?? "False"));
 
         return { hideUnknownGender };
     },

@@ -16,8 +16,8 @@
 
         <div class="panel-body">
             <TransitionVerticalCollapse>
-                <div v-if="descending && isAddNoteVisible" :class="notesContainerEditorAndFilterCssClass">
-                    <div class="notes-container-editor">
+                <div v-if="descending && (isAddNoteVisible || isNoteTypeFilterVisible)" :class="notesContainerEditorAndFilterCssClass">
+                    <div v-if="isAddNoteVisible" class="notes-container-editor">
                         <NoteEditor v-model="addNoteBag"
                                     :noteTypes="noteTypes"
                                     :showAlert="noteOptions.showAlert"
@@ -43,8 +43,8 @@
             <NoteList :notes="visibleNotes" @beginEditNote="onBeginEditNote" @endEditNote="onEndEditNote" />
 
             <TransitionVerticalCollapse>
-                <div v-if="!descending && isAddNoteVisible" :class="notesContainerEditorAndFilterCssClass">
-                    <div class="notes-container-editor">
+                <div v-if="!descending && (isAddNoteVisible || isNoteTypeFilterVisible)" :class="notesContainerEditorAndFilterCssClass">
+                    <div v-if="isAddNoteVisible" class="notes-container-editor">
                         <NoteEditor v-model="addNoteBag"
                                     :noteTypes="noteTypes"
                                     :showAlert="noteOptions.showAlert"

@@ -316,7 +316,7 @@ namespace Rock.Blocks.Core
             component.LoadAttributes( RockContext );
 
             // Apply the public attribute values from the client.
-            component.SetPublicAttributeValues( attributeValues, RequestContext.CurrentPerson );
+            component.SetPublicAttributeValues( attributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
 
             // Validate attribute values before saving.
             if ( !component.ValidateAttributeValues( out var errorMessage ) )

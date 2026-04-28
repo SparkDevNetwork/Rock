@@ -65,7 +65,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Determines if the internal profile should be included in the return.
         /// </summary>
         [JsonIgnore]
-        public bool IncludePublicProfile { get; set; }
+        public bool IncludeProfileLink { get; set; }
 
         /// <summary>
         /// Determines if the avatar URL should be included in the return.
@@ -89,7 +89,7 @@ namespace Rock.AI.Agent.Classes.Entity
         {
             get
             {
-                if ( !IncludePublicProfile )
+                if ( !IncludeProfileLink )
                 {
                     return null;
                 }

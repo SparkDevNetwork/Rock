@@ -25,7 +25,6 @@
                                      :rules="config.isLastNameRequired ? ['required', 'nospecialcharacters', 'noemojisorspecialfonts'] : ['nospecialcharacters', 'noemojisorspecialfonts']" />
 
                             <EmailBox v-model="email"
-                                      autocomplete="email"
                                       :disabled="isSaving || isNavigating"
                                       label="Email" />
 

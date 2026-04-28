@@ -1,0 +1,43 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      description="Edits a nested DataViewFilter tree using the same filter components that Data Views use.">
+
+        <NotificationBox alertType="info" heading="Note">
+            This control is for internal use only.
+        </NotificationBox>
+
+        <DataViewFilterEditor v-model="value"
+                              :entityTypeGuid="EntityType.Person" />
+
+        <template #settings>
+            <p>This gallery displays the Data View Filters for the <code>Person</code> Entity Type.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import DataViewFilterEditor from "@Obsidian/Controls/dataViewFilterEditor.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { DataViewFilterBag } from "@Obsidian/ViewModels/Reporting/dataViewFilterBag";
+
+    const value = ref<DataViewFilterBag>({
+        expressionType: FilterExpressionType.GroupAll,
+        guid: newGuid(),
+        childFilters: [
+            {
+                guid: newGuid(),
+                expressionType: FilterExpressionType.Filter
+            }
+        ]
+    });
+
+    const importCode = getSfcControlImportPath("dataViewFilterEditor");
+    const exampleCode = `<DataViewFilterEditor v-model="value" :entityTypeGuid="EntityType.Person" />`;
+</script>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,17 +19,22 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Model.CMS.ContentChannelItem.Options;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.SystemGuid;
+using Rock.SystemKey;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.ContentChannelItemList;
 using Rock.Web.Cache;
@@ -46,56 +51,106 @@ namespace Rock.Blocks.Cms
     [Description( "Displays a list of content channel items." )]
     [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
-
     [ContextAware]
 
-    [LinkedPage(
-        "Detail Page",
+    #region Block Attributes
+
+    #region General Settings
+
+    [ContentChannelField(
+        "Content Channel",
+        Key = AttributeKey.ContentChannel,
+        Description = "If set the block will ignore content channel query parameters",
+        Category = AttributeCategory.GeneralSettings,
         Order = 0,
-        Key = AttributeKey.DetailPage,
-        Category = "Pages" )]
+        IsRequired = false )]
 
     [BooleanField(
         "Filter Items For Current User",
+        Key = AttributeKey.FilterItemsForCurrentUser,
         Description = "Filters the items by those created by the current logged in user.",
         DefaultBooleanValue = false,
+        Category = AttributeCategory.GeneralSettings,
         Order = 1,
-        Key = AttributeKey.FilterItemsForCurrentUser )]
+        IsRequired = false )]
+
     [BooleanField(
         "Show Filters",
+        Key = AttributeKey.ShowFilters,
         Description = "Allows you to show/hide the grids filters.",
         DefaultBooleanValue = true,
+        Category = AttributeCategory.GeneralSettings,
         Order = 2,
-        Key = AttributeKey.ShowFilters )]
+        IsRequired = false )]
+
     [BooleanField(
         "Show Event Occurrences Column",
+        Key = AttributeKey.ShowEventOccurrencesColumn,
         Description = "Determines if the column that lists event occurrences should be shown if any of the items has an event occurrence.",
         DefaultBooleanValue = true,
+        Category = AttributeCategory.GeneralSettings,
         Order = 3,
-        Key = AttributeKey.ShowEventOccurrencesColumn )]
+        IsRequired = false )]
+
+    [BooleanField(
+        "Show Total Views Column",
+        Key = AttributeKey.ShowTotalViewsColumns,
+        Description = "Determines if the total views column should be shown.",
+        DefaultBooleanValue = true,
+        Category = AttributeCategory.GeneralSettings,
+        Order = 4,
+        IsRequired = false )]
+
     [BooleanField(
         "Show Priority Column",
+        Key = AttributeKey.ShowPriorityColumn,
         Description = "Determines if the column that displays priority should be shown for content channels that have Priority enabled.",
         DefaultBooleanValue = true,
-        Order = 4,
-        Key = AttributeKey.ShowPriorityColumn )]
+        Category = AttributeCategory.GeneralSettings,
+        Order = 5,
+        IsRequired = false )]
+
+    [BooleanField(
+        "Show Item URL Column",
+        Key = AttributeKey.ShowItemUrlColumn,
+        Description = "Determines if the item URL column should be shown.",
+        DefaultBooleanValue = true,
+        Category = AttributeCategory.GeneralSettings,
+        Order = 6,
+        IsRequired = false )]
+
+    [BooleanField(
+        "Show Linked Media Column",
+        Key = AttributeKey.ShowLinkedMediaColumn,
+        Description = "Determines if the linked media column should be shown.",
+        DefaultBooleanValue = true,
+        Category = AttributeCategory.GeneralSettings,
+        Order = 7,
+        IsRequired = false )]
+
     [BooleanField(
         "Show Security Column",
+        Key = AttributeKey.ShowSecurityColumn,
         Description = "Determines if the security column should be shown.",
         DefaultBooleanValue = true,
-        Order = 5,
-        Key = AttributeKey.ShowSecurityColumn )]
-    [BooleanField(
-        "Show Expire Column",
-        Description = "Determines if the expire column should be shown.",
-        DefaultBooleanValue = true,
-        Order = 6,
-        Key = AttributeKey.ShowExpireColumn )]
-    [ContentChannelField(
-        "Content Channel",
-        Description = "If set the block will ignore content channel query parameters",
-        IsRequired = false,
-        Key = AttributeKey.ContentChannel )]
+        Category = AttributeCategory.GeneralSettings,
+        Order = 8,
+        IsRequired = false )]
+
+    #endregion General Settings
+
+    #region Pages
+
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Category = AttributeCategory.Pages,
+        Order = 0,
+        IsRequired = true )]
+
+    #endregion Pages
+
+    #endregion Block Attributes
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "5597badd-bb0e-4bcd-be1f-5acf230cf428" )]
@@ -111,14 +166,33 @@ namespace Rock.Blocks.Cms
 
         private static class AttributeKey
         {
-            public const string DetailPage = "DetailPage";
+            // General Settings
+            public const string ContentChannel = "ContentChannel";
             public const string FilterItemsForCurrentUser = "FilterItemsForCurrentUser";
             public const string ShowFilters = "ShowFilters";
             public const string ShowEventOccurrencesColumn = "ShowEventOccurrencesColumn";
+            public const string ShowTotalViewsColumns = "ShowTotalViewsColumns";
             public const string ShowPriorityColumn = "ShowPriorityColumn";
+            public const string ShowItemUrlColumn = "ShowItemUrlColumn";
+            public const string ShowLinkedMediaColumn = "ShowLinkedMediaColumn";
             public const string ShowSecurityColumn = "ShowSecurityColumn";
-            public const string ShowExpireColumn = "ShowExpireColumn";
-            public const string ContentChannel = "ContentChannel";
+
+            // Pages
+            public const string DetailPage = "DetailPage";
+        }
+
+        private static class AttributeCategory
+        {
+            public const string GeneralSettings = "";
+            public const string Pages = "Pages";
+        }
+
+        private static class SqlParamKey
+        {
+            public const string MediumDefinedValueId = "@MediumDefinedValueId";
+            public const string ContentChannelId = "@ContentChannelId";
+            public const string EntityMetadataKey = "@EntityMetadataKey";
+            public const string ContentChannelItemEntityTypeId = "@ContentChannelItemEntityTypeId";
         }
 
         private static class NavigationUrlKey
@@ -126,6 +200,7 @@ namespace Rock.Blocks.Cms
             public const string DetailPage = "DetailPage";
             public const string NewItemPage = "NewItemPage";
             public const string LibraryDownloadPage = "LibraryDownloadPage";
+            public const string MediaElementPage = "MediaElementPage";
         }
 
         #endregion Keys
@@ -186,15 +261,18 @@ namespace Rock.Blocks.Cms
                 LibraryLicenseName = DefinedValueCache.Get( licenseGuid ).Value,
 
                 ShowReorderColumn = !isFiltered && contentChannel.ItemsManuallyOrdered,
-                ShowPriorityColumn = !contentChannel.ContentChannelType.DisablePriority
-                    && GetAttributeValue( AttributeKey.ShowPriorityColumn ).AsBoolean(),
                 ShowStartDateTimeColumn = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.SingleDate
                     || contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange,
-                ShowExpireDateTimeColumn = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange
-                    && GetAttributeValue( AttributeKey.ShowExpireColumn ).AsBoolean(),
+                ShowExpireDateTimeColumn = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange,
+                ShowTotalViewsColumns = GetAttributeValue( AttributeKey.ShowTotalViewsColumns ).AsBoolean(),
+                ShowPriorityColumn = !contentChannel.ContentChannelType.DisablePriority
+                    && GetAttributeValue( AttributeKey.ShowPriorityColumn ).AsBoolean(),
+                ShowOccurrencesColumn = GetAttributeValue( AttributeKey.ShowEventOccurrencesColumn ).AsBoolean(),
                 ShowStatusColumn = contentChannel.RequiresApproval && !contentChannel.ContentChannelType.DisableStatus,
-                ShowSecurityColumn = GetAttributeValue( AttributeKey.ShowSecurityColumn ).AsBoolean(),
-                ShowOccurrencesColumn = GetAttributeValue( AttributeKey.ShowEventOccurrencesColumn ).AsBoolean()
+                ShowItemUrlColumn = GetAttributeValue( AttributeKey.ShowItemUrlColumn ).AsBoolean()
+                    && contentChannel.ItemUrl.IsNotNullOrWhiteSpace(),
+                ShowLinkedMediaColumn = GetAttributeValue( AttributeKey.ShowLinkedMediaColumn ).AsBoolean(),
+                ShowSecurityColumn = GetAttributeValue( AttributeKey.ShowSecurityColumn ).AsBoolean()
             };
 
             return options;
@@ -251,7 +329,8 @@ namespace Rock.Blocks.Cms
                     ["ContentItemId"] = "((Key))",
                     ["ContentChannelId"] = contentChannel.IdKey
                 } ),
-                [NavigationUrlKey.LibraryDownloadPage] = libraryDownloadUrl
+                [NavigationUrlKey.LibraryDownloadPage] = libraryDownloadUrl,
+                [NavigationUrlKey.MediaElementPage] = "/admin/cms/media-accounts/items/((Key))"
             };
         }
 
@@ -305,7 +384,7 @@ namespace Rock.Blocks.Cms
                 query = query.OrderByDescending( p => p.StartDateTime );
             }
 
-            return queryable;
+            return query;
         }
 
         /// <summary>
@@ -332,6 +411,11 @@ namespace Rock.Blocks.Cms
         {
             var contentChannel = GetContentChannel();
 
+            var itemUrlMergeFields = new Dictionary<string, object>
+            {
+                ["ContentChannelId"] = contentChannel.Id
+            };
+
             var builder = new GridBuilder<ContentChannelItem>()
                 .WithBlock( this )
                 .AddTextField( "id", a => a.Id.ToString() )
@@ -351,6 +435,21 @@ namespace Rock.Blocks.Cms
                 .AddField( "isUploadedToContentLibrary", a => a.IsUploadedToContentLibrary )
                 .AddField( "contentLibraryLicenseTypeGuid", a => a.ContentLibraryLicenseTypeValueId.HasValue ? DefinedValueCache.Get( a.ContentLibraryLicenseTypeValueId.Value )?.Guid : null )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "last28DaysViewsCount", a => 0 )
+                .AddTextField( "itemUrl", a =>
+                {
+                    if ( contentChannel.ItemUrl.IsNullOrWhiteSpace() )
+                    {
+                        return null;
+                    }
+
+                    itemUrlMergeFields.AddOrReplace( "Id", a.Id );
+                    itemUrlMergeFields.AddOrReplace( "Title", a.Title );
+                    itemUrlMergeFields.AddOrReplace( "Slug", a.PrimarySlug );
+
+                    return contentChannel.ItemUrl.ResolveMergeFields( itemUrlMergeFields );
+                } )
+                .AddField( "hasLinkedMediaElements", a => false )
                 .AddAttributeFields( GetGridAttributes() );
 
             return builder;
@@ -398,9 +497,209 @@ namespace Rock.Blocks.Cms
             return SelectedContentChannel;
         }
 
-        #endregion
+        #endregion Methods
 
         #region Block Actions
+
+        /// <summary>
+        /// Gets the content channel item list grid data.
+        /// </summary>
+        /// <returns>A bag containing the content channel item list grid data.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> GetContentChannelItemListGridData()
+        {
+            var contentChannel = GetContentChannel();
+            if ( contentChannel == null )
+            {
+                return ActionBadRequest( $"Unable to find {ContentChannel.FriendlyTypeName}." );
+            }
+
+            /*
+                3/18/2026 - JPH
+
+                This `GetGridData` block action diverges from the standard grid data pattern.
+
+                It aggregates data from multiple independent sources:
+                    1. Base entities;
+                    2. View interaction counts;
+                    3. Linked media metadata;
+
+                Each source is retrieved in parallel using separate background tasks (each with its own RockContext).
+                The results are then merged into the final grid data bag before returning to the client.
+
+                Reason: Document non-standard parallel data retrieval and aggregation approach.
+            */
+
+            var getGridDataTask = Task.Run( () =>
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    return GetGridDataBag( rockContext );
+                }
+            } );
+
+            var tasks = new List<Task> { getGridDataTask };
+
+            Task<Dictionary<int, InteractionCounts>> getInteractionCountsTask = null;
+            Task<Dictionary<int, LinkedMediaMetadata>> getLinkedMediaElementsTask = null;
+
+            var showTotalViewsColumns = GetAttributeValue( AttributeKey.ShowTotalViewsColumns ).AsBoolean();
+            if ( showTotalViewsColumns )
+            {
+                getInteractionCountsTask = Task.Run( () =>
+                {
+                    var mediumDefinedValueGuid = Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL.AsGuid();
+
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var sql = $@"
+SELECT ic.[EntityId],
+    COUNT(*) AS [Last28DaysViewsCount]
+FROM [Interaction] i
+    INNER JOIN [InteractionComponent] ic ON ic.[Id] = i.[InteractionComponentId]
+    INNER JOIN [InteractionChannel] ich ON ich.[Id] = ic.[InteractionChannelId]
+    INNER JOIN [ContentChannelItem] cci ON cci.[Id] = ic.[EntityId]
+WHERE ich.[ChannelTypeMediumValueId] = {SqlParamKey.MediumDefinedValueId}
+    AND cci.[ContentChannelId] = {SqlParamKey.ContentChannelId}
+    AND i.[InteractionDateTime] >= DATEADD(DAY, -27, CAST(GETDATE() AS DATE))
+GROUP BY ic.[EntityId];";
+
+                        return rockContext.Database
+                            .SqlQuery<InteractionCounts>(
+                                sql,
+                                new SqlParameter( SqlParamKey.MediumDefinedValueId, DefinedValueCache.GetId( mediumDefinedValueGuid ) ),
+                                new SqlParameter( SqlParamKey.ContentChannelId, contentChannel.Id )
+                            )
+                            .ToDictionary( c => c.EntityId );
+                    }
+                } );
+
+                tasks.Add( getInteractionCountsTask );
+            }
+
+            var showLinkedMediaColumn = GetAttributeValue( AttributeKey.ShowLinkedMediaColumn ).AsBoolean();
+            if ( showLinkedMediaColumn )
+            {
+                getLinkedMediaElementsTask = Task.Run( () =>
+                {
+                    var contentChannelItemEntityGuid = Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid();
+
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var sql = $@"
+SELECT em.[EntityId]
+    , em.[Value]
+FROM [EntityMetadata] em
+    INNER JOIN [ContentChannelItem] cci ON cci.[Id] = em.[EntityId]
+WHERE em.[Key] = {SqlParamKey.EntityMetadataKey}
+    AND em.[EntityTypeId] = {SqlParamKey.ContentChannelItemEntityTypeId}
+    AND cci.[ContentChannelId] = {SqlParamKey.ContentChannelId};";
+
+                        return rockContext.Database
+                            .SqlQuery<LinkedMediaMetadata>(
+                                sql,
+                                new SqlParameter( SqlParamKey.EntityMetadataKey, MetadataKey.MediaElements ),
+                                new SqlParameter( SqlParamKey.ContentChannelItemEntityTypeId, EntityTypeCache.GetId( contentChannelItemEntityGuid ) ),
+                                new SqlParameter( SqlParamKey.ContentChannelId, contentChannel.Id )
+                            )
+                            .GroupBy( m => m.EntityId )
+                            .ToDictionary(
+                                g => g.Key,
+                                g => g.First()
+                            );
+                    }
+                } );
+
+                tasks.Add( getLinkedMediaElementsTask );
+            }
+
+            await Task.WhenAll( tasks );
+
+            var gridDataBag = getGridDataTask.Result;
+
+            if ( tasks.Count > 1 )
+            {
+                var interactionCounts = showTotalViewsColumns ? getInteractionCountsTask.Result : null;
+                var linkedMediaElements = showLinkedMediaColumn ? getLinkedMediaElementsTask.Result : null;
+
+                foreach ( var row in gridDataBag.Rows )
+                {
+                    if ( !row.TryGetValue( "idKey", out var idKey ) )
+                    {
+                        continue;
+                    }
+
+                    var id = IdHasher.Instance.GetId( idKey.ToString() );
+                    if ( !id.HasValue )
+                    {
+                        continue;
+                    }
+
+                    if ( interactionCounts != null && interactionCounts.TryGetValue( id.Value, out var counts ) )
+                    {
+                        row["last28DaysViewsCount"] = counts.Last28DaysViewsCount;
+                    }
+
+                    if ( linkedMediaElements != null && linkedMediaElements.TryGetValue( id.Value, out var metadata ) )
+                    {
+                        row["hasLinkedMediaElements"] = metadata.Value.IsNotNullOrWhiteSpace();
+                    }
+                }
+            }
+
+            return ActionOk( gridDataBag );
+        }
+
+        /// <summary>
+        /// Gets information about linked media elements.
+        /// </summary>
+        /// <param name="bag">The information needed to get linked media elements.</param>
+        /// <returns>A bag containing information about linked media elements.</returns>
+        [BlockAction]
+        public BlockActionResult GetLinkedMediaElements( GetLinkedMediaElementsRequestBag bag )
+        {
+            if ( ( bag?.ContentChannelItemIdKey ).IsNullOrWhiteSpace() )
+            {
+                return ActionBadRequest();
+            }
+
+            var contentChannelItem = new ContentChannelItemService( RockContext )
+                .Get( bag.ContentChannelItemIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( contentChannelItem == null )
+            {
+                return ActionBadRequest( $"Unable to find {ContentChannelItem.FriendlyTypeName}." );
+            }
+
+            if ( !contentChannelItem.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                return ActionUnauthorized( EditModeMessage.NotAuthorizedToView( ContentChannelItem.FriendlyTypeName ) );
+            }
+
+            var mediaElementIds = contentChannelItem.GetMetadataValue<List<int>>( MetadataKey.MediaElements, RockContext );
+            if ( mediaElementIds?.Any() != true )
+            {
+                return ActionBadRequest( "Unable to find linked media elements" );
+            }
+
+            var mediaElements = new MediaElementService( RockContext )
+                .Queryable()
+                // This will be a small list of IDs (most often just one), so a SQL `WHERE...IN` should be OK here.
+                .Where( me => mediaElementIds.Contains( me.Id ) )
+                .Select( me => new LinkedMediaElementBag
+                {
+                    Id = me.Id,
+                    Name = me.Name
+                } )
+                .ToList();
+
+            mediaElements.ForEach( me => me.TranslateIdToIdKey() );
+
+            return ActionOk( new GetLinkedMediaElementsResponseBag
+            {
+                LinkedMediaElements = mediaElements
+            } );
+        }
 
         /// <summary>
         /// Deletes the specified entity.
@@ -410,31 +709,28 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new ContentChannelItemService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new ContentChannelItemService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{ContentChannelItem.FriendlyTypeName} not found." );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete {ContentChannelItem.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{ContentChannelItem.FriendlyTypeName} not found." );
             }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {ContentChannelItem.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         /// <summary>
@@ -446,24 +742,21 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
-            using ( var rockContext = new RockContext() )
+            // Get the queryable and make sure it is ordered correctly.
+            var qry = GetListQueryable( RockContext );
+            qry = GetOrderedListQueryable( qry, RockContext );
+
+            // Get the entities from the database.
+            var items = GetListItems( qry, RockContext );
+
+            if ( !items.ReorderEntity( key, beforeKey ) )
             {
-                // Get the queryable and make sure it is ordered correctly.
-                var qry = GetListQueryable( rockContext );
-                qry = GetOrderedListQueryable( qry, rockContext );
-
-                // Get the entities from the database.
-                var items = GetListItems( qry, rockContext );
-
-                if ( !items.ReorderEntity( key, beforeKey ) )
-                {
-                    return ActionBadRequest( "Invalid reorder attempt." );
-                }
-
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( "Invalid reorder attempt." );
             }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         /// <summary>
@@ -474,27 +767,24 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult UploadContentLibraryItem( string key )
         {
-            using ( var rockContext = new RockContext() )
+            try
             {
-                try
-                {
-                    var contentChannelItemId = key.AsInteger();
-                    var contentChannelItemService = new ContentChannelItemService( rockContext );
-                    contentChannelItemService.UploadToContentLibrary(
-                        new ContentLibraryItemUploadOptions
-                        {
-                            ContentChannelItemId = contentChannelItemId,
-                            UploadedByPersonAliasId = GetCurrentPerson().PrimaryAliasId
-                        } );
-                }
-                catch ( AddToContentLibraryException ex )
-                {
-                    Logger.LogError( ex, ex.Message );
-                    return ActionInternalServerError( ex.Message );
-                }
-
-                return ActionOk();
+                var contentChannelItemId = key.AsInteger();
+                var contentChannelItemService = new ContentChannelItemService( RockContext );
+                contentChannelItemService.UploadToContentLibrary(
+                    new ContentLibraryItemUploadOptions
+                    {
+                        ContentChannelItemId = contentChannelItemId,
+                        UploadedByPersonAliasId = GetCurrentPerson().PrimaryAliasId
+                    } );
             }
+            catch ( AddToContentLibraryException ex )
+            {
+                Logger.LogError( ex, ex.Message );
+                return ActionInternalServerError( ex.Message );
+            }
+
+            return ActionOk();
         }
 
         /// <summary>
@@ -505,28 +795,25 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult UpdateContentLibraryItem( string key )
         {
-            using ( var rockContext = new RockContext() )
+            try
             {
-                try
-                {
-                    var contentChannelItemId = key.AsInteger();
-                    var contentChannelItemService = new ContentChannelItemService( rockContext );
-                    contentChannelItemService.UploadToContentLibrary(
-                        new ContentLibraryItemUploadOptions
-                        {
-                            ContentChannelItemId = contentChannelItemId,
-                            UploadedByPersonAliasId = GetCurrentPerson().PrimaryAliasId
-                        }
-                    );
-                }
-                catch ( AddToContentLibraryException ex )
-                {
-                    Logger.LogError( ex, ex.Message );
-                    return ActionInternalServerError( ex.Message );
-                }
-
-                return ActionOk();
+                var contentChannelItemId = key.AsInteger();
+                var contentChannelItemService = new ContentChannelItemService( RockContext );
+                contentChannelItemService.UploadToContentLibrary(
+                    new ContentLibraryItemUploadOptions
+                    {
+                        ContentChannelItemId = contentChannelItemId,
+                        UploadedByPersonAliasId = GetCurrentPerson().PrimaryAliasId
+                    }
+                );
             }
+            catch ( AddToContentLibraryException ex )
+            {
+                Logger.LogError( ex, ex.Message );
+                return ActionInternalServerError( ex.Message );
+            }
+
+            return ActionOk();
         }
 
         /// <summary>
@@ -537,32 +824,66 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult ReDownloadContentLibraryItem( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var contentChannelItemId = key.AsInteger();
+            var contentChannelItemService = new ContentChannelItemService( RockContext );
+
+            var contentLibraryItemGuid = contentChannelItemService.AsNoFilter().AsNoTracking().Where( i => i.Id == contentChannelItemId ).Select( i => i.ContentLibrarySourceIdentifier ).FirstOrDefault();
+
+            try
             {
-                var contentChannelItemId = key.AsInteger();
-                var contentChannelItemService = new ContentChannelItemService( rockContext );
-
-                var contentLibraryItemGuid = contentChannelItemService.AsNoFilter().AsNoTracking().Where( i => i.Id == contentChannelItemId ).Select( i => i.ContentLibrarySourceIdentifier ).FirstOrDefault();
-
-                try
+                var result = contentChannelItemService.AddFromContentLibrary( new ContentLibraryItemDownloadOptions
                 {
-                    var result = contentChannelItemService.AddFromContentLibrary( new ContentLibraryItemDownloadOptions
-                    {
-                        ContentLibraryItemGuidToDownload = contentLibraryItemGuid.Value,
-                        DownloadIntoContentChannelGuid = GetContentChannel().Guid,
-                        CurrentPersonPerformingDownload = GetCurrentPerson()
-                    } );
-                }
-                catch ( AddFromContentLibraryException ex )
-                {
-                    Logger.LogError( ex, ex.Message );
-                    return ActionInternalServerError( ex.Message );
-                }
-
-                return ActionOk();
+                    ContentLibraryItemGuidToDownload = contentLibraryItemGuid.Value,
+                    DownloadIntoContentChannelGuid = GetContentChannel().Guid,
+                    CurrentPersonPerformingDownload = GetCurrentPerson()
+                } );
             }
+            catch ( AddFromContentLibraryException ex )
+            {
+                Logger.LogError( ex, ex.Message );
+                return ActionInternalServerError( ex.Message );
+            }
+
+            return ActionOk();
         }
 
-        #endregion
+        #endregion Block Actions
+
+        #region Supporting Classes
+
+        /// <summary>
+        /// A POCO to represent interaction counts.
+        /// </summary>
+        private class InteractionCounts
+        {
+            /// <summary>
+            /// Gets or sets the entity identifier.
+            /// </summary>
+            public int EntityId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the count of view interactions within the last 28 days.
+            /// </summary>
+            public int Last28DaysViewsCount { get; set; }
+        }
+
+        /// <summary>
+        /// A POCO to represent linked media metadata.
+        /// </summary>
+        private class LinkedMediaMetadata
+        {
+            /// <summary>
+            /// Gets or sets the entity identifier.
+            /// </summary>
+            public int EntityId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the metadata value that will contain an array of the linked <see cref="MediaElement"/>
+            /// identifiers.
+            /// </summary>
+            public string Value { get; set; }
+        }
+
+        #endregion Supporting Classes
     }
 }

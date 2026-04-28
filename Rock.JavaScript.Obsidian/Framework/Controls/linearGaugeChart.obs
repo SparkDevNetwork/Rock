@@ -1,0 +1,589 @@
+<template>
+    <div class="chart-container linear-gauge-chart" :style="{ height: height || '100%', width: width || '100%' }">
+        <div v-if="title"
+             class="linear-gauge-chart-label"
+             :class="titleAlign">{{ title }}</div>
+
+        <div class="linear-gauge-chart-and-legend"
+             :class="legendPosition">
+            <div ref="chartContentRef"
+                 class="linear-gauge-chart-content">
+                <div v-for="gauge of gauges"
+                     :key="gauge.id"
+                     class="linear-gauge"
+                     :class="sectionStyle">
+                    <div v-for="section of gauge.sections"
+                         :key="section.id"
+                         class="linear-gauge-section"
+                         :data-original-title="section.tooltip"
+                         :ref="applyTooltip">
+                        <div v-for="segment of section.segments"
+                             :key="segment.id"
+                             class="linear-gauge-section-segment"
+                             :style="{ backgroundColor: segment.color, width: segment.width + 'px' }" />
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="!hideLegend"
+                 class="linear-gauge-chart-legend"
+                 :class="legendAlign">
+                <div v-for="(item, i) of series"
+                     :key="i"
+                     class="linear-gauge-chart-legend-item"
+                     :class="{ 'legend-item-hidden': hiddenSeries[item.label] }"
+                     @click="toggleSeries(item.label)">
+                    <span class="linear-gauge-chart-legend-item-icon"
+                          :style="{ color: item.color }">
+                        <i class="ti ti-circle-filled"></i>
+                    </span>
+                    <span class="linear-gauge-chart-legend-item-label">
+                        {{ item.label }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.linear-gauge-chart {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large);
+    flex: 1;
+    /* Allow the chart to grow and fill available space if in a flex box */
+    justify-content: space-between;
+    /* Distribute space between the label, content, and legend */
+}
+
+.linear-gauge-chart-label {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-small);
+    color: var(--color-interface-strong);
+    text-align: center;
+}
+
+.linear-gauge-chart-label.start {
+    text-align: left;
+}
+
+.linear-gauge-chart-label.center {
+    text-align: center;
+}
+
+.linear-gauge-chart-label.end {
+    text-align: right;
+}
+
+.linear-gauge-chart-and-legend {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+}
+
+.linear-gauge-chart-and-legend.left {
+    flex-direction: row-reverse;
+}
+
+.linear-gauge-chart-and-legend.right {
+    flex-direction: row;
+}
+
+.linear-gauge-chart-and-legend.top {
+    flex-direction: column-reverse;
+}
+
+.linear-gauge-chart-and-legend.bottom {
+    flex-direction: column;
+}
+
+.linear-gauge-chart-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    flex: 1;
+}
+
+.linear-gauge {
+    display: flex;
+    height: 30px;
+    gap: v-bind(gapWidthPx);
+}
+
+.linear-gauge-section {
+    display: flex;
+    height: 100%;
+    gap: v-bind(gapWidthPx);
+}
+
+.linear-gauge-section:empty {
+    display: none;
+}
+
+.linear-gauge-section-segment {
+    height: 100%;
+}
+
+.linear-gauge.segmented .linear-gauge-section-segment {
+    border-radius: var(--rounded-small);
+}
+
+.linear-gauge.continuous .linear-gauge-section .linear-gauge-section-segment {
+    border-radius: 0;
+}
+
+.linear-gauge.continuous .linear-gauge-section:first-child .linear-gauge-section-segment {
+    border-top-left-radius: var(--rounded-small);
+    border-bottom-left-radius: var(--rounded-small);
+}
+
+.linear-gauge.continuous .linear-gauge-section:last-child .linear-gauge-section-segment {
+    border-top-right-radius: var(--rounded-small);
+    border-bottom-right-radius: var(--rounded-small);
+}
+
+.linear-gauge-chart-legend {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--spacing-small);
+    row-gap: var(--spacing-tiny);
+    justify-content: center;
+}
+
+.linear-gauge-chart-and-legend.left .linear-gauge-chart-legend,
+.linear-gauge-chart-and-legend.right .linear-gauge-chart-legend {
+    flex-direction: column;
+}
+
+.linear-gauge-chart-legend.start {
+    justify-content: flex-start;
+}
+
+.linear-gauge-chart-legend.center {
+    justify-content: center;
+}
+
+.linear-gauge-chart-legend.end {
+    justify-content: flex-end;
+}
+
+.linear-gauge-chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    cursor: pointer;
+}
+
+.linear-gauge-chart-legend-item-label {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-xsmall);
+}
+
+.linear-gauge-chart-legend-item.legend-item-hidden .linear-gauge-chart-legend-item-label {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.linear-gauge-chart-legend-item.legend-item-hidden .linear-gauge-chart-legend-item-icon {
+    opacity: 0.4;
+}
+</style>
+
+<script setup lang="ts">
+    /**
+     * Terminology:
+     * - Linear gauge: The visualization rendered by this component.
+     * - Section: A logical portion of the gauge (for example, On Track, Due Soon, Overdue).
+     * - Segmented: A rendering style that visually divides sections into smaller pieces.
+     */
+    import { computed, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+    import {
+        LegendAlign,
+        LegendPosition,
+        LinearGaugeSectionStyle,
+        LinearGaugeSeries,
+        TitleAlign,
+        TooltipCallback,
+        TooltipContext
+    } from "@Obsidian/Core/Controls/chart";
+    import { isElement } from "@Obsidian/Utility/dom";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    type Gauge = {
+        id: string;
+        label?: string;
+        sections: Section[];
+    };
+
+    type Section = {
+        id: string;
+        label: string;
+        color: string;
+        segments: Segment[];
+        tooltip: string;
+    };
+
+    type Segment = {
+        id: string;
+        label: string;
+        width: number;
+        color: string;
+    };
+
+    const props = defineProps({
+        /**
+         * The CSS style string to set the height of the doughnut chart component.
+         * - Accepts any valid CSS height value (e.g., "400px", "50vh") or undefined.
+         * - Value defaults to "100%" if undefined.
+         */
+        height: {
+            type: String as PropType<string | undefined>,
+            default: "100%"
+        },
+
+        /**
+         * Whether the legend is hidden.
+         */
+        hideLegend: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The labels to display to the left of each linear gauge.
+         *
+         * Each label corresponds by index to a rendered gauge. For example,
+         * `labels[i]` describes the i-th linear gauge formed from the series data.
+         */
+        labels: {
+            type: Array as PropType<string[] | undefined>,
+            required: false
+        },
+
+        /**
+         * The alignment of the legend in the chart.
+         */
+        legendAlign: {
+            type: Object as PropType<LegendAlign | null | undefined>
+        },
+
+        /**
+         * The position of the legend in the chart.
+         */
+        legendPosition: {
+            type: Object as PropType<LegendPosition | undefined>
+        },
+
+        /**
+         * The line style used to render each section of the linear gauge.
+         *
+         * A segmented style renders sections as a series of discrete visual pieces,
+         * while a continuous style renders each section as a single uninterrupted shape.
+         */
+        sectionStyle: {
+            type: String as PropType<LinearGaugeSectionStyle>,
+            default: "segmented"
+        },
+        /**
+         * The series used to render the linear gauge.
+         *
+         * Each entry represents a section that may appear in one or more linear gauges.
+         * Sections at the same index across all series are combined to form a single gauge.
+         *
+         * @example
+         * ```ts
+         * // Example for a single linear gauge composed of three sections
+         * // representing request health (On Track, Due Soon, Overdue)
+         * const series: LinearGaugeSeries[] = [
+         *   { label: "On Track", data: [55], color: "var(--color-success-strong)" },
+         *   { label: "Due Soon", data: [18], color: "#F59E0B" },
+         *   { label: "Overdue", data: [8], color: "#EF4444" }
+         * ];
+         * ```
+         *
+         * @example
+         * ```ts
+         * // Example for multiple linear gauges using the same sections.
+         * // Each index across the data arrays forms a complete gauge.
+         * // In this example, two gauges are rendered.
+         * const series: LinearGaugeSeries[] = [
+         *   { label: "On Track", data: [55, 42], color: "var(--color-success-strong)" },
+         *   { label: "Due Soon", data: [18, 25], color: "#F59E0B" },
+         *   { label: "Overdue", data: [8, 13], color: "#EF4444" }
+         * ];
+         * ```
+         */
+        series: {
+            type: Array as PropType<LinearGaugeSeries[]>,
+            required: true
+        },
+
+        /**
+         * The title of the chart.
+         */
+        title: {
+            type: String,
+            default: ""
+        },
+
+        /**
+         * The alignment of the chart title.
+         */
+        titleAlign: {
+            type: String as PropType<TitleAlign | undefined>
+        },
+
+        /**
+         * The tooltip formatter function.
+         *
+         * This formats the value portion of the tooltip body. The title of the tooltip will use the `tooltipTitle` formatter if provided, otherwise it will use the default formatter.
+         */
+        tooltip: {
+            type: Function as PropType<TooltipCallback | undefined>
+        },
+
+        /**
+         * The tooltip title.
+         *
+         * Either a string or a formatter function can be used. If a formatter function is provided, it will be used to format the title of the tooltip. If a string is provided, it will be used as the title for all tooltips. If neither is provided, the default formatter will use the series label as the title.
+         */
+        tooltipTitle: {
+            type: [Function, String] as PropType<TooltipCallback | string | undefined>
+        },
+
+        /**
+         * The CSS style string to set the width of the doughnut chart component.
+         * - Accepts any valid CSS width value (e.g., "600px", "100%") or undefined.
+         * - Value defaults to "100%" if undefined.
+         */
+        width: {
+            type: String as PropType<string | undefined>,
+            default: "100%"
+        },
+    });
+
+    const segmentWidth = 8;
+    const gapWidth = 3;
+
+    const chartContentRef = ref<HTMLElement | null>(null);
+    const hiddenSeries = ref<Record<string, boolean>>({});
+    const gauges = ref<Gauge[]>([]);
+
+    const gapWidthPx = computed(() =>
+        props.sectionStyle === "continuous" ? "" : `${gapWidth}px`
+    );
+
+    const resizeObserver = new ResizeObserver(() => {
+        if (props.legendPosition === "left" || props.legendPosition === "right") {
+            // Clear the gauges when the legend is on the left or right
+            // to prevent rendering issues during resize when the legend may be taking up horizontal space.
+            gauges.value = [];
+        }
+        requestAnimationFrame(calculateSegments);
+    });
+
+    function calculateSegments(): void {
+        gauges.value = [];
+
+        const containerWidth = chartContentRef.value?.clientWidth;
+        const gaugeCount = Math.max(0, ...props.series.map(s => s.data.length));
+
+        if (isNullish(containerWidth) || gaugeCount === 0) {
+            return;
+        }
+
+        for (let gaugeIndex = 0; gaugeIndex < gaugeCount; gaugeIndex++) {
+            const visibleItems = props.series.filter(
+                item => !hiddenSeries.value[item.label] && !isNullish(item.data[gaugeIndex])
+            );
+
+            // Ensure negative values are treated as zero since they
+            // can't be rendered in a linear gauge and would throw off the segment calculations.
+            const valueSum = Enumerable.from(visibleItems).sum(i => Math.max(i.data[gaugeIndex]!, 0));
+
+            if (valueSum <= 0) {
+                continue;
+            }
+
+            const totalAvailableSegments = Math.floor(
+                (containerWidth + gapWidth) / (segmentWidth + gapWidth)
+            );
+
+            const allocations = visibleItems.map(item => {
+                const exact = (Math.max(item.data[gaugeIndex]!, 0) / valueSum) * totalAvailableSegments;
+                const floored = Math.floor(exact);
+                return {
+                    item,
+                    segments: floored,
+                    remainder: exact - floored
+                };
+            });
+
+            let used = allocations.reduce((s, a) => s + a.segments, 0);
+            let remaining = totalAvailableSegments - used;
+
+            allocations
+                .slice()
+                .sort((a, b) => b.remainder - a.remainder)
+                .slice(0, remaining)
+                .forEach(a => a.segments++);
+
+            const sections: Section[] = allocations.map(a => {
+                const segments: Segment[] = [];
+
+                if (props.sectionStyle === "continuous") {
+                    if (a.segments > 0) {
+                        const width =
+                            (a.segments * segmentWidth) +
+                            ((a.segments - 1) * gapWidth) +
+                            gapWidth;
+
+                        segments.push({
+                            id: `${a.item.label}-${gaugeIndex}-0`,
+                            label: a.item.label,
+                            width,
+                            // TODO: Determine default color logic in the future. For now just use info strong if no color is provided
+                            color: a.item.color ?? "var(--color-info-strong)"
+                        });
+                    }
+                }
+                else {
+                    for (let i = 0; i < a.segments; i++) {
+                        segments.push({
+                            id: `${a.item.label}-${gaugeIndex}-${i}`,
+                            label: a.item.label,
+                            width: segmentWidth,
+                            // TODO: Determine default color logic in the future. For now just use info strong if no color is provided
+                            color: a.item.color ?? "var(--color-info-strong)"
+                        });
+                    }
+                }
+
+                return {
+                    id: `${a.item.label}-${gaugeIndex}`,
+                    label: a.item.label,
+                    // TODO: Determine default color logic in the future. For now just use info strong if no color is provided
+                    color: a.item.color ?? "var(--color-info-strong)",
+                    segments,
+                    tooltip: formatTooltip({
+                        formattedLabel: a.item.label,
+                        value: a.item.data[gaugeIndex]!,
+                        formattedValue: (a.item.data[gaugeIndex]! / valueSum).toLocaleString(undefined, { style: "percent" }),
+                        label: a.item.label,
+                        seriesLabel: props.labels?.[gaugeIndex] ?? ""
+                    })
+                };
+            });
+
+            gauges.value.push({
+                id: `gauge-${gaugeIndex}`,
+                label: props.labels?.[gaugeIndex],
+                sections
+            });
+        }
+    }
+
+    function formatTooltipTitleDefault(context: TooltipContext): string {
+        return context.seriesLabel;
+    }
+
+    function formatTooltipDefault(context: TooltipContext): string {
+        if (context.formattedValue) {
+            if (context.formattedLabel) {
+                return `${context.formattedLabel}: ${context.formattedValue}`;
+            }
+            else {
+                return context.formattedValue;
+            }
+        }
+        else {
+            return "";
+        }
+    }
+
+    function formatTooltip(context: TooltipContext): string {
+        const tooltipTitle =
+            !props.tooltipTitle ? formatTooltipTitleDefault(context)
+                : typeof props.tooltipTitle === "string" ? props.tooltipTitle
+                    : props.tooltipTitle(context);
+
+        const tooltipBody =
+            props.tooltip ? props.tooltip(context)
+                : formatTooltipDefault(context);
+
+        const color = Enumerable
+            .from(props.series)
+            .firstOrDefault(item => item.label === context.label)
+            ?.color;
+
+        let tooltipText = `<div style="display: flex; flex-direction: column; gap: var(--spacing-tiny);">`;
+        if (tooltipTitle) {
+            tooltipText += `
+    <h6 style="color: var(--color-interface-softest); margin: 0; font-size: var(--font-size-small);">${tooltipTitle}</h6>
+`;
+        }
+        if (tooltipBody) {
+            tooltipText += `
+    <p style="color: var(--color-interface-softest); margin: 0; display: flex; flex-direction: row; align-items: center; gap: var(--spacing-tiny);">
+        ${color ? `<span style="color: ${color};"><i class="ti ti-square-filled"></i></span>` : ""}
+        <span style="font-size: var(--font-size-xsmall);">${tooltipBody}</span>
+    </p>
+`;
+        }
+        tooltipText += `</div>`;
+
+        return tooltipText;
+    }
+
+    function applyTooltip(el: unknown): void {
+        if (isElement(el)) {
+            tooltip(el, { html: true, sanitize: false });
+        }
+    }
+
+    function toggleSeries(label: string): void {
+        hiddenSeries.value[label] = !hiddenSeries.value[label];
+        calculateSegments();
+    }
+
+    watch(() => props.sectionStyle, calculateSegments);
+
+    watch(() => props.legendPosition, () => {
+        // Clear the gauges to make way for the legend.
+        if (props.legendPosition === "left" || props.legendPosition === "right") {
+            gauges.value = [];
+        }
+        
+        // Let the legend position update in the DOM before recalculating segments to ensure the resize observer has accurate container width
+        requestAnimationFrame(calculateSegments);
+    });
+
+    watch(
+        () => props.series,
+        newValue => {
+            const next: Record<string, boolean> = {};
+            for (const item of newValue) {
+                next[item.label] = hiddenSeries.value[item.label] ?? false;
+            }
+            hiddenSeries.value = next;
+            calculateSegments();
+        },
+        { immediate: true }
+    );
+
+    onMounted(() => {
+        calculateSegments();
+        if (chartContentRef.value) {
+            resizeObserver.observe(chartContentRef.value);
+        }
+    });
+
+    onUnmounted(() => {
+        if (chartContentRef.value) {
+            resizeObserver.unobserve(chartContentRef.value);
+        }
+    });
+</script>

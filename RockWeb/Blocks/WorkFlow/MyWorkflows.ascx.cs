@@ -347,7 +347,7 @@ namespace RockWeb.Blocks.WorkFlow
                         authorizedActivityTypes.Contains( a.ActionType.ActivityTypeId ) &&
                         (
                             ( a.Activity.AssignedPersonAlias != null && a.Activity.AssignedPersonAlias.PersonId == personId ) ||
-                            ( a.Activity.AssignedGroup != null && a.Activity.AssignedGroup.Members.Any( m => m.PersonId == personId ) )
+                            ( a.Activity.AssignedGroup != null && a.Activity.AssignedGroup.Members.Any( m => m.PersonId == personId && m.GroupMemberStatus != GroupMemberStatus.Inactive ) )
                         )
                     )
                     .ToList();

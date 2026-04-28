@@ -19,7 +19,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { List } from "@Obsidian/Utility/linq";
 import { FieldTypeBase } from "./fieldType";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     Values = "values",
     KeyPrompt = "keyprompt",
     ValuePrompt = "valueprompt",
@@ -63,7 +63,7 @@ export class KeyValueListFieldType extends FieldTypeBase {
     public override getTextValue(value: string, configurationValues: Record<string, string>): string {
         try {
             const clientValues = JSON.parse(value ?? "[]") as ClientValue[];
-            const configuredValues = new List(JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[]);
+            const configuredValues = new List(JSON.parse(configurationValues[ConfigurationKey.Values] ?? "[]") as ValueItem[]);
             const values: string[] = [];
 
             for (const clientValue of clientValues) {

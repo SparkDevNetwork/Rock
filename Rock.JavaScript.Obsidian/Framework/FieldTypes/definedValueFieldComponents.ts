@@ -26,7 +26,7 @@ import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, ValueItem } from "./definedValueField.partial";
+import { ClientValue, ConfigurationPropertyKey, ConfigurationKey, ValueItem } from "./definedValueField.partial";
 import { getFieldEditorProps } from "./utils";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { useFieldTypeAttributeGuid } from "@Obsidian/Utility/fieldTypes";
@@ -83,7 +83,7 @@ export const EditComponent = defineComponent({
         const saveError = ref<false | string>(false);
         const valueOptions = computed((): ValueItem[] => {
             try {
-                const valueOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[];
+                const valueOptions = JSON.parse(props.configurationValues[ConfigurationKey.Values] ?? "[]") as ValueItem[];
                 addedOptions.value.forEach(addedOption => {
                     if (valueOptions.find(a => a.value === addedOption.value) == null) {
                         valueOptions.push(addedOption);
@@ -99,9 +99,9 @@ export const EditComponent = defineComponent({
 
         const addedOptions = ref<ValueItem[]>([]);
 
-        const displayDescription = computed(() => asBoolean(props.configurationValues[ConfigurationValueKey.DisplayDescription]));
-        const allowAdd = computed(() => asBoolean(props.configurationValues[ConfigurationValueKey.AllowAddingNewValues]));
-        const definedTypeGuid = computed(() => props.configurationValues[ConfigurationValueKey.DefinedType]);
+        const displayDescription = computed(() => asBoolean(props.configurationValues[ConfigurationKey.DisplayDescription]));
+        const allowAdd = computed(() => asBoolean(props.configurationValues[ConfigurationKey.AllowAddingNewValues]));
+        const definedTypeGuid = computed(() => props.configurationValues[ConfigurationKey.DefinedType]);
         const updateAttributeGuid = useFieldTypeAttributeGuid();
 
         /** The options to choose from */
@@ -114,11 +114,11 @@ export const EditComponent = defineComponent({
             });
         });
 
-        const isMultiple = computed(() => asBoolean(props.configurationValues[ConfigurationValueKey.AllowMultiple]));
-        const enhanceForLongLists = computed(() => asBoolean(props.configurationValues[ConfigurationValueKey.EnhancedSelection]));
+        const isMultiple = computed(() => asBoolean(props.configurationValues[ConfigurationKey.AllowMultiple]));
+        const enhanceForLongLists = computed(() => asBoolean(props.configurationValues[ConfigurationKey.EnhancedSelection]));
 
         /** The number of columns wide the checkbox list will be. */
-        const repeatColumns = computed((): number => toNumber(props.configurationValues[ConfigurationValueKey.RepeatColumns]));
+        const repeatColumns = computed((): number => toNumber(props.configurationValues[ConfigurationKey.RepeatColumns]));
 
         watch(() => props.modelValue, () => {
             internalValue.value = parseModelValue(props.modelValue);
@@ -176,7 +176,7 @@ export const EditComponent = defineComponent({
                 internalValue.value = newValue.value ?? "";
             }
 
-            const selectableValues = (props.configurationValues[ConfigurationValueKey.SelectableValues]?.split(",") ?? []).filter(s => s !== "");
+            const selectableValues = (props.configurationValues[ConfigurationKey.SelectableValues]?.split(",") ?? []).filter(s => s !== "");
             if (selectableValues.length > 0 && newValue.value) {
                 selectableValues.push(newValue.value);
 
@@ -255,11 +255,11 @@ export const FilterComponent = defineComponent({
         const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
         const configurationValues = ref({ ...props.configurationValues });
-        configurationValues.value[ConfigurationValueKey.AllowMultiple] = "True";
+        configurationValues.value[ConfigurationKey.AllowMultiple] = "True";
 
         watch(() => props.configurationValues, () => {
             configurationValues.value = { ...props.configurationValues };
-            configurationValues.value[ConfigurationValueKey.AllowMultiple] = "True";
+            configurationValues.value[ConfigurationKey.AllowMultiple] = "True";
         });
 
         return {
@@ -339,24 +339,24 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.DefinedType] = definedTypeValue.value;
-            newValue[ConfigurationValueKey.SelectableValues] = selectableValues.value.join(",");
-            newValue[ConfigurationValueKey.AllowMultiple] = asTrueFalseOrNull(allowMultipleValues.value) ?? "False";
-            newValue[ConfigurationValueKey.DisplayDescription] = asTrueFalseOrNull(displayDescriptions.value) ?? "False";
-            newValue[ConfigurationValueKey.EnhancedSelection] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "False";
-            newValue[ConfigurationValueKey.IncludeInactive] = asTrueFalseOrNull(includeInactive.value) ?? "False";
-            newValue[ConfigurationValueKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
-            newValue[ConfigurationValueKey.AllowAddingNewValues] = asTrueFalseOrNull(allowAddingNewValues.value) ?? "False";
+            newValue[ConfigurationKey.DefinedType] = definedTypeValue.value;
+            newValue[ConfigurationKey.SelectableValues] = selectableValues.value.join(",");
+            newValue[ConfigurationKey.AllowMultiple] = asTrueFalseOrNull(allowMultipleValues.value) ?? "False";
+            newValue[ConfigurationKey.DisplayDescription] = asTrueFalseOrNull(displayDescriptions.value) ?? "False";
+            newValue[ConfigurationKey.EnhancedSelection] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "False";
+            newValue[ConfigurationKey.IncludeInactive] = asTrueFalseOrNull(includeInactive.value) ?? "False";
+            newValue[ConfigurationKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
+            newValue[ConfigurationKey.AllowAddingNewValues] = asTrueFalseOrNull(allowAddingNewValues.value) ?? "False";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.DefinedType] !== props.modelValue[ConfigurationValueKey.DefinedType]
-                || newValue[ConfigurationValueKey.SelectableValues] !== (props.modelValue[ConfigurationValueKey.SelectableValues] ?? "")
-                || newValue[ConfigurationValueKey.AllowMultiple] !== (props.modelValue[ConfigurationValueKey.AllowMultiple] ?? "False")
-                || newValue[ConfigurationValueKey.DisplayDescription] !== (props.modelValue[ConfigurationValueKey.DisplayDescription] ?? "False")
-                || newValue[ConfigurationValueKey.EnhancedSelection] !== (props.modelValue[ConfigurationValueKey.EnhancedSelection] ?? "False")
-                || newValue[ConfigurationValueKey.IncludeInactive] !== (props.modelValue[ConfigurationValueKey.IncludeInactive] ?? "False")
-                || newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns] ?? "")
-                || newValue[ConfigurationValueKey.AllowAddingNewValues] !== (props.modelValue[ConfigurationValueKey.AllowAddingNewValues ?? "False"]);
+            const anyValueChanged = newValue[ConfigurationKey.DefinedType] !== props.modelValue[ConfigurationKey.DefinedType]
+                || newValue[ConfigurationKey.SelectableValues] !== (props.modelValue[ConfigurationKey.SelectableValues] ?? "")
+                || newValue[ConfigurationKey.AllowMultiple] !== (props.modelValue[ConfigurationKey.AllowMultiple] ?? "False")
+                || newValue[ConfigurationKey.DisplayDescription] !== (props.modelValue[ConfigurationKey.DisplayDescription] ?? "False")
+                || newValue[ConfigurationKey.EnhancedSelection] !== (props.modelValue[ConfigurationKey.EnhancedSelection] ?? "False")
+                || newValue[ConfigurationKey.IncludeInactive] !== (props.modelValue[ConfigurationKey.IncludeInactive] ?? "False")
+                || newValue[ConfigurationKey.RepeatColumns] !== (props.modelValue[ConfigurationKey.RepeatColumns] ?? "")
+                || newValue[ConfigurationKey.AllowAddingNewValues] !== (props.modelValue[ConfigurationKey.AllowAddingNewValues ?? "False"]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -390,13 +390,13 @@ export const ConfigurationComponent = defineComponent({
             definedValueItems.value = definedValues ? JSON.parse(props.configurationProperties.definedValues) as ListItemBag[] : [];
 
             definedTypeValue.value = props.modelValue.definedtype;
-            allowMultipleValues.value = asBoolean(props.modelValue[ConfigurationValueKey.AllowMultiple]);
-            displayDescriptions.value = asBoolean(props.modelValue[ConfigurationValueKey.DisplayDescription]);
-            enhanceForLongLists.value = asBoolean(props.modelValue[ConfigurationValueKey.EnhancedSelection]);
-            includeInactive.value = asBoolean(props.modelValue[ConfigurationValueKey.IncludeInactive]);
-            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
-            selectableValues.value = (props.modelValue[ConfigurationValueKey.SelectableValues]?.split(",") ?? []).filter(s => s !== "");
-            allowAddingNewValues.value = asBoolean(props.modelValue[ConfigurationValueKey.AllowAddingNewValues]);
+            allowMultipleValues.value = asBoolean(props.modelValue[ConfigurationKey.AllowMultiple]);
+            displayDescriptions.value = asBoolean(props.modelValue[ConfigurationKey.DisplayDescription]);
+            enhanceForLongLists.value = asBoolean(props.modelValue[ConfigurationKey.EnhancedSelection]);
+            includeInactive.value = asBoolean(props.modelValue[ConfigurationKey.IncludeInactive]);
+            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationKey.RepeatColumns]);
+            selectableValues.value = (props.modelValue[ConfigurationKey.SelectableValues]?.split(",") ?? []).filter(s => s !== "");
+            allowAddingNewValues.value = asBoolean(props.modelValue[ConfigurationKey.AllowAddingNewValues]);
         }, {
             immediate: true
         });
@@ -410,10 +410,10 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(allowMultipleValues, () => maybeUpdateConfiguration(ConfigurationValueKey.AllowMultiple, asTrueFalseOrNull(allowMultipleValues.value) ?? "False"));
-        watch(enhanceForLongLists, () => maybeUpdateConfiguration(ConfigurationValueKey.EnhancedSelection, asTrueFalseOrNull(enhanceForLongLists.value) ?? "False"));
-        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
-        watch(allowAddingNewValues, () => maybeUpdateConfiguration(ConfigurationValueKey.AllowAddingNewValues, asTrueFalseOrNull(allowAddingNewValues.value) ?? "False"));
+        watch(allowMultipleValues, () => maybeUpdateConfiguration(ConfigurationKey.AllowMultiple, asTrueFalseOrNull(allowMultipleValues.value) ?? "False"));
+        watch(enhanceForLongLists, () => maybeUpdateConfiguration(ConfigurationKey.EnhancedSelection, asTrueFalseOrNull(enhanceForLongLists.value) ?? "False"));
+        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
+        watch(allowAddingNewValues, () => maybeUpdateConfiguration(ConfigurationKey.AllowAddingNewValues, asTrueFalseOrNull(allowAddingNewValues.value) ?? "False"));
 
         return {
             allowMultipleValues,

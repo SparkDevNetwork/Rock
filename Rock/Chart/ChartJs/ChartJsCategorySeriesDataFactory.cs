@@ -356,22 +356,6 @@ namespace Rock.Chart
         }
 
         #endregion
-
-        #region Obsolete
-
-        /// <summary>
-        /// Get the chart configuration in JSON format that is compatible for use with the Chart.js component.
-        /// </summary>
-        /// <param name="args">The arguments.</param>
-        /// <returns></returns>
-        [Obsolete( "Use the GetJson(ChartJsCategorySeriesDataFactory.GetJsonArgs args) method instead." )]
-        [RockObsolete( "1.14" )]
-        public string GetChartDataJson( ChartJsDataFactory.GetJsonArgs args )
-        {
-            return GetJson( ( ChartJsCategorySeriesDataFactory.GetJsonArgs ) args );
-        }
-
-        #endregion
     }
 
     #region Enumerations

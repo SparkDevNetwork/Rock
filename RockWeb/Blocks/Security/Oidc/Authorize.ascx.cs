@@ -32,7 +32,6 @@ using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Oidc.Authorization;
-using Rock.Utility;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security.Oidc
@@ -76,7 +75,6 @@ namespace RockWeb.Blocks.Security.Oidc
 
         private const string AntiXsrfTokenKey = "__AntiXsrfToken";
         protected string _antiXsrfTokenValue;
-        private const string ScopeCookiePrefix = ".ROCK-OidcScopeApproval-";
 
         #endregion Fields
 
@@ -197,8 +195,10 @@ namespace RockWeb.Blocks.Security.Oidc
                 return;
             }
 
+            lNickName.Text = CurrentPerson.NickName;
+
             // Check if this client has already approved the scopes. We'll look for the cookie and check that the scopes have not changed.
-            var scopesApprovalCookieValue = RockPage.GetCookie( GetScopeCookieName( authClient ) )?.Value;
+            var scopesApprovalCookieValue = RockPage.GetCookie( AuthClientService.GetScopeCookieName( authClient, CurrentUser ) )?.Value;
             var scopesPreviouslyApproved = Rock.Security.Encryption.DecryptString( scopesApprovalCookieValue ) == authClient.AllowedScopes.ToString();
 
             // We have to use querystring, because something in the .net postback chain writes to the Response object which breaks the auth call.
@@ -326,18 +326,15 @@ namespace RockWeb.Blocks.Security.Oidc
             var request = owinContext.GetOpenIdConnectRequest();
             var requestedScopes = request.GetScopes();
             var rockContext = new RockContext();
-            var authClientService = new AuthClientService( rockContext );
+            var authClient = GetAuthClient();
 
-            var clientAllowedClaims = authClientService
-                .Queryable()
-                .Where( ac => ac.ClientId == request.ClientId )
-                .Select( ac => ac.AllowedClaims ).FirstOrDefault();
-
-            var parsedAllowedClientClaims = clientAllowedClaims.FromJsonOrNull<List<string>>();
-            if ( parsedAllowedClientClaims == null )
+            var parsedAllowedClientClaims = authClient?.AllowedClaims.FromJsonOrNull<List<string>>();
+            var parsedAllowedClientScopes = authClient?.AllowedScopes.FromJsonOrNull<List<string>>();
+            if ( parsedAllowedClientClaims == null || parsedAllowedClientScopes == null )
             {
                 return new List<string>();
             }
+
             var authClaimService = new AuthClaimService( rockContext );
             var activeAllowedClientClaims = authClaimService
                 .Queryable()
@@ -350,8 +347,29 @@ namespace RockWeb.Blocks.Security.Oidc
                 .Select( ac => new { Scope = ac.Key, Claims = string.Join( ", ", ac.ToArray() ) } );
 
             scopes.AddRange( activeAllowedClientClaims.Select( ac => ac.Scope == ac.Claims ? ac.Scope : ac.Scope + " (" + ac.Claims + ")" ) );
+
+            var activeScopes = new AuthScopeService( rockContext )
+                .Queryable()
+                .Where( s => s.IsActive )
+                .Select( s => new
+                {
+                    s.Name,
+                    s.PublicName
+                } );
+
+            // If the client requested a scope that is in the client's allowed
+            // scopes, but not included in the active allowed claims, we should
+            // still show that scope to the user.
+            foreach ( var requestedScope in requestedScopes )
+            {
+                if ( !scopes.Contains( requestedScope ) && parsedAllowedClientScopes.Contains( requestedScope ) )
+                {
+                    var scope = activeScopes.FirstOrDefault( s => s.Name == requestedScope );
+                    scopes.Add( scope.PublicName.IfEmpty( requestedScope ) );
+                }
+            }
+
             return scopes;
-            //return scopeString.SplitDelimitedValues().ToList();
         }
 
         /// <summary>
@@ -377,18 +395,6 @@ namespace RockWeb.Blocks.Security.Oidc
         #region Private Methods
 
         /// <summary>
-        /// Gets the scope cookie name for the current <see cref="AuthClient"/> and <see cref="UserLogin"/> combination.
-        /// </summary>
-        /// <param name="authClient">The <see cref="AuthClient"/> for which authorization is being requested.</param>
-        /// <returns>
-        /// The scope cookie name for the current <see cref="AuthClient"/> and <see cref="UserLogin"/> combination.
-        /// </returns>
-        private string GetScopeCookieName( AuthClient authClient )
-        {
-            return $"{ScopeCookiePrefix}{IdHasher.Instance.GetHash( authClient.Id )}-{IdHasher.Instance.GetHash( CurrentUser.Id )}";
-        }
-
-        /// <summary>
         /// Adds a cookie indicating that the individual has authorized the requested scopes and continues the OIDC
         /// authentication process.
         /// </summary>
@@ -398,18 +404,15 @@ namespace RockWeb.Blocks.Security.Oidc
             var request = owinContext.GetOpenIdConnectRequest();
 
             // TODO: only allow valid scopes.
-            var requestedScopes = request.GetScopes();
-            var authClientId = PageParameter( PageParamKey.ClientId );
+            var requestedScopes = request.GetScopes() ?? Array.Empty<string>();
+            var authClient = GetAuthClient();
             IDictionary<string, string> clientAllowedClaims = null;
 
-            AuthClient authClient = null;
             IEnumerable<string> clientAllowedScopes = null;
             using ( var rockContext = new RockContext() )
             {
-                var authClientService = new AuthClientService( rockContext );
-                authClient = authClientService.GetByClientId( authClientId );
-                clientAllowedScopes = RockIdentityHelper.NarrowRequestedScopesToApprovedScopes( rockContext, authClientId, requestedScopes );
-                clientAllowedClaims = RockIdentityHelper.GetAllowedClientClaims( rockContext, authClientId, clientAllowedScopes );
+                clientAllowedScopes = RockIdentityHelper.NarrowRequestedScopesToApprovedScopes( rockContext, authClient, requestedScopes ).ToList();
+                clientAllowedClaims = RockIdentityHelper.GetAllowedClientClaims( rockContext, authClient, clientAllowedScopes );
             }
 
             if ( authClient == null || clientAllowedScopes == null || clientAllowedClaims == null )
@@ -420,20 +423,20 @@ namespace RockWeb.Blocks.Security.Oidc
 
             // Create a new ClaimsIdentity containing the claims that
             // will be used to create an id_token, a token or a code.
-            var identity = RockIdentityHelper.GetRockClaimsIdentity( CurrentUser, clientAllowedClaims, authClientId );
+            var identity = RockIdentityHelper.GetRockClaimsIdentity( CurrentUser, clientAllowedClaims, authClient.ClientId );
 
             // Create a new authentication ticket holding the user identity.
             var ticket = new AuthenticationTicket( identity, new AuthenticationProperties() );
 
             // We should set the scopes to the requested valid scopes.
-            ticket.SetScopes( requestedScopes );
+            ticket.SetScopes( clientAllowedScopes );
 
             // Set the resource servers the access token should be issued for.
             ticket.SetResources( "resource_server" );
 
             // Set cookie to remember the fact that this individual as approved the scopes.
             var cookieValue = $"{Rock.Security.Encryption.EncryptString( authClient.AllowedScopes.ToString() )}";
-            RockPage.AddOrUpdateCookie( GetScopeCookieName( authClient ), cookieValue, RockDateTime.Now.AddDays( authClient.ScopeApprovalExpiration ) );
+            RockPage.AddOrUpdateCookie( AuthClientService.GetScopeCookieName( authClient, CurrentUser ), cookieValue, RockDateTime.Now.AddDays( authClient.ScopeApprovalExpiration ) );
 
             // Returning a SignInResult will ask ASOS to serialize the specified identity
             // to build appropriate tokens. You should always make sure the identities

@@ -33,7 +33,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Blocks.Security
 {
     /// <summary>
-    /// Displays the details of a particular user login.
+    /// Allows a user to get their forgotten username information emailed to them.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
@@ -102,7 +102,8 @@ namespace Rock.Blocks.Security
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "5BBEE600-781E-4480-8144-36F8D01C7F09" )]
-    [Rock.SystemGuid.BlockTypeGuid( "16CD7562-BE31-4823-9C4D-F365AB0AA5C4" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "16CD7562-BE31-4823-9C4D-F365AB0AA5C4" )]
+    [Rock.SystemGuid.BlockTypeGuid( "02B3D7D1-23CE-4154-B602-F4A15B321757" )]
     public class ForgotUserName : RockBlockType
     {
         #region Keys
@@ -116,11 +117,6 @@ namespace Rock.Blocks.Security
             public const string EmailTemplate = "EmailTemplate";
             public const string CreateCommunicationRecord = "CreateCommunicationRecord";
             public const string DisableCaptchaSupport = "DisableCaptchaSupport";
-        }
-
-        private static class NavigationUrlKey
-        {
-            public const string ParentPage = "ParentPage";
         }
 
         #endregion
@@ -139,8 +135,6 @@ namespace Rock.Blocks.Security
 
         private string SuccessCaption => GetAttributeValue( AttributeKey.SuccessCaption );
 
-        private bool DisableCaptchaSupport => GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
-
         #endregion
 
         #region Public Methods
@@ -157,7 +151,6 @@ namespace Rock.Blocks.Security
                     SuccessCaption = this.SuccessCaption
                 },
                 ErrorMessage = null,
-                NavigationUrls = GetBoxNavigationUrls(),
                 SecurityGrantToken = null,
                 DisableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() )
             };
@@ -192,15 +185,14 @@ namespace Rock.Blocks.Security
             var hostName = rootUri.Host;
             if ( !CheckHostConfiguration( hostName ) )
             {
-                throw new Exception( "Invalid request." );
+                return ActionBadRequest( "Invalid request." );
             }
 
-            var rockContext = new RockContext();
-            var personService = new PersonService( rockContext );
-            var userLoginService = new UserLoginService( rockContext );
+            var personService = new PersonService( RockContext );
             var accountTypes = new List<string>();
-            var usernamesSupportingPasswordChange = new List<string>();
+            var hasAccountWithPasswordResetAbility = false;
             var results = new List<IDictionary<string, object>>();
+            var passwordlessAuthGuid = Rock.SystemGuid.EntityType.AUTHENTICATION_PASSWORDLESS.AsGuid();
 
             foreach ( var person in personService.GetByEmail( bag.Email )
                 .AsNoTracking()
@@ -209,6 +201,8 @@ namespace Rock.Blocks.Security
                 .Where( p => p.Users.Any() ) )
             {
                 var users = new List<UserLogin>();
+                var supportsChangePassword = new List<string>();
+
                 foreach ( var user in person.Users )
                 {
                     if ( user.EntityType != null )
@@ -219,10 +213,37 @@ namespace Rock.Blocks.Security
                         {
                             if ( component.SupportsChangePassword )
                             {
-                                usernamesSupportingPasswordChange.Add( user.UserName );
+                                supportsChangePassword.Add( user.UserName );
                             }
 
-                            users.Add( user );
+                            /*
+                                3/31/26 - MSE
+
+                                Passwordless logins (e.g., email/SMS codes) don't have a traditional
+                                username to display in the forgot-username email, so we replace it
+                                with a friendly label.
+
+                                They also should not count toward hasAccountWithPasswordResetAbility
+                                because the person cannot reset a password that doesn't exist;
+                                if only passwordless accounts are found the block should show the
+                                "not supported" warning instead.
+
+                                The UserName can be mutated directly (instead of cloned) because
+                                this query uses AsNoTracking(), so there is no risk of persisting
+                                the change.
+
+                                Reason: Parity with the original WebForms passwordless handling.
+                            */
+                            if ( component.TypeGuid == passwordlessAuthGuid )
+                            {
+                                user.UserName = "(email or mobile number)";
+                                users.Add( user );
+                            }
+                            else
+                            {
+                                users.Add( user );
+                                hasAccountWithPasswordResetAbility = true;
+                            }
                         }
 
                         accountTypes.Add( user.EntityType.FriendlyName );
@@ -233,19 +254,19 @@ namespace Rock.Blocks.Security
                 {
                     { "Person", person },
                     { "Users", users },
-                    { "SupportsChangePassword", usernamesSupportingPasswordChange }
+                    { "SupportsChangePassword", supportsChangePassword }
                 } );
             }
 
-            if ( results.Count > 0 && usernamesSupportingPasswordChange.Any() )
+            if ( results.Count > 0 && hasAccountWithPasswordResetAbility )
             {
                 var mergeFields = this.RequestContext.GetCommonMergeFields( this.GetCurrentPerson() );
-                mergeFields.Add( "ConfirmAccountUrl", RequestContext.RootUrlPath + url);
+                mergeFields.Add( "ConfirmAccountUrl", RequestContext.RootUrlPath + url.TrimStart( '/' ) );
                 mergeFields.Add( "Results", results.ToArray() );
 
                 var emailMessage = new RockEmailMessage( this.EmailTemplateGuid );
                 emailMessage.AddRecipient( RockEmailMessageRecipient.CreateAnonymous( bag.Email, mergeFields ) );
-                emailMessage.AppRoot = "/";
+                emailMessage.AppRoot = RequestContext.RootUrlPath.EnsureTrailingForwardslash();
                 emailMessage.ThemeRoot = this.RequestContext.ResolveRockUrl( "~~/" );
                 emailMessage.CreateCommunicationRecord = this.CreateCommunicationRecord;
                 emailMessage.Send();
@@ -286,30 +307,15 @@ namespace Rock.Blocks.Security
         /// </summary>
         /// <param name="hostName">The host name</param>
         /// <returns>True if the specified host name is configured in Rock.</returns>
-        private static bool CheckHostConfiguration( string hostName )
+        private bool CheckHostConfiguration( string hostName )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var siteService = new SiteService( rockContext );
-                var siteHostNames = siteService.Queryable().AsNoTracking()
-                    .SelectMany( s => s.SiteDomains )
-                    .Select( d => d.Domain )
-                    .ToList();
+            var siteService = new SiteService( RockContext );
+            var siteHostNames = siteService.Queryable().AsNoTracking()
+                .SelectMany( s => s.SiteDomains )
+                .Select( d => d.Domain )
+                .ToList();
 
-                return siteHostNames.Contains( hostName );
-            }
-        }
-
-        /// <summary>
-        /// Gets the box navigation URLs required for the page to operate.
-        /// </summary>
-        /// <returns>A dictionary of key names and URL values.</returns>
-        private Dictionary<string, string> GetBoxNavigationUrls()
-        {
-            return new Dictionary<string, string>
-            {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
-            };
+            return siteHostNames.Exists( s => s.Equals( hostName, StringComparison.OrdinalIgnoreCase ) );
         }
 
         #endregion

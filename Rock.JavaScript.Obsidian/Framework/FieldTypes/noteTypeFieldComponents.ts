@@ -19,7 +19,7 @@ import TextBox from "@Obsidian/Controls/textBox.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./noteTypeField.partial";
+import { ConfigurationKey } from "./noteTypeField.partial";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 
 export const EditComponent = defineComponent({
@@ -46,7 +46,7 @@ export const EditComponent = defineComponent({
     computed: {
         options(): ListItemBag[] {
             try {
-                const valuesConfig = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                const valuesConfig = JSON.parse(this.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
                 return valuesConfig.map(v => {
                     return {
                         text: v.text,
@@ -91,7 +91,7 @@ export const ConfigurationComponent = defineComponent({
     computed: {
         options(): ListItemBag[] {
             try {
-                const valuesConfig = JSON.parse(this.modelValue[ConfigurationValueKey.EntityTypes] ?? "[]") as ListItemBag[];
+                const valuesConfig = JSON.parse(this.modelValue[ConfigurationKey.EntityTypes] ?? "[]") as ListItemBag[];
                 return valuesConfig.map(v => {
                     return {
                         text: v.text,
@@ -112,9 +112,9 @@ export const ConfigurationComponent = defineComponent({
     ],
 
     setup(props, { emit }) {
-        const entityTypeName = ref(props.modelValue[ConfigurationValueKey.EntityTypeName]?? {});
-        const qualifierColumn = ref(props.modelValue[ConfigurationValueKey.QualifierColumn]);
-        const qualifierValue = ref(props.modelValue[ConfigurationValueKey.QualifierValue]);
+        const entityTypeName = ref(props.modelValue[ConfigurationKey.EntityTypeName] ?? {});
+        const qualifierColumn = ref(props.modelValue[ConfigurationKey.QualifierColumn]);
+        const qualifierValue = ref(props.modelValue[ConfigurationKey.QualifierValue]);
 
         /**
          * Update the modelValue property if any value of the dictionary has
@@ -125,18 +125,18 @@ export const ConfigurationComponent = defineComponent({
          * @returns true if a new modelValue was emitted to the parent component.
          */
         const maybeUpdateModelValue = (): boolean => {
-            const newValue: Record<string, string> = {...props.modelValue};
+            const newValue: Record<string, string> = { ...props.modelValue };
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.EntityTypeName] = entityTypeName.value ?? "";
-            newValue[ConfigurationValueKey.QualifierColumn] = qualifierColumn.value ?? "";
-            newValue[ConfigurationValueKey.QualifierValue] = qualifierValue.value ?? "";
+            newValue[ConfigurationKey.EntityTypeName] = entityTypeName.value ?? "";
+            newValue[ConfigurationKey.QualifierColumn] = qualifierColumn.value ?? "";
+            newValue[ConfigurationKey.QualifierValue] = qualifierValue.value ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.EntityTypeName] !== (props.modelValue[ConfigurationValueKey.EntityTypeName] ?? "")
-                || newValue[ConfigurationValueKey.QualifierColumn] !== (props.modelValue[ConfigurationValueKey.QualifierColumn] ?? "")
-                || newValue[ConfigurationValueKey.QualifierValue] !== (props.modelValue[ConfigurationValueKey.QualifierValue] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.EntityTypeName] !== (props.modelValue[ConfigurationKey.EntityTypeName] ?? "")
+                || newValue[ConfigurationKey.QualifierColumn] !== (props.modelValue[ConfigurationKey.QualifierColumn] ?? "")
+                || newValue[ConfigurationKey.QualifierValue] !== (props.modelValue[ConfigurationKey.QualifierValue] ?? "");
 
 
             // If any value changed then emit the new model value.
@@ -163,9 +163,9 @@ export const ConfigurationComponent = defineComponent({
         };
 
         // Watch for changes in properties that only require a local UI update.
-        watch(entityTypeName, () => maybeUpdateConfiguration(ConfigurationValueKey.EntityTypeName, entityTypeName.value ?? ""));
-        watch(qualifierColumn, () => maybeUpdateConfiguration(ConfigurationValueKey.QualifierColumn, qualifierColumn.value ?? ""));
-        watch(qualifierValue, () => maybeUpdateConfiguration(ConfigurationValueKey.QualifierValue, qualifierValue.value ?? ""));
+        watch(entityTypeName, () => maybeUpdateConfiguration(ConfigurationKey.EntityTypeName, entityTypeName.value ?? ""));
+        watch(qualifierColumn, () => maybeUpdateConfiguration(ConfigurationKey.QualifierColumn, qualifierColumn.value ?? ""));
+        watch(qualifierValue, () => maybeUpdateConfiguration(ConfigurationKey.QualifierValue, qualifierValue.value ?? ""));
 
         return {
             entityTypeName,

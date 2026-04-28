@@ -876,7 +876,7 @@ namespace Rock
         /// <param name="action">The action to be performed.</param>
         /// <param name="person">The person that needs to be authorized.</param>
         /// <returns><c>true</c> if access to the attribute is granted; otherwise <c>false</c>.</returns>
-        private static bool IsAttributeAuthorized( IHasAttributes entity, ref bool? entityAuthorized, AttributeCache attribute, string action, Person person )
+        internal static bool IsAttributeAuthorized( IHasAttributes entity, ref bool? entityAuthorized, AttributeCache attribute, string action, Person person )
         {
             // The AuthorizedForEntity method will check explicit
             // permissions on the entity. No inherited permissions

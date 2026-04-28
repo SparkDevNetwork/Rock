@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             _canEdit = UserCanEdit || Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
-            _canView = _canEdit || ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) && Workflow.IsAuthorized( "ViewList", CurrentPerson ) );
+            _canView = _canEdit || ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) && Workflow.IsAuthorized( Authorization.VIEW_LIST, CurrentPerson ) );
         }
 
         /// <summary>
@@ -141,7 +141,9 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "WorkflowId" ).AsInteger() );
+                var workflowId = new WorkflowService( new RockContext() )
+                    .GetSelect( PageParameter( "WorkflowId" ), w => ( int? ) w.Id, !PageCache.Layout.Site.DisablePredictableIds ) ?? 0;
+                ShowDetail( workflowId );
             }
             else
             {
@@ -665,25 +667,9 @@ namespace RockWeb.Blocks.WorkFlow
             var workflowService = new WorkflowService( rockContext );
 
             Workflow = workflowService
-                    .Queryable( "WorkflowType, Activities")
+                    .Queryable( "WorkflowType, Activities" )
                     .Where( w => w.Id == workflowId )
                     .FirstOrDefault();
-
-            if ( Workflow == null )
-            {
-                var workflowIdKey = PageParameter( "WorkflowId" );
-                if ( workflowIdKey.IsNotNullOrWhiteSpace() )
-                {
-                    var workflow = workflowService.Get( workflowIdKey );
-                    if ( workflow != null )
-                    {
-                        Workflow = workflowService
-                            .Queryable( "WorkflowType, Activities" )
-                            .Where( w => w.Id == workflow.Id )
-                            .FirstOrDefault();
-                    }
-                }
-            }
 
             if ( Workflow == null )
             {
@@ -696,7 +682,7 @@ namespace RockWeb.Blocks.WorkFlow
             pdAuditDetails.SetEntity( Workflow, ResolveRockUrl( "~" ) );
 
             _canEdit = UserCanEdit || Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
-            _canView = _canEdit || ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) && Workflow.IsAuthorized( "ViewList", CurrentPerson ) );
+            _canView = _canEdit || ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) && Workflow.IsAuthorized( Authorization.VIEW_LIST, CurrentPerson ) );
 
             Workflow.LoadAttributes( rockContext );
             foreach ( var activity in Workflow.Activities )

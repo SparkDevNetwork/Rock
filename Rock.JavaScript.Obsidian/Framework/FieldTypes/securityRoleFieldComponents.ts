@@ -17,7 +17,7 @@
 import { defineComponent, inject } from "vue";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./securityRoleField.partial";
+import { ConfigurationKey } from "./securityRoleField.partial";
 import { getFieldEditorProps } from "./utils";
 
 export const EditComponent = defineComponent({
@@ -44,7 +44,7 @@ export const EditComponent = defineComponent({
     computed: {
         options(): ListItemBag[] {
             try {
-                const valuesConfig = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                const valuesConfig = JSON.parse(this.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
                 return valuesConfig.map(v => {
                     return {
                         text: v.text,

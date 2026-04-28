@@ -23,6 +23,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="!isEditable"
+                 :showExperienceMode="true"
                  :isFullScreenVisible="false"
                  :footerSecondaryActions="footerSecondaryActions"
                  additionalDeleteMessage="This will also delete the associated step participants."

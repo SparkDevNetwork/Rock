@@ -20,7 +20,7 @@ import MediaPlayer from "@Obsidian/Controls/mediaPlayer.obs";
 import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
-import { ConfigurationValueKey } from "./mediaWatchField.partial";
+import { ConfigurationKey } from "./mediaWatchField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { emptyGuid } from "@Obsidian/Utility/guid";
@@ -42,17 +42,17 @@ export const EditComponent = defineComponent({
             let mediaElement: ListItemBag = {};
 
             try {
-                mediaElement = JSON.parse(props.configurationValues[ConfigurationValueKey.MediaElement] ?? "{}") as ListItemBag;
+                mediaElement = JSON.parse(props.configurationValues[ConfigurationKey.MediaElement] ?? "{}") as ListItemBag;
             }
             catch (e) {
                 // Do Nothing
             }
 
             const config = {
-                requiredPercentage: toNumberOrNull(props.configurationValues[ConfigurationValueKey.CompletionPercentage]),
-                resumeInDays: toNumberOrNull(props.configurationValues[ConfigurationValueKey.AutoResumeInDays]),
-                maxWidth: props.configurationValues[ConfigurationValueKey.MaxWidth],
-                validationMessage: props.configurationValues[ConfigurationValueKey.ValidationMessage],
+                requiredPercentage: toNumberOrNull(props.configurationValues[ConfigurationKey.CompletionPercentage]),
+                resumeInDays: toNumberOrNull(props.configurationValues[ConfigurationKey.AutoResumeInDays]),
+                maxWidth: props.configurationValues[ConfigurationKey.MaxWidth],
+                validationMessage: props.configurationValues[ConfigurationKey.ValidationMessage],
                 mediaGuid: mediaElement?.value ?? emptyGuid,
             };
 
@@ -129,22 +129,22 @@ export const ConfigurationComponent = defineComponent({
             const newValue: Record<string, string> = {};
 
             // Construct the new value that will be emitted if it is different than the current value.
-            newValue[ConfigurationValueKey.CompletionPercentage] = completionPercentage.value?.toString() ?? "";
-            newValue[ConfigurationValueKey.AutoResumeInDays] = autoResumeInDays.value?.toString() ?? "";
-            newValue[ConfigurationValueKey.MaxWidth] = maxWidth.value;
-            newValue[ConfigurationValueKey.ValidationMessage] = validationMessage.value;
-            newValue[ConfigurationValueKey.MediaAccount] = JSON.stringify(mediaAccount.value);
-            newValue[ConfigurationValueKey.MediaFolder] = JSON.stringify(mediaFolder.value);
-            newValue[ConfigurationValueKey.MediaElement] = JSON.stringify(mediaElement.value);
+            newValue[ConfigurationKey.CompletionPercentage] = completionPercentage.value?.toString() ?? "";
+            newValue[ConfigurationKey.AutoResumeInDays] = autoResumeInDays.value?.toString() ?? "";
+            newValue[ConfigurationKey.MaxWidth] = maxWidth.value;
+            newValue[ConfigurationKey.ValidationMessage] = validationMessage.value;
+            newValue[ConfigurationKey.MediaAccount] = JSON.stringify(mediaAccount.value);
+            newValue[ConfigurationKey.MediaFolder] = JSON.stringify(mediaFolder.value);
+            newValue[ConfigurationKey.MediaElement] = JSON.stringify(mediaElement.value);
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.CompletionPercentage] !== (props.modelValue[ConfigurationValueKey.CompletionPercentage])
-                || newValue[ConfigurationValueKey.AutoResumeInDays] !== (props.modelValue[ConfigurationValueKey.AutoResumeInDays])
-                || newValue[ConfigurationValueKey.MaxWidth] !== (props.modelValue[ConfigurationValueKey.MaxWidth])
-                || newValue[ConfigurationValueKey.ValidationMessage] !== (props.modelValue[ConfigurationValueKey.ValidationMessage])
-                || newValue[ConfigurationValueKey.MediaAccount] !== (props.modelValue[ConfigurationValueKey.MediaAccount])
-                || newValue[ConfigurationValueKey.MediaFolder] !== (props.modelValue[ConfigurationValueKey.MediaFolder])
-                || newValue[ConfigurationValueKey.MediaElement] !== (props.modelValue[ConfigurationValueKey.MediaElement]);
+            const anyValueChanged = newValue[ConfigurationKey.CompletionPercentage] !== (props.modelValue[ConfigurationKey.CompletionPercentage])
+                || newValue[ConfigurationKey.AutoResumeInDays] !== (props.modelValue[ConfigurationKey.AutoResumeInDays])
+                || newValue[ConfigurationKey.MaxWidth] !== (props.modelValue[ConfigurationKey.MaxWidth])
+                || newValue[ConfigurationKey.ValidationMessage] !== (props.modelValue[ConfigurationKey.ValidationMessage])
+                || newValue[ConfigurationKey.MediaAccount] !== (props.modelValue[ConfigurationKey.MediaAccount])
+                || newValue[ConfigurationKey.MediaFolder] !== (props.modelValue[ConfigurationKey.MediaFolder])
+                || newValue[ConfigurationKey.MediaElement] !== (props.modelValue[ConfigurationKey.MediaElement]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -171,27 +171,27 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            completionPercentage.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.CompletionPercentage]) ?? undefined;
-            autoResumeInDays.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.AutoResumeInDays]) ?? undefined;
-            maxWidth.value = props.modelValue[ConfigurationValueKey.MaxWidth];
-            validationMessage.value = props.modelValue[ConfigurationValueKey.ValidationMessage];
+            completionPercentage.value = toNumberOrNull(props.modelValue[ConfigurationKey.CompletionPercentage]) ?? undefined;
+            autoResumeInDays.value = toNumberOrNull(props.modelValue[ConfigurationKey.AutoResumeInDays]) ?? undefined;
+            maxWidth.value = props.modelValue[ConfigurationKey.MaxWidth];
+            validationMessage.value = props.modelValue[ConfigurationKey.ValidationMessage];
 
             try {
-                mediaAccount.value = JSON.parse(props.modelValue[ConfigurationValueKey.MediaAccount]) as ListItemBag;
+                mediaAccount.value = JSON.parse(props.modelValue[ConfigurationKey.MediaAccount]) as ListItemBag;
             }
             catch (e) {
                 /* Do Nothing */
             }
 
             try {
-                mediaFolder.value = JSON.parse(props.modelValue[ConfigurationValueKey.MediaFolder]) as ListItemBag;
+                mediaFolder.value = JSON.parse(props.modelValue[ConfigurationKey.MediaFolder]) as ListItemBag;
             }
             catch (e) {
                 /* Do Nothing */
             }
 
             try {
-                mediaElement.value = JSON.parse(props.modelValue[ConfigurationValueKey.MediaElement]) as ListItemBag;
+                mediaElement.value = JSON.parse(props.modelValue[ConfigurationKey.MediaElement]) as ListItemBag;
             }
             catch (e) {
                 /* Do Nothing */
@@ -201,13 +201,13 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(completionPercentage, () => maybeUpdateConfiguration(ConfigurationValueKey.CompletionPercentage, completionPercentage.value?.toString() ?? ""));
-        watch(autoResumeInDays, () => maybeUpdateConfiguration(ConfigurationValueKey.AutoResumeInDays, autoResumeInDays.value?.toString() ?? ""));
-        watch(maxWidth, () => maybeUpdateConfiguration(ConfigurationValueKey.MaxWidth, maxWidth.value));
-        watch(validationMessage, () => maybeUpdateConfiguration(ConfigurationValueKey.ValidationMessage, validationMessage.value));
-        watch(mediaAccount, () => maybeUpdateConfiguration(ConfigurationValueKey.MediaAccount, JSON.stringify(mediaAccount.value) ?? ""));
-        watch(mediaFolder, () => maybeUpdateConfiguration(ConfigurationValueKey.MediaFolder, JSON.stringify(mediaFolder.value) ?? ""));
-        watch(mediaElement, () => maybeUpdateConfiguration(ConfigurationValueKey.MediaElement, JSON.stringify(mediaElement.value) ?? ""));
+        watch(completionPercentage, () => maybeUpdateConfiguration(ConfigurationKey.CompletionPercentage, completionPercentage.value?.toString() ?? ""));
+        watch(autoResumeInDays, () => maybeUpdateConfiguration(ConfigurationKey.AutoResumeInDays, autoResumeInDays.value?.toString() ?? ""));
+        watch(maxWidth, () => maybeUpdateConfiguration(ConfigurationKey.MaxWidth, maxWidth.value));
+        watch(validationMessage, () => maybeUpdateConfiguration(ConfigurationKey.ValidationMessage, validationMessage.value));
+        watch(mediaAccount, () => maybeUpdateConfiguration(ConfigurationKey.MediaAccount, JSON.stringify(mediaAccount.value) ?? ""));
+        watch(mediaFolder, () => maybeUpdateConfiguration(ConfigurationKey.MediaFolder, JSON.stringify(mediaFolder.value) ?? ""));
+        watch(mediaElement, () => maybeUpdateConfiguration(ConfigurationKey.MediaElement, JSON.stringify(mediaElement.value) ?? ""));
 
         return {
             completionPercentage,

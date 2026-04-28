@@ -22,7 +22,7 @@ import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     FilePath = "filePath",
     EncodedFileName = "encodedFileName",
 }
@@ -66,8 +66,8 @@ export class LabelFieldType extends FieldTypeBase {
         }
 
         const binaryFile = JSON.parse(value) as ListItemBag;
-        const filePath = configurationValues[ConfigurationValueKey.FilePath];
-        const fileName = configurationValues[ConfigurationValueKey.EncodedFileName];
+        const filePath = configurationValues[ConfigurationKey.FilePath];
+        const fileName = configurationValues[ConfigurationKey.EncodedFileName];
 
         const html = `
 <a

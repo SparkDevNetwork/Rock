@@ -1,0 +1,507 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Universal Search">
+        <NotificationBox v-if="config.errorMessage || warningMessage" alertType="warning" v-text="config.errorMessage || warningMessage" />
+
+        <div v-if="config.preHtml" v-html="config.preHtml"></div>
+
+        <form @submit.prevent="onSearch">
+            <div class="input-group searchbox">
+                <div class="input-group-addon"><i class="ti ti-search"></i></div>
+                <TextBox v-model="query" class="form-control" placeholder="Search" @keydown.enter.prevent="onSearch"></TextBox>
+                <span id="spanButtonGroup" runat="server" class="input-group-btn">
+                    <RockButton type="submit" btnType="primary" autoLoading :isLoading="isLoadingResults" :disabled="isLoadingResults" loadingText="Searching...">Go</RockButton>
+                </span>
+            </div>
+        </form>
+
+        <div class="clearfix margin-t-sm">
+            <a v-if="config.showRefinedSearchToggle && hasRefinedFilters" class="pull-right" href="#" @click.prevent="toggleRefinedSearch">{{ refinedSearchText }}</a>
+        </div>
+
+        <div v-if="config.postHtml" v-html="config.postHtml"></div>
+
+        <div v-if="isRefinedSearchVisible && hasRefinedFilters" class="well margin-t-md">
+            <h4>Filters</h4>
+
+            <CheckBoxList v-if="config.showModelFilter"
+                          v-model="selectedModelIds"
+                          label="Information Types"
+                          :items="config.availableModels ?? []"
+                          horizontal
+                          :repeatColumns="4"
+                          @update:modelValue="onModelSelectionChanged" />
+
+            <hr v-if="config.showModelFilter && (config.filters?.length ?? 0) > 0">
+
+            <div class="row">
+                <div v-for="filter in config.filters ?? []" :key="filter.fieldName || filter.entityTypeId" class="col-md-6">
+                    <CheckBoxList v-model="selectedFilters[filter.fieldName || '']"
+                                  :label="filter.label || ''"
+                                  :items="filter.items ?? []"
+                                  horizontal
+                                  @update:modelValue="value => onFilterSelectionChanged(filter.fieldName || '', filter.entityTypeId, value)" />
+                </div>
+            </div>
+        </div>
+
+        <div ref="resultsContainerElement"
+             class="margin-t-lg"
+             :class="{ 'universal-search-results-loading': isLoadingResults }"
+             v-html="resultsHtml"></div>
+
+        <div v-if="isLoadingResults" class="text-center margin-t-md">
+            <LoadingIndicator isSmall />
+        </div>
+
+        <div v-if="totalPages > 1" class="text-center">
+            <ul class="pagination">
+                <li :class="{ disabled: currentPage === 0 || isLoadingResults }">
+                    <a href="#" @click.prevent="goToPage(currentPage - 1)">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+
+                <li v-for="pageNumber in visiblePageNumbers" :key="pageNumber" :class="{ active: currentPage + 1 === pageNumber, disabled: isLoadingResults }">
+                    <a href="#" @click.prevent="goToPage(pageNumber - 1)">
+                        <span>{{ pageNumber }}</span>
+                    </a>
+                </li>
+
+                <li :class="{ disabled: currentPage + 1 >= totalPages || isLoadingResults }">
+                    <a href="#" @click.prevent="goToPage(currentPage + 1)">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { UniversalSearchBag } from "@Obsidian/ViewModels/Blocks/Cms/UniversalSearch/universalSearchBag";
+    import { UniversalSearchRequestBag } from "@Obsidian/ViewModels/Blocks/Cms/UniversalSearch/universalSearchRequestBag";
+    import { UniversalSearchResultsBag } from "@Obsidian/ViewModels/Blocks/Cms/UniversalSearch/universalSearchResultsBag";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+
+    const config = useConfigurationValues<UniversalSearchBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    const query = ref(config.query ?? "");
+    const selectedModelIds = ref<string[]>([...(config.selectedModelIds ?? [])]);
+    const previousSelectedModelIds = ref<string[]>([...(config.selectedModelIds ?? [])]);
+    const selectedFilters = ref<Record<string, string[]>>(initializeSelectedFilters());
+    const results = ref<UniversalSearchResultsBag | null>(config.initialResults ?? null);
+    const isRefinedSearchVisible = ref(config.isRefinedSearchVisible ?? false);
+    const isSmartSearchActive = ref(config.isSmartSearchRequest ?? false);
+    const isUpdatingModelFromFilter = ref(false);
+    const isLoadingResults = ref(false);
+    const resultsContainerElement = ref<HTMLElement | null>(null);
+
+    let photoObserver: IntersectionObserver | null = null;
+    let resultsNavigationHandler: ((event: Event) => void) | null = null;
+
+    const warningMessage = computed(() => results.value?.warningMessage ?? "");
+    const resultsHtml = computed(() => results.value?.resultsHtml ?? "");
+    const currentPage = computed(() => results.value?.currentPage ?? 0);
+    const itemsPerPage = computed(() => results.value?.itemsPerPage ?? config.resultsPerPage ?? 20);
+    const totalPages = computed(() => {
+        const perPage = itemsPerPage.value || 1;
+        return Math.ceil((results.value?.totalResultsAvailable ?? 0) / perPage);
+    });
+    const hasRefinedFilters = computed(() => !!config.showModelFilter || (config.filters?.length ?? 0) > 0);
+    const refinedSearchText = computed(() => isRefinedSearchVisible.value ? "Hide Refined Search" : "Refine Search");
+    const visiblePageNumbers = computed(() => {
+        if (totalPages.value <= 1) {
+            return [];
+        }
+
+        const currentPageNumber = currentPage.value + 1;
+        let startPage = Math.max(1, currentPageNumber - 5);
+        let endPage = Math.min(totalPages.value, startPage + 10);
+
+        startPage = Math.max(1, endPage - 10);
+
+        const pageNumbers: number[] = [];
+        for (let page = startPage; page <= endPage; page++) {
+            pageNumbers.push(page);
+        }
+
+        return pageNumbers;
+    });
+
+    /**
+     * Wires row navigation for rendered result items that expose a data-href.
+     */
+    function initializeResultNavigation(): void {
+        if (!resultsContainerElement.value) {
+            return;
+        }
+
+        if (resultsNavigationHandler) {
+            resultsContainerElement.value.removeEventListener("click", resultsNavigationHandler);
+        }
+
+        resultsNavigationHandler = event => {
+            const target = event.target as HTMLElement | null;
+            const navigableElement = target?.closest<HTMLElement>(".model-cannavigate");
+
+            if (!navigableElement || !resultsContainerElement.value?.contains(navigableElement)) {
+                return;
+            }
+
+            const href = navigableElement.dataset.href;
+            if (!href) {
+                return;
+            }
+
+            event.preventDefault();
+            window.location.href = href;
+        };
+
+        resultsContainerElement.value.addEventListener("click", resultsNavigationHandler);
+    }
+
+    /**
+     * Applies lazy loading behavior to photo-round elements rendered in the result HTML.
+     */
+    function initializePhotoRoundLazyLoad(): void {
+        photoObserver?.disconnect();
+
+        const photoElements = resultsContainerElement.value?.querySelectorAll<HTMLElement>("div.photo-round[data-original]") ?? [];
+
+        if (!photoElements.length) {
+            return;
+        }
+
+        photoObserver = new IntersectionObserver(entries => {
+            for (const entry of entries) {
+                if (!entry.isIntersecting) {
+                    continue;
+                }
+
+                const element = entry.target as HTMLElement;
+                const imageUrl = element.dataset.original;
+
+                if (imageUrl) {
+                    element.style.backgroundImage = `url("${imageUrl}")`;
+                    element.classList.add("photo-round-loaded");
+                }
+
+                photoObserver?.unobserve(element);
+            }
+        });
+
+        photoElements.forEach(element => photoObserver?.observe(element));
+    }
+
+    /**
+     * Initializes the selected filter lookup so every filter has an array value.
+     */
+    function initializeSelectedFilters(): Record<string, string[]> {
+        const filters: Record<string, string[]> = {};
+
+        for (const filter of config.filters ?? []) {
+            filters[filter.fieldName ?? ""] = [...(config.selectedFilters?.[filter.fieldName ?? ""] ?? [])];
+        }
+
+        return filters;
+    }
+
+    /**
+     * Synchronizes the browser URL with the current search state.
+     *
+     * @param pageNumber The zero-based page number to place in the URL.
+     */
+    function updateUrl(pageNumber: number): void {
+        const params = new URLSearchParams(window.location.search);
+
+        params.delete("Q");
+        params.delete("SmartSearch");
+        params.delete("Models");
+        params.delete("CurrentPage");
+        params.delete("RefinedSearch");
+
+        for (const filter of config.filters ?? []) {
+            params.delete(filter.fieldName ?? "");
+        }
+
+        if (query.value) {
+            params.set("Q", query.value);
+        }
+
+        if (isSmartSearchActive.value) {
+            params.set("SmartSearch", "true");
+        }
+
+        if (selectedModelIds.value.length > 0) {
+            params.set("Models", selectedModelIds.value.join(","));
+        }
+
+        if (pageNumber > 0) {
+            params.set("CurrentPage", (pageNumber + 1).toString());
+        }
+
+        if (isRefinedSearchVisible.value) {
+            params.set("RefinedSearch", "true");
+        }
+
+        for (const filter of config.filters ?? []) {
+            const values = selectedFilters.value[filter.fieldName ?? ""];
+
+            if (values?.length) {
+                params.set(filter.fieldName ?? "", values.join(","));
+            }
+        }
+
+        const queryString = params.toString();
+        window.history.replaceState(null, "", queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname);
+    }
+
+    /**
+     * Executes the current search state against the server.
+     *
+     * @param pageNumber The zero-based page number to request.
+     */
+    async function performSearch(pageNumber: number): Promise<void> {
+        updateUrl(pageNumber);
+        isLoadingResults.value = true;
+
+        const bag: UniversalSearchRequestBag = {
+            query: query.value,
+            selectedEntityTypeIds: selectedModelIds.value.map(v => toNumber(v)).filter((v): v is number => v !== undefined && v !== null),
+            selectedFilters: selectedFilters.value,
+            currentPage: Math.max(0, pageNumber),
+            searchTypeValue: config.searchTypeValue ?? 0,
+            isSmartSearchRequest: isSmartSearchActive.value
+        };
+
+        try {
+            const result = await invokeBlockAction<UniversalSearchResultsBag>("Search", { bag });
+
+            if (!result.isSuccess || !result.data) {
+                results.value = {
+                    currentPage: Math.max(0, pageNumber),
+                    itemsPerPage: config.resultsPerPage ?? 20,
+                    resultsHtml: "",
+                    totalResultsAvailable: 0,
+                    warningMessage: result.errorMessage || "An error occurred while searching.",
+                    redirectUrl: ""
+                };
+                return;
+            }
+
+            if (result.data.redirectUrl) {
+                window.location.href = result.data.redirectUrl;
+                return;
+            }
+
+            results.value = result.data;
+        }
+        finally {
+            isLoadingResults.value = false;
+        }
+    }
+
+    /**
+     * Sets the selected values for a single filter using an immutable update.
+     *
+     * @param fieldName The field name to update.
+     * @param values The selected values for the filter.
+     */
+    function setSelectedFilterValues(fieldName: string, values: string[]): void {
+        selectedFilters.value = {
+            ...selectedFilters.value,
+            [fieldName]: [...values]
+        };
+    }
+
+    /**
+     * Handles a direct model filter change.
+     *
+     * This intentionally mirrors the legacy WebForms behavior:
+     * when a parent model is checked, only that model's child filters are checked;
+     * when a parent model is unchecked, only that model's child filters are cleared.
+     *
+     * Tracking the previous selection is important because the CheckBoxList updates
+     * the bound v-model before this handler runs. Without that snapshot, we cannot
+     * tell which parent entity changed and would risk applying updates to the wrong
+     * child filter group.
+     *
+     * @param value The newly selected model identifiers.
+     */
+    function onModelSelectionChanged(value: string[]): void {
+        const normalizedValues = [...new Set(value.map(v => v?.toString() ?? "").filter(v => v !== ""))];
+        const previousValues = [...previousSelectedModelIds.value];
+
+        selectedModelIds.value = normalizedValues;
+        previousSelectedModelIds.value = normalizedValues;
+
+        // Ignore the synthetic model update triggered by a child filter change.
+        // In that case we only want to check the parent model, not overwrite that
+        // model's existing child selections.
+        if (isUpdatingModelFromFilter.value) {
+            isUpdatingModelFromFilter.value = false;
+            return;
+        }
+
+        const addedValues = normalizedValues.filter(v => !previousValues.includes(v));
+        const removedValues = previousValues.filter(v => !normalizedValues.includes(v));
+
+        for (const addedValue of addedValues) {
+            const entityId = toNumber(addedValue);
+            if (entityId === undefined || entityId === null) {
+                continue;
+            }
+
+            for (const filter of (config.filters ?? []).filter(f => f.entityTypeId === entityId)) {
+                setSelectedFilterValues(
+                    filter.fieldName ?? "",
+                    (filter.items ?? []).map(item => item.value ?? "").filter(v => v !== "")
+                );
+            }
+        }
+
+        for (const removedValue of removedValues) {
+            const entityId = toNumber(removedValue);
+            if (entityId === undefined || entityId === null) {
+                continue;
+            }
+
+            for (const filter of (config.filters ?? []).filter(f => f.entityTypeId === entityId)) {
+                setSelectedFilterValues(filter.fieldName ?? "", []);
+            }
+        }
+    }
+
+    /**
+     * Handles a filter selection change.
+     *
+     * This intentionally mirrors the legacy WebForms behavior:
+     * when any child filter is checked, its parent model is automatically checked.
+     *
+     * There is one important Obsidian nuance when the model filter UI is hidden.
+     * In that case we still need the parent entity id while a child filter is active,
+     * but once every child filter for that entity is cleared we must remove the parent
+     * entity id again so the search can fall back to the configured Enabled Models.
+     * Otherwise the block appears stuck on the last filtered entity type until the
+     * page is reloaded.
+     *
+     * @param fieldName The field name that changed.
+     * @param entityTypeId The entity type identifier that owns the filter.
+     * @param value The newly selected filter values.
+     */
+    function onFilterSelectionChanged(fieldName: string | null | undefined, entityTypeId: number, value: string[]): void {
+        const safeFieldName = fieldName ?? "";
+        const entityTypeIdValue = entityTypeId.toString();
+
+        setSelectedFilterValues(safeFieldName, value);
+
+        if (value.length > 0 && !selectedModelIds.value.includes(entityTypeIdValue)) {
+            isUpdatingModelFromFilter.value = true;
+            selectedModelIds.value = [...selectedModelIds.value, entityTypeIdValue];
+            previousSelectedModelIds.value = [...selectedModelIds.value];
+            return;
+        }
+
+        if (!config.showModelFilter && value.length === 0) {
+            const hasAnySelectedFiltersForEntity = (config.filters ?? [])
+                .filter(f => f.entityTypeId === entityTypeId)
+                .some(f => (selectedFilters.value[f.fieldName ?? ""]?.length ?? 0) > 0);
+
+            if (!hasAnySelectedFiltersForEntity) {
+                selectedModelIds.value = selectedModelIds.value.filter(id => id !== entityTypeIdValue);
+                previousSelectedModelIds.value = [...selectedModelIds.value];
+            }
+        }
+    }
+
+    /**
+     * Executes a new search and converts any smart search request into a normal search.
+     */
+    async function onSearch(): Promise<void> {
+        isSmartSearchActive.value = false;
+        await performSearch(0);
+    }
+
+    /**
+     * Moves to the requested result page.
+     *
+     * @param pageNumber The zero-based page number to display.
+     */
+    async function goToPage(pageNumber: number): Promise<void> {
+        if (isLoadingResults.value || pageNumber < 0 || pageNumber >= totalPages.value) {
+            return;
+        }
+
+        await performSearch(pageNumber);
+    }
+
+    /**
+     * Toggles the refine search panel visibility.
+     */
+    function toggleRefinedSearch(): void {
+        isRefinedSearchVisible.value = !isRefinedSearchVisible.value;
+        updateUrl(currentPage.value);
+    }
+
+    watch(resultsHtml, async () => {
+        await nextTick();
+        initializeResultNavigation();
+        initializePhotoRoundLazyLoad();
+    });
+
+    onMounted(async () => {
+        if (config.redirectUrl) {
+            window.location.href = config.redirectUrl;
+            return;
+        }
+
+        await nextTick();
+        initializeResultNavigation();
+        initializePhotoRoundLazyLoad();
+    });
+
+    onBeforeUnmount(() => {
+        photoObserver?.disconnect();
+
+        if (resultsContainerElement.value && resultsNavigationHandler) {
+            resultsContainerElement.value.removeEventListener("click", resultsNavigationHandler);
+        }
+    });
+
+    onConfigurationValuesChanged(reloadBlock);
+</script>
+
+<style>
+.model-cannavigate {
+    cursor: pointer;
+}
+</style>
+<style scoped>
+.universal-search-results-loading {
+    opacity: 0.65;
+    pointer-events: none;
+    transition: opacity 120ms ease-in-out;
+}
+
+:deep(.photo-round) {
+    opacity: 0;
+    transition: opacity 200ms ease-in-out;
+}
+
+:deep(.photo-round.photo-round-loaded) {
+    opacity: 1;
+}
+</style>
+
+

@@ -588,50 +588,12 @@ namespace Rock.Blocks.Core
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         /// <returns></returns>
         [BlockAction]
+        [Obsolete( "Legacy signature providers are no longer supported in Rock." )]
+        [RockObsolete( "19.0" )]
         public BlockActionResult GetExternalProviders( Guid? entityTypeGuid )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var externalProviders = new List<ListItemBag>();
-                var errorMessage = string.Empty;
-
-                if ( !entityTypeGuid.HasValue )
-                {
-                    return ActionOk(new { externalProviders = externalProviders } );
-                }
-
-                var entityType = EntityTypeCache.Get( entityTypeGuid.Value );
-
-                if ( entityType == null )
-                {
-                    return ActionOk( new { externalProviders = externalProviders } );
-                }
-
-                var component = DigitalSignatureContainer.GetComponent( entityType.Name );
-                if ( component == null )
-                {
-                    return ActionOk( new { externalProviders = externalProviders } );
-                }
-
-                var errors = new List<string>();
-                var templates = component.GetTemplates( out errors );
-
-                if ( templates != null )
-                {
-                    foreach ( var keyVal in templates.OrderBy( d => d.Value ) )
-                    {
-                        externalProviders.Add( new ListItemBag() { Text = keyVal.Value, Value = keyVal.Key } );
-                    }
-
-                    return ActionOk( new { externalProviders = externalProviders } );
-                }
-                else
-                {
-                    errorMessage = string.Format( "<ul><li>{0}</li></ul>", errors.AsDelimited( "</li><li>" ) );
-
-                    return ActionBadRequest( errorMessage );
-                }
-            }
+            var externalProviders = new List<ListItemBag>();
+            return ActionOk( new { externalProviders = externalProviders } );
         }
 
         #endregion

@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.ClientService.Core.Note;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks.Core.Notes;
 using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
@@ -134,7 +135,8 @@ namespace Rock.Blocks.Core
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "33566B2B-D74F-4148-B962-1897D418C6DF" )]
-    [Rock.SystemGuid.BlockTypeGuid( "D87B84DC-7AD9-42A2-B18D-88B7E71DADA8" )]
+    // Original Obsidian was: [Rock.SystemGuid.BlockTypeGuid( "D87B84DC-7AD9-42A2-B18D-88B7E71DADA8" )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.NOTES )]
     public class Notes : RockBlockType
     {
         #region Keys
@@ -174,13 +176,12 @@ namespace Rock.Blocks.Core
                 };
             }
 
+            var noteTypes = GetConfiguredNoteTypes( contextEntity.TypeId );
             var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson )
             {
                 AllowBackdatedNotes = GetAttributeValue( AttributeKey.AllowBackdatedNotes ).AsBoolean(),
-                AllowedNoteTypes = GetConfiguredNoteTypes( contextEntity.TypeId )
+                AllowedNoteTypes = noteTypes
             };
-            var noteTypes = GetConfiguredNoteTypes( contextEntity.TypeId );
-            var noteTypeIds = noteTypes.Select( nt => nt.Id ).ToList();
 
             var noteCollection = noteClientService.GetViewableNotes( contextEntity );
             var notes = noteClientService.OrderNotes( noteCollection, GetAttributeValue( AttributeKey.DisplayOrder ) == "Descending" ).ToList();
@@ -233,6 +234,18 @@ namespace Rock.Blocks.Core
                 noteTypes = noteTypes.Where( n => configuredNoteTypes.Contains( n.Guid ) ).ToList();
             }
 
+            /*
+                4/20/2026 - M.E.
+
+                Filter by VIEW authorization so restricted note types don't leak into the
+                filter dropdown.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6787
+            */
+            noteTypes = noteTypes
+                .Where( nt => nt.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .ToList();
+
             return noteTypes;
         }
 
@@ -282,11 +295,6 @@ namespace Rock.Blocks.Core
         public BlockActionResult SaveNote( SaveNoteRequestBag request )
         {
             var contextEntity = GetContextEntity();
-            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson )
-            {
-                AllowBackdatedNotes = GetAttributeValue( AttributeKey.AllowBackdatedNotes ).AsBoolean(),
-                AllowedNoteTypes = GetConfiguredNoteTypes( contextEntity.TypeId )
-            };
 
             if ( contextEntity == null )
             {
@@ -297,6 +305,12 @@ namespace Rock.Blocks.Core
             {
                 return ActionBadRequest( "Request details are not valid." );
             }
+
+            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson )
+            {
+                AllowBackdatedNotes = GetAttributeValue( AttributeKey.AllowBackdatedNotes ).AsBoolean(),
+                AllowedNoteTypes = GetConfiguredNoteTypes( contextEntity.TypeId )
+            };
 
             var noteBag = noteClientService.SaveNote( request, contextEntity, PageCache.Id, this.GetCurrentPageUrl(), RequestContext, out var errorMessage );
 
@@ -316,8 +330,19 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult DeleteNote( DeleteNoteRequestBag request )
         {
-            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson );
+            if ( request == null || request.IdKey.IsNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( "Request details are not valid." );
+            }
+
             var note = new NoteService( RockContext ).Get( request.IdKey, false );
+
+            if ( note == null )
+            {
+                return ActionNotFound( "Note not found." );
+            }
+
+            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson );
 
             if ( !noteClientService.DeleteNote( note, out var errorMessage ) )
             {
@@ -335,8 +360,19 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult WatchNote( WatchNoteRequestBag request )
         {
-            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson );
+            if ( request == null || request.IdKey.IsNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( "Request details are not valid." );
+            }
+
             var note = new NoteService( RockContext ).Get( request.IdKey, false );
+
+            if ( note == null )
+            {
+                return ActionNotFound( "Note not found." );
+            }
+
+            var noteClientService = new NoteClientService( RockContext, RequestContext.CurrentPerson );
 
             if ( !noteClientService.WatchNote( note, request.IsWatching, out var errorMessage ) )
             {

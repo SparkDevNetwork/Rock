@@ -1,5 +1,5 @@
 <template>
-    <div class="chart-container" :style="`height: ${height}; width: ${width};`">
+    <div class="chart-container" :style="`height: ${height || '100%'}; width: ${width || '100%'};`">
         <Chart :data="chartData" :options="chartOptions" type="line" />
     </div>
 </template>
@@ -7,7 +7,7 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import Chart from "./chart.obs";
-    import { LabelDateFormat, LegendAlign, LegendPosition, LineSeries, LineStyle, TooltipCallback } from "@Obsidian/Core/Controls/chart";
+    import { LabelDateFormat, LegendAlign, LegendPosition, LineSeries, LineStyle, TitleAlign, TooltipCallback } from "@Obsidian/Core/Controls/chart";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { Chart as ChartJs, ChartData, ChartOptions, Color, LegendItem, ScriptableContext, TooltipItem, TooltipLabelStyle } from "@Obsidian/Libs/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
@@ -127,6 +127,13 @@
          */
         title: {
             type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The alignment of the chart title.
+         */
+        titleAlign: {
+            type: String as PropType<TitleAlign | undefined>
         },
 
         /**
@@ -491,6 +498,7 @@
                 },
 
                 title: {
+                    align: props.titleAlign ?? undefined,
                     color: getCssVar("--color-interface-strong"),
                     display: !!props.title,
 
@@ -499,6 +507,12 @@
                         size: parseInt(getCssVar("--font-size-small")) || undefined,
                         weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                     },
+
+                    // When the title alignment is centered,
+                    // it should be centered according to the full width of the canvas.
+                    // When it is right or left aligned, it should be left or right aligned
+                    // with the chart data area.
+                    fullSize: !props.titleAlign || props.titleAlign === "center",
 
                     text: props.title ?? undefined
                 },

@@ -67,7 +67,11 @@
     const maxLevels = ref(4);
     const campus = ref(emptyGuid);
 
-    syncRefsWithQueryParams({ dateRange, maxLevels, campus });
+    syncRefsWithQueryParams([
+        { param: "DateRange", ref: dateRange, type: "json" },
+        { param: "MaxLevels", ref: maxLevels, type: "number" },
+        { param: "Campus", ref: campus, type: "string" }
+    ]);
 
     const campusOptions = ref<ListItemBag[]>([
         {

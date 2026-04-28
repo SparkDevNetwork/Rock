@@ -68,6 +68,12 @@ namespace Rock.Web.Cache
         public bool HasEndDate { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether a date is required for steps of this type.
+        /// </summary>
+        [DataMember]
+        public bool IsDateRequired { get; private set; }
+
+        /// <summary>
         /// Gets or sets the Id of the <see cref="DataView"/> associated with this step type. The data view reveals the people that are allowed to be
         /// considered for this step type.
         /// </summary>
@@ -170,12 +176,23 @@ namespace Rock.Web.Cache
 
         #endregion Related Caches
 
-        #region Security
+        #region ISecured
+
+        /*
+             3/12/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
 
         /// <inheritdoc cref="Rock.Model.StepType.ParentAuthority"/>
         public override Security.ISecured ParentAuthority => StepProgram ?? base.ParentAuthority;
 
-        #endregion Security
+        #endregion ISecured
 
         #region Public Methods
 
@@ -199,6 +216,7 @@ namespace Rock.Web.Cache
             IconCssClass = sourceModel.IconCssClass;
             AllowMultiple = sourceModel.AllowMultiple;
             HasEndDate = sourceModel.HasEndDate;
+            IsDateRequired = sourceModel.IsDateRequired;
             AudienceDataViewId = sourceModel.AudienceDataViewId;
             ShowCountOnBadge = sourceModel.ShowCountOnBadge;
             AutoCompleteDataViewId = sourceModel.AutoCompleteDataViewId;

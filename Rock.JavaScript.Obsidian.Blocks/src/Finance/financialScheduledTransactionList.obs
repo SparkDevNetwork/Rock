@@ -19,15 +19,13 @@
                       field="authorized"
                       :filter="pickExistingValueFilter"
                       :filterValue="getPersonFilterValue"
-                      :quickFilterValue="getPersonFilterValue"
-                      visiblePriority="xs" />
+                      :quickFilterValue="getPersonFilterValue" />
 
         <CurrencyColumn name="amount"
                         title="Amount"
                         field="amount"
                         :filter="numberValueFilter"
-                        width="100"
-                        visiblePriority="md">
+                        width="120px">
             <template #format="{ row }">
                 {{ toCurrencyOrNull(row.amount, config.options?.currencyInfo) }}
             </template>
@@ -39,7 +37,7 @@
                 :filter="pickExistingValueFilter"
                 :filterValue="getRowAccountsFilterValue"
                 :quickFilterValue="getRowAccountsFilterValue"
-                visiblePriority="xs">
+                :sortValue="getRowAccountsFilterValue">
             <template #format="{ row }">
                 <div class="text-sm">
                     <div v-for="account in row.accounts">
@@ -62,59 +60,50 @@
         <TextColumn name="transactionFrequency"
                     title="Frequency"
                     field="transactionFrequency"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="xs" />
+                    :filter="pickExistingValueFilter" />
 
 
         <DateColumn name="createdDateTime"
                     title="Created"
                     field="createdDateTime"
-                    :filter="dateValueFilter"
-                    visiblePriority="md" />
+                    :filter="dateValueFilter" />
 
         <DateColumn name="startDate"
                     title="Starting"
                     field="startDate"
-                    :filter="dateValueFilter"
-                    visiblePriority="md" />
+                    :filter="dateValueFilter" />
 
         <DateColumn name="endDate"
                     title="Ending"
                     field="endDate"
-                    :filter="dateValueFilter"
-                    visiblePriority="md" />
+                    :filter="dateValueFilter" />
 
         <DateColumn name="nextPayment"
                     title="Next Payment"
                     field="nextPayment"
-                    :filter="dateValueFilter"
-                    visiblePriority="md" />
+                    :filter="dateValueFilter" />
 
         <TextColumn name="currencyType"
                     title="Currency Type"
                     field="currencyType"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="xs" />
+                    :filter="pickExistingValueFilter" />
 
         <TextColumn v-if="showTransactionTypeColumn"
                     name="transactionType"
                     title="Transaction Type"
                     field="transactionType"
-                    :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    :filter="textValueFilter" />
 
         <TextColumn name="gatewayScheduleId"
                     title="Schedule ID"
                     field="gatewayScheduleId"
                     itemClass="schedule-wrap"
-                    :filter="textValueFilter"
-                    visiblePriority="md" />
+                    :filter="textValueFilter" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
-                       :filter="booleanValueFilter"
-                       visiblePriority="xs" />
+                       :filter="booleanValueFilter" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
     </Grid>

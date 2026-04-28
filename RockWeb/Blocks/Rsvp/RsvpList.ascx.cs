@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.RSVP
                     }
                     else
                     {
-                        NavigateToRSVPDetail();
+                        //NavigateToRSVPDetail();
                     }
                 }
             }
