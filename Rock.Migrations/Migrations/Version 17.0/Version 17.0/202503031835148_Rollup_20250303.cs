@@ -210,6 +210,7 @@ namespace Rock.Migrations
                 { "F791046A-333F-4B2A-9815-73B60326162D", "EnableAIDisclaimer,AIDisclaimer,GroupCategoryId" }, // Prayer Request Detail ( Prayer )
                 { "9F26A1DA-74AE-4CB7-BABC-6AE81A581A06", "DefaultInviteEmail" }, // Signature Document Template Detail ( Core )
                 { "20AD75DD-0DF3-49E9-9DB1-8537C12B1664", "DetailPage" }, // Rest Action List ( Core )
+                { "8CDB6E8D-A8DF-4144-99F8-7F78CC1AF7E4", "core.CustomGridEnableStickyHeaders,core.CustomActionsConfigs,core.EnableDefaultWorkflowLauncher" }, // Schedule Builder ( Check-in )
             } );
         }
 
