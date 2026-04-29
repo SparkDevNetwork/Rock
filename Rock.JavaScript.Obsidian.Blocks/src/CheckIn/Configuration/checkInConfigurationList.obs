@@ -5,7 +5,7 @@
     <BreakpointObserver v-else @breakpointHelper="breakpointHelper = $event">
         <div class="check-ins-container row">
 
-            <div class="check-ins-list col-sm-9">
+            <div class="check-ins-list col-md-9">
                 <Panel title="Active Check-in Configurations">
                     <template #helpContent>
                         <div class="check-ins-help">
@@ -45,7 +45,7 @@
                 </Panel>
             </div>
 
-            <div class="check-ins-related col-sm-3">
+            <div class="check-ins-related col-md-3">
                 <Panel>
                     <template #title>
                         <div class="check-ins-related-title">
