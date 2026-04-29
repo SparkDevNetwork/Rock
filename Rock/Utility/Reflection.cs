@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Utility.ExtensionMethods;
 using Rock.Web.Cache;
@@ -285,7 +286,7 @@ namespace Rock
 
             if ( contextType == typeof( Rock.Data.RockContext ) )
             {
-                return new Rock.Data.RockContext();
+                return RockApp.Current.CreateRockContext();
             }
             else
             {

@@ -44,6 +44,7 @@ namespace Rock.Core.EntitySearch
         /// </summary>
         private readonly static ParsingConfig _parsingConfig = new ParsingConfig
         {
+            AllowEqualsAndToStringMethodsOnObject = true,
             DisableMemberAccessToIndexAccessorFallback = true,
             CustomTypeProvider = new DynamicLinqCustomTypeProvider()
         };

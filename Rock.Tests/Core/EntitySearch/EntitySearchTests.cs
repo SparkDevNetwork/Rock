@@ -67,6 +67,23 @@ namespace Rock.Tests.Core.EntitySearch
         }
 
         [TestMethod]
+        public void WhereWithIdToString_ReturnsExactItem()
+        {
+            var queryable = GetGroupsQueryableMock();
+
+            var systemQuery = new EntitySearchSystemQuery
+            {
+                WhereExpression = "Id.ToString() == \"2\""
+            };
+
+            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
+            var items = results.Items.Cast<dynamic>().ToList();
+
+            Assert.HasCount( 1, results.Items );
+            Assert.AreEqual( 2, ( int ) items[0].Id );
+        }
+
+        [TestMethod]
         public void WhereWithMissingId_ReturnsNoResults()
         {
             var queryable = GetGroupsQueryableMock();
@@ -102,6 +119,23 @@ namespace Rock.Tests.Core.EntitySearch
             Assert.AreEqual( "Group Type 1", ( string ) items[0] );
         }
 
+        [TestMethod]
+        public void SelectWithIdToString_ReturnsOnlyIdAsString()
+        {
+            var queryable = GetGroupsQueryableMock();
+
+            var systemQuery = new EntitySearchSystemQuery
+            {
+                WhereExpression = "Id == 1",
+                SelectExpression = "Id.ToString()"
+            };
+
+            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
+            var items = results.Items.Cast<dynamic>().ToList();
+
+            Assert.AreEqual( "1", ( string ) items[0] );
+        }
+
         #endregion
 
         #region GroupBy Tests
@@ -126,6 +160,33 @@ namespace Rock.Tests.Core.EntitySearch
             {
                 WhereExpression = "GroupTypeId == 1 || GroupTypeId == 2",
                 GroupByExpression = "GroupTypeId"
+            };
+
+            var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );
+
+            Assert.HasCount( 2, results.Items );
+        }
+
+        [TestMethod]
+        public void GroupByToString_ReturnsGroupedItems()
+        {
+            var queryable = GetGroupsQueryableMock();
+
+            // Validate source data.
+            if ( !queryable.Any( g => g.GroupTypeId == 1 ) || !queryable.Any( g => g.GroupTypeId == 2 ) )
+            {
+                throw new AssertInconclusiveException( "Mock groups queryable is missing expected group types." );
+            }
+
+            if ( queryable.Count( g => g.GroupTypeId == 1 || g.GroupTypeId == 2 ) == 2 )
+            {
+                throw new AssertInconclusiveException( "Mock groups queryable contains unexpected group counts." );
+            }
+
+            var systemQuery = new EntitySearchSystemQuery
+            {
+                WhereExpression = "GroupTypeId == 1 || GroupTypeId == 2",
+                GroupByExpression = "GroupTypeId.ToString()"
             };
 
             var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, null, null );

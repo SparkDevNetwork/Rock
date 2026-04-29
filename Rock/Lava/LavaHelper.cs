@@ -25,6 +25,7 @@ using System.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -70,7 +71,7 @@ namespace Rock.Lava
 
             if ( rockContext == null )
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
                 if ( context != null )
                 {
                     context.SetInternalField( "rock_context", rockContext );
