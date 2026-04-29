@@ -5,7 +5,7 @@
         </template>
 
         <template v-if="items.length">
-            <NotificationBox alertType="warning">
+            <NotificationBox v-if="isApiKeyAppendedToUrl" alertType="warning">
                 <p><strong>Security Notice</strong></p>
                 Do not share the MCP links below. They are tied directly to your user account and permissions — sharing them could compromise your account and expose sensitive data.
             </NotificationBox>
@@ -47,14 +47,21 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { AudienceType, AudienceTypeDescription } from "@Obsidian/Enums/AI/Agent/audienceType";
-    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { InitializationBox } from "@Obsidian/ViewModels/Blocks/Core/McpServerList/initializationBox";
     import { McpServerListItemBag } from "@Obsidian/ViewModels/Blocks/Core/McpServerList/mcpServerListItemBag";
 
     const config = useConfigurationValues<InitializationBox>();
+    const reloadBlock = useReloadBlock();
+
+    // #region Computed Values
 
     const items = computed<McpServerListItemBag[]>(() => {
         return config.items || [];
+    });
+
+    const isApiKeyAppendedToUrl = computed<boolean>(() => {
+        return config.isApiKeyAppendedToUrl === true;
     });
 
     const panelLabel = computed<string>(() => {
@@ -64,4 +71,8 @@
 
         return `${items.value.length} MCP Server${items.value.length === 1 ? "" : "s"}`;
     });
+
+    // #endregion Computed Values
+
+    onConfigurationValuesChanged(reloadBlock);
 </script>

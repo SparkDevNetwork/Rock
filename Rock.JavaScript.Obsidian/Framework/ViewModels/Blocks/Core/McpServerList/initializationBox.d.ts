@@ -31,6 +31,12 @@ export type InitializationBox = {
      */
     errorMessage?: string | null;
 
+    /**
+     * Gets or sets a value indicating whether the individual's API key is appended to the MCP URL.
+     * When true, the URL contains a sensitive credential and a security notice should be displayed.
+     */
+    isApiKeyAppendedToUrl: boolean;
+
     /** Gets or sets the collection of MCP servers. */
     items?: McpServerListItemBag[] | null;
 
