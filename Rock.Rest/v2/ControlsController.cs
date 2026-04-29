@@ -4266,14 +4266,10 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "E2601583-94D5-4C21-96FA-309B9FB7E11F" )]
         public IActionResult DefinedValueEditorGetAttributes( DefinedValueEditorGetAttributesOptionsBag options )
         {
-            if ( RockRequestContext.CurrentPerson == null )
-            {
-                return Unauthorized();
-            }
-
             var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+            var securityGrant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( definedType == null || !definedType.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+            if ( definedType == null )
             {
                 return Unauthorized();
             }
@@ -4283,6 +4279,11 @@ namespace Rock.Rest.v2
                 Id = 0,
                 DefinedTypeId = definedType.Id
             };
+
+            if ( securityGrant?.IsAccessGranted( definedValue, Authorization.EDIT ) != true )
+            {
+                return Unauthorized();
+            }
 
             definedValue.LoadAttributes();
 
@@ -4319,11 +4320,6 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "E1AB17E0-CF28-4032-97A8-2A4279C5815A" )]
         public IActionResult DefinedValueEditorSaveNewValue( DefinedValueEditorSaveNewValueOptionsBag options )
         {
-            if ( RockRequestContext.CurrentPerson == null )
-            {
-                return Unauthorized();
-            }
-
             var securityGrant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
             using ( var rockContext = new RockContext() )

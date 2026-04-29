@@ -231,7 +231,7 @@ namespace Rock.Tests.Shared
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
             var rockContextFactory = MockDatabaseHelper.CreateRockContextFactory( rockContextMock );
 
-            return CreateScopedRockApp( sc => sc.AddSingleton( rockContextFactory ) );
+            return CreateScopedRockApp( "Server=localhost\\MockInstance;Database=Rock", sc => sc.AddSingleton( rockContextFactory ) );
         }
 
         /// <summary>
