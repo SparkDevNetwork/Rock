@@ -28,7 +28,21 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            NA_RemoveObsoleteAppleTVPageListObsidianBlock_Up();
+            /*
+                4/29/2026 - NA
+
+                We ran into a race/timing issue with this block deletion that affects developers
+                who create a fresh database and the pre-alpha deployment process (which starts
+                from a v15 database or earlier). In these situations, this deletion interferes with the
+                "Chop Block Types 17.1 (18.0.6)" chop job that runs in v18.0 via
+                202505131801097_Rollup_20250513.cs because, by the time that job runs, the block has been
+                deleted by this data migration.
+
+                Reason: Deferring this deletion until the next migration squish, at which point
+                there is no chance the block will still exist.
+            */
+            //NA_RemoveObsoleteAppleTVPageListObsidianBlock_Up();
+
             NA_RenameChoppedBlocksForV20_Up();
             NA_ReCleanupUnusedPluginManagerBlockType_Up();
         }
@@ -41,6 +55,9 @@ namespace Rock.Plugin.HotFixes
             // Down migrations are not yet supported in plug-in migrations.
         }
 
+        /// <summary>
+        /// No longer used.  See enginnering note above.
+        /// </summary>
         private void NA_RemoveObsoleteAppleTVPageListObsidianBlock_Up()
         {
             RockMigrationHelper.DeleteBlockType( "a759218b-1c72-446c-8994-8559ba72941e" ); // BlockType: AppleTvPageList (Obsolete)
