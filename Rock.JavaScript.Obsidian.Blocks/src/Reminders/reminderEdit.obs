@@ -11,18 +11,33 @@
                 {{ saveErrorMessage }}
             </NotificationBox>
 
+            <div class="d-flex flex-wrap align-items-start gap-spacing-xl">
+                <DatePicker v-model="reminderDate"
+                            label="Due Date"
+                            :disallowPastDateSelection="true"
+                            rules="required" />
+                <CheckBox v-if="isExistingReminder"
+                          v-model="isComplete"
+                          label="Complete"
+                          help="Determines if the reminder should be considered complete." />
+            </div>
+
             <div class="row">
-                <div class="col-md-6">
-                    <DatePicker v-model="reminderDate"
-                                label="Reminder Date"
-                                :disallowPastDateSelection="true"
-                                rules="required" />
+                <div class="col-xs-12 col-md-6">
+                    <DropDownList v-model="reminderType"
+                                  label="Reminder Type"
+                                  :items="reminderTypeItems"
+                                  rules="required"
+                                  :showBlankItem="false" />
                 </div>
-                <div class="col-md-6">
-                    <CheckBox v-if="isExistingReminder"
-                              v-model="isComplete"
-                              label="Complete"
-                              help="Determines if the reminder should be considered complete." />
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12 col-md-3">
+                    <PersonPicker v-model="person"
+                                  label="Assigned To"
+                                  rules="required"
+                                  :enableSelfSelection="true" />
                 </div>
             </div>
 
@@ -30,32 +45,24 @@
                      label="Note"
                      textMode="multiline" />
 
-            <DropDownList v-model="reminderType"
-                          label="Reminder Type"
-                          :items="reminderTypeItems"
-                          rules="required"
-                          :showBlankItem="false" />
-
-            <PersonPicker v-model="person"
-                          label="Assign Reminder To"
-                          rules="required"
-                          :enableSelfSelection="true" />
-
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-xs-12 col-md-3">
                     <NumberBox v-model="renewPeriodDays"
-                               label="Repeat Every"
-                               help="Will repeat the reminder the provided number of days after the completion."
+                               label="Repeat Frequency"
+                               help="The number of days after completion before the reminder repeats."
                                :minimumValue="0">
                         <template #inputGroupAppend>
                             <span class="input-group-addon">days</span>
                         </template>
                     </NumberBox>
                 </div>
-                <div class="col-md-6">
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12 col-md-3">
                     <NumberBox v-model="renewMaxCount"
-                               label="Number of Times to Repeat"
-                               help="The number of times to repeat. Leave blank to repeat indefinitely."
+                               label="Repeat Count"
+                               help="The number of times this reminder will repeat. Leave blank to repeat indefinitely."
                                :minimumValue="0">
                         <template #inputGroupAppend>
                             <span class="input-group-addon">times</span>
