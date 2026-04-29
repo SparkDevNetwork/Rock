@@ -45,10 +45,18 @@ namespace Rock.Blocks.Crm
 
     #region Block Attributes
 
+    [LinkedPage( "NCOA Process Page",
+        Description = "The page used to process NCOA data.",
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.Page.NCOA_PROCESS + "," + Rock.SystemGuid.PageRoute.NCOA_PROCESS,
+        Key = AttributeKey.NcoaProcessPage,
+        Order = 0 )]
+
     [IntegerField( "Result Count",
          Description = "How many results to show per page.",
          DefaultIntegerValue = 20,
-         Key = AttributeKey.ResultCount )]
+         Key = AttributeKey.ResultCount,
+         Order = 1 )]
 
     #endregion
 
@@ -62,12 +70,14 @@ namespace Rock.Blocks.Crm
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
+            public const string NcoaProcessPage = "NcoaProcessPage";
             public const string ResultCount = "ResultCount";
         }
 
         private static class NavigationUrlKey
         {
             public const string DetailPage = "DetailPage";
+            public const string NcoaProcessPage = "NcoaProcessPage";
         }
 
         private static class PreferenceKey
@@ -184,7 +194,8 @@ namespace Rock.Blocks.Crm
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "NcoaRowId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "NcoaRowId", "((Key))" ),
+                [NavigationUrlKey.NcoaProcessPage] = this.GetLinkedPageUrl( AttributeKey.NcoaProcessPage )
             };
         }
 

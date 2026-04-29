@@ -4,6 +4,9 @@
            type="block">
         <template #headerActions>
 
+            <a :href="processNcoaUrl" class="btn btn-default btn-xs">
+                <i class="fa fa-upload"></i> Process NCOA
+            </a>
             <span class="label label-default">
                 Results: {{ totalCount }}
             </span>
@@ -241,6 +244,8 @@
         },
         { deep: true }
     );
+
+    const processNcoaUrl = computed((): string => config.navigationUrls?.["NcoaProcessPage"] ?? "");
 
     const hasSettingsFilters = computed((): boolean => {
         return (!!gridSettings.value.filterProcessed.length && gridSettings.value.filterProcessed !== Processed.ManualUpdateRequiredOrNotProcessed.toString())

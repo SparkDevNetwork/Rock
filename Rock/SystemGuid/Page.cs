@@ -2130,5 +2130,10 @@ namespace Rock.SystemGuid
         /// The Group Placement page.
         /// </summary>
         public const string GROUP_PLACEMENT = "C1B0C21F-FF3B-4D79-A11A-75BF689A954A";
+
+        /// <summary>
+        /// The Ncoa Process Page
+        /// </summary>
+        public const string NCOA_PROCESS = "56EDE500-CEE6-41F4-B724-E44E66A4432F";
     }
 }
