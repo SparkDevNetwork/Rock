@@ -1018,7 +1018,7 @@ namespace Rock.WebStartup
                                     sqlTxn.Rollback();
                                 }
 
-                                throw new RockStartupException( $"##Plugin Migration error occurred in {migrationNumber}, {migrationType.Name}##", ex );
+                                throw new RockStartupException( $"## {pluginAssemblyName} Plugin Migration error occurred in {migrationNumber}, {migrationType.Name}##", ex );
                             }
                         }
                     }
