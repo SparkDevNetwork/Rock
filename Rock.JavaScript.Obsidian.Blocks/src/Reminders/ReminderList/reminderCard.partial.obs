@@ -1,0 +1,308 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DisplayCard class="reminder-list-card"
+                 :class="{ 'o-60': reminder.isComplete }"
+                 :title="reminder.entityName ?? ''"
+                 :titleUrl="reminder.entityUrl ?? ''"
+                 :description="reminder.note ?? ''"
+                 :onClick="readonly ? undefined : onCardClick"
+                 :primaryActions="readonly ? undefined : primaryActions"
+                 :secondaryActions="readonly ? undefined : secondaryActions">
+        <template #prepend>
+            <button v-if="!readonly"
+                    type="button"
+                    class="reminder-list-card-toggle border-0 p-0 mr-spacing-sm d-inline-flex align-items-center cursor-pointer text-interface-soft"
+                    :class="{ 'is-complete': reminder.isComplete }"
+                    :title="reminder.isComplete ? 'Mark Incomplete' : 'Mark Complete'"
+                    @click.stop="onToggleComplete">
+                <i :class="reminder.isComplete ? 'ti ti-circle-check-filled' : 'ti ti-circle'"></i>
+            </button>
+            <div class="reminder-list-card-visual d-inline-flex align-items-center justify-content-center flex-grow-0 flex-shrink-0">
+                <PersonAvatar v-if="reminder.isPersonReminder && reminder.profilePhotoUrl"
+                              :photoUrl="reminder.profilePhotoUrl"
+                              :personIdKey="reminder.personIdKey ?? ''"
+                              :photoSize="48"
+                              marginRight="0"
+                              alwaysShowAvatar
+                              :enableHoverInfo="!!reminder.personIdKey" />
+                <span v-else class="reminder-list-card-icon d-inline-flex align-items-center justify-content-center w-100 h-100 bg-info-soft text-info-strong font-size-h3">
+                    <i :class="visualIconCssClass"></i>
+                </span>
+            </div>
+        </template>
+
+        <template #middleSection>
+            <div class="d-flex flex-column justify-content-start">
+                <div v-if="reminder.dueLabel" class="reminder-list-card-due d-flex align-items-center gap-spacing-tiny font-size-sm" :class="dueColorClass">
+                    <i class="ti ti-clock"></i>
+                    <span>{{ reminder.dueLabel }}</span>
+                </div>
+                <div v-if="reminder.recurrenceText" class="reminder-list-card-recurrence d-flex align-items-center gap-spacing-tiny font-size-sm text-interface-medium">
+                    <i class="ti ti-refresh"></i>
+                    <span>{{ reminder.recurrenceText }}</span>
+                </div>
+            </div>
+        </template>
+
+        <template #rightMiddleSection>
+            <HighlightLabel v-if="reminder.reminderTypeName"
+                            labelType="default"
+                            class="reminder-list-card-type">
+                <span class="reminder-list-card-type-dot rounded-circle flex-grow-0 flex-shrink-0" :style="dotStyle"></span>
+                <span>{{ reminder.reminderTypeName }}</span>
+            </HighlightLabel>
+        </template>
+    </DisplayCard>
+
+    <RescheduleReminderFlyout :visible="activeFlyout === 'reschedule'"
+                              :anchorEl="flyoutAnchorEl"
+                              :reminder="reminder"
+                              @update:visible="onFlyoutVisibilityChange('reschedule', $event)"
+                              @save="onConfirmReschedule" />
+
+    <ReassignReminderFlyout :visible="activeFlyout === 'reassign'"
+                            :anchorEl="flyoutAnchorEl"
+                            :reminder="reminder"
+                            @update:visible="onFlyoutVisibilityChange('reassign', $event)"
+                            @save="onConfirmReassign" />
+</template>
+
+<style scoped>
+.reminder-list-card-toggle {
+    background: transparent;
+    font-size: 1.75rem;
+}
+
+.reminder-list-card-toggle.is-complete,
+.reminder-list-card-toggle:hover:not(.is-complete) {
+    color: var(--color-success-strong);
+}
+
+/* Give the heading (title + description) the lion's share of the row.
+   DisplayCard's default of `flex: 1 1 0` for heading + both content
+   slots would split the row in thirds; bumping the heading to
+   `flex: 3 1 0` (3/5 ≈ 60%) leaves the description plenty of room and
+   pushes the middle / right-middle sections further to the right. */
+.reminder-list-card :deep(.displaycard-heading) {
+    flex: 3 1 0;
+}
+
+/* Fixed-size visual slot in the prepend area. Keeping this 48×48 across
+   every row — whether it contains an avatar, a group icon, or a fallback
+   person icon — keeps the prepend width constant so the heading, middle,
+   and right-middle flex tracks all start at the same x across rows. */
+.reminder-list-card-visual {
+    width: 48px;
+    height: 48px;
+}
+
+.reminder-list-card-icon {
+    border-radius: var(--rounded-xsmall);
+}
+
+.reminder-list-card-due {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-strong);
+}
+
+.reminder-list-card-due.is-overdue {
+    color: var(--color-danger-strong);
+}
+
+.reminder-list-card-due.is-today {
+    color: var(--color-warning-strong);
+}
+
+.reminder-list-card-recurrence {
+    margin-top: 2px;
+}
+
+/* Flex layout inside the HighlightLabel — gives true vertical centering
+   between the color dot and the label text and removes the gap that
+   inline-block + whitespace was leaving behind. Kept scoped because
+   utility classes wouldn't override HighlightLabel's own scoped display. */
+.reminder-list-card-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.reminder-list-card-type-dot {
+    width: 12px;
+    height: 12px;
+    background: var(--reminder-type-color, var(--color-interface-medium));
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { Guid } from "@Obsidian/Types";
+    import { ReminderListBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderList/reminderListBag";
+    import RescheduleReminderFlyout from "./rescheduleReminderFlyout.partial.obs";
+    import ReassignReminderFlyout from "./reassignReminderFlyout.partial.obs";
+
+    type FlyoutKind = "reschedule" | "reassign";
+
+    const props = defineProps({
+        reminder: {
+            type: Object as PropType<ReminderListBag>,
+            required: true
+        },
+
+        /**
+         * Renders the card as a non-interactive preview — no toggle, no
+         * primary/secondary actions, no card-click handler. Used by the
+         * Delete Reminder modal so the confirmation card matches the
+         * visual styling of the list while suppressing affordances that
+         * would be confusing in a confirmation context.
+         */
+        readonly: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "edit", idKey: string): void;
+        (e: "delete", idKey: string): void;
+        (e: "reschedule", payload: { idKey: string; newReminderDate: string }): void;
+        (e: "reassign", payload: { idKey: string; newPersonAliasGuid: Guid }): void;
+        (e: "toggleComplete", idKey: string): void;
+    }>();
+
+    /**
+     * Which flyout (if any) is currently open for this card. Each card owns
+     * its own flyout pair so the anchor element stays in scope and multiple
+     * cards' flyouts don't fight each other.
+     */
+    const activeFlyout = ref<FlyoutKind | null>(null);
+
+    /** The button DOM that the active flyout anchors to. Captured at click time. */
+    const flyoutAnchorEl = ref<HTMLElement | null>(null);
+
+    /** Map the server-supplied dueLabelColor hint to a CSS class. */
+    const dueColorClass = computed((): string => {
+        if (props.reminder.dueLabelColor === "danger") {
+            return "is-overdue";
+        }
+        if (props.reminder.dueLabelColor === "warning") {
+            return "is-today";
+        }
+        return "";
+    });
+
+    /** Inline style used to color the reminder-type dot. */
+    const dotStyle = computed((): Record<string, string> => {
+        return {
+            "--reminder-type-color": props.reminder.highlightColor ?? "var(--color-interface-medium)"
+        };
+    });
+
+    /**
+     * Icon used inside the fixed-width visual block when no PersonAvatar is
+     * shown — group reminders, or person reminders without a profile photo.
+     * Keeping the visual block at a constant 48×48 across rows is what lets
+     * the middle and right-middle sections line up vertically.
+     */
+    const visualIconCssClass = computed((): string => {
+        if (props.reminder.isGroupReminder) {
+            return props.reminder.entityIconCssClass ?? "ti ti-users";
+        }
+        return "ti ti-user";
+    });
+
+    /** Reschedule and Reassign appear as inline icon buttons on the card. */
+    const primaryActions = computed((): MenuAction[] => {
+        return [
+            {
+                title: "Reschedule",
+                iconCssClass: "ti ti-calendar",
+                type: "default",
+                handler: onReschedule
+            },
+            {
+                title: "Reassign",
+                iconCssClass: "ti ti-user",
+                type: "default",
+                handler: onReassign
+            }
+        ];
+    });
+
+    /** The kebab menu collapses to a single Delete action. Edit is the card click. */
+    const secondaryActions = computed((): MenuAction[] => {
+        return [
+            {
+                title: "Delete Reminder",
+                iconCssClass: "ti ti-trash",
+                type: "danger",
+                handler: () => onDelete()
+            }
+        ];
+    });
+
+    /** Emits the edit event when the card body is clicked. */
+    function onCardClick(): void {
+        if (props.reminder.idKey) {
+            emit("edit", props.reminder.idKey);
+        }
+    }
+
+    /** Emits the toggleComplete event when the circle/check toggle is clicked. */
+    function onToggleComplete(): void {
+        if (props.reminder.idKey) {
+            emit("toggleComplete", props.reminder.idKey);
+        }
+    }
+
+    /** Captures the clicked icon button so the flyout knows what to anchor under, then opens the Reschedule flyout. */
+    function onReschedule(event: Event): void {
+        if (!props.reminder.idKey) {
+            return;
+        }
+        flyoutAnchorEl.value = (event.currentTarget as HTMLElement) ?? null;
+        activeFlyout.value = "reschedule";
+    }
+
+    /** Captures the clicked icon button so the flyout knows what to anchor under, then opens the Reassign flyout. */
+    function onReassign(event: Event): void {
+        if (!props.reminder.idKey) {
+            return;
+        }
+        flyoutAnchorEl.value = (event.currentTarget as HTMLElement) ?? null;
+        activeFlyout.value = "reassign";
+    }
+
+    /**
+     * Single source of truth for closing flyouts. Only clears state when the
+     * close request matches the active flyout — avoids a stale 'reassign'
+     * close emit clobbering an already-opened 'reschedule', for instance.
+     */
+    function onFlyoutVisibilityChange(kind: FlyoutKind, visible: boolean): void {
+        if (!visible && activeFlyout.value === kind) {
+            activeFlyout.value = null;
+            flyoutAnchorEl.value = null;
+        }
+    }
+
+    /** Re-emits the reschedule payload upward to the parent block. */
+    function onConfirmReschedule(payload: { idKey: string; newReminderDate: string }): void {
+        emit("reschedule", payload);
+    }
+
+    /** Re-emits the reassign payload upward to the parent block. */
+    function onConfirmReassign(payload: { idKey: string; newPersonAliasGuid: Guid }): void {
+        emit("reassign", payload);
+    }
+
+    /** Emits the delete event from the kebab menu. */
+    function onDelete(): void {
+        if (props.reminder.idKey) {
+            emit("delete", props.reminder.idKey);
+        }
+    }
+</script>

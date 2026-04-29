@@ -1,0 +1,407 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Reminders"
+           titleIconCssClass="ti ti-bell"
+           :hasFullscreen="false">
+        <template #headerActions>
+            <button v-if="reminders && showFilters && !hasNoReminders"
+                    type="button"
+                    class="btn btn-panel-action"
+                    title="View Options"
+                    @click.prevent="onOpenViewOptions">
+                <i class="ti ti-adjustments-horizontal"></i>
+            </button>
+        </template>
+
+        <template #panelLabels>
+            <span v-if="reminders && showFilters && !hasNoReminders" class="label label-default">{{ countBadgeText }}</span>
+        </template>
+
+        <NotificationBox v-if="!isAuthenticated" alertType="danger">
+            Please log in to use Reminders.
+        </NotificationBox>
+
+        <NotificationBox v-else-if="hasNoReminders" alertType="warning">
+            You do not have any reminders.
+        </NotificationBox>
+
+        <template v-else-if="reminders">
+            <div class="reminder-list-toolbar d-flex align-items-center gap-spacing-sm flex-wrap">
+                <div class="reminder-list-toolbar-types">
+                    <DropDownList v-model="reminderTypeIdKey"
+                                  :items="reminderTypeDropdownItems"
+                                  :showBlankItem="false" />
+                </div>
+
+                <div v-if="showFilters" class="ml-auto mb-0">
+                    <ButtonGroup v-model="completionFilter"
+                                 :items="completionOptions"
+                                 :btnSize="BtnSize.Small" />
+                </div>
+            </div>
+
+            <NotificationBox v-if="reminders.length === 0" alertType="info" class="mt-3">
+                {{ emptyStateText }}
+            </NotificationBox>
+
+            <DisplayCardContainer v-else class="mt-3">
+                <ReminderCard v-for="(reminder, index) in reminders"
+                              :key="reminder.idKey ?? index"
+                              :reminder="reminder"
+                              @edit="onEditReminder"
+                              @delete="onRequestDelete"
+                              @reschedule="onConfirmReschedule"
+                              @reassign="onConfirmReassign"
+                              @toggleComplete="onToggleComplete" />
+            </DisplayCardContainer>
+        </template>
+
+        <ViewOptionsModal v-model="theFilter"
+                          :options="options"
+                          :selectedEntity="selectedEntity"
+                          v-model:visible="isViewOptionsModalVisible" />
+
+        <DeleteReminderModal v-model:visible="isDeleteModalVisible"
+                             :reminder="targetReminder"
+                             @confirm="onConfirmDelete" />
+    </Panel>
+</template>
+
+<style scoped>
+/* Match the spacing detail blocks use between the panel-labels badge group
+   and the panel-header-actions buttons (see Framework/Templates/detailBlock.ts). */
+:deep(.panel-flex > .panel-header > .panel-labels) {
+    margin-right: var(--spacing-xsmall);
+}
+
+.reminder-list-toolbar-types {
+    margin-bottom: 0;
+    min-width: 220px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { Guid } from "@Obsidian/Types";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ReminderListInitializationBox } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderList/reminderListInitializationBox";
+    import { ReminderListBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderList/reminderListBag";
+    import { ReminderListOptionsBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderList/reminderListOptionsBag";
+    import { GetRemindersResponseBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderList/getRemindersResponseBag";
+    import { RescheduleReminderRequestBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderList/rescheduleReminderRequestBag";
+    import { ReassignReminderRequestBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderList/reassignReminderRequestBag";
+    import ReminderCard from "./ReminderList/reminderCard.partial.obs";
+    import ViewOptionsModal from "./ReminderList/viewOptionsModal.partial.obs";
+    import DeleteReminderModal from "./ReminderList/deleteReminderModal.partial.obs";
+    import { CompletionFilter, DueFilter, EntityTypeFilter, NavigationUrlKey, PreferenceKey, ReminderFilter, SortBy } from "./ReminderList/types.partial";
+
+    const config = useConfigurationValues<ReminderListInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const isAuthenticated = config.isAuthenticated;
+    const showFilters = config.showFilters;
+
+    /**
+     * Null until the first GetReminders response lands — gates the empty-state
+     * notifications so they don't flash before we know what the server has.
+     */
+    const reminders = ref<ReminderListBag[] | null>(null);
+    const options = ref<ReminderListOptionsBag>({} as ReminderListOptionsBag);
+    const selectedEntity = ref<ListItemBag | null>(null);
+
+    /**
+     * Server-supplied: true when the user has zero reminders of any kind. Suppresses
+     * the toolbar entirely since filters can't act on an empty set.
+     */
+    const hasNoReminders = ref<boolean>(false);
+
+    /**
+     * Filter state hydrated from block preferences. The frontend is the source
+     * of truth — every change writes to preferences and triggers a refresh.
+     */
+    const theFilter = ref<ReminderFilter>({
+        sort: preferences.getValue(PreferenceKey.Sort) || SortBy.DueDateAsc,
+        completion: preferences.getValue(PreferenceKey.Completion) || CompletionFilter.Active,
+        entityType: preferences.getValue(PreferenceKey.EntityType) || EntityTypeFilter.All,
+        entityGuid: preferences.getValue(PreferenceKey.EntityGuid),
+        reminderTypeIdKey: preferences.getValue(PreferenceKey.ReminderType),
+        due: preferences.getValue(PreferenceKey.Due) || DueFilter.Overdue,
+        dueDateRange: preferences.getValue(PreferenceKey.DueDateRange)
+    });
+
+    /**
+     * Snapshot of the completion filter taken at response-arrival time. Reading
+     * live theFilter.value.completion in the badge / empty-state would flip the
+     * label before the new reminders arrive, producing a visible flicker.
+     */
+    const appliedCompletion = ref<string>(theFilter.value.completion ?? CompletionFilter.Active);
+
+    const isViewOptionsModalVisible = ref(false);
+    const isDeleteModalVisible = ref(false);
+    const targetReminder = ref<ReminderListBag | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Keyed off appliedCompletion so wording matches the currently displayed reminders. */
+    const emptyStateText = computed((): string => {
+        if (appliedCompletion.value === CompletionFilter.Complete) {
+            return "You have no completed reminders.";
+        }
+        if (appliedCompletion.value === CompletionFilter.Active) {
+            return "You have no active reminders.";
+        }
+        return "You have no reminders.";
+    });
+
+    /**
+     * "{N} {Filter} Reminders" pill. Count + label both come from response-time
+     * snapshot state so they update together when the response lands, not on click.
+     */
+    const countBadgeText = computed((): string => {
+        const n = reminders.value?.length ?? 0;
+        const noun = n === 1 ? "Reminder" : "Reminders";
+        if (appliedCompletion.value === CompletionFilter.Active) {
+            return `${n} Active ${noun}`;
+        }
+        if (appliedCompletion.value === CompletionFilter.Complete) {
+            return `${n} Completed ${noun}`;
+        }
+        return `${n} ${noun}`;
+    });
+
+    /** Prepends an "All Reminder Types" option to whatever the server returned. */
+    const reminderTypeDropdownItems = computed<ListItemBag[]>(() => {
+        const items: ListItemBag[] = [{ value: "", text: "All Reminder Types" }];
+        for (const item of options.value.reminderTypes ?? []) {
+            items.push(item);
+        }
+        return items;
+    });
+
+    /**
+     * Type is inferred (not ListItemBag[]) so non-null literals satisfy
+     * ButtonGroup's StandardListItemBag contract.
+     */
+    const completionOptions = computed(() => [
+        { value: CompletionFilter.All, text: "All" },
+        { value: CompletionFilter.Active, text: "Active" },
+        { value: CompletionFilter.Complete, text: "Completed" }
+    ]);
+
+    /** Writes through theFilter so the existing watcher handles persistence + refresh. */
+    const completionFilter = computed<string>({
+        get: () => theFilter.value.completion ?? CompletionFilter.All,
+        set: (next) => {
+            if ((theFilter.value.completion ?? "") === (next ?? "")) {
+                return;
+            }
+            theFilter.value = { ...theFilter.value, completion: next };
+        }
+    });
+
+    /** Toolbar reminder-type dropdown — writes through theFilter, same pattern as completionFilter. */
+    const reminderTypeIdKey = computed<string>({
+        get: () => theFilter.value.reminderTypeIdKey ?? "",
+        set: (next) => {
+            const value = next ?? "";
+            if ((theFilter.value.reminderTypeIdKey ?? "") === value) {
+                return;
+            }
+            theFilter.value = { ...theFilter.value, reminderTypeIdKey: value };
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * appliedCompletion is snapshot here so header/empty-state strings stay in
+     * sync with the displayed reminders rather than with in-flight filter clicks.
+     */
+    function applyResponse(response: GetRemindersResponseBag | null | undefined): void {
+        if (!response) {
+            return;
+        }
+        reminders.value = response.reminders ?? [];
+        selectedEntity.value = response.selectedEntity ?? null;
+        hasNoReminders.value = response.hasNoReminders === true;
+        if (response.options) {
+            options.value = response.options;
+        }
+        appliedCompletion.value = theFilter.value.completion ?? CompletionFilter.All;
+
+        const currentTypeKey = theFilter.value.reminderTypeIdKey ?? "";
+        if (currentTypeKey) {
+            const stillValid = (response.options?.reminderTypes ?? []).some(t => t.value === currentTypeKey);
+            if (!stillValid) {
+                theFilter.value = { ...theFilter.value, reminderTypeIdKey: "" };
+            }
+        }
+    }
+
+    /** Server reads filter state from preferences directly, so no payload. */
+    async function getReminders(): Promise<void> {
+        const result = await invokeBlockAction<GetRemindersResponseBag>("GetReminders");
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to load reminders.");
+            return;
+        }
+        applyResponse(result.data);
+    }
+
+    /**
+     * Tells the ReminderLinks bell to re-fetch its count after a mutation. Window-level
+     * CustomEvent keeps the blocks decoupled — pages without the bell just see it fire
+     * into the void.
+     */
+    function notifyReminderCountsChanged(): void {
+        window.dispatchEvent(new CustomEvent("rock:reminder-counts-changed"));
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Open the View Options modal.
+     */
+    function onOpenViewOptions(): void {
+        isViewOptionsModalVisible.value = true;
+    }
+
+    /**
+     * Card click — navigate to the Edit Reminder page.
+     */
+    function onEditReminder(idKey: string): void {
+        const baseUrl = config.navigationUrls?.[NavigationUrlKey.EditReminderPage];
+        if (!baseUrl) {
+            return;
+        }
+        const separator = baseUrl.includes("?") ? "&" : "?";
+        window.location.href = `${baseUrl}${separator}ReminderId=${encodeURIComponent(idKey)}`;
+    }
+
+    /**
+     * Open the styled delete-confirmation modal.
+     */
+    function onRequestDelete(idKey: string): void {
+        targetReminder.value = reminders.value?.find(r => r.idKey === idKey) ?? null;
+        isDeleteModalVisible.value = true;
+    }
+
+    /**
+     * Run the delete and refresh from the response.
+     */
+    async function onConfirmDelete(idKey: string): Promise<void> {
+        const result = await invokeBlockAction<GetRemindersResponseBag>("DeleteReminder", { reminderIdKey: idKey });
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to delete reminder.");
+            return;
+        }
+        applyResponse(result.data);
+        notifyReminderCountsChanged();
+    }
+
+    /**
+     * Submit the new date and refresh from the response. Card emits the
+     * payload directly when the user confirms inside the flyout.
+     */
+    async function onConfirmReschedule(payload: { idKey: string; newReminderDate: string }): Promise<void> {
+        const bag: RescheduleReminderRequestBag = {
+            reminderIdKey: payload.idKey,
+            newReminderDate: payload.newReminderDate
+        };
+        const result = await invokeBlockAction<GetRemindersResponseBag>("RescheduleReminder", { bag });
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to reschedule reminder.");
+            return;
+        }
+        applyResponse(result.data);
+        notifyReminderCountsChanged();
+    }
+
+    /**
+     * Submit the new alias guid and refresh from the response. Card emits
+     * the payload directly when the user confirms inside the flyout.
+     */
+    async function onConfirmReassign(payload: { idKey: string; newPersonAliasGuid: Guid }): Promise<void> {
+        const bag: ReassignReminderRequestBag = {
+            reminderIdKey: payload.idKey,
+            newPersonAliasGuid: payload.newPersonAliasGuid
+        };
+        const result = await invokeBlockAction<GetRemindersResponseBag>("ReassignReminder", { bag });
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to reassign reminder.");
+            return;
+        }
+        applyResponse(result.data);
+        notifyReminderCountsChanged();
+    }
+
+    /**
+     * Toggle the complete state from the inline circle / check button.
+     */
+    async function onToggleComplete(idKey: string): Promise<void> {
+        const result = await invokeBlockAction<GetRemindersResponseBag>("ToggleReminderComplete", { reminderIdKey: idKey });
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to update reminder.");
+            return;
+        }
+        applyResponse(result.data);
+        notifyReminderCountsChanged();
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    /**
+     * Single source-of-truth watcher: any change to filter state writes back
+     * to preferences and re-queries. Mirrors the pattern in
+     * Rock.JavaScript.Obsidian.Blocks/src/Cms/pageShortLinkList.obs.
+     */
+    watch(theFilter, async (next, prev) => {
+        if (!prev) {
+            return;
+        }
+        if (deepEqual(next, prev, true)) {
+            return;
+        }
+
+        preferences.setValue(PreferenceKey.Sort, next.sort ?? "");
+        preferences.setValue(PreferenceKey.Completion, next.completion ?? "");
+        preferences.setValue(PreferenceKey.EntityType, next.entityType ?? "");
+        preferences.setValue(PreferenceKey.EntityGuid, next.entityGuid ?? "");
+        preferences.setValue(PreferenceKey.ReminderType, next.reminderTypeIdKey ?? "");
+        preferences.setValue(PreferenceKey.Due, next.due ?? "");
+        preferences.setValue(PreferenceKey.DueDateRange, next.dueDateRange ?? "");
+
+        await preferences.save();
+
+        await getReminders();
+    }, { deep: true });
+
+    // #endregion Watchers
+
+    // Initial load of the reminders.
+    if (isAuthenticated) {
+        void getReminders();
+    }
+</script>

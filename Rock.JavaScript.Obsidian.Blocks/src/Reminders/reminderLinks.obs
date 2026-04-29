@@ -255,6 +255,15 @@
         }
     }
 
+    /**
+     * Listens for cross-block signals (currently the ReminderList block after
+     * complete / reschedule / reassign / delete) and re-fetches counts so the
+     * badge stays in sync without waiting for the polling interval.
+     */
+    function onReminderCountsChanged(): void {
+        void refreshCounts();
+    }
+
     /** Pauses polling while the tab is hidden; resumes (and refreshes if stale) on return. */
     function onVisibilityChange(): void {
         if (document.hidden) {
@@ -402,6 +411,7 @@
         document.addEventListener("mousedown", onDocumentMouseDown);
         document.addEventListener("keydown", onDocumentKeydown);
         document.addEventListener("visibilitychange", onVisibilityChange);
+        window.addEventListener("rock:reminder-counts-changed", onReminderCountsChanged);
     });
 
     onBeforeUnmount(() => {
@@ -412,6 +422,7 @@
         document.removeEventListener("mousedown", onDocumentMouseDown);
         document.removeEventListener("keydown", onDocumentKeydown);
         document.removeEventListener("visibilitychange", onVisibilityChange);
+        window.removeEventListener("rock:reminder-counts-changed", onReminderCountsChanged);
     });
 
     // #endregion

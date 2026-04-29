@@ -1,0 +1,70 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ReminderActionFlyout :visible="visible"
+                          :anchorEl="anchorEl"
+                          title="Reassign Reminder"
+                          iconCssClass="ti ti-user"
+                          @update:visible="onVisibleChange"
+                          @save="onSave">
+        <PersonPicker v-model="assignee"
+                      label="Assigned To"
+                      :enableSelfSelection="true"
+                      rules="required" />
+    </ReminderActionFlyout>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import ReminderActionFlyout from "./reminderActionFlyout.partial.obs";
+    import { ReminderListBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderList/reminderListBag";
+
+    const props = defineProps({
+        visible: {
+            type: Boolean,
+            required: true
+        },
+        anchorEl: {
+            type: Object as PropType<HTMLElement | null>,
+            default: null
+        },
+        reminder: {
+            type: Object as PropType<ReminderListBag | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:visible", value: boolean): void;
+        (e: "save", payload: { idKey: string; newPersonAliasGuid: Guid }): void;
+    }>();
+
+    const assignee = ref<ListItemBag | undefined>(undefined);
+
+    /** Reset the picker every time a new reminder is selected for reassignment. */
+    watch(() => props.reminder, () => {
+        assignee.value = undefined;
+    });
+
+    function onVisibleChange(value: boolean): void {
+        emit("update:visible", value);
+    }
+
+    /**
+     * RockForm has already validated by the time this fires. PersonPicker.value
+     * IS the PersonAlias guid (not the Person guid).
+     */
+    function onSave(): void {
+        const aliasGuid = toGuidOrNull(assignee.value?.value);
+        if (!props.reminder?.idKey || !aliasGuid) {
+            return;
+        }
+        emit("save", {
+            idKey: props.reminder.idKey,
+            newPersonAliasGuid: aliasGuid
+        });
+    }
+</script>
