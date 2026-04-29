@@ -23,9 +23,11 @@
 
 import { NcoaDataBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaDataBag";
 
-/** Family group of Ncoa history items */
+/** Represents a family group of NCOA history items for display in the NCOA Results block. */
 export type NcoaFamilyGroupBag = {
+    /** The name of the family group (from the Rock family group record). */
     familyName?: string | null;
 
+    /** The list of NCOA history items belonging to this family group. */
     ncoaItems?: NcoaDataBag[] | null;
 };

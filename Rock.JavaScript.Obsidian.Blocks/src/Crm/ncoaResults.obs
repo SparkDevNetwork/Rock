@@ -12,7 +12,7 @@
         </template>
 
         <div v-for="(family, idx) in ncoaResults" :key="idx" class="m-4">
-            <h3 class="pl-0">{{ family.familyName || family.ncoaItems?.[0]?.individualName?.split(' ')?.[1] }} Family</h3>
+            <h3 class="pl-0">{{ family.familyName }}</h3>
 
             <div v-for="(row, rowIdx) in family.ncoaItems" :key="row.idKey ?? rowIdx">
                 <div class="well">
@@ -22,7 +22,7 @@
                                 <div class="col-lg-6 col-md-12">
                                     <h4 v-if="row.type?.toLowerCase() === 'move'">
                                         <span class="label label-success">
-                                            {{ row.familyMembers?.trim() ? "Family" : "Individual" }}
+                                            {{ row.moveType }}
                                         </span>
                                     </h4>
                                     <h4 v-else-if="row.type?.toLowerCase() === 'month48move'">
@@ -37,11 +37,9 @@
                                     </dl>
                                 </div>
                                 <div class="col-lg-6 col-md-12">
-                                    <dl>
-                                        <dt>{{ row.familyMembers?.trim() ? "Family Members" : "Individual" }}</dt>
-                                        <dd v-for="(member, i) in (row.familyMembers?.trim()
-                                            ? row.familyMembers.split(',').map(m => m.trim())
-                                            : [row.individualName])"
+                                    <dl v-if="row.familyMembers?.trim()">
+                                        <dt>Family Members</dt>
+                                        <dd v-for="(member, i) in row.familyMembers.split(',').map(m => m.trim())"
                                             :key="i">
                                             {{ member }}
                                             <a v-if="i === 0" :href="'/Person/' + row.individualIdKey" target="_blank">
@@ -49,6 +47,24 @@
                                             </a>
                                         </dd>
                                     </dl>
+                                    <template v-else>
+                                        <dl>
+                                            <dt>Individual</dt>
+                                            <dd>
+                                                {{ row.individualName }}
+                                                <a :href="'/Person/' + row.individualIdKey" target="_blank">
+                                                    <i class="ti ti-users"></i>
+                                                </a>
+                                            </dd>
+                                        </dl>
+                                        <dl v-if="row.otherFamilyMembers?.trim()">
+                                            <dt>Other Family Members</dt>
+                                            <dd v-for="(member, i) in row.otherFamilyMembers.split(',').map(m => m.trim())"
+                                                :key="i">
+                                                {{ member }}
+                                            </dd>
+                                        </dl>
+                                    </template>
                                 </div>
                             </div>
                         </div>
@@ -96,9 +112,12 @@
                             </div>
                         </div>
                     </div>
-                    <div v-if="warnings[row.idKey ?? '']" class="row">
+                    <div v-if="row.otherFamilyMembers?.trim() || warnings[row.idKey ?? '']" class="row">
                         <div class="col-xs-12">
-                            <div class="alert alert-warning font-size-sm">
+                            <div v-if="row.otherFamilyMembers?.trim()" class="alert alert-warning font-size-sm">
+                                <p>Auto processing this move would result in a split family.</p>
+                            </div>
+                            <div v-if="warnings[row.idKey ?? '']" class="alert alert-warning font-size-sm">
                                 <p>{{ warnings[row.idKey ?? ''] }}</p>
                             </div>
                         </div>
@@ -217,6 +236,7 @@
 
             await preferences.save();
 
+            currentPage.value = 1;
             loadNcoaResults();
         },
         { deep: true }
@@ -274,14 +294,5 @@
         loadNcoaResults();
     }
 
-    watch(
-        gridSettings,
-        async () => {
-            await preferences.save();
 
-            currentPage.value = 1;
-            loadNcoaResults();
-        },
-        { deep: true }
-    );
 </script>

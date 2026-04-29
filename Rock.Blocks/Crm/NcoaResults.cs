@@ -243,12 +243,18 @@ namespace Rock.Blocks.Crm
             return result;
         }
 
-        public Dictionary<int, string> GetPersonNamesForFamilies( List<int> familyIds )
+        /// <summary>
+        /// Gets a comma-separated string of member names for each of the specified family group IDs.
+        /// Excludes deceased members.
+        /// </summary>
+        /// <param name="familyIds">The family group IDs to look up.</param>
+        /// <returns>A dictionary mapping family group ID to a comma-separated member name string.</returns>
+        private Dictionary<int, string> GetPersonNamesForFamilies( List<int> familyIds )
         {
-            var groupMemberService = new GroupMemberService( RockContext );
             var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
 
-            var families = groupMemberService.Queryable()
+            return new GroupMemberService( RockContext )
+                .Queryable()
                 .Where( gm =>
                     familyIds.Contains( gm.GroupId ) &&
                     gm.Group.GroupType.Guid == familyGroupTypeGuid &&
@@ -264,8 +270,67 @@ namespace Rock.Blocks.Crm
                     g => g.Key,
                     g => string.Join( ", ", g.Select( x => x.FullName ) )
                 );
+        }
 
-            return families;
+        /// <summary>
+        /// For individual move records, returns a dictionary mapping person alias ID to a
+        /// comma-separated string of other family member names. A non-empty entry indicates
+        /// a split family move — the individual moved but other members remain at the address.
+        /// Excludes deceased members.
+        /// </summary>
+        /// <param name="ncoaHistoryData">The paged NCOA history records.</param>
+        /// <returns>A dictionary mapping person alias ID to other family member names.</returns>
+        private Dictionary<int, string> GetOtherFamilyMembersForIndividualMoves( List<NcoaHistory> ncoaHistoryData )
+        {
+            var individualMoves = ncoaHistoryData
+                .Where( h => h.MoveType == MoveType.Individual )
+                .ToList();
+
+            if ( !individualMoves.Any() )
+            {
+                return new Dictionary<int, string>();
+            }
+
+            // Resolve alias IDs to person IDs.
+            var aliasIds = individualMoves.Select( h => h.PersonAliasId ).ToList();
+            var aliasToPersonId = new PersonAliasService( RockContext )
+                .Queryable()
+                .Where( pa => aliasIds.Contains( pa.Id ) )
+                .Select( pa => new { AliasId = pa.Id, pa.PersonId } )
+                .ToList()
+                .ToDictionary( x => x.AliasId, x => x.PersonId );
+
+            // Fetch all non-deceased members of the specific family groups from the NCOA records.
+            // Scoping to FamilyId (not all groups the person belongs to) matches the web forms behavior.
+            var individualMoveFamilyIds = individualMoves.Select( h => h.FamilyId ).Distinct().ToList();
+            var allFamilyMembers = new GroupMemberService( RockContext )
+                .Queryable()
+                .Where( gm => individualMoveFamilyIds.Contains( gm.GroupId ) && !gm.Person.IsDeceased )
+                .Select( gm => new { gm.GroupId, gm.PersonId, FullName = gm.Person.NickName + " " + gm.Person.LastName } )
+                .ToList();
+
+            var result = new Dictionary<int, string>();
+
+            foreach ( var move in individualMoves )
+            {
+                if ( !aliasToPersonId.TryGetValue( move.PersonAliasId, out var personId ) )
+                {
+                    continue;
+                }
+
+                var otherMembers = allFamilyMembers
+                    .Where( m => m.GroupId == move.FamilyId && m.PersonId != personId )
+                    .Select( m => m.FullName )
+                    .Distinct()
+                    .ToList();
+
+                if ( otherMembers.Any() )
+                {
+                    result[move.PersonAliasId] = string.Join( ", ", otherMembers );
+                }
+            }
+
+            return result;
         }
 
         #endregion
@@ -360,7 +425,7 @@ namespace Rock.Blocks.Crm
 
                 if ( dateRange.End.HasValue )
                 {
-                    ncoaQuery = ncoaQuery.Where( i => i.NcoaRunDateTime <= dateRange.End );
+                    ncoaQuery = ncoaQuery.Where( i => i.NcoaRunDateTime < dateRange.End );
                 }
             }
 
@@ -438,6 +503,17 @@ namespace Rock.Blocks.Crm
 
             var familyNamesKey = GetPersonNamesForFamilies( familyIds );
 
+            // Fetch the actual family group names for all records on this page.
+            var allFamilyIds = ncoaHistoryData.Select( h => h.FamilyId ).Distinct().ToList();
+            var familyGroupNames = new GroupService( RockContext )
+                .Queryable()
+                .Where( g => allFamilyIds.Contains( g.Id ) )
+                .Select( g => new { g.Id, g.Name } )
+                .ToList()
+                .ToDictionary( g => g.Id, g => g.Name );
+
+            var otherFamilyMembersByAliasId = GetOtherFamilyMembersForIndividualMoves( ncoaHistoryData );
+
             var ncoaPersonAliasIds = ncoaHistoryData.Select( d => d.PersonAliasId ).ToList();
 
             var personData = new PersonAliasService( RockContext ).Queryable().AsNoTracking()
@@ -460,9 +536,11 @@ namespace Rock.Blocks.Crm
                     IdKey = i.Id.AsIdKey(),
                     FamilyId = i.FamilyId,
                     Type = i.NcoaType.ToString(),
+                    MoveType = i.MoveType.ToString(),
                     IndividualIdKey = individual.personId.AsIdKey(),
                     IndividualName = individual.NickName + ' ' + individual.LastName,
-                    FamilyMembers = familyNamesKey.ContainsKey( i.FamilyId ) ? familyNamesKey[i.FamilyId] : string.Empty,
+                    FamilyMembers = i.MoveType != MoveType.Individual && familyNamesKey.ContainsKey( i.FamilyId ) ? familyNamesKey[i.FamilyId] : string.Empty,
+                    OtherFamilyMembers = otherFamilyMembersByAliasId.TryGetValue( i.PersonAliasId, out var otherMembers ) ? otherMembers : string.Empty,
 
                     OriginalAddress = FormattedAddress(
                             i.OriginalStreet1, i.OriginalStreet2, i.OriginalCity, i.OriginalState, i.OriginalPostalCode )
@@ -472,7 +550,7 @@ namespace Rock.Blocks.Crm
                             i.UpdatedStreet1, i.UpdatedStreet2, i.UpdatedCity, i.UpdatedState, i.UpdatedPostalCode )
                         .ConvertCrLfToHtmlBr(),
 
-                    MoveDate = i.MoveDate.ToShortDateString(),
+                    MoveDate = i.MoveDate?.ToShortDateString(),
                     MoveDistance = i.MoveDistance,
                     ProcessStatus = i.Processed == Processed.Complete ? "Processed" : "Not Processed",
                     AddressStatus = i.AddressStatus.ToString()
@@ -483,7 +561,7 @@ namespace Rock.Blocks.Crm
                 .GroupBy( n => n.FamilyId )
                 .Select( g => new NcoaFamilyGroupBag
                 {
-                    FamilyName = familyNamesKey.ContainsKey( g.Key ) ? familyNamesKey[g.Key].Split( ' ' ).Last() : null,
+                    FamilyName = familyGroupNames.TryGetValue( g.Key, out var groupName ) ? groupName : null,
                     NcoaItems = g.ToList()
                 } ).ToList();
 
