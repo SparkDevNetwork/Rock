@@ -721,6 +721,22 @@ namespace Rock.Workflow.Action
                     formField.Attribute.FieldTypeGuid = Guid.Empty;
                     formField.Attribute.ConfigurationValues = null;
                 }
+                else
+                {
+                    var fieldType = FieldTypeCache.Get( attribute.FieldTypeId, rockContext );
+
+                    // If this field type implements ISecurityGrantFieldType
+                    // then we need to construct a security grant for the field
+                    // and include that in the field details we send to the
+                    // client. The UI will then use this security grant when
+                    // rendering the just this one field.
+                    if ( fieldType.Field is ISecurityGrantFieldType grantFieldType )
+                    {
+                        var securityGrant = new Rock.Security.SecurityGrant();
+                        grantFieldType.AddRulesToSecurityGrant( securityGrant, attribute.ConfigurationValues );
+                        formField.SecurityGrantToken = securityGrant.ToToken( true );
+                    }
+                }
 
                 fields.Add( formField );
             }

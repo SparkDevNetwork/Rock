@@ -265,12 +265,6 @@ namespace Rock.SystemGuid
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";
 
         /// <summary>
-        /// The Job to Rebuild a Sequence. This job has been deleted and replaced with
-        /// <see cref="Rock.Transactions.StreakTypeRebuildTransaction" />
-        /// </summary>
-        public const string REBUILD_STREAK = "BFBB9524-10E8-42CF-BCD3-0CC7D2B22C3A";
-
-        /// <summary>
         /// The rock cleanup Job. <see cref="Rock.Jobs.RockCleanup"/>
         /// </summary>
         public const string ROCK_CLEANUP = "1A8238B1-038A-4295-9FDE-C6D93002A5D7";
@@ -299,13 +293,6 @@ namespace Rock.SystemGuid
         /// The <seealso cref="Rock.Jobs.GivingAutomation"/> job.
         /// </summary>
         public const string GIVING_AUTOMATION = "B6DE0544-8C91-444E-B911-453D4CE71515";
-
-        /// <summary>
-        /// Use <see cref="GIVING_AUTOMATION" /> instead
-        /// </summary>
-        [Obsolete( "Use GIVING_AUTOMATION instead" )]
-        [RockObsolete( "1.13" )]
-        public const string GIVING_ANALYTICS = GIVING_AUTOMATION;
 
         /// <summary>
         /// The <see cref="Rock.Jobs.SyncMedia">media synchronize</see> job.

@@ -24,7 +24,8 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { PropType, ref, watch } from "vue";
+    import { Guid } from "@Obsidian/Types";
     import { LocationTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -47,6 +48,15 @@
         },
 
         /**
+         * Limits the location tree to descendants of the specified root location.
+         * When null or empty, the full tree is shown.
+         */
+        rootLocationGuid: {
+            type: String as PropType<Guid | null>,
+            default: null
+        },
+
+        /**
          * V-Model of whether the popup area is opened.
          */
         showPopup: {
@@ -62,8 +72,21 @@
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
     const internalShowPopup = useVModelPassthrough(props, "showPopup", emit);
 
-    // Configure the item provider with our settings. These are not reactive
-    // since we don't do lazy loading so there is no point.
-    const itemProvider = new LocationTreeItemProvider();
-    itemProvider.securityGrantToken = props.securityGrantToken;
+    const itemProvider = ref<LocationTreeItemProvider>();
+
+    // Configure the item provider with our settings.
+    function refreshItemProvider(): void {
+        const provider = new LocationTreeItemProvider();
+        provider.securityGrantToken = props.securityGrantToken;
+        provider.rootLocationGuid = props.rootLocationGuid;
+
+        itemProvider.value = provider;
+    }
+
+    refreshItemProvider();
+
+    watch(() => [
+        props.securityGrantToken,
+        props.rootLocationGuid
+    ], refreshItemProvider);
 </script>

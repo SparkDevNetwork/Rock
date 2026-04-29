@@ -55,58 +55,111 @@ BEGIN
 		    DECLARE @LessActiveGroupMembersIdsToDelete TABLE (id INT);
 		    DECLARE @GroupMembersIdsToArchive TABLE (id INT);
 
-		    -- In the case when the old person and the new person are in the same group with the same role,
-		    -- delete the groupmember record for the new person if it is 'less active' (Active > Pending > Inactive) then the old person. 
-		    -- That will get that record out of the way so that the 'old' group member record can be assigned to the new person
-		    -- We'll also consider 'less active' as having fewer LearningClassActivityCompletion records for the same class then the old person.
-		    INSERT INTO @LessActiveGroupMembersIdsToDelete
-		    SELECT gmn.id
-		    FROM [GroupMember] GMO
-		    INNER JOIN [GroupTypeRole] GTR ON GTR.[Id] = GMO.[GroupRoleId]
-		    INNER JOIN [GroupMember] GMN ON GMN.[GroupId] = GMO.[GroupId]
-			    AND GMN.[PersonId] = @NewId
-			    AND (
-				    GTR.[MaxCount] <= 1
-				    OR GMN.[GroupRoleId] = GMO.[GroupRoleId]
-				    )
-		    -- Count completions for the "old" group member in this class
-		    OUTER APPLY (
-			    SELECT COUNT(lcac.[Id]) AS OldCompletionCount
-			    FROM [dbo].[LearningParticipant] AS lp
-			    LEFT JOIN [dbo].[LearningClassActivityCompletion] AS lcac
-				    ON lcac.[StudentId] = lp.[Id]
-			    WHERE lp.[Id] = gmo.[Id]              -- LP is the TPT extension of GroupMember
-				    AND lp.[LearningClassId] = gmo.[GroupId] -- same class as the group
-		    ) AS oldc
-		    -- Count completions for the "new" group member in this class
-		    OUTER APPLY (
-			    SELECT COUNT(lcac2.[Id]) AS NewCompletionCount
-			    FROM [dbo].[LearningParticipant] AS lp2
-			    LEFT JOIN [dbo].[LearningClassActivityCompletion] AS lcac2
-				    ON lcac2.[StudentId] = lp2.[Id]
-			    WHERE lp2.[Id] = gmn.[Id]
-				    AND lp2.[LearningClassId] = gmn.[GroupId]
-		    ) AS newc
-		    WHERE GMO.[PersonId] = @OldId
-			    AND (
-					    (
-					    -- old person' group member status is Active but new person's status is not, so delete the new person's groupmember record so that we can set the old record to the new person id
-					    gmn.GroupMemberStatus != @GroupMemberStatusActive
-					    AND gmo.GroupMemberStatus = @GroupMemberStatusActive
-					    )
-				    OR (
-					    -- old person's group member status is Pending but new person's group member status is Inactive, so delete the new person's groupmember record so that we can set the old record to the new person id
-					    gmn.GroupMemberStatus = @GroupMemberStatusInactive
-					    AND gmo.GroupMemberStatus = @GroupMemberStatusPending
-					    )
-				     OR (
-					    -- the old person has more (or the same) LearningClassActivityCompletions for the class than the new person, so delete the new person's groupmember record.
-					    -- But only use completion comparison if BOTH old and new have ANY completions.
-					    ISNULL(oldc.[OldCompletionCount], 0) > 0
-					    AND ISNULL(newc.[NewCompletionCount], 0) > 0
-					    AND ISNULL(oldc.[OldCompletionCount], 0) >= ISNULL(newc.[NewCompletionCount], 0)
-					    )
-				    )
+            -- In the case when the old person and the new person are in the same group with the same role,
+            -- delete the groupmember record for the person that is 'less active' (Active > Pending > Inactive).
+            -- That will get that record out of the way so that the surviving groupmember record can remain.
+            -- We'll also consider 'less active' as having fewer LearningClassActivityCompletion records for the same class.
+            -- If only one person has LearningClassActivityCompletion records for the class, prefer that person's groupmember record.
+            -- If the completion counts are the same, prefer the new person's groupmember record since that belongs
+            -- to the surviving person.
+            INSERT INTO @LessActiveGroupMembersIdsToDelete
+            SELECT DISTINCT
+                CASE
+                    -- old person's group member status is Active but new person's status is not,
+                    -- so delete the new person's groupmember record.
+                    WHEN gmn.GroupMemberStatus != @GroupMemberStatusActive
+                         AND gmo.GroupMemberStatus = @GroupMemberStatusActive
+                        THEN gmn.Id
+
+                    -- old person's group member status is Pending but new person's status is Inactive,
+                    -- so delete the new person's groupmember record.
+                    WHEN gmn.GroupMemberStatus = @GroupMemberStatusInactive
+                         AND gmo.GroupMemberStatus = @GroupMemberStatusPending
+                        THEN gmn.Id
+
+                    -- the old person has LearningClassActivityCompletions for the class and the new person does not,
+                    -- so delete the new person's groupmember record.
+                    WHEN ISNULL(oldc.[OldCompletionCount], 0) > 0
+                         AND ISNULL(newc.[NewCompletionCount], 0) = 0
+                        THEN gmn.Id
+
+                    -- the new person has LearningClassActivityCompletions for the class and the old person does not,
+                    -- so delete the old person's groupmember record.
+                    WHEN ISNULL(newc.[NewCompletionCount], 0) > 0
+                         AND ISNULL(oldc.[OldCompletionCount], 0) = 0
+                        THEN gmo.Id
+
+                    -- the old person has more LearningClassActivityCompletions for the class than the new person,
+                    -- so delete the new person's groupmember record.
+                    WHEN ISNULL(oldc.[OldCompletionCount], 0) > ISNULL(newc.[NewCompletionCount], 0)
+                        THEN gmn.Id
+
+                    -- the new person has more (or the same) LearningClassActivityCompletions for the class than the old person,
+                    -- so delete the old person's groupmember record.
+                    WHEN ISNULL(newc.[NewCompletionCount], 0) >= ISNULL(oldc.[OldCompletionCount], 0)
+                         AND ISNULL(newc.[NewCompletionCount], 0) > 0
+                        THEN gmo.Id
+                END
+            FROM [GroupMember] GMO
+            INNER JOIN [GroupTypeRole] GTR ON GTR.[Id] = GMO.[GroupRoleId]
+            INNER JOIN [GroupMember] GMN ON GMN.[GroupId] = GMO.[GroupId]
+                AND GMN.[PersonId] = @NewId
+                AND (
+                    GTR.[MaxCount] <= 1
+                    OR GMN.[GroupRoleId] = GMO.[GroupRoleId]
+                    )
+            -- Count completions for the "old" group member in this class
+            OUTER APPLY (
+                SELECT COUNT(lcac.[Id]) AS OldCompletionCount
+                FROM [dbo].[LearningParticipant] AS lp
+                LEFT JOIN [dbo].[LearningClassActivityCompletion] AS lcac
+                    ON lcac.[StudentId] = lp.[Id]
+                WHERE lp.[Id] = GMO.[Id]              -- LP is the TPT extension of GroupMember
+                    AND lp.[LearningClassId] = GMO.[GroupId] -- same class as the group
+            ) AS oldc
+            -- Count completions for the "new" group member in this class
+            OUTER APPLY (
+                SELECT COUNT(lcac2.[Id]) AS NewCompletionCount
+                FROM [dbo].[LearningParticipant] AS lp2
+                LEFT JOIN [dbo].[LearningClassActivityCompletion] AS lcac2
+                    ON lcac2.[StudentId] = lp2.[Id]
+                WHERE lp2.[Id] = GMN.[Id]
+                    AND lp2.[LearningClassId] = GMN.[GroupId]
+            ) AS newc
+            WHERE GMO.[PersonId] = @OldId
+                AND (
+                        (
+                        -- old person's group member status is Active but new person's status is not, so delete the new person's groupmember record.
+                        gmn.GroupMemberStatus != @GroupMemberStatusActive
+                        AND gmo.GroupMemberStatus = @GroupMemberStatusActive
+                        )
+                    OR (
+                        -- old person's group member status is Pending but new person's status is Inactive, so delete the new person's groupmember record.
+                        gmn.GroupMemberStatus = @GroupMemberStatusInactive
+                        AND gmo.GroupMemberStatus = @GroupMemberStatusPending
+                        )
+                    OR (
+                        -- only the old person has LearningClassActivityCompletions for the class, so delete the new person's groupmember record.
+                        ISNULL(oldc.[OldCompletionCount], 0) > 0
+                        AND ISNULL(newc.[NewCompletionCount], 0) = 0
+                        )
+                    OR (
+                        -- only the new person has LearningClassActivityCompletions for the class, so delete the old person's groupmember record.
+                        ISNULL(newc.[NewCompletionCount], 0) > 0
+                        AND ISNULL(oldc.[OldCompletionCount], 0) = 0
+                        )
+                    OR (
+                        -- the old person has more LearningClassActivityCompletions for the class than the new person, so delete the new person's groupmember record.
+                        ISNULL(oldc.[OldCompletionCount], 0) > 0
+                        AND ISNULL(oldc.[OldCompletionCount], 0) > ISNULL(newc.[NewCompletionCount], 0)
+                        )
+                    OR (
+                        -- the new person has more (or the same) LearningClassActivityCompletions for the class than the old person, so delete the old person's groupmember record.
+                        -- If the completion counts are the same, prefer the new person's groupmember record since that belongs to the surviving person.
+                        ISNULL(newc.[NewCompletionCount], 0) > 0
+                        AND ISNULL(newc.[NewCompletionCount], 0) >= ISNULL(oldc.[OldCompletionCount], 0)
+                        )
+                    )
 
 		    /**********************************************************************************************
 		     * Handle LearningClassActivityCompletion and LearningParticipant records
@@ -161,7 +214,7 @@ BEGIN
 
                     -- Pick ONE deterministic mapping per (FinalLoserGMId, GroupId) so later joins are stable.
                     -- Prefer non-archived rows; then newest modified/created; then lowest Id as a tie-breaker.
-                    rn = ROW_NUMBER() OVER (
+       rn = ROW_NUMBER() OVER (
                         PARTITION BY
                             CASE WHEN LA.Id IS NOT NULL THEN GMKeep.Id ELSE GMOld.Id END,  -- FinalLoserGMId
                             GMOld.GroupId
@@ -502,7 +555,7 @@ BEGIN
                     INSERT INTO [PersonPreviousName] ( [PersonAliasId], [LastName], [Guid], [CreatedDateTime], [ModifiedDateTime] )
                     VALUES ( @NewPrimaryAliasId, @OldLastName, NEWID(), GETDATE(), GETDATE() );
                 END
-            END
+           END
 
 		    -- Delete any duplicate previous names
 		    DELETE PN

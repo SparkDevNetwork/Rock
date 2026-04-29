@@ -16,5 +16,5 @@
 //
 
 export const enum NavigationUrlKey {
-    DetailPage = "DetailPage"
+    QueueDetailPage = "QueueDetailPage"
 }

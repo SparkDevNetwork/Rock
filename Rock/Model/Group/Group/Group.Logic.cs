@@ -51,17 +51,6 @@ namespace Rock.Model
         public bool AllowsInteractiveBulkIndexing => true;
 
         /// <summary>
-        /// Gets or sets the history change list.
-        /// </summary>
-        /// <value>
-        /// The history change list.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
-        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
-
-        /// <summary>
         /// Gets whether this group is overriding its parent group type's peer network configuration in any way.
         /// </summary>
         /// <remarks>

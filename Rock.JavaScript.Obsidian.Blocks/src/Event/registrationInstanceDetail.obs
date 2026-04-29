@@ -1,0 +1,306 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="danger" v-html="blockError"></NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+    <Wizard v-if="!blockError && !isPageUnscoped && templateName"
+            :templateName="templateName"
+            :templateUrl="templateUrl"
+            :instanceName="instanceName" />
+
+    <DetailBlock v-if="!blockError && !isPageUnscoped"
+                 v-model:mode="panelMode"
+                 name="Registration Instance"
+                 :title="registrationInstanceViewBag?.name ?? ''"
+                 :labels="blockLabels"
+                 :showLabelsInHeader="true"
+                 :footerSecondaryActions="footerSecondaryActions"
+                 :entityKey="entityKey"
+                 :entityTypeGuid="entityTypeGuid"
+                 entityTypeName="Registration Instance"
+                 :isAuditHidden="false"
+                 :isBadgesVisible="false"
+                 :isDeleteVisible="isEditable"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="true"
+                 :isSecurityHidden="true"
+                 @cancelEdit="onCancelEdit"
+                 @delete="onDelete"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="registrationInstanceViewBag" :options="options" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="registrationInstanceEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import EditPanel from "./RegistrationInstanceDetail/editPanel.partial.obs";
+    import ViewPanel from "./RegistrationInstanceDetail/viewPanel.partial.obs";
+    import Wizard from "./RegistrationInstanceDetail/wizard.partial.obs";
+    import { NavigationUrlKey } from "./RegistrationInstanceDetail/types.partial";
+    import { RegistrationInstanceBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceDetail/registrationInstanceBag";
+    import { RegistrationInstanceDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceDetail/registrationInstanceDetailOptionsBag";
+
+    const config = useConfigurationValues<DetailBlockBox<RegistrationInstanceBag, RegistrationInstanceDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const registrationInstanceViewBag = ref(config.entity);
+    const registrationInstanceEditBag = ref<ValidPropertiesBox<RegistrationInstanceBag>>({
+        bag: {} as RegistrationInstanceBag
+    });
+    const entityTypeGuid = EntityType.RegistrationInstance;
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: registrationInstanceEditBag
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const entityKey = computed((): string => {
+        return registrationInstanceViewBag.value?.idKey ?? "";
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const isViewMode = computed((): boolean => {
+        return panelMode.value === DetailPanelMode.View;
+    });
+
+    const options = computed((): RegistrationInstanceDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    const templateName = computed((): string => {
+        return registrationInstanceViewBag.value?.registrationTemplateName ?? "";
+    });
+
+    const instanceName = computed((): string => {
+        if (panelMode.value === DetailPanelMode.Add) {
+            return "New Instance";
+        }
+
+        if (!registrationInstanceViewBag.value?.idKey) {
+            return "New Instance";
+        }
+        return registrationInstanceViewBag.value?.name ?? "";
+    });
+
+    const templateUrl = computed((): string => {
+        if (!config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return "";
+        }
+        return config.navigationUrls[NavigationUrlKey.ParentPage];
+    });
+
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        if (!isViewMode.value) {
+            return undefined;
+        }
+
+        const labels: PanelAction[] = [];
+        const bag = registrationInstanceViewBag.value;
+        if (!bag) {
+            return labels;
+        }
+
+        if (!bag.isActive) {
+            labels.push({ title: "Inactive", type: "danger" });
+        }
+
+        if (bag.registrationTemplateName) {
+            labels.push({ title: bag.registrationTemplateName, type: "default" });
+        }
+
+        if (bag.statusText) {
+            const type = bag.statusLabelType === "success" ? "success" : "default";
+            labels.push({ title: bag.statusText, type });
+        }
+
+        return labels;
+    });
+
+    const footerSecondaryActions = computed((): PanelAction[] => {
+        if (!isViewMode.value || !registrationInstanceViewBag.value?.idKey) {
+            return [];
+        }
+
+        const actions: PanelAction[] = [];
+        const bag = registrationInstanceViewBag.value;
+
+        if (bag?.canSendPaymentReminder && options.value.paymentReminderPageUrl) {
+            actions.push({
+                iconCssClass: "ti ti-mail-forward",
+                title: "Send Payment Reminders",
+                type: "default",
+                handler: onSendPaymentReminder
+            });
+        }
+
+        actions.push({
+            iconCssClass: "ti ti-copy",
+            title: "Copy",
+            type: "default",
+            handler: onCopy
+        });
+
+        return actions;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (!registrationInstanceEditBag.value?.bag?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    async function onDelete(): Promise<false | string> {
+        errorMessage.value = "";
+
+        const confirmed = await confirm("Are you sure you want to delete this registration instance? All of the registrations and registrants will also be deleted!");
+        if (!confirmed) {
+            return false;
+        }
+
+        if (registrationInstanceViewBag.value?.hasActivePaymentPlans) {
+            const confirmedPayments = await confirm("This registration instance also has registrations with payments. Are you sure that you want to delete the instance? The payment plan will be deactivated and will no longer be associated with a registration.");
+            if (!confirmedPayments) {
+                return false;
+            }
+        }
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key: registrationInstanceViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete registration instance.";
+        return false;
+    }
+
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<RegistrationInstanceBag>>("Edit", {
+            key: registrationInstanceViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            registrationInstanceEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+            return true;
+        }
+
+        return false;
+    }
+
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<RegistrationInstanceBag> | string>("Save", {
+            box: registrationInstanceEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                registrationInstanceViewBag.value = result.data.bag;
+                return true;
+            }
+
+            if (result.statusCode === 201 && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save registration instance.";
+        return false;
+    }
+
+    async function onCopy(): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<RegistrationInstanceBag>>("Copy", {
+            key: registrationInstanceViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data?.bag) {
+            registrationInstanceEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            // Switch to Add mode so Cancel redirects out of the page and Save navigates to the new id.
+            panelMode.value = DetailPanelMode.Add;
+            return;
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to copy registration instance.";
+    }
+
+    function onSendPaymentReminder(): void {
+        const url = options.value.paymentReminderPageUrl;
+        if (url) {
+            window.location.href = makeUrlRedirectSafe(url);
+        }
+    }
+
+    // When the server returns neither an entity nor an error, the page wasn't scoped to a
+    // specific RegistrationInstanceId — hide all chrome (wizard + detail block) silently to
+    // match the original WebForms block's pnlDetails.Visible = false behavior.
+    const isPageUnscoped = computed((): boolean => {
+        return !config.entity && !config.errorMessage;
+    });
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (config.entity && !config.entity.idKey) {
+        registrationInstanceEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

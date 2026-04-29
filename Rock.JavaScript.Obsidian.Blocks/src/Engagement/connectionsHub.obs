@@ -13,35 +13,42 @@
         </template>
     </ContextSlicer>
 
-    <GroupedGridPanel v-model:quickFilterValue="rawQuickFilter"
-                      v-model:groupingKey="selectedGrouping"
-                      v-model:orderedRequestKeys="orderedRequestKeys"
-                      ref="groupedGridPanel"
-                      :title="box.options?.title ?? ''"
-                      :titleIconCssClass="`${box.options?.iconCssClass ?? ''} panel-icon`"
-                      :isSelectedView="hasAnySelectedKeys"
-                      :rows="gridData?.rows ?? []"
-                      :filteredAndSortedRows="visibleRows"
-                      :panelSettingsActive="hasSettingsFilters"
-                      :groupingFields="groupingFields"
-                      itemTerm="Request"
-                      hasFullscreen
-                      :onAddItem="canEditConnectionRequests ? onAddItem : undefined"
-                      :onPanelSettingsClick="onPanelSettingsClick"
-                      :isAutoCollapseEnabled="isAutoCollapseEnabled"
-                      :headerSecondaryActions="secondaryActions">
+    <GroupedPanel v-model:quickFilterValue="rawQuickFilter"
+                  v-model:groupingKey="selectedGrouping"
+                  v-model:orderedRequestKeys="orderedRequestKeys"
+                  v-model:viewMode="selectedView"
+                  ref="groupedPanel"
+                  :title="box.options?.title ?? ''"
+                  :titleIconCssClass="`${box.options?.iconCssClass ?? ''} panel-icon d-inline-block`"
+                  :isSelectedView="hasAnySelectedKeys"
+                  :rows="gridData?.rows ?? []"
+                  :filteredAndSortedRows="visibleRowsFilteredByGrid"
+                  :panelSettingsActive="hasSettingsFilters"
+                  :groupingFields="groupingFields"
+                  :viewModeItems="enabledViews"
+                  itemTerm="Request"
+                  hasFullscreen
+                  :onAddItem="canEditConnectionRequests ? onAddItem : undefined"
+                  :onPanelSettingsClick="onPanelSettingsClick"
+                  :isAutoCollapseEnabled="isAutoCollapseEnabled"
+                  :headerSecondaryActions="secondaryActions"
+                  :availableGroups="availableGroups"
+                  :canDropOnGroup="canDropOnGroup"
+                  :isGroupDrag="isCardInGroupDrag"
+                  :selectedCount="allSelectedKeys.length"
+                  @cardMoved="onCardMoved">
         <template #selectedActionToolbar>
-            <div class="left-actions d-flex align-items-center gap-md">
-                <div class="d-flex align-items-center gap-tiny">
+            <div class="left-actions d-flex align-items-center gap-spacing-md">
+                <div class="d-flex align-items-center gap-spacing-tiny">
                     <RockLabel class="text-info-strong mb-0">Selected</RockLabel>
                     <Badge class="font-weight-semibold bg-info-strong">{{ allSelectedKeys.length }}</Badge>
                 </div>
-                <div class="d-flex align-items-center gap-xs">
+                <div class="d-flex align-items-center gap-spacing-xs">
                     <RockButton class="activity-btn" @click="showAssignRequestModal" :disabled="!canEditConnectionRequests">
                         <i class="ti ti-user-circle"></i>
                         <span class="activity-btn-label">Assign</span>
                     </RockButton>
-                    <RockButton @click="showChangeStatusModal" class="activity-btn" :disabled="!canEditConnectionRequests">
+                    <RockButton @click="showChangeStatusModal()" class="activity-btn" :disabled="!canEditConnectionRequests">
                         <template v-if="box.options?.isSequentialStatusMode">
                             <i class="ti ti-arrow-right"></i>
                             <span class="activity-btn-label">Advance to Next Status</span>
@@ -59,43 +66,39 @@
                         <i class="ti ti-circle-check"></i>
                         <span class="activity-btn-label">Complete</span>
                     </RockButton>
-                    <div v-if="canEditConnectionRequests" class="dropdown">
-                        <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown"></i>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <button type="button"
-                                        @click="showChangeStateModal(ConnectionState.Active)"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                    <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
-                                </button>
-                            </li>
-                            <li>
-                                <button type="button"
-                                        @click="showChangeStateModal(ConnectionState.Inactive)"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                    <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
-                                </button>
-                            </li>
-                            <li v-if="box.options?.isFutureFollowUpEnabled">
-                                <button type="button"
-                                        @click="showChangeStateModal(ConnectionState.FutureFollowUp)"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                    <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
-                                </button>
-                            </li>
-                            <li>
-                                <button type="button"
-                                        @click="showDeleteRequestModal()"
-                                        class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold text-danger">
-                                    <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
+                    <DropDownContent v-if="canEditConnectionRequests"
+                                     v-model="isDetailActionDropdownOpen"
+                                     enableFlip
+                                     placement="bottom-start"
+                                     preventAnchorClickPropagation>
+                        <template #anchor>
+                            <i class="ti ti-dots-vertical cursor-pointer"></i>
+                        </template>
+                        <div class="bg-interface-softest dropdown-content text-sm"
+                             @click="isDetailActionDropdownOpen = false">
+                            <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                 @click="showChangeStateModal(ConnectionState.Active)">
+                                <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
+                            </div>
+                            <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                 @click="showChangeStateModal(ConnectionState.Inactive)">
+                                <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
+                            </div>
+                            <div v-if="box.options?.isFutureFollowUpEnabled"
+                                 class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                 @click="showChangeStateModal(ConnectionState.FutureFollowUp)">
+                                <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
+                            </div>
+                            <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold text-danger"
+                                 @click="showDeleteRequestModal()">
+                                <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
+                            </div>
+                        </div>
+                    </DropDownContent>
                 </div>
             </div>
-            <div class="right-actions d-flex align-items-center gap-md">
-                <div class="pl-spacing-md d-flex align-items-center gap-xs">
+            <div class="right-actions d-flex align-items-center gap-spacing-md">
+                <div class="pl-spacing-md d-flex align-items-center gap-spacing-xs">
                     <RockButton @click="showSMSModal()" class="activity-btn">
                         <i class="ti ti-message-circle-plus"></i>
                         <span class="activity-btn-label">SMS</span>
@@ -105,12 +108,16 @@
                         <span class="activity-btn-label">Email</span>
                     </RockButton>
                 </div>
-                <div class="border-left border-info pl-spacing-md d-flex align-items-center gap-md">
+                <div class="border-left-divider pl-spacing-md d-flex align-items-center gap-spacing-md">
                     <RockButton class="activity-btn" @click="showAddActivityModal()" :disabled="!canEditConnectionRequests">
                         <i class="ti ti-activity"></i>
                         <span class="activity-btn-label">Add Activity</span>
                     </RockButton>
-                    <div class="d-flex align-items-center gap-sm">
+                    <RockButton class="activity-btn" @click="showBulkTransferModal()" :disabled="!canEditConnectionRequests">
+                        <i class="ti ti-switch-3"></i>
+                        <span class="activity-btn-label">Transfer</span>
+                    </RockButton>
+                    <div class="d-flex align-items-center gap-spacing-sm">
                         <i class="ti ti-x cursor-pointer" @click="clearAllSelections"></i>
                     </div>
                 </div>
@@ -153,7 +160,7 @@
                         name="connectionOpportunity"
                         field="connectionOpportunity">
                     <template #format="{ row }">
-                        <div class="d-flex flex-column align-items-start gap-1">
+                        <div class="d-flex flex-column align-items-start gap-spacing-tiny">
                             <HighlightLabel labelType="custom"
                                             customClass="label-default text-xs text-semibold text-interface-strong">
                                 {{ row.connectionOpportunity }}
@@ -194,9 +201,15 @@
                         title="Group"
                         field="group">
                     <template #format="{ row }">
-                        <div v-if="!!row.group">
-                            {{ row.group }}
-                        </div>
+                        <template v-if="!!row.group">
+                            <div v-if="row.isPendingMember" :class="{ 'text-muted': !!row.isPlacementGroupInactiveOrArchived }" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
+                                {{ row.group }}
+                                <i class="ti ti-user-share text-interface-medium"></i>
+                            </div>
+                            <div v-else :class="{ 'text-muted': !!row.isPlacementGroupInactiveOrArchived }">
+                                {{ row.group }}
+                            </div>
+                        </template>
                         <div v-else>
                             <i class="ti ti-minus"></i>
                         </div>
@@ -209,7 +222,7 @@
                         field="activity">
                     <template #format="{ row }">
                         <div v-if="!!row.lastActivityDateTime && !!row.activityCount"
-                             class="d-flex align-items-center gap-1">
+                             class="d-flex align-items-center gap-spacing-tiny">
                             <div class="activity-metric activity-date">
                                 <i class="ti ti-calendar-month"></i>
                                 <span>
@@ -310,15 +323,15 @@
                                                         @click.stop="(e) => onStatusClick(row, e)" />
                             </template>
                             <div v-else-if="row.connectionState === ConnectionState.Inactive"
-                                 class="text-center text-semibold text-slate">
+                                 class=" font-size-sm text-center text-semibold text-slate">
                                 {{ ConnectionStateDescription[ConnectionState.Inactive] }}
                             </div>
                             <div v-else-if="row.connectionState === ConnectionState.FutureFollowUp"
-                                 class="text-center text-semibold text-info-strong">
+                                 class="font-size-sm text-center text-semibold text-info-strong">
                                 {{ ConnectionStateDescription[ConnectionState.FutureFollowUp] }} - {{ asLocaleString(row.followUpDate) }}
                             </div>
                             <div v-else-if="row.connectionState === ConnectionState.Connected"
-                                 class="text-center text-semibold text-emerald">
+                                 class="font-size-sm text-center text-semibold text-emerald">
                                 {{ ConnectionStateDescription[ConnectionState.Connected] }}
                             </div>
                         </div>
@@ -330,72 +343,76 @@
                         width="52"
                         itemClass="grid-cell-overflow">
                     <template #format="{ row }">
-                        <div :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === row.idKey }]">
-                            <i class="ti ti-dots-vertical cursor-pointer" data-toggle="dropdown" @click.stop="toggleGridRowDropdown(row.idKey)"></i>
-                            <ul class="dropdown-menu">
+                        <DropDownContent :modelValue="openDropdownIndex === row.idKey"
+                                         @update:modelValue="val => openDropdownIndex = val ? row.idKey : null"
+                                         enableFlip
+                                         placement="bottom-end"
+                                         preventAnchorClickPropagation>
+                            <template #anchor>
+                                <i class="ti ti-dots-vertical cursor-pointer"></i>
+                            </template>
+                            <div class="d-flex flex-column bg-interface-softest dropdown-content text-sm">
                                 <template v-if="canEditConnectionRequests">
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.Active, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.Inactive, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
-                                        </button>
-                                    </li>
-                                    <li v-if="box.options?.isFutureFollowUpEnabled">
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.FutureFollowUp, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showChangeStateModal(ConnectionState.Connected, row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-circle-check pr-spacing-sm text-interface-medium"></i>Mark Complete
-                                        </button>
-                                    </li>
+                                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                         @click.stop="showChangeStateModal(ConnectionState.Active, row)">
+                                        <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
+                                    </div>
+                                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                         @click.stop="showChangeStateModal(ConnectionState.Inactive, row)">
+                                        <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
+                                    </div>
+                                    <div v-if="box.options?.isFutureFollowUpEnabled"
+                                         class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                         @click.stop="showChangeStateModal(ConnectionState.FutureFollowUp, row)">
+                                        <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
+                                    </div>
+                                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                         @click.stop="showChangeStateModal(ConnectionState.Connected, row)">
+                                        <i class="ti ti-circle-check pr-spacing-sm text-interface-medium"></i>Mark Complete
+                                    </div>
                                 </template>
-                                <li>
-                                    <button type="button"
-                                            @click.stop="showLaunchWorkflowModal(row)"
-                                            class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                        <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
-                                    </button>
-                                </li>
+                                <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                     @click.stop="showLaunchWorkflowModal(row)">
+                                    <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
+                                </div>
                                 <template v-if="canEditConnectionRequests">
-                                    <li v-if="box.options?.isRequestSecurityEnabled">
-                                        <button type="button"
-                                                @click.stop="showSecurityModal(row.idKey)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold">
-                                            <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button type="button"
-                                                @click.stop="showDeleteRequestModal(row)"
-                                                class="dropdown-item btn-link py-spacing-xs px-spacing-md font-weight-semibold text-danger">
-                                            <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
-                                        </button>
-                                    </li>
+                                    <div v-if="box.options?.isRequestSecurityEnabled"
+                                         class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                                         @click.stop="showSecurityModal(row.idKey)">
+                                        <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
+                                    </div>
+                                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold text-danger"
+                                         @click.stop="showDeleteRequestModal(row)">
+                                        <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
+                                    </div>
                                 </template>
-                            </ul>
-                        </div>
+                            </div>
+                        </DropDownContent>
                     </template>
                 </Column>
             </Grid>
         </template>
         <template #emptyView>
             <template v-if="areRequestsLoading">
-                <div class="skeleton-list">
-                    <div v-for="index in skeletonCount" :key="index" class="skeleton rounded" style="height: 300px"></div>
+                <!-- Board View Skeleton -->
+                <div v-if="selectedView === 'board'" class="skeleton-board">
+                    <div v-for="columnIndex in skeletonCount" :key="`board-col-${columnIndex}`" class="skeleton-board-column">
+                        <div class="skeleton skeleton-heading"></div>
+                        <div v-for="cardIndex in 4" :key="`board-card-${columnIndex}-${cardIndex}`"
+                             class="skeleton rounded skeleton-board-card"></div>
+                    </div>
+                </div>
+                <!-- Grid View Skeleton -->
+                <div v-else-if="selectedView === 'grid'" class="d-flex flex-column">
+                    <div v-for="rowIndex in 16" :key="`grid-row-${rowIndex}`" class="skeleton-grid-row" :class="{ 'bg-interface-softer': rowIndex % 2 === 0 }">
+                        <div v-for="colIndex in 8" :key="`grid-col-${colIndex}`"
+                             :style="colIndex % 2 === 0 ? 'max-width: 260px;' : 'max-width: 160px;'"
+                             class="skeleton skeleton-text m-spacing-xs" />
+                    </div>
+                </div>
+                <!-- List View Skeleton -->
+                <div v-else class="skeleton-list">
+                    <div v-for="index in skeletonCount" :key="`list-${index}`" class="skeleton rounded" style="height: 300px"></div>
                 </div>
             </template>
             <template v-else>
@@ -416,7 +433,205 @@
                 </div>
             </template>
         </template>
-    </GroupedGridPanel>
+        <template #boardCard="{ row }">
+            <ConnectionRequestCard :connectionRequest="row"
+                                   :options="box.options"
+                                   :canEditConnectionRequests="canEditConnectionRequests"
+                                   :hideCampusLabel="selectedCampus !== null"
+                                   :viewOptions="viewOptions"
+                                   :attributesToShow="attributesToShow"
+                                   :currentPersonIdKey="currentPerson?.idKey"
+                                   :isSelected="allSelectedKeySet.has(row.idKey as string)"
+                                   @selectItem="onSelectBoardCard"
+                                   @toggleSelection="onToggleBoardCardSelection"
+                                   @changeState="showChangeStateModal"
+                                   @launchWorkflow="showLaunchWorkflowModal"
+                                   @showSecurity="showSecurityModal"
+                                   @delete="showDeleteRequestModal" />
+        </template>
+        <template #emptyColumn>
+            <div class="text-center p-spacing-md border rounded">No requests available.</div>
+        </template>
+        <template #gridView>
+            <Grid :definition="box.gridDefinition ?? undefined"
+                  :data="gridViewData"
+                  ref="gridViewGridRef"
+                  keyField="idKey"
+                  personKeyField="personIdKey"
+                  :isTitleHidden="true"
+                  :isSearchVisible="false"
+                  :isFooterHidden="true"
+                  :showExport="false"
+                  :showMergeTemplate="false"
+                  :isCountMessageVisible="false"
+                  :hideFilterHeaderRow="true"
+                  :entityTypeGuid="EntityType.ConnectionRequest"
+                  class="grid-hover border-0 mb-spacing-none"
+                  @selectItem="onSelectItem"
+                  @selectedKeysChanged="state => onSelectedKeysChanged('all', state)"
+                  @filteredRowsChanged="onFilteredRowsChanged">
+                <SelectColumn />
+
+                <Column name="requestDetails"
+                        title="Name"
+                        field="requestDetails"
+                        :filter="pickExistingValueFilter"
+                        :filterValue="getRequesterFilterValue"
+                        :sortValue="getRequesterFilterValue">
+                    <template #format="{ row }">
+                        {{ row.requestDetails.nickName }} {{ row.requestDetails.lastName }}
+                    </template>
+                </Column>
+
+                <Column title="Connector"
+                        name="connectorDetails"
+                        field="connectorDetails"
+                        :filter="pickExistingValueFilter"
+                        :filterValue="getConnectorFilterValue"
+                        :sortValue="getConnectorFilterValue">
+                    <template #format="{ row }">
+                        {{ row.connectorDetails?.text }}
+                    </template>
+                </Column>
+
+                <Column name="campus"
+                        title="Campus"
+                        field="campus"
+                        :filter="pickExistingValueFilter">
+                    <template #format="{ row }">
+                        <div v-if="!!row.campus">
+                            {{ row.campus }}
+                        </div>
+                        <div v-else>
+                            <i class="ti ti-minus"></i>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column v-if="viewOptions.gridDataToShow?.includes('connectionOpportunity')"
+                        name="connectionOpportunity"
+                        title="Opportunity"
+                        field="connectionOpportunity"
+                        :filter="pickExistingValueFilter">
+                    <template #format="{ row }">
+                        <div class="d-flex flex-column align-items-start gap-1">
+                            <div>
+                                {{ row.connectionOpportunity }}
+                            </div>
+                            <span v-if="!isNullOrWhiteSpace(row.connectionTypeSource) && viewOptions.isRequestSourceShown"
+                                  class="text-small text-interface-medium">
+                                {{ row.connectionTypeSource }}
+                            </span>
+                        </div>
+                    </template>
+                    <template #condensed="{ row }">
+                        {{ row.connectionOpportunity }}
+                    </template>
+                </Column>
+
+                <Column v-if="box.options?.areGroupPlacementsEnabled"
+                        name="group"
+                        title="Group"
+                        field="group"
+                        :filter="pickExistingValueFilter">
+                    <template #format="{ row }">
+                        <template v-if="!!row.group">
+                            <div v-if="row.isPendingMember" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
+                                {{ row.group }}
+                                <i class="ti ti-user-share text-interface-medium"></i>
+                            </div>
+                            <div v-else>
+                                {{ row.group }}
+                            </div>
+                        </template>
+                        <div v-else>
+                            <i class="ti ti-minus"></i>
+                        </div>
+                    </template>
+                    <template #condensed="{ row }">
+                        <div v-if="!!row.group">
+                            {{ row.group }}
+                        </div>
+                        <div v-else>
+                            <i class="ti ti-minus"></i>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column v-if="viewOptions.gridDataToShow?.includes('activity')"
+                        name="activityCount"
+                        title="Activity"
+                        field="activityCount">
+                    <template #format="{ row }">
+                        <div v-if="!!row.lastActivityDateTime && !!row.activityCount"
+                             class="d-flex flex-column align-items-start gap-1">
+                            <div>
+                                {{ row.activityCount }} {{ pluralize("Activity", row.activityCount) }}
+                            </div>
+                            <div class="text-small text-interface-medium" v-tooltip="`Last Activity: ${formatColumnDate(row.lastActivityDateTime)}`">
+                                Last Activity: {{ getElapsedShortTime(row.lastActivityDateTime) }}
+                            </div>
+                        </div>
+                        <div v-else>
+                            <i class="ti ti-minus"></i>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column v-if="viewOptions.gridDataToShow?.includes('dueDate')"
+                        name="dueDate"
+                        title="Due Date"
+                        field="dueDate"
+                        width="5%"
+                        :filter="dateValueFilter">
+                    <template #format="{ row }">
+                        <div v-if="!!row.dueDate && row.connectionState !== ConnectionState.Inactive" :class="getDueDateColor(row.dueStatus, row.connectionState === ConnectionState.Connected)">
+                            {{ formatColumnDate(row.dueDate) }}
+                        </div>
+                        <div v-else>
+                            <i class="ti ti-minus"></i>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column name="connectionState"
+                        title="State"
+                        field="connectionState"
+                        :filter="pickExistingValueFilter">
+                    <template #format="{ row }">
+                        <HighlightLabel :labelType="getConnectionStateLabel(row.connectionState)">
+                            {{ ConnectionStateDescription[row.connectionState] }}<template v-if="row.connectionState === ConnectionState.FutureFollowUp"> - {{ formatColumnDate(row.followUpDate) }}</template>
+                        </HighlightLabel>
+                    </template>
+                    <template #condensed="{ row }">
+                        <HighlightLabel :labelType="getConnectionStateLabel(row.connectionState)">
+                            {{ ConnectionStateDescription[row.connectionState] }}
+                        </HighlightLabel>
+                    </template>
+                </Column>
+
+                <Column name="connectionStatus"
+                        title="Status"
+                        field="connectionStatus"
+                        width="5%"
+                        :filter="pickExistingValueFilter"
+                        :filterValue="getStatusFilterValue"
+                        :sortValue="getStatusFilterValue">
+                    <template #format="{ row }">
+                        <HighlightLabel labelType="custom"
+                                        v-tooltip.overflow="row.connectionStatus.name"
+                                        :style="`background-color: ${row.connectionStatus.highlightColor};`">
+                            {{ row.connectionStatus.name }}
+                        </HighlightLabel>
+                    </template>
+                </Column>
+
+                <AttributeColumns :attributes="attributesToShow" />
+
+                <SecurityColumn v-if="canEditConnectionRequests && box.options?.isRequestSecurityEnabled" :itemTitle="() => 'Item'" />
+            </Grid>
+        </template>
+    </GroupedPanel>
 
     <ChangeStatusFlyout v-model="isFlyoutOpen"
                         :errorMessage="flyoutErrorMessage"
@@ -425,7 +640,7 @@
                         :anchorEl="flyoutAnchorEl"
                         :connectionRequestUpdateBag="connectionRequestUpdateBag"
                         :isNoteRequired="isNoteRequired"
-                        :isSequentialMode="box.options?.isSequentialStatusMode ?? false"
+                        :isSequentialMode="isSequentialStatus"
                         :connectionStatusItems="connectionStatusItems"
                         @updateStatus="changeRequestStatus"
                         @updateState="updateStateFromFlyout"
@@ -480,7 +695,8 @@
                    @addSuccess="increaseReminderCount">
         <template #postBody>
             <RequestTable :requestDetails="requestDetailsForModal"
-                          :viewOptions="viewOptions" />
+                          :viewOptions="viewOptions"
+                          :isConnectorVisible="true" />
         </template>
     </ReminderModal>
 
@@ -531,6 +747,7 @@
                        :requestDetails="requestDetailsForModal"
                        :viewOptions="viewOptions"
                        :errorMessage="modalErrorMessage"
+                       :selectedStatus="selectedStatus"
                        @dismissErrorMessage="onModalErrorMessageDismissed"
                        @close="onModalErrorMessageDismissed"
                        @updateStatus="updateStatusFromModal" />
@@ -593,10 +810,13 @@
                                     :transferDetails="transferRequestDetails"
                                     :isSaving="isModalSaving"
                                     :errorMessage="modalErrorMessage"
+                                    :isBulkTransfer="isBulkTransfer"
+                                    :requestDetails="requestDetailsForModal"
+                                    :viewOptions="viewOptions"
                                     @fetchConnectorOptions="fetchConnectorOptionsForTransfer"
                                     @dismissErrorMessage="onModalErrorMessageDismissed"
-                                    @close="onModalErrorMessageDismissed"
-                                    @transfer="transferRequest" />
+                                    @close="onTransferModalClose"
+                                    @transfer="selectTransferProcess" />
 </template>
 
 <style>
@@ -618,6 +838,21 @@
     overflow: visible;
 }
 
+/* The dropdown content within the action-toolbar needs to have a greater z index then the grid column header (currently 3). */
+:deep(.action-toolbar .floating-dropdown) {
+    z-index: 4;
+}
+
+/* The dropdown content within the List View needs to have a greater z index then the grid column header (currently 3). */
+:deep(.grid-cell-overflow .floating-dropdown) {
+    z-index: 4;
+}
+
+:deep(.grid-body) {
+    border-bottom-left-radius: var(--rounded-medium);
+    border-bottom-right-radius: var(--rounded-medium);
+}
+
 .activity-metric {
     display: flex;
     align-items: center;
@@ -630,6 +865,48 @@
     gap: var(--spacing-medium);
 }
 
+.skeleton-board {
+    display: flex;
+    gap: var(--spacing-large);
+    overflow-x: hidden;
+    height: 100%;
+}
+
+.skeleton-board-column {
+    flex: 0 0 380px;
+    width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    padding: var(--spacing-medium);
+    background-color: var(--color-interface-softer);
+    border-radius: var(--rounded-large);
+}
+
+.skeleton-board-column .skeleton-heading {
+    background-color: var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+    flex-shrink: 0;
+    margin: var(--spacing-small) 0;
+}
+
+.skeleton-board-card {
+    height: 180px;
+    background-color: var(--color-interface-soft);
+}
+
+.skeleton-grid-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-small) var(--spacing-medium);
+    border-bottom: 1px solid var(--color-interface-softer);
+}
+
+.skeleton-grid-row .skeleton {
+    background-color: var(--color-interface-soft);
+}
+
 .empty-list {
     min-height: calc(70vh - 200px);
     display: flex;
@@ -637,26 +914,6 @@
     align-items: center;
     justify-content: center;
     gap: var(--spacing-xsmall);
-}
-
-.gap-tiny {
-    gap: var(--spacing-tiny);
-}
-
-.gap-xs {
-    gap: var(--spacing-xsmall);
-}
-
-.gap-sm {
-    gap: var(--spacing-small);
-}
-
-.gap-md {
-    gap: var(--spacing-medium);
-}
-
-.gap-lg {
-    gap: var(--spacing-large);
 }
 
 .ddl-min-width {
@@ -669,6 +926,10 @@
 
 .activity-count {
     color: var(--color-interface-medium);
+}
+
+.border-left-divider {
+    border-left: 1px solid var(--color-interface-softer);
 }
 
 .text-slate {
@@ -691,7 +952,7 @@
     padding-right: var(--spacing-tiny);
 }
 
-@media (max-width: 1290px) {
+@media (max-width: 1418px) {
     .right-actions .activity-btn-label {
         display: none;
     }
@@ -715,14 +976,16 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { computed, reactive, ref, watch, nextTick } from "vue";
+    import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
-    import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns } from "@Obsidian/Controls/grid";
+    import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns, SecurityColumn, pickExistingValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
-    import GroupedGridPanel from "@Obsidian/Controls/Internal/groupedGridPanel.obs";
+    import GroupedPanel from "@Obsidian/Controls/Internal/groupedPanel.obs";
+    import { GroupedGrid } from "@Obsidian/Controls/Internal/GroupedPanel/types.partial";
     import { isNullOrWhiteSpace, pluralize, safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { tooltip } from "@Obsidian/Utility/tooltip";
@@ -785,6 +1048,7 @@
     import ReminderModal from "@Obsidian/Controls/Internal/reminderModal.obs";
     import RequestTable from "./ConnectionsHub/requestTable.partial.obs";
     import ConnectionRequestDockedPanel from "./ConnectionsHub/connectionRequestDockedPanel.partial.obs";
+    import { downloadFile } from "@Obsidian/Utility/file";
     import { debounce } from "@Obsidian/Utility/util";
     import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
     import { ConnectionRequestDetailBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailBox";
@@ -797,6 +1061,9 @@
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { ConnectorOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectorOptionsBag";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ConnectionRequestCard from "./ConnectionsHub/connectionRequestCard.partial.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+
 
     const box = useConfigurationValues<ListBlockBox<ConnectionsHubOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -841,11 +1108,39 @@
         },
     ];
 
+    type IconListItemBag = {
+        text: string;
+        value: string;
+        iconCssClass?: string;
+    };
+
+    const enabledViews = <IconListItemBag[]>[];
+    if (box.options?.isListViewEnabled) {
+        enabledViews.push({
+            text: "List",
+            iconCssClass: "ti ti-layout-list",
+            value: "list"
+        });
+    }
+    if (box.options?.isBoardViewEnabled) {
+        enabledViews.push({
+            text: "Board",
+            iconCssClass: "ti ti-layout-cards",
+            value: "board"
+        });
+    }
+    if (box.options?.isGridViewEnabled) {
+        enabledViews.push({
+            text: "Grid",
+            iconCssClass: "ti ti-table",
+            value: "grid"
+        });
+    }
+
     // Soft security check to see if the user can edit the list of connection requests.
     const canEditGlobalConnectionRequests = ref<boolean>(box.options?.canEditConnectionRequests ?? false);
 
     // Context Slicer configuration
-    const selectedGrouping = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? "connectorGrouping" : preferences.getValue(PreferenceKey.SelectedGroupByMode));
     const selectedCampus = ref<ListItemBag | null>(null);
     const areOnlyMyRequestsVisible = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.AreOnlyMyRequestsVisible)) ? "true" : preferences.getValue(PreferenceKey.AreOnlyMyRequestsVisible));
     const internalSelectedOpportunity = ref(box.options?.connectionOpportunityGuidFromPageParameter ?? preferences.getValue(getConnectionFilterKey(PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey)));
@@ -875,11 +1170,12 @@
     // Grouped Grid Configuration
     const selectedKeys = ref<Record<string, string[]>>({});
     const selectedKeysOnUnmount = ref<Record<string, string[]>>({});
-    const groupedGridPanel = ref();
+    const groupedPanel = ref();
     const rawQuickFilter = ref("");
     const debouncedQuickFilter = ref(rawQuickFilter.value);
     const isAutoCollapseEnabled = ref<boolean>(asBoolean(preferences.getValue(PreferenceKey.IsAutoCollapseEnabled)));
     const openDropdownIndex = ref<string | null | undefined>();
+    const isDetailActionDropdownOpen = ref<boolean>(false);
     // Holds the raw grid data returned from the server
     const gridData = ref<GridDataBag>();
     const requestListErrorMessage = ref<string>("");
@@ -923,6 +1219,8 @@
         dueFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterDueConnectionTypIdKey))),
     });
     const allPossibleConnectors = ref(box.options?.allPossibleConnectors ?? []);
+    const selectedStatus = ref<string | null | undefined>();
+    const isBulkTransfer = ref<boolean>(false);
     // SMS and Email modal state
     const communicationRecipients = ref<CommunicationRecipientBag[] | null | undefined>();
     const smsFromSystemPhoneNumbers = ref<ListItemBag[]>([]);
@@ -937,6 +1235,11 @@
     const flyoutAnchorEl = ref<HTMLElement | null>(null);
     const isNoteRequired = ref(false);
 
+    /** The idKey of the card that the most recent board drag was dropped before,
+     *  used to attach positional data to status update bags sent to the server.
+     *  Null means the card was dropped at the end of the column. */
+    const cardMovedBeforeIdKey = ref<string | null>(null);
+
     // Docked Panel Configuration
     const isDockedPanelSaving = ref<boolean>(false);
     const connectionRequestUpdateBag = ref<ConnectionRequestUpdateBag>({} as ConnectionRequestUpdateBag);
@@ -948,6 +1251,21 @@
     const dockedPanelCloseOnOutsideClick = ref<boolean>(true);
     // Breadcrumbs are used when a user navigates to an "additional request"
     const connectionRequestBreadcrumbs = ref<ListItemBag[]>([]);
+
+    const selectedView = ref<string>((() => {
+        const preferenceValue = preferences.getValue(getConnectionFilterKey(PreferenceKey.SelectedViewConnectionTypeIdKey));
+        return isNullOrWhiteSpace(preferenceValue) ? enabledViews[0].value : preferenceValue;
+    })());
+
+    const selectedGrouping = ref<string>((() => {
+        if (selectedView.value === "board") {
+            return "statusGrouping";
+        }
+        return isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? "connectorGrouping" : preferences.getValue(PreferenceKey.SelectedGroupByMode);
+    })());
+
+    const gridViewGridRef = ref();
+    const gridViewFilteredRows = ref<Record<string, unknown>[]>();
 
     // #region Computed Values
 
@@ -968,26 +1286,71 @@
      * Gets the list of secondary action items to be included in the panel.
      * This is computed because the auto-collapse toggle title depends on reactive state.
      */
-    const secondaryActions = computed((): PanelAction[] => [
-        {
-            type: "default",
-            iconCssClass: "ti ti-plus",
-            title: "Add From Campaign",
-            handler: showAddFromCampaignModal
-        },
-        {
-            type: "default",
-            iconCssClass: "ti ti-viewport-short",
-            title: isAutoCollapseEnabled.value ? "Turn Off Auto-Collapse" : "Turn On Auto-Collapse",
-            handler: toggleAutoCollapse
-        },
-        {
-            type: "default",
-            iconCssClass: "ti ti-chevrons-up",
-            title: "Collapse All",
-            handler: collapseAll
+    const secondaryActions = computed((): PanelAction[] => {
+        const actions: PanelAction[] = [
+            {
+                type: "default",
+                iconCssClass: "ti ti-plus",
+                title: "Add From Campaign",
+                handler: showAddFromCampaignModal
+            }
+        ];
+
+        if (selectedView.value === "list") {
+            actions.push(
+                {
+                    type: "default",
+                    iconCssClass: "ti ti-viewport-short",
+                    title: isAutoCollapseEnabled.value ? "Turn Off Auto-Collapse" : "Turn On Auto-Collapse",
+                    handler: toggleAutoCollapse
+                },
+                {
+                    type: "default",
+                    iconCssClass: "ti ti-chevrons-up",
+                    title: "Collapse All",
+                    handler: collapseAll
+                }
+            );
         }
-    ]);
+        else if (selectedView.value === "grid") {
+            actions.push(
+                {
+                    type: "default",
+                    iconCssClass: "ti ti-message",
+                    title: "Communicate",
+                    handler: onCommunicate
+                },
+                {
+                    type: "default",
+                    iconCssClass: "ti ti-files",
+                    title: "Merge Template",
+                    handler: mergeTemplate
+                },
+                {
+                    type: "default",
+                    iconCssClass: "ti ti-users",
+                    title: "Merge People",
+                    handler: mergePerson
+                }
+            );
+        }
+
+        actions.push({
+            type: "default",
+            iconCssClass: "ti ti-file-excel",
+            title: "Export to Excel",
+            handler: exportToExcel
+        });
+
+        actions.push({
+            type: "default",
+            iconCssClass: "ti ti-file-spreadsheet",
+            title: "Export to CSV",
+            handler: exportToCsv
+        });
+
+        return actions;
+    });
 
     // Computed setter normalizes v-model updates so the dropdown’s blank "All Opportunities" value is never stored in component state.
     const selectedOpportunity = computed({
@@ -1000,6 +1363,16 @@
     const groupingFields = computed(() => {
         let filteredGroupingFields = allGroupingFields;
 
+        // No grouping on Grid View
+        if (selectedView.value === "grid") {
+            return [];
+        }
+
+        // Board mode only allows status grouping.
+        if (selectedView.value === "board") {
+            return filteredGroupingFields.filter(g => g.value === "statusGrouping");
+        }
+
         if (!isNullOrWhiteSpace(selectedOpportunity.value)) {
             filteredGroupingFields = filteredGroupingFields.filter(g => g.value !== "opportunityGrouping");
         }
@@ -1010,11 +1383,44 @@
         return filteredGroupingFields;
     });
 
+    /** Converts the backend available groupings into the format expected by GroupedPanel. */
+    const availableGroups = computed<Record<string, GroupedGrid[]> | undefined>(() => {
+        const raw = box.options?.availableGroupings;
+        if (!raw) {
+            return undefined;
+        }
+
+        // When a status filter is active, restrict available status columns to
+        // only the allowed statuses so excluded ones don't appear as empty board
+        // columns. Map filter GUIDs to IdKeys via connectionStatuses.
+        const activeStatusFilter = viewOptions.value.statusFilter;
+        const allowedStatusKeys = activeStatusFilter?.length
+            ? (box.options?.connectionStatuses ?? [])
+                .filter(s => activeStatusFilter.includes(s.guid) && s.idKey)
+                .map(s => s.idKey!)
+            : null;
+
+        const result: Record<string, GroupedGrid[]> = {};
+        for (const [key, bags] of Object.entries(raw)) {
+            const filteredBags = key === "statusGrouping" && allowedStatusKeys?.length
+                ? bags.filter(bag => bag.key && allowedStatusKeys.includes(bag.key))
+                : bags;
+
+            result[key] = filteredBags.map(bag => ({
+                ...bag,
+                gridData: { rows: [] }
+            }));
+        }
+
+        return result;
+    });
+
     const hasSelectedOpportunity = computed(() => !isNullOrWhiteSpace(selectedOpportunity.value));
 
     const skeletonCount = computed<number>(() => selectedGrouping.value === "connectorGrouping" && asBoolean(areOnlyMyRequestsVisible.value) ? 1 : 3);
 
     const allSelectedKeys = computed(() => Object.values(selectedKeys.value).flat());
+    const allSelectedKeySet = computed(() => new Set(allSelectedKeys.value));
     const hasAnySelectedKeys = computed(() => allSelectedKeys.value.length > 0);
 
     const selectedRequestDetails = computed((): BulkRequestViewBag[] => {
@@ -1058,9 +1464,22 @@
 
     const normalizedQuickFilter = computed(() => debouncedQuickFilter.value.toLowerCase());
 
+    const isSequentialStatus = computed<boolean>(() => {
+        if (isDockedPanelVisible.value) {
+            return dockedPanelDetailsBox.value?.options?.isSequentialStatusMode ?? false;
+        }
+        return box.options?.isSequentialStatusMode ?? false;
+    });
+
     const connectionStatusItems = computed<ListItemBag[]>(() => {
-        const statuses = dockedPanelDetailsBox.value?.options?.connectionStatuses
-            ?? box.options?.connectionStatuses;
+        let statuses: ConnectionStatusBag[] | null | undefined;
+
+        if (isDockedPanelVisible.value && dockedPanelDetailsBox.value?.options?.connectionStatuses) {
+            statuses = dockedPanelDetailsBox.value.options.connectionStatuses;
+        }
+        else {
+            statuses = box.options?.connectionStatuses;
+        }
 
         return (
             statuses?.slice() // avoid mutating source
@@ -1090,6 +1509,35 @@
         rows = sortRows(rows);
 
         return rows;
+    });
+
+    const gridViewData = computed<GridDataBag>(() => ({
+        rows: visibleRows.value
+    }));
+
+    /*
+    * Computed value that applies column filters from Grid View to the visibleRows computed property.
+    * When the Connections Hub is not in Grid View, the visible rows property will be returned and no
+    * Grid column filtering will be applied.
+    *
+    * Used to populate the count label in the Grouped Panel and as the filtered row set from which
+    * the Block exports to Excel.
+    */
+    const visibleRowsFilteredByGrid = computed(() => {
+        if (selectedView.value !== "grid") {
+            return visibleRows.value;
+        }
+
+        // When in grid view, the grid has already applied its own column filters and
+        // reported back the surviving rows via onFilteredRowsChanged. Filter the
+        // source rows down to only those whose idKey appears in that set so the panel
+        // counts/display stay in sync with what the grid is showing.
+        if (gridViewFilteredRows.value) {
+            const filteredKeySet = new Set(gridViewFilteredRows.value.map(r => r["idKey"]));
+            return visibleRows.value.filter(r => filteredKeySet.has(r["idKey"]));
+        }
+
+        return visibleRows.value;
     });
 
     // #endregion Computed Values
@@ -1141,7 +1589,14 @@
         const sortBy = viewOptions.value.sortBy;
 
         if (isNullOrWhiteSpace(sortBy)) {
-            return rows;
+            // When no explicit sort is selected, sort by the persisted
+            // order on the connection request (ascending).
+            return rows.sort((a, b) => {
+                const aOrder = (a["order"] as number | null | undefined) ?? 0;
+                const bOrder = (b["order"] as number | null | undefined) ?? 0;
+
+                return aOrder - bOrder;
+            });
         }
 
         return rows.sort((a, b) => {
@@ -1308,11 +1763,130 @@
         isDockedPanelVisible.value = true;
     }
 
+    /**
+     * Handles a plain click on a board card. Clears any active multi-selection
+     * before opening the docked detail panel so plain click is a "focus one"
+     * action. Ctrl+click goes through onToggleBoardCardSelection instead.
+     */
+    function onSelectBoardCard(key: string): void {
+        if (hasAnySelectedKeys.value) {
+            clearAllSelections();
+        }
+
+        onSelectItem(key);
+    }
+
+    /**
+     * Toggles a card in/out of the board-view selection bucket. Board-view
+     * selections live under the "board" key in `selectedKeys` so they flow
+     * through `allSelectedKeys` and drive the shared bulk-action toolbar.
+     */
+    function onToggleBoardCardSelection(groupKey: string, idKey: string): void {
+        const current = selectedKeys.value[groupKey] ?? [];
+
+        // If the connection type has sequential status configured then we must clear
+        // selections in any status grouping that does not match the selected group key.
+        if (box.options?.isSequentialStatusMode) {
+            Object.keys(selectedKeys.value)
+                .filter(key => key !== groupKey)
+                .forEach(key => selectedKeys.value[key] = []);
+        }
+
+        selectedKeys.value[groupKey] = current.includes(idKey)
+            ? current.filter(k => k !== idKey)
+            : [...current, idKey];
+    }
+
     function onAddItem(): void {
         isAddConnectionRequestModalVisible.value = true;
     }
 
+    /**
+     * Called when the rows that match the user filters have changed.
+     *
+     * @param state The state object that describes the grid.
+     */
+    function onFilteredRowsChanged(state: IGridState): void {
+        gridViewFilteredRows.value = [...state.filteredRows];
+    }
+
     // #endregion Grid Functions
+
+    // #region Board Functions
+
+    /**
+     * When sequential status mode is active and grouped by status,
+     * only allow drops on the next sequential status column.
+     */
+    const canDropOnGroup = computed<((sourceGroupKey: string, targetGroupKey: string) => boolean) | undefined>(() => {
+        if (!box.options?.isSequentialStatusMode || selectedGrouping.value !== "statusGrouping") {
+            return undefined;
+        }
+
+        const statuses = box.options?.connectionStatuses ?? [];
+        const sortedStatuses = [...statuses].sort((a, b) => a.order - b.order);
+        const nextKeyByKey = new Map<string, string>();
+
+        for (let i = 0; i < sortedStatuses.length - 1; i++) {
+            const currentKey = sortedStatuses[i].idKey;
+            const nextKey = sortedStatuses[i + 1].idKey;
+
+            if (currentKey && nextKey) {
+                nextKeyByKey.set(currentKey, nextKey);
+            }
+        }
+
+        return (sourceGroupKey: string, targetGroupKey: string): boolean => {
+            return nextKeyByKey.get(sourceGroupKey) === targetGroupKey;
+        };
+    });
+
+    /**
+     * Reports whether a card is part of a multi-card selection so the board
+     * view can apply group-drag styling to the mirror and transit previews.
+     * Matches the group-drag trigger condition in onCardMoved.
+     */
+    function isCardInGroupDrag(idKey: string): boolean {
+        return allSelectedKeys.value.length > 1 && allSelectedKeySet.value.has(idKey);
+    }
+
+    function onCardMoved(idKey: string, fromGroupKey: string, toGroupKey: string, beforeIdKey: string | null): void {
+        // If the from key and to key are the same then we just need to reorder the request.
+        if (fromGroupKey === toGroupKey) {
+            // Don't reorder if the board is sorted by a custom field.
+            if (viewOptions.value.sortBy) {
+                return;
+            }
+            reorderConnectionRequest(idKey, beforeIdKey, toGroupKey);
+            return;
+        }
+
+        if (!gridData.value?.rows) {
+            return;
+        }
+        const row = gridData.value.rows.find(r => r.idKey === idKey);
+
+        // Only set value needed for reorder if the sortBy filter is empty (defaulting to Order).
+        if (isNullOrWhiteSpace(viewOptions.value.sortBy)) {
+            cardMovedBeforeIdKey.value = beforeIdKey;
+        }
+
+        // Group drag: dragged card is part of a multi-card selection.
+        // Fall through to single-card path if not selected or sole selection,
+        // so we never move cards the user didn't drag.
+        const isGroupDrag = allSelectedKeys.value.length > 1 && allSelectedKeySet.value.has(idKey);
+
+        // This Block only supports status grouping, so a cross-column move
+        // always represents a status change. Other groupings (connector, state,
+        // opportunity, campus, due status) are not supported on the Block at this time.
+        selectedStatus.value = box.options?.connectionStatuses?.find(s => s.idKey === toGroupKey)?.guid;
+
+        // Pass in null if the card was moved from a group drag, otherwise pass in the data row
+        // of the card that has been dragged.
+        showChangeStatusModal(isGroupDrag ? null : row);
+    }
+
+    // #endregion Board Functions
 
     // #region Docked Panel Functions
 
@@ -1335,6 +1909,11 @@
 
     function onModalErrorMessageDismissed(): void {
         modalErrorMessage.value = "";
+    }
+
+    function onTransferModalClose(): void {
+        isBulkTransfer.value = false;
+        onModalErrorMessageDismissed();
     }
 
     // #endregioin Modal Functions
@@ -1366,6 +1945,39 @@
         return 0;
     }
 
+    /**
+    * Gets the filter value text to use for the requester column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getRequesterFilterValue(row: Record<string, unknown>): string {
+        const person = row["requestDetails"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+    * Gets the filter value text to use for the connector column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getConnectorFilterValue(row: Record<string, unknown>): string {
+        const connectorItem = row["connectorDetails"] as ListItemBag;
+        return !connectorItem ? "" : `${connectorItem.text}`;
+    }
+
+    /**
+    * Gets the filter value text to use for the status column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getStatusFilterValue(row: Record<string, unknown>): string {
+        const statusBag = row["connectionStatus"] as ConnectionStatusBag;
+        return !statusBag ? "" : `${statusBag.name}`;
+    }
+
+    function formatColumnDate(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date as string)?.toASPString("d") ?? "";
+    }
 
     function formatDueDateShortLabel(dueDate: string | null | undefined, isCompleted: boolean, completedDateTime: string | null | undefined): string {
         // Use the completion date as the reference point if completed, otherwise use today
@@ -1401,6 +2013,21 @@
                 return "text-danger text-semibold";
             default:
                 return "text-interface-strong";
+        }
+    }
+
+    function getConnectionStateLabel(state: ConnectionState | undefined): "default" | "primary" | "success" | "info" | "warning" | "danger" | "campus" | "type" | "custom" {
+        switch (state) {
+            case ConnectionState.Active:
+                return "default";
+            case ConnectionState.FutureFollowUp:
+                return "info";
+            case ConnectionState.Inactive:
+                return "warning";
+            case ConnectionState.Connected:
+                return "success";
+            default:
+                return "default";
         }
     }
 
@@ -1468,10 +2095,6 @@
         }
     }
 
-    function toggleGridRowDropdown(key: string | null | undefined): void {
-        openDropdownIndex.value = openDropdownIndex.value === key ? null : key;
-    }
-
     /**
      * Called when the individual changes which rows are selected.
      *
@@ -1531,6 +2154,7 @@
         }
 
         const connectionOpportunity = row["connectionOpportunity"] as string | null | undefined;
+        const connectionOpportunityGuid = row["connectionOpportunityGuid"] as string | null | undefined;
         const connectionStatus = row["connectionStatus"] as ConnectionStatusBag | null | undefined;
         const connectionTypeSource = row["connectionTypeSource"] as string | null | undefined;
         const connector = row["connectorDetails"] as ListItemBag | null | undefined;
@@ -1542,6 +2166,7 @@
         return {
             idKey,
             connectionOpportunity,
+            connectionOpportunityGuid,
             connectionStatus,
             connectionTypeSource,
             connector,
@@ -1563,6 +2188,7 @@
         const bag = <BulkRequestViewBag>{
             idKey: box.entity.connectionRequestIdKey,
             connectionOpportunity: box.entity.connectionOpportunityName,
+            connectionOpportunityGuid: box.entity.connectionOpportunityGuid,
             connectionStatus: box.entity.connectionStatus,
             connectionTypeSource: box.entity.connectionTypeSource,
             connector: connector,
@@ -1586,11 +2212,433 @@
     }
 
     function collapseAll(): void {
-        groupedGridPanel.value.collapseAll();
+        groupedPanel.value.collapseAll();
     }
 
     function toggleAutoCollapse(): void {
         isAutoCollapseEnabled.value = !isAutoCollapseEnabled.value;
+    }
+
+    // #region Export to Excel or CSV
+
+    /**
+     * Builds the workbook containing the currently visible connection requests,
+     * along with the raw row data and the title used for the export. This is
+     * shared by the Excel and CSV export paths so the two formats stay in sync.
+     * Follows the same pattern as the Grid component's getExportWorkbook
+     * (grid.partial.obs).
+     */
+    async function getExportWorkbook(): Promise<{ workbook: import("@Obsidian/Libs/exceljs").Workbook, rowData: Record<string, unknown>[], title: string } | null> {
+        // When the user has selected specific rows, limit the export to just
+        // those rows. Otherwise, export every currently visible row.
+        let rows = visibleRowsFilteredByGrid.value;
+
+        if (hasAnySelectedKeys.value) {
+            const selectedKeySet = new Set(allSelectedKeys.value);
+            rows = rows.filter(row => {
+                const idKey = row["idKey"] as string | null | undefined;
+                return !!idKey && selectedKeySet.has(idKey);
+            });
+        }
+
+        if (!rows.length) {
+            return null;
+        }
+
+        // Build the list of columns to export based on current view options.
+        type ExportColumn = {
+            key: string;
+            title: string;
+            getValue: (row: Record<string, unknown>) => unknown;
+        };
+
+        const columns: ExportColumn[] = [];
+
+        columns.push({
+            key: "id",
+            title: "Id",
+            getValue: (row) => row.id
+        });
+
+        columns.push({
+            key: "name",
+            title: "Name",
+            getValue: (row) => {
+                const person = row.requestDetails as PersonFieldBag | null;
+                return person ? `${person.nickName ?? ""} ${person.lastName ?? ""}`.trim() : "";
+            }
+        });
+
+        const gridDataToShow = viewOptions.value.gridDataToShow ?? [];
+
+        if (gridDataToShow.includes("connectionOpportunity")) {
+            columns.push({
+                key: "connectionOpportunity",
+                title: "Connection Opportunity",
+                getValue: (row) => (row.connectionOpportunity as string) ?? ""
+            });
+
+            if (viewOptions.value.isRequestSourceShown) {
+                columns.push({
+                    key: "connectionTypeSource",
+                    title: "Connection Request Source",
+                    getValue: (row) => (row.connectionTypeSource as string) ?? ""
+                });
+            }
+        }
+
+        columns.push({
+            key: "connectorDetails",
+            title: "Connector",
+            getValue: (row) => (row.connectorDetails as ListItemBag | null)?.text ?? ""
+        });
+
+        columns.push({
+            key: "campus",
+            title: "Campus",
+            getValue: (row) => (row.campus as string) ?? ""
+        });
+
+        if (box.options?.areGroupPlacementsEnabled) {
+            columns.push({
+                key: "group",
+                title: "Placement Group",
+                getValue: (row) => (row.group as string) ?? ""
+            });
+        }
+
+        if (gridDataToShow.includes("activity")) {
+            columns.push({
+                key: "lastActivityDateTime",
+                title: "Last Activity Date",
+                getValue: (row) => toExcelDate(row.lastActivityDateTime as string | null | undefined)
+            });
+
+            columns.push({
+                key: "activityCount",
+                title: "Activity Count",
+                getValue: (row) => (row.activityCount as number) ?? ""
+            });
+        }
+
+        if (gridDataToShow.includes("dueDate")) {
+            columns.push({
+                key: "dueDate",
+                title: "Due Date",
+                getValue: (row) => toExcelDate(row.dueDate as string | null | undefined)
+            });
+            columns.push({
+                key: "dueSoonDate",
+                title: "Due Soon Date",
+                getValue: (row) => toExcelDate(row.dueSoonDate as string | null | undefined)
+            });
+        }
+
+        columns.push({
+            key: "connectionStatus",
+            title: "Connection Status",
+            getValue: (row) => (row.connectionStatus as ConnectionStatusBag | null)?.name ?? ""
+        });
+
+        columns.push({
+            key: "connectionState",
+            title: "Connection State",
+            getValue: (row) => {
+                const state = row.connectionState as ConnectionState | null | undefined;
+                return state != null ? (ConnectionStateDescription[state] ?? "") : "";
+            }
+        });
+
+        columns.push({
+            key: "createdDateTime",
+            title: "Created Date",
+            getValue: (row) => toExcelDate(row.createdDateTime as string | null | undefined)
+        });
+
+        if (box.options?.isFutureFollowUpEnabled === true) {
+            columns.push({
+                key: "followUpDate",
+                title: "Follow-Up Date",
+                getValue: (row) => toExcelDate(row.followUpDate as string | null | undefined)
+            });
+        }
+
+        columns.push({
+            key: "completedDateTime",
+            title: "Completed Date",
+            getValue: (row) => toExcelDate(row.completedDateTime as string | null | undefined)
+        });
+
+        columns.push({
+            key: "order",
+            title: "Order",
+            getValue: (row) => row.order
+        });
+
+        // Attribute columns the user has selected.
+        for (const attr of (attributesToShow.value ?? [])) {
+            const attrName = attr.name;
+            if (!attrName) {
+                return null;
+            }
+            columns.push({
+                key: attrName,
+                title: attr.title ?? attrName,
+                getValue: (row) => {
+                    const value = row[attrName];
+
+                    if (!value || typeof value !== "object") {
+                        return undefined;
+                    }
+
+                    if (typeof value["text"] !== "string") {
+                        return undefined;
+                    }
+
+                    return value["text"];
+                }
+            });
+        }
+
+        columns.push({
+            key: "requesterPersonAliasGuid",
+            title: "Person Alias Guid",
+            getValue: (row) => row.requesterPersonAliasGuid
+        });
+
+        columns.push({
+            key: "connectionOpportunityGuid",
+            title: "Connection Opportunity Guid",
+            getValue: (row) => row.connectionOpportunityGuid
+        });
+
+        columns.push({
+            key: "campusGuid",
+            title: "Campus Guid",
+            getValue: (row) => row.campusGuid
+        });
+
+        // Dynamically import ExcelJS so it is only loaded when needed.
+        const exceljs = await import("@Obsidian/Libs/exceljs");
+        const title = box.options?.title || "Connection Requests";
+
+        const workbook = new exceljs.Workbook();
+        workbook.created = new Date();
+        workbook.modified = new Date();
+        const worksheet = workbook.addWorksheet(title);
+
+        // Set the column headers.
+        worksheet.columns = columns.map(c => ({
+            header: c.title,
+            key: c.key
+        }));
+
+        // Build the data rows.
+        const rowData: Record<string, unknown>[] = [];
+        for (const row of rows) {
+            const record: Record<string, unknown> = {};
+            for (const col of columns) {
+                record[col.key] = col.getValue(row);
+            }
+            rowData.push(record);
+        }
+
+        worksheet.addRows(rowData);
+
+        return { workbook, rowData, title };
+    }
+
+    /**
+     * Triggers an automatic download of the workbook so it can be saved to
+     * the filesystem. Mirrors the Grid component's downloadWorkbook helper
+     * (grid.partial.obs) so CSV and Excel paths share a single download flow.
+     *
+     * @param workbook The workbook to be downloaded by the browser.
+     * @param title The title of the workbook, used as the base for the filename.
+     * @param format The format to use when downloading the workbook.
+     */
+    async function downloadWorkbook(workbook: import("@Obsidian/Libs/exceljs").Workbook, title: string, format: "csv" | "xlsx"): Promise<void> {
+        const buffer = format === "xlsx"
+            ? await workbook.xlsx.writeBuffer()
+            : await workbook.csv.writeBuffer();
+
+        const data = new Blob([buffer], { type: "application/octet-stream" });
+
+        await downloadFile(data, `${title.replace(/[^a-zA-Z0-9\-_]/g, "")}.${format}`);
+    }
+
+    /**
+     * Exports the currently visible connection requests to an Excel file.
+     * Follows the same formatting pattern as the Grid component's built-in
+     * export (grid.partial.obs).
+     */
+    async function exportToExcel(): Promise<void> {
+        const result = await getExportWorkbook();
+
+        if (!result) {
+            return;
+        }
+
+        const { workbook, rowData, title } = result;
+        const worksheet = workbook.getWorksheet(title);
+
+        if (!worksheet) {
+            return;
+        }
+
+        // Apply formatting to data rows.
+        const lineHeight = 15;
+        const padding = 2;
+
+        worksheet.eachRow((row, index) => {
+            let maxLines = 1;
+
+            row.eachCell((cell) => {
+                const text = cell.value?.toString() ?? "";
+
+                if (text.includes("\n")) {
+                    const lineCount = text.split("\n").length;
+                    if (lineCount > maxLines) {
+                        maxLines = lineCount;
+                    }
+
+                    cell.alignment = { wrapText: true, vertical: "top" };
+                }
+                else {
+                    cell.alignment = { wrapText: false, vertical: "top" };
+                }
+
+                row.height = (maxLines * lineHeight) + padding;
+
+                // Zebra striping every other row.
+                if ((index + 1) % 2 === 0) {
+                    cell.fill = {
+                        type: "pattern",
+                        pattern: "solid",
+                        fgColor: { argb: "ffc6f1c7" }
+                    };
+                }
+            });
+        });
+
+        // Freeze the header rows.
+        worksheet.views = [{ state: "frozen", ySplit: 3 }];
+
+        // Auto-fit column widths.
+        for (const column of worksheet.columns) {
+            if (!column.key) {
+                continue;
+            }
+
+            let maxLength: number = (column.header?.toString() ?? "").length + 3;
+
+            for (const row of rowData) {
+                const value = row[column.key];
+
+                if (typeof value === "string") {
+                    const longestLineLength = value.split("\n").reduce((max, str) => Math.max(max, str.length), 0);
+                    maxLength = Math.max(maxLength, longestLineLength + 1);
+                }
+                else if (typeof value === "boolean") {
+                    maxLength = Math.max(maxLength, 6);
+                }
+                else if (value instanceof Date) {
+                    maxLength = Math.max(maxLength, 11);
+                }
+                else {
+                    maxLength = Math.max(maxLength, String(value).length + 1);
+                }
+            }
+
+            column.width = Math.min(80, Math.max(4, maxLength));
+        }
+
+        // Insert the title and export timestamp header rows.
+        worksheet.insertRows(1, [{}, {}]);
+        worksheet.getCell(1, 1).value = title;
+        worksheet.getCell(2, 1).value = `Exported on ${RockDateTime.now().toASPString("G")}`;
+        worksheet.getCell(1, 1).font = { size: 18 };
+
+        // Style header rows (title, timestamp, column headers).
+        worksheet.getRows(1, 3)?.forEach(row => {
+            row.eachCell(cell => {
+                cell.fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: "ffdedede" }
+                };
+                cell.font = cell.font ?? {};
+                cell.font.bold = true;
+            });
+        });
+
+        worksheet.mergeCells(1, 1, 1, worksheet.columns.length);
+        worksheet.mergeCells(2, 1, 2, worksheet.columns.length);
+
+        // Set up auto-filter on the data range.
+        worksheet.autoFilter = {
+            from: { row: 3, column: 1 },
+            to: { row: rowData.length + 3, column: worksheet.columns.length }
+        };
+
+        await downloadWorkbook(workbook, title, "xlsx");
+    }
+
+    /**
+     * Exports the currently visible connection requests to a CSV file. Skips
+     * Excel-only formatting (styling, merged header rows, auto-filter) since
+     * CSV is a plain text format. Mirrors onExportToCsv in grid.partial.obs.
+     */
+    async function exportToCsv(): Promise<void> {
+        const result = await getExportWorkbook();
+
+        if (!result) {
+            return;
+        }
+
+        const { workbook, title } = result;
+
+        await downloadWorkbook(workbook, title, "csv");
+    }
+
+    /**
+     * Converts an ISO date string to a UTC Date object suitable for Excel.
+     * Excel is not timezone aware, so we strip the zone information.
+     */
+    function toExcelDate(isoDate: string | null | undefined): Date | string {
+        const parsed = RockDateTime.parseISO(isoDate ?? "");
+
+        if (!parsed) {
+            return "";
+        }
+
+        return new Date(Date.UTC(parsed.year, parsed.month - 1, parsed.day, parsed.hour, parsed.minute, parsed.second));
+    }
+
+    // #endregion Export to Excel or CSV
+
+    async function onCommunicate(): Promise<void> {
+        if (!gridViewGridRef.value) {
+            return;
+        }
+
+        await gridViewGridRef.value.onCommunicate();
+    }
+
+    async function mergeTemplate(): Promise<void> {
+        if (!gridViewGridRef.value) {
+            return;
+        }
+
+        await gridViewGridRef.value.onMergeTemplate();
+    }
+
+    async function mergePerson(): Promise<void> {
+        if (!gridViewGridRef.value) {
+            return;
+        }
+
+        await gridViewGridRef.value.onPersonMerge();
     }
 
     function showCelebrationModal(row: Record<string, unknown> | null = null, detailsBox: ConnectionRequestDetailBox | null = null): void {
@@ -1661,8 +2709,8 @@
         isActivityModalVisible.value = true;
     }
 
-    function showChangeStatusModal(): void {
-        prepareRequestDetailsForModal();
+    function showChangeStatusModal(row: Record<string, unknown> | null = null): void {
+        prepareRequestDetailsForModal(row);
         isChangeStatusModalVisible.value = true;
     }
 
@@ -1693,8 +2741,7 @@
 
             const lastStatusIndex = connectionStatusItems.value.length - 1;
 
-
-            for (const request of selectedRequestDetails.value) {
+            for (const request of requestDetailsForModal.value) {
                 const currentIndex = statusIndexByGuid.get(request.connectionStatus?.guid);
                 if (currentIndex === undefined || isNullOrWhiteSpace(request.idKey)) {
                     continue;
@@ -1711,17 +2758,19 @@
 
                 statusUpdateBags.push({
                     connectionRequestIdKey: request.idKey,
-                    connectionStatusGuid: nextStatus.value,
-                    note: bag.note
+                    connectionStatusKey: nextStatus.value,
+                    note: bag.note,
+                    beforeIdKey: cardMovedBeforeIdKey.value
                 });
             }
         }
         else {
-            for (const key of allSelectedKeys.value) {
+            for (const request of requestDetailsForModal.value) {
                 statusUpdateBags.push({
-                    connectionRequestIdKey: key,
-                    connectionStatusGuid: bag.connectionStatusGuid,
-                    note: bag.note
+                    connectionRequestIdKey: request.idKey,
+                    connectionStatusKey: bag.connectionStatusKey,
+                    note: bag.note,
+                    beforeIdKey: cardMovedBeforeIdKey.value
                 });
             }
         }
@@ -1735,6 +2784,7 @@
         }
         finally {
             isModalSaving.value = false;
+            cardMovedBeforeIdKey.value = null;
         }
     }
 
@@ -1907,7 +2957,7 @@
 
         connectionRequestUpdateBag.value = {
             connectionRequestIdKey: key,
-            connectionStatusGuid: status.guid,
+            connectionStatusKey: status.guid,
             connectionState: state
         };
 
@@ -1934,7 +2984,7 @@
 
         connectionRequestUpdateBag.value = {
             connectionRequestIdKey: dockedPanelDetailsBox.value?.entity?.connectionRequestIdKey,
-            connectionStatusGuid: dockedPanelDetailsBox.value?.entity?.connectionStatus?.guid,
+            connectionStatusKey: dockedPanelDetailsBox.value?.entity?.connectionStatus?.guid,
             connectionState: dockedPanelDetailsBox.value?.entity?.connectionState,
             canCompleteRequest
         };
@@ -2054,9 +3104,37 @@
     }
 
     function clearAllSelections(): void {
-        groupedGridPanel.value.clearSelectedKeys();
+        groupedPanel.value.clearSelectedKeys();
+        gridViewGridRef.value?.clearSelectedKeys();
         selectedKeys.value = {};
         selectedKeysOnUnmount.value = {};
+    }
+
+    /*
+        4/20/26 - KBH
+
+        Clears the board multi-selection when the user clicks away from
+        the cards and the bulk-action toolbar. Excludes clicks inside cards,
+        the action toolbar, and any open modal/dropdown/popover so bulk
+        actions can finish flowing through the modal snapshot before the
+        selection is torn down.
+
+        Reason: Users expect an "outside click" to deselect, matching the
+        mental model set by the multi-select UI and common kanban patterns.
+    */
+    const ignoreOutsideClickSelectors = ".board-card-wrapper, .action-toolbar, .modal, .floating-dropdown, .popover";
+
+    function handleOutsideClick(event: MouseEvent): void {
+        if (!hasAnySelectedKeys.value || selectedView.value !== "board") {
+            return;
+        }
+
+        const target = event.target as Element | null;
+        if (target?.closest(ignoreOutsideClickSelectors)) {
+            return;
+        }
+
+        clearAllSelections();
     }
 
     async function getSmsConfiguration(selectedKeys: string[], connectionTypeIdKey: string | null | undefined): Promise<HttpResult<GetSmsConfigurationResponseBag>> {
@@ -2102,6 +3180,18 @@
                     continue;
                 }
 
+                // Mirror the server-side BulkUpdate: increment the order of
+                // all sibling rows in the target status that are at or after
+                // the new order so client-side sorting stays in sync.
+                const newOrder = updateBag.order;
+                if (newOrder !== undefined && gridData.value?.rows) {
+                    for (const sibling of gridData.value.rows) {
+                        if (sibling.idKey !== updateBag.idKey && sibling.statusGrouping === updateBag.statusGrouping && (sibling.order as number) >= newOrder) {
+                            (sibling.order as number) += 1;
+                        }
+                    }
+                }
+
                 row.stateGrouping = updateBag.stateGrouping;
                 row.statusGrouping = updateBag.statusGrouping;
                 row.connectionStatus = updateBag.connectionStatusBag;
@@ -2112,6 +3202,7 @@
                 row.dueSoonDate = updateBag.dueSoonDate;
                 row.followUpDate = updateBag.followUpDate;
                 row.completedDateTime = updateBag.completedDateTime;
+                row.order = newOrder;
             }
 
             // Need to validate the updated rows still meet server filter requirements.
@@ -2132,7 +3223,10 @@
             isFlyoutSaving.value = true;
 
             // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-            const connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            let connectionTypeIdKey: string | null | undefined;
+            if (isDockedPanelVisible.value) {
+                connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
 
             const result = await invokeBlockAction<ConnectionListGridUpdateBag>("ChangeRequestStatus", {
                 bag,
@@ -2237,7 +3331,10 @@
 
     async function updateRequestStates(bag: UpdateConnectionRequestStatesBag): Promise<string | null> {
         // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-        const connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        let connectionTypeIdKey: string | null | undefined;
+        if (isDockedPanelVisible.value) {
+            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        }
 
         const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("UpdateRequestStates", {
             bag: bag,
@@ -2256,6 +3353,7 @@
                     row.stateGrouping = resultBag.stateGrouping;
                     row.connectionState = resultBag.connectionState;
                     row.followUpDate = resultBag.followUpDate;
+                    row.completedDateTime = resultBag.completedDateTime;
 
                     // If this row stopped meeting server filters then splice it.
                     if (!isRowVisibleWithServerFilters(row)) {
@@ -2302,7 +3400,10 @@
             isModalSaving.value = true;
 
             // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-            const connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            let connectionTypeIdKey: string | null | undefined;
+            if (isDockedPanelVisible.value) {
+                connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
 
             const result = await invokeBlockAction<LaunchWorkflowResultBag>("LaunchWorkflowForRequests", {
                 bag: bag,
@@ -2337,7 +3438,10 @@
 
     async function deleteRequests(connectionRequestIdKeys: string[]): Promise<string | null> {
         // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-        const connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        let connectionTypeIdKey: string | null | undefined;
+        if (isDockedPanelVisible.value) {
+            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        }
 
         const result = await invokeBlockAction("DeleteRequests", {
             connectionRequestIdKeys: connectionRequestIdKeys,
@@ -2371,7 +3475,10 @@
             isModalSaving.value = true;
 
             // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-            const connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            let connectionTypeIdKey: string | null | undefined;
+            if (isDockedPanelVisible.value) {
+                connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
 
             // If we have an activity Id Key then we are in update mode.
             if (bag.activityIdKey) {
@@ -2523,6 +3630,98 @@
         }
     }
 
+    async function showBulkTransferModal(): Promise<void> {
+        prepareRequestDetailsForModal();
+        isBulkTransfer.value = true;
+        isTransferModalVisible.value = true;
+
+        areTransferDetailsLoading.value = true;
+
+        const result = await invokeBlockAction<TransferConnectionRequestDetailsBag>("GetBulkTransferDetails");
+
+        if (result.isSuccess && result.data) {
+            transferRequestDetails.value = result.data;
+        }
+        else {
+            modalErrorMessage.value = result.errorMessage ?? "An error occurred while getting transfer details.";
+        }
+
+        areTransferDetailsLoading.value = false;
+    }
+
+    function selectTransferProcess(bag: TransferConnectionRequestBag): void {
+        if (isBulkTransfer.value) {
+            bulkTransferRequests(bag);
+        }
+        else {
+            transferSingleRequest(bag);
+        }
+    }
+
+    async function bulkTransferRequests(bag: TransferConnectionRequestBag): Promise<void> {
+        try {
+            isModalSaving.value = true;
+
+            const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("BulkTransferConnectionRequests", {
+                connectionRequestIdKeys: allSelectedKeys.value,
+                bag
+            });
+
+            if (result.isSuccess && result.data) {
+                const rowsByIdKey = new Map(
+                    gridData.value?.rows?.map(r => [r.idKey, r])
+                );
+
+                for (const updateBag of result.data) {
+                    const row = rowsByIdKey.get(updateBag.idKey);
+                    if (!row) {
+                        continue;
+                    }
+
+                    row.opportunityGrouping = updateBag.opportunityGrouping;
+                    row.campusGrouping = updateBag.campusGrouping;
+                    row.stateGrouping = updateBag.stateGrouping;
+                    row.statusGrouping = updateBag.statusGrouping;
+                    row.stateGrouping = updateBag.stateGrouping;
+                    row.dueStatusGrouping = updateBag.dueStatusGrouping;
+                    row.statusGrouping = updateBag.statusGrouping;
+                    row.connectionStatus = updateBag.connectionStatusBag;
+                    row.connectionState = updateBag.connectionState;
+                    row.dueStatus = updateBag.dueStatus;
+                    row.dueDate = updateBag.dueDate;
+                    row.dueSoonDate = updateBag.dueSoonDate;
+                    row.followUpDate = updateBag.followUpDate;
+                    row.completedDateTime = updateBag.completedDateTime;
+                    row.connectionOpportunity = updateBag.connectionOpportunity;
+                    row.connectionOpportunityGuid = updateBag.connectionOpportunityGuid;
+                    row.connectionOpportunityIconCssClass = updateBag.connectionOpportunityIconCssClass;
+                    row.campus = updateBag.campus;
+                    row.campusGuid = updateBag.campusGuid;
+                    row.lastActivityDateTime = updateBag.lastActivityDateTime;
+                    row.activityCount = updateBag.activityCount;
+
+                    // If the request's current connector was not preserved, then update the row data.
+                    if (bag.connectorOption !== "current") {
+                        row.connectorGrouping = updateBag.connectorGrouping;
+                        row.connectorDetails = updateBag.connectorDetails;
+                    }
+                }
+
+                // Need to validate the updated rows still meet server filter requirements.
+                applyServerFilters();
+
+                clearAllSelections();
+                isTransferModalVisible.value = false;
+            }
+            else {
+                modalErrorMessage.value = result.errorMessage ?? "An unknown error occurred while transferring the connection request.";
+            }
+        }
+        finally {
+            isModalSaving.value = false;
+        }
+    }
+
     async function onTransferClick(): Promise<void> {
         isTransferModalVisible.value = true;
         areTransferDetailsLoading.value = true;
@@ -2541,7 +3740,7 @@
         areTransferDetailsLoading.value = false;
     }
 
-    async function transferRequest(bag: TransferConnectionRequestBag): Promise<void> {
+    async function transferSingleRequest(bag: TransferConnectionRequestBag): Promise<void> {
         try {
             isModalSaving.value = true;
 
@@ -2623,7 +3822,10 @@
 
     async function reassignConnector(connectionRequestIdKeys: string[], connector: string, fromDockedPanel: boolean = false): Promise<void> {
         // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-        const connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        let connectionTypeIdKey: string | null | undefined;
+        if (isDockedPanelVisible.value) {
+            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+        }
 
         const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("ReassignConnector", {
             connectionRequestIdKeys: connectionRequestIdKeys,
@@ -2696,7 +3898,10 @@
             isModalSaving.value = true;
 
             // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-            const connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            let connectionTypeIdKey: string | null | undefined;
+            if (isDockedPanelVisible.value) {
+                connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
 
             const result = await invokeBlockAction<ConnectionListGridUpdateBag>("UpsertCelebrationText", { bag, connectionTypeIdKey });
 
@@ -2753,12 +3958,47 @@
         }
     }
 
+    async function reorderConnectionRequest(idKey: string, beforeIdKey: string | null, statusGroupKey: string): Promise<void> {
+        const result = await invokeBlockAction<number>("ReorderConnectionRequest", {
+            connectionRequestIdKey: idKey,
+            beforeIdKey
+        });
+        const rowIndex = gridData.value?.rows?.findIndex(r => r.idKey === idKey) ?? -1;
+
+        if (result.isSuccess && gridData.value?.rows && rowIndex !== -1) {
+            const newOrder = result.data as number;
+
+            // Mirror the server-side BulkUpdate: increment sibling orders
+            // in the same status column at or after the new position.
+            for (const sibling of gridData.value.rows) {
+                if (sibling.idKey !== idKey
+                    && sibling.statusGrouping === statusGroupKey
+                    && (sibling.order as number) >= newOrder) {
+                    (sibling.order as number) += 1;
+                }
+            }
+
+            const row = gridData.value.rows[rowIndex];
+            row.order = newOrder;
+        }
+        else {
+            console.error(result.errorMessage ?? "An error occurred while reordering the Connection Request.");
+        }
+    }
+
     // #endregion Block Actions
 
     // When any modal is open, disable close-on-outside-click for the docked panel so that
     // clicking inside a modal doesn't accidentally close the panel behind it.
     watch([isTransferModalVisible, isCelebrationModalVisible, isActivityModalVisible, isReminderModalVisible, isSendSMSModalVisible, isSendEmailModalVisible, isFlyoutOpen, isModalAlertVisible, isDeleteRequestModalVisible], (values) => {
         handleClickOutsideSettingForDockedPanel(!values.some(Boolean));
+    });
+
+    watch(isChangeStatusModalVisible, () => {
+        // Clear selected status whenever the change status modal is closed.
+        if (!isChangeStatusModalVisible.value) {
+            selectedStatus.value = null;
+        }
     });
 
     watch(areOnlyMyRequestsVisible, async () => {
@@ -2843,6 +4083,19 @@
         await preferences.save();
     });
 
+    watch(selectedView, async () => {
+        removeCurrentUrlQueryParams("SelectedView");
+        clearAllSelections();
+
+        if (selectedView.value === "list") {
+            selectedGrouping.value = isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? selectedGrouping.value : preferences.getValue(PreferenceKey.SelectedGroupByMode);
+        }
+
+        preferences.setValue(getConnectionFilterKey(PreferenceKey.SelectedViewConnectionTypeIdKey), selectedView.value);
+
+        await preferences.save();
+    });
+
     watch(() => viewOptions.value.stateFilter, async () => {
         preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterStateConnectionTypIdKey), JSON.stringify(viewOptions.value.stateFilter));
         await preferences.save();
@@ -2853,10 +4106,18 @@
     //     onAddRequest(newConnectionRequest.value);
     // });
 
-    watch([selectedGrouping, isAutoCollapseEnabled], async () => {
-        preferences.setValue(PreferenceKey.SelectedGroupByMode, selectedGrouping.value);
-        preferences.setValue(PreferenceKey.IsAutoCollapseEnabled, isAutoCollapseEnabled.value.toString());
+    watch(selectedGrouping, async () => {
+        // Only update the selected group by mode person preference when the selected view is "List".
+        if (selectedView.value !== "list") {
+            return;
+        }
 
+        preferences.setValue(PreferenceKey.SelectedGroupByMode, selectedGrouping.value);
+        await preferences.save();
+    });
+
+    watch(isAutoCollapseEnabled, async () => {
+        preferences.setValue(PreferenceKey.IsAutoCollapseEnabled, isAutoCollapseEnabled.value.toString());
         await preferences.save();
     });
 
@@ -2884,4 +4145,12 @@
     }
 
     onConfigurationValuesChanged(useReloadBlock());
+
+    onMounted(() => {
+        document.addEventListener("click", handleOutsideClick);
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("click", handleOutsideClick);
+    });
 </script>

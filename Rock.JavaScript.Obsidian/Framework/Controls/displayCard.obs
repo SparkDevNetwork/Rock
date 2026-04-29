@@ -20,7 +20,10 @@
             </div>
 
             <div v-if="title || description || $slots.description" class="displaycard-heading-text">
-                <h5 v-if="title" class="displaycard-heading-text-title">{{ title }}</h5>
+                <h5 v-if="title" class="displaycard-heading-text-title">
+                    <a v-if="titleUrl" :href="titleUrl" @click.stop>{{ title }}</a>
+                    <template v-else>{{ title }}</template>
+                </h5>
                 <small v-if="description || $slots.description" class="displaycard-heading-text-description">
                     <slot name="description">
                         {{ description }}
@@ -151,6 +154,16 @@
         },
 
         title: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        /**
+         * Optional URL the title should link to. When set, the title
+         * renders as an anchor; clicks navigate without triggering the
+         * card-level <c>onClick</c> handler.
+         */
+        titleUrl: {
             type: String as PropType<string | null | undefined>,
             required: false
         },

@@ -30,6 +30,7 @@ export const enum PreferenceKey {
     FilterStateConnectionTypIdKey = "FilterState_ConnectionTypeIdKey_{0}",
     FilterStatusConnectionTypIdKey = "FilterStatus_ConnectionTypeIdKey_{0}",
     FilterDueConnectionTypIdKey = "FilterDue_ConnectionTypeIdKey_{0}",
+    SelectedViewConnectionTypeIdKey = "SelectedView_ConnectionTypeIdKey_{0}",
 }
 
 export const enum NavigationUrlKey {

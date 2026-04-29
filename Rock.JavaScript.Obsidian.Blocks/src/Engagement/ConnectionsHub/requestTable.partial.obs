@@ -3,7 +3,7 @@
     <div class="styled-scroll">
         <RockLabel v-if="isLabelVisible">{{ pluralize("Request", requestDetails.length) }}</RockLabel>
         <div class="d-flex flex-column gap-xs request-table">
-            <div v-for="request in requestDetails" class="bg-interface-softer py-spacing-xs px-spacing-md border rounded request-row mr-spacing-tiny">
+            <div v-for="request in requestDetails" class="bg-interface-softer py-spacing-sm px-spacing-md border rounded request-row mr-spacing-tiny">
                 <div class="d-flex align-items-center">
                     <template v-if="request.requester">
                         <PersonAvatar :personIdKey="request.requester?.idKey ?? ''"
@@ -42,7 +42,7 @@
                 </div>
                 <div class="d-flex align-items-center justify-content-end">
                     <div v-if="request.connectionStatus"
-                         class="w-100 py-spacing-tiny px-spacing-xs rounded-huge text-semibold text-interface-softest text-center"
+                         class="w-100 py-spacing-tiny px-spacing-xs font-size-sm rounded-huge text-semibold text-interface-softest text-center text-truncate"
                          :style="`background-color: ${request.connectionStatus.highlightColor}`">
                         {{ request.connectionStatus.name }}
                     </div>

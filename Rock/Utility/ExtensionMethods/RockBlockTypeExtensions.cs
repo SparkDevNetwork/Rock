@@ -17,10 +17,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 
 using Rock.Blocks;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock
 {
@@ -184,6 +186,24 @@ namespace Rock
         /// <returns>A string representing the URL to the login <see cref="Rock.Model.Page"/>.</returns>
         public static string GetLoginPageUrl( this RockBlockType block, string returnUrl )
         {
+            // If any block on the current page implements IDisallowReturnUrlBlock,
+            // clear the return URL so users are not redirected back to this
+            // page after authenticating.
+            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            {
+                var isReturnUrlDisallowed = block.PageCache.Blocks
+                    .Any( pageBlock =>
+                    {
+                        var blockType = pageBlock.BlockType?.GetCompiledType();
+                        return blockType != null && typeof( IDisallowReturnUrlBlock ).IsAssignableFrom( blockType );
+                    } );
+
+                if ( isReturnUrlDisallowed )
+                {
+                    returnUrl = null;
+                }
+            }
+
             var site = SiteCache.Get( block.PageCache.SiteId );
             var pageReference = new Rock.Web.PageReference( site.LoginPageReference );
 

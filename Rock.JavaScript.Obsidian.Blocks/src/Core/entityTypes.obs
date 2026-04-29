@@ -1,0 +1,197 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!config.options?.isAuthorizedToEdit" alertType="warning"><strong>Warning</strong> You are not authorized to edit entity types</NotificationBox>
+    <Grid
+          v-else
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Entity"
+          :entityTypeGuid="EntityType.EntityType"
+          liveUpdates
+          @selectItem="onSelectItem">
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    width="50%"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="friendlyName"
+                    title="Friendly Name"
+                    field="friendlyName"
+                    width="35%"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <BooleanColumn name="isCommon"
+                       title="Common"
+                       field="isCommon"
+                       width="100px"
+                       :filter="booleanValueFilter"
+                       visiblePriority="xs" />
+
+        <Column name="Security"
+                visiblePriority="xs"
+                width="60px"
+                columnType="security"
+                itemClass="grid-columncommand justify-content-center">
+            <template #format="{ row }">
+                <button v-if="!row.isSecurityDisabled"
+                        class="btn btn-security btn-sm"
+                        type="button"
+                        @click.stop="onSecurityClick(row.idKey, row.friendlyName)">
+                    <i class="ti ti-lock"></i>
+                </button>
+            </template>
+        </Column>
+    </Grid>
+    <Modal v-model="showEditEntityTypeModal" title="Edit Entity Type" @closeModal="onCloseModal">
+        <RockForm v-model:submit="submitEntityType" @submit="saveEntityType">
+            <EntityTypeEditor v-model="entityTypeEditBag" />
+        </RockForm>
+
+        <template #customButtons>
+            <RockButton btnType="primary" @click="startSaveEntityType">Save</RockButton>
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { booleanValueFilter, TextColumn, textValueFilter, Column, BooleanColumn } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { EntityTypesOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/EntityTypes/entityTypesOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { EntityTypesBag } from "@Obsidian/ViewModels/Blocks/Core/EntityTypes/entityTypesBag";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { reactive, ref } from "vue";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import EntityTypeEditor from "./EntityTypes/entityTypeEditor.partial.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { alert, showSecurity } from "@Obsidian/Utility/dialogs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const config = useConfigurationValues<ListBlockBox<EntityTypesOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const isEditing = ref<boolean>(false);
+
+    const showEditEntityTypeModal = ref<boolean>(false);
+
+    const entityTypeEditBag = ref<ValidPropertiesBox<EntityTypesBag>>({
+        bag: {} as EntityTypesBag
+    });
+
+    const submitEntityType = ref<boolean>(false);
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    async function onSelectItem(key: string): Promise<void> {
+        const result = await invokeBlockAction<EntityTypesBag>("GetEditEntityType", { key });
+        if (!result.isSuccess || !result.data) {
+            return alert(result.errorMessage ?? "Unable to edit entity type.");
+        }
+
+        entityTypeEditBag.value.bag = result.data;
+        isEditing.value = true;
+        showEditEntityTypeModal.value = true;
+    }
+
+    const startSaveEntityType = (): void => {
+        submitEntityType.value = true;
+    };
+
+    const saveEntityType = async (): Promise<void> => {
+        const result = await invokeBlockAction<ValidPropertiesBox<EntityTypesBag>>("SaveEntityType", {
+            box: entityTypeEditBag.value
+        });
+
+        if (!result.isSuccess) {
+            return alert(result.errorMessage ?? "Unable to save entity type.");
+        }
+
+        if (result.isSuccess) {
+            gridDataSource.value = loadGridData();
+        }
+
+        entityTypeEditBag.value.bag = {
+            id: 0,
+            isCommon: false,
+            isRelatedToInteractionTrackedOnCreate: false,
+            isSecured: false,
+        };
+        showEditEntityTypeModal.value = false;
+        isEditing.value = false;
+        submitEntityType.value = false;
+    };
+
+    /**
+     * Called the edit or add modal is closed.
+     */
+    function onCloseModal(): void {
+        entityTypeEditBag.value.bag = {
+            id: 0,
+            isCommon: false,
+            isRelatedToInteractionTrackedOnCreate: false,
+            isSecured: false,
+        };
+
+        isEditing.value = false;
+    }
+
+    /**
+     * Called when the individual clicks on the security icon.
+     *
+     * @param event The event that triggered us.
+     */
+    async function onSecurityClick(entityTypeId: string, typeFriendlyName: string): Promise<void> {
+        if (!entityTypeId) {
+            return;
+        }
+        showSecurity(entityTypeId, 0, typeFriendlyName + " Security");
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

@@ -25,6 +25,7 @@ using System.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -70,7 +71,7 @@ namespace Rock.Lava
 
             if ( rockContext == null )
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
                 if ( context != null )
                 {
                     context.SetInternalField( "rock_context", rockContext );
@@ -262,17 +263,6 @@ namespace Rock.Lava
                 {
                     return true;
                 }
-
-#pragma warning disable CS0618 // Type or member is obsolete
-                if ( pi.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Count() > 0 )
-                {
-                    return false;
-                }
-                if ( pi.GetCustomAttributes( typeof( LavaIncludeAttribute ) ).Count() > 0 )
-                {
-                    return true;
-                }
-#pragma warning restore CS0618 // Type or member is obsolete
 
                 // otherwise return false
                 return false;

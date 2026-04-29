@@ -75,31 +75,28 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            int? entityTypeId = PageParameter( "EntityTypeId" ).AsIntegerOrNull();
-            string entityTypeName = string.Empty;
-            Type type = null;
+            var entityTypeId = PageParameter( "EntityTypeId" );
+            EntityTypeCache entityType = null;
 
-            // If we didn't find it by Id, check if it is a Guid and translate.
-            if ( !entityTypeId.HasValue )
+            // if entityTypeId is a guid, get the int id
+            if ( entityTypeId.AsGuidOrNull() is Guid g )
             {
-                var entityTypeGuid = PageParameter( "EntityTypeId" ).AsGuidOrNull();
-
-                if ( entityTypeGuid.HasValue )
-                {
-                    entityTypeId = EntityTypeCache.GetId( entityTypeGuid.Value );
-                }
+                entityTypeId = EntityTypeCache.GetId( g ).ToString();
             }
 
-            // Get Entity Type
-            if ( entityTypeId.HasValue )
+            // Get Entity Type if plain id id is available
+            if ( int.TryParse( entityTypeId, out int parsedEntityTypeId ) )
             {
-                var entityType = EntityTypeCache.Get( entityTypeId.Value );
-                if ( entityType != null )
-                {
-                    entityTypeName = entityType.FriendlyName;
-                    type = entityType.GetEntityType();
-                }
+                entityType = EntityTypeCache.Get( parsedEntityTypeId );
             }
+            else if ( entityTypeId.IsNotNullOrWhiteSpace() )
+            {
+                // If type id is not an int, check if it is an id key
+                entityType = EntityTypeCache.GetByIdKey( entityTypeId );
+            }
+
+            var entityTypeName = entityType?.FriendlyName ?? string.Empty;
+            var type = entityType?.GetEntityType();
 
             // Get object type
             if ( type != null )

@@ -25,14 +25,6 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationInstancePaymentList
     public class RegistrationInstancePaymentListOptionsBag
     {
         /// <summary>
-        /// Gets or sets the registration template identifier key.
-        /// </summary>
-        /// <value>
-        /// The registration template identifier key.
-        /// </value>
-        public string RegistrationTemplateIdKey { get; set; }
-
-        /// <summary>
         /// Gets or sets the title for the exported excel or csv file.
         /// </summary>
         /// <value>

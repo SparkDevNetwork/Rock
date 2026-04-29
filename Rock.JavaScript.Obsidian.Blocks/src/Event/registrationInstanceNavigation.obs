@@ -1,0 +1,18 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ul class="nav nav-tabs margin-b-md">
+        <li v-for="(tab, index) in tabs"
+            :key="tab.pageIdKey ?? index"
+            :class="{ active: tab.isActive }">
+            <a :href="tab.url ?? '#'">{{ tab.title }}</a>
+        </li>
+    </ul>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { RegistrationInstanceNavigationOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceNavigation/registrationInstanceNavigationOptionsBag";
+
+    const config = useConfigurationValues<RegistrationInstanceNavigationOptionsBag>();
+    const tabs = config.tabs ?? [];
+</script>

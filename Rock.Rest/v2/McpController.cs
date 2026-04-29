@@ -52,7 +52,7 @@ namespace Rock.Rest.v2
     {
         private readonly IMcpServer _mcpServer;
 
-        private readonly IChatAgentBuilder _agentBuilder;
+        private readonly ChatAgentBuilder _agentBuilder;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="McpController"/> class.
@@ -61,7 +61,7 @@ namespace Rock.Rest.v2
         public McpController( IServiceProvider serviceProvider )
         {
             _mcpServer = serviceProvider.GetRequiredService<IMcpServer>();
-            _agentBuilder = serviceProvider.GetRequiredService<IChatAgentBuilder>();
+            _agentBuilder = serviceProvider.GetRequiredService<ChatAgentBuilder>();
         }
 
         /// <summary>
@@ -73,6 +73,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "{slug}" )]
         [Authenticate]
+        [RequiredScope( "mcp:invoke" )]
         [Secured( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK )]

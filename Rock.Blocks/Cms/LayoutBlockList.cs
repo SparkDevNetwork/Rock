@@ -39,11 +39,12 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of blocks." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "9cf1aa10-24e4-4530-a345-57da4cfe9595" )]
-    [Rock.SystemGuid.BlockTypeGuid( "ea8be085-d420-4d1b-a538-2c0d4d116e0a" )]
+    [Rock.SystemGuid.BlockTypeGuid( "CD3C0C1D-2171-4FCC-B840-FC6E6F72EEEF" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "ea8be085-d420-4d1b-a538-2c0d4d116e0a" )]
     [CustomizedGrid]
     public class LayoutBlockList : RockEntityListBlockType<Block>
     {

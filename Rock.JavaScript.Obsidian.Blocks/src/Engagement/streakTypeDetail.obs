@@ -50,6 +50,7 @@
     import { confirm } from "@Obsidian/Utility/dialogs";
     import { StreakTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeBag";
     import { StreakTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeDetail/streakTypeDetailOptionsBag";
+    import { StreakStructureType } from "@Obsidian/Enums/Engagement/streakStructureType";
 
     const config = useConfigurationValues<DetailBlockBox<StreakTypeBag, StreakTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -173,7 +174,7 @@
                     window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.ExclusionsPage] ?? "");
                 }
             }];
-        if (streakTypeViewBag.value?.structureType === 0 || streakTypeViewBag.value?.structureEntity != null) {
+        if (streakTypeViewBag.value?.structureType === StreakStructureType.AnyAttendance || streakTypeViewBag.value?.structureEntity != null) {
             footerActionsPanelActions.push({
                 iconCssClass: "ti ti-arrow-forward-up",
                 title: "Rebuild",

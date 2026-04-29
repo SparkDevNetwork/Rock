@@ -88,6 +88,12 @@ namespace Rock.Reporting.DataFilter.Person
             }
 
             var config = SelectionConfig.Parse( selection );
+
+            if ( config == null )
+            {
+                return new Dictionary<string, string>();
+            }
+
             var dict = new Dictionary<string, string>
             {
                 { "amount",  config.Amount.ToString() },
@@ -200,6 +206,11 @@ function() {
         {
             string result = "Giving Amount";
             var selectionConfig = SelectionConfig.Parse( selection );
+
+            if ( selectionConfig == null )
+            {
+                return null;
+            }
 
             ComparisonType comparisonType = selectionConfig.ComparisonType;
             decimal amount = selectionConfig.Amount ?? 0.00M;

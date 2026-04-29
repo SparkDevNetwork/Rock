@@ -377,17 +377,6 @@ namespace Rock.Model
         [DataMember]
         public virtual FinancialPersonSavedAccount FinancialPersonSavedAccount { get; set; }
 
-        /// <summary>
-        /// Gets or sets the history changes.
-        /// </summary>
-        /// <value>
-        /// The history changes.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
-        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
-
         #endregion Navigation Properties
     }
 

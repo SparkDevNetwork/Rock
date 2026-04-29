@@ -124,5 +124,13 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// The attribute values.
         /// </value>
         public Dictionary<string, string> PlacementGroupMemberAttributeValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the currently persisted placement group on this request is
+        /// inactive or archived. When true, the edit UI should warn the user that saving with
+        /// a different selection will overwrite an assignment to a group that is no longer
+        /// available in the picker.
+        /// </summary>
+        public bool? IsCurrentPlacementGroupInactiveOrArchived { get; set; }
     }
 }

@@ -208,7 +208,7 @@ function() {
                 var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
                 result = comparisonType == null ? "Interactions" : $"{comparisonType.ConvertToString()} {selectionConfig.ViewsCount} Interactions";
 
-                if ( selectionConfig.WebsiteIds.Count > 0 )
+                if ( selectionConfig.WebsiteIds != null && selectionConfig.WebsiteIds.Count > 0 )
                 {
                     var websiteNames = new List<string>();
                     foreach ( var websiteId in selectionConfig.WebsiteIds )

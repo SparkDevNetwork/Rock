@@ -111,7 +111,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
             var selectionConfig = new SelectionConfig
             {
                 ConnectionActivityTypeGuid = data.GetValueOrNull( "activityType" )?.AsGuid(),
-                IntegerCompare = data.GetValueOrDefault( "comparisonType", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ).ConvertToEnum<ComparisonType>(),
+                IntegerCompare = data.GetValueOrNull( "comparisonType" ).ConvertToEnumOrNull<ComparisonType>() ?? ComparisonType.GreaterThanOrEqualTo,
                 MinimumCount = data.GetValueOrDefault( "minimumCount", "1" ).AsInteger(),
                 SlidingDateRangeDelimitedValues = data.GetValueOrDefault( "dateRange", "All||||" ),
             };

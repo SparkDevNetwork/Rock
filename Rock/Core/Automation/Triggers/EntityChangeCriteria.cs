@@ -171,6 +171,7 @@ namespace Rock.Core.Automation.Triggers
             // so Dynamic LINQ assumes you might be trying to use that.
             var config = new ParsingConfig
             {
+                AllowEqualsAndToStringMethodsOnObject = true,
                 DisableMemberAccessToIndexAccessorFallback = true
             };
 

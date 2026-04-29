@@ -70,6 +70,10 @@ public class SafeDirectoryCatalog : ComposablePartCatalog
 
                 string msg = e.Message;
             }
+            catch ( Exception ex )
+            {
+                Rock.Model.ExceptionLogService.LogException( new Exception( $"Unable to load MEF from {assembly.FullName}", ex ) );
+            }
         }
     }
 

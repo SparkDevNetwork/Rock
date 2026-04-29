@@ -39,14 +39,15 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the SMS Pipelines currently in the system." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the sms pipeline details.",
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "8141535c-4ebb-490f-875f-c62c1f7f4d00" )]
-    [Rock.SystemGuid.BlockTypeGuid( "da937cfd-f20e-4619-8cb8-d1a2738d2ff2" )]
+    [Rock.SystemGuid.BlockTypeGuid( "DB6FD0BF-FDCE-48DA-919C-240F029518A2" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "da937cfd-f20e-4619-8cb8-d1a2738d2ff2" )]
     [CustomizedGrid]
     public class SmsPipelineList : RockEntityListBlockType<SmsPipeline>
     {

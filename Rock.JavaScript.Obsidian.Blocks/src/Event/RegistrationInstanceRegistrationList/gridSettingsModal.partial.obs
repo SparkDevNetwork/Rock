@@ -1,0 +1,122 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <SlidingDateRangePicker v-model="dateRange"
+                                label="Registration Date Range" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="paymentStatus"
+                              label="Payment Status"
+                              :items="paymentStatusItems"
+                              showBlankItem />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <PersonPicker v-model="registeredBy"
+                              label="Registered By" />
+            </div>
+        </div>
+
+        <CheckBoxList v-model="campuses"
+                      label="Campuses"
+                      :items="campusItems" />
+
+        <div class="mt-3">
+            <RockButton btnType="default" btnSize="xs" @click="onClearFilters">Clear Filters</RockButton>
+        </div>
+    </Modal>
+</template>
+
+<style></style>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { RegistrationPaymentStatusDescription } from "@Obsidian/Enums/Event/registrationPaymentStatus";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        campusItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const dateRange = ref<SlidingDateRange | null>(props.modelValue.dateRange);
+    const paymentStatus = ref<string>(props.modelValue.paymentStatus);
+    const registeredBy = ref<ListItemBag | undefined>(props.modelValue.registeredBy);
+    const campuses = ref<string[]>(props.modelValue.campuses);
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const paymentStatusItems = enumToListItemBag(RegistrationPaymentStatusDescription);
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            dateRange: dateRange.value,
+            paymentStatus: paymentStatus.value,
+            registeredBy: registeredBy.value,
+            campuses: campuses.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    function onClearFilters(): void {
+        dateRange.value = null;
+        paymentStatus.value = "";
+        registeredBy.value = undefined;
+        campuses.value = [];
+    }
+
+    watch(() => props.modelValue, () => {
+        dateRange.value = props.modelValue.dateRange;
+        paymentStatus.value = props.modelValue.paymentStatus;
+        registeredBy.value = props.modelValue.registeredBy;
+        campuses.value = props.modelValue.campuses;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

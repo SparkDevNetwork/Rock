@@ -173,17 +173,6 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the history change list.
-        /// </summary>
-        /// <value>
-        /// The history change list.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
-        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
-
         #endregion Navigation Properties
     }
 

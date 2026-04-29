@@ -1,0 +1,254 @@
+<template>
+    <div ref="boardViewRef" class="grouped-board-view">
+        <GroupedBoardColumn v-for="group in groups"
+                            :key="group.key ?? ''"
+                            :group="group"
+                            :dragSourceOptions="dragSourceOptions">
+            <template #boardCard="slotProps">
+                <slot name="boardCard" v-bind="slotProps" />
+            </template>
+            <template #emptyColumn>
+                <slot name="emptyColumn" />
+            </template>
+        </GroupedBoardColumn>
+    </div>
+</template>
+
+<style scoped>
+.grouped-board-view {
+    display: flex;
+    gap: var(--spacing-large);
+    overflow-x: auto;
+    height: 100%;
+    padding-bottom: var(--spacing-xsmall);
+}
+</style>
+
+<style>
+/* Dragula mirror and transit styles — must not be scoped. */
+.gu-mirror {
+    cursor: grabbing;
+    box-shadow: 0 0 0 1px var(--color-primary);
+    border-radius: var(--rounded-small);
+    transform: rotate(-5deg);
+}
+
+.gu-transit {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+body.is-dragging,
+body.is-dragging * {
+    cursor: grabbing !important;
+}
+
+/* Group-drag styling — only applied when multiple selected cards are moving together. */
+.gu-mirror.multi-drag-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--rounded-small);
+    color: var(--color-primary);
+    opacity: 0.9;
+    pointer-events: none;
+}
+
+.gu-mirror.multi-drag-preview .multi-drag-icon {
+    font-size: var(--font-size-h3);
+}
+
+.gu-mirror.multi-drag-preview .multi-drag-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 var(--spacing-xsmall);
+    border-radius: 999px;
+    background-color: var(--color-primary);
+    color: var(--color-primary-text, #fff);
+    font-size: var(--font-size-xsmall);
+    font-weight: var(--font-weight-semibold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 1;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, ref } from "vue";
+    import { IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { GroupedGrid } from "./types.partial";
+    import GroupedBoardColumn from "./groupedBoardColumn.partial.obs";
+
+    const props = defineProps({
+        /** The pre-computed groups to render as board columns. */
+        groups: {
+            type: Array as PropType<GroupedGrid[]>,
+            required: true
+        },
+
+        /**
+         * Optional callback that determines whether a card from
+         * sourceGroupKey can be dropped onto targetGroupKey. When
+         * undefined all columns accept drops (default behavior).
+         */
+        canDropOnGroup: {
+            type: Function as PropType<((sourceGroupKey: string, targetGroupKey: string) => boolean) | undefined>,
+            required: false,
+            default: undefined
+        },
+
+        /**
+         * Optional callback invoked at drag start to determine whether
+         * the card being dragged is part of a multi-card selection. When
+         * true, the drag mirror and transit preview get group-drag styling.
+         */
+        isGroupDrag: {
+            type: Function as PropType<((idKey: string) => boolean) | undefined>,
+            required: false,
+            default: undefined
+        },
+
+        /** Number of selected cards to display on the group-drag badge. */
+        selectedCount: {
+            type: Number,
+            required: false,
+            default: 0
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "cardMoved", idKey: string, fromGroupKey: string, toGroupKey: string, beforeIdKey: string | null): void;
+    }>();
+
+    const boardViewRef = ref<HTMLElement | null>(null);
+
+    // #region Drag and Drop
+
+    const dragId = newGuid();
+
+    /** Shared drag source options for all board columns. A single id links
+     *  every column as both a source and a target so cards can move freely. */
+    const dragSourceOptions = computed<IDragSourceOptions>(() => ({
+        id: dragId,
+        copyElement: false,
+
+        startDrag(operation) {
+            // Prevent the empty-column placeholder from being dragged.
+            return !(operation.element as HTMLElement).classList.contains("board-column-empty");
+        },
+
+        acceptDrop(operation) {
+            if (!props.canDropOnGroup) {
+                return true;
+            }
+
+            const sourceKey = (operation.sourceContainer as HTMLElement)?.dataset.groupKey;
+            const targetKey = (operation.targetContainer as HTMLElement)?.dataset.groupKey;
+
+            if (!sourceKey || !targetKey) {
+                return false;
+            }
+
+            return props.canDropOnGroup(sourceKey, targetKey);
+        },
+
+        dragBegin(operation) {
+            document.body.classList.add("is-dragging");
+
+            // Detect group drag: dragged card is part of a multi-card selection.
+            // Enables body.is-group-drag CSS styling for transit, and decorates
+            // the mirror with a stacked look and a count badge.
+            const idKey = (operation.element as HTMLElement).dataset.idKey;
+            const isGroup = !!(idKey && props.isGroupDrag?.(idKey));
+
+            if (isGroup) {
+                // Dragula clones the mirror after this hook; wait a tick before
+                // decorating it.
+                const count = props.selectedCount;
+                nextTick(() => {
+                    const mirror = document.querySelector(".gu-mirror") as HTMLElement | null;
+                    if (!mirror) {
+                        return;
+                    }
+
+                    mirror.classList.add("multi-drag-preview");
+                    mirror.innerHTML = `
+                        <div class="multi-drag-icon">
+                            <i class="ti ti-users"></i>
+                        </div>
+                        <div class="multi-drag-badge">${count}</div>
+                    `;
+                });
+            }
+
+            // When a drop constraint callback is provided, mark columns
+            // that cannot accept the dragged card so they appear disabled.
+            if (props.canDropOnGroup) {
+                const sourceKey = (operation.sourceContainer as HTMLElement)?.dataset.groupKey ?? "";
+
+                boardViewRef.value?.querySelectorAll<HTMLElement>(".board-column-body").forEach(body => {
+                    const targetKey = body.dataset.groupKey ?? "";
+
+                    if (targetKey !== sourceKey && !props.canDropOnGroup!(sourceKey, targetKey)) {
+                        body.closest(".board-column")?.classList.add("drag-disabled");
+                    }
+                });
+            }
+        },
+
+        dragOver(operation) {
+            operation.targetContainer?.closest(".board-column")?.classList.add("drag-over");
+        },
+
+        dragOut(operation) {
+            operation.targetContainer?.closest(".board-column")?.classList.remove("drag-over");
+        },
+
+        dragEnd() {
+            document.body.classList.remove("is-dragging");
+
+            // Safety cleanup of all highlights.
+            document.querySelectorAll(".board-column.drag-over")
+                .forEach(el => el.classList.remove("drag-over"));
+            document.querySelectorAll(".board-column.drag-disabled")
+                .forEach(el => el.classList.remove("drag-disabled"));
+        },
+
+        dragDrop(operation) {
+            const element = operation.element as HTMLElement;
+            const sourceContainer = operation.sourceContainer as HTMLElement;
+            const targetContainer = operation.targetContainer as HTMLElement | undefined;
+
+            const idKey = element.dataset.idKey;
+            const fromGroupKey = sourceContainer.dataset.groupKey;
+            const toGroupKey = targetContainer?.dataset.groupKey;
+
+            // Get the idKey of the card this was dropped before (null = end of column).
+            const targetSibling = operation.targetSibling as HTMLElement | undefined;
+            const beforeIdKey = targetSibling?.dataset?.idKey ?? null;
+
+            if (!idKey || !fromGroupKey || !toGroupKey) {
+                return;
+            }
+
+            // Revert Dragula's DOM mutation — let Vue re-render from data.
+            operation.element.remove();
+            operation.sourceContainer.insertBefore(
+                operation.element,
+                operation.sourceSibling ?? null
+            );
+
+            emit("cardMoved", idKey, fromGroupKey, toGroupKey, beforeIdKey);
+        }
+    }));
+
+    // #endregion
+</script>

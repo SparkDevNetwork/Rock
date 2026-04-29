@@ -506,7 +506,9 @@ namespace Rock.Web.UI
         {
             base.OnInit( e );
 
-            RegistrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+            var registrationInstanceIdKey = PageParameter( PageParameterKey.RegistrationInstanceId );
+            RegistrationInstanceId = registrationInstanceIdKey.AsIntegerOrNull()
+                ?? Rock.Utility.IdHasher.Instance.GetId( registrationInstanceIdKey );
 
             if ( RegistrationInstance == null
                  && RegistrationInstanceId.HasValue )

@@ -49,6 +49,7 @@ using Rock.Financial;
 using Rock.Lava;
 using Rock.Media;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Rest.Controllers;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -3914,6 +3915,176 @@ namespace Rock.Rest.v2
         #region Data Filter
 
         /// <summary>
+        /// Gets the list of available data filter types for an entity.
+        /// </summary>
+        /// <param name="options">The options that describe the entity being filtered.</param>
+        /// <returns>A collection of available filter types.</returns>
+        [HttpPost]
+        [Route( "DataFilterGetAvailableTypes" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<DataFilterTypeItemBag> ) )]
+        [Rock.SystemGuid.RestActionGuid( "780F64B8-C695-44BE-9875-7958C1D420B3" )]
+        public IActionResult DataFilterGetAvailableTypes( [FromBody] DataFilterGetAvailableTypesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // We have to check access on the EntityType record because the
+                // component is not an IEntity so it will not work.
+                if ( grant == null || !grant.IsAccessGranted( options.EntityTypeGuid, Security.Authorization.VIEW ) )
+                {
+                    return BadRequest( "Security grant token is not valid." );
+                }
+
+                var entityType = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
+                var filteredEntityType = entityType?.GetEntityType();
+
+                if ( filteredEntityType == null )
+                {
+                    return BadRequest( "Invalid request." );
+                }
+
+                return Ok( DataFilterObsidianHelper.GetAvailableFilterTypes( filteredEntityType, RockRequestContext.CurrentPerson, options.ExcludedFilterTypeGuids, options.IsObsidianSupported ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets the Obsidian component definition and initial data for a data filter.
+        /// </summary>
+        /// <param name="options">The options that describe the filter to initialize.</param>
+        /// <returns>The component metadata and data for the filter.</returns>
+        [HttpPost]
+        [Route( "DataFilterGetComponent" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( DataFilterGetComponentResultsBag ) )]
+        [Rock.SystemGuid.RestActionGuid( "36C2AAE0-FE6C-48D3-B31B-B2BD43B97B9E" )]
+        public IActionResult DataFilterGetComponent( [FromBody] DataFilterGetComponentOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // We have to check access on the EntityType record because the
+                // component is not an IEntity so it will not work.
+                if ( grant == null || !grant.IsAccessGranted( options.EntityTypeGuid, Security.Authorization.VIEW ) )
+                {
+                    return BadRequest( "Security grant token is not valid." );
+                }
+
+                if ( !TryGetAuthorizedDataFilterComponent( options.EntityTypeGuid, options.FilterTypeGuid, rockContext, out var filteredEntityType, out var component, out var errorResult ) )
+                {
+                    return errorResult;
+                }
+
+                var componentData = component.GetObsidianComponentData( filteredEntityType, options.Selection, rockContext, RockRequestContext )
+                    ?? new Dictionary<string, string>();
+
+                var effectiveSelection = options.Selection;
+
+                if ( effectiveSelection.IsNullOrWhiteSpace() )
+                {
+                    effectiveSelection = component.GetSelectionFromObsidianComponentData( filteredEntityType, componentData, rockContext, RockRequestContext );
+                }
+
+                var formattedSelection = effectiveSelection.IsNotNullOrWhiteSpace()
+                    ? component.FormatSelection( filteredEntityType, effectiveSelection )
+                    : null;
+
+                return Ok( new DataFilterGetComponentResultsBag
+                {
+                    Title = component.GetTitle( filteredEntityType ),
+                    Description = component.Description,
+                    ComponentDefinition = component.GetComponentDefinition( filteredEntityType, effectiveSelection, rockContext, RockRequestContext ),
+                    ComponentData = componentData,
+                    Selection = effectiveSelection,
+                    FormattedSelection = formattedSelection
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Converts a data filter's component data into the persisted selection string.
+        /// </summary>
+        /// <param name="options">The options that describe the component data.</param>
+        /// <returns>The persisted selection string and formatted summary.</returns>
+        [HttpPost]
+        [Route( "DataFilterGetSelection" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( DataFilterGetSelectionResultsBag ) )]
+        [Rock.SystemGuid.RestActionGuid( "982EF174-890D-44A4-8C8D-5C1CC694174E" )]
+        public IActionResult DataFilterGetSelection( [FromBody] DataFilterGetSelectionOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // We have to check access on the EntityType record because the
+                // component is not an IEntity so it will not work.
+                if ( grant == null || !grant.IsAccessGranted( options.EntityTypeGuid, Security.Authorization.VIEW ) )
+                {
+                    return BadRequest( "Security grant token is not valid." );
+                }
+
+                if ( !TryGetAuthorizedDataFilterComponent( options.EntityTypeGuid, options.FilterTypeGuid, rockContext, out var filteredEntityType, out var component, out var errorResult ) )
+                {
+                    return errorResult;
+                }
+
+                var componentData = options.ComponentData ?? new Dictionary<string, string>();
+                var selection = component.GetSelectionFromObsidianComponentData( filteredEntityType, componentData, rockContext, RockRequestContext );
+                var formattedSelection = selection.IsNotNullOrWhiteSpace()
+                    ? component.FormatSelection( filteredEntityType, selection )
+                    : null;
+
+                return Ok( new DataFilterGetSelectionResultsBag
+                {
+                    Selection = selection,
+                    FormattedSelection = formattedSelection
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Executes a dynamic server request for a data filter component.
+        /// </summary>
+        /// <param name="options">The options that describe the request.</param>
+        /// <returns>The results of the component request.</returns>
+        [HttpPost]
+        [Route( "DataFilterExecuteComponentRequest" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponse( HttpStatusCode.OK, Type = typeof( Dictionary<string, string> ) )]
+        [Rock.SystemGuid.RestActionGuid( "FF743B32-D521-4134-BF71-709EC1672552" )]
+        public IActionResult DataFilterExecuteComponentRequest( [FromBody] DataFilterExecuteComponentRequestOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                // We have to check access on the EntityType record because the
+                // component is not an IEntity so it will not work.
+                if ( grant == null || !grant.IsAccessGranted( options.EntityTypeGuid, Security.Authorization.VIEW ) )
+                {
+                    return BadRequest( "Security grant token is not valid." );
+                }
+
+                if ( !TryGetAuthorizedDataFilterComponent( options.EntityTypeGuid, options.FilterTypeGuid, rockContext, out _, out var component, out var errorResult ) )
+                {
+                    return errorResult;
+                }
+
+                var response = component.ExecuteComponentRequest( options.Request ?? new Dictionary<string, string>(), null, rockContext, RockRequestContext )
+                    ?? new Dictionary<string, string>();
+
+                return Ok( response );
+            }
+        }
+
+        /// <summary>
         /// Gets the formatted string that describes the data filter from the
         /// selection values.
         /// </summary>
@@ -3966,8 +4137,69 @@ namespace Rock.Rest.v2
 
                 var selection = filterComponent.GetSelectionFromObsidianComponentData( entityType.GetEntityType(), componentData, rockContext, RockRequestContext );
 
+                if ( selection.IsNullOrWhiteSpace() )
+                {
+                    return Ok( string.Empty );
+                }
+
                 return Ok( filterComponent.FormatSelection( entityType.GetEntityType(), selection ) );
             }
+        }
+
+        /// <summary>
+        /// Attempts to resolve and authorize a data filter component request.
+        /// </summary>
+        /// <param name="entityTypeGuid">The filtered entity type guid.</param>
+        /// <param name="filterTypeGuid">The data filter type guid.</param>
+        /// <param name="rockContext">The context to use for entity lookup.</param>
+        /// <param name="filteredEntityType">The resolved filtered entity type.</param>
+        /// <param name="component">The resolved and authorized component.</param>
+        /// <param name="errorResult">The error result if resolution fails.</param>
+        /// <returns><c>true</c> when the request is valid; otherwise <c>false</c>.</returns>
+        private bool TryGetAuthorizedDataFilterComponent( Guid entityTypeGuid, Guid filterTypeGuid, RockContext rockContext, out Type filteredEntityType, out DataFilterComponent component, out IActionResult errorResult )
+        {
+            filteredEntityType = null;
+            component = null;
+            errorResult = null;
+
+            if ( entityTypeGuid == Guid.Empty || filterTypeGuid == Guid.Empty )
+            {
+                errorResult = BadRequest( "Invalid request." );
+                return false;
+            }
+
+            var entityType = EntityTypeCache.Get( entityTypeGuid, rockContext );
+            var filterEntityType = EntityTypeCache.Get( filterTypeGuid, rockContext );
+
+            if ( entityType == null || filterEntityType == null )
+            {
+                errorResult = BadRequest( "Invalid request." );
+                return false;
+            }
+
+            filteredEntityType = entityType.GetEntityType();
+            component = DataFilterContainer.GetComponent( filterEntityType.Name );
+
+            if ( filteredEntityType == null || component == null )
+            {
+                errorResult = BadRequest( "Invalid request." );
+                return false;
+            }
+
+            if ( component.AppliesToEntityType.IsNotNullOrWhiteSpace()
+                && component.AppliesToEntityType != filteredEntityType.FullName )
+            {
+                errorResult = BadRequest( "Invalid request." );
+                return false;
+            }
+
+            if ( !component.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+            {
+                errorResult = BadRequest( "Not authorized to access this filter." );
+                return false;
+            }
+
+            return true;
         }
 
         #endregion
@@ -4034,14 +4266,10 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "E2601583-94D5-4C21-96FA-309B9FB7E11F" )]
         public IActionResult DefinedValueEditorGetAttributes( DefinedValueEditorGetAttributesOptionsBag options )
         {
-            if ( RockRequestContext.CurrentPerson == null )
-            {
-                return Unauthorized();
-            }
-
             var definedType = DefinedTypeCache.Get( options.DefinedTypeGuid );
+            var securityGrant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( definedType == null || !definedType.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+            if ( definedType == null )
             {
                 return Unauthorized();
             }
@@ -4051,6 +4279,11 @@ namespace Rock.Rest.v2
                 Id = 0,
                 DefinedTypeId = definedType.Id
             };
+
+            if ( securityGrant?.IsAccessGranted( definedValue, Authorization.EDIT ) != true )
+            {
+                return Unauthorized();
+            }
 
             definedValue.LoadAttributes();
 
@@ -4087,11 +4320,6 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "E1AB17E0-CF28-4032-97A8-2A4279C5815A" )]
         public IActionResult DefinedValueEditorSaveNewValue( DefinedValueEditorSaveNewValueOptionsBag options )
         {
-            if ( RockRequestContext.CurrentPerson == null )
-            {
-                return Unauthorized();
-            }
-
             var securityGrant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
             using ( var rockContext = new RockContext() )
@@ -4291,6 +4519,14 @@ namespace Rock.Rest.v2
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
                 rockContext.SaveChanges();
 
+                // Read the inserted email section before converting to a bag
+                // to get its final field values that might have been updated from hooks.
+                var query = emailSectionService.Queryable().AsNoTracking()
+                    .Where( es => es.Id == emailSection.Id );
+                query = SetIncludesForEmailEditorEmailSectionBag( query );
+
+                emailSection = query.FirstOrDefault();
+
                 return Content( HttpStatusCode.Created, GetEmailSectionBagFromEmailSection( emailSection ) );
             }
         }
@@ -4322,22 +4558,21 @@ namespace Rock.Rest.v2
             using ( var rockContext = new RockContext() )
             {
                 var emailSectionService = new EmailSectionService( rockContext );
-                var emailSection = emailSectionService.Queryable().AsNoTracking()
-                    .Include( es => es.Category )
-                    .Include( es => es.ThumbnailBinaryFile )
-                    .Where( es => es.Guid == options.EmailSectionGuid )
-                    .ToList()
-                    .Where( es => es.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
-                    .Select( es => GetEmailSectionBagFromEmailSection( es ) )
-                    .FirstOrDefault();
 
-                if ( emailSection == null )
+                var query = emailSectionService.Queryable().AsNoTracking()
+                    .Where( es => es.Guid == options.EmailSectionGuid );
+                query = SetIncludesForEmailEditorEmailSectionBag( query );
+
+                var emailSection = query.FirstOrDefault();
+
+                if ( emailSection == null
+                     || !emailSection.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
                 {
                     return NotFound();
                 }
                 else
                 {
-                    return Ok( emailSection );
+                    return Ok( GetEmailSectionBagFromEmailSection( emailSection ) );
                 }
             }
         }
@@ -4367,15 +4602,17 @@ namespace Rock.Rest.v2
             using ( var rockContext = new RockContext() )
             {
                 var emailSectionService = new EmailSectionService( rockContext );
-                var emailSection = emailSectionService.Queryable().AsNoTracking()
-                    .Include( es => es.Category )
-                    .Include( es => es.ThumbnailBinaryFile )
+
+                var query = emailSectionService.Queryable().AsNoTracking();
+                query = SetIncludesForEmailEditorEmailSectionBag( query );
+
+                var emailSections = query
                     .ToList()
                     .Where( es => es.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
                     .Select( es => GetEmailSectionBagFromEmailSection( es ) )
                     .ToList();
 
-                return Ok( emailSection );
+                return Ok( emailSections );
             }
         }
 
@@ -4495,6 +4732,14 @@ namespace Rock.Rest.v2
 
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
                 rockContext.SaveChanges();
+
+                // Read the updated email section before converting to a bag
+                // to get its final field values that might have been updated from hooks.
+                var query = emailSectionService.Queryable().AsNoTracking()
+                    .Where( es => es.Id == emailSection.Id );
+                query = SetIncludesForEmailEditorEmailSectionBag( query );
+
+                emailSection = query.FirstOrDefault();
 
                 return Ok( GetEmailSectionBagFromEmailSection( emailSection ) );
             }
@@ -4686,10 +4931,24 @@ namespace Rock.Rest.v2
             }
         }
 
-        private static EmailEditorEmailSectionBag GetEmailSectionBagFromEmailSection( EmailSection emailSection )
+        private IQueryable<EmailSection> SetIncludesForEmailEditorEmailSectionBag( IQueryable<EmailSection> query )
         {
+            return query.Include( es => es.Category )
+                .Include( es => es.ThumbnailBinaryFile )
+                .Include( es => es.CreatedByPersonAlias );
+        }
+
+        private EmailEditorEmailSectionBag GetEmailSectionBagFromEmailSection( EmailSection emailSection )
+        {
+            var currentPerson = RockRequestContext.CurrentPerson;
+            var canEdit = emailSection != null
+                && !emailSection.IsSystem
+                && emailSection.IsAuthorized( Authorization.EDIT, currentPerson );
+
             return emailSection == null ? null : new EmailEditorEmailSectionBag
             {
+                CanDelete = canEdit,
+                CanEdit = canEdit,
                 Category = emailSection.Category.ToListItemBag(),
                 Guid = emailSection.Guid,
                 IsSystem = emailSection.IsSystem,

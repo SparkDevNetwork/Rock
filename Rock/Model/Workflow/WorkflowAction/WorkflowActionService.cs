@@ -63,7 +63,7 @@ namespace Rock.Model
                 .Where( a => a.ActivatedDateTime.HasValue && !a.CompletedDateTime.HasValue )
                 .Where( a =>
                  ( a.AssignedPersonAliasId.HasValue && personAliasIds.Contains( a.AssignedPersonAliasId.Value ) ) ||
-                         ( a.AssignedGroupId.HasValue && a.AssignedGroup.Members.Any( m => m.PersonId == person.Id ) ) ).Select( a => a.Id ).ToList();
+                         ( a.AssignedGroupId.HasValue && a.AssignedGroup.Members.Any( m => m.PersonId == person.Id && m.GroupMemberStatus != GroupMemberStatus.Inactive ) ) ).Select( a => a.Id ).ToList();
 
             // Get all of the active form actions with an activity that assigned to the specified person
             var formActionsQry = GetActiveForms().Where( a => assignedActiveActivityIdList.Contains( a.ActivityId ) );

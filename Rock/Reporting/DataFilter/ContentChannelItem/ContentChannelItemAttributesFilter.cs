@@ -266,7 +266,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
 
             // First value is content channel type, second value is attribute, remaining values are the field type's filter values
             var values = selection.FromJsonOrNull<List<string>>();
-            if ( values.Count >= 2 )
+            if ( values != null && values.Count >= 2 )
             {
                 var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( values[0].AsGuid() );
                 if ( contentChannelType != null )

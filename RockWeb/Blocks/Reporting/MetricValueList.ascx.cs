@@ -22,6 +22,7 @@ using System.Linq;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -209,7 +210,7 @@ namespace RockWeb.Blocks.Reporting
                             else
                             {
                                 var errorControl = new LiteralControl();
-                                errorControl.Text = string.Format("<span class='label label-danger'>Unable to create Partition control for {0}. Verify that the metric partition settings are set correctly</span>", metricPartition.Label);
+                                errorControl.Text = string.Format( "<span class='label label-danger'>Unable to create Partition control for {0}. Verify that the metric partition settings are set correctly</span>", metricPartition.Label );
                                 phMetricValuePartitions.Controls.Add( errorControl );
                             }
                         }
@@ -306,19 +307,22 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gMetricValues_Add( object sender, EventArgs e )
         {
+            var rockContext = new RockContext();
+            var disablePredictableIds = PageCache.Layout.Site.DisablePredictableIds;
             var qryParams = new Dictionary<string, string>();
 
-            var metricId = PageParameter( PageParameterKey.MetricId );
-            if ( metricId.AsInteger() > 0 )
+            var metric = new MetricService( rockContext ).GetNoTracking( PageParameter( PageParameterKey.MetricId ), !disablePredictableIds );
+            if ( metric != null )
             {
-                qryParams.Add( PageParameterKey.MetricId, metricId );
+                qryParams.Add( PageParameterKey.MetricId, metric.IdKey );
             }
 
             qryParams.Add( PageParameterKey.MetricValueId, 0.ToString() );
 
-            if ( hfMetricCategoryId.ValueAsInt() > 0 )
+            var metricCategory = new MetricCategoryService( rockContext ).GetNoTracking( hfMetricCategoryId.ValueAsInt() );
+            if ( metricCategory != null )
             {
-                qryParams.Add( PageParameterKey.MetricCategoryId, hfMetricCategoryId.Value );
+                qryParams.Add( PageParameterKey.MetricCategoryId, metricCategory.IdKey );
             }
 
             var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
@@ -337,18 +341,24 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gMetricValues_Edit( object sender, RowEventArgs e )
         {
-            var qryParams = new Dictionary<string, string>
-            {
-                { PageParameterKey.MetricValueId, e.RowKeyId.ToString() }
-            };
+            var rockContext = new RockContext();
+            var qryParams = new Dictionary<string, string>();
 
-            if ( hfMetricCategoryId.ValueAsInt() > 0 )
+            // e.RowKeyId is the grid's integer Id, so use the int overload directly;
+            // the string overload would honor DisablePredictableIds and refuse to resolve integers.
+            var metricValue = new MetricValueService( rockContext ).GetNoTracking( e.RowKeyId );
+            if ( metricValue != null )
             {
-                qryParams.Add( PageParameterKey.MetricCategoryId, hfMetricCategoryId.Value );
+                qryParams.Add( PageParameterKey.MetricValueId, metricValue.IdKey );
+            }
+
+            var metricCategory = new MetricCategoryService( rockContext ).GetNoTracking( hfMetricCategoryId.ValueAsInt() );
+            if ( metricCategory != null )
+            {
+                qryParams.Add( PageParameterKey.MetricCategoryId, metricCategory.IdKey );
             }
 
             var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
-
             if ( expandedIds.IsNotNullOrWhiteSpace() )
             {
                 qryParams.Add( PageParameterKey.ExpandedIds, expandedIds );
@@ -545,7 +555,7 @@ namespace RockWeb.Blocks.Reporting
         /// Creates the entity value lookups.
         /// </summary>
         /// <param name="metricID">The metric identifier.</param>
-        private void CreateEntityValueLookups(int? metricID )
+        private void CreateEntityValueLookups( int? metricID )
         {
             Metric metric = new MetricService( new RockContext() ).Get( metricID ?? 0 );
             if ( metric != null )
@@ -586,33 +596,26 @@ namespace RockWeb.Blocks.Reporting
         private void SetHiddenFieldValues()
         {
             var rockContext = new RockContext();
-
-            // in case called normally
-            int? metricId = PageParameter( PageParameterKey.MetricId ).AsIntegerOrNull();
+            var disablePredictableIds = PageCache.Layout.Site.DisablePredictableIds;
 
             // in case called from CategoryTreeView
-            int? metricCategoryId = PageParameter( PageParameterKey.MetricCategoryId ).AsIntegerOrNull();
-            MetricCategory metricCategory = null;
-            if ( metricCategoryId.HasValue )
+            var metricCategory = new MetricCategoryService( rockContext ).GetNoTracking( PageParameter( PageParameterKey.MetricCategoryId ), !disablePredictableIds );
+            if ( metricCategory != null )
             {
-                if ( metricCategoryId.Value > 0 )
-                {
-                    // editing a metric, but get the metricId from the metricCategory
-                    metricCategory = new MetricCategoryService( rockContext ).Get( metricCategoryId.Value );
-                    if ( metricCategory != null )
-                    {
-                        metricId = metricCategory.MetricId;
-                    }
-                }
-                else if ( !metricId.HasValue )
-                {
-                    // adding a new metric. Block will (hopefully) not be shown
-                    metricId = 0;
-                }
+                hfMetricId.Value = metricCategory.MetricId.ToString();
+                hfMetricCategoryId.Value = metricCategory.Id.ToString();
+                return;
             }
 
-            hfMetricId.Value = metricId.ToString();
-            hfMetricCategoryId.Value = metricCategoryId.ToString();
+            // in case called normally
+            var metric = new MetricService( rockContext ).GetNoTracking( PageParameter( PageParameterKey.MetricId ), !disablePredictableIds );
+            if ( metric != null )
+            {
+                hfMetricId.Value = metric.Id.ToString();
+            }
+
+            // If no metric was resolved, leave hfMetricId empty so the
+            // visibility check in OnLoad hides the block.
         }
 
         /// <summary>

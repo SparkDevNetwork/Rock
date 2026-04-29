@@ -23,6 +23,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.AI.Agent;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -65,20 +66,6 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// An optional identifier for the type of entity that this session
-        /// is related to.
-        /// </summary>
-        [DataMember]
-        public int? RelatedEntityTypeId { get; set; }
-
-        /// <summary>
-        /// An optional identifier for the specific entity that this session
-        /// is related to. Multiple sessions can be related to the same entity.
-        /// </summary>
-        [DataMember]
-        public int? RelatedEntityId { get; set; }
-
-        /// <summary>
         /// The date and time the session was started. This will be set
         /// automatically when the session is created.
         /// </summary>
@@ -97,6 +84,12 @@ namespace Rock.Model
         [DataMember]
         public string AdditionalSettingsJson { get; set; }
 
+        /// <summary>
+        /// The type of session represented by this instance.
+        /// </summary>
+        [DataMember]
+        public SessionType SessionType { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -112,11 +105,6 @@ namespace Rock.Model
         /// history.
         /// </summary>
         public virtual PersonAlias PersonAlias { get; set; }
-
-        /// <summary>
-        /// The type of the entity that this session is related to.
-        /// </summary>
-        public virtual EntityType RelatedEntityType { get; set; }
 
         /// <summary>
         /// A collection containing the <see cref="AIAgentSessionHistory" /> entities
@@ -149,7 +137,6 @@ namespace Rock.Model
         {
             this.HasRequired( a => a.AIAgent ).WithMany().HasForeignKey( a => a.AIAgentId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.PersonAlias ).WithMany().HasForeignKey( a => a.PersonAliasId ).WillCascadeOnDelete( false );
-            this.HasOptional( a => a.RelatedEntityType ).WithMany().HasForeignKey( a => a.RelatedEntityTypeId ).WillCascadeOnDelete( true );
         }
     }
 

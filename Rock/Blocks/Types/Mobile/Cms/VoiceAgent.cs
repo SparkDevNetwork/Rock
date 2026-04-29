@@ -1,14 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
+using Nest;
+
 using Newtonsoft.Json;
 
 using Rock.AI.Agent.Mcp;
 using Rock.Attribute;
+using Rock.Common.Mobile.Enums;
+using Rock.Common.Mobile.ViewModel;
+using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -27,21 +35,21 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
 
-    [TextField( "OpenAI API Key",
-        Description = "The API key obtained from the OpenAI developer portal.",
+    [TextField( "API Key",
+        Description = "The API key obtained from the OpenAI or xAI developer portal.",
         IsRequired = true,
         DefaultValue = "",
         Key = AttributeKeys.ApiKey,
         Order = 0 )]
 
     [TextField( "OpenAI Model",
-        Description = "The realtime OpenAI model used for audio interactions.",
-        IsRequired = true,
+        Description = "The realtime OpenAI model used for audio interactions. Leave blank when using xAI.",
+        IsRequired = false,
         DefaultValue = "gpt-realtime-mini",
         Key = AttributeKeys.Model,
         Order = 1 )]
 
-    [MemoField( "Instruction",
+    [MemoField( "Instructions",
         Description = "Instructions that define how the AI assistant should behave during conversations.",
         IsRequired = false,
         DefaultValue = @"
@@ -60,18 +68,25 @@ namespace Rock.Blocks.Types.Mobile.Cms
         AllowHtml = true,
         Order = 2 )]
 
-    [CustomDropdownListField( "Rock MCP",
+    [MobileNavigationActionField( "Stop Action",
+        Description = "The navigation action to perform when the stop button is pressed.",
+        IsRequired = false,
+        DefaultValue = MobileNavigationActionFieldAttribute.PopSinglePageValue,
+        Key = AttributeKeys.StopAction,
+        Order = 3 )]
+
+    [CustomDropdownListField( "Rock MCP (Model Context Protocol)",
         Description = "Select an MCP agent configured in Rock. This agent will be available to the AI assistant.",
         ListSource = "SELECT [Guid] AS [Value], [Name] AS [Text] FROM [AIAgent] WHERE [AgentType] = 1",
         IsRequired = false,
         Key = AttributeKeys.RockMcp,
-        Order = 3 )]
+        Order = 4 )]
 
     [ValueListField( "External MCP",
         Description = "Enter one or more MCP server URLs from external systems that should be available to the AI agent.",
         IsRequired = false,
         Key = AttributeKeys.ExternalMcp,
-        Order = 4 )]
+        Order = 5 )]
 
 
     [Rock.SystemGuid.EntityTypeGuid( "8654b230-5868-4490-8832-61dbdd1fd6d4" )]
@@ -86,6 +101,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             public const string ApiKey = "ApiKey";
             public const string Model = "Model";
             public const string Instruction = "Instruction";
+            public const string StopAction = "StopAction";
             public const string RockMcp = "RockMcp";
             public const string ExternalMcp = "ExternalMcp";
         }
@@ -95,6 +111,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         #region Private Constants
 
         private const string OpenAiRealtimeClientSecretUrl = "https://api.openai.com/v1/realtime/client_secrets";
+        private const string xAiRealtimeClientSecretUrl = "https://api.x.ai/v1/realtime/client_secrets";
 
         #endregion
 
@@ -102,8 +119,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
         private string GetRockMcpUrl( string slug )
         {
+            var apiKey = GetOrCreateMcpApiKeyForCurrentPerson( GetCurrentPerson(), RockContext );
+
             var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" ).TrimEnd( '/' );
-            var mcpUrl = $"{baseUrl}/api/v2/mcp/{slug}";
+            var mcpUrl = $"{baseUrl}/api/v2/mcp/{slug}?apikey={apiKey}";
 
             return mcpUrl;
         }
@@ -131,24 +150,37 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue( "Bearer", apiKey );
                     httpClient.DefaultRequestHeaders.Accept.Add( new MediaTypeWithQualityHeaderValue( "application/json" ) );
 
-                    var payload = new
-                    {
-                        expires_after = new
+                    var payload = GetProvider() == VoiceAgentProvider.OpenAi
+                        ? ( object ) new
                         {
-                            anchor = "created_at",
-                            seconds = 300
-                        },
-                        session = new
-                        {
-                            type = "realtime",
-                            model = model,
-                            instructions = instruction
+                            expires_after = new
+                            {
+                                anchor = "created_at",
+                                seconds = 300
+                            },
+                            session = new
+                            {
+                                type = "realtime",
+                                model = model,
+                                instructions = instruction
+                            }
                         }
-                    };
+                        : new
+                        {
+                            expires_after = new
+                            {
+                                anchor = "created_at",
+                                seconds = 300
+                            }
+                        };
                     var json = JsonConvert.SerializeObject( payload );
                     var content = new StringContent( json, Encoding.UTF8, "application/json" );
 
-                    var response = await httpClient.PostAsync( OpenAiRealtimeClientSecretUrl, content );
+                    var endpoint = GetProvider() == VoiceAgentProvider.OpenAi
+                        ? OpenAiRealtimeClientSecretUrl
+                        : xAiRealtimeClientSecretUrl;
+
+                    var response = await httpClient.PostAsync( endpoint, content );
                     var responseBody = await response.Content.ReadAsStringAsync();
 
                     if ( !response.IsSuccessStatusCode )
@@ -167,19 +199,135 @@ namespace Rock.Blocks.Types.Mobile.Cms
             }
         }
 
+        /// <summary>
+        /// Retrieves the MCP API key associated with the specified person, creating one if it does not already exist.
+        /// </summary>
+        /// <remarks>If multiple MCP API keys exist for the person, the first one found is returned. If no
+        /// key exists, a new one is generated and persisted. In the event of a race condition where another key is
+        /// created concurrently, the method ensures only one key is retained and returns the existing key.</remarks>
+        /// <param name="currentPerson">The person for whom to retrieve or create the MCP API key. Cannot be null.</param>
+        /// <param name="rockContext">The database context used for querying and persisting user login and API key information. Cannot be null.</param>
+        /// <returns>A string containing the MCP API key for the specified person. The string is never null but may be empty if
+        /// the key could not be created.</returns>
+        internal static string GetOrCreateMcpApiKeyForCurrentPerson( Person currentPerson, RockContext rockContext )
+        {
+            // Get this person's single MCP API Key, if it exists.
+            // If multiple exist for some reason, just grab the first one.
+            // This API Key will be included in the generated MCP Server URL
+            // so the AI agent can use it to authenticate API requests from the client back to the server.
+            var apiKey = currentPerson
+                .Users
+                .Where( ul => ul.ApiKeyPurpose == ApiKeyPurpose.Mcp && ul.ApiKey.IsNotNullOrWhiteSpace() )
+                .Select( ul => ul.ApiKey )
+                .FirstOrDefault();
+
+            if ( apiKey.IsNotNullOrWhiteSpace() )
+            {
+                return apiKey;
+            }
+
+            // Generate a new UserLogin API Key record since it hasn't been created yet.
+            apiKey = Rock.Utility.KeyHelper.GenerateKey( ( RockContext keyContext, string key ) =>
+            {
+                // Only compare ApiKey here so the value is unique across all UserLogin records, regardless of Person or Purpose.
+                // The ApiKey can be used by itself to authenticate Rest API requests.
+                // It would be an issue if multiple people had UserLogin records with the same ApiKey,
+                // because API requests that included that ApiKey could potentially authenticate as any of those people,
+                // and it would be unpredictable which one it would authenticate as.
+                return new UserLoginService( keyContext ).Queryable().Any( a => a.ApiKey == key );
+            } );
+
+            // The ApiKey UserLogin will be saved with the Database authentication Entity Type
+            // to follow the pattern of how API Keys are created for other rest client authentication types.
+            var entityType = new EntityTypeService( rockContext )
+                .Get( "Rock.Security.Authentication.Database" );
+
+            var userLoginService = new UserLoginService( rockContext );
+            userLoginService.Add( new UserLogin
+            {
+                UserName = Guid.NewGuid().ToString(),
+                IsConfirmed = true,
+                PersonId = currentPerson.Id,
+                EntityTypeId = entityType.Id,
+                ApiKey = apiKey,
+                ApiKeyPurpose = ApiKeyPurpose.Mcp
+            } );
+            rockContext.SaveChanges();
+
+            // Just in case we hit a race condition and another API Key was created for this user and purpose between when we checked and when we tried to create,
+            // delete the one we just created and use the existing one instead.
+            var existingApiKey = userLoginService.Queryable()
+                .Where( ul => ul.PersonId == currentPerson.Id && ul.ApiKeyPurpose == ApiKeyPurpose.Mcp && ul.ApiKey != apiKey )
+                .ToList()
+                .Where( ul => ul.ApiKey.IsNotNullOrWhiteSpace() )
+                .OrderBy( ul => ul.CreatedDateTime )
+                .Select( ul => ul.ApiKey )
+                .FirstOrDefault();
+
+            if ( existingApiKey.IsNotNullOrWhiteSpace() )
+            {
+                var apiKeysToDelete = userLoginService.Queryable()
+                    .Where( ul =>
+                        ul.PersonId == currentPerson.Id
+                        && ul.ApiKeyPurpose == ApiKeyPurpose.Mcp
+                        && ul.ApiKey == apiKey )
+                    .ToList();
+                userLoginService.DeleteRange( apiKeysToDelete );
+                rockContext.SaveChanges();
+
+                // Get the existing API Key that was created by another request.
+                apiKey = existingApiKey;
+            }
+
+            return apiKey;
+        }
+
+        /// Determines the voice agent provider based on the configured API key.
+        /// </summary>
+        /// <remarks>The method inspects the prefix of the API key to identify the provider. If the key
+        /// starts with "sk-", OpenAI is selected; if it starts with "xai-", xAi is selected. If the key does not match
+        /// any known prefix, OpenAI is returned by default.</remarks>
+        /// <returns>A value of the <see cref="VoiceAgentProvider"/> enumeration that indicates the detected provider. Returns
+        /// <see cref="VoiceAgentProvider.OpenAi"/> if the API key is not recognized.</returns>
+        private VoiceAgentProvider GetProvider()
+        {
+            var apiKey = GetAttributeValue( AttributeKeys.ApiKey );
+
+            // Default to OpenAI when the key is not configured so callers don't NRE on the prefix check.
+            if ( apiKey.IsNullOrWhiteSpace() )
+            {
+                return VoiceAgentProvider.OpenAi;
+            }
+
+            if ( apiKey.StartsWith( "sk-" ) )
+            {
+                return VoiceAgentProvider.OpenAi;
+            }
+
+            if ( apiKey.StartsWith( "xai-" ) )
+            {
+                return VoiceAgentProvider.xAi;
+            }
+
+            return VoiceAgentProvider.OpenAi;
+        }
+
         #endregion
 
         #region Block Actions
 
-
-
         /// <summary>
         /// Gets the initial data for the block, including any configured MCP URLs.
         /// </summary>
-        /// <returns></returns>
         [BlockAction]
         public async Task<BlockActionResult> GetInitialData()
         {
+            var currentPerson = GetCurrentPerson();
+            if ( currentPerson == null )
+            {
+                return ActionUnauthorized( "You must be logged in to use the voice agent." );
+            }
+
             var urls = new List<string>();
 
             var aiAgentSlug = AIAgentCache.Get( GetAttributeValue( AttributeKeys.RockMcp ) )?
@@ -201,6 +349,28 @@ namespace Rock.Blocks.Types.Mobile.Cms
             return ActionOk( initialData );
         }
 
+        /// <summary>
+        /// Requests a new ephemeral token from the configured voice agent provider.
+        /// </summary>
+        /// <returns>A <see cref="BlockActionResult"/> containing the ephemeral token.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> GetEphemeralToken()
+        {
+            var currentPerson = GetCurrentPerson();
+            if ( currentPerson == null )
+            {
+                return ActionUnauthorized( "You must be logged in to use the voice agent." );
+            }
+
+            var ephemeralKey = await GetEphemeralKey();
+            if ( ephemeralKey.IsNullOrWhiteSpace() )
+            {
+                return ActionInternalServerError( "Unable to retrieve an ephemeral token." );
+            }
+
+            return ActionOk( ephemeralKey );
+        }
+
         #endregion
 
         /// <inheritdoc/>
@@ -209,7 +379,9 @@ namespace Rock.Blocks.Types.Mobile.Cms
             return new Rock.Common.Mobile.Blocks.Cms.VoiceAgent.Configuration
             {
                 Model = GetAttributeValue( AttributeKeys.Model ),
-                Instruction = GetAttributeValue( AttributeKeys.Instruction )
+                Instruction = GetAttributeValue( AttributeKeys.Instruction ),
+                StopAction = GetAttributeValue( AttributeKeys.StopAction ).FromJsonOrNull<MobileNavigationActionViewModel>() ?? new MobileNavigationActionViewModel(),
+                VoiceAgentProvider = GetProvider(),
             };
         }
 
@@ -220,5 +392,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             public List<string> McpUrl { get; set; }
         }
+
     }
 }

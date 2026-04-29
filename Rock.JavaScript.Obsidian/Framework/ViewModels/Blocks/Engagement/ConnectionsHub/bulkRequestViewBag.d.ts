@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
 import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -32,6 +33,9 @@ export type BulkRequestViewBag = {
 
     /** Gets or sets the name of the connection opportunity this request is associated with. */
     connectionOpportunity?: string | null;
+
+    /** Gets or sets the conection opportunity Guid. */
+    connectionOpportunityGuid?: Guid | null;
 
     /** Gets or sets the current connection status of this request. */
     connectionStatus?: ConnectionStatusBag | null;

@@ -187,14 +187,14 @@ namespace Rock.Lava
 
             if ( templatePath.StartsWith( "~~" ) )
             {
-                var rockPage = RockRequestContextAccessor.Current.Page;
+                var rockPage = RockRequestContextAccessor.Current?.Page;
 
                 if ( rockPage == null && HttpContext.Current?.Items?.Contains( "Rock:PageId" ) == true )
                 {
                     rockPage = PageCache.Get( HttpContext.Current.Items["Rock:PageId"].ToString().AsInteger() );
                 }
 
-                return RockApp.Current.MapPath( templatePath, rockPage.Layout.Site.Theme ?? "Rock" );
+                return RockApp.Current.MapPath( templatePath, rockPage?.Layout.Site.Theme ?? "Rock" );
             }
             else if ( templatePath.StartsWith( "~" ) )
             {

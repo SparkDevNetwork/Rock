@@ -454,6 +454,25 @@ namespace Rock.Tests.Lava
             return _activeEngines;
         }
 
+        public List<ILavaEngine> CreateActiveTestEngines()
+        {
+            var engines = new List<ILavaEngine>();
+
+            if ( FluidEngineIsEnabled )
+            {
+                var engineOptions = new LavaEngineConfigurationOptions();
+
+                var fluidEngine = LavaService.NewEngineInstance( typeof( FluidEngine ), engineOptions );
+
+                RegisterFilters( fluidEngine );
+                RegisterBlocks( fluidEngine );
+
+                engines.Add( fluidEngine );
+            }
+
+            return engines;
+        }
+
         #endregion
 
         /// <summary>

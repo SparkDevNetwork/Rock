@@ -133,21 +133,7 @@ namespace Rock.Web.UI.Controls
             {
                 badgeComponent.Render( BadgeCache, entity, writer );
 
-#pragma warning disable CS0618 // Type or member is obsolete
-                badgeComponent.ParentContextEntityBlock = ContextEntityBlock;
-                badgeComponent.Entity = entity;
-                badgeComponent.Render( BadgeCache, writer );
-
-#pragma warning restore CS0618 // Type or member is obsolete
-
                 var script = badgeComponent.GetWrappedJavaScript( BadgeCache, entity );
-
-                if ( script.IsNullOrWhiteSpace() )
-                {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    script = badgeComponent.GetWrappedJavaScript( BadgeCache );
-#pragma warning restore CS0618 // Type or member is obsolete
-                }
 
                 if ( !script.IsNullOrWhiteSpace() )
                 {

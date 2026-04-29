@@ -34,26 +34,26 @@
                     {{ initializationErrorMessage }}
                 </NotificationBox>
                 <div class="card shadow card-message-preview" :class="{ 'mobile-preview': isMobileView }">
-                    <div class="card-header bg-white py-2 px-0">
+                    <div class="card-header bg-interface-softest py-spacing-xs px-spacing-none">
                         <!-- Email Preview Headers -->
-                        <div class="row no-gutters p-2">
+                        <div class="row no-gutters p-spacing-xs">
                             <div class="col-xs-3 text-right">
-                                <span class="text-muted pr-md-4 text-nowrap">From</span>
+                                <span class="text-muted pr-spacing-md text-nowrap">From</span>
                             </div>
                             <div class="col-xs-9">
                                 <span class="text-semibold">{{ fromName }}</span> <span class="text-muted">{{ emailFrom }}</span>
                             </div>
                         </div>
-                        <div class="row no-gutters p-2">
-                            <div class="col-xs-3 text-right"><span class="text-muted pr-md-4 text-nowrap">Subject</span></div>
+                        <div class="row no-gutters p-spacing-xs">
+                            <div class="col-xs-3 text-right"><span class="text-muted pr-spacing-md text-nowrap">Subject</span></div>
                             <div class="col-xs-9 text-semibold">{{ emailSubject }}</div>
                         </div>
-                        <div class="row no-gutters p-2">
-                            <div class="col-xs-3 text-right"><span class="text-muted pr-md-4 text-nowrap">Date</span></div>
+                        <div class="row no-gutters p-spacing-xs">
+                            <div class="col-xs-3 text-right"><span class="text-muted pr-spacing-md text-nowrap">Date</span></div>
                             <div class="col-xs-9 text-semibold">{{ emailDate }}</div>
                         </div>
                     </div>
-                    <div class="card-header py-1 bg-white position-relative d-flex justify-content-end">
+                    <div class="card-header py-spacing-xs bg-interface-softest position-relative d-flex justify-content-end">
                         <div class="inset-0 d-flex align-items-center justify-content-center">
                             <div class="btn-group btn-group-view-control" role="group" aria-label="View Mode">
                                 <RockButton :btnSize="'xs'" :btnType="isMobileView ? 'default' : 'info'" @click="isMobileView = false">Desktop</RockButton>
@@ -72,7 +72,7 @@
                         <!-- The iframe srcdoc is dynamically updated with the email content -->
                         <iframe name="emailPreview"
                                 :srcdoc="emailContent"
-                                class="emaileditor-iframe inset-0 w-100 h-100 js-emailpreview-iframe email-wrapper email-content-desktop styled-scroll"
+                                class="emaileditor-iframe bg-white inset-0 w-100 h-100 js-emailpreview-iframe email-wrapper email-content-desktop styled-scroll"
                                 frameborder="0"
                                 border="0"
                                 cellspacing="0"
@@ -110,6 +110,7 @@
     max-width: 874px;
     margin: 16px auto;
 }
+
 .mobile-preview {
     max-width: 414px;
 }

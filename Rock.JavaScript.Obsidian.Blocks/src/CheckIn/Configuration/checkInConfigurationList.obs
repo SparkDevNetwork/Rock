@@ -1,0 +1,283 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning" v-html="config.errorMessage"></NotificationBox>
+
+    <BreakpointObserver v-else @breakpointHelper="breakpointHelper = $event">
+        <div class="check-ins-container row">
+
+            <div class="check-ins-list col-sm-9">
+                <Panel title="Active Check-in Configurations">
+                    <template #helpContent>
+                        <div class="check-ins-help">
+                            If you need help getting started with Check-in Configurations, check out our documentation.
+                        </div>
+                    </template>
+
+                    <template #headerActions>
+                        <div v-if="breakpointHelper?.isSmOrLarger" class="action">
+                            <ButtonDropDownList v-model="sortBy"
+                                                :items="config.sortByItems ?? []"
+                                                title="Sort By"
+                                                selectionStyle="checkmark" />
+                        </div>
+                        <button v-if="addCheckInConfigurationPageUrl"
+                                type="button"
+                                class="btn btn-panel-action btn-add"
+                                @click="onAddClick">
+                            <i class="ti ti-square-plus"></i>
+                        </button>
+                    </template>
+
+                    <template #default>
+                        <NotificationBox v-if="!anyCheckinConfigurations" :alertType="AlertType.Info">
+                            No check-ins have been configured. Click the + button to get started.
+                        </NotificationBox>
+                        <DisplayCardContainer v-else>
+                            <DisplayCard v-for="configuration in checkInConfigurations"
+                                         :key="configuration.idKey!"
+                                         :iconCssClass="configuration.iconCssClass"
+                                         :title="configuration.name"
+                                         :description="configuration.description"
+                                         :primaryActions="getPrimaryActions(configuration)">
+                            </DisplayCard>
+                        </DisplayCardContainer>
+                    </template>
+                </Panel>
+            </div>
+
+            <div class="check-ins-related col-sm-3">
+                <Panel>
+                    <template #title>
+                        <div class="check-ins-related-title">
+                            Related Settings
+                        </div>
+                    </template>
+
+                    <div class="check-ins-related-sections">
+                        <div class="check-ins-related-section">
+                            <span class="section-header">
+                                Locations & Schedules
+                            </span>
+                            <a v-if="namedLocationsPageUrl" :href="namedLocationsPageUrl" class="list-group-item check-ins-related-link">
+                                <i class="ti ti-map-pin"></i> Named Locations
+                            </a>
+                            <a v-if="schedulesPageUrl" :href="schedulesPageUrl" class="list-group-item check-ins-related-link">
+                                <i class="ti ti-calendar-month"></i> Schedules
+                            </a>
+                        </div>
+                        <div class="check-ins-related-section">
+                            <span class="section-header">
+                                Kiosk Settings
+                            </span>
+                            <a v-if="devicesPageUrl" :href="devicesPageUrl" class="list-group-item check-ins-related-link">
+                                <i class="ti ti-device-imac"></i> Devices
+                            </a>
+                            <a v-if="labelsPageUrl" :href="labelsPageUrl" class="list-group-item check-ins-related-link">
+                                <i class="ti ti-tag-starred"></i> Labels
+                            </a>
+                            <a v-if="classicLabelsPageUrl" :href="classicLabelsPageUrl" class="list-group-item check-ins-related-link">
+                                <i class="ti ti-tag"></i> Classic Labels
+                            </a>
+                            <a v-if="cloudPrintPageUrl" :href="cloudPrintPageUrl" class="list-group-item check-ins-related-link">
+                                <i class="ti ti-wifi"></i> Cloud Print
+                            </a>
+                        </div>
+                    </div>
+                </Panel>
+            </div>
+
+        </div>
+    </BreakpointObserver>
+
+</template>
+
+<style scoped>
+.check-ins-help {
+    color: var(--color-interface-medium);
+    padding-top: var(--spacing-medium);
+}
+
+.check-ins-related-title {
+    height: 56px;
+    display: flex;
+    align-items: center;
+}
+
+.check-ins-related-sections {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+
+}
+
+.check-ins-related-section .section-header {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+    line-height: var(--line-height-tight);
+}
+
+.check-ins-related-link {
+    border: none;
+    border-radius: var(--rounded-small);
+    background-color: transparent;
+    color: var(--color-interface-strong);
+    font-weight: var(--font-weight-semibold);
+    padding: var(--spacing-xsmall) var(--spacing-small);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    margin-top: var(--spacing-tiny);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import BreakpointObserver from "./CheckInConfigurationList/breakpointObserver.partial.obs";
+    import { BreakpointHelper, NavigationUrlKey, PreferenceKey } from "./CheckInConfigurationList/types.partial";
+    import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CheckInConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInConfigurationList/checkInConfigurationBag";
+    import { CheckInConfigurationListInitializationBox } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInConfigurationList/checkInConfigurationListInitializationBox";
+
+    const config = useConfigurationValues<CheckInConfigurationListInitializationBox>();
+    const preferences = usePersonPreferences().blockPreferences;
+    const breakpointHelper = ref<BreakpointHelper>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const sortBy = ref(preferences.getValue(PreferenceKey.SortBy) || "alphabetical");
+
+    const checkInConfigurations = ref<CheckInConfigurationBag[]>(config.checkInConfigurations || []);
+    const isFetchingCheckInConfigurations = ref(false);
+    const fetchCheckInConfigurationsErrorMessage = ref("");
+
+    const areasAndGroupsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.AreasAndGroupsPage]);
+    const scheduleBuilderPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ScheduleBuilderPage]);
+    const configurationSettingsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ConfigurationSettingsPage]);
+
+    const namedLocationsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.NamedLocationsPage]);
+    const schedulesPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.SchedulesPage]);
+    const devicesPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.DevicesPage]);
+    const labelsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.LabelsPage]);
+    const classicLabelsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ClassicLabelsPage]);
+    const cloudPrintPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.CloudPrintPage]);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Indicates whether there are any check-in configurations available. */
+    const anyCheckinConfigurations = computed((): boolean => {
+        return !!checkInConfigurations.value.length;
+    });
+
+    /** Gets the URL for adding a new check-in configuration. */
+    const addCheckInConfigurationPageUrl = computed((): string => {
+        if (!config.showAddCheckInConfigurationButton || !configurationSettingsPageUrl.value) {
+            return "";
+        }
+
+        return configurationSettingsPageUrl.value.replace("((Key))", "0");
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Generates the primary actions for a given check-in configuration.
+     * @param configuration The check-in configuration for which to generate actions.
+     * @returns An array of menu actions relevant to the provided configuration.
+     */
+    function getPrimaryActions(configuration: CheckInConfigurationBag): MenuAction[] {
+        const actions: MenuAction[] = [];
+
+        if (areasAndGroupsPageUrl.value) {
+            actions.push({
+                iconCssClass: "ti ti-users-group",
+                title: "Areas and Groups",
+                type: "default",
+                handler: () => {
+                    window.location.href = areasAndGroupsPageUrl.value!.replace("((Key))", configuration.idKey!);
+                }
+            });
+        }
+
+        if (scheduleBuilderPageUrl.value) {
+            actions.push({
+                iconCssClass: "ti ti-calendar-month",
+                title: "Schedule Builder",
+                type: "default",
+                handler: () => {
+                    window.location.href = scheduleBuilderPageUrl.value!.replace("((Key))", configuration.idKey!);
+                }
+            });
+        }
+
+        if (configurationSettingsPageUrl.value) {
+            actions.push({
+                iconCssClass: "ti ti-settings",
+                title: "Configuration Settings",
+                type: "default",
+                handler: () => {
+                    window.location.href = configurationSettingsPageUrl.value!.replace("((Key))", configuration.idKey!);
+                }
+            });
+        }
+
+        return actions;
+    }
+
+    /**
+     * Fetches the check-in configurations from the server.
+     */
+    async function fetchCheckInConfigurations(): Promise<void> {
+        if (isFetchingCheckInConfigurations.value) {
+            return;
+        }
+
+        isFetchingCheckInConfigurations.value = true;
+        fetchCheckInConfigurationsErrorMessage.value = "";
+
+        const result = await invokeBlockAction<CheckInConfigurationBag[]>("GetCheckInConfigurations");
+        isFetchingCheckInConfigurations.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            fetchCheckInConfigurationsErrorMessage.value = result.errorMessage || "Unknown error while trying to load check-in configurations.";
+            return;
+        }
+
+        checkInConfigurations.value = result.data;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /** Navigates to the add check-in configuration page. */
+    function onAddClick(): void {
+        window.location.href = addCheckInConfigurationPageUrl.value;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(sortBy, async () => {
+        preferences.setValue(PreferenceKey.SortBy, sortBy.value);
+
+        await preferences.save();
+        await fetchCheckInConfigurations();
+    });
+
+    // #endregion Watchers
+</script>

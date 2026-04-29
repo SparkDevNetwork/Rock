@@ -226,12 +226,12 @@ namespace Rock.Blocks.Event
         /// <summary>
         /// Gets the registration identifier page parameter.
         /// </summary>
-        public int? RegistrationIdPageParameter => PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
+        public int? RegistrationIdPageParameter => ResolveIdFromKey( PageParameter( PageParameterKey.RegistrationId ) );
 
         /// <summary>
         /// Gets the event occurrence identifier page parameter.
         /// </summary>
-        public int? EventOccurrenceIdPageParameter => PageParameter( PageParameterKey.EventOccurrenceId ).AsIntegerOrNull();
+        public int? EventOccurrenceIdPageParameter => ResolveIdFromKey( PageParameter( PageParameterKey.EventOccurrenceId ) );
 
         #endregion Properties
 
@@ -363,6 +363,20 @@ namespace Rock.Blocks.Event
 
                 if ( isAutoApply && code.IsNullOrWhiteSpace() && ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() ) )
                 {
+                    // If a manual discount amount or percentage has already been applied to the registration
+                    // (without a discount code), return that manual discount instead of overriding it with an auto-applied one.
+                    if ( registration != null && ( registration.DiscountAmount > 0 || registration.DiscountPercentage > 0 ) )
+                    {
+                        return ActionOk( new
+                        {
+                            DiscountCode = registration.DiscountCode,
+                            RegistrationUsagesRemaining = ( int? ) null,
+                            DiscountAmount = registration.DiscountAmount,
+                            DiscountPercentage = registration.DiscountPercentage,
+                            DiscountMaxRegistrants = ( int? ) null
+                        } );
+                    }
+
                     // if no code is provided and there is no code already saved in the registration check for an auto apply discount, if there are none discount will be null which returns ActionNotFound
                     var registrationTemplateDiscountCodes = registrationTemplateDiscountService
                         .GetDiscountsForRegistrationInstance( registrationInstanceId )
@@ -462,7 +476,7 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( errorMessage );
                 }
 
-                if ( PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull() == null )
+                if ( ResolveIdFromKey( PageParameter( PageParameterKey.GroupId ) ) == null )
                 {
                     var groupId = GetRegistrationGroupId( rockContext, context?.Registration?.RegistrationInstanceId, allowParameterGroupId: false );
                     if ( groupId.HasValue )
@@ -1290,7 +1304,7 @@ namespace Rock.Blocks.Event
                 RegistrationGuid = context.Registration?.Guid,
                 RegistrationSessionGuid = args.RegistrationSessionGuid,
                 Slug = PageParameter( PageParameterKey.Slug ),
-                GroupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull()
+                GroupId = ResolveIdFromKey( PageParameter( PageParameterKey.GroupId ) )
             };
 
             var nonWaitlistRegistrantCount = args.Registrants.Count( r => !r.IsOnWaitList );
@@ -1485,7 +1499,7 @@ namespace Rock.Blocks.Event
                 .FirstOrDefault();
 
             // Make sure there's an actual person associated to registration
-            var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+            var campusId = ResolveIdFromKey( PageParameter( PageParameterKey.CampusId ) );
 
             // variables to keep track of the family that new people should be added to
             int? singleFamilyId = null;
@@ -2191,7 +2205,7 @@ namespace Rock.Blocks.Event
         /// <returns>The <see cref="Group"/> identifier or <c>null</c> if one is not available.</returns>
         private int? GetRegistrationGroupId( RockContext rockContext, int? registrationInstanceId, bool allowParameterGroupId = true )
         {
-            var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            var groupId = ResolveIdFromKey( PageParameter( PageParameterKey.GroupId ) );
             var registrationSlug = PageParameter( PageParameterKey.Slug );
             var eventOccurrenceId = this.EventOccurrenceIdPageParameter;
 
@@ -3064,7 +3078,7 @@ namespace Rock.Blocks.Event
         private (int? campusId, Location location, bool updateExistingCampus) UpdatePersonFromRegistrant( Person person, ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo, History.HistoryChangeList personChanges, RegistrationSettings settings )
         {
             Location location = null;
-            var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+            var campusId = ResolveIdFromKey( PageParameter( PageParameterKey.CampusId ) );
             var updateExistingCampus = false;
             var personService = new PersonService( this.RockContext );
             var homeNumberDefinedValue = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
@@ -3404,7 +3418,7 @@ namespace Rock.Blocks.Event
             var (campusId, location, updateExistingCampus) = UpdatePersonFromRegistrant( person, registrantInfo, personChanges, context.RegistrationSettings );
 
             // If campus was not provided, then check the page parameter.
-            campusId = campusId ?? PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+            campusId = campusId ?? ResolveIdFromKey( PageParameter( PageParameterKey.CampusId ) );
 
             // Save the person ( and family if needed )
             SavePerson( rockContext, context.RegistrationSettings, person, registrantInfo.FamilyGuid ?? Guid.NewGuid(), campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId, updateExistingCampus );
@@ -3873,7 +3887,7 @@ namespace Rock.Blocks.Event
                 Reason:  Resolving errors when processing additional payments from redirection gateways.
             */
 
-            var isExistingRegistration = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue || session?.RegistrationGuid.HasValue == true;
+            var isExistingRegistration = ResolveIdFromKey( PageParameter( PageParameterKey.RegistrationId ) ).HasValue || session?.RegistrationGuid.HasValue == true;
             var isUnauthorized = isExistingRegistration && session == null;
             RegistrationEntrySuccessBag successViewModel = null;
 
@@ -3955,7 +3969,7 @@ namespace Rock.Blocks.Event
                 .Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
 
             // Get family members.
-            // Exclude family members who do not meet Registrant Eligibility.
+            // Include ineligible family members in the list as disabled options with the appended text "(Ineligible)".
             // Do not exclude family members who have already registered. They will still be displayed in the dropdown but a warning will be displayed if they are selected.
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
             var registrationTemplate = registrationTemplateService.Get( context.RegistrationSettings.RegistrationTemplateId );
@@ -3971,13 +3985,13 @@ namespace Rock.Blocks.Event
                     } )
                     .DistinctBy( gm => gm.Person.Guid )
                     .ToList()
-                    .Where( gm => registrantEligibilityEvaluator.Evaluate( gm.Person ) )
                     .Select( gm => new RegistrationEntryFamilyMemberBag
                     {
                         Guid = gm.Person.Guid,
                         FamilyGuid = gm.FamilyGuid,
                         FullName = gm.Person.FullName,
-                        FieldValues = GetCurrentValueFieldValues( context, rockContext, gm.Person, null, formModels, false )
+                        FieldValues = GetCurrentValueFieldValues( context, rockContext, gm.Person, null, formModels, false ),
+                        IsIneligible = !registrantEligibilityEvaluator.Evaluate( gm.Person )
                     } )
                     .ToList() :
                     new List<RegistrationEntryFamilyMemberBag>();
@@ -5274,6 +5288,32 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Resolves a page-parameter string to the underlying integer Id,
+        /// accepting either an integer Id or a hashed IdKey. Integer IDs are
+        /// always accepted regardless of the site's DisablePredictableIds
+        /// setting so that existing links from WebForms blocks, external
+        /// systems, gateway return URLs, emails, and bookmarks continue to
+        /// resolve; the IdKey fallback is additive.
+        /// </summary>
+        /// <param name="key">The raw page-parameter value.</param>
+        /// <returns>The resolved Id, or <c>null</c> if the value is empty or does not resolve.</returns>
+        private int? ResolveIdFromKey( string key )
+        {
+            if ( key.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var intId = key.AsIntegerOrNull();
+            if ( intId.HasValue )
+            {
+                return intId;
+            }
+
+            return Rock.Utility.IdHasher.Instance.GetId( key );
+        }
+
+        /// <summary>
         /// Gets the registration session page parameter value from all possible sources.
         /// </summary>
         /// <returns>The session unique identifier or <c>null</c> if it could not be obtained.</returns>
@@ -5341,7 +5381,7 @@ namespace Rock.Blocks.Event
             }
 
             // The page param is the least costly since there is no database call, so try that first
-            var registrationInstanceId = registrationInstanceParameter.AsIntegerOrNull();
+            var registrationInstanceId = ResolveIdFromKey( registrationInstanceParameter );
 
             if ( registrationInstanceId.HasValue )
             {
@@ -5384,7 +5424,7 @@ namespace Rock.Blocks.Event
             }
 
             // Try the registration id
-            var registrationId = registrationParameter.AsIntegerOrNull();
+            var registrationId = ResolveIdFromKey( registrationParameter );
 
             if ( registrationId.HasValue )
             {
@@ -5433,7 +5473,7 @@ namespace Rock.Blocks.Event
 
             // Try to restore the session from an existing registration
             var currentPerson = GetCurrentPerson();
-            var registrationId = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
+            var registrationId = ResolveIdFromKey( PageParameter( PageParameterKey.RegistrationId ) );
 
             if ( registrationId is null || currentPerson is null )
             {
@@ -5497,7 +5537,7 @@ namespace Rock.Blocks.Event
                 ActivePaymentPlan = activePaymentPlan?.AsRegistrationPaymentPlanBag(),
                 PreviouslyPaid = alreadyPaid,
                 Slug = PageParameter( PageParameterKey.Slug ),
-                GroupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull()
+                GroupId = ResolveIdFromKey( PageParameter( PageParameterKey.GroupId ) )
             };
 
             // Add attributes about the registration itself
@@ -5677,7 +5717,7 @@ namespace Rock.Blocks.Event
         {
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
-            var registrationId = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
+            var registrationId = ResolveIdFromKey( PageParameter( PageParameterKey.RegistrationId ) );
 
             // If the URL does not have a registrationId then check if there
             // is a registration session. Some redirect gateways drop the

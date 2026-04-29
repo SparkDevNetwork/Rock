@@ -41,6 +41,45 @@ namespace RockWeb.Blocks.Event
     [Rock.SystemGuid.BlockTypeGuid( "D72A1A61-43D1-4D5D-92EC-BAECA02EAC43" )]
     public partial class RegistrantDetail : RockBlock
     {
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters. Both keys accept either a numeric Id
+        /// or an IdKey (hashed) value so that links from Obsidian blocks and
+        /// legacy numeric URLs both resolve.
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string RegistrantId = "RegistrantId";
+            public const string RegistrationId = "RegistrationId";
+        }
+
+        #endregion Page Parameter Keys
+
+        #region Page Parameter Helpers
+
+        /// <summary>
+        /// Resolves the RegistrantId page parameter, accepting either a numeric
+        /// Id or an IdKey string. Returns null when neither form resolves.
+        /// </summary>
+        private int? GetRegistrantIdFromPage()
+        {
+            var key = PageParameter( PageParameterKey.RegistrantId );
+            return key.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( key );
+        }
+
+        /// <summary>
+        /// Resolves the RegistrationId page parameter, accepting either a numeric
+        /// Id or an IdKey string. Returns null when neither form resolves.
+        /// </summary>
+        private int? GetRegistrationIdFromPage()
+        {
+            var key = PageParameter( PageParameterKey.RegistrationId );
+            return key.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( key );
+        }
+
+        #endregion Page Parameter Helpers
+
         #region Properties
 
         private RegistrationTemplate RegistrationTemplate
@@ -766,8 +805,8 @@ namespace RockWeb.Blocks.Event
         private void LoadState()
         {
             nbFoundExistingSignatureDocument.Visible = false;
-            int? registrantId = PageParameter( "RegistrantId" ).AsIntegerOrNull();
-            int? registrationId = PageParameter( "RegistrationId" ).AsIntegerOrNull();
+            int? registrantId = GetRegistrantIdFromPage();
+            int? registrationId = GetRegistrationIdFromPage();
 
             if ( RegistrantState == null )
             {

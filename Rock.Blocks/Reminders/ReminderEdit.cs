@@ -24,6 +24,7 @@ using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Reminders.ReminderEdit;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Reminders
 {
@@ -40,8 +41,6 @@ namespace Rock.Blocks.Reminders
 
         private static class PageParameterKey
         {
-            public const string EntityTypeId = "EntityTypeId";
-            public const string EntityId = "EntityId";
             public const string ReminderId = "ReminderId";
         }
 
@@ -54,24 +53,27 @@ namespace Rock.Blocks.Reminders
         {
             var box = new CustomBlockBox<ReminderEditBag, ReminderEditOptionsBag>();
 
-            var reminderId = PageParameter( PageParameterKey.ReminderId ).AsInteger();
-            var entityTypeId = PageParameter( PageParameterKey.EntityTypeId ).AsInteger();
-            var entityId = PageParameter( PageParameterKey.EntityId ).AsInteger();
+            var reminderService = new ReminderService( RockContext );
 
-            if ( reminderId == 0 && ( entityTypeId == 0 || entityId == 0 ) )
+            var reminderId = reminderService.GetSelect(
+                PageParameter( PageParameterKey.ReminderId ),
+                r => ( int? ) r.Id,
+                !PageCache.Layout.Site.DisablePredictableIds );
+
+            var reminder = reminderId.HasValue
+                ? reminderService.Queryable()
+                    .Include( r => r.ReminderType )
+                    .Include( r => r.PersonAlias.Person )
+                    .FirstOrDefault( r => r.Id == reminderId.Value )
+                : null;
+
+            if ( reminder == null )
             {
-                box.ErrorMessage = "The required page parameters were not provided.";
+                box.ErrorMessage = "The specified reminder was not found.";
                 return box;
             }
 
-            if ( reminderId != 0 )
-            {
-                LoadExistingReminder( box, reminderId );
-            }
-            else
-            {
-                LoadNewReminder( box, entityTypeId, entityId );
-            }
+            LoadReminder( box, reminder );
 
             box.Options.ParentPageUrl = this.GetParentPageUrl();
 
@@ -82,20 +84,9 @@ namespace Rock.Blocks.Reminders
         /// Populates the box with data for editing an existing reminder.
         /// </summary>
         /// <param name="box">The custom block box to populate.</param>
-        /// <param name="reminderId">The reminder identifier.</param>
-        private void LoadExistingReminder( CustomBlockBox<ReminderEditBag, ReminderEditOptionsBag> box, int reminderId )
+        /// <param name="reminder">The reminder being edited, with ReminderType and PersonAlias.Person eagerly loaded.</param>
+        private void LoadReminder( CustomBlockBox<ReminderEditBag, ReminderEditOptionsBag> box, Reminder reminder )
         {
-            var reminder = new ReminderService( RockContext ).Queryable()
-                .Include( r => r.ReminderType )
-                .Include( r => r.PersonAlias.Person )
-                .FirstOrDefault( r => r.Id == reminderId );
-
-            if ( reminder == null )
-            {
-                box.ErrorMessage = "The specified reminder was not found.";
-                return;
-            }
-
             var entityTypeId = reminder.ReminderType.EntityTypeId;
 
             // Get the entity description for the panel header.
@@ -126,46 +117,12 @@ namespace Rock.Blocks.Reminders
             };
         }
 
-        /// <summary>
-        /// Populates the box with data for creating a new reminder.
-        /// </summary>
-        /// <param name="box">The custom block box to populate.</param>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="entityId">The entity identifier.</param>
-        private void LoadNewReminder( CustomBlockBox<ReminderEditBag, ReminderEditOptionsBag> box, int entityTypeId, int entityId )
-        {
-            // Get the entity description for the panel header.
-            var entity = new EntityTypeService( RockContext ).GetEntity( entityTypeId, entityId );
-            var entityDescription = entity?.ToString() ?? string.Empty;
-
-            // Load reminder types for the entity type.
-            var reminderTypes = new ReminderTypeService( RockContext )
-                .GetReminderTypesForEntityType( entityTypeId, RequestContext.CurrentPerson );
-
-            box.Options.ReminderTypes = reminderTypes.ToListItemBagList();
-
-            var currentPerson = RequestContext.CurrentPerson;
-            var primaryAliasGuid = new PersonAliasService( RockContext ).GetPrimaryAliasGuid( currentPerson.Id );
-
-            box.Bag = new ReminderEditBag
-            {
-                IsExistingReminder = false,
-                EntityDescription = entityDescription,
-                PersonAlias = new ListItemBag
-                {
-                    Value = primaryAliasGuid?.ToString(),
-                    Text = currentPerson.FullName
-                }
-            };
-        }
-
         #endregion Methods
 
         #region Block Actions
 
         /// <summary>
-        /// Saves the reminder. Creates a new reminder or updates an existing one
-        /// based on the provided data.
+        /// Saves edits to the reminder identified by the ReminderId page parameter.
         /// </summary>
         /// <param name="bag">The save data from the client.</param>
         /// <returns>A block action result indicating success or failure.</returns>
@@ -213,69 +170,39 @@ namespace Rock.Blocks.Reminders
                 return ActionBadRequest( "The reminder date is not valid." );
             }
 
-            var reminderId = PageParameter( PageParameterKey.ReminderId ).AsInteger();
+            var reminder = reminderService.Get(
+                PageParameter( PageParameterKey.ReminderId ),
+                !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( reminderId != 0 )
+            if ( reminder == null )
             {
-                // Update existing reminder.
-                var reminder = reminderService.Get( reminderId );
-                if ( reminder == null )
-                {
-                    return ActionBadRequest( "The specified reminder was not found." );
-                }
-
-                reminder.ReminderTypeId = reminderType.Id;
-                reminder.ReminderDate = reminderDate.Value;
-                reminder.Note = bag.Note;
-                reminder.RenewPeriodDays = bag.RenewPeriodDays;
-                reminder.RenewMaxCount = bag.RenewMaxCount;
-                reminder.PersonAliasId = personAlias.Id;
-
-                /*
-                    3/26/26 - MSE
-                    Use the model's CompleteReminder / ResetCompletedReminder methods
-                    to correctly handle renewal logic when toggling completion status.
-
-                    Reason: Direct property assignment would bypass renewal date advancement.
-                */
-                if ( reminder.IsComplete && !bag.IsComplete )
-                {
-                    reminder.ResetCompletedReminder();
-                }
-                else if ( !reminder.IsComplete && bag.IsComplete )
-                {
-                    reminder.CompleteReminder();
-                }
-
-                RockContext.SaveChanges();
+                return ActionBadRequest( "The specified reminder was not found." );
             }
-            else
+
+            reminder.ReminderTypeId = reminderType.Id;
+            reminder.ReminderDate = reminderDate.Value;
+            reminder.Note = bag.Note;
+            reminder.RenewPeriodDays = bag.RenewPeriodDays;
+            reminder.RenewMaxCount = bag.RenewMaxCount;
+            reminder.PersonAliasId = personAlias.Id;
+
+            /*
+                3/26/26 - MSE
+                Use the model's CompleteReminder / ResetCompletedReminder methods
+                to correctly handle renewal logic when toggling completion status.
+
+                Reason: Direct property assignment would bypass renewal date advancement.
+            */
+            if ( reminder.IsComplete && !bag.IsComplete )
             {
-                // Create new reminder.
-                var entityTypeId = PageParameter( PageParameterKey.EntityTypeId ).AsInteger();
-                var entityId = PageParameter( PageParameterKey.EntityId ).AsInteger();
-
-                if ( entityTypeId == 0 || entityId == 0 )
-                {
-                    return ActionBadRequest( "Entity type and entity are required for new reminders." );
-                }
-
-                var reminder = new Reminder
-                {
-                    EntityId = entityId,
-                    ReminderTypeId = reminderType.Id,
-                    ReminderDate = reminderDate.Value,
-                    Note = bag.Note,
-                    IsComplete = false,
-                    RenewPeriodDays = bag.RenewPeriodDays,
-                    RenewMaxCount = bag.RenewMaxCount,
-                    RenewCurrentCount = 0,
-                    PersonAliasId = personAlias.Id
-                };
-
-                reminderService.Add( reminder );
-                RockContext.SaveChanges();
+                reminder.ResetCompletedReminder();
             }
+            else if ( !reminder.IsComplete && bag.IsComplete )
+            {
+                reminder.CompleteReminder();
+            }
+
+            RockContext.SaveChanges();
 
             return ActionOk();
         }

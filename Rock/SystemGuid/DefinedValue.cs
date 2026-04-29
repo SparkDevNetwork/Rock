@@ -891,13 +891,6 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_PROSPECT = "368DD475-242C-49C4-A42C-7278BE690CC2";
 
-        /// <summary>
-        /// Person Connection Status - Web Prospect
-        /// </summary>
-        [Obsolete( "This is the same as the old Web Prospect but it is renamed to just Prospect." )]
-        [RockObsolete( "1.13" )]
-        public const string PERSON_CONNECTION_STATUS_WEB_PROSPECT = "368DD475-242C-49C4-A42C-7278BE690CC2";
-
         #endregion
 
         #region Person Review Reason

@@ -91,7 +91,9 @@
                                  iconLabelType="default"
                                  :title="summary.name"
                                  :description="summary.summary"
-                                 :primaryActions="getPrimaryActions(summary)">
+                                 :primaryActions="getPrimaryActions(summary)"
+                                 :secondaryActions="getSecondaryActions(summary)"
+                                 @click="onConnectionOpportunityClick(summary.idKey!)">
 
                         <template #prepend>
                             <HighlightLabel iconCssClass="ti ti-user-circle"
@@ -205,6 +207,9 @@
 
 .connection-opportunity-navigation-metric-active-requests .kpi-stat {
     padding-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
 }
 
 .connection-opportunity-navigation-request-counts {
@@ -243,6 +248,7 @@
     import { PageMessages } from "@Obsidian/Utility/browserBus";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { areEqual } from "@Obsidian/Utility/guid";
+    import { useHttp } from "@Obsidian/Utility/http";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -253,6 +259,7 @@
     import { ConnectionRequestCountsPerDayBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunityNavigation/connectionRequestCountsPerDayBag";
     import { ConnectionTypeSummaryBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunityNavigation/connectionTypeSummaryBag";
     import { GetNavigationDetailsRequestBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunityNavigation/getNavigationDetailsRequestBag";
+    import { FollowingSetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingSetFollowingOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<ConnectionOpportunityNavigationInitializationBox>();
@@ -261,6 +268,7 @@
     const contextEntities = useContextEntities();
     const browserBus = useBlockBrowserBus();
     const invokeBlockAction = useInvokeBlockAction();
+    const http = useHttp();
 
     onConfigurationValuesChanged(useReloadBlock());
 
@@ -287,12 +295,13 @@
     const operationalSnapshotBtnText = ref("Operational Snapshot");
 
     // Connection Type-level URLs.
-    const typeConnectionsListPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeConnectionsListPage]);
+    const typeConnectionsHubListViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeConnectionsHubListViewPage]);
     const typeOperationalSnapshotPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.TypeOperationalSnapshotPage]);
 
     // Connection Opportunity-level URLs.
-    const opportunityConnectionsListPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsListPage]);
-    const opportunityConnectionBoardPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionBoardPage]);
+    const opportunityConnectionsHubListViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubListViewPage]);
+    const opportunityConnectionsHubBoardViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubBoardViewPage]);
+    const opportunityConnectionsHubGridViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubGridViewPage]);
 
     syncRefsWithQueryParams([
         { param: "ConnectionType", ref: connectionTypeIdKey, type: "string" }
@@ -495,42 +504,56 @@
     function getPrimaryActions(summary: ConnectionOpportunitySummaryBag): MenuAction[] {
         const actions: MenuAction[] = [];
 
-        if (opportunityConnectionsListPageUrl.value && isListViewEnabled.value) {
+        if (opportunityConnectionsHubListViewPageUrl.value && isListViewEnabled.value) {
             actions.push({
                 iconCssClass: "ti ti-layout-list",
                 title: "Connections List",
                 type: "default",
                 handler: () => {
-                    window.location.href = opportunityConnectionsListPageUrl.value!.replace("((Key))", summary.idKey!);
+                    window.location.href = opportunityConnectionsHubListViewPageUrl.value!.replace("((Key))", summary.idKey!);
                 }
             });
         }
 
-        if (opportunityConnectionBoardPageUrl.value) {
-            if (isBoardViewEnabled.value) {
-                actions.push({
-                    iconCssClass: "ti ti-layout-cards",
-                    title: "Connection Board",
-                    type: "default",
-                    handler: () => {
-                        window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}&IsCardViewMode=True${campusPageParam.value}`;
-                    }
-                });
-            }
+        if (opportunityConnectionsHubBoardViewPageUrl.value && isBoardViewEnabled.value) {
+            actions.push({
+                iconCssClass: "ti ti-layout-cards",
+                title: "Connection Board",
+                type: "default",
+                handler: () => {
+                    window.location.href = `${opportunityConnectionsHubBoardViewPageUrl.value!.replace("((Key))", summary.idKey!)}${campusPageParam.value}`;
+                }
+            });
+        }
 
-            if (isGridViewEnabled.value) {
-                actions.push({
-                    iconCssClass: "ti ti-table",
-                    title: "Connection Board (Grid View)",
-                    type: "default",
-                    handler: () => {
-                        window.location.href = `${opportunityConnectionBoardPageUrl.value!.replace("((Key))", summary.idKey!)}&IsCardViewMode=False${campusPageParam.value}`;
-                    }
-                });
-            }
+        if (opportunityConnectionsHubGridViewPageUrl.value && isGridViewEnabled.value) {
+            actions.push({
+                iconCssClass: "ti ti-table",
+                title: "Connection Grid",
+                type: "default",
+                handler: () => {
+                    window.location.href = `${opportunityConnectionsHubGridViewPageUrl.value!.replace("((Key))", summary.idKey!)}${campusPageParam.value}`;
+                }
+            });
         }
 
         return actions;
+    }
+
+    /**
+     * Generates the secondary actions (ellipsis menu) for a given connection opportunity summary.
+     * @param summary The connection opportunity summary for which to generate actions.
+     * @returns An array of menu actions for the secondary actions dropdown.
+     */
+    function getSecondaryActions(summary: ConnectionOpportunitySummaryBag): MenuAction[] {
+        return [
+            {
+                iconCssClass: summary.isFollowed ? "ti ti-star-off" : "ti ti-star",
+                title: summary.isFollowed ? "Remove from Favorites" : "Favorite",
+                type: "default",
+                handler: () => onToggleFavorite(summary)
+            }
+        ];
     }
 
     /**
@@ -564,12 +587,31 @@
     // #region Event Handlers
 
     /**
+     * Toggles the followed (favorited) state of a connection opportunity and updates
+     * the summary's isFollowed flag to keep the menu label in sync.
+     * @param summary The connection opportunity summary to toggle.
+     */
+    async function onToggleFavorite(summary: ConnectionOpportunitySummaryBag): Promise<void> {
+        const data: FollowingSetFollowingOptionsBag = {
+            entityTypeGuid: EntityType.ConnectionOpportunity,
+            entityKey: summary.idKey,
+            isFollowing: !summary.isFollowed
+        };
+
+        const response = await http.post("/api/v2/Controls/FollowingSetFollowing", undefined, data);
+
+        if (response.isSuccess) {
+            summary.isFollowed = !summary.isFollowed;
+        }
+    }
+
+    /**
      * Handles the click event for the "View Requests" button in the panel header.
      * Navigates the individual to the connections list page for the connection type.
      */
     function onViewRequestsClick(): void {
-        if (typeConnectionsListPageUrl.value) {
-            window.location.href = typeConnectionsListPageUrl.value;
+        if (typeConnectionsHubListViewPageUrl.value) {
+            window.location.href = typeConnectionsHubListViewPageUrl.value;
         }
     }
 
@@ -580,6 +622,27 @@
     function onOperationalSnapshotClick(): void {
         if (typeOperationalSnapshotPageUrl.value) {
             window.location.href = typeOperationalSnapshotPageUrl.value;
+        }
+    }
+
+    /**
+     * Navigates to the default view mode for the Connection Opportunity
+     * (prioritizing the List View)
+     */
+    function onConnectionOpportunityClick(idKey: string): void {
+        // Prefer List > Board > Grid when multiple views are enabled, falling
+        // back to the list URL as a last resort so the user always lands somewhere.
+        if (opportunityConnectionsHubListViewPageUrl.value && isListViewEnabled.value) {
+            window.location.href = opportunityConnectionsHubListViewPageUrl.value!.replace("((Key))", idKey);
+        }
+        else if (opportunityConnectionsHubBoardViewPageUrl.value && isBoardViewEnabled.value) {
+            window.location.href = `${opportunityConnectionsHubBoardViewPageUrl.value!.replace("((Key))", idKey)}${campusPageParam.value}`;
+        }
+        else if (opportunityConnectionsHubGridViewPageUrl.value && isGridViewEnabled.value) {
+            window.location.href = `${opportunityConnectionsHubGridViewPageUrl.value!.replace("((Key))", idKey)}${campusPageParam.value}`;
+        }
+        else if (opportunityConnectionsHubListViewPageUrl.value) {
+            window.location.href = opportunityConnectionsHubListViewPageUrl.value!.replace("((Key))", idKey);
         }
     }
 
