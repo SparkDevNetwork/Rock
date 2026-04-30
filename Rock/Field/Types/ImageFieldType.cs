@@ -97,7 +97,15 @@ namespace Rock.Field.Types
                 publicValues.AddOrReplace( ConfigurationKey.ImageTagTemplate, DefaultImageTagTemplate );
             }
 
-            publicValues[ConfigurationKey.ImageUrl] = FileUrlHelper.GetImageUrl( value.AsGuid() );
+            // Only emit ImageUrl when we have a real value to point at. For per-attribute
+            // config requests (e.g. matrix rows that share one attribute bag across many
+            // values), omitting it lets the client build the URL from each cell's own
+            // value instead of inheriting Guid.Empty.
+            var imageGuid = value.AsGuidOrNull();
+            if ( imageGuid.HasValue && imageGuid.Value != Guid.Empty )
+            {
+                publicValues[ConfigurationKey.ImageUrl] = FileUrlHelper.GetImageUrl( imageGuid.Value );
+            }
 
             return publicValues;
         }
