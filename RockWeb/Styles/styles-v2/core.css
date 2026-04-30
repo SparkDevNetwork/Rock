@@ -20683,10 +20683,11 @@ table tbody tr td .required-indicator::after {
 .chat-bot .footer-actions {
   /* this is ugly, don't use as final */
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 10px; /* don't cover the scrollbar */
+  bottom: 1px;
+  left: 1px;
+  right: var(--spacing-medium); /* don't cover the scrollbar */
   padding: var(--spacing-large);
+  border-radius: var(--rounded-medium); /* Don't clip the container corners. */
   background: linear-gradient(to top, var(--color-interface-softest) 50%, color-mix(in srgb, var(--color-interface-softest) 70%, transparent) 70%, color-mix(in srgb, var(--color-interface-softest) 90%, transparent) 80%, transparent 100%);
 }
 
@@ -20696,6 +20697,8 @@ table tbody tr td .required-indicator::after {
   color: var(--color-warning-strong);
   box-shadow: unset !important;
   border: 0;
+  padding: 0 var(--spacing-tiny);
+  margin: 0 var(--spacing-tiny);
 }
 
 .chat-bot .action-bar .btn-default {
@@ -20716,14 +20719,22 @@ table tbody tr td .required-indicator::after {
 }
 
 .chat-bot .action-bar-container {
+  display: flex;
+  align-items: center;
   background-color: var(--color-interface-softest);
   border: 1px solid var(--color-interface-soft);
   padding: var(--spacing-small);
-  border-radius: 1000px;
+  border-radius: var(--rounded-huge);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-.chat-bot .action-bar-container input {
+.chat-bot .action-bar-container :first-child {
+  flex-grow: 1;
+}
+
+.chat-bot .action-bar-container textarea {
+  flex-grow: 1;
+  resize: none;
   border: none;
   box-shadow: none;
 }
@@ -20740,7 +20751,7 @@ table tbody tr td .required-indicator::after {
   overflow-y: auto;
   gap: var(--spacing-small);
   margin-bottom: 0;
-  padding: var(--spacing-medium) var(--spacing-medium) 120px var(--spacing-medium);
+  padding: var(--spacing-medium);
   border: 1px solid var(--color-interface-soft);
   border-radius: var(--rounded-small);
   background-color: var(--color-interface-softest);
