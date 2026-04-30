@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/groupLocationsBag";
+import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInScheduleBuilder/groupLocationsBag";
 
 export const enum PreferenceKey {
     SelectedGroupType = "selected-group-type",

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
+namespace Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInScheduleBuilder
 {
     /// <summary>
     /// The Check-in Schedule Builder Options Bag

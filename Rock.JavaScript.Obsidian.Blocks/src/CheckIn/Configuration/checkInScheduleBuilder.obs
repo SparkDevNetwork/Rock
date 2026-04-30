@@ -135,10 +135,10 @@
     import { alert } from "@Obsidian/Utility/dialogs";
     import { areEqual } from "@Obsidian/Utility/guid";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
-    import { CheckInScheduleBuilderDataBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/checkInScheduleBuilderDataBag";
-    import { CheckInScheduleBuilderOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/checkInScheduleBuilderOptionsBag";
-    import { CloneScheduleBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/cloneScheduleBag";
-    import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/groupLocationsBag";
+    import { CheckInScheduleBuilderDataBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInScheduleBuilder/checkInScheduleBuilderDataBag";
+    import { CheckInScheduleBuilderOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInScheduleBuilder/checkInScheduleBuilderOptionsBag";
+    import { CloneScheduleBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInScheduleBuilder/cloneScheduleBag";
+    import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInScheduleBuilder/groupLocationsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<CheckInScheduleBuilderOptionsBag>();

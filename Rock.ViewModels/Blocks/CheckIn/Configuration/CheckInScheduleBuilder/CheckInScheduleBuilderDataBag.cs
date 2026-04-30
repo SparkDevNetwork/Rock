@@ -14,14 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
+namespace Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInScheduleBuilder
 {
     /// <summary>
     /// The Check-in Schedule Builder Data Bag

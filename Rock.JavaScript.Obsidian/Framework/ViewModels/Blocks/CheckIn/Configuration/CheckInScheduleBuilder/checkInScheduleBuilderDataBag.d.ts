@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/groupLocationsBag";
+import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInScheduleBuilder/groupLocationsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The Check-in Schedule Builder Data Bag */

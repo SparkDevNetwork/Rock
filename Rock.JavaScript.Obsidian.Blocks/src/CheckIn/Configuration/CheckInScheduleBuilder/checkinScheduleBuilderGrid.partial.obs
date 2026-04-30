@@ -55,7 +55,7 @@
     import { GroupedGroupLocationsBag } from "./types.partial";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import { escapeHtml } from "@Obsidian/Utility/stringUtils";
-    import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/groupLocationsBag";
+    import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInScheduleBuilder/groupLocationsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({

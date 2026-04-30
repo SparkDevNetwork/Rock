@@ -22,32 +22,33 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder;
+using Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInScheduleBuilder;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
-namespace Rock.Blocks.CheckIn
+namespace Rock.Blocks.CheckIn.Configuration
 {
     /// <summary>
     /// Helps to build schedules used for check-in.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.RockBlockType" />
+    /// <seealso cref="RockBlockType" />
 
-    [DisplayName( "Schedule Builder" )]
-    [Category( "Check-in" )]
+    [DisplayName( "Check-in Schedule Builder" )]
+    [Category( "Check-in > Configuration" )]
     [Description( "Helps to build schedules used for check-in." )]
     [IconCssClass( "ti ti-clipboard" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
     [ContextAware( typeof( Campus ) )]
 
-    [Rock.SystemGuid.EntityTypeGuid( "28B9DAB2-C58A-4459-9EE7-8D1895C09592" )]
-    [Rock.SystemGuid.BlockTypeGuid( "03C8EA07-DAF5-4B5A-9BB6-3A1AF99BB135" )]
+    [SystemGuid.EntityTypeGuid( "28B9DAB2-C58A-4459-9EE7-8D1895C09592" )]
+    [SystemGuid.BlockTypeGuid( "03C8EA07-DAF5-4B5A-9BB6-3A1AF99BB135" )]
     public class CheckInScheduleBuilder : RockBlockType
     {
         #region Keys
