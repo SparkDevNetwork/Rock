@@ -1,0 +1,54 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" alertType="danger">
+        {{ config.errorMessage }}
+    </NotificationBox>
+
+    <template v-else-if="bag">
+        <OccurrencePanel :bag="bag"
+                         :groupName="bag.groupName ?? ''"
+                         @occurrenceSaved="onOccurrenceSaved"
+                         @cancel="navigateToParent" />
+
+        <AttendeesPanel v-if="!bag.isNewOccurrence"
+                        :bag="bag" />
+
+        <div v-if="!bag.isNewOccurrence && config.options?.parentPageUrl" class="actions">
+            <RockButton :btnType="BtnType.Link" @click="navigateToParent">
+                <i class="ti ti-chevron-left mr-1"></i>Back to RSVP List
+            </RockButton>
+        </div>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { RsvpDetailBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/rsvpDetailBag";
+    import { RsvpDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/rsvpDetailOptionsBag";
+    import OccurrencePanel from "./RsvpDetail/occurrencePanel.partial.obs";
+    import AttendeesPanel from "./RsvpDetail/attendeesPanel.partial.obs";
+
+    const config = useConfigurationValues<CustomBlockBox<RsvpDetailBag, RsvpDetailOptionsBag>>();
+
+    const bag = ref<RsvpDetailBag | null>(config.bag ?? null);
+
+    /** Replaces the local bag with the freshly-saved version returned by SaveOccurrence. */
+    function onOccurrenceSaved(updatedBag: RsvpDetailBag): void {
+        bag.value = updatedBag;
+    }
+
+    /** Sends the user back to the parent (RSVP list) page when configured. */
+    function navigateToParent(): void {
+        const url = config.options?.parentPageUrl;
+        if (url) {
+            window.location.href = url;
+        }
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
