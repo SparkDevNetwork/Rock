@@ -16,6 +16,14 @@
                      minWidth="500px"
                      maxWidth="50%"
                      mode="push">
+            <template #header>
+                <div class="chat-bot-header">
+                    <span class="chat-bot-close-panel" @click="isDockedChatOpen = false">
+                        <i class="ti ti-x"></i>
+                    </span>
+                </div>
+            </template>
+
             <div ref="dockedChatContainer"
                  class="chat-bot chat-bot-docked"
                  style="height: 100%; display: flex;">

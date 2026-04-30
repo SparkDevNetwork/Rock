@@ -306,4 +306,37 @@
   }
 }
 
+/*
+ * When docked panel in push mode and screen width is less than 1440px
+ * show the chat bot header so they can close the panel.
+ */
+body[data-docked-panel-mode="push"] .chat-bot-header {
+  display: none;
+  border-bottom: 1px solid var(--color-interface-soft);
+}
+
+body[data-docked-panel-mode="push"] .chat-bot-header .chat-bot-close-panel {
+  margin-left: auto;
+  width: 56px;
+  height: 56px;
+  border-left: 1px solid var(--color-interface-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-interface-medium);
+}
+
+body[data-docked-panel-mode="push"] .chat-bot-header .chat-bot-close-panel:hover {
+  color: var(--color-interface-stronger);
+  background-color: var(--color-interface-soft);
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+@media (max-width: 1439px) {
+  body[data-docked-panel-mode="push"] .chat-bot-header {
+    display: block;
+  }
+}
+
 // ================END CHAT BOT==========================
