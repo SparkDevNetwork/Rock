@@ -1,0 +1,180 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning" v-html="config.errorMessage"></NotificationBox>
+
+    <Panel v-else :title="panelTitle">
+        <template v-if="config.isAddEnabled && addActions.length" #headerActions>
+            <DropDownMenu anchorButtonCssClass="btn-panel-action btn-add"
+                          title="Add Folder"
+                          align="right"
+                          :items="addActions">
+                <i class="ti ti-square-plus"></i>
+            </DropDownMenu>
+        </template>
+
+        <template #default>
+
+            <NotificationBox v-if="!folderSummaries.length && !config.isAddEnabled" :alertType="AlertType.Info">
+                There are no folders in this knowledge base.
+            </NotificationBox>
+
+            <DisplayCardContainer v-else>
+
+                <DisplayCard v-for="summary of folderSummaries"
+                             :key="summary.idKey!"
+                             iconCssClass="ti ti-folder"
+                             iconLabelType="default"
+                             :title="summary.name ?? ''"
+                             :description="summary.description ?? ''"
+                             :primaryActions="config.isAddEnabled ? getCardActions(summary) : undefined"
+                             @click="onFolderClick(summary.idKey!)">
+
+                    <template #prepend>
+                        <HighlightLabel iconCssClass="ti ti-tag"
+                                        labelType="info"
+                                        :tooltip="`Source: ${summary.sourceTypeName}`"
+                                        tooltipPlacement="top">
+                            {{ summary.sourceTypeName }}
+                        </HighlightLabel>
+                    </template>
+
+                    <template #rightMiddleSection>
+                        <HighlightLabel iconCssClass="ti ti-file-text"
+                                        labelType="default"
+                                        tooltip="Documents"
+                                        tooltipPlacement="top">
+                            {{ asFormattedString(summary.documentCount) }}
+                        </HighlightLabel>
+                    </template>
+
+                </DisplayCard>
+
+                <DisplayCardAddButton v-if="config.isAddEnabled && addActions.length"
+                                      addText="Add Folder"
+                                      :actions="addActions" />
+
+            </DisplayCardContainer>
+
+        </template>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { NavigationUrlKey } from "./KnowledgeBaseFolderList/types.partial";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import DisplayCardAddButton from "@Obsidian/Controls/displayCardAddButton.obs";
+    import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { KnowledgeBaseFolderListInitializationBox } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseFolderList/knowledgeBaseFolderListInitializationBox";
+    import { KnowledgeBaseFolderSourceTypeBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseFolderList/knowledgeBaseFolderSourceTypeBag";
+    import { KnowledgeBaseFolderSummaryBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseFolderList/knowledgeBaseFolderSummaryBag";
+
+    const config = useConfigurationValues<KnowledgeBaseFolderListInitializationBox>();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const folderSummaries = ref<KnowledgeBaseFolderSummaryBag[]>(config.folderSummaries ?? []);
+
+    const detailPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.DetailPage]);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const panelTitle = computed((): string => {
+        const baseName = config.knowledgeBaseName?.trim();
+        return baseName ? `${baseName} Folders` : "Knowledge Base Folders";
+    });
+
+    /**
+     * One Add menu action per supported source type. Each handler navigates
+     * to the folder detail page in add mode and forwards the picked
+     * SourceEntityTypeId so the detail block can render the right Source
+     * Key picker on first paint. The "Manual" source type has no entity
+     * type and navigates without the SourceEntityTypeId param.
+     */
+    const addActions = computed((): MenuAction[] => {
+        const sourceTypes = (config.sourceTypes ?? []) as KnowledgeBaseFolderSourceTypeBag[];
+
+        return sourceTypes.map((sourceType): MenuAction => ({
+            type: "default",
+            iconCssClass: sourceType.iconCssClass ?? undefined,
+            title: sourceType.name ?? "",
+            handler: () => onAddSourceTypeClick(sourceType)
+        }));
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** Navigates to the folder detail page for the selected folder. */
+    function onFolderClick(idKey: string): void {
+        if (detailPageUrl.value) {
+            window.location.href = detailPageUrl.value.replace("((Key))", idKey);
+        }
+    }
+
+    /**
+     * Navigates to the folder detail page in add mode by substituting "0"
+     * for the folder Id token in the detail URL, then appending the
+     * selected SourceEntityTypeId so the detail block knows which Source
+     * Key picker to render. Manual folders pass no SourceEntityTypeId.
+     */
+    function onAddSourceTypeClick(sourceType: KnowledgeBaseFolderSourceTypeBag): void {
+        if (!detailPageUrl.value) {
+            return;
+        }
+
+        let target = detailPageUrl.value.replace("((Key))", "0");
+
+        if (sourceType.sourceEntityTypeId != null) {
+            const separator = target.includes("?") ? "&" : "?";
+            target = `${target}${separator}SourceEntityTypeId=${encodeURIComponent(String(sourceType.sourceEntityTypeId))}`;
+        }
+
+        window.location.href = target;
+    }
+
+    /**
+     * Navigates to the folder detail page in edit mode by substituting the
+     * entity's IdKey and appending autoEdit=true so the detail block opens
+     * directly into the edit form. The current page URL is included as
+     * returnUrl by convention.
+     */
+    function onEditClick(idKey: string): void {
+        if (!detailPageUrl.value) {
+            return;
+        }
+
+        let target = detailPageUrl.value.replace("((Key))", idKey);
+        const separator = target.includes("?") ? "&" : "?";
+        target = `${target}${separator}autoEdit=true&returnUrl=${encodeURIComponent(window.location.href)}`;
+
+        window.location.href = target;
+    }
+
+    /** Per-card action menu. Edit is the only entry today. */
+    function getCardActions(summary: KnowledgeBaseFolderSummaryBag): MenuAction[] {
+        return [
+            {
+                iconCssClass: "ti ti-pencil",
+                title: "Edit",
+                type: "default",
+                handler: () => onEditClick(summary.idKey!)
+            }
+        ];
+    }
+
+    // #endregion Event Handlers
+</script>

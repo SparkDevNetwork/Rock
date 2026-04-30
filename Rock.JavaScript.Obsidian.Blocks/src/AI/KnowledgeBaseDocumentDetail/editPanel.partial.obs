@@ -1,0 +1,253 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection light>
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name"
+                                 label="Name"
+                                 rules="required" />
+                    </div>
+
+                    <StaticFormControl v-if="isContentChannelSource"
+                                       label="Source Name"
+                                       :modelValue="contentChannelDerivedSourceName" />
+                    <div v-else
+                         class="col-md-6">
+                        <TextBox v-model="sourceName"
+                                 label="Source Name"
+                                 help="The name of the source entity (article, document, etc.) cached for display." />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Source"
+                        icon="ti ti-database"
+                        :order="1">
+            <ContentStack title="Source Reference"
+                          description="Identifies the Rock-side content this document represents and any external link or file backing it.">
+
+                <StaticFormControl v-if="sourceTypeName"
+                                   label="Source Type"
+                                   :modelValue="sourceTypeName" />
+
+                <DropDownList v-if="isContentChannelSource"
+                              v-model="contentChannelItemValue"
+                              label="Content Channel Item"
+                              help="The content channel item this document represents. Source Key and Source Name are derived from this picker."
+                              :items="contentChannelItemOptions"
+                              :showBlankItem="true"
+                              rules="required" />
+
+                <div v-else class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="sourceKey"
+                                 label="Source Key"
+                                 help="The Rock-side identifier of the source content within the parent folder's source kind." />
+                    </div>
+                </div>
+
+                <UrlLinkBox v-model="url"
+                            label="URL"
+                            help="Optional link to the source. Used to deep-link from search results back to the source entity." />
+
+                <FileUploader v-model="binaryFile"
+                              label="File"
+                              help="Optional binary file (PDF, audio, etc.) when the source content is a file rather than text." />
+
+            </ContentStack>
+
+            <ContentStack title="Content"
+                          description="The raw text sent to the indexing service. Stored locally for re-send and audit so re-syncs do not require re-fetching from the source.">
+                <TextBox v-model="content"
+                         label="Content"
+                         textMode="multiline"
+                         :rows="10" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Indexing"
+                        icon="ti ti-database-import"
+                        :order="2">
+            <ContentStack title="Indexing Status"
+                          description="These values are managed by the sync worker and refresh as documents flow through the indexing service.">
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <StaticFormControl label="Index Status"
+                                           :modelValue="indexStatusDisplay" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <StaticFormControl label="Last Indexed"
+                                           :modelValue="indexDateTimeDisplay" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <StaticFormControl label="Document Key"
+                                           :modelValue="documentKeyDisplay" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <StaticFormControl label="Dirty"
+                                           :modelValue="isIndexDirtyDisplay" />
+                    </div>
+                </div>
+
+            </ContentStack>
+        </ContentSection>
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
+    import { computed, PropType, ref, watch } from "vue";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { IndexStatusDescription } from "@Obsidian/Enums/AI/indexStatus";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { KnowledgeBaseDocumentBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseDocumentDetail/knowledgeBaseDocumentBag";
+    import { KnowledgeBaseDocumentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseDocumentDetail/knowledgeBaseDocumentDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<KnowledgeBaseDocumentBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<KnowledgeBaseDocumentDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<KnowledgeBaseDocumentBag>): void
+    }>();
+
+    // #region Values
+
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const sourceName = propertyRef(props.modelValue.bag?.sourceName ?? "", "SourceName");
+    const sourceKey = propertyRef(props.modelValue.bag?.sourceKey ?? "", "SourceKey");
+    const url = propertyRef(props.modelValue.bag?.url ?? "", "Url");
+    const binaryFile = propertyRef(props.modelValue.bag?.binaryFile ?? null, "BinaryFile");
+    const content = propertyRef(props.modelValue.bag?.content ?? "", "Content");
+
+    // The DropDownList binds to a string value (the selected item's Id as
+    // string). On emit, the matching ListItemBag is reconstructed from the
+    // server-supplied options so the bag carries both Value (Id) and Text
+    // (Title) — the server uses both to write entity.SourceKey and
+    // entity.SourceName respectively.
+    const contentChannelItemValue = ref(props.modelValue.bag?.sourceContentChannelItem?.value ?? "");
+
+    const propRefs = [name, sourceName, sourceKey, url, binaryFile, content];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const indexStatusDisplay = computed((): string => {
+        const status = props.modelValue.bag?.indexStatus;
+        return status != null ? (IndexStatusDescription[status] ?? "") : "";
+    });
+
+    const indexDateTimeDisplay = computed((): string => {
+        const indexDateTime = props.modelValue.bag?.indexDateTime;
+        if (!indexDateTime) {
+            return "Not yet indexed";
+        }
+
+        const parsed = RockDateTime.parseISO(indexDateTime);
+        return parsed?.toASPString("g") ?? "";
+    });
+
+    const documentKeyDisplay = computed((): string => {
+        return props.modelValue.bag?.documentKey || "(not yet assigned)";
+    });
+
+    const isIndexDirtyDisplay = computed((): string => {
+        return props.modelValue.bag?.isIndexDirty ? "Yes" : "No";
+    });
+
+    /** True when the parent folder is bound to the Content Channel source type. */
+    const isContentChannelSource = computed((): boolean => {
+        return props.options?.isContentChannelSource === true;
+    });
+
+    /** Friendly source-type label rendered above the dropdown. */
+    const sourceTypeName = computed((): string => {
+        return props.options?.sourceTypeName ?? "";
+    });
+
+    /** Server-supplied list of items belonging to the parent folder's bound channel. */
+    const contentChannelItemOptions = computed((): ListItemBag[] => {
+        return props.options?.contentChannelItemOptions ?? [];
+    });
+
+    /**
+     * The picked item's Title rendered read-only beside Name so admins can
+     * see the SourceName that will be cached on the entity. Looked up from
+     * the options list by the dropdown's currently selected value.
+     */
+    const contentChannelDerivedSourceName = computed((): string => {
+        const match = contentChannelItemOptions.value.find(o => o.value === contentChannelItemValue.value);
+        return match?.text ?? "";
+    });
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(sourceName, props.modelValue.bag?.sourceName ?? "");
+        updateRefValue(sourceKey, props.modelValue.bag?.sourceKey ?? "");
+        updateRefValue(url, props.modelValue.bag?.url ?? "");
+        updateRefValue(binaryFile, props.modelValue.bag?.binaryFile ?? null);
+        updateRefValue(content, props.modelValue.bag?.content ?? "");
+        updateRefValue(contentChannelItemValue, props.modelValue.bag?.sourceContentChannelItem?.value ?? "");
+    });
+
+    // Watch the tracked refs and emit a new ValidPropertiesBox when any change.
+    watch([...propRefs, contentChannelItemValue], () => {
+        const newValue: ValidPropertiesBox<KnowledgeBaseDocumentBag> = {
+            bag: { ...props.modelValue.bag } as KnowledgeBaseDocumentBag
+        };
+
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "url", url.value);
+        setPropertiesBoxValue(newValue, "binaryFile", binaryFile.value);
+        setPropertiesBoxValue(newValue, "content", content.value);
+
+        if (isContentChannelSource.value) {
+            // Content Channel documents derive both SourceKey and SourceName
+            // from the picked dropdown item. Reconstruct the ListItemBag
+            // from the options so the server has both Value (Id) and Text
+            // (Title) to write into entity.SourceKey/entity.SourceName.
+            const itemMatch = contentChannelItemOptions.value.find(o => o.value === contentChannelItemValue.value);
+            const sourceContentChannelItem = itemMatch ?? null;
+
+            setPropertiesBoxValue(newValue, "sourceContentChannelItem", sourceContentChannelItem);
+        }
+        else {
+            // Manual documents take both SourceKey and SourceName as free text.
+            setPropertiesBoxValue(newValue, "sourceName", sourceName.value);
+            setPropertiesBoxValue(newValue, "sourceKey", sourceKey.value);
+        }
+
+        emit("update:modelValue", newValue);
+    });
+</script>

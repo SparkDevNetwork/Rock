@@ -1,0 +1,183 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :isAuditHidden="false"
+                 :isBadgesVisible="false"
+                 :isDeleteVisible="isEditable"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
+                 @cancelEdit="onCancelEdit"
+                 @delete="onDelete"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="documentViewBag" :options="options" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="documentEditBag" :options="options" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./KnowledgeBaseDocumentDetail/editPanel.partial.obs";
+    import ViewPanel from "./KnowledgeBaseDocumentDetail/viewPanel.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./KnowledgeBaseDocumentDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { KnowledgeBaseDocumentBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseDocumentDetail/knowledgeBaseDocumentBag";
+    import { KnowledgeBaseDocumentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseDocumentDetail/knowledgeBaseDocumentDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const config = useConfigurationValues<DetailBlockBox<KnowledgeBaseDocumentBag, KnowledgeBaseDocumentDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const documentViewBag = ref(config.entity);
+    const documentEditBag = ref<ValidPropertiesBox<KnowledgeBaseDocumentBag>>({
+        bag: {} as KnowledgeBaseDocumentBag
+    });
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    useEntityDetailBlock({
+        blockConfig: config,
+        entity: documentEditBag
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const panelName = computed((): string => {
+        return documentViewBag.value?.name ?? "";
+    });
+
+    const entityKey = computed((): string => {
+        return documentViewBag.value?.idKey ?? "";
+    });
+
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        if (panelMode.value !== DetailPanelMode.View) {
+            return undefined;
+        }
+
+        return [];
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): KnowledgeBaseDocumentDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (!documentEditBag.value.bag?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    async function onDelete(): Promise<false | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key: documentViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete document.";
+
+            return false;
+        }
+    }
+
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<KnowledgeBaseDocumentBag>>("Edit", {
+            key: documentViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            documentEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<KnowledgeBaseDocumentBag> | string>("Save", {
+            box: documentEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                documentViewBag.value = result.data.bag;
+
+                return true;
+            }
+            else if (result.statusCode === 201 && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save document.";
+
+        return false;
+    }
+
+    // #endregion
+
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified knowledge base document could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        documentEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

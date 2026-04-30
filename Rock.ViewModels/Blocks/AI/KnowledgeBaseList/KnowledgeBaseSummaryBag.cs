@@ -15,30 +15,35 @@
 // </copyright>
 //
 
-namespace Rock.Enums.AI
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.AI.KnowledgeBaseList
 {
     /// <summary>
-    /// The lifecycle status of a <see cref="Rock.Model.KnowledgeBaseDocument"/> in the
-    /// indexing service (Ragie). Anything richer that the indexing service reports is
-    /// normalized to one of these three values.
+    /// A bag that contains information about a single knowledge base for the
+    /// Knowledge Base List block's display card.
     /// </summary>
-    public enum IndexStatus
+    public class KnowledgeBaseSummaryBag : ITranslateIdKey
     {
-        /// <summary>
-        /// The document is queued for indexing or is currently being indexed.
-        /// Anything the indexing service reports that is not Ready or Failed is treated
-        /// as Pending. New rows default to this value.
-        /// </summary>
-        Pending = 0,
+        /// <inheritdoc />
+        public int? Id { get; set; }
+
+        /// <inheritdoc />
+        public string IdKey { get; set; }
 
         /// <summary>
-        /// The document has been successfully indexed and is available for retrieval.
+        /// Gets or sets the name of the knowledge base.
         /// </summary>
-        Ready = 1,
+        public string Name { get; set; }
 
         /// <summary>
-        /// The document failed to index. Inspect logs or re-queue to retry.
+        /// Gets or sets the description of the knowledge base.
         /// </summary>
-        Failed = 2
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count of folders contained in the knowledge base.
+        /// </summary>
+        public int FolderCount { get; set; }
     }
 }

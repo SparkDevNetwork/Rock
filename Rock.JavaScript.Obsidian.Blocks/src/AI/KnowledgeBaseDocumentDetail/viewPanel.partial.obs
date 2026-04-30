@@ -1,0 +1,103 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { computed, PropType } from "vue";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { IndexStatusDescription } from "@Obsidian/Enums/AI/indexStatus";
+    import { KnowledgeBaseDocumentBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseDocumentDetail/knowledgeBaseDocumentBag";
+    import { KnowledgeBaseDocumentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseDocumentDetail/knowledgeBaseDocumentDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<KnowledgeBaseDocumentBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<KnowledgeBaseDocumentDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.sourceName) {
+            valueBuilder.addTextValue("Source Name", props.modelValue.sourceName);
+        }
+
+        if (props.modelValue.url) {
+            valueBuilder.addHtmlValue("URL", `<a href="${props.modelValue.url}" target="_blank" rel="noreferrer noopener">${props.modelValue.url}</a>`);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.sourceKey) {
+            valueBuilder.addTextValue("Source Key", props.modelValue.sourceKey);
+        }
+
+        if (props.modelValue.documentKey) {
+            valueBuilder.addTextValue("Document Key", props.modelValue.documentKey);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the right side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addTextValue("Index Status", IndexStatusDescription[props.modelValue.indexStatus]);
+
+        if (props.modelValue.indexDateTime) {
+            const indexDate = RockDateTime.parseISO(props.modelValue.indexDateTime);
+            if (indexDate) {
+                valueBuilder.addTextValue("Last Indexed", indexDate.toASPString("g"));
+            }
+        }
+
+        valueBuilder.addTextValue("Dirty", props.modelValue.isIndexDirty ? "Yes" : "No");
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+</script>

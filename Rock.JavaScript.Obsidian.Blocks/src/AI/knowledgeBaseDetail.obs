@@ -1,0 +1,203 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :isAuditHidden="false"
+                 :isBadgesVisible="false"
+                 :isDeleteVisible="isEditable"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="false"
+                 @cancelEdit="onCancelEdit"
+                 @delete="onDelete"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="knowledgeBaseViewBag" :options="options" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="knowledgeBaseEditBag" :options="options" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./KnowledgeBaseDetail/editPanel.partial.obs";
+    import ViewPanel from "./KnowledgeBaseDetail/viewPanel.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./KnowledgeBaseDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { KnowledgeBaseBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseDetail/knowledgeBaseBag";
+    import { KnowledgeBaseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseDetail/knowledgeBaseDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const config = useConfigurationValues<DetailBlockBox<KnowledgeBaseBag, KnowledgeBaseDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const knowledgeBaseViewBag = ref(config.entity);
+    const knowledgeBaseEditBag = ref<ValidPropertiesBox<KnowledgeBaseBag>>({
+        bag: {} as KnowledgeBaseBag
+    });
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    useEntityDetailBlock({
+        blockConfig: config,
+        entity: knowledgeBaseEditBag
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const panelName = computed((): string => {
+        return knowledgeBaseViewBag.value?.name ?? "";
+    });
+
+    const entityKey = computed((): string => {
+        return knowledgeBaseViewBag.value?.idKey ?? "";
+    });
+
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        if (panelMode.value !== DetailPanelMode.View) {
+            return undefined;
+        }
+
+        return [];
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): KnowledgeBaseDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (!knowledgeBaseEditBag.value.bag?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for the Delete button being clicked.
+     */
+    async function onDelete(): Promise<false | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key: knowledgeBaseViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete knowledge base.";
+
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the Edit button being clicked.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<KnowledgeBaseBag>>("Edit", {
+            key: knowledgeBaseViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            knowledgeBaseEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<KnowledgeBaseBag> | string>("Save", {
+            box: knowledgeBaseEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                knowledgeBaseViewBag.value = result.data.bag;
+
+                return true;
+            }
+            else if (result.statusCode === 201 && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save knowledge base.";
+
+        return false;
+    }
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified knowledge base could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        knowledgeBaseEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+    else if (isEditable.value && new URLSearchParams(window.location.search).get("autoEdit")?.toLowerCase() === "true") {
+        // The list block linked here with autoEdit=true; jump straight into
+        // the edit form. View and edit bags share the same shape so we can
+        // seed the edit bag from config.entity without an extra block action.
+        knowledgeBaseEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Edit;
+    }
+</script>

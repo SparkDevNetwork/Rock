@@ -1,0 +1,148 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection light>
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name"
+                                 label="Name"
+                                 rules="required" />
+                    </div>
+                </div>
+
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Source"
+                        icon="ti ti-database"
+                        :order="1">
+            <ContentStack title="Source Binding"
+                          description="The source kind is fixed when the folder is created. To switch to a different kind, create a new folder.">
+
+                <StaticFormControl label="Source Type"
+                                   :modelValue="sourceTypeName" />
+
+                <DropDownList v-if="isContentChannelSource"
+                              v-model="contentChannelValue"
+                              label="Content Channel"
+                              help="The content channel whose items will be indexed for this folder."
+                              :items="contentChannelOptions"
+                              :showBlankItem="true"
+                              rules="required" />
+
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Retrieval"
+                        icon="ti ti-bulb"
+                        :order="2">
+            <ContentStack title="Context Hint"
+                          description="Optional context combined with the parent knowledge base's hint to help the LLM understand what kind of content this folder contains.">
+                <TextBox v-model="contextHint"
+                         label="Context Hint"
+                         textMode="multiline" />
+            </ContentStack>
+        </ContentSection>
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { computed, PropType, ref, watch } from "vue";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { KnowledgeBaseFolderBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseFolderDetail/knowledgeBaseFolderBag";
+    import { KnowledgeBaseFolderDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseFolderDetail/knowledgeBaseFolderDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<KnowledgeBaseFolderBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<KnowledgeBaseFolderDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<KnowledgeBaseFolderBag>): void
+    }>();
+
+    // #region Values
+
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const contextHint = propertyRef(props.modelValue.bag?.contextHint ?? "", "ContextHint");
+
+    // The DropDownList control binds to a string value; the source content
+    // channel is reconstructed into a ListItemBag on watch.
+    const contentChannelValue = ref(props.modelValue.bag?.sourceContentChannel?.value ?? "");
+
+    const propRefs = [name, description, contextHint];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const sourceTypeName = computed((): string => {
+        return props.options?.sourceTypeName ?? "";
+    });
+
+    const contentChannelOptions = computed((): ListItemBag[] => {
+        return props.options?.contentChannelOptions ?? [];
+    });
+
+    /**
+     * The Source Key picker swaps based on the folder's bound Source Entity
+     * Type. v1 supports Content Channel as the only typed picker; "Manual"
+     * folders render no picker. As more source types come online, extend
+     * this v-if chain rather than introducing a registry until the variety
+     * justifies it.
+     */
+    const isContentChannelSource = computed((): boolean => {
+        return props.options?.isContentChannelSource === true;
+    });
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(contextHint, props.modelValue.bag?.contextHint ?? "");
+        updateRefValue(contentChannelValue, props.modelValue.bag?.sourceContentChannel?.value ?? "");
+    });
+
+    // Watch the tracked refs and emit a new ValidPropertiesBox when any change.
+    watch([...propRefs, contentChannelValue], () => {
+        const newValue: ValidPropertiesBox<KnowledgeBaseFolderBag> = {
+            bag: { ...props.modelValue.bag } as KnowledgeBaseFolderBag
+        };
+
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "contextHint", contextHint.value);
+
+        if (isContentChannelSource.value) {
+            const channelMatch = contentChannelOptions.value.find(o => o.value === contentChannelValue.value);
+            const sourceContentChannel = channelMatch ?? null;
+
+            setPropertiesBoxValue(newValue, "sourceContentChannel", sourceContentChannel);
+        }
+
+        emit("update:modelValue", newValue);
+    });
+</script>

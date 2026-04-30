@@ -15,30 +15,30 @@
 // </copyright>
 //
 
-namespace Rock.Enums.AI
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.AI.KnowledgeBaseDetail
 {
     /// <summary>
-    /// The lifecycle status of a <see cref="Rock.Model.KnowledgeBaseDocument"/> in the
-    /// indexing service (Ragie). Anything richer that the indexing service reports is
-    /// normalized to one of these three values.
+    /// The bag that contains the editable fields for a knowledge base.
     /// </summary>
-    public enum IndexStatus
+    public class KnowledgeBaseBag : EntityBagBase
     {
         /// <summary>
-        /// The document is queued for indexing or is currently being indexed.
-        /// Anything the indexing service reports that is not Ready or Failed is treated
-        /// as Pending. New rows default to this value.
+        /// Gets or sets the name of the knowledge base.
         /// </summary>
-        Pending = 0,
+        public string Name { get; set; }
 
         /// <summary>
-        /// The document has been successfully indexed and is available for retrieval.
+        /// Gets or sets the long-form description of the knowledge base.
         /// </summary>
-        Ready = 1,
+        public string Description { get; set; }
 
         /// <summary>
-        /// The document failed to index. Inspect logs or re-queue to retry.
+        /// Gets or sets the optional context that should be passed to retrieval
+        /// or LLM prompts to describe what kind of content this knowledge base
+        /// contains.
         /// </summary>
-        Failed = 2
+        public string ContextHint { get; set; }
     }
 }

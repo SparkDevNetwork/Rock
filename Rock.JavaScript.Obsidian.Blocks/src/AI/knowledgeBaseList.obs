@@ -1,0 +1,130 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning" v-html="config.errorMessage"></NotificationBox>
+
+    <Panel v-else title="Knowledge Bases">
+        <template v-if="config.isAddEnabled" #headerActions>
+            <button type="button"
+                    class="btn btn-panel-action btn-add"
+                    title="Add Knowledge Base"
+                    @click="onAddClick">
+                <i class="ti ti-square-plus"></i>
+            </button>
+        </template>
+
+        <template #default>
+
+            <NotificationBox v-if="!knowledgeBaseSummaries.length" :alertType="AlertType.Info">
+                There are no knowledge bases to display.
+            </NotificationBox>
+
+            <DisplayCardContainer v-else>
+
+                <DisplayCard v-for="summary of knowledgeBaseSummaries"
+                             :key="summary.idKey!"
+                             iconCssClass="ti ti-book-2"
+                             iconLabelType="default"
+                             :title="summary.name ?? ''"
+                             :description="summary.description ?? ''"
+                             :primaryActions="config.isAddEnabled ? getCardActions(summary) : undefined"
+                             @click="onKnowledgeBaseClick(summary.idKey!)">
+
+                    <template #rightMiddleSection>
+                        <HighlightLabel iconCssClass="ti ti-folder"
+                                        labelType="default"
+                                        tooltip="Folders"
+                                        tooltipPlacement="top">
+                            {{ asFormattedString(summary.folderCount) }}
+                        </HighlightLabel>
+                    </template>
+
+                </DisplayCard>
+
+            </DisplayCardContainer>
+
+        </template>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { NavigationUrlKey } from "./KnowledgeBaseList/types.partial";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { KnowledgeBaseListInitializationBox } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseList/knowledgeBaseListInitializationBox";
+    import { KnowledgeBaseSummaryBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseList/knowledgeBaseSummaryBag";
+
+    const config = useConfigurationValues<KnowledgeBaseListInitializationBox>();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const knowledgeBaseSummaries = ref<KnowledgeBaseSummaryBag[]>(config.knowledgeBaseSummaries ?? []);
+
+    const detailPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.DetailPage]);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Navigates to the detail page for the selected knowledge base.
+     */
+    function onKnowledgeBaseClick(idKey: string): void {
+        if (detailPageUrl.value) {
+            window.location.href = detailPageUrl.value.replace("((Key))", idKey);
+        }
+    }
+
+    /** Navigates to the detail page in add mode by substituting "0" for the entity key. */
+    function onAddClick(): void {
+        if (detailPageUrl.value) {
+            window.location.href = detailPageUrl.value.replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Navigates to the detail page in edit mode by substituting the entity's
+     * IdKey and appending autoEdit=true so the detail block opens directly
+     * into the edit form. The current page URL is included as returnUrl by
+     * convention; the detail block can use it after save/cancel.
+     */
+    function onEditClick(idKey: string): void {
+        if (!detailPageUrl.value) {
+            return;
+        }
+
+        let target = detailPageUrl.value.replace("((Key))", idKey);
+        const separator = target.includes("?") ? "&" : "?";
+        target = `${target}${separator}autoEdit=true&returnUrl=${encodeURIComponent(window.location.href)}`;
+
+        window.location.href = target;
+    }
+
+    /**
+     * Builds the per-card action menu. Edit is the only entry today and is
+     * gated on the same permission flag that gates the panel-header Add
+     * button (the block's edit-at-list-scope authorization). Returns an
+     * empty array when no actions apply so the card renders no actions row.
+     */
+    function getCardActions(summary: KnowledgeBaseSummaryBag): MenuAction[] {
+        return [
+            {
+                iconCssClass: "ti ti-pencil",
+                title: "Edit",
+                type: "default",
+                handler: () => onEditClick(summary.idKey!)
+            }
+        ];
+    }
+
+    // #endregion Event Handlers
+</script>

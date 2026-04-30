@@ -1,0 +1,163 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning" v-html="config.errorMessage"></NotificationBox>
+
+    <Grid v-else
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Document"
+          :entityTypeGuid="EntityType.KnowledgeBaseDocument"
+          stickyHeader
+          liveUpdates
+          :title="panelTitle"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+        <SelectColumn />
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    width="25%"
+                    visiblePriority="xs" />
+
+        <TextColumn name="sourceName"
+                    title="Source Name"
+                    field="sourceName"
+                    :filter="textValueFilter"
+                    width="20%"
+                    visiblePriority="md" />
+
+        <TextColumn name="sourceKey"
+                    title="Source Key"
+                    field="sourceKey"
+                    :filter="textValueFilter"
+                    width="15%"
+                    visiblePriority="lg" />
+
+        <LabelColumn name="indexStatus"
+                     title="Index Status"
+                     field="indexStatus"
+                     :filter="pickExistingValueFilter"
+                     :classSource="indexStatusClassSource"
+                     width="120px"
+                     visiblePriority="sm" />
+
+        <DateTimeColumn name="indexDateTime"
+                        title="Indexed"
+                        field="indexDateTime"
+                        :filter="dateValueFilter"
+                        width="160px"
+                        visiblePriority="md" />
+
+        <BooleanColumn name="isIndexDirty"
+                       title="Dirty"
+                       field="isIndexDirty"
+                       :filter="booleanValueFilter"
+                       width="80px"
+                       visiblePriority="lg" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { computed, reactive, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Grid, { TextColumn, LabelColumn, DateTimeColumn, BooleanColumn, DeleteColumn, SelectColumn, textValueFilter, pickExistingValueFilter, dateValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { KnowledgeBaseDocumentListOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseDocumentList/knowledgeBaseDocumentListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./KnowledgeBaseDocumentList/types.partial";
+
+    const config = useConfigurationValues<ListBlockBox<KnowledgeBaseDocumentListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    /**
+     * Maps each IndexStatus display value to a label color so the grid
+     * column can render Pending / Ready / Failed as colored pills.
+     */
+    const indexStatusClassSource = {
+        Pending: "warning",
+        Ready: "success",
+        Failed: "danger"
+    };
+
+    // #endregion
+
+    // #region Computed Values
+
+    const panelTitle = computed((): string => {
+        const folderName = config.options?.folderName?.trim();
+        return folderName ? `${folderName} Documents` : "Documents";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Loads the grid data from the server. */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Navigates to the detail page for the selected row. */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /** Deletes a row from the grid after the user has confirmed. */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", { key });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete document.");
+        }
+    }
+
+    /** Navigates to the detail page in add mode. */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

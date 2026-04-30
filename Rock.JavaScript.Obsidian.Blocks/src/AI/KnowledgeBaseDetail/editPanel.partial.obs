@@ -1,0 +1,90 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection light>
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name"
+                                 label="Name"
+                                 rules="required" />
+                    </div>
+                </div>
+
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Retrieval"
+                        icon="ti ti-bulb"
+                        :order="1">
+            <ContentStack title="Context Hint"
+                          description="Optional context that should be passed to retrieval or LLM prompts to describe what kind of content this knowledge base contains.">
+                <TextBox v-model="contextHint"
+                         label="Context Hint"
+                         textMode="multiline" />
+            </ContentStack>
+        </ContentSection>
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { PropType, watch } from "vue";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { KnowledgeBaseBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseDetail/knowledgeBaseBag";
+    import { KnowledgeBaseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseDetail/knowledgeBaseDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<KnowledgeBaseBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<KnowledgeBaseDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<KnowledgeBaseBag>): void
+    }>();
+
+    // #region Values
+
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const contextHint = propertyRef(props.modelValue.bag?.contextHint ?? "", "ContextHint");
+
+    const propRefs = [name, description, contextHint];
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(contextHint, props.modelValue.bag?.contextHint ?? "");
+    });
+
+    // Watch the tracked refs and emit a new ValidPropertiesBox when any change.
+    watch(propRefs, () => {
+        const newValue: ValidPropertiesBox<KnowledgeBaseBag> = {
+            bag: { ...props.modelValue.bag } as KnowledgeBaseBag
+        };
+
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "contextHint", contextHint.value);
+
+        emit("update:modelValue", newValue);
+    });
+</script>

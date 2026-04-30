@@ -1,0 +1,50 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <ValueDetailList :modelValue="topValues" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { computed, PropType } from "vue";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { KnowledgeBaseBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseDetail/knowledgeBaseBag";
+    import { KnowledgeBaseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/KnowledgeBaseDetail/knowledgeBaseDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<KnowledgeBaseBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<KnowledgeBaseDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        if (props.modelValue.contextHint) {
+            valueBuilder.addTextValue("Context Hint", props.modelValue.contextHint);
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+</script>
