@@ -36,6 +36,7 @@ using Rock.Field;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Model.Event.RegistrationInstance.Options;
+using Rock.Model.Event.RegistrationTemplate.Options;
 using Rock.Pdf;
 using Rock.Security;
 using Rock.Tasks;
@@ -3975,6 +3976,15 @@ namespace Rock.Blocks.Event
             var registrationTemplate = registrationTemplateService.Get( context.RegistrationSettings.RegistrationTemplateId );
             var registrantEligibilityEvaluator = registrationTemplateService.GetRegistrantEligibility( registrationTemplate );
 
+            // Use Lax mode here so that a family member who is missing data needed by an
+            // eligibility requirement (e.g. age, grade) is still surfaced in the dropdown
+            // as "potentially eligible" rather than being marked Ineligible. The strict
+            // check is still enforced at registration submission.
+            var familyMemberEligibilityOptions = new RegistrantEligibilityEvaluationOptions
+            {
+                Mode = RegistrantEligibilityEvaluationMode.Lax
+            };
+
             var currentPerson = GetCurrentPerson();
             var familyMembers = context.RegistrationSettings.AreCurrentFamilyMembersShown ?
                 currentPerson.GetFamilyMembers( true, rockContext )
@@ -3991,7 +4001,7 @@ namespace Rock.Blocks.Event
                         FamilyGuid = gm.FamilyGuid,
                         FullName = gm.Person.FullName,
                         FieldValues = GetCurrentValueFieldValues( context, rockContext, gm.Person, null, formModels, false ),
-                        IsIneligible = !registrantEligibilityEvaluator.Evaluate( gm.Person )
+                        IsIneligible = !registrantEligibilityEvaluator.Evaluate( gm.Person, familyMemberEligibilityOptions )
                     } )
                     .ToList() :
                     new List<RegistrationEntryFamilyMemberBag>();

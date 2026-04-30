@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,8 @@
 
 using System;
 using System.Linq;
+
+using Rock.Model.Event.RegistrationTemplate.Options;
 
 namespace Rock.Model
 {
@@ -53,22 +55,57 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Determines whether the specified registrant meets the eligibility criteria defined by the current settings.
+        /// Determines whether the specified registrant meets the eligibility criteria defined by
+        /// the current settings using <see cref="RegistrantEligibilityEvaluationMode.Strict"/> mode.
         /// </summary>
         /// <param name="registrantPerson">The person to evaluate for eligibility. Returns <see langword="false"/> if <see langword="null"/>.</param>
         /// <returns><see langword="true"/> if the registrant meets all eligibility requirements; otherwise, <see langword="false"/>.</returns>
         public bool Evaluate( Person registrantPerson )
         {
-            return Evaluate( registrantPerson, out var _ );
+            return Evaluate( registrantPerson, options: null, out var _ );
         }
 
         /// <summary>
-        /// Determines whether the specified registrant meets the eligibility criteria defined by the current settings.
+        /// Determines whether the specified registrant meets the eligibility criteria defined by
+        /// the current settings using <see cref="RegistrantEligibilityEvaluationMode.Strict"/> mode.
         /// </summary>
         /// <param name="registrantPerson">The person to evaluate for eligibility. Returns <see langword="false"/> if <see langword="null"/>.</param>
         /// <param name="error">The first friendly error explaining why the person is not eligible.</param>
         /// <returns><see langword="true"/> if the registrant meets all eligibility requirements; otherwise, <see langword="false"/>.</returns>
         public bool Evaluate( Person registrantPerson, out string error )
+        {
+            return Evaluate( registrantPerson, options: null, out error );
+        }
+
+        /// <summary>
+        /// Determines whether the specified registrant meets the eligibility criteria defined by
+        /// the current settings, using the supplied <paramref name="options"/> to control how
+        /// missing-data scenarios are handled.
+        /// </summary>
+        /// <param name="registrantPerson">The person to evaluate for eligibility. Returns <see langword="false"/> if <see langword="null"/>.</param>
+        /// <param name="options">
+        /// Options that control how the evaluator treats missing data on the person. If
+        /// <see langword="null"/>, defaults to <see cref="RegistrantEligibilityEvaluationMode.Strict"/>.
+        /// </param>
+        /// <returns><see langword="true"/> if the registrant meets all eligibility requirements; otherwise, <see langword="false"/>.</returns>
+        public bool Evaluate( Person registrantPerson, RegistrantEligibilityEvaluationOptions options )
+        {
+            return Evaluate( registrantPerson, options, out var _ );
+        }
+
+        /// <summary>
+        /// Determines whether the specified registrant meets the eligibility criteria defined by
+        /// the current settings, using the supplied <paramref name="options"/> to control how
+        /// missing-data scenarios are handled.
+        /// </summary>
+        /// <param name="registrantPerson">The person to evaluate for eligibility. Returns <see langword="false"/> if <see langword="null"/>.</param>
+        /// <param name="options">
+        /// Options that control how the evaluator treats missing data on the person. If
+        /// <see langword="null"/>, defaults to <see cref="RegistrantEligibilityEvaluationMode.Strict"/>.
+        /// </param>
+        /// <param name="error">The first friendly error explaining why the person is not eligible.</param>
+        /// <returns><see langword="true"/> if the registrant meets all eligibility requirements; otherwise, <see langword="false"/>.</returns>
+        public bool Evaluate( Person registrantPerson, RegistrantEligibilityEvaluationOptions options, out string error )
         {
             error = null;
 
@@ -86,6 +123,10 @@ namespace Rock.Model
                 return true;
             }
 
+            // Resolve the evaluation mode. A null options instance falls back to the default
+            // (Strict), preserving the behavior of the parameterless Evaluate overloads.
+            var evaluationMode = ( options ?? new RegistrantEligibilityEvaluationOptions() ).Mode;
+
             // Minimum Age
             if ( _registrantEligibilitySettings.MinimumAge.HasValue )
             {
@@ -93,11 +134,14 @@ namespace Rock.Model
 
                 if ( !registrantPerson.Age.HasValue )
                 {
-                    error = minAgeError;
-                    return false;
+                    // Age is required to evaluate this rule. Strict mode rejects, Lax mode skips.
+                    if ( evaluationMode == RegistrantEligibilityEvaluationMode.Strict )
+                    {
+                        error = minAgeError;
+                        return false;
+                    }
                 }
-
-                if ( registrantPerson.Age.Value < _registrantEligibilitySettings.MinimumAge.Value )
+                else if ( registrantPerson.Age.Value < _registrantEligibilitySettings.MinimumAge.Value )
                 {
                     error = minAgeError;
                     return false;
@@ -107,16 +151,19 @@ namespace Rock.Model
             // Maximum Age
             if ( _registrantEligibilitySettings.MaximumAge.HasValue )
             {
-                var isMaxAgeInteger = _registrantEligibilitySettings.MaximumAge.Value.IsInteger();
+                var isMaxAgeAnInteger = _registrantEligibilitySettings.MaximumAge.Value.IsInteger();
                 var maxAgeError = $"{registrantPerson.FullName} does not meet the maximum age requirement for this {_registrationTemplate.RegistrationTerm} ({_registrantEligibilitySettings.MaximumAge.Value} years old or younger).";
 
                 if ( !registrantPerson.Age.HasValue )
                 {
-                    error = maxAgeError;
-                    return false;
+                    // Age is required to evaluate this rule. Strict mode rejects, Lax mode skips.
+                    if ( evaluationMode == RegistrantEligibilityEvaluationMode.Strict )
+                    {
+                        error = maxAgeError;
+                        return false;
+                    }
                 }
-
-                if ( isMaxAgeInteger )
+                else if ( isMaxAgeAnInteger )
                 {
                     // If max age is an integer number of years old, then treat it as "up to and including that age".
                     // So if max age is 18, then a registrant who is 18 years and 11 months old would still be eligible,
@@ -139,13 +186,13 @@ namespace Rock.Model
                     }
                 }
             }
-            
+
             // Age Classification
             if ( _registrantEligibilitySettings.AgeClassification.HasValue )
             {
                 // Typically age classification is set in the person save hook,
                 // but that won't run until a running transaction is committed.
-                // Resolve it here so we can determine registrant eligibility when a new person is created for a registration.
+                // Resolve it here using the same logic so we can determine registrant eligibility when a new person is created for a registration.
                 var resolvedAgeClassification = registrantPerson.AgeClassification;
                 if ( resolvedAgeClassification == AgeClassification.Unknown && registrantPerson.Age.HasValue )
                 {
@@ -159,9 +206,21 @@ namespace Rock.Model
                     }
                 }
 
-                if ( resolvedAgeClassification != _registrantEligibilitySettings.AgeClassification.Value )
+                var ageClassificationError = $"{registrantPerson.FullName} does not meet the age requirement for this {_registrationTemplate.RegistrationTerm} ({_registrantEligibilitySettings.AgeClassification.GetDisplayName()}).";
+
+                if ( resolvedAgeClassification == AgeClassification.Unknown )
                 {
-                    error = $"{registrantPerson.FullName} does not meet the age requirement for this {_registrationTemplate.RegistrationTerm} ({_registrantEligibilitySettings.AgeClassification.GetDisplayName()}).";
+                    // Age classification could not be determined (no explicit value and no age to derive it).
+                    // Strict mode rejects, Lax mode skips this rule.
+                    if ( evaluationMode == RegistrantEligibilityEvaluationMode.Strict )
+                    {
+                        error = ageClassificationError;
+                        return false;
+                    }
+                }
+                else if ( resolvedAgeClassification != _registrantEligibilitySettings.AgeClassification.Value )
+                {
+                    error = ageClassificationError;
                     return false;
                 }
             }
@@ -170,14 +229,17 @@ namespace Rock.Model
             if ( _registrantEligibilitySettings.MaximumGradeOffset.HasValue )
             {
                 var minGradeError = $"{registrantPerson.FullName} does not meet the minimum grade requirement for this {_registrationTemplate.RegistrationTerm}.";
-                
+
                 if ( !registrantPerson.GradeOffset.HasValue )
                 {
-                    error = minGradeError;
-                    return false;
+                    // Grade is required to evaluate this rule. Strict mode rejects, Lax mode skips.
+                    if ( evaluationMode == RegistrantEligibilityEvaluationMode.Strict )
+                    {
+                        error = minGradeError;
+                        return false;
+                    }
                 }
-
-                if ( registrantPerson.GradeOffset.Value > _registrantEligibilitySettings.MaximumGradeOffset.Value )
+                else if ( registrantPerson.GradeOffset.Value > _registrantEligibilitySettings.MaximumGradeOffset.Value )
                 {
                     error = minGradeError;
                     return false;
@@ -188,14 +250,17 @@ namespace Rock.Model
             if ( _registrantEligibilitySettings.MinimumGradeOffset.HasValue )
             {
                 var maxGradeError = $"{registrantPerson.FullName} does not meet the maximum grade requirement for this {_registrationTemplate.RegistrationTerm}.";
-                
+
                 if ( !registrantPerson.GradeOffset.HasValue )
                 {
-                    error = maxGradeError;
-                    return false;
+                    // Grade is required to evaluate this rule. Strict mode rejects, Lax mode skips.
+                    if ( evaluationMode == RegistrantEligibilityEvaluationMode.Strict )
+                    {
+                        error = maxGradeError;
+                        return false;
+                    }
                 }
-
-                if ( registrantPerson.GradeOffset.Value < _registrantEligibilitySettings.MinimumGradeOffset.Value )
+                else if ( registrantPerson.GradeOffset.Value < _registrantEligibilitySettings.MinimumGradeOffset.Value )
                 {
                     error = maxGradeError;
                     return false;
@@ -205,14 +270,27 @@ namespace Rock.Model
             // Gender
             if ( _registrantEligibilitySettings.Gender.HasValue )
             {
-                if ( registrantPerson.Gender != _registrantEligibilitySettings.Gender.Value )
+                var genderError = $"{registrantPerson.FullName} does not meet the gender requirement for this {_registrationTemplate.RegistrationTerm} ({_registrantEligibilitySettings.Gender.Value.GetDisplayName()}).";
+
+                if ( registrantPerson.Gender == Gender.Unknown )
                 {
-                    error = $"{registrantPerson.FullName} does not meet the gender requirement for this {_registrationTemplate.RegistrationTerm} ({_registrantEligibilitySettings.Gender.Value.GetDisplayName()}).";
+                    // Gender is required to evaluate this rule. Strict mode rejects, Lax mode skips.
+                    if ( evaluationMode == RegistrantEligibilityEvaluationMode.Strict )
+                    {
+                        error = genderError;
+                        return false;
+                    }
+                }
+                else if ( registrantPerson.Gender != _registrantEligibilitySettings.Gender.Value )
+                {
+                    error = genderError;
                     return false;
                 }
             }
 
             // Data View
+            // The Data View check is based on concrete membership in a configured query rather than
+            // missing-data semantics, so it is enforced regardless of the evaluation mode.
             if ( _eligibleDataViewPersonQuery != null )
             {
                 if ( !_eligibleDataViewPersonQuery.Any( p => p.Id == registrantPerson.Id ) )
