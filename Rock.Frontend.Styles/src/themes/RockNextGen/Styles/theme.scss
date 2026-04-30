@@ -92,6 +92,12 @@ body.navbar-side-open {
   }
 }
 
+@media (min-width: 1440px) and (max-width: 1549px) {
+  body[data-docked-panel-mode="push"] .header-content .page-title-display .breadcrumb {
+    display: none;
+  }
+}
+
 .main-content {
   margin: var(--spacing-medium) var(--spacing-medium);
   #page-content {
@@ -371,14 +377,10 @@ body.navbar-side-open {
     border: 1px solid var(--color-interface-soft);
     border-radius: 999px;
     flex-direction: row-reverse;
+    transition: width .2s ease;
 
     .ti.ti-search {
       display: none;
-    }
-
-    @media (min-width: $screen-small) {
-      height: $navbar-element-height;
-      width: 340px;
     }
 
     i {
@@ -530,6 +532,19 @@ body.navbar-side-open {
     }
   }
 
+}
+
+@media (min-width: $screen-small) {
+  .rock-top-header .smartsearch {
+    height: $navbar-element-height;
+    width: 340px;
+  }
+}
+
+@media (min-width: 1440px) and (max-width: 1549px) {
+  body[data-docked-panel-mode="push"] .rock-top-header .smartsearch {
+      width: 280px
+  }
 }
 
 // ======================== REMINDERS / BOOKMARKS ========================

@@ -910,4 +910,18 @@ body[data-docked-panel-mode="push"] {
   }
 }
 
+@media (max-width: 1439px) {
+  body[data-docked-panel-mode="push"] {
+    padding-right: 0;
+
+    .navbar-fixed-top {
+      right: 0;
+    }
+  }
+
+  body[data-docked-panel-mode="push"] .docked-panel {
+    width: 100%;
+  }
+}
+
 // ===================== END DOCKED PANEL =====================
