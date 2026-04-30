@@ -5777,13 +5777,36 @@ namespace Rock.Rest.v2
                 valueFormat = hintFieldType.GetFieldHints( configurationValues )?.ValueFormat;
             }
 
+            // If the field type contributes security grant rules (e.g. an
+            // Asset field that needs the asset/file manager picker to work),
+            // mint an attribute-specific token here so the default value
+            // editor has the access it needs before the attribute has been
+            // saved. Mirrors the per-attribute grant generated in
+            // PublicAttributeHelper.GetPublicAttributeForEdit and lets
+            // RockField.obs pick it up via the attribute's securityGrantToken.
+            string securityGrantToken = null;
+
+            if ( fieldType is ISecurityGrantFieldType securityGrantFieldType )
+            {
+                var securityGrant = new SecurityGrant();
+
+                securityGrantFieldType.AddRulesToSecurityGrant( securityGrant, configurationValues );
+
+                if ( securityGrant.Rules.Count > 0 )
+                {
+                    securityGrant.SetLifetime( TimeSpan.FromDays( 1 ) );
+                    securityGrantToken = securityGrant.ToToken();
+                }
+            }
+
             return Ok( new FieldTypeEditorUpdateAttributeConfigurationResultBag
             {
                 ConfigurationProperties = configurationProperties,
                 AdminConfigurationValues = publicAdminConfigurationValues,
                 EditConfigurationValues = publicEditConfigurationValues,
                 ValueFormat = valueFormat,
-                DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues )
+                DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues ),
+                SecurityGrantToken = securityGrantToken
             } );
         }
 

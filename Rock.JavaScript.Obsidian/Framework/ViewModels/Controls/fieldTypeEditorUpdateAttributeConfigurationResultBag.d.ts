@@ -51,6 +51,17 @@ export type FieldTypeEditorUpdateAttributeConfigurationResultBag = {
     editConfigurationValues?: Record<string, string> | null;
 
     /**
+     * Gets or sets the security grant token that should be used by the
+     * default value editor for the selected field type. Field types that
+     * implement Rock.Field.ISecurityGrantFieldType contribute their rules
+     * into this token so that controls bound to the default value
+     * preview (e.g. the asset/file manager picker for an Asset field
+     * type) have the access they need before the attribute has been
+     * saved.
+     */
+    securityGrantToken?: string | null;
+
+    /**
      * A string that describes the format of the raw value stored in the
      * database.
      */
