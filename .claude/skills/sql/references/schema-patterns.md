@@ -18,13 +18,12 @@ This reference covers the standard column patterns, FK conventions, and data typ
 
 ## Base Entity Columns
 
-Every entity inheriting from `Model<T>` (which is most Rock entities) has these columns:
+Every entity inheriting from `Model<T>` has these columns (from `Rock/Data/Model.cs` and `Rock/Data/Entity.cs`):
 
 | Column | Type | Required | Notes |
 |---|---|---|---|
 | `Id` | int | Yes (identity) | Auto-generated, never set manually |
 | `Guid` | uniqueidentifier | Yes | Use `NEWID()` for new records. Unique index. |
-| `IsSystem` | bit | Yes | `0` = user-created, `1` = Rock core only |
 | `CreatedDateTime` | datetime | No (nullable) | Set to `GETDATE()` on insert |
 | `ModifiedDateTime` | datetime | No (nullable) | Set to `GETDATE()` on insert and update |
 | `CreatedByPersonAliasId` | int | No (nullable) | FK to `[PersonAlias].[Id]` — NOT `[Person].[Id]` |
@@ -33,7 +32,25 @@ Every entity inheriting from `Model<T>` (which is most Rock entities) has these 
 | `ForeignGuid` | uniqueidentifier | No (nullable) | For external system sync |
 | `ForeignKey` | nvarchar(100) | No (nullable) | For external system sync |
 
-**Simpler entities** (like `PersonAlias` itself) may not have all audit columns. Always verify by reading the model file.
+Entities inheriting from `Entity<T>` (a smaller subset, mostly join tables like `MetricCategory`) get only `Id`, `Guid`, and the `Foreign*` columns — no audit columns. Always verify by reading the model file.
+
+---
+
+## IsSystem — Per-Entity, Not Base
+
+**`IsSystem` is NOT on the `Model<T>` or `Entity<T>` base classes.** Rock declares `IsSystem` individually on each entity that needs it. Including `[IsSystem]` in an INSERT for an entity that doesn't declare it produces `Msg 207, Invalid column name 'IsSystem'` on first run — by far the most common error in this skill's history.
+
+**Always verify before including `[IsSystem]`:** grep the entity's `.cs` file for `public bool IsSystem`. If the property is not declared on that entity (or inherited from a partial class in the same project), omit `[IsSystem]` from the INSERT.
+
+| Entities that **have** `IsSystem` (partial list) | Entities that **lack** `IsSystem` (partial list) |
+|---|---|
+| `Person`, `Group`, `GroupMember`, `GroupType`, `GroupTypeRole` | `MetricValue`, `MetricPartition`, `MetricValuePartition` |
+| `Campus`, `Schedule`, `Location`, `Category` | `MetricCategory` (Entity<T> derivative) |
+| `Metric`, `BlockType`, `Block`, `Page`, `PageRoute`, `Site`, `Layout` | `Attendance`, `AttendanceOccurrence` |
+| `Attribute`, `AttributeValue`, `DefinedType`, `DefinedValue`, `EntityType`, `FieldType` | `FinancialTransaction`, `FinancialTransactionDetail`, `FinancialBatch` |
+| `WorkflowType`, `WorkflowAction`, `WorkflowActionType`, `BinaryFileType` | `Note`, `History`, `AuditLog`, `Following`, `Tag` |
+
+The lists above are not exhaustive — verify per script with a grep on the actual model file you're targeting.
 
 ---
 
