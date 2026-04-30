@@ -1,5 +1,5 @@
 <template>
-    <div class="footer-actions">
+    <div class="footer-actions" ref="footerActionsElement">
         <div v-if="sortedAnchors.length > 0" class="anchors-container">
             <div v-for="anchor in sortedAnchors"
                  :key="anchor.id"
@@ -13,33 +13,33 @@
         <div class="action-bar">
             <div class="action-bar-container">
                 <TextBox v-model="message"
+                         textMode="multiline"
+                         :rows="inputRowCount"
                          placeholder="Ask me anything..."
+                         @keydown.enter="onKeyDown"
                          @keyup.enter="onSubmit">
-                    <template #inputGroupAppend>
-                        <span class="input-group-btn">
-                            <button v-if="isDebugAllowed"
-                                    :class="isDebugEnabled ? 'btn btn-warning btn-chat-debug' : 'btn btn-default btn-chat-debug'"
-                                    type="button"
-                                    :title="isDebugEnabled ? 'Disable Debug Mode' : 'Enable Debug Mode'"
-                                    @click.prevent="onToggleDebugClick">
-                                <i v-if="isDebugEnabled" class="ti ti-bug"></i>
-                                <i v-else class="ti ti-bug-off"></i>
-                            </button>
-
-                            <button class="btn btn-default btn-chat-clear"
-                                    type="button"
-                                    @click.prevent="onClearMessages"
-                                    title="Clear Chat History">
-                                <i class="ti ti-eraser"></i>
-                            </button>
-
-                            <button class="btn btn-primary btn-chat-submit"
-                                    type="button"
-                                    :disabled="isSendDisabled"
-                                    @click.prevent="onSubmit"><i class="ti ti-arrow-up"></i></button>
-                        </span>
-                    </template>
                 </TextBox>
+
+                <button v-if="isDebugAllowed"
+                        :class="isDebugEnabled ? 'btn btn-warning btn-chat-debug' : 'btn btn-default btn-chat-debug'"
+                        type="button"
+                        :title="isDebugEnabled ? 'Disable Debug Mode' : 'Enable Debug Mode'"
+                        @click.prevent="onToggleDebugClick">
+                    <i v-if="isDebugEnabled" class="ti ti-bug"></i>
+                    <i v-else class="ti ti-bug-off"></i>
+                </button>
+
+                <button class="btn btn-default btn-chat-clear"
+                        type="button"
+                        @click.prevent="onClearMessages"
+                        title="Clear Chat History">
+                    <i class="ti ti-eraser"></i>
+                </button>
+
+                <button class="btn btn-primary btn-chat-submit"
+                        type="button"
+                        :disabled="isSendDisabled"
+                        @click.prevent="onSubmit"><i class="ti ti-arrow-up"></i></button>
             </div>
         </div>
     </div>
@@ -47,7 +47,7 @@
 
 <script setup lang="ts">
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { PropType } from "vue";
+    import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
     import { ChatAnchorBag } from "./types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
@@ -84,11 +84,32 @@
         (e: "toggleDebug"): void;
         (e: "clearMessages"): void;
         (e: "deleteAnchor", entityTypeId: number): void;
+        (e: "updateBottomPadding", value: number): void;
     }>();
 
+    const footerActionsElement = ref<HTMLElement | null>(null);
     const message = useVModelPassthrough(props, "message", emit);
+    let shiftKeyPressedAtStart = false;
+
+    const inputRowCount = computed(() => {
+        const lineCount = message.value.split("\n").length;
+        return Math.min(Math.max(lineCount, 1), 8);
+    });
+
+    function onKeyDown(ev: KeyboardEvent): void {
+        if (ev.shiftKey) {
+            shiftKeyPressedAtStart = true;
+        }
+    }
 
     function onSubmit(): void {
+        // Don't submit on Shift-Enter since that's used to create a new
+        // line in the message.
+        if (shiftKeyPressedAtStart) {
+            shiftKeyPressedAtStart = false;
+            return;
+        }
+
         emit("submit");
     }
 
@@ -103,4 +124,20 @@
     function onDeleteAnchor(entityTypeId: number): void {
         emit("deleteAnchor", entityTypeId);
     }
+
+    watch(inputRowCount, () => {
+        nextTick(() => {
+            if (footerActionsElement.value) {
+                const newPadding = footerActionsElement.value.clientHeight;
+                emit("updateBottomPadding", newPadding);
+            }
+        });
+    });
+
+    onMounted(() => {
+        if (footerActionsElement.value) {
+            const initialPadding = footerActionsElement.value.clientHeight;
+            emit("updateBottomPadding", initialPadding);
+        }
+    });
 </script>

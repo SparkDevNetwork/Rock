@@ -1,5 +1,7 @@
 <template>
-    <div class="well messages-container" ref="messagesContainer">
+    <div class="well messages-container"
+         ref="messagesContainer"
+         :style="{ paddingBottom: bottomPadding + 'px' }">
         <div v-for="(message, index) in messages"
              :key="index"
              class="message"
@@ -88,6 +90,11 @@
         isSending: {
             type: Boolean as PropType<boolean>,
             required: true
+        },
+
+        bottomPadding: {
+            type: Number as PropType<number>,
+            required: true,
         },
     });
 
