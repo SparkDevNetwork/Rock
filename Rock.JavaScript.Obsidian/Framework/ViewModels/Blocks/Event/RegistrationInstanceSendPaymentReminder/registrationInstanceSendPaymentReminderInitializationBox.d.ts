@@ -22,6 +22,7 @@
 //
 
 import { RegistrationBalanceBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceSendPaymentReminder/registrationBalanceBag";
+import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 
 /** Initial state delivered to the Send Payment Reminder block. */
 export type RegistrationInstanceSendPaymentReminderInitializationBox = {
@@ -44,6 +45,13 @@ export type RegistrationInstanceSendPaymentReminderInitializationBox = {
      * registration's merge fields.
      */
     fromName?: string | null;
+
+    /**
+     * Gets or sets the grid definition. The grid is populated client-side
+     * from Rock.ViewModels.Blocks.Event.RegistrationInstanceSendPaymentReminder.RegistrationInstanceSendPaymentReminderInitializationBox.Registrations, but the definition still drives
+     * the toolbar action URLs (e.g. Merge Template).
+     */
+    gridDefinition?: GridDefinitionBag | null;
 
     /**
      * Gets or sets a value indicating whether the resolved registration
