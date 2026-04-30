@@ -32,6 +32,7 @@
                                  :liveMessage="liveMessage"
                                  :isSending="isSending"
                                  :isDebugEnabled="isDebugEnabled"
+                                 :bottomPadding="messageContainerPadding"
                                  @showMessageDebug="onShowMessageDebug" />
 
                     <FooterActions v-model:message="message"
@@ -42,7 +43,8 @@
                                    @deleteAnchor="onDeleteAnchor"
                                    @toggleDebug="onToggleDebugClick"
                                    @clearMessages="onClearMessages"
-                                   @submit="onSubmit" />
+                                   @submit="onSubmit"
+                                   @updateBottomPadding="messageContainerPadding = $event" />
                 </div>
             </div>
         </DockedPanel>
@@ -72,6 +74,7 @@
                          :liveMessage="liveMessage"
                          :isSending="isSending"
                          :isDebugEnabled="isDebugEnabled"
+                         :bottomPadding="messageContainerPadding"
                          @showMessageDebug="onShowMessageDebug" />
 
             <FooterActions v-model:message="message"
@@ -82,7 +85,8 @@
                            @deleteAnchor="onDeleteAnchor"
                            @toggleDebug="onToggleDebugClick"
                            @clearMessages="onClearMessages"
-                           @submit="onSubmit" />
+                           @submit="onSubmit"
+                           @updateBottomPadding="messageContainerPadding = $event" />
         </div>
     </div>
 
@@ -143,6 +147,8 @@
     const isDockedPanelReady = ref(true);
     const dockedChatWidth = ref("500px");
     const saveSessionData = debounce(saveSessionDataInternal, 100);
+
+    const messageContainerPadding = ref(120);
 
     // #endregion
 
