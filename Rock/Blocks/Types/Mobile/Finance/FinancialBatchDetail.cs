@@ -313,10 +313,10 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// Processes the image and generates a financial transaction based on the provided image and batch information.
         /// </summary>
         /// <param name="processImageBag"></param>
-        /// <param name="image"></param>
+        /// <param name="imageId"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        private void ProcessImageAndGenerateTransaction( ProcessImageBag processImageBag, Rock.Model.BinaryFile image )
+        private void ProcessImageAndGenerateTransaction( ProcessImageBag processImageBag, int imageId )
         {
             // Create FinancialPaymentDetail
             if ( processImageBag.BatchIdKey.IsNullOrWhiteSpace() )
@@ -366,7 +366,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
             if ( isCheck )
             {
-                _ = Task.Run( () => ExtractAndPopulateMicrDataAsync( image, financialTransaction.IdKey ) );
+                _ = Task.Run( () => ExtractAndPopulateMicrDataAsync( imageId, financialTransaction.IdKey ) );
             }
 
             // Create the FinancialTransactionImage
@@ -386,10 +386,10 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <summary>
         /// Extracts the MICR data from the provided image and populates the financial transaction with the extracted data.
         /// </summary>
-        /// <param name="image"></param>
+        /// <param name="imageId">The Id of the BinaryFile containing the scanned check image. The entity is intentionally re-fetched inside this method's RockContext so the background task never touches a proxy attached to the (already-disposed) block-level context.</param>
         /// <param name="idKey"></param>
         /// <returns></returns>
-        private async Task ExtractAndPopulateMicrDataAsync( Rock.Model.BinaryFile image, string idKey )
+        private async Task ExtractAndPopulateMicrDataAsync( int imageId, string idKey )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -397,6 +397,13 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
                 try
                 {
+                    var image = new BinaryFileService( rockContext ).Get( imageId );
+                    if ( image == null )
+                    {
+                        Logger.LogError( "BinaryFile with Id {imageId} not found while extracting MICR data.", imageId );
+                        return;
+                    }
+
                     // Extract the MICR using Azure Document Intelligence and save the information in the FinancialTransactionScannedCheck.
                     var scannedInfo = await ExtractMicrInformationAsync( image, cts.Token );
 
@@ -789,7 +796,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
             try
             {
-                ProcessImageAndGenerateTransaction( processImageBag, image );
+                ProcessImageAndGenerateTransaction( processImageBag, image.Id );
             }
             catch ( Exception ex )
             {
