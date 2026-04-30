@@ -47,28 +47,28 @@ namespace Rock.Blocks.Reminders
 
     [LinkedPage(
         "Edit Reminder Page",
-        Description = "The page where a person can edit a reminder.",
+        Description = "The page used to edit a reminder.",
         DefaultValue = Rock.SystemGuid.Page.REMINDER_EDIT,
         Order = 1,
         Key = AttributeKey.EditReminderPage )]
 
     [ReminderTypesField(
         "Reminder Types Include",
-        Description = "Select any specific reminder types to show in this block. Leave all unchecked to show all active reminder types ( except for excluded reminder types ).",
+        Description = "Reminder types to show in this block. Leave all unchecked to show all active reminder types.",
         IsRequired = false,
         Order = 2,
         Key = AttributeKey.ReminderTypesInclude )]
 
     [ReminderTypesField(
         "Reminder Types Exclude",
-        Description = "Select reminder types to exclude from this block. Note that this setting is only effective if 'Reminder Types Include' has no specific reminder types selected.",
+        Description = "Reminder types to exclude from this block. Only applies when no types are selected in Reminder Types Include.",
         IsRequired = false,
         Order = 3,
         Key = AttributeKey.ReminderTypesExclude )]
 
     [BooleanField(
         "Show Filters",
-        Description = "Select this option if you want the block to show filters for reminders.",
+        Description = "Displays reminder filters above the list.",
         DefaultBooleanValue = true,
         Order = 4,
         Key = AttributeKey.ShowFilters )]
