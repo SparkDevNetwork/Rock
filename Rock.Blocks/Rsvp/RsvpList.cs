@@ -49,7 +49,8 @@ namespace Rock.Blocks.Rsvp
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "1ef2847c-137d-41f2-80b3-d4aa8d9f7790" )]
-    [Rock.SystemGuid.BlockTypeGuid( "57189fa8-ab29-4a66-8c52-392dff6cb91a" )]
+    // WAS [Rock.SystemGuid.BlockTypeGuid( "57189fa8-ab29-4a66-8c52-392dff6cb91a" )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.RSVP_LIST )]
     [CustomizedGrid]
     public class RsvpList : RockListBlockType<RsvpListBag>
     {
