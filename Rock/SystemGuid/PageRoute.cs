@@ -106,5 +106,10 @@ namespace Rock.SystemGuid
         /// The Group Placement route 'GroupPlacement'
         /// </summary>
         public const string GROUP_PLACEMENT = "C00ECC2D-8067-44DE-8947-A87B2CC4D575";
+
+        /// <summary>
+        /// The Ncoa Process route
+        /// </summary>
+        public const string NCOA_PROCESS = "20A7BA14-BC22-48B2-AF82-063F428B66E4";
     }
 }

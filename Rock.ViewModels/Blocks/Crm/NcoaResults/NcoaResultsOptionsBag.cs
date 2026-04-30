@@ -15,21 +15,17 @@
 // </copyright>
 //
 
-namespace Rock.Model
+namespace Rock.ViewModels.Blocks.Crm.NcoaResults
 {
     /// <summary>
-    /// Represents the address statuses.
+    /// The additional configuration options for the NcoaResults block.
     /// </summary>
-    public enum AddressStatus
+    public class NcoaResultsOptionsBag
     {
         /// <summary>
-        /// Invalid
+        /// Number of results displayed on the page
         /// </summary>
-        Invalid = 0,
+        public int ResultCount { get; set; }
 
-        /// <summary>
-        /// Valid
-        /// </summary>
-        Valid = 1
     }
 }
