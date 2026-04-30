@@ -1,0 +1,206 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning">
+        {{ config.errorMessage }}
+    </NotificationBox>
+
+    <Grid v-else
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Metric Value"
+          :entityTypeGuid="EntityType.MetricValue"
+          stickyHeader
+          liveUpdates
+          tooltipField="metricValueDateTime"
+          gridSettings
+          :gridSettingsActive="hasActiveFilters"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          @selectItem="onSelectItem">
+
+        <DateColumn name="metricValueDateTime"
+                    field="metricValueDateTime"
+                    title="Date"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <LabelColumn name="metricValueType"
+                     field="metricValueType"
+                     title="Type"
+                     :filter="pickExistingValueFilter"
+                     visiblePriority="sm" />
+
+        <NumberColumn name="yValue"
+                      field="yValue"
+                      title="Value"
+                      :filter="numberValueFilter"
+                      headerClass="title-right"
+                      visiblePriority="xs" />
+
+        <TextColumn v-if="isPartitionsColumnVisible"
+                    name="partitions"
+                    field="partitions"
+                    title="Partitions"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn name="xValue"
+                    field="xValue"
+                    title="X Value"
+                    headerClass="title-right"
+                    :hideOnScreen="true"
+                    :excludeFromExport="true" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+
+    </Grid>
+
+    <GridSettingsModal v-if="!config.errorMessage"
+                       v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :metricValueTypeItems="metricValueTypeItems"
+                       :partitionFilters="partitionFilters" />
+</template>
+
+<script setup lang="ts">
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./MetricValueList/gridSettingsModal.partial.obs";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./MetricValueList/types.partial";
+    import Grid, {
+        DateColumn, DeleteColumn, LabelColumn, NumberColumn, TextColumn,
+        dateValueFilter, numberValueFilter, pickExistingValueFilter, textValueFilter
+    } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import {
+        onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction,
+        usePersonPreferences, useReloadBlock
+    } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { MetricPartitionFilterBag } from "@Obsidian/ViewModels/Blocks/Reporting/MetricValueList/metricPartitionFilterBag";
+    import { MetricValueListGetGridDataResponseBag } from "@Obsidian/ViewModels/Blocks/Reporting/MetricValueList/metricValueListGetGridDataResponseBag";
+    import { MetricValueListOptionsBag } from "@Obsidian/ViewModels/Blocks/Reporting/MetricValueList/metricValueListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<ListBlockBox<MetricValueListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // The metric IdKey is the suffix used to scope the partition filter
+    // preference per-metric; absent only when no metric is in scope.
+    const metricIdKey = config.options?.metricIdKey ?? "";
+    const partitionPreferenceKey = `${PreferenceKey.FilterPartitionValuesPrefix}${metricIdKey}`;
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+
+    const gridSettings = ref<GridSettingsOptions>({
+        slidingDateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterDateRange)) ?? null,
+        goalMeasure: preferences.getValue(PreferenceKey.FilterGoalMeasure),
+        partitionValues: metricIdKey
+            ? (safeParseJson<Record<string, string>>(preferences.getValue(partitionPreferenceKey)) ?? {})
+            : {}
+    });
+
+    /** Goal/Measure dropdown items, sourced from the server-built options bag. */
+    const metricValueTypeItems = computed((): ListItemBag[] => {
+        return config.options?.metricValueTypeItems ?? [];
+    });
+
+    /** Per-partition filter descriptors used to render entity pickers in the settings modal. */
+    const partitionFilters = computed((): MetricPartitionFilterBag[] => {
+        return config.options?.partitionFilters ?? [];
+    });
+
+    /** Whether the grid should show the partitions column (only when the metric defines entity-typed partitions). */
+    const isPartitionsColumnVisible = computed((): boolean => {
+        return config.options?.isPartitionsColumnVisible === true;
+    });
+
+    /** Server-set flag for the gear-icon active state; updated from each GetGridData response. */
+    const hasActiveFilters = ref(false);
+
+    /** Fetches grid rows. The server re-reads filters from person preferences on each call. */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<MetricValueListGetGridDataResponseBag>("GetGridData");
+
+        if (result.isSuccess && result.data && result.data.gridData) {
+            hasActiveFilters.value = result.data.hasActiveFilters ?? false;
+            gridData = reactive(result.data.gridData);
+            return gridData;
+        }
+
+        throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+    }
+
+    /** Row click — navigates to the detail page for the selected metric value. */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /** Add button — navigates to the detail page in create mode (key = "0"). */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /** Deletes a metric value via block action and splices the row from gridData on success. */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", { key });
+
+        if (result.isSuccess) {
+            if (gridData?.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+                if (index !== -1) {
+                    gridData.rows.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete metric value.");
+        }
+    }
+
+    watch(gridSettings, async () => {
+        const settings = gridSettings.value;
+
+        preferences.setValue(
+            PreferenceKey.FilterDateRange,
+            settings.slidingDateRange ? slidingDateRangeToString(settings.slidingDateRange) : ""
+        );
+        preferences.setValue(PreferenceKey.FilterGoalMeasure, settings.goalMeasure ?? "");
+
+        if (metricIdKey) {
+            // Drop entries for partitions no longer defined on this metric.
+            const validGuids = new Set(partitionFilters.value.map(f => f.metricPartitionGuid));
+            const filteredPartitions = Object.fromEntries(
+                Object.entries(settings.partitionValues ?? {})
+                    .filter(([guid]) => validGuids.has(guid))
+            );
+            preferences.setValue(
+                partitionPreferenceKey,
+                Object.keys(filteredPartitions).length > 0 ? JSON.stringify(filteredPartitions) : ""
+            );
+        }
+
+        await preferences.save();
+        gridDataSource.value = loadGridData();
+    });
+
+    if (!config.errorMessage) {
+        gridDataSource.value = loadGridData();
+    }
+</script>
