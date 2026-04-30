@@ -177,6 +177,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { appendQueryParam } from "@Obsidian/Utility/url";
 
     const config = useConfigurationValues<ListBlockBox<WorkflowListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -321,7 +322,7 @@
 
         if (row["hasActiveEntryForm"] as boolean && config.navigationUrls?.[NavigationUrlKey.EntryPage]) {
             const basePath = config.navigationUrls[NavigationUrlKey.EntryPage].replace("((workflowTypeKey))", (row["workflowTypeIdKey"] as string) ?? "");
-            window.location.href = `${basePath}&WorkflowGuid=${row["guid"] as string}`;
+            window.location.href = appendQueryParam(basePath, "WorkflowGuid", (row["guid"] as string) ?? "");
         }
         else if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
