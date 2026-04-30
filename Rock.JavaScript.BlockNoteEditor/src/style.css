@@ -183,15 +183,22 @@ html[theme="dark"] .bn-container {
   list-style: none;
 }
 
-.bn-hover ul.bn-menu li {
+.bn-hover ul.bn-menu .bn-menu-item {
   border-radius: 4px;
   padding: 2px 8px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xsmall);
 }
 
-.bn-hover ul.bn-menu li.selected,
-.bn-hover ul.bn-menu li:hover {
+.bn-hover ul.bn-menu .bn-menu-item.selected,
+.bn-hover ul.bn-menu .bn-menu-item:hover {
   background-color: var(--color-interface-soft);
+}
+
+.bn-hover ul.bn-menu .bn-menu-item-danger {
+  color: var(--color-danger-strong);
 }
 
 /* Code block overrides */

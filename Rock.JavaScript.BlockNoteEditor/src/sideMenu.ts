@@ -1,4 +1,4 @@
-import { createIconButton } from "./functions";
+import { createIconButton, Hover, Menu } from "./functions";
 import { SideMenuExtension, SuggestionMenu } from "@blocknote/core/extensions";
 import type { RockBlock, RockBlockNoteEditor } from "./schema";
 
@@ -54,7 +54,7 @@ export class SideMenu {
         });
 
         this.actionButton.addEventListener('click', () => {
-            console.log('Action button clicked');
+            this.showMenu(editor, container, this.actionButton);
         });
 
         this.element = document.createElement('div');
@@ -81,5 +81,18 @@ export class SideMenu {
             this.element.style.top = "0px";
             this.element.style.transform = `translate(${box.x - containerRect.left - sideMenuRect.width}px, ${box.y - containerRect.top}px)`;
         });
+    }
+
+    private showMenu(editor: RockBlockNoteEditor, container: HTMLElement, anchor: HTMLElement): void {
+        const menu = new Menu();
+
+        menu.addItem({ text: "Delete", icon: "ti ti-trash", type: "danger" }, () => {
+            if (this.block) {
+                editor.removeBlocks([this.block]);
+            }
+            hover.dispose();
+        });
+
+        const hover = Hover.showMenu(menu, container, anchor);
     }
 }

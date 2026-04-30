@@ -142,10 +142,29 @@ export class Menu implements IDisposable {
         this.disposeCallbacks.length = 0;
     }
 
-    public addItem(text: string, listener: EventListener): void {
+    public addItem(text: string | { text: string, icon?: string, type?: "danger" }, listener: EventListener): void {
         const item = document.createElement("li");
+        item.classList.add("bn-menu-item");
 
-        item.textContent = text;
+        if (typeof text === "string") {
+            item.textContent = text;
+        }
+        else {
+            if (text.icon) {
+                const icon = document.createElement("i");
+                icon.className = text.icon;
+                item.prepend(icon);
+            }
+
+            const span = document.createElement("span");
+            span.textContent = text.text;
+            item.appendChild(span);
+
+            if (text.type === "danger") {
+                item.classList.add("bn-menu-item-danger");
+            }
+        }
+
         item.addEventListener("click", listener);
         item.addEventListener("mousedown", ev => ev.preventDefault());
 
