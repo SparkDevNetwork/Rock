@@ -174,18 +174,27 @@ namespace Rock.Blocks.Cms
 
             foreach ( var shortcode in shortcodeTypes )
             {
-                var shortcodeMetadataAttribute = shortcode
-                    .GetCustomAttributes( typeof( LavaShortcodeMetadataAttribute ), true )
-                    .FirstOrDefault() as LavaShortcodeMetadataAttribute;
+                /*
+                    4/30/2026 - JPH
 
-                // Ignore shortcodes with no metadata.
-                if ( shortcodeMetadataAttribute == null )
-                {
-                    continue;
-                }
+                    The entire loop body is wrapped in a try/catch so that a single bad shortcode type (e.g., a plugin
+                    DLL whose [LavaShortcodeMetadata] attribute is bound to a constructor that no longer exists) does
+                    not prevent the rest of the shortcodes from being listed.
 
+                    Reason: One bad plugin type should not blank out the Lava Shortcode List admin block.
+                */
                 try
                 {
+                    var shortcodeMetadataAttribute = shortcode
+                        .GetCustomAttributes( typeof( LavaShortcodeMetadataAttribute ), true )
+                        .FirstOrDefault() as LavaShortcodeMetadataAttribute;
+
+                    // Ignore shortcodes with no metadata.
+                    if ( shortcodeMetadataAttribute == null )
+                    {
+                        continue;
+                    }
+
                     var shortcodeInstance = Activator.CreateInstance( shortcode ) as ILavaShortcode;
                     var shortcodeType = shortcodeInstance.ElementType;
 
@@ -203,11 +212,10 @@ namespace Rock.Blocks.Cms
                         Categories = GetCategoriesFromMetaData( shortcodeMetadataAttribute ),
                         ShortcodeScopeBehavior = ShortcodeScopeBehavior.Isolated
                     } );
-
                 }
                 catch ( Exception ex )
                 {
-                    ExceptionLogService.LogException( ex );
+                    ExceptionLogService.LogException( new Exception( $"Unable to load Lava shortcode metadata for type '{shortcode.FullName}' in assembly '{shortcode.Assembly.GetName().Name}'.", ex ) );
                 }
             }
 

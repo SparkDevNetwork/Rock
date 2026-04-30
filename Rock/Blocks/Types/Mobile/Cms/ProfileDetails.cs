@@ -194,7 +194,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             /// The display campus types key.
             /// </summary>
             public const string DisplayCampusTypes = "DisplayCampusTypes";
-                
+
             /// <summary>
             /// The display campus statuses key.
             /// </summary>
@@ -388,20 +388,30 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 int phoneNumberTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
 
                 var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberTypeId );
-                if ( phoneNumber == null )
+                var cleanedNumber = PhoneNumber.CleanNumber( profile.MobilePhone );
+
+                if ( string.IsNullOrWhiteSpace( cleanedNumber ) )
                 {
-                    phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
-                    person.PhoneNumbers.Add( phoneNumber );
+                    // Only remove/delete a phone number record if one previously existed.
+                    // Creating a new entity just to immediately delete it leaves EF in an
+                    // inconsistent tracking state and causes SaveChanges to throw.
+                    if ( phoneNumber != null )
+                    {
+                        person.PhoneNumbers.Remove( phoneNumber );
+                        phoneNumberService.Delete( phoneNumber );
+                    }
                 }
-
-                // TODO: What to do with country code?
-                phoneNumber.CountryCode = PhoneNumber.CleanNumber( "+1" );
-                phoneNumber.Number = PhoneNumber.CleanNumber( profile.MobilePhone );
-
-                if ( string.IsNullOrWhiteSpace( phoneNumber.Number ) )
+                else
                 {
-                    person.PhoneNumbers.Remove( phoneNumber );
-                    phoneNumberService.Delete( phoneNumber );
+                    if ( phoneNumber == null )
+                    {
+                        phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
+                        person.PhoneNumbers.Add( phoneNumber );
+                    }
+
+                    // TODO: What to do with country code?
+                    phoneNumber.CountryCode = PhoneNumber.CleanNumber( "+1" );
+                    phoneNumber.Number = cleanedNumber;
                 }
             }
 
