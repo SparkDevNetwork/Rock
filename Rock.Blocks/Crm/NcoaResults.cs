@@ -61,7 +61,8 @@ namespace Rock.Blocks.Crm
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "01a7925e-2532-4a9a-9dc6-8bef835761de" )]
-    [Rock.SystemGuid.BlockTypeGuid( "69c53367-0d4a-49f1-b64b-863f08c2fc0b" )]
+    // WAS [Rock.SystemGuid.BlockTypeGuid( "69c53367-0d4a-49f1-b64b-863f08c2fc0b" )]
+    [Rock.SystemGuid.BlockTypeGuid( "3997FE75-E069-4879-B8BA-C8B19C367CD3" )]
     [CustomizedGrid]
     public class NcoaResults : RockBlockType
     {
