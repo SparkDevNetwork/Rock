@@ -650,15 +650,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 entity.SaveAttributeValues( RockContext );
             } );
 
-            // Invalidate the kiosk device cache and push a refresh notification to all connected kiosks so
-            // configuration changes propagate without waiting for an app recycle. Mirrors the legacy
-            // WebForms block; the reflection call into Rock.CheckIn.v2.CheckInDirector matches the legacy
-            // approach (the API is intentionally still internal).
-            Rock.CheckIn.KioskDevice.Clear();
-
-            typeof( GroupType ).Assembly.GetType( "Rock.CheckIn.v2.CheckInDirector" )
-                ?.GetMethod( "SendRefreshKioskConfiguration" )
-                ?.Invoke( null, new object[0] );
+            RefreshConnectedKiosks();
 
             if ( isNew )
             {
@@ -710,9 +702,7 @@ namespace Rock.Blocks.CheckIn.Configuration
             entityService.Delete( entity );
             RockContext.SaveChanges();
 
-            // Invalidate the kiosk device cache so the deleted configuration is no longer served to any
-            // connected kiosks. Mirrors the legacy WebForms block.
-            Rock.CheckIn.KioskDevice.Clear();
+            RefreshConnectedKiosks();
 
             var pageRef = new Rock.Web.PageReference( PageCache.Id );
             var routeId = PageCache.PageRoutes.FirstOrDefault()?.Id;
@@ -1324,6 +1314,24 @@ namespace Rock.Blocks.CheckIn.Configuration
             errorMessage = null;
 
             return true;
+        }
+
+        /// <summary>
+        /// Clears the kiosk device cache and pushes a refresh notification to all connected kiosks so configuration
+        /// changes propagate without waiting for an app recycle.
+        /// </summary>
+        private void RefreshConnectedKiosks()
+        {
+#if NET472_OR_GREATER
+            // Temporary until legacy check-in is removed.
+            KioskDevice.Clear();
+#endif
+
+            // I know, this is a terrible hack. But we need to force the
+            // kiosks to refresh and we don't want to make this public yet. -dsh
+            typeof( GroupType ).Assembly.GetType( "Rock.CheckIn.v2.CheckInDirector" )
+                ?.GetMethod( "SendRefreshKioskConfiguration" )
+                ?.Invoke( null, new object[0] );
         }
 
         #endregion Private Methods

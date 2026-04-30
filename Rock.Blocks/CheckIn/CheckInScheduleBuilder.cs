@@ -264,10 +264,7 @@ namespace Rock.Blocks.CheckIn
 
             if ( RockContext.SaveChanges() > 0 )
             {
-#if NET472_OR_GREATER
-                // Temporary until legacy check-in is removed.
-                KioskDevice.Clear();
-#endif
+                RefreshConnectedKiosks();
             }
 
             return ActionOk();
@@ -701,6 +698,24 @@ namespace Rock.Blocks.CheckIn
             }
 
             return bags;
+        }
+
+        /// <summary>
+        /// Clears the kiosk device cache and pushes a refresh notification to all connected kiosks so configuration
+        /// changes propagate without waiting for an app recycle.
+        /// </summary>
+        private void RefreshConnectedKiosks()
+        {
+#if NET472_OR_GREATER
+            // Temporary until legacy check-in is removed.
+            KioskDevice.Clear();
+#endif
+
+            // I know, this is a terrible hack. But we need to force the
+            // kiosks to refresh and we don't want to make this public yet. -dsh
+            typeof( GroupType ).Assembly.GetType( "Rock.CheckIn.v2.CheckInDirector" )
+                ?.GetMethod( "SendRefreshKioskConfiguration" )
+                ?.Invoke( null, new object[0] );
         }
 
         #endregion Private Methods
