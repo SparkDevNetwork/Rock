@@ -162,9 +162,11 @@
 
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+							{% if ButtonVisibility.AllowGroupMemberDelete == true %}
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
 							<i class="ti ti-x"></i>
 							</a>
+							{% endif %}
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
 							<i class="ti ti-pencil"></i>
 							</a>
@@ -229,9 +231,11 @@
 
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+							{% if ButtonVisibility.AllowGroupMemberDelete == true %}
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
 							<i class="ti ti-x"></i>
 							</a>
+							{% endif %}
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
 							<i class="ti ti-pencil"></i>
 							</a>
@@ -296,9 +300,11 @@
 
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+							{% if ButtonVisibility.AllowGroupMemberDelete == true %}
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
 							<i class="ti ti-x"></i>
 							</a>
+							{% endif %}
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
 							<i class="ti ti-pencil"></i>
 							</a>

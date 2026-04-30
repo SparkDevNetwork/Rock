@@ -987,6 +987,7 @@ namespace RockWeb.Blocks.Groups
                 Dictionary<string, object> buttonVisibility = new Dictionary<string, object>();
                 buttonVisibility.Add( AttributeKey.ShowEmailGroupLeadersButton, GetAttributeValue( AttributeKey.ShowEmailGroupLeadersButton ) );
                 buttonVisibility.Add( AttributeKey.ShowEmailRosterParentsButton, GetAttributeValue( AttributeKey.ShowEmailRosterParentsButton ) );
+                buttonVisibility.Add( AttributeKey.AllowGroupMemberDelete, GetAttributeValue( AttributeKey.AllowGroupMemberDelete ) );
                 mergeFields.Add( "ButtonVisibility", buttonVisibility );
 
                 string template = GetAttributeValue( AttributeKey.LavaTemplate );
@@ -1378,7 +1379,7 @@ namespace RockWeb.Blocks.Groups
                 // persist the group member id for use in partial postbacks
                 this.CurrentGroupMemberId = groupMember.Id;
 
-                lConfirmDeleteMsg.Text = string.Format( "Are you sure you want to delete (remove) {0} from {1}?", groupMember.Person.FullName, groupMember.Group.Name );
+                lConfirmDeleteMsg.Text = string.Format( "Are you sure you want to remove {0} from {1}?", groupMember.Person.FullName, groupMember.Group.Name );
 
                 mdConfirmDelete.Show();
                 //mdConfirmDelete.Header.Visible = false;
