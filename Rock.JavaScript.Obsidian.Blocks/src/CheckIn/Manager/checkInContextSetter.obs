@@ -94,6 +94,8 @@
     function createLocationProvider(campusGuid: string | null | undefined): ITreeItemProvider {
         const provider = new LocationTreeItemProvider();
 
+        provider.includeInactive = true;
+
         if (campusGuid) {
             provider.rootLocationGuid = config.rootLocations?.[campusGuid];
         }

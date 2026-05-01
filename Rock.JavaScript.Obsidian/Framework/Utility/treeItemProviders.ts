@@ -188,6 +188,11 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
     public rootLocationGuid?: Guid | null;
 
     /**
+     * Determines if inactive locations should be included in the results.
+     */
+    public includeInactive: boolean = false;
+
+    /**
      * Gets the child items from the server.
      *
      * @param parentGuid The parent item whose children are retrieved.
@@ -200,7 +205,8 @@ export class LocationTreeItemProvider implements ITreeItemProvider {
             guid: toGuidOrNull(parentGuid) ?? emptyGuid,
             rootLocationGuid: this.rootLocationGuid ?? emptyGuid,
             expandToValues: expandToValues,
-            securityGrantToken: this.securityGrantToken
+            securityGrantToken: this.securityGrantToken,
+            includeInactive: this.includeInactive,
         };
         const url = "/api/v2/Controls/LocationItemPickerGetActiveChildren";
         const response = await this.http.post<TreeItemBag[]>(url, undefined, options);
