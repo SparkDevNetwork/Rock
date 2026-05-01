@@ -1,6 +1,6 @@
 ---
 title: Group Requirements
-last_updated: 2026-04-29
+last_updated: 2026-05-01
 related_files:
   - Rock/Model/Group/GroupRequirement/GroupRequirement.cs
   - Rock/Model/Group/GroupRequirement/GroupRequirement.Logic.cs
@@ -193,8 +193,8 @@ Manual requirements are skipped entirely. Their state changes only when a UI act
 
 ## Recent Impactful Changes
 
-- **2025-08-13** ([commit `78e21f1ed0`](https://github.com/SparkDevNetwork/Rock/commit/78e21f1ed0)). Group Scheduler now allows scheduling members in Warning state. Previously treated Warning as ineligible (Fixes #6654).
-- **2024-late** ([commit `1f8228034a`](https://github.com/SparkDevNetwork/Rock/commit/1f8228034a)). `CalculateGroupRequirements` performance: stale rows properly deleted, workflows correctly re-fire on newly-met requirements, retroactive Manual evaluation.
-- **2024** ([commit `a0aac875b1`](https://github.com/SparkDevNetwork/Rock/commit/a0aac875b1)). Added `GroupMemberRequirementState` as computed, persisted property.
-- **2024** ([commit `e872b392a0`](https://github.com/SparkDevNetwork/Rock/commit/e872b392a0)). Fixed display issue where a member who transitioned from Met to Warning still rendered as Met.
-- **2024** ([commit `2ee3535127`](https://github.com/SparkDevNetwork/Rock/commit/2ee3535127)). Group Requirement Type Detail (Obsidian) correctly loads and saves Attribute Values.
+- **2026-02-09** ([commit `78e21f1ed0`](https://github.com/SparkDevNetwork/Rock/commit/78e21f1ed0)). Group Scheduler now allows scheduling members in Warning state; previously treated Warning as ineligible (Fixes #6654).
+- **2026-02-07** ([commit `a0aac875b1`](https://github.com/SparkDevNetwork/Rock/commit/a0aac875b1)). Added `GroupMemberRequirementState` as a computed, persisted property and improved the requirement job.
+- **2026-01-14** ([commit `2ee3535127`](https://github.com/SparkDevNetwork/Rock/commit/2ee3535127)). Group Requirement Type Detail (Obsidian) correctly loads and saves Attribute Values (Fixes #6642).
+- **2025-12-16** ([commit `e872b392a0`](https://github.com/SparkDevNetwork/Rock/commit/e872b392a0)). Fixed display issue where a member who transitioned from Met to Warning still rendered as Met (Fixes #6427).
+- **2025-12-12** ([commit `1f8228034a`](https://github.com/SparkDevNetwork/Rock/commit/1f8228034a)). `CalculateGroupRequirements` performance: outdated member requirements are now properly deleted, workflows re-fire when an individual newly meets a requirement, and Manual requirements are retroactively evaluated (Fixes #6594, #6595).

@@ -1,6 +1,6 @@
 ---
 title: Group Attendance
-last_updated: 2026-04-29
+last_updated: 2026-05-01
 related_files:
   - Rock.Blocks/Group/GroupAttendanceDetail.cs
   - Rock.Blocks/Group/GroupAttendanceList.cs
@@ -51,7 +51,7 @@ The Group-facing recording flow lazily creates `AttendanceOccurrence` rows on de
 
 **`DidNotOccur = true` does not retroactively flip Attendance rows.** Marking an occurrence as cancelled does not cascade to the attendance rows. If a service is cancelled after some attendance has been recorded, those rows still say `DidAttend = true`. Reporting code must check both.
 
-**Block parameter resolution must accept both raw int IDs and IdKey/Guid forms.** The Group Attendance Detail block previously only accepted raw int IDs and broke when "Disable Predictable Ids" was enabled site-wide. Commit `639757c414` fixed the resolver to accept both forms. Custom blocks that take a Group reference need to follow the same pattern; hardcoding integer-only resolution will produce the same bug.
+**Group references must be resolved through the standard pattern.** The Group Attendance Detail block previously only accepted raw int IDs and broke when a site had "Disable Predictable Ids" enabled. Custom recording blocks must use `GetQueryableByKey` and pass the site setting through; hardcoding an integer-only resolver, or hardcoding `allowIntegerIdentifier: true`, reintroduces the bug. See [docs/core/entity-reference-resolution.md](../core/entity-reference-resolution.md) for the canonical pattern.
 
 **Group archive does not bulk-delete attendance.** Historical attendance survives Group archive, preserving reporting integrity. It does not survive `Group.Delete`: the Group save hook bulk-deletes Attendance rows whose `Occurrence.GroupId` matches.
 
@@ -75,7 +75,7 @@ WHERE o.GroupId = @groupId
   AND o.OccurrenceDate >= @start AND o.OccurrenceDate <= @end
 ```
 
-**"Build a custom attendance recording block for a Group."** Resolve the Group via `GetQueryableByKey(groupKey, allowIntegerIdentifier: true)` to support both raw int and IdKey/Guid. Look up or create the `AttendanceOccurrence`. Write per-person `Attendance` rows.
+**"Build a custom attendance recording block for a Group."** Resolve the Group via `GetQueryableByKey( groupKey, !PageCache.Layout.Site.DisablePredictableIds )` so the block honors the site's predictable-ids setting (see [docs/core/entity-reference-resolution.md](../core/entity-reference-resolution.md)). Look up or create the `AttendanceOccurrence`. Write per-person `Attendance` rows.
 
 ## Key Architectural Decisions
 
@@ -125,7 +125,7 @@ Rejected. The common case is marking present. Defaulting to false would require 
 
 [Rock.Blocks/Group/GroupAttendanceDetail.cs](../../Rock.Blocks/Group/GroupAttendanceDetail.cs):
 
-1. Resolve the Group from the page parameter. Both raw int IDs and IdKey/Guid are accepted ([commit `639757c414`](https://github.com/SparkDevNetwork/Rock/commit/639757c414)).
+1. Resolve the Group from the page parameter via `GetQueryableByKey`, passing through the site's `DisablePredictableIds` setting. See [docs/core/entity-reference-resolution.md](../core/entity-reference-resolution.md).
 2. Resolve the date, location, schedule from page params or block settings.
 3. Look up an existing `AttendanceOccurrence` for the tuple; create on demand.
 4. Render roster, mark attendees.
@@ -154,6 +154,6 @@ The block can mark the occurrence as `DidNotOccur = true`, which sets the flag w
 
 ## Recent Impactful Changes
 
-- **2025-08-13** ([commit `639757c414`](https://github.com/SparkDevNetwork/Rock/commit/639757c414)). Group Attendance Detail correctly resolves the Group via Guid or IdKey when "Disable Predictive Ids" is enabled (Fixes #6687).
-- **2025** ([commit `194af0435a`](https://github.com/SparkDevNetwork/Rock/commit/194af0435a)). Group Attendance List Obsidian block landed; legacy WebForms version chopped.
-- **2025** ([commit `278e1fb088`](https://github.com/SparkDevNetwork/Rock/commit/278e1fb088)). Final WebForms cleanup for `BatchList`, `GroupAttendanceDetail`, and `Notes`.
+- **2026-04-14** ([commit `278e1fb088`](https://github.com/SparkDevNetwork/Rock/commit/278e1fb088)). Final WebForms cleanup for `BatchList`, `GroupAttendanceDetail`, and `Notes` blocks.
+- **2026-04-13** ([commit `194af0435a`](https://github.com/SparkDevNetwork/Rock/commit/194af0435a)). Group Attendance List Obsidian block landed; legacy WebForms version chopped.
+- **2026-02-09** ([commit `639757c414`](https://github.com/SparkDevNetwork/Rock/commit/639757c414)). Group Attendance Detail correctly resolves the Group via `Guid` or `IdKey` when "Disable Predictable Ids" is enabled site-wide (Fixes #6687).

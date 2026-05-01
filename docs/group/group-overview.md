@@ -1,6 +1,6 @@
 ---
 title: Groups Domain Overview
-last_updated: 2026-04-29
+last_updated: 2026-05-01
 related_files:
   - Rock/Model/Group/Group/Group.cs
   - Rock/Model/Group/Group/Group.Logic.cs
@@ -155,8 +155,8 @@ Four cache classes back the domain: `GroupCache`, `GroupTypeCache`, `GroupTypeRo
 
 ## Recent Impactful Changes
 
-- **2026-03-13** ([commit `dd7e1d45c8`](https://github.com/SparkDevNetwork/Rock/commit/dd7e1d45c8)). `ISecured` mirroring on cache classes (including `GroupCache`) closed an authorization-mismatch class of bugs.
+- **2026-03-13** ([commit `dd7e1d45c8`](https://github.com/SparkDevNetwork/Rock/commit/dd7e1d45c8)). Cache classes (including `GroupCache`) updated to mirror their model entities' `ISecured` behavior, closing an authorization-mismatch class of bugs.
+- **2026-02-09** ([commit `544d4f8587`](https://github.com/SparkDevNetwork/Rock/commit/544d4f8587)). Group Registration block now refuses to register against archived groups even when reached via a bookmarked link (Fixes #6674).
+- **2025-10-27** ([commit `b7f1eaa9e0`](https://github.com/SparkDevNetwork/Rock/commit/b7f1eaa9e0)). Cache classes switched to `RockApp.Current.CreateRockContext()` for testability.
 - **2025-10-16** ([commit `e16e7506a7`](https://github.com/SparkDevNetwork/Rock/commit/e16e7506a7)). `Group.Logic.cs` security checks now use `GroupCache` for parent authority.
-- **2025-08-20** ([commit `544d4f8587`](https://github.com/SparkDevNetwork/Rock/commit/544d4f8587)). Group Registration block now refuses to register against archived groups.
-- **2024-08** ([commit `f4c1cd8708`](https://github.com/SparkDevNetwork/Rock/commit/f4c1cd8708)). Reactivating very large Groups no longer times out.
-- **2024** ([commit `bbfdb9f3b4`](https://github.com/SparkDevNetwork/Rock/commit/bbfdb9f3b4)). Edge-case GroupMember validation moved to async to avoid blocking saves.
+- **2025-10-12** ([commit `f4c1cd8708`](https://github.com/SparkDevNetwork/Rock/commit/f4c1cd8708)). Reactivating very large Groups no longer times out (Fixes #6436).

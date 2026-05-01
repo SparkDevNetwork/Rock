@@ -1,6 +1,6 @@
 ---
 title: Group Types
-last_updated: 2026-04-29
+last_updated: 2026-05-01
 related_files:
   - Rock/Model/Group/GroupType/GroupType.cs
   - Rock/Model/Group/GroupType/GroupType.Logic.cs
@@ -142,6 +142,5 @@ GroupType edits do not have the heavy member-cascade logic that `Group.SaveHook`
 
 ## Recent Impactful Changes
 
-- **2025-08-27** ([commit `52191e72d4`](https://github.com/SparkDevNetwork/Rock/commit/52191e72d4)). Group Type Detail Obsidian block landed; legacy WebForms version chopped.
-- **2025-08-12** ([commit `6081891459`](https://github.com/SparkDevNetwork/Rock/commit/6081891459)). Group Type Detail loads entity attributes in view mode.
-- **2024** ([commit `2ee3535127`](https://github.com/SparkDevNetwork/Rock/commit/2ee3535127)). Fixed Group Requirement Type Detail (Obsidian) so attribute values save correctly.
+- **2026-03-27** ([commit `6081891459`](https://github.com/SparkDevNetwork/Rock/commit/6081891459)). Group Type Detail block now loads entity attributes in view mode.
+- **2026-02-05** ([commit `52191e72d4`](https://github.com/SparkDevNetwork/Rock/commit/52191e72d4)). Group Type Detail Obsidian block landed; legacy WebForms version chopped.

@@ -1,6 +1,6 @@
 ---
 title: Group Sync
-last_updated: 2026-04-29
+last_updated: 2026-05-01
 related_files:
   - Rock/Model/Group/GroupSync/GroupSync.cs
   - Rock/Model/Group/GroupSync/GroupSyncService.cs
@@ -146,4 +146,4 @@ Throughput per [GroupSync.cs:55](../../Rock/Model/Group/GroupSync/GroupSync.cs):
 
 ## Recent Impactful Changes
 
-(None notable in the recent commit history surveyed.)
+(No release-note-worthy changes to the Group Sync subsystem in the last 18 months.)

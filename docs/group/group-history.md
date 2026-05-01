@@ -1,6 +1,6 @@
 ---
 title: Group Historical Entities
-last_updated: 2026-04-29
+last_updated: 2026-05-01
 related_files:
   - Rock/Model/Group/GroupHistorical/GroupHistorical.cs
   - Rock/Model/Group/GroupHistorical/GroupHistorical.Logic.cs
@@ -176,4 +176,4 @@ There is no top-level admin block for browsing historical rows directly.
 
 ## Recent Impactful Changes
 
-- **2025** ([commit `dd7e1d45c8`](https://github.com/SparkDevNetwork/Rock/commit/dd7e1d45c8)). `ISecured` mirroring fix touched some `*.Logic.cs` files including historical entities; behavior unchanged for history but cache parity fixed.
+(No changes to the historical-entity subsystem in the last 18 months that materially affect doc content.)

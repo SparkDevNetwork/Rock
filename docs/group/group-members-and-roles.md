@@ -1,6 +1,6 @@
 ---
 title: Group Members and Roles
-last_updated: 2026-04-29
+last_updated: 2026-05-01
 related_files:
   - Rock/Model/Group/GroupMember/GroupMember.cs
   - Rock/Model/Group/GroupMember/GroupMember.Logic.cs
@@ -183,7 +183,7 @@ Composite index `(GroupId, GroupRoleId, GroupMemberStatus)` at [GroupMember.cs:7
 
 ## Recent Impactful Changes
 
-- **2025** ([commit `bbfdb9f3b4`](https://github.com/SparkDevNetwork/Rock/commit/bbfdb9f3b4)). Edge-case GroupMember validation moved to async to avoid blocking saves.
-- **2025** ([commit `fa351ab9a9`](https://github.com/SparkDevNetwork/Rock/commit/fa351ab9a9)). `GroupMemberDetail` reduced redundant `PersonMeetsGroupRequirements` calls.
-- **2025-08-12** ([commit `4c4ef121b4`](https://github.com/SparkDevNetwork/Rock/commit/4c4ef121b4)). Obsidian Group Type Detail correctly persists `GroupTypeRole` attribute values and security checks.
-- **2025** ([commit `7d26eea4be`](https://github.com/SparkDevNetwork/Rock/commit/7d26eea4be)). Group Placement "Date Added" sort uses `DateTimeAdded` correctly.
+- **2026-01-20** ([commit `4c4ef121b4`](https://github.com/SparkDevNetwork/Rock/commit/4c4ef121b4)). Completed all functionality related to GroupTypeRoles in the Obsidian Group Type Detail. Fixed GroupType attributes/values loading and maintained security checks.
+- **2025-11-05** ([commit `7d26eea4be`](https://github.com/SparkDevNetwork/Rock/commit/7d26eea4be)). Group Placement "Date Added (Oldest First)" / "Date Added (Newest First)" sort now uses `GroupMember.DateTimeAdded` correctly (Fixes #6545).
+- **2025-10-17** ([commit `fa351ab9a9`](https://github.com/SparkDevNetwork/Rock/commit/fa351ab9a9)). `GroupMemberDetail` reduced redundant `PersonMeetsGroupRequirements` calls during person selection and save.
+- **2025-10-14** ([commit `bbfdb9f3b4`](https://github.com/SparkDevNetwork/Rock/commit/bbfdb9f3b4)). Edge-case GroupMember validation refactored to run as an asynchronous task, removing the save-time block.

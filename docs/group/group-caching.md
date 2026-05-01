@@ -1,6 +1,6 @@
 ---
 title: Group Caching
-last_updated: 2026-04-29
+last_updated: 2026-05-01
 related_files:
   - Rock/Web/Cache/Entities/GroupCache.cs
   - Rock/Web/Cache/Entities/GroupTypeCache.cs
@@ -155,6 +155,6 @@ Caching is a service-layer concern; no UI exposes it directly. The cache managem
 
 ## Recent Impactful Changes
 
-- **2026-03-13** ([commit `dd7e1d45c8`](https://github.com/SparkDevNetwork/Rock/commit/dd7e1d45c8)). `ISecured` overrides reorganized into `*.Logic.cs` and matching overrides added to cache classes (including `GroupCache`).
-- **2025-10-16** ([commit `e16e7506a7`](https://github.com/SparkDevNetwork/Rock/commit/e16e7506a7)). `Group.Logic.cs` security checks now use `GroupCache` for parent authority.
-- **2025-10-27** ([commits `b7f1eaa9e0`, `18c8ecbd47`](https://github.com/SparkDevNetwork/Rock/commit/b7f1eaa9e0)). `new RockContext()` replaced with `RockApp.Current.CreateRockContext()` across cache files.
+- **2026-03-13** ([commit `dd7e1d45c8`](https://github.com/SparkDevNetwork/Rock/commit/dd7e1d45c8)). Cache classes (including `GroupCache`, `GroupTypeCache`, `GroupTypeRoleCache`) updated to mirror their model entities' `ISecured` behavior. `ParentAuthority`, `IsAuthorized`, `IsAllowedByDefault` overrides added where missing. `ISecured` methods reorganized into `*.Logic.cs` for several entities.
+- **2025-10-27** ([commit `b7f1eaa9e0`](https://github.com/SparkDevNetwork/Rock/commit/b7f1eaa9e0)). Cache classes switched from `new RockContext()` to `RockApp.Current.CreateRockContext()` to improve testability.
+- **2025-10-16** ([commit `e16e7506a7`](https://github.com/SparkDevNetwork/Rock/commit/e16e7506a7)). `Group.Logic.cs` security checks now use `GroupCache` for parent authority. Small performance improvement.

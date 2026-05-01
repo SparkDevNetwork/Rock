@@ -1,6 +1,6 @@
 ---
 title: Group Locations
-last_updated: 2026-04-29
+last_updated: 2026-05-01
 related_files:
   - Rock/Model/Group/GroupLocation/GroupLocation.cs
   - Rock/Model/Group/GroupLocation/GroupLocationService.cs
@@ -167,4 +167,3 @@ Cascade delete from both `GroupLocation` and `Schedule`.
 ## Recent Impactful Changes
 
 - **2025-10-27** ([commit `b7f1eaa9e0`](https://github.com/SparkDevNetwork/Rock/commit/b7f1eaa9e0)). `GroupLocationCache` switched to `RockApp.Current.CreateRockContext()` for testability. Behavior unchanged.
-- **2025-08-13** ([commit `639757c414`](https://github.com/SparkDevNetwork/Rock/commit/639757c414)). Group Attendance Detail correctly resolves the selected Group via Guid or IdKey when "Disable Predictive Ids" is enabled. Indirectly affects how Group Locations are picked.

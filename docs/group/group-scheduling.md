@@ -1,6 +1,6 @@
 ---
 title: Group Scheduling
-last_updated: 2026-04-29
+last_updated: 2026-05-01
 related_files:
   - Rock.Blocks/Group/Scheduling/GroupScheduler.cs
   - Rock.Blocks/Group/Scheduling/GroupScheduleToolbox.cs
@@ -179,6 +179,6 @@ The Scheduler honors `GroupLocationScheduleConfig` capacities as a soft hierarch
 
 ## Recent Impactful Changes
 
-- **2025-09** ([commit `60924b0e17`](https://github.com/SparkDevNetwork/Rock/commit/60924b0e17)). Group Scheduler correctly disables the Group Picker when one or more Groups are passed via URL (Fixes #6670).
-- **2025-08-13** ([commit `78e21f1ed0`](https://github.com/SparkDevNetwork/Rock/commit/78e21f1ed0)). Warning-state Group Requirements no longer block scheduling (Fixes #6654).
-- **2024-late** ([commit `49530db1e1`](https://github.com/SparkDevNetwork/Rock/commit/49530db1e1)). Group Scheduler reduced redundant DB queries when viewing many Groups across many weeks (Fixes #6662).
+- **2026-02-09** ([commit `60924b0e17`](https://github.com/SparkDevNetwork/Rock/commit/60924b0e17)). Group Scheduler correctly disables the Group Picker when one or more Groups are passed via URL with "Disallow Group Selection If Specified" enabled (Fixes #6670).
+- **2026-02-09** ([commit `78e21f1ed0`](https://github.com/SparkDevNetwork/Rock/commit/78e21f1ed0)). Warning-state Group Requirements no longer block scheduling (Fixes #6654).
+- **2026-01-28** ([commit `49530db1e1`](https://github.com/SparkDevNetwork/Rock/commit/49530db1e1)). Reduced redundant DB queries when viewing many Groups across many weeks (Fixes #6662).
