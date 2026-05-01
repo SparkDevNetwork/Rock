@@ -36,12 +36,19 @@
         <template #edit>
             <EditPanel v-model="registrationInstanceEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
+
+        <template v-if="isSendPaymentReminderShown" #footerSecondaryActions>
+            <RockButton btnType="default" @click="onSendPaymentReminder">
+                <i class="ti ti-mail-forward"></i> Send Payment Reminders
+            </RockButton>
+        </template>
     </DetailBlock>
 </template>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
@@ -150,31 +157,26 @@
         return labels;
     });
 
+    const isSendPaymentReminderShown = computed((): boolean => {
+        return isViewMode.value
+            && !!registrationInstanceViewBag.value?.idKey
+            && registrationInstanceViewBag.value?.canSendPaymentReminder === true
+            && !!options.value.paymentReminderPageUrl;
+    });
+
     const footerSecondaryActions = computed((): PanelAction[] => {
         if (!isViewMode.value || !registrationInstanceViewBag.value?.idKey) {
             return [];
         }
 
-        const actions: PanelAction[] = [];
-        const bag = registrationInstanceViewBag.value;
-
-        if (bag?.canSendPaymentReminder && options.value.paymentReminderPageUrl) {
-            actions.push({
-                iconCssClass: "ti ti-mail-forward",
-                title: "Send Payment Reminders",
+        return [
+            {
+                iconCssClass: "ti ti-copy",
+                title: "Copy",
                 type: "default",
-                handler: onSendPaymentReminder
-            });
-        }
-
-        actions.push({
-            iconCssClass: "ti ti-copy",
-            title: "Copy",
-            type: "default",
-            handler: onCopy
-        });
-
-        return actions;
+                handler: onCopy
+            }
+        ];
     });
 
     // #endregion

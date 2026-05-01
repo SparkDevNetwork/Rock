@@ -967,7 +967,7 @@ export default defineComponent({
 
     <template v-if="showLabels && showLabelsInHeader" #panelLabels>
         <div class="label-group">
-            <span v-for="action in labels" :class="getClassForLabelAction(action)" @click="onActionClick(action, $event)">
+            <span v-for="action in labels" :class="getClassForLabelAction(action)" :title="action.tooltip" @click="onActionClick(action, $event)">
                 <template v-if="action.title">{{ action.title }}</template>
                 <i v-else :class="action.iconCssClass"></i>
             </span>
@@ -1019,7 +1019,7 @@ export default defineComponent({
     </template>
 
     <template #footerSecondaryActions>
-        <slot name="footerSecondaryActions" />
+        <slot v-if="$slots.footerSecondaryActions" name="footerSecondaryActions" />
         <RockButton v-for="action in internalFooterSecondaryActions" :btnType="action.type" btnSize="sm" :title="action.title" @click="onActionClick(action, $event)" :disabled="action.disabled" :key="action.title+action.iconCssClass">
             <i :class="getActionIconCssClass(action)"></i>
         </RockButton>
