@@ -250,15 +250,9 @@ namespace Rock.Model
             refundTransaction.RefundDetails.RefundReasonSummary = summary;
             refundTransaction.RefundDetails.OriginalTransactionId = transaction.Id;
 
-            string batchName = transaction.Batch.Name;
-            if ( batchNameSuffix.IsNotNullOrWhiteSpace() && !batchName.EndsWith( batchNameSuffix ) )
-            {
-                batchName += batchNameSuffix;
-            }
-
             // Get the batch
             var batchService = new FinancialBatchService( rockContext );
-            var batch = batchService.GetForNewTransaction( refundTransaction );
+            var batch = batchService.GetForNewTransaction( refundTransaction, nameSuffix: batchNameSuffix );
 
             // If this is a new Batch, SaveChanges so that we can get the Batch.Id
             if ( batch.Id == 0 )
