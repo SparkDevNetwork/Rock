@@ -509,24 +509,6 @@
         pruneAndSeedPlacementGroupMemberAttributeValues();
     });
 
-    /**
-     * If there is only one group member role then we will hide the dropdown and set the value to that role by default.
-     */
-    watch(() => props.placementGroupDetails?.groupMemberRoles, () => {
-        if (props.placementGroupDetails?.groupMemberRoles && props.placementGroupDetails.groupMemberRoles.length === 1) {
-            groupMemberRoleGuid.value = props.placementGroupDetails.groupMemberRoles[0].value ?? "";
-        }
-    });
-
-    /**
-     * If there is only one group member status for the selected role then we will hide the dropdown and set the value to that status by default.
-     */
-    watch(groupMemberStatusItems, () => {
-        if (groupMemberStatusItems.value.length === 1) {
-            groupMemberStatus.value = groupMemberStatusItems.value[0].value ?? "";
-        }
-    });
-
     watch(() => props.modelValue.bag, () => {
         updateRefValue(comments, props.modelValue.bag?.comments ?? "");
         updateRefValue(connectionOpportunityGuid, props.modelValue.bag?.connectionOpportunityGuid ?? "");
