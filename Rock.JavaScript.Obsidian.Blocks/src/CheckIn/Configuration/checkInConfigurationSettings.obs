@@ -1,33 +1,35 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+    <template v-if="!isHidden">
+        <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" ref="errorMessageElement" alertType="danger" v-html="errorMessage"></NotificationBox>
+        <NotificationBox v-if="errorMessage" ref="errorMessageElement" alertType="danger" v-html="errorMessage"></NotificationBox>
 
-    <DetailBlock v-if="!blockError"
-                 v-model:mode="panelMode"
-                 :name="panelName"
-                 :entityKey="entityKey"
-                 :isAuditHidden="false"
-                 :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable"
-                 :isEditVisible="isEditable"
-                 :isFollowVisible="false"
-                 :isSecurityHidden="false"
-                 :showExperienceMode="true"
-                 :footerSecondaryActions="footerSecondaryActions"
-                 @cancelEdit="onCancelEdit"
-                 @delete="onDelete"
-                 @edit="onEdit"
-                 @save="onSave">
-        <template #view>
-            <ViewPanel :modelValue="checkInConfigurationViewBag" :options="options" />
-        </template>
+        <DetailBlock v-if="!blockError"
+                     v-model:mode="panelMode"
+                     :name="panelName"
+                     :entityKey="entityKey"
+                     :isAuditHidden="false"
+                     :isBadgesVisible="true"
+                     :isDeleteVisible="isEditable"
+                     :isEditVisible="isEditable"
+                     :isFollowVisible="false"
+                     :isSecurityHidden="false"
+                     :showExperienceMode="true"
+                     :footerSecondaryActions="footerSecondaryActions"
+                     @cancelEdit="onCancelEdit"
+                     @delete="onDelete"
+                     @edit="onEdit"
+                     @save="onSave">
+            <template #view>
+                <ViewPanel :modelValue="checkInConfigurationViewBag" :options="options" />
+            </template>
 
-        <template #edit>
-            <EditPanel v-model="checkInConfigurationEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
-        </template>
-    </DetailBlock>
+            <template #edit>
+                <EditPanel v-model="checkInConfigurationEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+            </template>
+        </DetailBlock>
+    </template>
 </template>
 
 <script setup lang="ts">
@@ -87,6 +89,13 @@
     /** Determines if the panel is editable based on the configuration. */
     const isEditable = computed((): boolean => {
         return config.isEditable === true;
+    });
+
+    /**
+     * Determines whether the block should be hidden.
+     */
+    const isHidden = computed((): boolean => {
+        return !!(config.options?.isHidden);
     });
 
     /** Retrieves the options for the check-in configuration settings. */
@@ -247,7 +256,10 @@
     // #endregion Event Handlers
 
     // Handle initial error conditions or entering add mode.
-    if (config.errorMessage) {
+    if (isHidden.value) {
+        // No-op: block is hidden because no configuration page parameter was provided.
+    }
+    else if (config.errorMessage) {
         blockError.value = config.errorMessage;
     }
     else if (!config.entity) {

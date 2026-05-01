@@ -26,6 +26,11 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInConfigurationSetti
     /// </summary>
     public class CheckInConfigurationSettingsOptionsBag
     {
+         /// <summary>
+         /// Gets or sets whether the block should be hidden.
+         /// </summary>
+        public bool IsHidden { get; set; }
+
         /// <summary>
         /// Gets or sets whether to show show classic check-in settings for this configuration.
         /// </summary>

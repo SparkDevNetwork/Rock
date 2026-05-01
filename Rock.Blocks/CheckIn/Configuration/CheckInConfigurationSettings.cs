@@ -101,6 +101,11 @@ namespace Rock.Blocks.CheckIn.Configuration
         #region Fields
 
         /// <summary>
+        /// The backing field for the <see cref="PageParameters"/> property.
+        /// </summary>
+        private IDictionary<string, string> _pageParameters;
+
+        /// <summary>
         /// The backing field for the <see cref="GroupTypePageParameterKey"/> property.
         /// </summary>
         private string _groupTypePageParameterKey;
@@ -112,6 +117,29 @@ namespace Rock.Blocks.CheckIn.Configuration
         #region Properties
 
         /// <summary>
+        /// Gets the page parameters for this request.
+        /// </summary>
+        private IDictionary<string, string> PageParameters
+        {
+            get
+            {
+                _pageParameters ??= this.RequestContext?.GetPageParameters() ?? new Dictionary<string, string>();
+
+                return _pageParameters;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the block should hide itself entirely - that is, when neither
+        /// <see cref="PageParameterKey.CheckInConfiguration"/> nor <see cref="PageParameterKey.CheckinTypeId"/>
+        /// is present on the request. Mirrors the legacy behavior, where the detail panel was invisible until a
+        /// configuration was selected.
+        /// </summary>
+        private bool IsBlockHidden =>
+            !PageParameters.ContainsKey( PageParameterKey.CheckInConfiguration )
+            && !PageParameters.ContainsKey( PageParameterKey.CheckinTypeId );
+
+        /// <summary>
         /// Gets the key of the page parameter - either "CheckInConfiguration" or "CheckinTypeId" - used to provide
         /// the check-in configuration <see cref="GroupType"/> entity key.
         /// </summary>
@@ -121,12 +149,11 @@ namespace Rock.Blocks.CheckIn.Configuration
             {
                 if ( _groupTypePageParameterKey.IsNullOrWhiteSpace() )
                 {
-                    var pageParameters = this.RequestContext?.GetPageParameters() ?? new Dictionary<string, string>();
-                    if ( pageParameters.ContainsKey( PageParameterKey.CheckInConfiguration ) )
+                    if ( PageParameters.ContainsKey( PageParameterKey.CheckInConfiguration ) )
                     {
                         _groupTypePageParameterKey = PageParameterKey.CheckInConfiguration;
                     }
-                    else if ( pageParameters.ContainsKey( PageParameterKey.CheckinTypeId ) )
+                    else if ( PageParameters.ContainsKey( PageParameterKey.CheckinTypeId ) )
                     {
                         _groupTypePageParameterKey = PageParameterKey.CheckinTypeId;
                     }
@@ -149,6 +176,12 @@ namespace Rock.Blocks.CheckIn.Configuration
         public override object GetObsidianBlockInitialization()
         {
             var box = new DetailBlockBox<CheckInConfigurationSettingsBag, CheckInConfigurationSettingsOptionsBag>();
+
+            if ( IsBlockHidden )
+            {
+                box.Options = new CheckInConfigurationSettingsOptionsBag { IsHidden = true };
+                return box;
+            }
 
             SetBoxInitialEntityState( box );
 
