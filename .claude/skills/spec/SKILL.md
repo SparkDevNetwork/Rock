@@ -10,11 +10,15 @@ description: >-
   says "complete this spec", "mark spec as done", "the X spec is finished", "archive
   this spec", or similar — the skill will move the file into `specs/completed/{Domain}/`
   and update `specs/completed/INDEX.md`.
+  ALSO use when the user says "reject this spec", "won't fix", "won't do", "mark spec as
+  rejected", "abandon this spec", or similar — the skill will capture a rejection reason,
+  append a Rejection section to the spec, move the file into `specs/rejected/{Domain}/`,
+  and update `specs/rejected/INDEX.md`.
   Do NOT use for: writing code, writing release notes, or writing CLAUDE.md / rule files.
 argument-hint: "Topic of the spec, OR the path/name of an existing spec to mark complete"
 compatibility: Requires Claude Code CLI with access to the repo and bash for the date stamp.
 metadata:
-  version: "1.0"
+  version: "1.1"
   author: "Jon Edmiston"
 ---
 
@@ -28,12 +32,13 @@ You are working on a spec document. A spec captures requirements, architectural 
 
 ## Decide the Mode
 
-Read `$ARGUMENTS` and the conversation context, then pick one of two modes:
+Read `$ARGUMENTS` and the conversation context, then pick one of three modes:
 
 - **Authoring mode** — the user wants to create or convert a new spec. Follow Steps 1 through 6 below.
-- **Completion mode** — the user signals that an existing spec is done. Phrases like "the spec is complete", "mark X spec as done", "archive this spec", "spec is finished", "move spec to completed". Skip Steps 1 through 6 and jump to **Completing a Spec** at the bottom of this file.
+- **Completion mode** — the user signals that an existing spec is done. Phrases like "the spec is complete", "mark X spec as done", "archive this spec", "spec is finished", "move spec to completed". Skip Steps 1 through 6 and jump to **Completing a Spec** below.
+- **Rejection mode** — the user signals that a spec will not be implemented. Phrases like "reject this spec", "won't fix", "won't do", "mark X spec as rejected", "abandon this spec". Skip Steps 1 through 6 and jump to **Rejecting a Spec** below.
 
-If the intent is ambiguous, ask one clarifying question before proceeding.
+If the intent is ambiguous, ask one clarifying question before proceeding. If the user uses "done" ambiguously, ask whether they mean the spec was completed (shipped) or rejected (decided against).
 
 ---
 
@@ -43,7 +48,7 @@ Before drafting, collect the following. Ask the user only for what is genuinely 
 
 1. **Topic / title** — a short noun phrase (under ~70 chars). Derive from `$ARGUMENTS` if provided.
 2. **Spec type** — pick one based on intent:
-   - **Feature / architecture** — net new system, refactor, or design decision.
+   - **Feature / architecture** — new feature, refactor, or design decision.
    - **Issue / regression** — analysis of an existing bug or unwanted behavior.
    - **Hybrid** — a feature with a specific problem motivating it. Use both section sets.
 3. **Contributors** — **ALWAYS ASK** at the start: "Who else should be listed as a contributor on this spec? (full names — first and last — comma-separated, or 'none')". Do not skip this step. If the user says "none", set the field to `[]`. Every contributor name MUST include both a first and last name; if a single name is given (e.g. "Daniel"), ask for the last name before writing the file. Do not guess or use initials.
@@ -302,3 +307,108 @@ After moving, indexing, and any docs updates:
 - **Never delete a spec.** Completion always means "move and index", not "remove."
 - **If the spec is already in `specs/completed/`, do nothing and tell the user.** Do not re-move or re-index.
 - **If the user explicitly asks to revert a completion** (move from `completed/` back to `specs/`), do it: move the file back to `specs/` and remove the row from `INDEX.md`.
+
+---
+
+## Rejecting a Spec
+
+When a spec is decided against (the proposal is dismissed, the issue is intentionally not going to be fixed, or the design has been superseded by a different approach), it should be archived out of the active `specs/` directory and into `specs/rejected/`, organized by domain. Rejection preserves the historical record so future contributors can find the reasoning instead of re-proposing the same idea.
+
+### Directory layout
+
+```
+specs/
+  rejected/
+    INDEX.md                        ← single index of every rejected spec
+    core/
+      {timestamp}-{topic-kebab}.md
+    lava/
+      {timestamp}-{topic-kebab}.md
+    {other domain folders as needed}
+```
+
+Same lowercase-kebab folder rules as `specs/completed/`. Do not use release-note casing.
+
+### Step R1 — Identify the spec
+
+Same as Step C1 of completion. If the user named the spec by topic, path, or partial filename, locate it in `specs/`. If multiple files match, list them and ask which. If none match, list the contents of `specs/` and ask the user to pick. Never guess.
+
+### Step R2 — Pick the domain folder
+
+Same logic as Step C2. Read the spec's Title, Summary, and Affected Code Paths to determine the Rock domain. Reference `.claude/rules/rock-domains.md` for the canonical list and the path-to-domain mapping.
+
+The `Domain` column in `INDEX.md` uses the release-note form. The folder name on disk uses the lowercase-kebab folder form. If the chosen folder does not exist under `specs/rejected/`, create it.
+
+### Step R3 — Capture the rejection reason
+
+ASK the user: "What is the reason for rejecting this spec? (one or two sentences)". This is mandatory. Do not proceed without a reason.
+
+The reason becomes the historical record of why this idea was dismissed. Future contributors who propose the same thing should read this section first and decide whether the rejection still applies.
+
+If the user gives a one-word answer or a vague reason ("not needed", "later"), push for specifics. Acceptable reasons name a concrete blocker: technical, strategic, scope, cost, dependency, regression risk, conflict with another in-flight design, security concern. A pure "not now" is a deferral, not a rejection, and the spec should stay active.
+
+### Step R4 — Append a Rejection section to the spec body
+
+Before moving the file, edit the spec to append a new section at the very end:
+
+```markdown
+## Rejection
+
+**Rejected on:** {YYYY-MM-DD, get with `date +%Y-%m-%d`}
+**Rejected by:** {Full name from `git config user.name`, same author rules as Step 1}
+
+{The rejection reason captured in R3. One or two paragraphs. Be specific about what was rejected and why; future readers should be able to tell whether the rejection still applies given today's context.}
+```
+
+Do not edit any other section of the spec. The point is to preserve the original proposal verbatim as a historical record; the Rejection section is the only addition.
+
+### Step R5 — Move the file
+
+Move the spec from `specs/{filename}` to `specs/rejected/{Domain}/{filename}`. Preserve the original filename verbatim (timestamp prefix included).
+
+Use `git mv` if the source file is tracked by git, otherwise plain `mv`. Verify the move succeeded before updating the index.
+
+### Step R6 — Update `specs/rejected/INDEX.md`
+
+`INDEX.md` is a single markdown table listing every rejected spec across every domain folder. Schema:
+
+| Column | Source | Notes |
+|---|---|---|
+| Spec | The spec's H1 title (or the YAML title if there is no H1). Linked to the moved file. | Use a relative markdown link from `specs/rejected/INDEX.md`. |
+| Domain | The Rock domain in **release-note casing** (`Core`, `Lava`, `CRM`, `Check-in`, ...). | Human-readable form. The folder itself is lowercase. |
+| Author | The `author:` value from the spec's YAML frontmatter. | The original proposer. |
+| Summary | The `summary:` value from the spec's YAML frontmatter. | One-liner. |
+| Rejected On | The ISO date from the appended Rejection section. | YYYY-MM-DD. |
+| Rejection Reason | A short paraphrase of the appended Rejection section, fitting one row. | One sentence. The full reason lives in the spec; the index is a quick scan. |
+
+If `INDEX.md` does not yet exist, create it with this header:
+
+```markdown
+# Rejected Specs Index
+
+This index lists every spec that has been moved into `specs/rejected/`. It is maintained by the `spec` skill, please do not edit by hand. Specs land here when a proposal is dismissed; the goal is to preserve the historical reasoning so future contributors can find it before re-proposing the same idea.
+
+| Spec | Domain | Author | Summary | Rejected On | Rejection Reason |
+|------|--------|--------|---------|-------------|------------------|
+```
+
+Append the new row at the bottom. Do not re-sort existing rows.
+
+If a row for this spec already exists in the index (e.g. the user is updating a previously-rejected spec), update the existing row in place rather than adding a duplicate.
+
+### Step R7 — Confirm
+
+After moving and indexing:
+
+1. State the new path of the spec.
+2. State that `INDEX.md` has been updated.
+3. State the rejection reason captured (one line).
+4. Stop. Do not paste the spec or index back into chat.
+
+### Rejection mode rules
+
+- **Never edit the body of the spec other than appending the Rejection section.** The proposal must be preserved verbatim so future readers see what was actually proposed.
+- **Never delete a rejected spec.** Rejection always means "move and index", not "remove."
+- **If the spec is already in `specs/rejected/`, do nothing and tell the user.** Do not re-move or re-index.
+- **If the user explicitly asks to revert a rejection** (move from `rejected/` back to `specs/`), do it: remove the appended Rejection section, move the file back to `specs/`, and remove the row from `INDEX.md`.
+- **Rejection differs from completion.** A completed spec shipped; a rejected spec was decided against. Do not conflate the two paths. If the user uses ambiguous language ("the spec is done"), ask whether they mean completed (shipped) or rejected (won't fix).

@@ -15,7 +15,7 @@ description: >-
 argument-hint: "Topic to document, OR a doc path to update/audit (e.g. 'group requirements', 'docs/lava/entity-commands.md')"
 compatibility: Requires Claude Code CLI with access to the Rock RMS codebase.
 metadata:
-  version: "1.0"
+  version: "1.1"
   author: "Jon Edmiston"
 ---
 
@@ -89,6 +89,25 @@ Possible outcomes:
 
 State the search result before writing or modifying any file. The user should know whether you are creating or updating, and why.
 
+### 1.4 Identify cross-cutting concepts before writing
+
+Some topics include concepts that are not specific to this domain but recur across many areas of Rock. These belong in `docs/core/` (or another genuinely cross-cutting folder), not embedded in every domain doc that touches them. Examples:
+
+- Entity reference resolution (`GetQueryableByKey`, IdKey vs raw int, the "Disable Predictable Ids" site setting).
+- PersonAlias semantics in audit columns and custom person FKs.
+- `RockContext` lifecycle and lazy loading.
+- Cache invalidation patterns.
+- Lava data object conventions (`LavaDataObject`, naming with `Info` suffix).
+- The Obsidian block lifecycle, security pattern, and bag conventions.
+
+If the topic includes a cross-cutting concept:
+
+1. Search `docs/core/` (and any other cross-cutting folder) for existing coverage.
+2. If a core doc covers it, **link to it; do not re-explain it inline**. Domain docs link, they do not duplicate.
+3. If no core doc covers it, **ask the user before writing** whether to (a) create the core doc first and link to it from the current doc, or (b) scope a brief inline explanation here this once. Default to (a) when the concept will obviously recur in other domain docs.
+
+Heuristic: if you would write substantively the same paragraph in three different domain docs, it belongs in `docs/core/` instead. The IdKey vs raw-int discussion is a canonical example: every Obsidian block that resolves an entity reference faces the same question, so it lives once in `docs/core/entity-reference-resolution.md` and every block doc links to it.
+
 ---
 
 ## Step 2 — Read the Code (mandatory before any "How it works" content)
@@ -104,6 +123,32 @@ Minimum source reading:
 Pull file:line references into the doc as you write. Every non-trivial mechanical claim in the doc should be traceable to a specific path in the codebase.
 
 If the source has been refactored since the topic was last documented (e.g. the conversation references method names that no longer exist), say so and ask before proceeding.
+
+### Sources for the "why"
+
+Code answers "what." Engineering notes, commit messages, and specs answer "why." For any non-trivial behavior the doc describes, find the why and lead with it. The "Why It Exists" and "Key Architectural Decisions" sections of the doc live or die on this step.
+
+Three primary sources, in order of usefulness:
+
+1. **Engineering notes in the source files.** Rock convention is multi-line comments with the developer's name or initials (often a `Reason:` one-liner). Pattern from CLAUDE.md:
+
+   ```
+   /*
+       3/5/26 - JE
+
+       <Why this code exists or why this change was made.>
+
+       Reason: <One-line summary for scanning.>
+   */
+   ```
+
+   These are the highest-signal source. Grep `related_files` for blocks like this and quote or paraphrase the reason directly into the doc. The original phrasing is often better than anything you could rewrite.
+
+2. **Recent commit messages on `related_files`.** Run `git log --format="%h %ai %s%n%n%b" -- {related_files}` and read the bodies, not just the subjects. Release-note commits (subjects starting with `+ (`) are written for an external audience and frequently include the why.
+
+3. **Linked specs in `related_specs`.** Specs in `specs/completed/` capture the design intent and the alternatives that were rejected. The Motivation and Considered but Rejected sections of a spec map directly to the corresponding sections of the doc.
+
+If you cannot find a why for a specific design choice, that is a finding worth surfacing to the user. Do not invent one. A doc that says "the design rationale is unclear, see {file:line}; consider asking {original author}" is more useful than a doc that confidently fabricates.
 
 ---
 
@@ -139,8 +184,8 @@ Every doc begins with this block:
 title: Group Requirements
 last_updated: 2026-04-28
 related_specs:
-  - ../../specs/completed/group/240118-group-requirement-caching.md
-  - ../../specs/completed/group/250903-group-requirement-override.md
+  - specs/completed/group/240118-group-requirement-caching.md
+  - specs/completed/group/250903-group-requirement-override.md
 related_files:
   - Rock/Model/Group/GroupRequirement.cs
   - Rock/Model/Group/GroupRequirementService.cs
@@ -150,16 +195,18 @@ related_files:
 
 - `title` — the human-readable title. Mirrors the H1.
 - `last_updated` — ISO-8601 date of this edit. Bump on every meaningful change. Get with `date +%Y-%m-%d`.
-- `related_specs` — list of spec paths in `specs/completed/**`. Active specs (still in `specs/` root) MUST NOT appear here. Used by the auto-rendered Related Specs section. Omit the key if there are none.
-- `related_files` — list of source-code paths that this doc materially depends on. Used by the commit/audit hooks to detect when source has changed and the doc may need refresh. Omit the key if there are none.
+- `related_specs` — list of completed-spec paths **relative to the repo root**. Active specs (still in `specs/` root) MUST NOT appear here. Used by the auto-rendered Related Specs section, which computes the relative-to-doc form for the markdown link at render time. Omit the key if there are none.
+- `related_files` — list of source-code paths **relative to the repo root** that this doc materially depends on. Used by the commit/audit hooks to detect when source has changed and the doc may need refresh, and as the scope for the `git log` query that sources Recent Impactful Changes. Omit the key if there are none.
+
+Both lists store **repo-root-relative paths** in YAML so they are stable when docs move and so downstream tools (`git log`, `Glob`, audit-mode lookups) can consume them without translation.
 
 ---
 
 ## Step 5 — Write the Body
 
-The structure below is **deliberately top-loaded with conceptual content** and back-loads the dense reference material. A developer who reads only the top half should come away with a working mental model and the practical things that bite people. The technical reference at the bottom is for the developer who is actively writing code in the area.
+The structure below is **deliberately top-loaded with the why and the conceptual content**, and back-loads the dense reference material. A developer who reads only the top half should come away knowing why this exists, how to think about it, and the practical things that bite people. The technical reference at the bottom is for the developer actively writing code in the area.
 
-The audience is core developers and quasi-technical community members. The voice is "what a senior engineer would tell a colleague who just walked into this corner of the codebase". Concept first, gotchas second, code archaeology last.
+The audience is core developers and quasi-technical community members. The voice is "what a senior engineer would tell a colleague who just walked into this corner of the codebase." Why first, concept second, gotchas third, code archaeology last.
 
 Sections are recommended but optional. Include only the sections that apply. If a topic needs a section that is not on this list, add it.
 
@@ -167,7 +214,10 @@ Sections are recommended but optional. Include only the sections that apply. If 
 # {Title}
 
 ## Overview
-{2-4 sentences. The 30-second answer to "what is this and why does it matter". A reader scanning the directory should know whether the rest of the doc is relevant after reading this paragraph alone.}
+{2-4 sentences. The 30-second answer to "what is this and why does it matter." A reader scanning the directory should know whether the rest of the doc is relevant after reading this paragraph alone.}
+
+## Why It Exists
+{2-4 sentences. The problem this system solves and the cost of not having it. Source the answer from engineering notes in the related source files, recent commit messages on those files, and the Motivation section of any linked specs (see Step 2's "Sources for the why"). Lead with the why; do not bury it under mechanics. Skip this section only if the why is genuinely obvious from the Overview, but err on the side of including it.}
 
 ## Mental Model
 {How to *think about* this thing. The conceptual shape. Key distinctions, analogies, the "right frame" for reasoning about it. NO file paths in this section. NO line numbers. NO column lists. This is where a developer who has never touched this corner gets oriented in plain language. Two or three short paragraphs is usually enough.}
@@ -179,21 +229,28 @@ Sections are recommended but optional. Include only the sections that apply. If 
 {Optional. Pattern recipes for common tasks. "How do I add a member to a synced group", "How do I change a requirement type without re-evaluating", "How do I record attendance for a cancelled occurrence". Skip this section entirely if the topic does not have recurring patterns worth showing.}
 
 ## Key Architectural Decisions
-{Why it's designed this way. Each decision: a short heading and the *why*. This helps a developer decide whether to work with the grain of the design or push back on it.}
+{Why it is designed this way. Each decision: a short heading and the *why*. Source the why from engineering notes and commit messages whenever possible; quote them when the original phrasing is good. This section helps a developer decide whether to work with the grain of the design or push back on it.}
 
 ## Considered but Rejected
 {Optional. Alternatives that have been evaluated and dismissed. For each:
 - A short heading (the alternative).
 - One-line description.
 - Why it was rejected.
-- A date in (YYYY-MM-DD) form when known so future readers can judge whether the rejection still applies.
+- A date in (YYYY-MM-DD) form **only if you can verify it from a spec, commit, or comment in source.** Omit the date otherwise; never approximate.
 
 This section preempts re-litigation. Include whenever there were real alternatives, even briefly considered.}
+```
 
-## Technical Reference
-{The in-the-weeds details. Everything dense, code-anchored, and reference-shaped goes here. A developer who is actively changing code in this area lives in this section; a developer just trying to understand the system can stop reading at the previous section.
+After the template above, the doc continues with the Technical Reference section and the auto-rendered Recent Impactful Changes section. These are described below as prose rather than as nested template blocks, because both have authoring rules that are easier to read outside a `{...}` placeholder.
+
+### Technical Reference
+
+Everything dense, code-anchored, and reference-shaped goes here. A developer actively changing code in this area lives in this section; a developer just trying to understand the system can stop reading at the previous section.
 
 Use subheadings to organize. Suggested subheadings (include only those that apply):
+
+```markdown
+## Technical Reference
 
 ### Data Model
 {Entities, key columns, FKs and cascade behavior, indices. The dense table. File:line citations.}
@@ -215,12 +272,33 @@ Use subheadings to organize. Suggested subheadings (include only those that appl
 
 ### File Index
 {A quick path index for the most-relevant files. Useful when a reader knows the topic but cannot remember where the code lives.}
-
-Add or drop subheadings as the topic warrants. A doc on a pure data concept may not have "Save Hook Behavior". A doc on a UI surface may not have "Data Model". That is fine.}
-
-## Recent Impactful Changes
-{At most 5 bullets. Newest first. Each bullet: date, one-line summary, link to spec or commit when known. Prune the oldest entry when adding a sixth.}
 ```
+
+Add or drop subheadings as the topic warrants. A doc on a pure data concept may not have "Save Hook Behavior". A doc on a UI surface may not have "Data Model". That is fine.
+
+### Recent Impactful Changes
+
+```markdown
+## Recent Impactful Changes
+```
+
+At most 5 bullets, newest first.
+
+**Mandatory: source every entry from `git log`. Never write a date you have not seen in git output.** If you cannot verify it, drop the entry. Do not paraphrase the date, do not write fuzzy values like "2024-late" or "early 2025", do not back-infer from issue numbers in commit subjects.
+
+Recommended command (scopes to `related_files` from this doc's frontmatter):
+
+```bash
+git log -n 30 --format="%h|%ai|%s" --since="18 months ago" -- {related_files}
+```
+
+From that output, prefer release-note commits (subject begins with `+ (`). Each bullet:
+
+```markdown
+- **YYYY-MM-DD** ([commit `{short-hash}`](https://github.com/SparkDevNetwork/Rock/commit/{short-hash})). One-line summary, paraphrased from the commit subject. Append `(Fixes #NNNN)` only if the commit subject contains it.
+```
+
+If `git log` returns fewer than 5 release-note commits in the window, write fewer bullets. Three accurate entries beat five plausible ones. If there are zero, omit the section entirely.
 
 ### The split between "What You Need to Know" and "Technical Reference"
 
@@ -244,9 +322,10 @@ If `related_specs` in the YAML frontmatter is non-empty, render this section at 
 Rules:
 
 - Source the list from `related_specs` in the YAML. Do not duplicate the data anywhere else.
+- Paths in YAML are repo-root-relative; **compute the relative-to-doc form at render time** for the markdown link so the link is clickable from the doc's location. Do not store the relative form in YAML.
 - **Only completed specs.** Filter to paths under `specs/completed/`. If a path in `related_specs` is not under `completed/`, drop it from the rendered list AND warn the user (it is probably a stale or premature link).
 - Link text is the spec's H1 title (or YAML `title` if there is no H1). Do not use the filename.
-- Each line: linked title, em-dash-free separator (use ` — `), date from spec's YAML `date_created`, primary author from spec's YAML `author` in parens.
+- Each line: linked title, separator ` — ` (the one sanctioned em-dash use, because the renderer needs a visible separator that is not a hyphen), date from spec's YAML `date_created`, primary author from spec's YAML `author` in parens.
 - Sort by date **descending** (newest first).
 - If `related_specs` is empty or absent, omit this section entirely. No empty placeholder.
 - The skill regenerates this section from frontmatter on every doc save. Manual edits inside this section will be overwritten.
@@ -292,11 +371,15 @@ After writing or updating files:
 
 ## Style Rules
 
-- **Concept first, code second.** The top half of every doc should read in plain language with the goal of building a mental model. File paths, line numbers, and column lists belong in **Technical Reference** at the bottom, not in the opening paragraphs. A reader who only reads the Overview, Mental Model, and What You Need to Know sections should come away knowing how to think about the system; the code archaeology is a separate read for active contributors.
+- **Why first, concept second, code third.** Lead with why this exists (Overview, Why It Exists). Build the conceptual model second (Mental Model). Code archaeology comes last (Technical Reference). A reader who only reads the top half should come away knowing why this matters and how to think about it; the file:line citations are a separate read for active contributors. Source the why from engineering notes in cited source files, recent commit messages on `related_files`, and Motivation sections of linked specs.
+- **Capture the why, not just the what.** Code shows what; this skill exists to surface the why. Engineering notes (multi-line code comments with developer initials and an optional `Reason:` line) and release-note commit messages are the highest-signal sources. Quote them when the original phrasing is good; paraphrase when not. If the why is genuinely unrecoverable, say so in the doc rather than fabricating one.
 - **Concise over comprehensive.** A doc is read more often than it is written. If a section can be a sentence, do not make it a paragraph. If a section has nothing to add, drop it.
 - **Code-anchored where it counts.** Mechanical claims in **Technical Reference** should cite `path/to/file.ext:line`. Conceptual content in **Overview**, **Mental Model**, and **What You Need to Know** should NOT be drowned in citations; one or two anchor references at most.
 - **Mermaid diagrams are welcome** when a picture genuinely clarifies the system. Use a fenced ` ```mermaid ` block. Useful types: `flowchart` for control flow and lifecycle, `sequenceDiagram` for multi-actor interactions, `classDiagram` or `erDiagram` for entity relationships, `stateDiagram-v2` for state machines. Diagrams typically belong in **Mental Model** (the conceptual shape) or **Technical Reference > Data Model** (entity relationships and state machines). Keep them small and focused: one diagram per concept beats one giant diagram with everything. Skip the diagram if the surrounding prose already conveys the same information.
 - **No em-dashes.** Use commas, parentheses, sentence breaks. (Project rule. The example "Related Specs" line uses ` — ` because the renderer needs a visible separator that is not a hyphen; that is the only sanctioned use.)
+- **Linking conventions.** Source citations (Mental Model, What You Need to Know, Technical Reference) use repo-root-relative paths in `path/to/file.cs:line` form. The harness auto-links them and they remain valid as the reader's working copy evolves. Historical citations (Recent Impactful Changes, Considered but Rejected) use GitHub commit URLs in the form `[commit \`{short-hash}\`](https://github.com/SparkDevNetwork/Rock/commit/{short-hash})`; commits are immutable, so the link is forever-stable, and the citation IS the commit, not where the code lives now.
+- **Document the right pattern, not the shortcut.** When the system has a site or global setting that callers should respect, document the read-and-pass-through pattern. Hardcoding the easy value to bypass the setting is the wrong example to teach. Example: when resolving a Group reference, callers must honor `Site.DisablePredictableIds`; document the pass-through, not `allowIntegerIdentifier: true`.
+- **Never write an unverified date.** Dates in Recent Impactful Changes, Considered but Rejected, and frontmatter `last_updated` must come from a verifiable source (`git log`, spec frontmatter, `date +%Y-%m-%d`). If you cannot verify, omit. Approximate dates ("2024-late", "early 2025", "Q3") are forbidden.
 - **No marketing tone.** This is internal technical reference, not a feature blurb.
 - **Prefer terse opinionated writing over comprehensive overviews.** Generic mush is worse than a missing section.
 - **Write like you are briefing a colleague who just walked in.** What is the smallest set of things they need to know to be productive? Lead with that.
@@ -311,10 +394,12 @@ Given a doc path (or a domain folder), verify the doc against current source.
 2. Read the cited source files. Compare.
 3. Report drift as a list. Categories:
    - **Stale path** — file or method no longer exists or has moved.
+   - **Stale line reference** — `path:line` citation no longer points at the claimed code (line is past EOF, or the named symbol no longer appears at that line). Caveat: line numbers drift constantly with unrelated edits (a using-statement add bumps every line below it). Surface the list, but the user decides which are worth fixing; do not treat this as high-priority drift on its own.
    - **Behavior drift** — the code now does something different from what the doc says.
+   - **Unverified date** — any date in Recent Impactful Changes that does not appear in `git log` for the cited commit, or any date in Considered but Rejected that does not appear in a referenced spec, commit, or source comment. The skill must NEVER hand-wave dates; this category catches earlier hallucinations.
    - **Stale Considered-but-Rejected** — entries with dates older than three years; flag for re-evaluation, do not auto-resolve.
    - **Stale `last_updated`** — frontmatter `last_updated` is more than six months old AND any `related_files` entry has been modified in git since then.
-   - **Broken cross-link** — `related_specs` paths that do not exist, or that point outside `specs/completed/`.
+   - **Broken cross-link** — `related_specs` paths that do not exist, or that point outside `specs/completed/`. Also flag any path in `related_specs` or `related_files` that is not repo-root-relative (e.g. starts with `../` or with a drive letter).
 
 **Do not auto-fix.** Surface the drift list and ask the user how to proceed. Audit is read-only by default.
 
