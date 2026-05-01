@@ -191,7 +191,13 @@ namespace Rock.Blocks.CheckIn.Manager
                 return _options;
             }
 
-            var options = new CheckInContextSetterOptionsBag();
+            var options = new CheckInContextSetterOptionsBag
+            {
+                // Temporary. This will be used to redirect to the same page
+                // for WebForms blocks. Once they have all been converted to
+                // Obsidian, this can be removed.
+                IsRedirectRequired = PageCache.Guid != new Guid( "ba04bf01-5244-4637-b12d-7a962d2a9e77" ),
+            };
 
             InitializeCampusOptions( options );
 

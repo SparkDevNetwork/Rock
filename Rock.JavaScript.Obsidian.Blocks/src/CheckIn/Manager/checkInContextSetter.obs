@@ -116,6 +116,13 @@
         }
     }
 
+    function maybeRedirect(): void {
+        if (config.isRedirectRequired) {
+            const url = window.location.href;
+            window.location.href = url;
+        }
+    }
+
     // #endregion
 
     // #region Event Handlers
@@ -127,6 +134,8 @@
      */
     async function onCampusSelected(campusValue: ListItemBag): Promise<void> {
         await contextEntities.set("Rock.Model.Campus", campusValue);
+
+        maybeRedirect();
     }
 
     /**
@@ -136,6 +145,8 @@
      */
     async function onLocationSelected(locationValue: ListItemBag | null): Promise<void> {
         await contextEntities.set("Rock.Model.Location", locationValue);
+
+        maybeRedirect();
     }
 
     /**
@@ -145,6 +156,8 @@
      */
     async function onScheduleSelected(scheduleValue: ListItemBag | null): Promise<void> {
         await contextEntities.set("Rock.Model.Schedule", scheduleValue);
+
+        maybeRedirect();
     }
 
     async function loadSchedules(): Promise<void> {
