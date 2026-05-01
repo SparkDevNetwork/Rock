@@ -864,6 +864,67 @@ namespace Rock.Blocks.Engagement
         #region Placement Group Methods
 
         /// <summary>
+        /// Applies a default group member role and/or status to the Connection Request
+        /// when the assigned placement group's opportunity offers only a single option.
+        /// The Edit and Add UIs hide the role/status dropdown when there is only one
+        /// configured value, so the bag arrives without a selection. This fills the
+        /// gap so the request can still be fully placed.
+        /// </summary>
+        /// <param name="entity">The Connection Request whose role/status may need defaulting.</param>
+        private void ApplyDefaultGroupMemberRoleAndStatus( ConnectionRequest entity )
+        {
+            if ( !entity.AssignedGroupId.HasValue )
+            {
+                return;
+            }
+
+            if ( entity.AssignedGroupMemberRoleId.HasValue && entity.AssignedGroupMemberStatus.HasValue )
+            {
+                return;
+            }
+
+            var placementGroup = new GroupService( RockContext ).Get( entity.AssignedGroupId.Value );
+            if ( placementGroup == null )
+            {
+                return;
+            }
+
+            var configs = new ConnectionOpportunityGroupConfigService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( c =>
+                    c.ConnectionOpportunityId == entity.ConnectionOpportunityId &&
+                    c.GroupTypeId == placementGroup.GroupTypeId )
+                .Select( c => new
+                {
+                    c.GroupMemberRoleId,
+                    c.GroupMemberStatus
+                } )
+                .ToList();
+
+            if ( !entity.AssignedGroupMemberRoleId.HasValue )
+            {
+                var distinctRoleIds = configs.Select( c => c.GroupMemberRoleId ).Distinct().ToList();
+                if ( distinctRoleIds.Count == 1 )
+                {
+                    entity.AssignedGroupMemberRoleId = distinctRoleIds[0];
+                }
+            }
+
+            if ( !entity.AssignedGroupMemberStatus.HasValue && entity.AssignedGroupMemberRoleId.HasValue )
+            {
+                var distinctStatuses = configs
+                    .Where( c => c.GroupMemberRoleId == entity.AssignedGroupMemberRoleId.Value )
+                    .Select( c => c.GroupMemberStatus )
+                    .Distinct()
+                    .ToList();
+                if ( distinctStatuses.Count == 1 )
+                {
+                    entity.AssignedGroupMemberStatus = distinctStatuses[0];
+                }
+            }
+        }
+
+        /// <summary>
         /// Serializes the Placement Group Member Attribute values into a JSON string and returns it
         /// </summary>
         /// <returns>A JSON string of the Placement Group Member Attribute Values</returns>
@@ -1565,6 +1626,10 @@ namespace Rock.Blocks.Engagement
 
                 box.IfValidProperty( nameof( box.Bag.GroupMemberStatus ),
                     () => entity.AssignedGroupMemberStatus = box.Bag.GroupMemberStatus );
+
+                // If the opportunity only offers a single role or status, the UI hides the dropdown,
+                // so the bag arrives empty. Default it before serializing attribute values.
+                ApplyDefaultGroupMemberRoleAndStatus( entity );
 
                 box.IfValidProperty( nameof( box.Bag.PlacementGroupMemberAttributeValues ),
                     () => entity.AssignedGroupMemberAttributeValues = GetGroupMemberAttributeValuesFromBag( box.Bag.PlacementGroupMemberAttributeValues, entity.AssignedGroupId, entity.AssignedGroupMemberRoleId, entity.AssignedGroupMemberStatus ) );
