@@ -44,9 +44,9 @@ namespace Rock.Blocks.Rsvp
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-    [LinkedPage( "Detail Page",
+    [LinkedPage( "RSVP Detail Page",
         Description = "The page that will show the rsvp details.",
-        Key = AttributeKey.DetailPage )]
+        Key = AttributeKey.RSVPDetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "1ef2847c-137d-41f2-80b3-d4aa8d9f7790" )]
     // WAS [Rock.SystemGuid.BlockTypeGuid( "57189fa8-ab29-4a66-8c52-392dff6cb91a" )]
@@ -58,7 +58,7 @@ namespace Rock.Blocks.Rsvp
 
         private static class AttributeKey
         {
-            public const string DetailPage = "DetailPage";
+            public const string RSVPDetailPage = "RSVPDetailPage";
         }
 
         private static class NavigationUrlKey
@@ -161,7 +161,7 @@ namespace Rock.Blocks.Rsvp
 
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.RSVPDetailPage, queryParams )
             };
         }
 
