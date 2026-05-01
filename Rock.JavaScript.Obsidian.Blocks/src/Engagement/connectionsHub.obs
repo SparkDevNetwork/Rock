@@ -556,9 +556,10 @@
                     :communicationRecipients="communicationRecipients"
                     :communicationTemplates="communicationTemplates"
                     @onSuccessfulSend="refreshActivityEntries(dockedPanelDetailsBox?.entity?.connectionRequestIdKey)" />
-    <ViewOptionsModal v-model="viewOptions"
+    <ViewOptionsModal :modelValue="viewOptionsForModal"
+                      @update:modelValue="onViewOptionsUpdate"
                       v-model:visible="isViewOptionsModalVisible"
-                      :gridDataToShowItems="box.options?.gridDataToShowItems ?? []"
+                      :gridDataToShowItems="filteredGridDataToShowItems"
                       :connectionStates="box.options?.connectionStates ?? []"
                       :connectionStatuses="box.options?.connectionStatuses ?? []" />
 
@@ -725,6 +726,7 @@
     import { computed, reactive, ref, watch } from "vue";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
+    import { GridDataToShowItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/gridDataToShowItemBag";
     import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns } from "@Obsidian/Controls/grid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -1020,6 +1022,52 @@
 
     const hasSelectedOpportunity = computed(() => !isNullOrWhiteSpace(selectedOpportunity.value));
 
+    /**
+     * Column choices shown in the View Options modal. Items scoped to one or more
+     * Connection Opportunities are hidden when an unrelated opportunity is the
+     * active filter, so the user does not see columns that would be empty for
+     * every visible row.
+     */
+    const filteredGridDataToShowItems = computed<ListItemBag[]>(() => {
+        const items: GridDataToShowItemBag[] = box.options?.gridDataToShowItems ?? [];
+        const activeOpportunityGuid = selectedOpportunity.value;
+        const hasActiveFilter = !isNullOrWhiteSpace(activeOpportunityGuid);
+
+        return items
+            .filter(item => {
+                const scopeGuids = item.connectionOpportunityGuids;
+                if (!scopeGuids || scopeGuids.length === 0) {
+                    return true;
+                }
+                if (!hasActiveFilter) {
+                    return true;
+                }
+                return scopeGuids.some(g => areEqual(g, activeOpportunityGuid));
+            })
+            .map(item => item.listItemBag as ListItemBag);
+    });
+
+    /** Set of grid item values currently visible to the user under the active opportunity filter. */
+    const inScopeGridDataToShowValues = computed<Set<string>>(() => {
+        return new Set(
+            filteredGridDataToShowItems.value
+                .map(i => i.value)
+                .filter((v): v is string => !!v)
+        );
+    });
+
+    /**
+     * View Options to present to the modal: identical to the saved view options except
+     * gridDataToShow is narrowed to values that exist in the modal's items list. Out-of-scope
+     * saved selections are intentionally excluded from the dropdown's v-model so the multi-select
+     * does not carry phantom values, and are re-merged in onViewOptionsUpdate on save.
+     */
+    const viewOptionsForModal = computed<ViewOptions>(() => ({
+        ...viewOptions.value,
+        gridDataToShow: (viewOptions.value.gridDataToShow ?? [])
+            .filter(v => inScopeGridDataToShowValues.value.has(v)),
+    }));
+
     const skeletonCount = computed<number>(() => selectedGrouping.value === "connectorGrouping" && asBoolean(areOnlyMyRequestsVisible.value) ? 1 : 3);
 
     const allSelectedKeys = computed(() => Object.values(selectedKeys.value).flat());
@@ -1049,11 +1097,16 @@
                 return false;
             }
 
-            if (viewOptions.value.gridDataToShow?.includes(a.name)) {
-                return true;
+            // The saved gridDataToShow preference can carry selections from other
+            // opportunities. Only render a column when the attribute is both selected
+            // to show AND currently in scope of the active opportunity filter, so
+            // out-of-scope selections stay preserved in the preference but do not
+            // surface as empty columns.
+            if (!inScopeGridDataToShowValues.value.has(a.name)) {
+                return false;
             }
 
-            return false;
+            return viewOptions.value.gridDataToShow?.includes(a.name) ?? false;
         });
     });
 
@@ -1468,6 +1521,28 @@
 
     function onPanelSettingsClick(): void {
         isViewOptionsModalVisible.value = true;
+    }
+
+    /**
+     * Selections that were saved but are currently out of scope (because the active
+     * opportunity filter excludes them) are not shown in the modal and therefore could
+     * not have been intentionally toggled off there. Preserve them so the corresponding
+     * column reappears when the user navigates back to that opportunity or clears the
+     * filter. Persistence to person preferences is handled by the deep watcher on
+     * viewOptions.
+     */
+    function onViewOptionsUpdate(updatedViewOptions: ViewOptions): void {
+        const previousSelections = viewOptions.value.gridDataToShow ?? [];
+        const hiddenSavedSelections = previousSelections.filter(
+            v => !inScopeGridDataToShowValues.value.has(v)
+        );
+        const newInScopeSelections = updatedViewOptions.gridDataToShow ?? [];
+        const mergedGridDataToShow = [...newInScopeSelections, ...hiddenSavedSelections];
+
+        viewOptions.value = {
+            ...updatedViewOptions,
+            gridDataToShow: mergedGridDataToShow,
+        };
     }
 
     function decreaseReminderCount(requesterPersonAliasGuid: string): void {
