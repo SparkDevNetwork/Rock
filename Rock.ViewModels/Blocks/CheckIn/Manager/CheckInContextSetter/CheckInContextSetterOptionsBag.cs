@@ -56,5 +56,12 @@ namespace Rock.ViewModels.Blocks.CheckIn.Manager.CheckInContextSetter
         /// The selected schedule when the block loaded.
         /// </summary>
         public ListItemBag SelectedSchedule { get; set; }
+
+        /// <summary>
+        /// When a context item changes, this will cause the page to redirect
+        /// back to itself so that the new context can be applied to legacy
+        /// WebForms blocks.
+        /// </summary>
+        public bool IsRedirectRequired { get; set; }
     }
 }

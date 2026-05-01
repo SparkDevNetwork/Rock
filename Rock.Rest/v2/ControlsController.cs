@@ -7485,7 +7485,8 @@ namespace Rock.Rest.v2
                     grant,
                     locationService,
                     LocationItemPickerGetAutoExpandGuids( options.ExpandToValues ),
-                    0 );
+                    0,
+                    options.IncludeInactive );
 
                 return Ok( locationNameList );
             }
@@ -7537,8 +7538,9 @@ namespace Rock.Rest.v2
         /// <param name="locationService">The service to use when accessing the database.</param>
         /// <param name="autoExpandGuids">The unique identifiers of the items to automatically expand.</param>
         /// <param name="depth">The current depth for recursion safety.</param>
+        /// <param name="includeInactive">Whether to include inactive locations.</param>
         /// <returns>A list of tree items.</returns>
-        private List<TreeItemBag> LocationItemPickerGetChildrenInternal( Guid parentLocationGuid, Guid rootLocationGuid, SecurityGrant grant, LocationService locationService, List<Guid> autoExpandGuids, int depth )
+        private List<TreeItemBag> LocationItemPickerGetChildrenInternal( Guid parentLocationGuid, Guid rootLocationGuid, SecurityGrant grant, LocationService locationService, List<Guid> autoExpandGuids, int depth, bool includeInactive )
         {
             if ( depth > 50 )
             {
@@ -7562,7 +7564,10 @@ namespace Rock.Rest.v2
             }
 
             // limit to only active locations.
-            qry = qry.Where( a => a.IsActive );
+            if ( !includeInactive )
+            {
+                qry = qry.Where( a => a.IsActive );
+            }
 
             // limit to only Named Locations (don't show home addresses, etc)
             qry = qry.Where( a => a.Name != null && a.Name != string.Empty );
@@ -7584,7 +7589,7 @@ namespace Rock.Rest.v2
 
                     if ( autoExpandGuids.Contains( location.Guid ) )
                     {
-                        treeViewItem.Children = LocationItemPickerGetChildrenInternal( location.Guid, Guid.Empty, grant, locationService, autoExpandGuids, depth + 1 );
+                        treeViewItem.Children = LocationItemPickerGetChildrenInternal( location.Guid, Guid.Empty, grant, locationService, autoExpandGuids, depth + 1, includeInactive );
                     }
                 }
             }
