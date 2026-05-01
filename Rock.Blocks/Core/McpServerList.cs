@@ -29,6 +29,12 @@ using Rock.ViewModels.Blocks.Core.McpServerList;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 
+#if WEBFORMS
+using System.Web.UI;
+
+using Rock.Web;
+#endif
+
 namespace Rock.Blocks.Core
 {
     /// <summary>
@@ -128,5 +134,61 @@ namespace Rock.Blocks.Core
         }
 
         #endregion
+
+#if WEBFORMS
+        #region Custom Settings
+
+        /// <summary>
+        /// Widens Bootstrap tooltips inside the BlockProperties iframe so the verbose
+        /// "Append API Key to URL" help text wraps to fewer lines and fits within the
+        /// iframe's vertical space (the default 200px tooltip width forces the long
+        /// description to wrap into a tall tooltip that gets clipped at the iframe edge).
+        /// </summary>
+        /*
+            5/1/26 - JMH
+
+            This provider only loads when the McpServerList block is being edited, so the
+            injected CSS is naturally scoped to this block's settings dialog and doesn't
+            affect tooltips elsewhere in Rock.
+
+            Reason: Tooltips can't extend past an iframe's boundary; widening them keeps
+            the rendered tooltip short enough to fit.
+        */
+        [CustomSettingsBlockType( typeof( McpServerList ), Model.SiteType.Web )]
+        public class McpServerListCustomSettingsProvider : RockCustomSettingsProvider
+        {
+            private const string TooltipWidthScript = @"
+<script>
+    (function() {
+        var style = document.createElement( 'style' );
+        style.textContent = '.tooltip-inner { max-width: 500px; }';
+        document.head.appendChild( style );
+    })();
+</script>";
+
+            /// <inheritdoc />
+            public override string CustomSettingsTitle => "Basic Settings";
+
+            /// <inheritdoc />
+            public override Control GetCustomSettingsControl( IHasAttributes attributeEntity, Control parent )
+            {
+                return new LiteralControl( TooltipWidthScript );
+            }
+
+            /// <inheritdoc />
+            public override void ReadSettingsFromEntity( IHasAttributes attributeEntity, Control control )
+            {
+                // No persisted state — this provider only injects styling for tooltips.
+            }
+
+            /// <inheritdoc />
+            public override void WriteSettingsToEntity( IHasAttributes attributeEntity, Control control, RockContext rockContext )
+            {
+                // No persisted state — this provider only injects styling for tooltips.
+            }
+        }
+
+        #endregion
+#endif
     }
 }
