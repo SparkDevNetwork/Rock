@@ -20,8 +20,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Core.Model
 {

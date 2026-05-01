@@ -17,7 +17,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava.Tags
 {

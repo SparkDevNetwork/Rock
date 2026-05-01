@@ -14,7 +14,7 @@ using Rock.AI.Automations;
 using Rock.Data;
 using Rock.Enums.AI;
 using Rock.Model;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.AI
 {

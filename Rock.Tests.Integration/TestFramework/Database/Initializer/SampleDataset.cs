@@ -18,13 +18,15 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+
 using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Shared.Lava;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
 using Rock.Web;
 
-namespace Rock.Tests.Shared.TestFramework.Database.Initializer
+namespace Rock.Tests.Integration.TestFramework.Database.Initializer
 {
     /// <summary>
     /// Initializes an empty database with the specified Rock sample data set.
@@ -90,17 +92,17 @@ namespace Rock.Tests.Shared.TestFramework.Database.Initializer
             TestHelper.Log( "Executing Rock Jobs..." );
 
             // Rock Cleanup
-            var jobCleanup = new Rock.Jobs.RockCleanup();
+            var jobCleanup = new Jobs.RockCleanup();
 
             ExecuteRockJob( "RockCleanup", () => { jobCleanup.ExecuteInternal( new Dictionary<string, string>() ); } );
 
             // Calculate Family Analytics
-            var jobFamilyAnalytics = new Rock.Jobs.CalculateFamilyAnalytics();
+            var jobFamilyAnalytics = new Jobs.CalculateFamilyAnalytics();
 
             ExecuteRockJob( "CalculateFamilyAnalytics", () => { jobFamilyAnalytics.ExecuteInternal( new Dictionary<string, string>() ); } );
 
             // Process BI Analytics
-            var jobBIAnalytics = new Rock.Jobs.ProcessBIAnalytics();
+            var jobBIAnalytics = new Jobs.ProcessBIAnalytics();
 
             var biAnalyticsSettings = new Dictionary<string, string>();
             biAnalyticsSettings.AddOrReplace( Rock.Jobs.ProcessBIAnalytics.AttributeKey.ProcessPersonBIAnalytics, "true" );
@@ -110,7 +112,7 @@ namespace Rock.Tests.Shared.TestFramework.Database.Initializer
             ExecuteRockJob( "ProcessBiAnalytics", () => { jobBIAnalytics.ExecuteInternal( biAnalyticsSettings ); } );
 
             // Calculate Attribute "ValueAs..." columns.
-            var jobUpdateAttributeValueAs = new Rock.Jobs.PostV141UpdateValueAsColumns();
+            var jobUpdateAttributeValueAs = new Jobs.PostV141UpdateValueAsColumns();
             jobUpdateAttributeValueAs.ExecuteInternal( new Dictionary<string, string>() );
 
             TestHelper.Log( "Executing Rock Jobs: completed." );

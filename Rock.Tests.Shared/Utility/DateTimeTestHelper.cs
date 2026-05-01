@@ -17,10 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Lava;
 
-namespace Rock.Tests.Shared
+namespace Rock.Tests.Shared.Utility
 {
     /// <summary>
     /// A helper class for testing components related to date/time.

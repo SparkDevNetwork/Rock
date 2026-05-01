@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
+using Rock.Tests.Shared.Utility;
+
 using Testcontainers.MsSql;
 
-namespace Rock.Tests.Shared.TestFramework
+namespace Rock.Tests.Integration.TestFramework.Database
 {
     /// <summary>
     /// Simple pool of <see cref="MsSqlContainer"/> images. It takes a few

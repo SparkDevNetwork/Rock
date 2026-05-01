@@ -7,11 +7,13 @@ using Docker.DotNet;
 using Docker.DotNet.Models;
 
 using Rock.Tests.Shared.Lava;
+using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Shared.Utility;
 using Rock.Web.Cache;
 
 using Testcontainers.MsSql;
 
-namespace Rock.Tests.Shared.TestFramework
+namespace Rock.Tests.Integration.TestFramework.Database
 {
     /// <summary>
     /// This is a wrapper around a database docker container that can be used
@@ -99,7 +101,7 @@ namespace Rock.Tests.Shared.TestFramework
 
             if ( _databaseContainer != null )
             {
-                global::Rock.Transactions.RockQueue.Clear();
+                Rock.Transactions.RockQueue.Clear();
                 RockCache.ClearAllCachedItems( false );
                 TestHelper.ConfigureRockApp( null );
 

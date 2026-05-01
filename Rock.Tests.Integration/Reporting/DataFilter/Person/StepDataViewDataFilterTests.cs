@@ -22,7 +22,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.DataFilter.Person;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Reporting.DataFilter.Person
 {

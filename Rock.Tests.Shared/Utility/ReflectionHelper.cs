@@ -19,15 +19,13 @@ using System.Reflection;
 
 
 // From https://github.com/haacked/Subtext/tree/master/src/UnitTests.Subtext
-namespace Rock.Tests.Shared
+namespace Rock.Tests.Shared.Utility
 {
     /// <summary>
     /// Helper class to simplify common reflection tasks.
     /// </summary>
-    public sealed class ReflectionHelper
+    internal static class ReflectionHelper
     {
-        private ReflectionHelper() { }
-
         /// <summary>
         /// Returns the value of the private member specified.
         /// </summary>

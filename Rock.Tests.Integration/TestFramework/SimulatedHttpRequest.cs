@@ -5,7 +5,7 @@ using System.Text;
 using System.Web;
 using System.Web.Hosting;
 
-namespace Rock.Tests.Shared
+namespace Rock.Tests.Integration.TestFramework
 {
     /// <summary>
     /// Used to simulate an HttpRequest.

@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.CheckIn.v2

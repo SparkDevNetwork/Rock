@@ -24,6 +24,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
+using Rock.Tests.Shared.Core.Schedules;
 using Rock.Tests.Shared.Lava;
 
 using static Rock.Tests.Integration.TestData.EventsDataManager;

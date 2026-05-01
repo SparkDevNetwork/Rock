@@ -21,7 +21,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.Reporting.DataFilter;
 using Rock.Tests.Integration.TestData.Core;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.TestData

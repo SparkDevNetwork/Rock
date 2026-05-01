@@ -16,15 +16,16 @@
 //
 using System;
 using System.Collections.Generic;
-using Rock.Model;
-
-using Ical.Net;
-using Ical.Net.DataTypes;
-using Ical.Net.Serialization;
-using Ical.Net.CalendarComponents;
 using System.Linq;
 
-namespace Rock.Tests
+using Ical.Net;
+using Ical.Net.CalendarComponents;
+using Ical.Net.DataTypes;
+using Ical.Net.Serialization;
+
+using Rock.Model;
+
+namespace Rock.Tests.Shared.Core.Schedules
 {
     /// <summary>
     /// Provides useful functions for testing Schedules.

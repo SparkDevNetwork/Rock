@@ -26,8 +26,8 @@ using Rock.Logging;
 using Rock.Tests.Integration.Communications.Transport;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestData.Crm;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 using static Rock.Jobs.SendNoteNotifications;

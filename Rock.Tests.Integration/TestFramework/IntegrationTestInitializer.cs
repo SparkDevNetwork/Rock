@@ -23,8 +23,10 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Bus;
-using Rock.Tests.Shared;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Integration.TestFramework.Database.Initializer;
 using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Shared.Utility;
 using Rock.WebStartup;
 
 namespace Rock.Tests.Integration.TestFramework
@@ -171,7 +173,7 @@ namespace Rock.Tests.Integration.TestFramework
             var initializerTypeName = ConfigurationManager.AppSettings["DatabaseInitializer"].ToStringSafe();
             if ( string.IsNullOrWhiteSpace( initializerTypeName ) )
             {
-                initializerTypeName = nameof( Rock.Tests.Shared.TestFramework.Database.Initializer.SampleDataset );
+                initializerTypeName = nameof( SampleDataset );
             }
 
             var initializerTypesMap = Reflection.FindTypes( typeof( ITestDatabaseInitializer ) );

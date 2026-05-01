@@ -25,7 +25,7 @@ using Rock.Jobs;
 using Rock.Model;
 using Rock.Reporting.DataFilter;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Jobs

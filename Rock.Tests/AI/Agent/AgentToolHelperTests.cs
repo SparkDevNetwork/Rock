@@ -22,7 +22,6 @@ using Rock.Lava;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
-using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
 using Rock.Web;

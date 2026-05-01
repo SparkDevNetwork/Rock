@@ -23,8 +23,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Crm.ConnectionStatusChangeReport;
 using Rock.Data;
 using Rock.Tests.Integration.TestData.Crm;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Performance.Crm

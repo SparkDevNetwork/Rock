@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Tests.Shared.Lava;
 using Rock.Tests.Shared.TestFramework;
 

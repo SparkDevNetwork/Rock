@@ -12,16 +12,19 @@ using Docker.DotNet.Models;
 
 using DotNet.Testcontainers.Containers;
 
+using Rock;
 using Rock.Jobs;
 using Rock.Migrations.RockStartup;
 using Rock.Model;
 using Rock.Tests.Shared.Lava;
+using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Shared.Utility;
 using Rock.Utility;
 using Rock.Web;
 
 using Testcontainers.MsSql;
 
-namespace Rock.Tests.Shared.TestFramework
+namespace Rock.Tests.Integration.TestFramework.Database
 {
     /// <summary>
     /// Builds a new Docker image that has the required database information
@@ -204,7 +207,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         {
             var connection = new DbConnectionInfo( connectionString, "System.Data.SqlClient" );
 
-            var config = new Rock.Migrations.Configuration
+            var config = new Migrations.Configuration
             {
                 TargetDatabase = connection
             };
@@ -234,7 +237,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         /// </summary>
         private static string GetTargetMigration()
         {
-            return typeof( Rock.Migrations.RockMigration )
+            return typeof( Migrations.RockMigration )
                 .Assembly
                 .GetExportedTypes()
                 .Where( a => typeof( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ).IsAssignableFrom( a ) )
@@ -250,7 +253,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         /// <param name="numberBack">The number of migrations back to look.</param>
         private static string GetRecentMigration( int numberBack )
         {
-            return typeof( Rock.Migrations.RockMigration )
+            return typeof( Migrations.RockMigration )
                 .Assembly
                 .GetExportedTypes()
                 .Where( a => typeof( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ).IsAssignableFrom( a ) )
@@ -288,7 +291,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             // Initialize the Lava Engine first, because it is needed by
             // the sample data loader.
             LavaIntegrationTestHelper.Initialize( testFluidEngine: true, loadShortcodes: false );
-            LavaIntegrationTestHelper.GetEngineInstance( typeof( Rock.Lava.Fluid.FluidEngine ) );
+            LavaIntegrationTestHelper.GetEngineInstance( typeof( Lava.Fluid.FluidEngine ) );
 
             // Make sure all Entity Types are registered.
             // This is necessary because some components are only registered at runtime,
@@ -307,7 +310,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
             if ( sampleDataUrl.Equals( "embedded", StringComparison.OrdinalIgnoreCase ) )
             {
-                using ( var stream = typeof( DatabaseContainerImageBuilder ).Assembly.GetManifestResourceStream( "Rock.Tests.Shared.TestFramework.sampledata_1_14_1.xml" ) )
+                using ( var stream = typeof( DatabaseContainerImageBuilder ).Assembly.GetManifestResourceStream( "Rock.Tests.Integration.TestFramework.sampledata_1_14_1.xml" ) )
                 {
                     var xmlText = new StreamReader( stream ).ReadToEnd();
                     factory.CreateFromXmlDocumentText( xmlText, args );
@@ -330,7 +333,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         /// <typeparam name="TJob">The job class to be executed.</typeparam>
         /// <param name="settings">The settings to pass to the job.</param>
         private static void ExecuteRockJob<TJob>( Dictionary<string, string> settings = null, Action<TJob> configure = null )
-            where TJob : Rock.Jobs.RockJob, new()
+            where TJob : RockJob, new()
         {
             var job = new TJob();
 

@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Rock.Tests.Shared.TestFramework
+using Rock.Tests.Shared.Utility;
+
+namespace Rock.Tests.Integration.TestFramework.Database
 {
     /// <summary>
     /// All unit tests that require database access should inherit from

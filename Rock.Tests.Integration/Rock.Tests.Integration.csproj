@@ -19,9 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="TestData\SampleData\sampledata_1_14_1.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="TestData\test.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -43,6 +40,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\Documentation\sampledata_1_14_1.xml">
+      <Link>TestFramework\sampledata_1_14_1.xml</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CsvHelper" Version="2.16.3" />
     <PackageReference Include="HttpSimulator" Version="2.3.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
@@ -50,6 +53,7 @@
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="MSTest" Version="4.0.2" />
     <PackageReference Include="SmtpServer" Version="10.0.1" />
+    <PackageReference Include="Testcontainers.MsSql" Version="4.9.0" />
   </ItemGroup>
 
   <ItemGroup>

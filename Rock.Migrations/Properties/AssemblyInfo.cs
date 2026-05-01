@@ -16,4 +16,4 @@
 //
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
+[assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]

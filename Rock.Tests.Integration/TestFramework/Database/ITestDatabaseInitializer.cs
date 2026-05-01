@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-namespace Rock.Tests.Shared.TestFramework
+namespace Rock.Tests.Integration.TestFramework.Database
 {
     /// <summary>
     /// A component that prepares an empty Rock database template for specific testing by adding relevant sample data.

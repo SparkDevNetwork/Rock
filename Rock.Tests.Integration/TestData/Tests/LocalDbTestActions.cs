@@ -17,9 +17,10 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Tests.Integration.TestFramework;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
-using Rock.Tests.Shared.TestFramework.Database.Initializer;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Integration.TestFramework.Database.Initializer;
+using Rock.Tests.Shared.Constants;
+using Rock.Tests.Shared.Utility;
 
 namespace Rock.Tests.Integration.TestData.Tests
 {

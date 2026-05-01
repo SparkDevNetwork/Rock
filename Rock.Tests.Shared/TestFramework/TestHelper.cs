@@ -26,10 +26,9 @@ using Moq;
 
 using Rock.Configuration;
 using Rock.Data;
-using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Shared
+namespace Rock.Tests.Shared.TestFramework
 {
     public static class TestHelper
     {

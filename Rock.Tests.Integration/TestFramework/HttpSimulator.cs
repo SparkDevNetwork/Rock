@@ -8,7 +8,9 @@ using System.Web.Configuration;
 using System.Web.Hosting;
 using System.Web.SessionState;
 
-namespace Rock.Tests.Shared
+using Rock.Tests.Shared.Utility;
+
+namespace Rock.Tests.Integration.TestFramework
 {
     public enum HttpVerb
     {

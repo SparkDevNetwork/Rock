@@ -16,7 +16,7 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Performance.Core
 {

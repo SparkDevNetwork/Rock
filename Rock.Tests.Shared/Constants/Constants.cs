@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-namespace Rock.Tests.Shared
+namespace Rock.Tests.Shared.Constants
 {
     /// <summary>
     /// Unique String identifiers 

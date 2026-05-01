@@ -24,11 +24,15 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+
+using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared;
+using Rock.Tests.Shared.Utility;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Shared.TestFramework
+namespace Rock.Tests.Integration.TestFramework.Database
 {
     /// <summary>
     /// Manages Rock databases for a LocalDb instance used during developer testing.
@@ -169,7 +173,7 @@ namespace Rock.Tests.Shared.TestFramework
             LogHelper.Log( $"Applying migrations from assembly \"{pluginAssemblyName}\"..." );
 
             // Migrate any plugins from the plugin assembly that have pending migrations
-            var pluginMigrationTypes = Rock.Reflection.SearchAssembly( pluginAssembly, typeof( Rock.Plugin.Migration ) ).Select( a => a.Value ).ToList();
+            var pluginMigrationTypes = Rock.Reflection.SearchAssembly( pluginAssembly, typeof( Plugin.Migration ) ).Select( a => a.Value ).ToList();
 
             // If any plugin migrations types were found
             if ( !pluginMigrationTypes.Any() )
@@ -187,7 +191,7 @@ namespace Rock.Tests.Shared.TestFramework
             foreach ( var migrationType in pluginMigrationTypes )
             {
                 // Get the MigrationNumberAttribute for the migration
-                var migrationNumberAttr = migrationType.GetCustomAttribute<Rock.Plugin.MigrationNumberAttribute>();
+                var migrationNumberAttr = migrationType.GetCustomAttribute<Plugin.MigrationNumberAttribute>();
                 if ( migrationNumberAttr != null )
                 {
                     migrationNumber = migrationNumberAttr.Number;
@@ -242,7 +246,7 @@ namespace Rock.Tests.Shared.TestFramework
                 // Iterate thru each plugin migration in this assembly, if one fails, will log the exception and stop running migrations for this assembly
                 foreach ( Type migrationType in migrationTypesToRun )
                 {
-                    migrationNumber = migrationType.GetCustomAttribute<Rock.Plugin.MigrationNumberAttribute>()?.Number ?? 0;
+                    migrationNumber = migrationType.GetCustomAttribute<Plugin.MigrationNumberAttribute>()?.Number ?? 0;
 
                     using ( var sqlTxn = sqlConnection.BeginTransaction() )
                     {
@@ -250,7 +254,7 @@ namespace Rock.Tests.Shared.TestFramework
                         try
                         {
                             // Create an instance of the migration and run the up migration
-                            var migration = Activator.CreateInstance( migrationType ) as Rock.Plugin.Migration;
+                            var migration = Activator.CreateInstance( migrationType ) as Plugin.Migration;
 
                             LogHelper.Log( $"Applying migration \"{migrationType.Name}\"..." );
 
@@ -306,7 +310,7 @@ namespace Rock.Tests.Shared.TestFramework
         {
             if ( _targetMigration == null )
             {
-                var targetMigrations = typeof( Rock.Migrations.RockMigration )
+                var targetMigrations = typeof( Migrations.RockMigration )
                     .Assembly
                     .GetExportedTypes()
                        .Where( a => typeof( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ).IsAssignableFrom( a ) )
@@ -356,7 +360,7 @@ namespace Rock.Tests.Shared.TestFramework
         {
             var connection = new DbConnectionInfo( connectionString, "System.Data.SqlClient" );
 
-            var config = new Rock.Migrations.Configuration();
+            var config = new Migrations.Configuration();
             config.TargetDatabase = connection;
 
             var migrator = new System.Data.Entity.Migrations.DbMigrator( config );

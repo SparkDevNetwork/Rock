@@ -25,7 +25,7 @@ using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 using Rock.Tests.Shared.Lava;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
@@ -517,7 +517,7 @@ Current Person Guid = {{ person.Guid }}
         {
             // Test with Step Program Guid
             PersonStepsTestWithTemplate( TestGuids.TestPeople.TedDecker,
-                Tests.Shared.TestGuids.Steps.ProgramAlphaGuid.ToString(),
+                TestGuids.Steps.ProgramAlphaGuid.ToString(),
                 null,
                 null,
                 "Ted Decker:<p>Attender - Completed</p><p>Volunteer - Started</p>" );
@@ -525,7 +525,7 @@ Current Person Guid = {{ person.Guid }}
             // Test with Step Program Id.
             var dataContext = new RockContext();
 
-            var stepProgramId = new StepProgramService( dataContext ).GetId( Tests.Shared.TestGuids.Steps.ProgramAlphaGuid );
+            var stepProgramId = new StepProgramService( dataContext ).GetId( TestGuids.Steps.ProgramAlphaGuid );
 
             PersonStepsTestWithTemplate( TestGuids.TestPeople.TedDecker,
                 stepProgramId.ToString(),
@@ -541,14 +541,14 @@ Current Person Guid = {{ person.Guid }}
             // Test with Step Type Guid
             PersonStepsTestWithTemplate( TestGuids.TestPeople.TedDecker,
                 null,
-                Tests.Shared.TestGuids.Steps.StepTypeBaptismGuid.ToString(),
+                TestGuids.Steps.StepTypeBaptismGuid.ToString(),
                 null,
                 "Ted Decker: <p>Baptism - Success</p>" );
 
             // Test with Step Type Id.
             var dataContext = new RockContext();
 
-            var stepTypeId = new StepTypeService( dataContext ).GetId( Tests.Shared.TestGuids.Steps.StepTypeBaptismGuid );
+            var stepTypeId = new StepTypeService( dataContext ).GetId( TestGuids.Steps.StepTypeBaptismGuid );
 
             PersonStepsTestWithTemplate( TestGuids.TestPeople.TedDecker,
                 null,

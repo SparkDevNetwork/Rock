@@ -7,6 +7,7 @@ using Moq;
 
 using Rock.Configuration;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Configuration
 {

@@ -24,7 +24,7 @@ using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData.Cms;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Transactions;
 using Rock.Web.Cache;
 

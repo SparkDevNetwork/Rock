@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-namespace Rock.Tests.Shared.TestFramework.Database.Initializer
+namespace Rock.Tests.Integration.TestFramework.Database.Initializer
 {
     /// <summary>
     /// Initializes an empty database that only contains basic configuration data.

@@ -14,14 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Configuration;
 using System.Threading.Tasks;
+
 using Rock.Configuration;
 using Rock.Tests.Shared.Lava;
-using Rock.Utility.Settings;
+using Rock.Tests.Shared.Utility;
 
-namespace Rock.Tests.Shared.TestFramework
+namespace Rock.Tests.Integration.TestFramework.Database
 {
     /// <summary>
     /// Manages Rock databases for a LocalDb instance used during developer testing.

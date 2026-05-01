@@ -1,4 +1,4 @@
-﻿namespace Rock.Tests.Shared.TestFramework
+﻿namespace Rock.Tests.Integration.TestFramework.Database
 {
     /// <summary>
     /// Indicates to the framework that we need to provide an isolated

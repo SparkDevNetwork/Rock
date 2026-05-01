@@ -16,7 +16,7 @@
 //
 using System.Threading.Tasks;
 
-namespace Rock.Tests.Shared.TestFramework
+namespace Rock.Tests.Integration.TestFramework.Database
 {
     /// <summary>
     /// A container that manages a database instance suitable for executing a batch of unit tests.
