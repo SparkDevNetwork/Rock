@@ -191,7 +191,13 @@ namespace Rock.Blocks.CheckIn.Manager
                 return _options;
             }
 
-            var options = new CheckInContextSetterOptionsBag();
+            var options = new CheckInContextSetterOptionsBag
+            {
+                // Temporary. This will be used to redirect to the same page
+                // for WebForms blocks. Once they have all been converted to
+                // Obsidian, this can be removed.
+                IsRedirectRequired = PageCache.Guid != new Guid( "ba04bf01-5244-4637-b12d-7a962d2a9e77" ),
+            };
 
             InitializeCampusOptions( options );
 
@@ -340,15 +346,20 @@ namespace Rock.Blocks.CheckIn.Manager
                 return location;
             }
 
-            if ( location == null || location.Id != locationId )
-            {
-                location = new LocationService( RockContext ).Get( locationId.Value );
+            location = new LocationService( RockContext ).Get( locationId.Value );
 
-                if ( location != null )
-                {
-                    RequestContext.SetContextEntity( location, pageSpecific: false );
-                }
+            if ( location != null )
+            {
+                RequestContext.SetContextEntity( location, pageSpecific: false );
             }
+
+            // We also need to redirect back to the current page without
+            // the LocationId query parameter so that everything on the
+            // page is in sync with the new location context.
+            var queryParams = RequestContext.QueryString.ToSimpleQueryStringDictionary();
+            queryParams.Remove( PageParameterKey.LocationId );
+
+            RequestContext.Response.RedirectToUrl( this.GetCurrentPageUrl( queryParams, skipExistingParameters: true ) );
 
             return location;
         }
