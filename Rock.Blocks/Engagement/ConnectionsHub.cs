@@ -2365,7 +2365,7 @@ namespace Rock.Blocks.Engagement
                 DueDate = connectionRequest.DueDate?.ToRockDateTimeOffset(),
                 CompletedDateTime = connectionRequest.ConnectedDateTime?.ToRockDateTimeOffset(),
                 DueStatus = GetDueStatus(connectionRequest.DueDate, connectionRequest.DueSoonDate, connectionRequest.ConnectionState, connectionRequest.ConnectedDateTime ),
-                Comments = connectionRequest.Comments,
+                Comments = connectionRequest.Comments?.ConvertMarkdownToHtml(),
                 ConnectionTypeSource = connectionRequest.ConnectionTypeSource?.Name,
                 CelebrationText = GetCelebrationText( connectionRequest.Id ),
                 ActionItems = new List<ListItemBag>(),
