@@ -219,7 +219,7 @@
                     </div>
                     <div v-if="!isNullOrWhiteSpace(requestDetails?.comments)">
                         <RockLabel class="mb-spacing-xs text-interface-medium text-regular">Comments</RockLabel>
-                        <div class="text-interface-stronger">{{ requestDetails?.comments }}</div>
+                        <div class="text-interface-stronger" v-html="requestDetails?.comments"></div>
                     </div>
                     <div v-if="!isNullOrWhiteSpace(requestDetails?.connectionTypeSource)">
                         <RockLabel class="mb-spacing-xs text-interface-medium text-regular">Request Source</RockLabel>

@@ -29,6 +29,7 @@ import { ConnectionOpportunityDetailBag } from "@Obsidian/ViewModels/Blocks/Enga
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
 import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionWorkflowBag";
 import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
+import { GridDataToShowItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/gridDataToShowItemBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Connections Hub block. */
@@ -90,7 +91,7 @@ export type ConnectionsHubOptionsBag = {
     enabledViews: EnabledViewFlags;
 
     /** Gets or sets the list of column options that control which data fields are displayed in the request grid. */
-    gridDataToShowItems?: ListItemBag[] | null;
+    gridDataToShowItems?: GridDataToShowItemBag[] | null;
 
     /** Gets or sets the CSS class for the icon to display alongside the block title. */
     iconCssClass?: string | null;

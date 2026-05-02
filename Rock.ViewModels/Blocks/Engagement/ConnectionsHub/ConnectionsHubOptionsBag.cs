@@ -142,7 +142,7 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// <summary>
         /// Gets or sets the list of column options that control which data fields are displayed in the request grid.
         /// </summary>
-        public List<ListItemBag> GridDataToShowItems { get; set; }
+        public List<GridDataToShowItemBag> GridDataToShowItems { get; set; }
 
         /// <summary>
         /// Gets or sets the list of activity types available to log against connection requests.
