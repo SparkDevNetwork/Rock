@@ -410,45 +410,93 @@ namespace Rock.Blocks.Engagement
                 .OrderBy( s => s.Order )
                 .ToList();
 
-            var tempConnectionRequest = new ConnectionRequest
-            {
-                ConnectionTypeId = connectionType.Id
-            };
-
-            tempConnectionRequest.LoadAttributes();
-
+            // Built-in columns are always available regardless of opportunity filter.
             // The values should equal the field names for each respective column.
-            options.GridDataToShowItems = new List<ListItemBag>
+            options.GridDataToShowItems = new List<GridDataToShowItemBag>
             {
-                new ListItemBag
+                new GridDataToShowItemBag
                 {
-                    Text = "Due Date",
-                    Value = "dueDate"
+                    ListItemBag = new ListItemBag { Text = "Due Date", Value = "dueDate" }
                 },
-                new ListItemBag
+                new GridDataToShowItemBag
                 {
-                    Text = "Opportunity",
-                    Value = "connectionOpportunity"
+                    ListItemBag = new ListItemBag { Text = "Opportunity", Value = "connectionOpportunity" }
                 },
-                new ListItemBag
+                new GridDataToShowItemBag
                 {
-                    Text = "Activity Count / Days",
-                    Value = "activity"
+                    ListItemBag = new ListItemBag { Text = "Activity Count / Days", Value = "activity" }
                 }
             };
 
-            options.GridDataToShowItems.AddRange(
-                tempConnectionRequest.Attributes
-                    .Select( a => a.Value )
-                    .Where( a => a.IsGridColumn )
-                    .Select( a =>
+            // Build the attribute column choices by unioning attributes across the Connection
+            // Type and every Connection Opportunity under it. Attributes defined at the type
+            // level are always shown; attributes contributed only by specific opportunities
+            // carry the Guids of the opportunities that scope them so the client can hide
+            // them when an unrelated opportunity is selected as the active filter.
+            var attributesByKey = new Dictionary<string, AttributeCache>();
+            var typeLevelAttributeKeys = new HashSet<string>();
+            var opportunityGuidsByAttributeKey = new Dictionary<string, HashSet<Guid>>();
+
+            var tempTypeRequest = new ConnectionRequest
+            {
+                ConnectionTypeId = connectionType.Id
+            };
+            tempTypeRequest.LoadAttributes();
+
+            foreach ( var attribute in tempTypeRequest.Attributes.Values.Where( a => a.IsGridColumn ) )
+            {
+                attributesByKey[attribute.Key] = attribute;
+                typeLevelAttributeKeys.Add( attribute.Key );
+            }
+
+            foreach ( var opportunity in connectionType.ConnectionOpportunities.Where( o => o.IsActive ) )
+            {
+                var tempOpportunityRequest = new ConnectionRequest
+                {
+                    ConnectionTypeId = connectionType.Id,
+                    ConnectionOpportunityId = opportunity.Id
+                };
+                tempOpportunityRequest.LoadAttributes();
+
+                foreach ( var attribute in tempOpportunityRequest.Attributes.Values.Where( a => a.IsGridColumn ) )
+                {
+                    // Type-level attributes are unconditionally shown, so we do not narrow
+                    // their scope by adding any opportunity Guids to them.
+                    if ( typeLevelAttributeKeys.Contains( attribute.Key ) )
                     {
-                        var item = a.ToListItemBag();
-                        // Overwrite the value with the field key that will be populated in the grid.
-                        item.Value = $"attr_{a.Key}";
-                        return item;
-                    } )
-            );
+                        continue;
+                    }
+
+                    attributesByKey.TryAdd( attribute.Key, attribute );
+
+                    // The same attribute can be contributed by multiple opportunities,
+                    // so accumulate every scoping opportunity's Guid against its key. The
+                    // client uses this set to keep the column option visible whenever any
+                    // of these opportunities is the active filter.
+                    if ( !opportunityGuidsByAttributeKey.TryGetValue( attribute.Key, out var opportunityGuids ) )
+                    {
+                        opportunityGuids = new HashSet<Guid>();
+                        opportunityGuidsByAttributeKey[attribute.Key] = opportunityGuids;
+                    }
+
+                    opportunityGuids.Add( opportunity.Guid );
+                }
+            }
+
+            options.GridDataToShowItems.AddRange( attributesByKey.Values.Select( a =>
+            {
+                var item = a.ToListItemBag();
+                // Overwrite the value with the field key that will be populated in the grid.
+                item.Value = $"attr_{a.Key}";
+
+                return new GridDataToShowItemBag
+                {
+                    ListItemBag = item,
+                    ConnectionOpportunityGuids = opportunityGuidsByAttributeKey.TryGetValue( a.Key, out var guids )
+                        ? guids.ToList()
+                        : null
+                };
+            } ) );
 
             options.ConnectionActivities = connectionType.ConnectionActivityTypes.Where( at => at.IsActive )
                 .Select( a => new ConnectionActivityTypeBag
@@ -667,26 +715,34 @@ namespace Rock.Blocks.Engagement
         /// <returns>The <see cref="ConnectionTypeCache"/> resolved from the available page parameters, or null if none could be found.</returns>
         private ConnectionTypeCache GetConnectionTypeCacheFromPageParameters( string connectionTypeIdKey = null )
         {
-            ConnectionTypeCache connectionType;
+            return GetConnectionTypeCacheFromPageParameters( out _, connectionTypeIdKey );
+        }
+
+        /// <summary>
+        /// Gets the Connection Type Cache from the current page parameters and exposes the
+        /// resolved Connection Opportunity (when one was used to derive the type) to the caller
+        /// so it does not have to look it up a second time.
+        /// </summary>
+        /// <param name="connectionOpportunity">The Connection Opportunity that was used to derive the Connection Type, or null if the type was resolved directly.</param>
+        /// <param name="connectionTypeIdKey">An optional Connection Type IdKey to look up directly, bypassing page parameter resolution.</param>
+        /// <returns>The <see cref="ConnectionTypeCache"/> resolved from the available page parameters, or null if none could be found.</returns>
+        private ConnectionTypeCache GetConnectionTypeCacheFromPageParameters( out ConnectionOpportunity connectionOpportunity, string connectionTypeIdKey = null )
+        {
+            connectionOpportunity = null;
 
             if ( connectionTypeIdKey.IsNotNullOrWhiteSpace() )
             {
-                connectionType = ConnectionTypeCache.Get( connectionTypeIdKey, !PageCache.Layout.Site.DisablePredictableIds );
-                return connectionType;
+                return ConnectionTypeCache.Get( connectionTypeIdKey, !PageCache.Layout.Site.DisablePredictableIds );
             }
 
-            var connectionOpportunity = new ConnectionOpportunityService( RockContext ).Get( PageParameter( PageParameterKey.ConnectionOpportunity ), !PageCache.Layout.Site.DisablePredictableIds );
+            connectionOpportunity = new ConnectionOpportunityService( RockContext ).Get( PageParameter( PageParameterKey.ConnectionOpportunity ), !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( connectionOpportunity != null )
             {
-                connectionType = ConnectionTypeCache.Get( connectionOpportunity.ConnectionTypeId );
-            }
-            else
-            {
-                connectionType = ConnectionTypeCache.Get( PageParameter( PageParameterKey.ConnectionType ), !PageCache.Layout.Site.DisablePredictableIds );
+                return ConnectionTypeCache.Get( connectionOpportunity.ConnectionTypeId );
             }
 
-            return connectionType;
+            return ConnectionTypeCache.Get( PageParameter( PageParameterKey.ConnectionType ), !PageCache.Layout.Site.DisablePredictableIds );
         }
 
         /// <summary>
@@ -2309,7 +2365,7 @@ namespace Rock.Blocks.Engagement
                 DueDate = connectionRequest.DueDate?.ToRockDateTimeOffset(),
                 CompletedDateTime = connectionRequest.ConnectedDateTime?.ToRockDateTimeOffset(),
                 DueStatus = GetDueStatus(connectionRequest.DueDate, connectionRequest.DueSoonDate, connectionRequest.ConnectionState, connectionRequest.ConnectedDateTime ),
-                Comments = connectionRequest.Comments,
+                Comments = connectionRequest.Comments?.ConvertMarkdownToHtml(),
                 ConnectionTypeSource = connectionRequest.ConnectionTypeSource?.Name,
                 CelebrationText = GetCelebrationText( connectionRequest.Id ),
                 ActionItems = new List<ListItemBag>(),
@@ -6130,12 +6186,35 @@ WHERE 1 = 1" );
             if ( _gridAttributes == null )
             {
                 var availableAttributes = new List<AttributeCache>();
-                var connectionTypeId = GetConnectionTypeCacheFromPageParameters()?.Id;
+                var connectionTypeCache = GetConnectionTypeCacheFromPageParameters( out var connectionOpportunity );
 
-                if ( connectionTypeId.HasValue )
+                if ( connectionTypeCache == null )
                 {
-                    var entityTypeId = EntityTypeCache.Get<ConnectionRequest>( false )?.Id;
-                    availableAttributes.AddRange( AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, "ConnectionTypeId", connectionTypeId.Value.ToString() ) );
+                    _gridAttributes = availableAttributes;
+                    return _gridAttributes;
+                }
+
+                var connectionTypeId = connectionTypeCache.Id;
+                var entityTypeId = EntityTypeCache.Get<ConnectionRequest>( false )?.Id;
+
+                availableAttributes.AddRange( AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, "ConnectionTypeId", connectionTypeId.ToString() ) );
+
+                if ( connectionOpportunity != null )
+                {
+                    availableAttributes.AddRange( AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, "ConnectionOpportunityId", connectionOpportunity.Id.ToString() ) );
+                }
+                else
+                {
+                    var opportunityIds = new ConnectionOpportunityService( RockContext ).Queryable()
+                        .AsNoTracking()
+                        .Where( co => co.ConnectionTypeId == connectionTypeId )
+                        .Select( co => co.Id )
+                        .ToList();
+
+                    foreach ( var opportunityId in opportunityIds )
+                    {
+                        availableAttributes.AddRange( AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, "ConnectionOpportunityId", opportunityId.ToString() ) );
+                    }
                 }
 
                 _gridAttributes = availableAttributes;

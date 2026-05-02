@@ -164,7 +164,19 @@
     }
 
     watch(isVisible, () => {
-        if (!isVisible.value) {
+        if (isVisible.value) {
+            // Re-seed the local refs from the latest modelValue every time the modal opens.
+            // This component stays mounted while the modal is hidden, so without this the
+            // refs would hold stale values when external state (e.g., the active opportunity
+            // filter narrowing or widening gridDataToShow) has changed since the last open.
+            sortBy.value = props.modelValue.sortBy ?? "DueDateAsc";
+            gridDataToShow.value = props.modelValue.gridDataToShow ?? [];
+            isRequestSourceShown.value = props.modelValue.isRequestSourceShown;
+            stateFilter.value = props.modelValue.stateFilter ?? [];
+            statusFilter.value = props.modelValue.statusFilter ?? [];
+            dueFilter.value = props.modelValue.dueFilter ?? [];
+        }
+        else {
             emit("close");
         }
     });
