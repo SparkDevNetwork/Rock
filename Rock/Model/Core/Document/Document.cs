@@ -53,6 +53,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int DocumentTypeId { get; set; }
 
         /// <summary>
