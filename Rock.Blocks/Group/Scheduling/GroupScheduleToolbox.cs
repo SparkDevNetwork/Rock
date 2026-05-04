@@ -2503,6 +2503,28 @@ namespace Rock.Blocks.Group.Scheduling
         /// <returns>An object containing information about the outcome of the request.</returns>
         private SaveSignUpResponseBag SaveSignUp( RockContext rockContext, SaveSignUpRequestBag bag )
         {
+            /*
+                5/4/2026 - JPH
+
+                The legacy version of this block would immediately save an individual's "additional time sign-up" as
+                soon as they placed a check in the box for a given occurrence; it would then delete/re-save attendance
+                records if they chose a different location from the drop-down list or simply delete the attendance
+                record altogether if they changed their mind and un-checked the box.
+
+                This Obsidian version of this block - however - requires a save button to be clicked before any saving
+                takes place. Once the save button is clicked and the attendance record is created, the occurrence will
+                then be removed altogether from their list of available sign-ups. This is because we introduced a
+                "schedule coordinator" feature, where the coordinator receives a communication whenever someone signs
+                up or modifies an existing scheduled occurrence. Without this save button gate, the coordinator would
+                receive back-to-back communications whenever someone changes their mind and un-checks the box or
+                chooses a different sign-up location.
+
+                Individuals CAN still delete an existing scheduled occurrence: they'll just need to do so on the
+                "Current Schedule" section of their toolbox.
+
+                Reason: Explain legacy vs Obsidian "Additional Time Sign-Up" behavior difference.
+            */
+
             var friendlyErrorMessage = "Unable to save sign-up.";
 
             var response = new SaveSignUpResponseBag();
