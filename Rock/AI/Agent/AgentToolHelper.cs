@@ -323,7 +323,7 @@ namespace Rock.AI.Agent
         /// <param name="pageSize">The size of each page. If <c>null</c> then a default page size will be applied.</param>
         /// <returns>A collection of items for the specified page.</returns>
         public PaginatedResult<T> GetCursorPaginatedItems<T>( IQueryable<T> queryable, CursorPaginator<T> paginator, string cursor = null, int? pageSize = null )
-            where T : class, IEntity
+            where T : class
         {
             pageSize = pageSize ?? DefaultPageSize;
 
