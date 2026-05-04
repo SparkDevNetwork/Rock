@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -771,6 +771,52 @@ WELCOME TO THE LAVA TAG
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
             } );
         }
+
+        [TestMethod]
+        public void LavaTag_WithInnerCustomLavaBlock_RendersBlockContentUsingLiquidBodyGrammar()
+        {
+            var template = @"
+{% lava
+    testpassthrough
+        assign greeting = 'hello'
+        echo greeting | Upcase
+    endtestpassthrough
+%}
+";
+
+            var expectedOutput = @"HELLO";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                engine.RegisterBlock( "testpassthrough", ( blockName ) => new TestPassthroughBlock() );
+
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+            } );
+        }
+
+        [TestMethod]
+        public void LavaTag_WithInnerCustomLavaBlockContainingForLoop_RendersCorrectly()
+        {
+            var template = @"
+{% lava
+    testpassthrough
+        for i in (1..4)
+            echo i
+        endfor
+    endtestpassthrough
+%}
+";
+
+            var expectedOutput = @"1234";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                engine.RegisterBlock( "testpassthrough", ( blockName ) => new TestPassthroughBlock() );
+
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+            } );
+        }
+
         #endregion
 
         #region Raw Tag
@@ -792,5 +838,14 @@ WELCOME TO THE LAVA TAG
 
         #endregion
 
+        private class TestPassthroughBlock : LavaBlockBase
+        {
+            public TestPassthroughBlock()
+            {
+                SourceElementName = "testpassthrough";
+            }
+        }
     }
 }
+
+

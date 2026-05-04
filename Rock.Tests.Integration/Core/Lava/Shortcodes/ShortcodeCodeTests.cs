@@ -503,7 +503,7 @@ Restored Value: {{Error}}";
         /// Verify that a shortcode embedded in an [[ item ]] tag is rendered correctly.
         /// </summary>
         [TestMethod]
-        [Ignore( "This test documents a potential bug. The nested [[ item ]] tag is not resolved correctly." )]
+        //[Ignore( "This test documents a potential bug. The nested [[ item ]] tag is not resolved correctly." )]
         public void ShortcodeParsing_ShortcodeEmbeddedInItemElement_IsParsedCorrectly()
         {
             var input = @"

@@ -64,15 +64,17 @@ namespace Rock.Lava.Fluid
         private readonly string _attributesMarkup;
         private readonly string _blockContent;
         private readonly string _tagName;
+        private readonly bool _isLiquidTagBody;
         private LavaTagFormatSpecifier _tagFormat;
 
         private readonly LavaFluidParser _parser;
 
-        internal FluidLavaBlockStatement( LavaFluidParser parser, string tagName, LavaTagFormatSpecifier tagFormat, in TextSpan attributesMarkup, in TextSpan blockContent )
+        internal FluidLavaBlockStatement( LavaFluidParser parser, string tagName, LavaTagFormatSpecifier tagFormat, in TextSpan attributesMarkup, in TextSpan blockContent, bool isLiquidTagBody )
         {
             _parser = parser;
             _tagName = tagName;
             _tagFormat = tagFormat;
+            _isLiquidTagBody = isLiquidTagBody;
 
             _attributesMarkup = attributesMarkup.ToString() ?? string.Empty;
 
@@ -145,14 +147,21 @@ namespace Rock.Lava.Fluid
             var fluidContext = ( ( FluidRenderContext ) context ).FluidContext;
 
             // Parse the content of the block into a set of Fluid statements.
-            var blockContext = new FluidParseContext( _blockContent );
+            var template = _blockContent ?? string.Empty;
 
+            // Re-wrap inner block content in a synthetic {% liquid %} tag so nested Fluid blocks (for/if/case/etc.)
+            // are parsed by the exact same code path as top-level {% liquid %}/{% lava %} content.
+            if ( _isLiquidTagBody )
+            {
+                template = $"{{% liquid\r\n{template}\r\n%}}";
+            }
+
+            var blockContext = new FluidParseContext( template );
             var parseResult = new ParseResult<IReadOnlyList<Statement>>();
 
             _ = _parser.Grammar.Parse( blockContext, ref parseResult );
 
-            // Execute each of the statements in the block.
-            var statements = parseResult.Value;
+            var statements = parseResult.Value ?? new List<Statement>();
 
             if ( encoder == null )
             {

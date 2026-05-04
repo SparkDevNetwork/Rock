@@ -424,7 +424,7 @@ namespace Rock.Lava.Fluid
                     return x;
                 } )
                 .SkipAnd(
-                    OneOrMany(
+                    ZeroOrMany(
                         OneOf(
                             SkipWhiteSpace( LavaInlineCommentParser.AsFluidTagResultParser() )
                                 .Then<Statement>( x => new CommentStatement( x.ToStringSafe() ) ),
@@ -553,7 +553,7 @@ namespace Rock.Lava.Fluid
             var lavaBlock = AnyCharBefore( tokenEndParser, canBeEmpty: true )
                 .AndSkip( tokenEndParser )
                 .And( new LavaTagParsers.LavaBlockContentParser( tagName, format ) )
-                .Then<Statement>( x => new FluidLavaBlockStatement( this, tagName, format, x.Item1, x.Item2 ) )
+                .Then<Statement>( ( context, x ) => new FluidLavaBlockStatement( this, tagName, format, x.Item1, x.Item2, ( ( FluidParseContext ) context ).InsideLiquidTag ) )
                 .ElseError( errorMessage );
 
             RegisteredTags[registerTagName] = lavaBlock;
@@ -724,6 +724,7 @@ namespace Rock.Lava.Fluid
 
             return lavaTokens;
         }
+
 
         /// <summary>
         /// Parse the supplied template into a collection of trace statements that can be used to debug parsing activity.
