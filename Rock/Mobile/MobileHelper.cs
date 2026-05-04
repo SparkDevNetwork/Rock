@@ -422,6 +422,11 @@ namespace Rock.Mobile
                 throw new Exception( "Invalid or non-existing AdditionalSettings property on site." );
             }
 
+            if ( !site.DefaultPageId.HasValue )
+            {
+                throw new InvalidOperationException( "Cannot build mobile package: the site has no default page configured." );
+            }
+
             // Get all the system phone formats.
             var phoneFormats = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE )
                 .DefinedValues

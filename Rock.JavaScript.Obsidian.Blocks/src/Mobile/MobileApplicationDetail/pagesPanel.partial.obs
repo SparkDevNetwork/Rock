@@ -1,0 +1,151 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Page"
+          light
+          liveUpdates
+          :onAddItem="onAddClicked"
+          @selectItem="onRowClicked">
+        <ReorderColumn @orderChanged="onOrderChanged" />
+
+        <TextColumn name="internalName"
+                    title="Name"
+                    field="internalName"
+                    visiblePriority="xs" />
+
+        <TextColumn name="layoutName"
+                    title="Layout"
+                    field="layoutName"
+                    visiblePriority="md" />
+
+        <TextColumn name="displayInNavWhen"
+                    title="Display In Nav"
+                    field="displayInNavWhen"
+                    visiblePriority="lg" />
+
+        <DeleteColumn :rowDisabled="isDeleteRowDisabled"
+                      @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { PropType, reactive, ref } from "vue";
+    import Grid, { TextColumn, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { MobileApplicationBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationBag";
+    import { MobileApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationDetailOptionsBag";
+    import { NavigationUrlKey } from "./types.partial";
+
+    const config = useConfigurationValues<DetailBlockBox<MobileApplicationBag, MobileApplicationDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    defineProps({
+        options: {
+            type: Object as PropType<MobileApplicationDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /** Loads the pages grid via the `GetPagesGridData` block action. */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetPagesGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unable to load pages.");
+        }
+    }
+
+    /**
+     * Navigates to the page detail URL with the row key substituted in.
+     */
+    function navigateToDetail(key: string): void {
+        const template = config.navigationUrls?.[NavigationUrlKey.PageDetailPage];
+        if (template) {
+            window.location.href = template.replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Disables the delete control on the site's default page row, since
+     * removing the default page would leave the site without an entry
+     * point.
+     */
+    function isDeleteRowDisabled(row: Record<string, unknown>): boolean {
+        return row.isDefaultPage === true;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Navigates to the new-page URL when the grid's Add button is clicked. */
+    function onAddClicked(): void {
+        navigateToDetail("0");
+    }
+
+    /** Navigates to the page detail URL when a row is clicked. */
+    function onRowClicked(key: string): void {
+        navigateToDetail(key);
+    }
+
+    /**
+     * Deletes the page via the `DeletePage` block action and removes the
+     * row from the grid in place. Surfaces the server's error message
+     * (typically a `CanDelete` rejection) when the delete is refused.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("DeletePage", { key });
+
+        if (result.isSuccess) {
+            if (gridData?.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+                if (index !== -1) {
+                    gridData.rows.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to delete the page.");
+        }
+    }
+
+    /**
+     * Persists a drag-and-drop page reorder via the `ReorderPage` block
+     * action. Reverts the visual reorder by returning false when the
+     * server rejects the request.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderPage", {
+            key: item.idKey,
+            beforeKey: beforeItem?.idKey ?? null
+        });
+
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to reorder pages.");
+            return false;
+        }
+
+        return true;
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

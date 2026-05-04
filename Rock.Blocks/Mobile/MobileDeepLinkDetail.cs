@@ -214,10 +214,10 @@ namespace Rock.Blocks.Mobile
         {
             var options = new MobileDeepLinkDetailOptionsBag();
 
-            options.RootPageGuid = SiteService
-                .Get( RequestContext.GetPageParameter( PageParameterKey.SiteId ).AsInteger() )
-                .DefaultPage
-                .Guid;
+            var site = SiteService
+                .Get( RequestContext.GetPageParameter( PageParameterKey.SiteId ), !PageCache.Layout.Site.DisablePredictableIds );
+
+            options.RootPageGuid = site?.DefaultPage?.Guid ?? System.Guid.Empty;
 
             return options;
         }
@@ -356,7 +356,7 @@ namespace Rock.Blocks.Mobile
 
             var pageService = new PageService( RockContext );
 
-            var site = SiteService.Get( PageParameter( PageParameterKey.SiteId ) );
+            var site = SiteService.Get( PageParameter( PageParameterKey.SiteId ), !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( site == null )
             {
@@ -437,7 +437,7 @@ namespace Rock.Blocks.Mobile
             var pageService = new PageService( RockContext );
 
             // Get the site settings for this specific site.
-            var site = SiteService.Get( PageParameter( PageParameterKey.SiteId ) );
+            var site = SiteService.Get( PageParameter( PageParameterKey.SiteId ), !PageCache.Layout.Site.DisablePredictableIds );
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
             // Generate the guid for our route, and get the guid for the mobile page corresponding to it.

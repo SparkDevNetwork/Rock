@@ -196,11 +196,12 @@ namespace Rock.Blocks.Mobile
 
             if ( layout?.Id == 0 )
             {
-                var siteId = RequestContext.GetPageParameter( PageParameterKey.SiteId )?.AsIntegerOrNull();
+                var site = new SiteService( RockContext )
+                    .Get( RequestContext.GetPageParameter( PageParameterKey.SiteId ), !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( siteId.HasValue )
+                if ( site != null )
                 {
-                    layout.SiteId = siteId.Value;
+                    layout.SiteId = site.Id;
                 }
             }
 
@@ -311,7 +312,15 @@ namespace Rock.Blocks.Mobile
 
             if ( isNew )
             {
-                entity.SiteId = PageParameter( PageParameterKey.SiteId ).AsInteger();
+                var site = new SiteService( RockContext )
+                    .Get( PageParameter( PageParameterKey.SiteId ), !PageCache.Layout.Site.DisablePredictableIds );
+
+                if ( site == null )
+                {
+                    return ActionBadRequest( "Site not found." );
+                }
+
+                entity.SiteId = site.Id;
             }
 
             RockContext.SaveChanges();
