@@ -536,8 +536,8 @@
         messagesContainer.value = dockedChatContainer.value?.querySelector(".messages-container") ?? undefined;
     });
 
-    watch(messagesContainer, () => {
-        messagesContainer.value?.removeEventListener("scroll", saveSessionData);
+    watch(messagesContainer, (_, oldValue) => {
+        oldValue?.removeEventListener("scroll", saveSessionData);
 
         if (!isDockedMode) {
             // Force scroll bar to be at the bottom on initial load so that it
@@ -552,7 +552,7 @@
     });
 
     onMounted(() => {
-        if (isDockedMode) {
+        if (isDockedMode.value) {
             messagesContainer.value = dockedChatContainer.value?.querySelector(".messages-container") ?? undefined;
 
             // Try to restore the scroll position.
