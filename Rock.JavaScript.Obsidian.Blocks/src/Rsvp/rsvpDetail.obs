@@ -11,7 +11,8 @@
                          @cancel="navigateToParent" />
 
         <AttendeesPanel v-if="!bag.isNewOccurrence"
-                        :bag="bag" />
+                        :bag="bag"
+                        @countsChanged="onCountsChanged" />
 
         <div v-if="!bag.isNewOccurrence && config.options?.parentPageUrl" class="actions">
             <RockButton :btnType="BtnType.Link" @click="navigateToParent">
@@ -30,6 +31,7 @@
     import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
     import { RsvpDetailBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/rsvpDetailBag";
     import { RsvpDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/rsvpDetailOptionsBag";
+    import { RsvpAttendeeCountsBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/rsvpAttendeeCountsBag";
     import OccurrencePanel from "./RsvpDetail/occurrencePanel.partial.obs";
     import AttendeesPanel from "./RsvpDetail/attendeesPanel.partial.obs";
 
@@ -40,6 +42,17 @@
     /** Replaces the local bag with the freshly-saved version returned by SaveOccurrence. */
     function onOccurrenceSaved(updatedBag: RsvpDetailBag): void {
         bag.value = updatedBag;
+    }
+
+    /** Patches the bag's attendee counts with the freshly-recomputed values returned by SaveAttendee
+     *  so the donut chart re-renders without a full block reload. */
+    function onCountsChanged(counts: RsvpAttendeeCountsBag): void {
+        if (!bag.value) {
+            return;
+        }
+        bag.value.acceptCount = counts.acceptCount ?? 0;
+        bag.value.declineCount = counts.declineCount ?? 0;
+        bag.value.noResponseCount = counts.noResponseCount ?? 0;
     }
 
     /** Sends the user back to the parent (RSVP list) page when configured. */

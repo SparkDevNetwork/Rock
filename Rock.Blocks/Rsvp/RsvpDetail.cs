@@ -582,7 +582,7 @@ namespace Rock.Blocks.Rsvp
                 Rock.CheckIn.KioskLocationAttendance.Remove( occurrence.LocationId.Value );
             }
 
-            return ActionOk();
+            return ActionOk( BuildAttendeeCounts( occurrence.Id ) );
         }
 
         #endregion Block Actions
@@ -740,6 +740,30 @@ namespace Rock.Blocks.Rsvp
                 GroupId = group.Id,
                 GroupRoleId = defaultGroupRoleId
             } );
+        }
+
+        /// <summary>
+        /// Recomputes the Accept / Decline / No Response counts for the occurrence directly from persisted
+        /// Attendance rows so the donut chart can refresh after a per-row save without a full block reload.
+        /// Uses a lean RSVP-only projection to keep the action cheap (it fires on every grid dropdown change).
+        /// </summary>
+        private RsvpAttendeeCountsBag BuildAttendeeCounts( int occurrenceId )
+        {
+            var rsvps = new AttendanceService( RockContext ).Queryable()
+                .Where( a => a.OccurrenceId == occurrenceId )
+                .Where( a => a.PersonAlias != null )
+                .Select( a => a.RSVP )
+                .ToList();
+
+            var counts = new RsvpAttendeeCountsBag
+            {
+                AcceptCount = rsvps.Count( r => r == RSVP.Yes ),
+                DeclineCount = rsvps.Count( r => r == RSVP.No )
+            };
+
+            counts.NoResponseCount = rsvps.Count - counts.AcceptCount - counts.DeclineCount;
+
+            return counts;
         }
 
         #endregion Helpers

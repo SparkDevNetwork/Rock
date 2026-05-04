@@ -126,6 +126,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { RsvpDetailBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/rsvpDetailBag";
     import { RsvpAttendeeBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/rsvpAttendeeBag";
+    import { RsvpAttendeeCountsBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/rsvpAttendeeCountsBag";
     import { SaveAttendeesRequestAttendeeBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/saveAttendeesRequestAttendeeBag";
     import { AttendeeStatus } from "./types.partial";
 
@@ -137,6 +138,10 @@
             required: true
         }
     });
+
+    const emit = defineEmits<{
+        (e: "countsChanged", counts: RsvpAttendeeCountsBag): void;
+    }>();
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -263,10 +268,14 @@
             declineNote: (declineNoteOverride ?? row.declineNote) || null
         };
 
-        const result = await invokeBlockAction("SaveAttendee", { request });
+        const result = await invokeBlockAction<RsvpAttendeeCountsBag>("SaveAttendee", { request });
         if (!result.isSuccess) {
             errorMessage.value = result.errorMessage || "Unable to save attendee.";
             return false;
+        }
+
+        if (result.data) {
+            emit("countsChanged", result.data);
         }
 
         errorMessage.value = "";
