@@ -184,8 +184,14 @@
   border-radius: .1em;
 
   .badge-icon {
-    font-size: .65em;
-    color: #fff;
+    color:          var(--color-interface-softest);
+    &.fa,
+    &.fas,
+    &.far,
+    &.fal,
+    &.fab {
+      font-size: .65em;
+    }
   }
 
   &.rockbadge-circle {
@@ -354,12 +360,17 @@
   height: 1em;
 
   .badge-icon {
-    top: 0;
-    right: 0;
-    left: 0;
-    font-size: 1.25em;
+    font-size: 45px;
     line-height: 1.15em;
     text-align: center;
+
+    &.fa,
+    &.fas,
+    &.far,
+    &.fal,
+    &.fab {
+      font-size: 36px;
+    }
   }
 
   &-invert {
@@ -411,8 +422,7 @@
 }
 
 .rockbadge-signal .metric-value {
-  top:      .35em;
-  bottom:   .65em;
+  top:      .20em;
 }
 
 .rockbadge-personaldevice,
