@@ -535,7 +535,7 @@ namespace Rock.Model
                     TimelinessPercent = connectedCount == 0
                         ? 0
                         : (
-                            g.Count( x =>
+                            ( decimal ) g.Count( x =>
                                 x.cr.ConnectionState == ConnectionState.Connected
                                 && x.cr.ConnectedDateTime.HasValue
                                 && (

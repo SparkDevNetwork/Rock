@@ -603,5 +603,10 @@ namespace Rock.SystemGuid
         /// The job to run Post v19.0 Data Migrations to add an index to ensure the Communication Unsubscribe Report performs efficiently.
         /// </summary>
         public const string DATA_MIGRATIONS_190_ADD_COMMUNICATION_UNSUBSCRIBE_REPORT_INDEX = "ECBC94C0-7646-491E-A804-1CA228F0FFAD";
+
+        /// <summary>
+        /// The job to run Post v19.0 Data Migrations to backfill the newly-added [ConnectionRequest].[ConnectedDateTime] and [WasCompletedOnTime] fields from the History table for requests that were already in the Connected state prior to v19.
+        /// </summary>
+        public const string DATA_MIGRATIONS_190_BACKFILL_CONNECTION_REQUEST_CONNECTED_DATETIME = "3B6F52DF-E6AB-47F2-9719-1365718410A3";
     }
 }
