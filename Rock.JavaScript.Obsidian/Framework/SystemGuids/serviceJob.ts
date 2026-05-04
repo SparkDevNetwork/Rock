@@ -199,6 +199,8 @@ export const ServiceJob = {
     DataMigrations183FixBrokenAchievementTypes: "2463AB43-8CB2-400E-BAAF-F96FC3E1A43D",
     /** The job to run Post v19.0 Data Migrations to add an index to ensure the Communication Unsubscribe Report performs efficiently. */
     DataMigrations190AddCommunicationUnsubscribeReportIndex: "ECBC94C0-7646-491E-A804-1CA228F0FFAD",
+    /** The job to run Post v19.0 Data Migrations to backfill the newly-added [ConnectionRequest].[ConnectedDateTime] and [WasCompletedOnTime] fields from the History table for requests that were already in the Connected state prior to v19. */
+    DataMigrations190BackfillConnectionRequestConnectedDatetime: "3B6F52DF-E6AB-47F2-9719-1365718410A3",
     /** The Job to run Post v19.0 Data Migrations to perform the final chop of the File and Asset Manager (webforms) Blocks. */
     DataMigrations190ChopFileAndAssetManagerFinal: "1EB6ED41-60F6-452E-A688-EB9C5444ECBC",
     /** The Job to run Post v19.0 Data Migrations to perform the final chop of the Registration Entry (webforms) Block. */
