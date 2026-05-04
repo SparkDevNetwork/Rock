@@ -20,6 +20,7 @@
                 title="Name"
                 field="name"
                 :filter="textValueFilter"
+                :quickFilterValue="getRowNameFilterValue"
                 visiblePriority="xs"
                 width="30%">
             <template #format="{ row }">
@@ -116,7 +117,7 @@
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { BlockTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/BlockTypeList/blockTypeListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./BlockTypeList/types.partial";
+    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey, Row } from "./BlockTypeList/types.partial";
     import { computed, ref, watch } from "vue";
     import { GridAction } from "@Obsidian/Types/Controls/grid";
     import GridSettingsModal from "./BlockTypeList/gridSettingsModal.partial.obs";
@@ -193,6 +194,16 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Gets the filter value text to use for the name column.
+     *
+     * @param row The row to be filtered.
+     */
+    function getRowNameFilterValue(row: Record<string, unknown>): string {
+        const r = row as Row;
+        return `${r.name ?? ""} ${r.path ?? ""}`;
+    }
 
     /**
      * Called when the grid is requesting the row data be loaded.
