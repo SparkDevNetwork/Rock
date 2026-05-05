@@ -4,6 +4,24 @@ Work through each category below. Check every item against both the WebForms sou
 
 ---
 
+## How to use this checklist
+
+`/review-conversion` v2 splits work between **/working/-driven audit passes** (Phase 2A-2E in `SKILL.md`) and **this generic checklist** (Phase 3). When the convert-block research artifacts are present, several sections here become spot-checks — duplicating them in full is wasted effort.
+
+| Section | Run mode (with /working/) | Run mode (without /working/) |
+|---|---|---|
+| §1 Functional Parity | **Spot-check** — covered by Phase 2A (parity-map.md) | Full sweep |
+| §2 Performance and Modernization | **Spot-check** — covered by Phase 2B (improvement-analysis.md) | Full sweep |
+| §3 Bug Patterns | **Spot-check** — mostly covered by Phase 2B; sweep code added post-research | Full sweep |
+| §4 Rock RMS Patterns | **Full sweep** — naming/style not in /working/ | Full sweep |
+| §5 Obsidian-Specific | **Full sweep** — bag types / block actions / reactive state not in /working/ | Full sweep |
+| §6 Grid Column Type Matrix | **Full sweep** — highly specialized, not in /working/ | Full sweep |
+| §7 Modernization Checks | **Full sweep** — general checks beyond improvement-analysis.md | Full sweep |
+
+Spot-check = scan for issues the per-block artifacts didn't capture (e.g., a bug introduced after convert-block research finished). Full sweep = walk every checkbox.
+
+---
+
 ## 1. Functional Parity
 
 ### Data Access

@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
-// Validates that all expected files exist (and WebForms files are deleted) after an Obsidian block conversion.
+// Validates an Obsidian block conversion: branch is a feature branch (not develop/main/master),
+// all required block files exist, .d.ts placeholders match bag .cs files 1:1, and the WebForms
+// .ascx/.ascx.cs files have been deleted. Surfaces additional partials as INFO.
 // Usage: node validate-conversion.js <Category> <BlockName> <detail|list|custom>
 
 const fs = require( "fs" );
@@ -106,16 +108,21 @@ try
         console.log( `FAIL  Current branch is "${currentBranch}" — must be on a feature branch` );
         failed++;
     }
+    else if ( !currentBranch )
+    {
+        console.log( "FAIL  Could not determine current git branch (empty result)" );
+        failed++;
+    }
     else
     {
         console.log( `PASS  Branch: ${currentBranch}` );
         passed++;
     }
 }
-catch
+catch ( err )
 {
-    console.log( "WARN  Could not determine current git branch" );
-    warnings++;
+    console.log( `FAIL  git branch --show-current failed: ${err.message}` );
+    failed++;
 }
 
 // --- Always required ---
@@ -123,25 +130,58 @@ checkFile( `Rock.ViewModels/Blocks/${category}/${blockName}/${blockName}OptionsB
 checkFile( `Rock.Blocks/${category}/${blockName}.cs`, "required" );
 checkFile( `Rock.JavaScript.Obsidian.Blocks/src/${category}/${toCamelCase( blockName )}.obs`, "required" );
 
-// At least one .d.ts placeholder.
+// .d.ts files: must match bags 1:1.
+const bagsDir = path.join( repoRoot, `Rock.ViewModels/Blocks/${category}/${blockName}` );
 const dtsDir = path.join( repoRoot, `Rock.JavaScript.Obsidian/Framework/ViewModels/Blocks/${category}/${blockName}` );
-let hasDts = false;
 
-if ( fs.existsSync( dtsDir ) )
-{
-    const dtsFiles = fs.readdirSync( dtsDir ).filter( f => f.endsWith( ".d.ts" ) );
-    hasDts = dtsFiles.length > 0;
-}
+const bagFiles = fs.existsSync( bagsDir )
+    ? fs.readdirSync( bagsDir ).filter( f => f.endsWith( ".cs" ) )
+    : [];
+const dtsFiles = fs.existsSync( dtsDir )
+    ? fs.readdirSync( dtsDir ).filter( f => f.endsWith( ".d.ts" ) )
+    : [];
 
-if ( hasDts )
+if ( bagFiles.length === 0 )
 {
-    console.log( `PASS  Rock.JavaScript.Obsidian/Framework/ViewModels/Blocks/${category}/${blockName}/ (has .d.ts files)` );
-    passed++;
+    console.log( `FAIL  Rock.ViewModels/Blocks/${category}/${blockName}/ (no bag files found)` );
+    failed++;
 }
-else
+else if ( dtsFiles.length === 0 )
 {
     console.log( `FAIL  Rock.JavaScript.Obsidian/Framework/ViewModels/Blocks/${category}/${blockName}/ (no .d.ts files found)` );
     failed++;
+}
+else
+{
+    // Each FooBag.cs must have a matching fooBag.d.ts (camelCase).
+    const expectedDtsFromBags = bagFiles.map( bag =>
+    {
+        const stem = bag.replace( /\.cs$/, "" );
+        return `${toCamelCase( stem )}.d.ts`;
+    } );
+
+    const dtsSet = new Set( dtsFiles );
+    const missing = expectedDtsFromBags.filter( d => !dtsSet.has( d ) );
+    const orphan = dtsFiles.filter( d => !expectedDtsFromBags.includes( d ) );
+
+    if ( missing.length === 0 && orphan.length === 0 )
+    {
+        console.log( `PASS  Rock.JavaScript.Obsidian/Framework/ViewModels/Blocks/${category}/${blockName}/ (${bagFiles.length} bags / ${dtsFiles.length} .d.ts, 1:1 match)` );
+        passed++;
+    }
+    else
+    {
+        if ( missing.length > 0 )
+        {
+            console.log( `FAIL  .d.ts files missing for bags: ${missing.join( ", " )}` );
+            failed++;
+        }
+        if ( orphan.length > 0 )
+        {
+            console.log( `WARN  .d.ts files with no matching bag (may need cleanup): ${orphan.join( ", " )}` );
+            warnings++;
+        }
+    }
 }
 
 // WebForms deleted.

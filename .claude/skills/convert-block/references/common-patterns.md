@@ -72,6 +72,60 @@ Only mention WebForms when a future reader genuinely needs that context to under
 | `// ParentPage URL carries RegistrationTemplateId (matches WebForms NavigateToParentPage).` | `// ParentPage URL carries RegistrationTemplateId so cancel/delete redirects stay scoped to the template.` |
 | `Reason: Preserves the WebForms Copy semantics using the bag layer instead of a deep entity clone.` | `Reason: Carry attributes + picker selections forward on Copy without the navigation-null trap of a deep entity clone.` |
 
+### JSDoc style for `.obs` and `.ts` files
+
+Functions, computed values, watchers, and exported types in the new `.obs` / `.ts` files get a lightweight JSDoc when the intent is non-obvious from the name alone. Default to *adding* one for any function or computed value the reader would otherwise have to read 10+ lines of body to understand; default to *omitting* one for a one-liner whose name already says everything (e.g. `entityKey = computed(() => bag.value?.idKey ?? "")`).
+
+**Required format — multi-line, even for short descriptions:**
+
+```ts
+/**
+ * Destination status options, excluding the current status.
+ */
+const statusItems = [...];
+```
+
+**Forbidden — single-line `/** ... */`:**
+
+```ts
+/** Destination status options, excluding the current status. */ // ← do not write this
+```
+
+The single-line form is harder to scan in a long `<script setup>` block and inconsistent with how the rest of the Obsidian codebase documents its functions. Even when the description is one short sentence, use three lines: opening `/**`, ` * description`, closing ` */`.
+
+Other rules that fold into the same style:
+
+- **One sentence by default.** Two if the second clarifies a non-obvious branch or invariant; rarely more.
+- **Document intent, not mechanics.** `// computes the slug prefix` is worse than the function name; `// switches to date-only output when the channel type does not include time` adds value.
+- **No `@param` / `@returns` blocks** unless the parameter or return shape is non-obvious from the type signature. The TypeScript types are the contract; JSDoc is for the *why*.
+- **Apply the `/working/`-artifact rule (below) inside JSDoc, too.** A JSDoc that says "Source values come from data-model.md" is the same anti-pattern as a code comment that says it.
+- **Consistency with existing files in the same block.** If a partial uses JSDoc on its watchers, the others should too. Mixed styles within a single block read as half-finished.
+
+### Forbidden: /working/ artifact identifiers
+
+`/working/` is research scaffolding. Its row IDs (`N1`, `N2`, `I12`, `Q3`, `B1`, `S10`, `T8-1`, audit codes, etc.) and filenames (`improvement-analysis.md`, `parity-map.md`, `new-features.md`, `figma-design.md`, `obsidian-pattern-analysis.md`, `redundancy-report.md`, `state-machine.md`) are private to the conversion process. They MUST NOT appear in any committed production file (C#, `.obs`, `.ts`, `.cs` bag files, `.d.ts`). After `/review-conversion` passes the folder is archived under `/specs/completed/` or deleted; once that happens these identifiers become orphan citations a future reader can't resolve.
+
+Forbidden patterns (delete or rewrite on sight):
+
+- `// I13: batch hierarchy lookup …`
+- `// Per N2 each section's default expansion …`
+- `// Tag flush. Q3 framework hook …`
+- `/// (improvement-analysis.md I16).`
+- `// Per audit B1 / B2 / B10 we keep the WebForms pills.`
+- `// parity-map Trace 4 …`, `// new-features.md row N3 …`, `// figma A2 collapsed-on-edit …`
+
+The fix is the same as the WebForms-reference rule: **rewrite to explain the intent or the underlying constraint**, not the bookkeeping ID. If the reason boils down to "the analysis said so", drop the comment entirely.
+
+| Before (delete) | After (keep or drop entirely) |
+|---|---|
+| `// I13: batch hierarchy lookup. Resolve every hierarchy key plus the current item in a single round trip.` | `// Resolve every hierarchy key plus the current item in a single round trip; one query per hop fanned out as the hierarchy deepened.` |
+| `// Per N2 each section's default expansion is set independently at mount.` | `// Each section's default expansion is set independently at mount: Add → all open; Edit → only Content Body + Attributes open.` |
+| `/// (improvement-analysis.md I16).` | `/// Re-checks EDIT on the child before cascading the delete; the parent grid is filtered only by VIEW.` |
+| `// Q3 framework hook hands back queued names.` | `// Queued names come from the TagList control's flushTags() expose so the same Save action handles entity + tags atomically.` |
+| `// Per audit B1 / B2 / B10 we keep the WebForms pills.` | `// Status, channel name with icon, and any linked event-occurrence pills appear in the panel header.` |
+
+When in doubt, ask: "If a future reader greps the repo for `I12`, will they find anything that explains it?" If the answer is no — and after archival it is no — the ID does not belong in the code.
+
 ---
 
 ## Files Created Per Conversion
@@ -115,10 +169,27 @@ Use `RockListBlockType<T>` instead of `RockEntityListBlockType<TEntity>` when gr
 
 ## GUID Assignment Rules
 
-- **Always generate new GUIDs** — never reuse WebForms GUIDs.
-- `EntityTypeGuid` → new GUID for the block's entity type registration.
-- `BlockTypeGuid` → new GUID for the block type.
-- **Use the script:** `node .claude/skills/convert-block/scripts/generate-guids.js` to generate both GUIDs.
+The chop happens at Rock startup, **without a migration**. `BlockTypeService.StagePossibleMigrateWebFormsToObsidianBlock` (called during `RegisterEntityBlockTypes`) finds existing WebForms `BlockType` rows whose `Guid` matches a new entity-based block class's `[BlockTypeGuid]` attribute, swaps `EntityType` over to the new entity, clears `Path`, and re-points every `Block` instance on every page to the now-Obsidian `BlockType`. Existing pages get the new block on the first restart after the C# class lands.
+
+For this to work, the new C# class must reuse the WebForms block's existing `Guid` on the `[BlockTypeGuid]` attribute.
+
+Pattern (verbatim, including the comment for traceability):
+
+```csharp
+[Rock.SystemGuid.EntityTypeGuid( "<newly-generated-entity-type-guid>" )]
+// was [Rock.SystemGuid.BlockTypeGuid( "<newly-generated-block-type-guid>" )]
+[Rock.SystemGuid.BlockTypeGuid( "<existing-webforms-block-type-guid>" )]
+public class FooDetail : RockEntityDetailBlockType<...>
+```
+
+Rules:
+
+- **`EntityTypeGuid`** → new GUID. The Obsidian entity type is a new record.
+- **`BlockTypeGuid`** → the WebForms block's existing GUID (read it from `RockWeb/Blocks/[Category]/[BlockName].ascx.cs`'s own `[Rock.SystemGuid.BlockTypeGuid(...)]` attribute). The chop hijacks that BlockType row.
+- **Commented "was" line** → the newly generated BlockTypeGuid that the script produced. Keep it in a `// was [Rock.SystemGuid.BlockTypeGuid( "..." )]` comment immediately above the active attribute. It is informational only — that GUID is never written to the database — but it documents what would have been used had this been a net-new block, and it helps reviewers spot intentional GUID reuse.
+- **Use the script:** `node .claude/skills/convert-block/scripts/generate-guids.js` to generate the entity-type GUID and the "was" GUID. The block-type GUID itself comes from the WebForms `.ascx.cs`, not from the script.
+
+**Do NOT write a Rock.Migrations migration to register the block.** The chop is automatic. Writing `AddOrUpdateEntityBlockType` is correct for net-new blocks (no WebForms predecessor); it is wrong for a conversion because it would create a second BlockType row alongside the WebForms one and existing pages would not pick up the Obsidian block.
 
 ---
 
@@ -290,7 +361,33 @@ Consult these blocks when you're unsure about a specific pattern. They are the s
 
 See **CLAUDE.md → Enums** for file location, namespace, and `[EnumDomain]` attribute rules.
 
+### Always import existing TS enums; never redeclare them in `types.partial.ts`
+
+`Rock.Enums/` is auto-generated to `Rock.JavaScript.Obsidian/Framework/Enums/` by Rock.CodeGeneration. Most enums you'll need on the TS side already exist as `@Obsidian/Enums/[Domain]/[enumName]` and ship full descriptions, value maps, and a TypeScript type alias.
+
+**Before defining or redefining an enum in `types.partial.ts`, check whether the C# source lives in `Rock.Enums/` (or has a forwarder) and whether the auto-generated TS file exists:**
+
+```bash
+# Look up the C# source — anything under Rock.Enums/ has a generated TS twin.
+ls Rock.Enums/[Domain]/[EnumName].cs
+
+# Look up the generated TS twin.
+ls Rock.JavaScript.Obsidian/Framework/Enums/[Domain]/[enumName].ts
+```
+
+If the TS file exists, import from it:
+
+```typescript
+import { ContentChannelDateType } from "@Obsidian/Enums/Cms/contentChannelDateType";
+import { ContentLibraryItemExperienceLevel } from "@Obsidian/Enums/Cms/contentLibraryItemExperienceLevel";
+```
+
+Defining a parallel `export const enum ContentChannelDateType { ... }` in `types.partial.ts` is wrong even when the values are correct: the enum drifts the moment the C# source changes, the TS-side `*Description` map and the framework's `enumToListItemBag` helper aren't usable on the local copy, and Code Generation will eventually flag the duplication.
+
+`types.partial.ts` is reserved for **block-local declarations** that have no C# source — typically `NavigationUrlKey`, modal-toggle string-literal enums, internal grid row shapes, and small helper types. Cross-language enums always come from `@Obsidian/Enums/`.
+
 ### Using existing enums in TypeScript
+
 ```typescript
 import { MyEnum, MyEnumDescription } from "@Obsidian/Enums/[Domain]/myEnum";
 import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
