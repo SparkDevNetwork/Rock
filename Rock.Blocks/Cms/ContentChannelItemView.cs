@@ -232,7 +232,8 @@ namespace Rock.Blocks.Cms
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "F4484867-C759-4C68-9C76-86CBA3DE4FB4" )]
-    [Rock.SystemGuid.BlockTypeGuid( "3EF97F63-09E4-418C-B65D-729D975BC223" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "3EF97F63-09E4-418C-B65D-729D975BC223" )]
+    [Rock.SystemGuid.BlockTypeGuid( "63659EBE-C5AF-4157-804A-55C7D565110E" )]
     public class ContentChannelItemView : RockBlockType, IHasCustomActions, IBreadCrumbBlock
     {
         #region Keys and Constants
@@ -1107,7 +1108,6 @@ Guid - ContentChannelItem Guid";
 
             var itemCacheDuration = GetAttributeValue( AttributeKey.ItemCacheDuration ).AsIntegerOrNull();
             var contentChannelGuid = GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull();
-
             var itemCacheKey = GetCacheKey( $"Item_{contentChannelGuid}_{contentChannelItemKey}" );
 
             if ( itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
@@ -1119,9 +1119,20 @@ Guid - ContentChannelItem Guid";
                 }
             }
 
-            // Eager-load ContentChannel because the cached item outlives this RockContext, and
-            // later .ContentChannel access would otherwise hit a dead lazy-load proxy.
-            var query = new ContentChannelItemService( RockContext )
+            /*
+                5/5/26 - JMH
+
+                A dedicated RockContext (not the block's per-request one) is intentionally
+                not disposed here. The cached EF proxy entity holds a reference back to this
+                context, keeping it alive for the duration of the cache entry. This matches
+                the behavior of the original WebForms block and allows Lava templates to
+                lazy-load navigation properties on cached items without throwing an
+                ObjectDisposedException.
+
+                Reason: Prevent ObjectDisposedException on cached items during Lava rendering.
+            */
+            var itemRockContext = new RockContext();
+            var query = new ContentChannelItemService( itemRockContext )
                 .Queryable()
                 .Include( c => c.ContentChannel );
 
