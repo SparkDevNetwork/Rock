@@ -18,7 +18,7 @@ description: >-
 argument-hint: "Topic of the spec, OR the path/name of an existing spec to mark complete"
 compatibility: Requires Claude Code CLI with access to the repo and bash for the date stamp.
 metadata:
-  version: "1.1"
+  version: "1.2"
   author: "Jon Edmiston"
 ---
 
@@ -34,9 +34,9 @@ You are working on a spec document. A spec captures requirements, architectural 
 
 Read `$ARGUMENTS` and the conversation context, then pick one of three modes:
 
-- **Authoring mode** — the user wants to create or convert a new spec. Follow Steps 1 through 6 below.
-- **Completion mode** — the user signals that an existing spec is done. Phrases like "the spec is complete", "mark X spec as done", "archive this spec", "spec is finished", "move spec to completed". Skip Steps 1 through 6 and jump to **Completing a Spec** below.
-- **Rejection mode** — the user signals that a spec will not be implemented. Phrases like "reject this spec", "won't fix", "won't do", "mark X spec as rejected", "abandon this spec". Skip Steps 1 through 6 and jump to **Rejecting a Spec** below.
+- **Authoring mode** — the user wants to create or convert a new spec. Follow Steps 1 through 7 below.
+- **Completion mode** — the user signals that an existing spec is done. Phrases like "the spec is complete", "mark X spec as done", "archive this spec", "spec is finished", "move spec to completed". Skip Steps 1 through 7 and jump to **Completing a Spec** below.
+- **Rejection mode** — the user signals that a spec will not be implemented. Phrases like "reject this spec", "won't fix", "won't do", "mark X spec as rejected", "abandon this spec". Skip Steps 1 through 7 and jump to **Rejecting a Spec** below.
 
 If the intent is ambiguous, ask one clarifying question before proceeding. If the user uses "done" ambiguously, ask whether they mean the spec was completed (shipped) or rejected (decided against).
 
@@ -54,10 +54,50 @@ Before drafting, collect the following. Ask the user only for what is genuinely 
 3. **Contributors** — **ALWAYS ASK** at the start: "Who else should be listed as a contributor on this spec? (full names — first and last — comma-separated, or 'none')". Do not skip this step. If the user says "none", set the field to `[]`. Every contributor name MUST include both a first and last name; if a single name is given (e.g. "Daniel"), ask for the last name before writing the file. Do not guess or use initials.
 4. **Author** — read from `git config user.name`. The value MUST be a full human name (first AND last name). If git returns only a first name, a single token, initials, or empty, ask the user for their full name before writing the file. Do not invent a name.
 5. **Brief summary** — one or two sentences. Derive from the conversation if obvious; otherwise ask.
+6. **External resource links** — collect any external URLs the user has referenced (Figma, Asana, GitHub issues/PRs, Notion pages, design system docs, customer tickets, related public docs). These will be cross-checked in Step 2 before the spec is written.
+7. **Local artifacts** — any photos, screenshots, PDFs, mockups, sample data, or other supporting files the user wants attached to the spec. Capture the paths or filenames; placement is handled in Step 5.
 
 ---
 
-## Step 2 — Generate the Filename
+## Step 2 — Cross-check External Resources
+
+If the spec references any external URLs (collected in Step 1.6, mentioned in the conversation, or appearing in any draft text the user pasted), fetch and read each one before writing the spec. The goal is to catch discrepancies between the user's stated requirements and what the external resource actually says.
+
+External resources can be **stale or contradictory**. Figma files in particular are often updated after a spec discussion and can disagree with what the user remembers, what got decided in a meeting, or what got written in another doc. Treat them as inputs to be reconciled, not as ground truth.
+
+### What to do
+
+For each external link:
+
+1. **Fetch the resource.** Use `WebFetch` for public URLs. For Figma, follow the file/frame URL and extract the visible requirements (screen flow, copy, field constraints, states, components). For Asana/Notion/GitHub, read the linked page or issue.
+2. **Compare against the user's stated requirements.** Look for:
+   - **Field/control mismatches** — the user said "a single text field"; the design has two fields.
+   - **State coverage gaps** — the design shows error/empty/loading states the user didn't mention, or vice versa.
+   - **Copy/label drift** — the design uses different button labels, headings, or placeholder text than the user described.
+   - **Flow differences** — the design implies a step the user didn't mention, or skips one the user did.
+   - **Stale designs** — last-modified dates well before the conversation, or notes/comments in the file that contradict the rendered state.
+   - **Conflicts between resources** — Figma says one thing, the linked Asana ticket says another.
+3. **Surface every discrepancy.** Do NOT silently pick a side. List the conflicts in a short message and ask the user which interpretation is canonical. If the user says "Figma is canonical," capture that decision; if they say "use what I told you, the Figma is stale," note that in the spec's Open Questions or Considered but Rejected section so future readers know the design was knowingly diverged from.
+4. **Record the cross-check in the spec.** In the spec's **Related** section, list each external resource link AND a one-line note about its status: "Figma file (last modified YYYY-MM-DD, treated as canonical)" or "Asana ticket (referenced for context, requirements live in this spec)". This tells future readers how much weight to put on each link.
+
+### When to skip the cross-check
+
+- Trivial specs (a typo fix, a doc-only spec) where no external resource has been referenced.
+- The user has explicitly said "don't read the Figma, just write what I told you" — but still note that decision in the spec.
+- The link is to a generic reference (e.g. "the C# language spec", a blog post about a pattern) rather than a project-specific source of requirements.
+
+### What to do when fetching fails
+
+If a link is private, requires auth, or returns an error, do NOT silently drop it. Tell the user the link could not be read and ask whether they want to:
+1. Paste the relevant content directly.
+2. Skip cross-checking this link (and accept the risk that the spec may diverge from it).
+3. Provide an alternate URL.
+
+If the user picks option 2, note in the spec's Related section that the link was not verifiable: "Figma file (auth required, contents not verified)".
+
+---
+
+## Step 3 — Generate the Filename
 
 Filenames are date-stamped to act as a stable hash and to sort chronologically.
 
@@ -78,7 +118,7 @@ Write the file to the repo's top-level `specs/` directory. If `specs/` does not 
 
 ---
 
-## Step 3 — Write the YAML Frontmatter
+## Step 4 — Write the YAML Frontmatter
 
 Every spec begins with this block, in this order:
 
@@ -105,7 +145,7 @@ Notes:
 
 ---
 
-## Step 4 — Write the Body
+## Step 5 — Write the Body
 
 Choose sections based on spec type. **Include only sections that are relevant** — empty placeholder sections add noise. The order below is canonical; keep it.
 
@@ -154,9 +194,54 @@ Choose sections based on spec type. **Include only sections that are relevant** 
 
 - **`## Related`** — links to issues, PRs, prior specs, external documentation, or commit hashes that provide context. Use markdown links. Include commit hashes as plain monospace if there is no PR / issue URL.
 
+### Adding Artifacts to a Spec
+
+Specs frequently include supporting files: reference screenshots, mockup images, sample data, PDFs of design briefs, redacted customer correspondence, etc. These are stored alongside the spec, not inline in the markdown.
+
+#### Location
+
+Active specs store artifacts under a per-spec subfolder of `specs/artifacts/`:
+
+```
+specs/
+  {timestamp}-{topic-kebab}.md
+  artifacts/
+    {timestamp}-{topic-kebab}/        ← subfolder name = spec filename minus .md
+      mockup.png
+      reference-design.pdf
+      sample-payload.json
+```
+
+The subfolder name MUST match the spec's filename without the `.md` extension (e.g. `260501-foo.md` ⇒ `specs/artifacts/260501-foo/`). Create the `specs/artifacts/` directory and the per-spec subfolder if they don't exist.
+
+#### Linking from the spec
+
+Reference artifacts using a relative markdown link from the spec file. From a spec at `specs/{name}.md`, the relative path to its artifacts is `artifacts/{name}/{file}`:
+
+```markdown
+See the proposed layout in [Mockup A](artifacts/260501-foo/mockup-a.png).
+
+![Mockup A](artifacts/260501-foo/mockup-a.png)
+```
+
+Use this exact form. **Do NOT** use absolute paths, repo-rooted paths (`/specs/...`), or `../` traversals — those break when the spec is moved during completion or rejection.
+
+#### When the user supplies artifacts
+
+If the user attaches files to the conversation, drops them somewhere on disk, or pastes image data:
+
+1. Create `specs/artifacts/{spec-filename-without-ext}/` if it doesn't exist.
+2. Copy or move the file into that subfolder. Preserve the original filename when reasonable; rename only if it's unclear (e.g. `image.png` → `mockup-checkout-flow.png`).
+3. Reference it in the spec body using the relative form above.
+4. If the file is large or binary and the user wants it tracked by git, confirm before adding (some teams gitignore `specs/artifacts/` entirely; check the repo's `.gitignore` first).
+
+#### When the user references but does not supply
+
+If the user describes an artifact ("the Figma export I sent in Slack last week") but does not provide it, do NOT invent a path. Ask whether they want to attach it now, or note in the spec's Related section that the artifact is referenced externally.
+
 ---
 
-## Step 5 — Style Rules
+## Step 6 — Style Rules
 
 - **Concise over comprehensive.** A spec is read more than it is written. If a section can be a sentence, do not make it a paragraph. If a section is empty, drop it.
 - **No em-dashes.** Use `—` only when quoting; otherwise prefer commas, parentheses, or sentence breaks. (Project rule.)
@@ -168,7 +253,7 @@ Choose sections based on spec type. **Include only sections that are relevant** 
 
 ---
 
-## Step 6 — Output
+## Step 7 — Output
 
 After writing the file:
 
@@ -185,7 +270,13 @@ Do not paste the full spec back into chat — the user can read the file. A shor
 
 User: *"Write a spec for the new attendance bulk-import block."*
 
-You: Ask for contributors. Default author from git. Pick spec type: feature. Sections: Summary, Requirements, Design, Open Questions, Considered but Rejected (if alternatives discussed), Related. Skip the issue-specific sections entirely.
+You: Ask for contributors. Default author from git. Ask for any external links or artifacts. Pick spec type: feature. Cross-check any provided links before drafting. Sections: Summary, Requirements, Design, Open Questions, Considered but Rejected (if alternatives discussed), Related. Skip the issue-specific sections entirely.
+
+**Example 1b — feature spec with a Figma link**
+
+User: *"Write a spec for the new bulk-import block. Here's the Figma: https://figma.com/file/abc123/Bulk-Import"*
+
+You: Ask for contributors. Fetch the Figma file. Compare what the user said in the conversation against what the Figma shows. If the Figma shows a "preview before commit" step the user did not mention, surface it: "The Figma includes a preview step between upload and commit; was that intentional, or should the spec describe a single-step import?". Capture the Figma's last-modified date in the spec's Related section. Place mockup screenshots from the Figma into `specs/artifacts/{spec-name}/` if the user attaches exports.
 
 **Example 2 — issue spec request (continuing from a debugging conversation)**
 
@@ -245,7 +336,22 @@ Move the spec from `specs/{filename}` to `specs/completed/{Domain}/{filename}`. 
 
 Use `git mv` if the source file is tracked by git, otherwise plain `mv`. Verify the move succeeded before updating the index.
 
-### Step C5 — Update `specs/completed/INDEX.md`
+### Step C5 — Move the spec's artifacts (if any) and adjust links
+
+If the spec has an artifacts subfolder at `specs/artifacts/{spec-filename-without-ext}/`, move it alongside the spec.
+
+1. **Check** for `specs/artifacts/{spec-filename-without-ext}/`. If it does not exist, skip this step.
+2. **Create** `specs/completed/{Domain}/artifacts/` if it does not exist.
+3. **Move** the per-spec subfolder into the completed domain's artifacts folder:
+   - Source: `specs/artifacts/{spec-filename-without-ext}/`
+   - Destination: `specs/completed/{Domain}/artifacts/{spec-filename-without-ext}/`
+   - Use `git mv` for the entire subfolder if tracked by git; otherwise `mv`.
+4. **Audit links** in the moved spec. Open the spec at its new location and check every relative link or image reference. Because the spec is now at `specs/completed/{Domain}/{filename}` and the artifacts are at `specs/completed/{Domain}/artifacts/{spec-filename-without-ext}/`, the relative form `artifacts/{spec-filename-without-ext}/{file}` continues to resolve correctly. **However**, if the original spec used any other form (e.g. `../artifacts/...`, repo-rooted paths, or absolute paths), rewrite those links to the new relative form so they resolve from the new location.
+5. **Verify each link resolves** to a real file at the new location before moving on. Do not skip the audit; broken links in completed specs are easy to ship and hard to find later.
+
+If `specs/artifacts/` is now empty after the move (no other active specs have artifacts), leave it in place. Do not delete the parent directory.
+
+### Step C6 — Update `specs/completed/INDEX.md`
 
 `INDEX.md` is a single markdown table listing every completed spec across every domain folder. Schema:
 
@@ -272,7 +378,7 @@ Append the new row at the bottom. Do not re-sort existing rows. (Filenames are t
 
 If a row for this spec already exists in the index (e.g. the user is re-completing or fixing an earlier mistake), update the existing row in place rather than adding a duplicate.
 
-### Step C6 — Offer to update related docs
+### Step C7 — Offer to update related docs
 
 After the file is moved and the index is updated, ask the user:
 
@@ -292,7 +398,7 @@ If the user names paths or accepts the suggestions, hand the candidate paths and
 
 If the user declines or says "no", proceed without updating any docs. Never silently rewrite documentation without explicit consent.
 
-### Step C7 — Confirm
+### Step C8 — Confirm
 
 After moving, indexing, and any docs updates:
 
@@ -368,7 +474,21 @@ Move the spec from `specs/{filename}` to `specs/rejected/{Domain}/{filename}`. P
 
 Use `git mv` if the source file is tracked by git, otherwise plain `mv`. Verify the move succeeded before updating the index.
 
-### Step R6 — Update `specs/rejected/INDEX.md`
+### Step R6 — Move the spec's artifacts (if any) and adjust links
+
+Same logic as Step C5 in completion mode, but the destination is `specs/rejected/{Domain}/artifacts/{spec-filename-without-ext}/`.
+
+1. **Check** for `specs/artifacts/{spec-filename-without-ext}/`. If it does not exist, skip this step.
+2. **Create** `specs/rejected/{Domain}/artifacts/` if it does not exist.
+3. **Move** the per-spec subfolder:
+   - Source: `specs/artifacts/{spec-filename-without-ext}/`
+   - Destination: `specs/rejected/{Domain}/artifacts/{spec-filename-without-ext}/`
+   - Use `git mv` if tracked by git; otherwise `mv`.
+4. **Audit links** in the moved spec. The relative form `artifacts/{spec-filename-without-ext}/{file}` continues to resolve from the new location. Rewrite any non-relative or `../`-based links so they resolve against the new location, and verify each link points to a real file.
+
+Rejection preserves the historical record, so artifacts that were referenced by the original proposal need to remain accessible. Do not drop them on the floor.
+
+### Step R7 — Update `specs/rejected/INDEX.md`
 
 `INDEX.md` is a single markdown table listing every rejected spec across every domain folder. Schema:
 
@@ -396,7 +516,7 @@ Append the new row at the bottom. Do not re-sort existing rows.
 
 If a row for this spec already exists in the index (e.g. the user is updating a previously-rejected spec), update the existing row in place rather than adding a duplicate.
 
-### Step R7 — Confirm
+### Step R8 — Confirm
 
 After moving and indexing:
 
