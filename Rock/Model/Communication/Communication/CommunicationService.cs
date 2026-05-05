@@ -194,6 +194,14 @@ namespace Rock.Model
             /// Gets or sets the communication template identifier.
             /// </summary>
             public int? CommunicationTemplateId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the communication topic <see cref="DefinedValue"/> identifier.
+            /// </summary>
+            /// <value>
+            /// The communication topic defined value identifier.
+            /// </value>
+            public int? CommunicationTopicValueId { get; set; }
         }
 
         /// <summary>
@@ -294,6 +302,7 @@ namespace Rock.Model
             communication.FutureSendDateTime = futureSendDateTime;
             communication.SendDateTime = sendDateTime;
             communication.SystemCommunicationId = systemCommunicationId;
+            communication.CommunicationTopicValueId = createEmailCommunicationArgs.CommunicationTopicValueId;
             Add( communication );
 
             // Add each person as a recipient to the communication.

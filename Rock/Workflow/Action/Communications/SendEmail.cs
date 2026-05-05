@@ -142,6 +142,14 @@ namespace Rock.Workflow.Action
         DefaultBooleanValue = false,
         Order = 12 )]
 
+    [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_TOPIC,
+        "Communication Topic",
+        Key = AttributeKey.CommunicationTopic,
+        Description = "The topic to assign to the communication record when 'Save Communication History' is enabled.",
+        IsRequired = false,
+        AllowMultiple = false,
+        Order = 13 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SEND_EMAIL )]
@@ -164,6 +172,7 @@ namespace Rock.Workflow.Action
             public const string AttachmentThree = "AttachmentThree";
             public const string SaveCommunicationHistory = "SaveCommunicationHistory";
             public const string FromName = "FromName";
+            public const string CommunicationTopic = "CommunicationTopic";
         }
 
         #endregion
@@ -230,6 +239,18 @@ namespace Rock.Workflow.Action
             var attachments = attachmentList.ToArray();
 
             bool createCommunicationRecord = GetAttributeValue( action, AttributeKey.SaveCommunicationHistory ).AsBoolean();
+
+            int? communicationTopicValueId = null;
+            var communicationTopicGuid = GetAttributeValue( action, AttributeKey.CommunicationTopic ).AsGuidOrNull();
+            if ( communicationTopicGuid.HasValue )
+            {
+                communicationTopicValueId = DefinedValueCache.GetId( communicationTopicGuid.Value );
+
+                if ( communicationTopicValueId.HasValue && !createCommunicationRecord )
+                {
+                    action.AddLogEntry( "Communication Topic was set, but 'Save Communication History' is disabled. The topic will only be persisted if history saving is enabled.", true );
+                }
+            }
 
             string fromName = string.Empty;
             string fromEmailAddress = string.Empty;
@@ -366,11 +387,11 @@ namespace Rock.Workflow.Action
 
                 if ( !string.IsNullOrWhiteSpace( toDelimitedEmails ) )
                 {
-                    Send( toDelimitedEmails, fromPersonId, fromEmailAddress, fromName, replyToEmailAddress, subject, body, ccEmails, bccEmails, mergeFields, createCommunicationRecord, attachments, out errorMessages );
+                    Send( toDelimitedEmails, fromPersonId, fromEmailAddress, fromName, replyToEmailAddress, subject, body, ccEmails, bccEmails, mergeFields, createCommunicationRecord, communicationTopicValueId, attachments, out errorMessages );
                 }
                 else if ( toRecipients != null )
                 {
-                    Send( toRecipients, fromPersonId, fromEmailAddress, fromName, replyToEmailAddress, subject, body, ccEmails, bccEmails, createCommunicationRecord, attachments, out errorMessages );
+                    Send( toRecipients, fromPersonId, fromEmailAddress, fromName, replyToEmailAddress, subject, body, ccEmails, bccEmails, createCommunicationRecord, communicationTopicValueId, attachments, out errorMessages );
                 }
             }
 
@@ -607,12 +628,13 @@ namespace Rock.Workflow.Action
         /// <param name="bccEmails">The BCC emails.</param>
         /// <param name="mergeFields">The merge fields.</param>
         /// <param name="createCommunicationRecord">if set to <c>true</c> [create communication record].</param>
+        /// <param name="communicationTopicValueId">The communication topic defined value identifier.</param>
         /// <param name="attachments">The attachments.</param>
         /// <param name="errorMessages">The error messages.</param>
-        private void Send( string recipientEmails, int? fromPersonId, string fromEmail, string fromName, string replyToEmail, string subject, string body, List<string> ccEmails, List<string> bccEmails, Dictionary<string, object> mergeFields, bool createCommunicationRecord, BinaryFile[] attachments, out List<string> errorMessages )
+        private void Send( string recipientEmails, int? fromPersonId, string fromEmail, string fromName, string replyToEmail, string subject, string body, List<string> ccEmails, List<string> bccEmails, Dictionary<string, object> mergeFields, bool createCommunicationRecord, int? communicationTopicValueId, BinaryFile[] attachments, out List<string> errorMessages )
         {
             var recipients = recipientEmails.ResolveMergeFields( mergeFields ).SplitDelimitedValues().Select( e => RockEmailMessageRecipient.CreateAnonymous( e, mergeFields ) ).ToList();
-            Send( recipients, fromPersonId, fromEmail, fromName, replyToEmail, subject, body, ccEmails, bccEmails, createCommunicationRecord, attachments, out errorMessages );
+            Send( recipients, fromPersonId, fromEmail, fromName, replyToEmail, subject, body, ccEmails, bccEmails, createCommunicationRecord, communicationTopicValueId, attachments, out errorMessages );
         }
 
         /// <summary>
@@ -628,9 +650,10 @@ namespace Rock.Workflow.Action
         /// <param name="ccEmails">The CC emails.</param>
         /// <param name="bccEmails">The BCC emails.</param>
         /// <param name="createCommunicationRecord">if set to <c>true</c> [create communication record].</param>
+        /// <param name="communicationTopicValueId">The communication topic defined value identifier.</param>
         /// <param name="attachments">The attachments.</param>
         /// <param name="errorMessages">The error messages.</param>
-        private void Send( List<RockEmailMessageRecipient> recipients, int? fromPersonId, string fromEmail, string fromName, string replyToEmail, string subject, string body, List<string> ccEmails, List<string> bccEmails, bool createCommunicationRecord, BinaryFile[] attachments, out List<string> errorMessages )
+        private void Send( List<RockEmailMessageRecipient> recipients, int? fromPersonId, string fromEmail, string fromName, string replyToEmail, string subject, string body, List<string> ccEmails, List<string> bccEmails, bool createCommunicationRecord, int? communicationTopicValueId, BinaryFile[] attachments, out List<string> errorMessages )
         {
             var emailMessage = new RockEmailMessage();
             emailMessage.SetRecipients( recipients );
@@ -653,6 +676,7 @@ namespace Rock.Workflow.Action
             }
 
             emailMessage.CreateCommunicationRecord = createCommunicationRecord;
+            emailMessage.CommunicationTopicValueId = communicationTopicValueId;
 
             /* 
                 [2024-06-20] - DJL

@@ -609,6 +609,7 @@ namespace Rock.Communication
 
             templateRockEmailMessage.ReplyToEmail = emailMessage.ReplyToEmail;
             templateRockEmailMessage.SystemCommunicationId = emailMessage.SystemCommunicationId;
+            templateRockEmailMessage.CommunicationTopicValueId = emailMessage.CommunicationTopicValueId;
             templateRockEmailMessage.CreateCommunicationRecord = emailMessage.CreateCommunicationRecord;
             templateRockEmailMessage.CreateCommunicationRecordImmediately = emailMessage.CreateCommunicationRecordImmediately;
             templateRockEmailMessage.SendSeperatelyToEachRecipient = emailMessage.SendSeperatelyToEachRecipient;
@@ -790,6 +791,7 @@ namespace Rock.Communication
 
             Guid? recipientGuid = null;
             recipientEmail.SystemCommunicationId = emailMessage.SystemCommunicationId;
+            recipientEmail.CommunicationTopicValueId = emailMessage.CommunicationTopicValueId;
             recipientEmail.CreateCommunicationRecord = emailMessage.CreateCommunicationRecord;
 
             // Headers
@@ -1268,6 +1270,7 @@ namespace Rock.Communication
 
                 transaction.FromPersonId = recipientEmailMessage.FromPersonId;
                 transaction.SystemCommunicationId = recipientEmailMessage.SystemCommunicationId;
+                transaction.CommunicationTopicValueId = recipientEmailMessage.CommunicationTopicValueId;
 
                 transaction.RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull();
                 transaction.RecipientStatus = result.Status;
