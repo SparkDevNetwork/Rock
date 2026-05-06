@@ -103,7 +103,12 @@ namespace Rock.Lava
                         See https://app.asana.com/1/20866866924293/project/1208321217019996/task/1211949287939339
             */
 
-            return inputTemplate?.Replace( "elseif", "elsif" );
+            if ( inputTemplate == null || inputTemplate.IndexOf( "elseif", StringComparison.Ordinal ) < 0 )
+            {
+                return inputTemplate;
+            }
+
+            return inputTemplate.Replace( "elseif", "elsif" );
         }
 
         #region Lava Comments

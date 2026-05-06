@@ -38,7 +38,7 @@ Each finding has a checkbox, an estimated impact, an affected location, and a pr
 
 ### P0 — Major hot-path issues
 
-#### [ ] F1. Block content is re-parsed on every render
+#### [x] F1. Block content is re-parsed on every render
 
 **Where:** [Rock.Lava.Fluid/Parser/FluidLavaBlockStatement.cs:141-174](../Rock.Lava.Fluid/Parser/FluidLavaBlockStatement.cs)
 
@@ -46,7 +46,7 @@ Each finding has a checkbox, an estimated impact, an affected location, and a pr
 
 **Proposed fix:** Parse `_blockContent` once at construction (or lazily under `Lazy<T>`) and cache `IReadOnlyList<Statement>` plus the token list as fields. Wrap the synchronous `task.Wait()` at line 164 in the same `IsCompletedSuccessfully` fast-path used in `FluidEngine.OnRenderTemplate` to avoid the `Task` allocation on the hot path.
 
-#### [ ] F2. LavaDataWrapper does reflection on every property access
+#### [x] F2. LavaDataWrapper does reflection on every property access
 
 **Where:** [Rock.Lava.Shared/Core/LavaDataWrapper.cs:103-113](../Rock.Lava.Shared/Core/LavaDataWrapper.cs)
 
@@ -61,9 +61,9 @@ public object GetValue( string key ) {
 
 `Type.GetProperty` plus `PropertyInfo.GetValue` runs on every merge-field lookup. `GetAvailableKeys` (line 132) likewise calls `GetProperties()` per wrapper instance instead of caching by Type.
 
-**Proposed fix:** Static `ConcurrentDictionary<Type, Dictionary<string, Func<object, object>>>` of compiled getters via `Expression.Lambda` or `Delegate.CreateDelegate(getMethod)`. Roughly 10x faster than `PropertyInfo.GetValue` and zero allocation per call.
+**Proposed fix:** Cache the reflection information per Type. A static `ConcurrentDictionary<Type, Dictionary<string, PropertyInfo>>` keyed by type avoids the repeated `GetType().GetProperty(key)` and `GetProperties()` calls. `PropertyInfo.GetValue` itself stays — compiled delegates/lambdas were considered but the cost of building them outweighs any per-call savings for this layer; caching the reflection lookup is the win.
 
-#### [ ] F3. LavaTypeMemberAccessor uses PropertyInfo.GetValue per call
+#### [x] F3. LavaTypeMemberAccessor uses PropertyInfo.GetValue per call
 
 **Where:** [Rock.Lava.Fluid/LavaObjectMemberAccessStrategy.cs:228-233](../Rock.Lava.Fluid/LavaObjectMemberAccessStrategy.cs)
 
@@ -71,7 +71,7 @@ Each `[LavaType]`-decorated class registers a `LavaTypeMemberAccessor` per prope
 
 **Proposed fix:** Compile the property getter into a `Func<object, object>` once in the constructor and call the delegate at access time.
 
-#### [ ] F4. LavaDataHelper.GetLavaTypeInfo recomputes per call and is uncached
+#### [x] F4. LavaDataHelper.GetLavaTypeInfo recomputes per call and is uncached
 
 **Where:** [Rock.Lava.Shared/Utility/LavaDataHelper.cs:37-76](../Rock.Lava.Shared/Utility/LavaDataHelper.cs)
 
@@ -79,7 +79,7 @@ Each `[LavaType]`-decorated class registers a `LavaTypeMemberAccessor` per prope
 
 **Proposed fix:** Back the lookup with a `ConcurrentDictionary<Type, LavaDataTypeInfo>` and call `GetProperties()` only once per type.
 
-#### [ ] F5. ToRealObjectValue uses reflection per dictionary unwrap
+#### [x] F5. ToRealObjectValue uses reflection per dictionary unwrap
 
 **Where:** [Rock.Lava.Fluid/FluidExtensions.cs:229-238](../Rock.Lava.Fluid/FluidExtensions.cs)
 
@@ -96,19 +96,46 @@ if ( value is DictionaryValue ) {
 
 **Proposed fix:** Cache the `FieldInfo` (or, better, a compiled `Func<DictionaryValue, object>`) in a `static readonly` field initialized once.
 
-#### [ ] F6. Filter invocation uses MethodInfo.Invoke and per-call array
+#### [x] F6a. Filter invocation uses MethodInfo.Invoke and per-call array
 
 **Where:** [Rock.Lava.Fluid/FluidEngine.cs:441-501](../Rock.Lava.Fluid/FluidEngine.cs)
 
-The wrapper allocates `new object[lavaFilterMethodParameters.Length]` per filter call and uses `lavaFilterMethod.Invoke(null, args)`. Templates can apply filters thousands of times per render.
+The wrapper allocates `new object[lavaFilterMethodParameters.Length]` per filter call and uses `lavaFilterMethod.Invoke(null, lavaFilterMethodArguments)`. A typical template invokes filters dozens of times per render, and an extremely complex template may reach the low hundreds. `MethodInfo.Invoke` is significantly slower than a direct method call because the runtime performs argument validation, value-type boxing/unboxing, security checks, and `TargetInvocationException` wrapping on every call.
 
-**Proposed fix:** Build a compiled `Func<object[], object>` (or strongly-typed delegate) at registration via `Expression.Lambda(...).Compile()`. The arg array still allocates, but the reflection invoke cost is gone. If we want to push further, we can generate per-arity wrappers to remove the array allocation.
+**Proposed fix:** Replace the per-call `MethodInfo.Invoke` with a compiled delegate built once at filter registration. `Expression.Lambda<Func<object[], object>>(...).Compile()` generates IL that contains a direct `call` opcode to the target method — the same call the runtime would have ended up making, just without the reflection machinery wrapping it. Conceptually:
 
-Also at [line 397](../Rock.Lava.Fluid/FluidEngine.cs): the LINQ chain `OrderBy(x => x.Name).ThenByDescending(x => x.GetParameters().Count())` invokes `GetParameters()` O(n log n) times during sort. Materialize `(method, parameters)` tuples first.
+```csharp
+// Built once, at AddFilter / RegisterFilters time:
+ParameterExpression argsParam = Expression.Parameter( typeof( object[] ), "args" );
+Expression[] convertedArgs = lavaFilterMethodParameters
+    .Select( ( p, i ) => Expression.Convert(
+        Expression.ArrayIndex( argsParam, Expression.Constant( i ) ),
+        p.ParameterType ) )
+    .ToArray();
+Expression body = Expression.Convert(
+    Expression.Call( lavaFilterMethod, convertedArgs ),
+    typeof( object ) );
+Func<object[], object> compiledFilter =
+    Expression.Lambda<Func<object[], object>>( body, argsParam ).Compile();
+```
+
+Then at invocation time, `lavaFilterMethod.Invoke( null, lavaFilterMethodArguments )` becomes `compiledFilter( lavaFilterMethodArguments )`. The actual method still gets called — that's the whole point — but via a direct delegate call instead of through `MethodInfo.Invoke`. Local benchmarking against the Rock filter set measured roughly an 8x improvement on the invoke step itself.
+
+What does **not** change: the `object[]` argument array is still allocated per call (the cast/unbox steps inside the delegate still need somewhere to read from), and the per-argument cast/unbox work itself is unchanged — it just happens inline in the generated IL instead of inside the reflection invoke. The boxing of value-type return values also stays.
+
+**Optional further step (separate from this finding):** generate per-arity strongly-typed wrappers — `Func<object, object>`, `Func<object, object, object>`, etc. — keyed on the method's parameter count, so the caller can pass arguments positionally without ever allocating the `object[]`. This adds complexity (one wrapper shape per supported arity) and given that filters run dozens to low hundreds of times per render, the array allocation is unlikely to be the dominant cost after the base fix. Only worth doing if post-fix profiling proves otherwise.
+
+#### [x] F6b. Filter registration sort calls GetParameters O(n log n) times
+
+**Where:** [Rock.Lava.Fluid/FluidEngine.cs:397](../Rock.Lava.Fluid/FluidEngine.cs)
+
+The LINQ chain `OrderBy(x => x.Name).ThenByDescending(x => x.GetParameters().Count())` invokes `GetParameters()` O(n log n) times during sort.
+
+**Proposed fix:** Materialize `(method, parameters)` tuples first, then sort against the materialized parameter list.
 
 ### P1 — Thread-safety bugs (with perf side-effects)
 
-#### [ ] F7. Per-render mutation of shared TemplateOptions
+#### [x] F7. Per-render mutation of shared TemplateOptions
 
 **Where:** [Rock.Lava.Fluid/FluidEngine.cs:658-665](../Rock.Lava.Fluid/FluidEngine.cs)
 
@@ -121,9 +148,32 @@ if ( parameters.TimeZone != null )
 
 `templateContext.FluidContext.Options` is the engine's single `_templateOptions` instance. Two concurrent renders with different cultures will race; one render can observe the other's culture mid-render. This is a correctness bug first, perf bug second.
 
+**Confirmation that Options is shared, not per-context:**
+
+- The engine holds a single `private TemplateOptions _templateOptions = null;` field at [Rock.Lava.Fluid/FluidEngine.cs:39](../Rock.Lava.Fluid/FluidEngine.cs).
+- [`GetTemplateOptions()` at Rock.Lava.Fluid/FluidEngine.cs:235-262](../Rock.Lava.Fluid/FluidEngine.cs) lazily creates that single instance and returns the same reference on every call.
+- [`OnCreateRenderContext()` at Rock.Lava.Fluid/FluidEngine.cs:74](../Rock.Lava.Fluid/FluidEngine.cs) builds `new global::Fluid.TemplateContext( options )` for every render, passing the shared `_templateOptions`.
+- Reflection on `Fluid.dll` confirms `TemplateContext.Options` is an auto-property over `<Options>k__BackingField`. The constructor stores the passed reference unchanged, so `templateContext.FluidContext.Options` is always the same `_templateOptions` instance for every concurrent render. A live reflection test creating two contexts from the same options instance returned `ReferenceEquals(ctxA.Options, ctxB.Options) == true` and `ReferenceEquals(ctxA.Options, _templateOptions) == true`.
+- That same reflection scan shows `TemplateContext` itself exposes its own per-context `CultureInfo` and `TimeZone` auto-properties (distinct backing fields from `Options.CultureInfo` and `Options.TimeZone`), which is what the proposed fix writes to instead.
+
 **Proposed fix:** Set the values on the `TemplateContext` itself (`fluidContext.CultureInfo`, `fluidContext.TimeZone`) rather than on the shared `Options`.
 
-#### [ ] F8. _map and factory dictionaries read lock-free while being written
+**Required verification:** This change MUST be covered by unit tests. Concurrency stress is **not** the goal — instead, add two new tests modeled on the existing per-render-timezone tests in [Rock.Tests/Lava/Filters/DateFilterTests.cs:571,599](../Rock.Tests/Lava/Filters/DateFilterTests.cs):
+
+- **Test 1** — sets `LavaRenderParameters.TimeZone` to a value that differs from `RockDateTime.OrgTimeZoneInfo`, renders a template that surfaces the timezone (e.g., a date filter), and asserts the output reflects the explicit timezone.
+- **Test 2** — sets `LavaRenderParameters.TimeZone` to the timezone that matches `RockDateTime.OrgTimeZoneInfo` (the "current" timezone) and asserts the output reflects that value as well.
+
+Together these prove the per-render value reaches the renderer correctly in both the "same as current" and "different from current" cases. The same shape of test should be added for `LavaRenderParameters.Culture`.
+
+**Note discovered while writing these tests (issue, not a bug):** Rock-side filters and value types do not currently honor the per-render `LavaRenderParameters.TimeZone` value. The Rock `Date` filter routes `DateTime` input through `LavaDateTime.ConvertToRockOffset(dt)`, which uses the global `RockDateTime.OrgTimeZoneInfo` directly; the `DateTimeOffset` input path uses the offset already embedded in the value; and `LavaDateTimeValue.WriteToAsync` accepts a `cultureInfo` but no timezone. A grep of `Rock.Lava.Fluid` for any read of `context.TimeZone` / `Options.TimeZone` returns only the assignment line itself, so today the parameter is a "dead write" from Rock's perspective.
+
+This is intentionally left as-is for now because Rock inherently uses `DateTime` values in the Rock organization timezone for almost everything (database columns store `DateTime` rather than `DateTimeOffset`, so the org timezone is implicit on every read). `DateTimeOffset` only appears at boundaries that need it (third-party libraries like Fluid; DTOs serialized over the wire). Honoring per-render `TimeZone` would be a behavior change requiring a deliberate design decision about whether and where Rock should re-anchor `DateTime` values away from the org timezone, which is well outside the scope of this perf-and-allocation spec.
+
+The F7 thread-safety fix is still correct as written: writing to a shared `TemplateOptions` instance across concurrent renders is undefined behavior even when no one downstream reads the value. The "differs from current" test added below has been kept as a guardrail for current functionality (the parameter being set must not break rendering); the matching-timezone test was dropped because it cannot distinguish behavior from no parameter being set.
+
+As a consequence, only **three** F7 tests are added (one TimeZone "differs from current" guardrail, two Culture tests for matching/differing). The Culture parameter is honored end to end via `LavaDateTimeValue.WriteToAsync`, so both Culture cases are observable.
+
+#### [x] F8. _map and factory dictionaries read lock-free while being written
 
 **Where:**
 - [Rock.Lava.Fluid/LavaObjectMemberAccessStrategy.cs:32](../Rock.Lava.Fluid/LavaObjectMemberAccessStrategy.cs)
@@ -132,9 +182,19 @@ if ( parameters.TimeZone != null )
 
 `_map` and the `_factoryMethods` dictionaries are `Dictionary<>` (not concurrent). Tag/block factory methods are written under a `lock` but read without one during render. Most registrations happen at startup, but dynamic shortcodes can be re-registered at runtime, so the race is real.
 
-**Proposed fix:** Switch all three to `ConcurrentDictionary<>`. While here, replace the `ContainsKey` followed by `[]` indexing in both factory wrappers with a single `TryGetValue`.
+**Proposed fix:** Use the **immutable-snapshot / copy-on-write** pattern Microsoft uses in places like `MemoryCache` and DI registration:
 
-#### [ ] F9. GetTemplateOptions is not thread-safe
+1. Keep the field as a plain `Dictionary<>` (do NOT switch to `ConcurrentDictionary<>`). The dictionary instance is treated as write-once: once published to the field, it is never mutated again.
+2. On write (registration), continue to take the existing `lock`, but inside the lock:
+   - Allocate a new `Dictionary<>` initialized from the current `_map` / `_factoryMethods`.
+   - Add or replace the entry on the new dictionary.
+   - Atomically reassign the field to the new dictionary.
+3. On read, capture the field reference once into a local and use that local for the lookup. Because the captured dictionary is no longer mutated by anyone, the read is safe without a lock.
+4. While here, replace any `ContainsKey` + `[]` indexer pattern with a single `TryGetValue` (e.g., the factory wrappers in [FluidLavaTagStatement.cs:85-89](../Rock.Lava.Fluid/Parser/FluidLavaTagStatement.cs) and [FluidLavaBlockStatement.cs](../Rock.Lava.Fluid/Parser/FluidLavaBlockStatement.cs)).
+
+**Why this over `ConcurrentDictionary<>`:** these maps are populated rarely — `_map` only when a `[LavaType]`-decorated type is first encountered (roughly a dozen across Rock), and `_factoryMethods` only when tags/blocks/shortcodes register. Reads vastly outnumber writes. `ConcurrentDictionary<>` carries per-bucket locking and a heavier read path; the snapshot pattern gives lock-free, allocation-free reads with the cost of a one-time dictionary copy on the rare write.
+
+#### [x] F9. GetTemplateOptions is not thread-safe
 
 **Where:** [Rock.Lava.Fluid/FluidEngine.cs:235-262](../Rock.Lava.Fluid/FluidEngine.cs)
 
@@ -144,13 +204,20 @@ The `if (_templateOptions == null) { ... }` initialization can let two threads e
 
 ### P2 — Per-context / per-render allocations
 
-#### [ ] F10. FluidRenderContext constructor sets four constants on every render
+#### [x] F10. FluidRenderContext constructor sets four constants on every render
 
 **Where:** [Rock.Lava.Fluid/FluidRenderContext.cs:38-48](../Rock.Lava.Fluid/FluidRenderContext.cs)
 
 `Blank/blank/Empty/empty` get `SetValue` calls on every new context. Since `ModelNamesComparer` is `StringComparer.Ordinal`, both case variants are needed, but they're constants and don't have to be set per render.
 
 **Proposed fix:** Register the four values once on the engine's `TemplateOptions` so each new context inherits them.
+
+**Required verification:** This is a functional change (the keywords must still resolve in both casings after registration moves from per-context to per-engine). The existing tests cover this:
+
+- [Rock.Tests/Lava/LiquidKeywordTests.cs:248-273](../Rock.Tests/Lava/LiquidKeywordTests.cs) — `Empty_UpperCaseOrLowerCase_IsNotCaseSensitive` exercises `Empty` and `empty` via `{% if Items == ... %}`.
+- [Rock.Tests/Lava/LiquidKeywordTests.cs:278-303](../Rock.Tests/Lava/LiquidKeywordTests.cs) — `Blank_UpperCaseOrLowerCase_IsNotCaseSensitive` exercises `Blank` and `blank` the same way.
+
+Confirm both still pass after the move. No new tests required unless these break under the change.
 
 #### [ ] F11. Reflection-based access to TemplateContext.LocalScope per read
 
@@ -169,7 +236,9 @@ private static readonly Func<TemplateContext, Scope> _getLocalScope =
 
 Then call `_getLocalScope(_context)` at the call sites.
 
-#### [ ] F12. ParseTemplate copies the Statements list for no apparent reason
+**Status:** Rejected. For the same reason as F2, building a delegate is not actually faster than the cached `PropertyInfo.GetValue` call at this layer. The reflection lookup is already cached in a `static` field, so the remaining per-call cost is the `GetValue` invocation itself, which a delegate would not meaningfully improve.
+
+#### [x] F12. ParseTemplate copies the Statements list for no apparent reason
 
 **Where:** [Rock.Lava.Fluid/FluidEngine.cs:633](../Rock.Lava.Fluid/FluidEngine.cs)
 
@@ -181,7 +250,7 @@ The parser already returned a `FluidTemplate`. We're copying its statement list 
 
 **Proposed fix:** Return `fluidTemplateObject` directly. If there is a real reason for the copy that is not visible in the surrounding code, document it inline.
 
-#### [ ] F13. Async-over-sync allocations
+#### [x] F13. Async-over-sync allocations
 
 **Where:**
 - [Rock.Lava.Fluid/FluidEngine.cs:701-705](../Rock.Lava.Fluid/FluidEngine.cs) — `task.AsTask().GetAwaiter().GetResult()`. ValueTask has its own `GetAwaiter()`; drop `AsTask()` to skip the Task allocation.
@@ -190,7 +259,7 @@ The parser already returned a `FluidTemplate`. We're copying its statement list 
 
 **Proposed fix:** Use ValueTask's own awaiter where possible and the `IsCompletedSuccessfully` fast-path everywhere a sync-over-async pattern exists.
 
-#### [ ] F14. GetScopeAggregatedValues allocates two dictionaries per call
+#### [x] F14. GetScopeAggregatedValues allocates two dictionaries per call
 
 **Where:** [Rock.Lava.Fluid/FluidRenderContext.cs:284-323](../Rock.Lava.Fluid/FluidRenderContext.cs)
 
@@ -202,12 +271,12 @@ The parser already returned a `FluidTemplate`. We're copying its statement list 
 
 These are individually cheap but called per render or per merge-field operation.
 
-- [ ] **F15a.** [FluidRenderContext.cs:167](../Rock.Lava.Fluid/FluidRenderContext.cs) — `",".ToCharArray()` allocates per call. Use a `private static readonly char[]` or the `Split(',')` overload.
-- [ ] **F15b.** [LavaToLiquidTemplateConverter.cs:106](../Rock.Lava/Engine/LavaToLiquidTemplateConverter.cs) — `inputTemplate?.Replace("elseif", "elsif")` always allocates a new string. Guard with `IndexOf("elseif", StringComparison.Ordinal) < 0` first.
-- [ ] **F15c.** [LavaDataObject.cs:788](../Rock.Lava.Shared/Core/LavaDataObject.cs) — `propPath.Split('.').ToList()` then `propPath.First()` and `propPath.Skip(1).ToList()` per traversal step. For path "a.b.c" this allocates 6+ lists. Replace with an int cursor and `IndexOf('.')`.
-- [ ] **F15d.** [LavaDataObject.cs:973-990](../Rock.Lava.Shared/Core/LavaDataObject.cs) — `GetDynamicMemberNames` allocates a new list; `AvailableKeys` then `.ToList()` again. Cache the property name list per type.
-- [ ] **F15e.** [LavaObjectMemberAccessStrategy.cs:127-134](../Rock.Lava.Fluid/LavaObjectMemberAccessStrategy.cs) — `RegisterLavaTypeProperties` calls `type.GetProperties()` three times. Materialize once.
-- [ ] **F15f.** [LavaObjectMemberAccessStrategy.cs:66](../Rock.Lava.Fluid/LavaObjectMemberAccessStrategy.cs) — `type.Name.Contains("AnonymousType")` per first-time access. Cache per-Type.
+- [x] **F15a.** [FluidRenderContext.cs:167](../Rock.Lava.Fluid/FluidRenderContext.cs) — `",".ToCharArray()` allocates per call. Use a `private static readonly char[]` or the `Split(',')` overload.
+- [x] **F15b.** [LavaToLiquidTemplateConverter.cs:106](../Rock.Lava/Engine/LavaToLiquidTemplateConverter.cs) — `inputTemplate?.Replace("elseif", "elsif")` always allocates a new string. Guard with `IndexOf("elseif", StringComparison.Ordinal) < 0` first.
+- [x] **F15c.** [LavaDataObject.cs:788](../Rock.Lava.Shared/Core/LavaDataObject.cs) — `propPath.Split('.').ToList()` then `propPath.First()` and `propPath.Skip(1).ToList()` per traversal step. For path "a.b.c" this allocates 6+ lists. Drop the trailing `.ToList<string>()` and use the `string[]` returned by `Split(...)` directly, then walk it with an `int` index counter instead of re-allocating via `Skip(1).ToList()` each iteration. The loop condition becomes `pathIndex < propPath.Length`, the current segment is `propPath[pathIndex]`, and the step becomes `pathIndex++`. This matches Rock's existing index-counter convention and avoids introducing a `cursor`/`IndexOf('.')` parser pattern.
+- [ ] **F15d.** [LavaDataObject.cs:973-990](../Rock.Lava.Shared/Core/LavaDataObject.cs) — `GetDynamicMemberNames` allocates a new list; `AvailableKeys` then `.ToList()` again. Cache the property name list per type. **Rejected:** the member list is intentionally dynamic (the method name says so). Caching by type would not honor runtime additions/removals.
+- [x] **F15e.** [LavaObjectMemberAccessStrategy.cs:127-134](../Rock.Lava.Fluid/LavaObjectMemberAccessStrategy.cs) — `RegisterLavaTypeProperties` calls `type.GetProperties()` three times. Materialize once.
+- [x] **F15f.** [LavaObjectMemberAccessStrategy.cs:66](../Rock.Lava.Fluid/LavaObjectMemberAccessStrategy.cs) — `type.Name.Contains("AnonymousType")` per first-time access. Cache per-Type.
 
 ### P3 — Worth knowing, low cost
 
@@ -217,17 +286,23 @@ These are individually cheap but called per render or per merge-field operation.
 
 The existing TODO already calls this out. Adding `if (value is string || value is int || value is bool) return null;` at the top of each converter would skip O(n_converters) per common value.
 
+**Status:** Rejected. The proposed change might actually be slower in practice (added type checks on every value), and standing up a benchmark suite to confirm the few-nanosecond win is not justified for the expected impact.
+
 #### [ ] F17. LavaDataDictionary.AvailableKeys allocates per call
 
 **Where:** [Rock.Lava.Shared/Core/LavaDataDictionary.cs:365](../Rock.Lava.Shared/Core/LavaDataDictionary.cs)
 
 Returns `new List<string>(_dictionary.Keys)` every call. If the engine reads it more than once during a render, that's wasted. Note: changing the return type would break the public API, so the fix is either to expose an alternate accessor or to cache the materialized list and invalidate on writes.
 
+**Status:** Rejected. The accessor returns a writable `List<string>`. Caching it would let one caller mutate the list and have the modified list returned to the next caller, which is a correctness regression. The allocation is the price of returning an isolated copy.
+
 #### [ ] F18. LavaDataObject IDictionary.Count and .Values do full reflection traversal
 
 **Where:** [Rock.Lava.Shared/Core/LavaDataObject.cs:338-346](../Rock.Lava.Shared/Core/LavaDataObject.cs)
 
 `((ICollection)ldo).Count` calls `GetProperties().Count()`, materializing all properties via reflection just to compute a count. Cache the count, or compute it from the cached `_instancePropertyInfoLookup` plus `_dynamicMembers.Count`.
+
+**Status:** Rejected. `GetProperties()` returns a dynamic list that can change as members are added or removed on the object. Caching the count or list would require building cache-invalidation logic on every member mutation, and the maintenance cost outweighs the per-call savings.
 
 ## Out of Scope
 
@@ -247,8 +322,6 @@ For each accepted finding:
 2. Capture before/after numbers for both mean time and allocated bytes.
 3. Confirm the existing Lava test suite passes (`Rock.Tests.Integration` covers most Lava behaviors).
 4. Spot-check a handful of common templates in a running Rock instance to confirm output is byte-identical.
-
-For thread-safety findings (F7, F8, F9), add a stress test that concurrently renders templates with differing cultures/timezones and asserts each render observes its own configured value.
 
 ## Considered but Rejected
 

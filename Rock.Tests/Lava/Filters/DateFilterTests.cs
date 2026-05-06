@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 using Ical.Net;
@@ -29,6 +30,8 @@ using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Tests.Shared.Core.Schedules;
 using Rock.Tests.Shared.Utility;
+
+using Calendar = Ical.Net.Calendar;
 
 namespace Rock.Tests.Lava.Filters
 {
@@ -605,7 +608,97 @@ namespace Rock.Tests.Lava.Filters
             // Verify that the Lava Date filter formats the DateTime value as a Rock time, including the correct offset.
             TestHelper.AssertTemplateOutput( rockTimeString, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", parameters );
         }
-        /// <summary>  
+
+        /// <summary>
+        /// Setting <see cref="LavaRenderParameters.TimeZone"/> to a value that differs from
+        /// <see cref="RockDateTime.OrgTimeZoneInfo"/> should not change the rendered date, because Rock
+        /// inherently uses the Rock org timezone for DateTime values: the Date filter routes DateTime
+        /// input through <see cref="LavaDateTime.ConvertToRockOffset(DateTime)"/>, which always uses
+        /// <see cref="RockDateTime.OrgTimeZoneInfo"/> regardless of any per-render timezone parameter.
+        /// </summary>
+        /// <remarks>
+        /// This test is a proof of CURRENT functionality, not a proof of CORRECT functionality. It is
+        /// meant as a catch against unintended consequences of future changes to the Lava timezone.
+        /// Before making any changes to this unit test that change this assertion, please make sure it
+        /// is discussed and agreed upon by the core team.
+        /// </remarks>
+        [TestMethod]
+        public void Render_WithRenderParameterTimeZoneDifferentFromOrgTimeZone_RendersExpectedDate()
+        {
+            var dtoInput = LavaDateTime.NewDateTimeOffset( 2020, 3, 30, 10, 0, 0 );
+            var datetimeInput = dtoInput.DateTime;
+            var expectedOutput = dtoInput.ToString( "yyyy-MM-ddTHH:mm:sszzz" );
+
+            // Pick a timezone that is deliberately distinct from the typical Rock org timezone used in
+            // tests. If the configured org timezone happens to be UTC, fall back to a fixed-offset zone
+            // so the explicit timezone still differs from the current one.
+            var explicitTimeZone = RockDateTime.OrgTimeZoneInfo.Equals( TimeZoneInfo.Utc )
+                ? TimeZoneInfo.FindSystemTimeZoneById( "Pacific Standard Time" )
+                : TimeZoneInfo.Utc;
+
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            var parameters = new LavaRenderParameters
+            {
+                Context = LavaRenderContext.FromMergeValues( mergeValues ),
+                TimeZone = explicitTimeZone
+            };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", parameters );
+        }
+
+        /// <summary>
+        /// Setting <see cref="LavaRenderParameters.Culture"/> to the current thread culture
+        /// should render culture-sensitive output using that culture.
+        /// </summary>
+        [TestMethod]
+        public void Render_WithRenderParameterCultureMatchingCurrentCulture_RendersExpectedDate()
+        {
+            var datetimeInput = LavaDateTime.NewDateTimeOffset( 2020, 3, 30, 10, 0, 0 );
+            var currentCulture = CultureInfo.CurrentCulture;
+            var expectedOutput = LavaDateTime.ToString( datetimeInput, "G", currentCulture );
+
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            var parameters = new LavaRenderParameters
+            {
+                Context = LavaRenderContext.FromMergeValues( mergeValues ),
+                Culture = currentCulture
+            };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput }}", parameters );
+        }
+
+        /// <summary>
+        /// Setting <see cref="LavaRenderParameters.Culture"/> to a culture that differs from
+        /// the current thread culture should render the bare datetime using the explicit culture.
+        /// </summary>
+        [TestMethod]
+        public void Render_WithRenderParameterCultureDifferentFromCurrentCulture_RendersExpectedDate()
+        {
+            var datetimeInput = LavaDateTime.NewDateTimeOffset( 2020, 3, 30, 10, 0, 0 );
+
+            // Pick a culture that is deliberately distinct from the typical en-US test environment so
+            // the formatted output differs from the default. If the test environment happens to be
+            // de-DE, fall back to en-US so the explicit culture still differs from the current one.
+            var explicitCulture = CultureInfo.CurrentCulture.Name == "de-DE"
+                ? new CultureInfo( "en-US" )
+                : new CultureInfo( "de-DE" );
+
+            var expectedOutput = LavaDateTime.ToString( datetimeInput, "G", explicitCulture );
+
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            var parameters = new LavaRenderParameters
+            {
+                Context = LavaRenderContext.FromMergeValues( mergeValues ),
+                Culture = explicitCulture
+            };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput }}", parameters );
+        }
+
+        /// <summary>
         /// Create a DateTime for a specific timezone.
         /// </summary>
         public struct DateTimeWithZone

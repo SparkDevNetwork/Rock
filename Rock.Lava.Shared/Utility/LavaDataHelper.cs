@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -29,12 +30,24 @@ namespace Rock.Lava
     {
         private static Type _lavaDataObjectBaseType = typeof( LavaDataObject );
 
+        private static readonly ConcurrentDictionary<Type, LavaDataTypeInfo> _lavaTypeInfoCache = new();
+
         /// <summary>
         /// Gets the properties of a class that are accessible in a Lava template.
         /// </summary>
         /// <param name="type"></param>
         /// <returns>A collection of visible property names, or null if the type is not marked as [LavaType].</returns>
         public static LavaDataTypeInfo GetLavaTypeInfo( Type type )
+        {
+            return _lavaTypeInfoCache.GetOrAdd( type, BuildLavaTypeInfo );
+        }
+
+        /// <summary>
+        /// Build the data type information for the specified type.
+        /// </summary>
+        /// <param name="type">The type to be resolved.</param>
+        /// <returns>A <see cref="LavaDataTypeInfo"/> object containing the data type information.</returns>
+        private static LavaDataTypeInfo BuildLavaTypeInfo( Type type )
         {
             var info = new LavaDataTypeInfo();
 
@@ -46,24 +59,27 @@ namespace Rock.Lava
 
                 info.HasLavaTypeAttribute = ( attr != null );
 
+                // Materialize GetProperties() once and reuse it for both the include and ignore passes.
+                var allProperties = type.GetProperties();
+
                 // Get the list of included properties, then remove the ignored properties.
                 List<PropertyInfo> includedProperties;
                 if ( attr == null || attr.AllowedMembers == null || !attr.AllowedMembers.Any() )
                 {
                     // No included properties have been specified, so assume all are included.
                     // Exclude properties that are defined on the LavaDataObject base type.
-                    includedProperties = type.GetProperties()
+                    includedProperties = allProperties
                         .Where( a => a.DeclaringType != _lavaDataObjectBaseType )
                         .ToList();
                 }
                 else
                 {
-                    includedProperties = type.GetProperties()
-                    .Where( x => attr.AllowedMembers.Contains( x.Name, StringComparer.OrdinalIgnoreCase ) )
-                    .ToList();
+                    includedProperties = allProperties
+                        .Where( x => attr.AllowedMembers.Contains( x.Name, StringComparer.OrdinalIgnoreCase ) )
+                        .ToList();
                 }
 
-                var ignoredProperties = type.GetProperties().Where( x => x.GetCustomAttributes( typeof( LavaHiddenAttribute ), false ).Any() ).ToList();
+                var ignoredProperties = allProperties.Where( x => x.GetCustomAttributes( typeof( LavaHiddenAttribute ), false ).Any() ).ToList();
 
                 info.VisiblePropertyNames = includedProperties.Except( ignoredProperties ).Select( x => x.Name ).ToList();
             }

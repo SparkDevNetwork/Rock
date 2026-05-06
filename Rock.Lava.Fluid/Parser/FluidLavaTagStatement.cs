@@ -48,9 +48,10 @@ namespace Rock.Lava.Fluid
 
             lock ( _factoryLock )
             {
-                _factoryMethods[name] = factoryMethod;
+                var newFactoryMethods = new Dictionary<string, Func<string, ILavaTag>>( _factoryMethods, _factoryMethods.Comparer );
+                newFactoryMethods[name] = factoryMethod;
+                _factoryMethods = newFactoryMethods;
             }
-
         }
 
         #endregion
@@ -82,10 +83,8 @@ namespace Rock.Lava.Fluid
 
             ILavaTag lavaTag = null;
 
-            if ( _factoryMethods.ContainsKey( registeredTagName ) )
+            if ( _factoryMethods.TryGetValue( registeredTagName, out var factoryMethod ) )
             {
-                var factoryMethod = _factoryMethods[registeredTagName];
-
                 lavaTag = factoryMethod( _tagName );
             }
 
