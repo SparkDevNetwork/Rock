@@ -217,6 +217,20 @@ namespace Rock.Blocks.Event
                 .AddAttributeFields( GetGridAttributes() );
         }
 
+        /// <inheritdoc/>
+        protected override List<AttributeCache> BuildGridAttributes()
+        {
+            var entityTypeId = EntityTypeCache.Get<EventItemOccurrence>( false )?.Id;
+            var eventItem = GetEventItem();
+
+            if ( entityTypeId.HasValue && eventItem != null )
+            {
+                return AttributeCache.GetOrderedGridAttributes( entityTypeId, "EventItemId", eventItem.Id.ToString() );
+            }
+
+            return new List<AttributeCache>();
+        }
+
         /// <summary>
         /// Gets the next start date time.
         /// </summary>
