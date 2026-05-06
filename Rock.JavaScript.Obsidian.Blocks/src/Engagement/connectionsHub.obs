@@ -774,7 +774,8 @@
                       v-model:visible="isViewOptionsModalVisible"
                       :gridDataToShowItems="filteredGridDataToShowItems"
                       :connectionStates="box.options?.connectionStates ?? []"
-                      :connectionStatuses="box.options?.connectionStatuses ?? []" />
+                      :connectionStatuses="box.options?.connectionStatuses ?? []"
+                      :attributeFilters="box.options?.attributeFilters ?? []" />
 
     <ModalAlert v-model="isModalAlertVisible">
         <p>{{ modalAlertText }}</p>
@@ -1051,7 +1052,7 @@
     import RequestTable from "./ConnectionsHub/requestTable.partial.obs";
     import ConnectionRequestDockedPanel from "./ConnectionsHub/connectionRequestDockedPanel.partial.obs";
     import { downloadFile } from "@Obsidian/Utility/file";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { debounce, deepEqual } from "@Obsidian/Utility/util";
     import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
     import { ConnectionRequestDetailBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailBox";
     import { ConnectionListUpdateBox } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionListUpdateBox";
@@ -1219,6 +1220,7 @@
         stateFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterStateConnectionTypIdKey))),
         statusFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterStatusConnectionTypIdKey))),
         dueFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterDueConnectionTypIdKey))),
+        attributeFilterValues: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterAttributeValuesConnectionTypeIdKey))) ?? {},
     });
     const allPossibleConnectors = ref(box.options?.allPossibleConnectors ?? []);
     const selectedStatus = ref<string | null | undefined>();
@@ -4156,6 +4158,24 @@
         preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterDueConnectionTypIdKey), JSON.stringify(viewOptions.value.dueFilter));
 
         await preferences.save();
+    });
+
+    // Attribute filters apply server-side, so persist them and reload the grid
+    // whenever the user saves a change to them from the View Options modal.
+    //
+    // The modal's onSave creates a new attributeFilterValues object on every emit
+    // (via { ...attributeFilterValues.value }), which means a reference-only watch
+    // would fire even when an unrelated client-side filter (status, due) changed.
+    // We compare the new value against the previous value deeply so that this
+    // watcher only triggers a grid reload when an attribute filter actually changed.
+    watch(() => viewOptions.value.attributeFilterValues, async (newValue, oldValue) => {
+        if (deepEqual(newValue, oldValue, true)) {
+            return;
+        }
+
+        preferences.setValue(getConnectionFilterKey(PreferenceKey.FilterAttributeValuesConnectionTypeIdKey), JSON.stringify(newValue ?? {}));
+        await preferences.save();
+        loadGridData();
     });
 
     watch(selectedView, async () => {

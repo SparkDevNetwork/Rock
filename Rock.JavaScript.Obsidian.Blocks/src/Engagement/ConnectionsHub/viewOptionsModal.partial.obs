@@ -44,10 +44,37 @@
                                   label="Due" />
                 </ContentStack>
             </ContentSection>
-            <!-- TODO - come back to attributes at the end. -->
+            <ContentSection v-if="hasAttributeFilters"
+                            title="Attribute Filters"
+                            icon="ti ti-binary-tree-2"
+                            disableCollapse>
+                <ContentStack>
+                    <template v-for="(attr, index) in props.attributeFilters" :key="attr.key ?? index">
+                        <div class="row">
+                            <div v-if="attr.key" class="form-group attribute-filter-group col-md-6">
+                                <RockLabel>{{ attr.name }}</RockLabel>
+                                <RockAttributeFilter v-model="attributeFilterValues[attr.key]"
+                                                     :attribute="attr" />
+                            </div>
+                        </div>
+                    </template>
+                </ContentStack>
+            </ContentSection>
         </ContentSectionContainer>
     </Modal>
 </template>
+
+<style scoped>
+/* Suppress labels rendered by inner filter components since we already display the attribute name via RockLabel. */
+.attribute-filter-group :deep(.field-criteria .form-group > .control-label) {
+    display: none;
+}
+
+.attribute-filter-group :deep(.field-criteria > div) {
+    display: block;
+    float: left;
+}
+</style>
 
 <script setup lang="ts">
     import Modal from "@Obsidian/Controls/modal.obs";
@@ -57,10 +84,15 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { ref, PropType, watch, computed } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
     import { ViewOptions } from "./types.partial";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { DueStatusDescription } from "@Obsidian/Enums/Connection/dueStatus";
     import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
@@ -85,6 +117,10 @@
         connectionStatuses: {
             type: Array as PropType<ConnectionStatusBag[]>,
             required: true
+        },
+        attributeFilters: {
+            type: Array as PropType<PublicAttributeBag[]>,
+            default: () => []
         }
     });
 
@@ -101,8 +137,11 @@
     const stateFilter = ref(props.modelValue.stateFilter ?? []);
     const statusFilter = ref(props.modelValue.statusFilter ?? []);
     const dueFilter = ref(props.modelValue.dueFilter ?? []);
+    const attributeFilterValues = ref<Record<string, ComparisonValue>>({ ...(props.modelValue.attributeFilterValues ?? {}) });
 
     const dueStatusItems = enumToListItemBag(DueStatusDescription);
+
+    const hasAttributeFilters = computed((): boolean => props.attributeFilters.length > 0);
 
     const sortByItems = [
         {
@@ -155,10 +194,17 @@
             isRequestSourceShown: isRequestSourceShown.value,
             stateFilter: stateFilter.value,
             statusFilter: statusFilter.value,
-            dueFilter: dueFilter.value
+            dueFilter: dueFilter.value,
+            attributeFilterValues: { ...attributeFilterValues.value }
         };
 
-        emit("update:modelValue", value);
+        // Skip the emit (and the watchers it triggers in the parent) when nothing
+        // actually changed. Without this guard the spread on attributeFilterValues
+        // produces a new reference every time the modal saves, which fires the
+        // attribute-filter watcher and reloads the grid even on a no-op save.
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
 
         isVisible.value = false;
     }

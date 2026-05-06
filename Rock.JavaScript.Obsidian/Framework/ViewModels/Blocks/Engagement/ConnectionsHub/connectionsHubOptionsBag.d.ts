@@ -31,6 +31,7 @@ import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/Co
 import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
 import { GridDataToShowItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/gridDataToShowItemBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The additional configuration options for the Connections Hub block. */
 export type ConnectionsHubOptionsBag = {
@@ -45,6 +46,13 @@ export type ConnectionsHubOptionsBag = {
 
     /** Gets or sets a value indicating whether reminders are enabled for connection requests. */
     areRemindersEnabled: boolean;
+
+    /**
+     * Gets or sets the list of attributes available for filtering the connection request grid,
+     * scoped to the current Connection Type. Each attribute is sent in its public form so the
+     * client can render a RockAttributeFilter control for it in the View Options modal.
+     */
+    attributeFilters?: PublicAttributeBag[] | null;
 
     /**
      * Gets or sets the available groupings for each grouping dimension. The dictionary is keyed
