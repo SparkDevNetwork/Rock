@@ -250,6 +250,32 @@
         bottom:          -1px;
       }
     }
+
+    .group-scheduler-progress-bar-tooltip {
+      min-width: 130px;
+    }
+
+    .group-scheduler-progress-bar-tooltip-label {
+      font-weight: var(--font-weight-bold);
+    }
+
+    .group-scheduler-progress-bar-tooltip-responses {
+      margin-top: var(--spacing-small);
+    }
+
+    .group-scheduler-progress-bar-tooltip-counts {
+      margin-top: var(--spacing-tiny);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .group-scheduler-progress-bar-tooltip-counts > span {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xsmall);
+    }
+
   }
 
   .progress-bar {
