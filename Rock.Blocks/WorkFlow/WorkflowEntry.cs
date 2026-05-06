@@ -695,11 +695,24 @@ namespace Rock.Blocks.Workflow
                     return GetEndOfWorkflowBag( workflow, actionTypeGuid, actionResult, errorMessage );
                 }
 
-                // If this action is the same as the last, that likely means the
-                // component is broken. For example if said "Continue" with a
-                // unsuccessful result.
+                /*
+                    5/6/26 - MSE
+
+                    Same action returned twice. If the previous result was
+                    successful, treat it as end-of-workflow and show the
+                    response. Otherwise it's a broken component looping,
+                    so surface the error.
+
+                    Reason: Allow form "Update" buttons with no target
+                    activity to display their response instead of erroring.
+                */
                 if ( action.Guid == lastAction?.Guid )
                 {
+                    if ( actionResult != null && actionResult.IsSuccess )
+                    {
+                        return GetEndOfWorkflowBag( workflow, lastActionTypeGuid, actionResult, null );
+                    }
+
                     return CreateErrorMessage( workflow, workflow.WorkflowTypeCache, "Invalid action", "We detected an invalid action state that prevents further processing." );
                 }
 
