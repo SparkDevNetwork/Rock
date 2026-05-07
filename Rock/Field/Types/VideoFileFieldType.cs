@@ -120,7 +120,14 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
-            return new Dictionary<string, string>();
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            privateConfigurationValues.Remove( FILE_NAME );
+            privateConfigurationValues.Remove( MIME_TYPE );
+            privateConfigurationValues.Remove( FILE_PATH );
+            privateConfigurationValues.Remove( FILE_GUID );
+
+            return privateConfigurationValues;
         }
 
         /// <inheritdoc/>
