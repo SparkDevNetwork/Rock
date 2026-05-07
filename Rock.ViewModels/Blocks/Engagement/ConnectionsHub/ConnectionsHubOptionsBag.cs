@@ -183,10 +183,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public Dictionary<string, List<GroupingFieldBag>> AvailableGroupings { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of attributes available for filtering the connection request grid,
-        /// scoped to the current Connection Type. Each attribute is sent in its public form so the
-        /// client can render a <c>RockAttributeFilter</c> control for it in the View Options modal.
+        /// Gets or sets the list of attributes available for filtering the connection request grid.
+        /// Each entry pairs the public attribute (used to render the <c>RockAttributeFilter</c>
+        /// control in the View Options modal) with the Connection Opportunity Guids that scope it,
+        /// so the client can hide filters for attributes that do not apply to the active opportunity.
         /// </summary>
-        public List<PublicAttributeBag> AttributeFilters { get; set; }
+        public List<ConnectionRequestAttributeFilterBag> AttributeFilters { get; set; }
     }
 }

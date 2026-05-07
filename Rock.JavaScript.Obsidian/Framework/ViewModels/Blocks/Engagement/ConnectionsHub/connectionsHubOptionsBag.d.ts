@@ -26,12 +26,12 @@ import { Guid } from "@Obsidian/Types";
 import { CampusLabelBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/campusLabelBag";
 import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionActivityTypeBag";
 import { ConnectionOpportunityDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionOpportunityDetailBag";
+import { ConnectionRequestAttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestAttributeFilterBag";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
 import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionWorkflowBag";
-import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
 import { GridDataToShowItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/gridDataToShowItemBag";
+import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The additional configuration options for the Connections Hub block. */
 export type ConnectionsHubOptionsBag = {
@@ -48,11 +48,12 @@ export type ConnectionsHubOptionsBag = {
     areRemindersEnabled: boolean;
 
     /**
-     * Gets or sets the list of attributes available for filtering the connection request grid,
-     * scoped to the current Connection Type. Each attribute is sent in its public form so the
-     * client can render a RockAttributeFilter control for it in the View Options modal.
+     * Gets or sets the list of attributes available for filtering the connection request grid.
+     * Each entry pairs the public attribute (used to render the RockAttributeFilter
+     * control in the View Options modal) with the Connection Opportunity Guids that scope it,
+     * so the client can hide filters for attributes that do not apply to the active opportunity.
      */
-    attributeFilters?: PublicAttributeBag[] | null;
+    attributeFilters?: ConnectionRequestAttributeFilterBag[] | null;
 
     /**
      * Gets or sets the available groupings for each grouping dimension. The dictionary is keyed

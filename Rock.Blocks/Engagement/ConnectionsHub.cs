@@ -628,8 +628,18 @@ namespace Rock.Blocks.Engagement
                     PersonNoteCreationBehavior = a.PersonNoteCreationBehavior
                 } ).ToList();
 
-            options.AttributeFilters = GetGridAttributes()
-                .Select( a => PublicAttributeHelper.GetPublicAttributeForEdit( a ) )
+            // Reuse the same attribute set and per-attribute opportunity scoping that the
+            // grid-column dropdown was just populated from. Every attribute available as a
+            // grid column is also available as a filter, and we want the client to apply
+            // the same hide-when-unrelated-opportunity rule to both.
+            options.AttributeFilters = attributesByKey.Values
+                .Select( a => new ConnectionRequestAttributeFilterBag
+                {
+                    Attribute = PublicAttributeHelper.GetPublicAttributeForEdit( a ),
+                    ConnectionOpportunityGuids = opportunityGuidsByAttributeKey.TryGetValue( a.Key, out var guids )
+                        ? guids.ToList()
+                        : null
+                } )
                 .ToList();
 
             return options;
@@ -747,8 +757,28 @@ namespace Rock.Blocks.Engagement
 
             var connectionRequestService = new ConnectionRequestService( RockContext );
 
+            // Resolve the currently-active opportunity (if any) so we can skip filter
+            // entries that target attributes scoped to a different opportunity. The
+            // client hides those filters from the View Options modal but persisted
+            // values for them remain in PersonPreferences (so they can come back when
+            // the user switches opportunities). Without this guard the server would
+            // still apply those stale filters and return zero rows.
+            var activeOpportunityGuid = GetConnectionOpportunityFilter( connectionTypeIdKey );
+            int? activeOpportunityId = activeOpportunityGuid.HasValue
+                ? new ConnectionOpportunityService( RockContext ).GetSelect( activeOpportunityGuid.Value, o => ( int? ) o.Id )
+                : null;
+
             foreach ( var attribute in gridAttributes )
             {
+                // Skip attributes scoped to a specific opportunity other than the active one.
+                // Type-level attributes (qualifier column = "ConnectionTypeId") always apply.
+                if ( activeOpportunityId.HasValue
+                    && attribute.EntityTypeQualifierColumn == "ConnectionOpportunityId"
+                    && attribute.EntityTypeQualifierValue.AsIntegerOrNull() != activeOpportunityId )
+                {
+                    continue;
+                }
+
                 if ( !attributeFilterValues.TryGetValue( attribute.Key, out var filterEntry ) )
                 {
                     continue;
