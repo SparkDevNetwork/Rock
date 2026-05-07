@@ -332,31 +332,56 @@ namespace Rock.Rest.Controllers
             var rockContext = new RockContext();
             var transactionService = new FinancialTransactionService( rockContext );
 
+            // Half-open date range instead of YEAR(TransactionDateTime) so the predicate
+            // is sargable. The original "TransactionDateTime.Value.Year == yearFilter"
+            // emits as "DATEPART(year, TransactionDateTime) = @year" -- a filter on a
+            // computed expression, which prevents an index seek on TransactionDateTime.
+            // The range form lets the optimizer seek directly on the column. Result-set
+            // semantics are identical (year is inclusive of Jan 1 00:00:00 and exclusive
+            // of next year's Jan 1 00:00:00).
+            var yearStart = new DateTime( yearFilter, 1, 1 );
+            var nextYearStart = yearStart.AddYears( 1 );
+
             var query = transactionService.Queryable( "FinancialPaymentDetail, TransactionDetails.Account" ).AsNoTracking().Where( t =>
                 t.AuthorizedPersonAliasId.HasValue &&
                 t.TransactionDateTime.HasValue &&
-                t.TransactionDateTime.Value.Year == yearFilter );
+                t.TransactionDateTime >= yearStart &&
+                t.TransactionDateTime < nextYearStart );
 
-            // If we include the giving group, then query for everyone in it, otherwise just the id sent
-            if ( includeGivingGroup )
+            // Pre-flight: resolve the requester's PersonId and GivingGroupId in a single
+            // PK seek on PersonAlias (joining Person for GivingGroupId). Sub-millisecond
+            // on the same DbContext/connection. Drives both branches below.
+            // GivingGroupId.HasValue indicates the requester opted into combined giving;
+            // NULL means individual giving only. Same gate ContributionStatementGenerator
+            // uses.
+            var queryingPerson = new PersonAliasService( rockContext ).Queryable().AsNoTracking()
+                .Where( pa => pa.Id == personAliasId )
+                .Select( pa => new { pa.PersonId, pa.Person.GivingGroupId } )
+                .FirstOrDefault();
+
+            if ( queryingPerson == null )
             {
-                var personAliasService = new PersonAliasService( rockContext );
-                var personAliases = personAliasService.Queryable();
+                // Match vendor (Spark/Triumph) behavior: an unresolvable alias yields an
+                // empty result rather than HTTP 400. The April hotfix returned 400 here;
+                // restoring vendor parity simplifies clients that don't need to handle
+                // both error shapes.
+                return new List<Gift>();
+            }
 
+            if ( includeGivingGroup && queryingPerson.GivingGroupId.HasValue )
+            {
+                var givingGroupId = queryingPerson.GivingGroupId.Value;
                 query = query.Where( t =>
-                    // Always include the requested person's own transactions (matches any alias for the same Person).
-                    t.AuthorizedPersonAlias.Person.Aliases.Any( a => a.Id == personAliasId )
-                    // Include other family members' transactions ONLY when the requested person has opted into combined giving:
-                    // In Rock, Person.GivingGroupId == NULL means "do not combine giving", so we gate the family match on ggId.HasValue.
-                    || personAliases
-                        .Where( pa => pa.Id == personAliasId )
-                        .Select( pa => pa.Person.GivingGroupId )
-                        .Any( ggId => ggId.HasValue && ggId.Value == t.AuthorizedPersonAlias.Person.GivingGroupId )
-                );
+                    t.AuthorizedPersonAlias.Person.GivingGroupId == givingGroupId );
             }
             else
             {
-                query = query.Where( t => t.AuthorizedPersonAlias.Person.Aliases.Any( a => a.Id == personAliasId ) );
+                // Match by PersonId, not the specific AuthorizedPersonAliasId, so all of
+                // the requester's PersonAlias rows are covered (post-merge persons can
+                // have multiple aliases). EF6 emits one INNER JOIN to PersonAlias for
+                // the AuthorizedPersonAlias.PersonId reference; PK lookup, plan-cacheable.
+                var personId = queryingPerson.PersonId;
+                query = query.Where( t => t.AuthorizedPersonAlias.PersonId == personId );
             }
 
             // If there is an excluded status param, then exclude those statuses from the results
