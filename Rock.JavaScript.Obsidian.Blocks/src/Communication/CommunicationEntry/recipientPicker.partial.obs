@@ -1,48 +1,67 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="recipient-picker">
-        <PopupPicker v-model="recipientListItems"
-                     :disabled="disabled"
-                     :getLabelTypeRef="personAliasGuid => getLabelTypeRef(findRecipient(personAliasGuid), mediumType)"
-                     :getTooltipRef="personAliasGuid => getTooltipRef(findRecipient(personAliasGuid), mediumType)"
-                     :isAddHidden="isAddHidden"
-                     :label="label"
-                     :rules="rules"
-                     validationTitle="At least one recipient"
-                     @openPopup="onOpenPopup"
-                     @showMore="onShowMore">
-            <template #itemImage="{ label, value: personAliasGuid, closable, disabled }">
-                <img :src="findRecipient(personAliasGuid)?.photoUrl ?? undefined" style="border-radius: 24px; width: 24px; height: 24px" />
+        <PillList :modelValue="recipientListItems"
+                  :canAdd="!isAddHidden"
+                  canExpand
+                  :canRemove="!isAddHidden"
+                  :disabled="disabled"
+                  :label="label"
+                  :rules="rules"
+                  validationTitle="At least one recipient"
+                  @add="onOpenPopupClicked"
+                  @moreClick="onShowMoreClicked"
+                  @remove="onPillRemoved">
+            <template #item="{ item, canRemove, remove }">
+                <Pill :canRemove="canRemove"
+                      :disabled="disabled"
+                      :tokenType="getPillTokenType(item.value)"
+                      :tooltip="getPillTooltip(item.value)"
+                      @remove="remove">
+                    <img v-if="findRecipient(item.value)?.photoUrl"
+                         :src="findRecipient(item.value)?.photoUrl ?? undefined"
+                         class="recipient-avatar" />
+                    <span>{{ item.text }}</span>
+                </Pill>
             </template>
-        </PopupPicker>
+        </PillList>
+
         <PersonPicker v-if="isPersonPickerShown"
                       v-model:isSearchModeOpen="isPersonPickerShown"
                       @update:modelValue="onPersonSelected" />
-        <RecipientModal v-model="isRecipientModalShown" :recipients="modelValue" @update:recipients="$emit('update:modelValue', $event)" :disabled="disabled" :disabledMessage="recipientManagerDisabledMessage" :getTooltipRef="getTooltipRef" :isForBulkCommunication="isForBulkCommunication" :isAddHidden="isAddHidden" />
+        <RecipientModal v-model="isRecipientModalShown"
+                        :recipients="modelValue"
+                        @update:recipients="$emit('update:modelValue', $event)"
+                        :disabled="disabled"
+                        :disabledMessage="recipientManagerDisabledMessage"
+                        :getTooltipRef="getTooltipRef"
+                        :isForBulkCommunication="isForBulkCommunication"
+                        :isAddHidden="isAddHidden" />
     </div>
 </template>
 
 <style scoped>
-.recipient-picker :deep(.picker-label) {
-    display: none;
+.recipient-avatar {
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    flex: 0 0 auto;
 }
 </style>
 
 <script setup lang="ts">
-    import { PropType, Ref, computed, nextTick, ref, watch } from "vue";
-    import PopupPicker from "./popupPicker.partial.obs";
+    import { PropType, Ref, computed, nextTick, ref } from "vue";
+    import Pill from "@Obsidian/Controls/pill.obs";
+    import PillList from "@Obsidian/Controls/pillList.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import RecipientModal from "./recipientModal.partial.obs";
     import { LabelType, MediumType } from "./types.partial";
-    import { updateArray } from "./utils.partial";
-    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import { ValidationRule } from "@Obsidian/Types/validationRules";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { splitCase } from "@Obsidian/Utility/stringUtils";
-    import { CommunicationEntryGetRecipientsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetRecipientsRequestBag";
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         /**
@@ -120,11 +139,17 @@
 
     const isPersonPickerShown = ref<boolean>(false);
     const isRecipientModalShown = ref<boolean>(false);
-    const recipientListItems = ref<ListItemBag[]>(convertRecipientsToListItems(props.modelValue));
 
     //#endregion
 
     //#region Computed Values
+
+    const recipientListItems = computed<ListItemBag[]>(() =>
+        props.modelValue.map(r => ({
+            text: r.name,
+            value: r.personAliasGuid
+        }))
+    );
 
     const rules = computed<ValidationRule[]>(() => {
         if (props.minimumRecipientCount === 0) {
@@ -141,66 +166,6 @@
             return [];
         }
     });
-
-
-    //#endregion
-
-    //#region Event Handlers
-
-    async function onOpenPopup(): Promise<void> {
-        if (!isPersonPickerShown.value) {
-            isPersonPickerShown.value = true;
-        }
-        else {
-            isPersonPickerShown.value = false;
-            await nextTick();
-            isPersonPickerShown.value = true;
-        }
-    }
-
-    async function onShowMore(): Promise<void> {
-        if (!isRecipientModalShown.value) {
-            isRecipientModalShown.value = true;
-        }
-        else {
-            isPersonPickerShown.value = false;
-            await nextTick();
-            isPersonPickerShown.value = true;
-        }
-    }
-
-    async function onPersonSelected(value: ListItemBag | undefined): Promise<void> {
-        if (!value?.value) {
-            return;
-        }
-
-        // Get communication data for the selected person.
-        const result = await invokeBlockAction<CommunicationEntryRecipientBag>("GetRecipient", {
-            personAliasGuid: toGuidOrNull(value.value) ?? emptyGuid
-        });
-
-        if (!result?.isSuccess || !result.data) {
-            console.error("An unexpected error occurred while retrieving information about the selected person:", result?.errorMessage);
-        }
-        else {
-            const updatedRecipients: CommunicationEntryRecipientBag[] = [];
-            let alreadyAdded = false;
-            for (const recipient of props.modelValue) {
-                if (!alreadyAdded && recipient.personAliasGuid === result.data.personAliasGuid) {
-                    alreadyAdded = true;
-                }
-                updatedRecipients.push(recipient);
-            }
-
-            if (!alreadyAdded) {
-                updatedRecipients.push(result.data);
-                emit("update:modelValue", updatedRecipients);
-            }
-        }
-
-        // Hide the person picker after stuff happens.
-        isPersonPickerShown.value = false;
-    }
 
     //#endregion
 
@@ -291,67 +256,96 @@
         });
     }
 
-    /** Converts recipients to list item bags. */
-    function convertRecipientsToListItems(recipients: CommunicationEntryRecipientBag[]): ListItemBag[] {
-        return recipients.map(item => ({
-            text: item.name,
-            value: item.personAliasGuid
-        }));
-    }
-
     /** Gets the recipient for a person. */
-    function findRecipient(personAliasGuid: string): CommunicationEntryRecipientBag | null {
+    function findRecipient(personAliasGuid: string | null | undefined): CommunicationEntryRecipientBag | null {
+        if (!personAliasGuid) {
+            return null;
+        }
         return props.modelValue.find(item => item.personAliasGuid === personAliasGuid) ?? null;
     }
 
-    //#endregion
-
-    function getListItemBagGuidSet(listItemBags: ListItemBag[]): Set<Guid> {
-        return new Set<Guid>(listItemBags.map(l => l.value!));
+    /** Maps the recipient's LabelType to the Pill component's tokenType prop. */
+    function getPillTokenType(personAliasGuid: string | null | undefined): "default" | "danger" {
+        if (!personAliasGuid) {
+            return "default";
+        }
+        return getLabelTypeRef(findRecipient(personAliasGuid), props.mediumType).value === "label-danger"
+            ? "danger"
+            : "default";
     }
 
-    //#region Watchers
-
-    // Update the ListItemBag array when the props modelValue changes.
-    watch(() => props.modelValue, () => {
-        const set1 = getListItemBagGuidSet(recipientListItems.value);
-        const set2 = new Set<Guid>(props.modelValue.map(r => r.personAliasGuid));
-        const areSetsEqual = set1.size === set2.size && [...set1].every((x) => set2.has(x));
-
-        if (!areSetsEqual) {
-            recipientListItems.value = convertRecipientsToListItems(props.modelValue);
+    /** Gets the per-recipient tooltip for a chip. */
+    function getPillTooltip(personAliasGuid: string | null | undefined): string {
+        if (!personAliasGuid) {
+            return "";
         }
-    });
-
-    // Update the recipients collection when the ListItemBag array changes.
-    watch(recipientListItems, async (newRecipientListItemBags) => {
-        const set1 = getListItemBagGuidSet(newRecipientListItemBags);
-        const set2 = new Set<Guid>(props.modelValue.map(r => r.personAliasGuid));
-        const areSetsEqual = set1.size === set2.size && [...set1].every((x) => set2.has(x));
-
-        if (!areSetsEqual) {
-            const newValues = await updateArray(
-                props.modelValue,
-                r => r.personAliasGuid,
-                set1,
-                async (recipientGuidsToAdd: Iterable<Guid>) => {
-                    const bag: CommunicationEntryGetRecipientsRequestBag = {
-                        personAliasGuids: Array.from(recipientGuidsToAdd)
-                    };
-
-                    const result = await invokeBlockAction<CommunicationEntryRecipientBag[]>(
-                        "GetRecipients",
-                        {
-                            bag
-                        });
-
-                    return result?.data ?? [];
-                });
-
-            emit("update:modelValue", Array.from(newValues.values()));
-        }
-    });
+        return getTooltipRef(findRecipient(personAliasGuid), props.mediumType).value;
+    }
 
     //#endregion
 
+    //#region Event Handlers
+
+    /** Opens the person picker. Toggling re-mounts the picker so it can be reopened cleanly. */
+    async function onOpenPopupClicked(): Promise<void> {
+        if (!isPersonPickerShown.value) {
+            isPersonPickerShown.value = true;
+        }
+        else {
+            isPersonPickerShown.value = false;
+            await nextTick();
+            isPersonPickerShown.value = true;
+        }
+    }
+
+    /** Opens the recipient management modal when the "X more" overflow pill is clicked. */
+    function onShowMoreClicked(): void {
+        isRecipientModalShown.value = true;
+    }
+
+    async function onPersonSelected(value: ListItemBag | undefined): Promise<void> {
+        if (!value?.value) {
+            return;
+        }
+
+        // Get communication data for the selected person.
+        const result = await invokeBlockAction<CommunicationEntryRecipientBag>("GetRecipient", {
+            personAliasGuid: toGuidOrNull(value.value) ?? emptyGuid
+        });
+
+        if (!result?.isSuccess || !result.data) {
+            console.error("An unexpected error occurred while retrieving information about the selected person:", result?.errorMessage);
+        }
+        else {
+            const updatedRecipients: CommunicationEntryRecipientBag[] = [];
+            let alreadyAdded = false;
+            for (const recipient of props.modelValue) {
+                if (!alreadyAdded && recipient.personAliasGuid === result.data.personAliasGuid) {
+                    alreadyAdded = true;
+                }
+                updatedRecipients.push(recipient);
+            }
+
+            if (!alreadyAdded) {
+                updatedRecipients.push(result.data);
+                emit("update:modelValue", updatedRecipients);
+            }
+        }
+
+        // Hide the person picker after stuff happens.
+        isPersonPickerShown.value = false;
+    }
+
+    /** Removes the recipient at the given index from the model. */
+    function onPillRemoved(_item: ListItemBag, index: number): void {
+        if (index < 0) {
+            return;
+        }
+        emit("update:modelValue", [
+            ...props.modelValue.slice(0, index),
+            ...props.modelValue.slice(index + 1)
+        ]);
+    }
+
+    //#endregion
 </script>

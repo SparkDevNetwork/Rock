@@ -14,6 +14,7 @@
                       :label="label"
                       :rules="isRequired ? 'required' : undefined"
                       @add="onAdd"
+                      @moreClick="moreClickHandler"
                       @remove="onRemove">
                 <template #itemContent="{ item, emptyValue }">{{ item.value || emptyValue }}</template>
             </PillList>
@@ -47,6 +48,10 @@
                     <Switch v-model="isRequired"
                             label="Is Required?"
                             help="Makes the control required." />
+
+                    <Switch v-model="isMoreClickEnabled"
+                            label="Wire moreClick?"
+                            help="When on, supplies a moreClick callback so the 'X more' overflow pill becomes clickable. Reduce the gallery width until the overflow pill appears, then click it to trigger the alert. When off, the overflow pill is not clickable." />
                 </div>
 
                 <div class="row">
@@ -125,9 +130,17 @@
     const expandedMaxHeightPx = ref<number | null>();
     const label = ref<string>("Connection Opportunities");
     const isRequired = ref<boolean>(false);
+    const isMoreClickEnabled = ref<boolean>(false);
+
+    // Conditionally supply the moreClick callback. When the toggle is off,
+    // the prop is undefined, which is what makes the overflow pill render
+    // without the clickable affordance.
+    const moreClickHandler = computed<(() => void) | undefined>(() =>
+        isMoreClickEnabled.value ? onMoreClick : undefined
+    );
 
     const importCode = getSfcControlImportPath("pillList");
-    const exampleCode = `<PillList v-model="values" :canAdd="canAdd" :canExpand="canExpand" :canRemove="canRemove" :disabled="disabled" :addDisabled="addDisabled" />`;
+    const exampleCode = `<PillList v-model="values" :canAdd="canAdd" :canExpand="canExpand" :canRemove="canRemove" :disabled="disabled" :addDisabled="addDisabled" @moreClick="onMoreClick" />`;
 
     const valuesAsString = computed<string>({
         get(): string {
@@ -154,6 +167,10 @@
         if (index >= 0) {
             values.value = [...values.value.slice(0, index), ...values.value.slice(index + 1)];
         }
+    }
+
+    function onMoreClick(): void {
+        alert("More Clicked!");
     }
 
     function onSubmit(): void {

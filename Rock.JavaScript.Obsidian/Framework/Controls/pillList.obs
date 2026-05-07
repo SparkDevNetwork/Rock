@@ -27,7 +27,9 @@
 
                     <div ref="overflowRef"
                          class="overflow-indicator"
-                         v-show="isOverflowIndicatorShown">
+                         :class="{ clickable: !!onMoreClick }"
+                         v-show="isOverflowIndicatorShown"
+                         @click="onMoreClick?.()">
                         <Pill :disabled="disabled">{{ modelValue.length - visibleItems.length }} more</Pill>
                     </div>
                 </div>
@@ -179,6 +181,18 @@
     gap: var(--spacing-xsmall);
 }
 
+.overflow-indicator.clickable {
+    cursor: pointer;
+}
+
+.overflow-indicator.clickable :deep(.pill) {
+    transition: border-color ease-in-out 0.15s;
+}
+
+.overflow-indicator.clickable:hover :deep(.pill) {
+    border-color: var(--color-interface-strong);
+}
+
 .measure-row {
     position: absolute;
     visibility: hidden;
@@ -262,6 +276,21 @@
         expandedMaxHeight: {
             type: String as PropType<string>,
             default: "250px"
+        },
+
+        /**
+         * Optional callback invoked when the "X more" overflow indicator
+         * pill is clicked. When omitted, the overflow pill is not clickable
+         * and renders without a cursor or hover affordance. Useful for
+         * opening a "view all" modal that lives on the consuming component.
+         *
+         * Named with the `on` prefix so consumers can use Vue's listener
+         * syntax: both `@moreClick="handler"` and `:onMoreClick="handler"`
+         * resolve to this prop.
+         */
+        onMoreClick: {
+            type: Function as PropType<(() => void) | undefined>,
+            default: undefined
         }
     });
 
