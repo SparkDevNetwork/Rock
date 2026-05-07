@@ -503,7 +503,18 @@ namespace Rock.Blocks.Cms
                         continue;
                     }
 
-                    var rawValue = filterEntry.Value?.Trim();
+                    /*
+                        5/6/26 - KBH
+
+                        Do NOT trim the raw filter value. Some field types (notably
+                        DateFieldType and DateTimeFieldType) use leading/trailing tab
+                        characters as a structural delimiter between the date picker
+                        value and the SlidingDateRangePicker value. Trimming strips
+                        those tabs and breaks Between filtering on date attributes.
+
+                        Reason: Preserve field-type-specific structural whitespace.
+                    */
+                    var rawValue = filterEntry.Value;
                     if ( rawValue == "null" )
                     {
                         rawValue = string.Empty;

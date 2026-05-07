@@ -18,6 +18,7 @@ using Rock.Security;
 using System.Collections.Generic;
 using Rock.Data;
 using Newtonsoft.Json;
+using Rock.Reporting;
 using Rock.SystemKey;
 using Rock.Web;
 using Rock.Enums.Connection;
@@ -137,6 +138,7 @@ namespace Rock.Blocks.Engagement
             public const string AreOnlyMyRequestsVisible = "AreOnlyMyRequestsVisible";
             public const string SelectedConnector = "SelectedConnector";
             public const string FilterStateConnectionTypeIdKey = "FilterState_ConnectionTypeIdKey_{0}";
+            public const string FilterAttributeValuesConnectionTypeIdKey = "FilterAttributeValues_ConnectionTypeIdKey_{0}";
             public const string SelectedViewConnectionTypeIdKey = "SelectedView_ConnectionTypeIdKey_{0}";
         }
 
@@ -626,6 +628,20 @@ namespace Rock.Blocks.Engagement
                     PersonNoteCreationBehavior = a.PersonNoteCreationBehavior
                 } ).ToList();
 
+            // Reuse the same attribute set and per-attribute opportunity scoping that the
+            // grid-column dropdown was just populated from. Every attribute available as a
+            // grid column is also available as a filter, and we want the client to apply
+            // the same hide-when-unrelated-opportunity rule to both.
+            options.AttributeFilters = attributesByKey.Values
+                .Select( a => new ConnectionRequestAttributeFilterBag
+                {
+                    Attribute = PublicAttributeHelper.GetPublicAttributeForEdit( a ),
+                    ConnectionOpportunityGuids = opportunityGuidsByAttributeKey.TryGetValue( a.Key, out var guids )
+                        ? guids.ToList()
+                        : null
+                } )
+                .ToList();
+
             return options;
         }
 
@@ -683,6 +699,169 @@ namespace Rock.Blocks.Engagement
                 .FromJsonOrNull<List<int>>()
                 ?.Select( i => ( ConnectionState ) i )
                 .ToList() ?? new List<ConnectionState>();
+        }
+
+        /// <summary>
+        /// Gets the attribute filter values from the Person Preference. The values are stored as
+        /// a JSON object keyed by attribute key, with each value containing the comparison type
+        /// and value selected in the View Options modal.
+        /// </summary>
+        /// <param name="connectionTypeIdKey">The connection type that the preference is set on.</param>
+        /// <returns>A dictionary of attribute keys to <see cref="ComparisonValue"/> filters, or an empty dictionary if no filters are set.</returns>
+        private Dictionary<string, ComparisonValue> GetAttributeFilterValues( string connectionTypeIdKey )
+        {
+            var preferences = GetBlockPersonPreferences();
+
+            return preferences.GetValue( string.Format( PreferenceKey.FilterAttributeValuesConnectionTypeIdKey, connectionTypeIdKey ) )
+                .FromJsonOrNull<Dictionary<string, ComparisonValue>>()
+                ?? new Dictionary<string, ComparisonValue>();
+        }
+
+        /// <summary>
+        /// Applies attribute filters from the View Options modal to the materialized
+        /// list of connection request rows. Filtering uses the canonical Rock pattern:
+        /// <see cref="ExpressionHelper.GetAttributeExpression"/> builds the same
+        /// <see cref="System.Linq.Expressions.Expression"/> that data views, attribute
+        /// list grids, and other Rock blocks use. We apply that expression against
+        /// <see cref="ConnectionRequestService.Queryable"/> to retrieve the set of
+        /// matching <see cref="ConnectionRequest.Id"/> values, then keep only the
+        /// already-materialized rows whose Id appears in that set.
+        /// </summary>
+        /// <remarks>
+        /// Reusing the canonical pattern means every <see cref="ComparisonType"/> Rock
+        /// supports today and every new one added later flows through this filter
+        /// automatically: <see cref="ExpressionHelper"/>, <see cref="EntityHelper"/>,
+        /// per-field-type overrides of <see cref="FieldType.AttributeFilterExpression"/>,
+        /// and <see cref="ComparisonHelper.ValueComparisonExpression"/> all participate.
+        ///
+        /// Each filter issues one EF-generated EXISTS query against
+        /// <c>[AttributeValue]</c>, which is index-friendly on <c>(AttributeId, EntityId)</c>.
+        /// The matching Ids are returned as a HashSet for in-memory membership checking;
+        /// no SQL <c>WHERE [Id] IN (...)</c> clause is ever appended to the grid query.
+        /// </remarks>
+        /// <param name="connectionRequests">The materialized rows to filter, modified in place.</param>
+        /// <param name="gridAttributes">The set of attributes the user is allowed to filter by.</param>
+        /// <param name="connectionTypeIdKey">The hashed Id of the Connection Type, used to look up the persisted filter values.</param>
+        private void FilterByAttributeValues( List<ConnectionRow> connectionRequests, List<AttributeCache> gridAttributes, string connectionTypeIdKey )
+        {
+            if ( connectionRequests.Count == 0 || gridAttributes.Count == 0 )
+            {
+                return;
+            }
+
+            var attributeFilterValues = GetAttributeFilterValues( connectionTypeIdKey );
+            if ( attributeFilterValues.Count == 0 )
+            {
+                return;
+            }
+
+            var connectionRequestService = new ConnectionRequestService( RockContext );
+
+            // Resolve the currently-active opportunity (if any) so we can skip filter
+            // entries that target attributes scoped to a different opportunity. The
+            // client hides those filters from the View Options modal but persisted
+            // values for them remain in PersonPreferences (so they can come back when
+            // the user switches opportunities). Without this guard the server would
+            // still apply those stale filters and return zero rows.
+            var activeOpportunityGuid = GetConnectionOpportunityFilter( connectionTypeIdKey );
+            int? activeOpportunityId = activeOpportunityGuid.HasValue
+                ? new ConnectionOpportunityService( RockContext ).GetSelect( activeOpportunityGuid.Value, o => ( int? ) o.Id )
+                : null;
+
+            foreach ( var attribute in gridAttributes )
+            {
+                // Skip attributes scoped to a specific opportunity other than the active one.
+                // Type-level attributes (qualifier column = "ConnectionTypeId") always apply.
+                if ( activeOpportunityId.HasValue
+                    && attribute.EntityTypeQualifierColumn == "ConnectionOpportunityId"
+                    && attribute.EntityTypeQualifierValue.AsIntegerOrNull() != activeOpportunityId )
+                {
+                    continue;
+                }
+
+                if ( !attributeFilterValues.TryGetValue( attribute.Key, out var filterEntry ) )
+                {
+                    continue;
+                }
+
+                /*
+                    5/6/26 - KBH
+
+                    Do NOT trim the raw filter value. Some field types (notably
+                    DateFieldType and DateTimeFieldType) use leading/trailing tab
+                    characters as a structural delimiter between the date picker
+                    value and the SlidingDateRangePicker value. Trimming strips
+                    those tabs and breaks Between filtering on date attributes.
+
+                    Reason: Preserve field-type-specific structural whitespace.
+                */
+                var rawValue = filterEntry.Value;
+                if ( rawValue == "null" )
+                {
+                    rawValue = string.Empty;
+                }
+
+                // Translate the public (client) value to its private (database) form so
+                // that defined-value Guids, person aliases, etc. compare correctly
+                // against what is actually stored in the attribute value.
+                var filterValue = rawValue.IsNotNullOrWhiteSpace()
+                    ? PublicAttributeHelper.GetPrivateValue( attribute, rawValue )
+                    : rawValue;
+
+                var isBlankComparison = filterEntry.ComparisonType.HasValue
+                    && ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( filterEntry.ComparisonType.Value );
+
+                if ( !isBlankComparison && filterValue.IsNullOrWhiteSpace() )
+                {
+                    continue;
+                }
+
+                var entityField = EntityHelper.GetEntityFieldForAttribute( attribute, false );
+                if ( entityField == null )
+                {
+                    continue;
+                }
+
+                // If the client did not specify a comparison type, fall back to the
+                // field type's default (Contains for text-style fields, EqualTo otherwise).
+                var comparisonType = filterEntry.ComparisonType;
+                if ( !comparisonType.HasValue && filterValue.IsNotNullOrWhiteSpace() )
+                {
+                    var supportedTypes = entityField.FieldType.Field.FilterComparisonType;
+                    comparisonType = supportedTypes.HasFlag( ComparisonType.Contains )
+                        ? ComparisonType.Contains
+                        : ComparisonType.EqualTo;
+                }
+
+                // Pack the args in the shape ExpressionHelper expects: optional comparison
+                // type as the first element, then the value(s).
+                var filterArgs = new List<string>();
+                if ( comparisonType.HasValue )
+                {
+                    filterArgs.Add( comparisonType.ConvertToInt().ToString() );
+                }
+
+                filterArgs.Add( filterValue );
+
+                var parameterExpression = connectionRequestService.ParameterExpression;
+                var attributeExpression = ExpressionHelper.GetAttributeExpression( connectionRequestService, parameterExpression, entityField, filterArgs );
+
+                if ( attributeExpression is NoAttributeFilterExpression )
+                {
+                    continue;
+                }
+
+                // Materialize the matching Ids in a single EF-generated EXISTS query.
+                // The HashSet keeps in-memory membership checks O(1) and avoids any
+                // SQL "WHERE [Id] IN (...)" clause.
+                var matchingIds = new HashSet<int>(
+                    connectionRequestService.Queryable()
+                        .Where( parameterExpression, attributeExpression )
+                        .Select( cr => cr.Id )
+                );
+
+                connectionRequests.RemoveAll( r => r.ConnectionRequest == null || !matchingIds.Contains( r.ConnectionRequest.Id ) );
+            }
         }
 
         /// <summary>
@@ -3666,6 +3845,15 @@ WHERE 1 = 1" );
             }
 
             GridAttributeLoader.LoadFor( connectionRequests, a => a.ConnectionRequest, gridAttributes, RockContext );
+
+            // Attribute filters from the View Options modal are applied here, after
+            // hydration, rather than in the SQL above. The hand-tuned grid SQL is
+            // already row-bounded by the connection type, state, opportunity, and
+            // connector filters; the additional in-memory pass narrows the result
+            // before it crosses the wire to the client. Applying filters here also
+            // lets us reuse Rock.Reporting.ComparisonHelper instead of reimplementing
+            // each ComparisonType in raw SQL.
+            FilterByAttributeValues( connectionRequests, gridAttributes, connectionTypeIdKey );
 
             var gridDataBag = GetGridBuilder().Build( connectionRequests );
             return ActionOk( gridDataBag );
