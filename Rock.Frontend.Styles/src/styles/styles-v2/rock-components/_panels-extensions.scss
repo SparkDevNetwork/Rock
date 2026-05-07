@@ -219,6 +219,13 @@
     padding:          0 var(--spacing-medium) var(--spacing-medium);
     margin:           var(--spacing-medium) calc(var(--spacing-medium) * -1) calc(var(--spacing-medium) * -1) calc(var(--spacing-medium) * -1);
   }
+
+  .panel-body {
+    .text-empty-state {
+      color: var(--color-interface-medium);
+    }
+  }
+
 }
 
 .panel.panel-fullscreen {
