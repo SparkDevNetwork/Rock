@@ -583,7 +583,8 @@
                         title="Due Date"
                         field="dueDate"
                         width="5%"
-                        :filter="dateValueFilter">
+                        :filter="dateValueFilter"
+                        :sortValue="getDueDateSortValue">
                     <template #format="{ row }">
                         <div v-if="!!row.dueDate && row.connectionState !== ConnectionState.Inactive" :class="getDueDateColor(row.dueStatus, row.connectionState === ConnectionState.Connected)">
                             {{ formatColumnDate(row.dueDate) }}
@@ -2057,6 +2058,26 @@
     function getStatusFilterValue(row: Record<string, unknown>): string {
         const statusBag = row["connectionStatus"] as ConnectionStatusBag;
         return !statusBag ? "" : `${statusBag.name}`;
+    }
+
+    /*
+        5/7/26 - KBH
+
+        Inactive requests render the due date cell as "-" even when the underlying DueDate has a value.
+        Returning undefined here keeps those rows aligned with rows that truly have no due date so
+        sorting matches what the user sees rather than the hidden ISO string.
+
+        Reason: Hide-on-Inactive cells must sort like empty cells.
+    */
+    function getDueDateSortValue(row: Record<string, unknown>): string | undefined {
+        const dueDate = row["dueDate"] as string | null | undefined;
+        const connectionState = row["connectionState"] as ConnectionState | null | undefined;
+
+        if (!dueDate || connectionState === ConnectionState.Inactive) {
+            return undefined;
+        }
+
+        return dueDate;
     }
 
     function formatColumnDate(date: string | null | undefined): string {
