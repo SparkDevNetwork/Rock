@@ -16,14 +16,13 @@
 //
 
 import { computed, defineComponent, ref, watch } from "vue";
-import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
-import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
+import { getFieldEditorProps } from "./utils";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader.obs";
 import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationKey } from "./backgroundCheckField.partial";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
+import { ConfigurationComponent } from "./fileFieldComponents";
 
 export const EditComponent = defineComponent({
     name: "BackgroundCheckField.Edit",
@@ -138,81 +137,4 @@ export const EditComponent = defineComponent({
 `
 });
 
-
-export const ConfigurationComponent = defineComponent({
-    name: "BackgroundCheckField.Configuration",
-
-    components: {
-        BinaryFileTypePicker
-    },
-
-    props: getFieldConfigurationProps(),
-
-    emits: [
-        "update:modelValue",
-        "updateConfigurationValue"
-    ],
-
-    setup(props, { emit }) {
-        const binaryFileType = ref<ListItemBag>({});
-
-        /**
-         * Update the modelValue property if any value of the dictionary has
-         * actually changed. This helps prevent unwanted postbacks if the value
-         * didn't really change - which can happen if multiple values get updated
-         * at the same time.
-         *
-         * @returns true if a new modelValue was emitted to the parent component.
-         */
-        const maybeUpdateModelValue = (): boolean => {
-            const newValue: Record<string, string> = {};
-
-            // Construct the new value that will be emitted if it is different
-            // than the current value.
-            newValue[ConfigurationKey.BinaryFileType] = JSON.stringify(binaryFileType.value ?? "");
-
-            // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationKey.BinaryFileType] !== (props.modelValue[ConfigurationKey.BinaryFileType] ?? "");
-
-            // If any value changed then emit the new model value.
-            if (anyValueChanged) {
-                emit("update:modelValue", newValue);
-                return true;
-            }
-            else {
-                return false;
-            }
-        };
-
-        /**
-        * Emits the updateConfigurationValue if the value has actually changed.
-        *
-        * @param key The key that was possibly modified.
-        * @param value The new value.
-        */
-
-        const maybeUpdateConfiguration = (key: string, value: string): void => {
-            if (maybeUpdateModelValue()) {
-                emit("updateConfigurationValue", key, value);
-            }
-        };
-
-        // Watch for changes coming in from the parent component and update our
-        // data to match the new information.
-        watch(() => [props.modelValue, props.configurationProperties], () => {
-            binaryFileType.value = JSON.parse(props.modelValue[ConfigurationKey.BinaryFileType] || "{}");
-        }, {
-            immediate: true
-        });
-
-        watch(binaryFileType, val => maybeUpdateConfiguration(ConfigurationKey.BinaryFileType, JSON.stringify(val ?? "")));
-
-        return {
-            binaryFileType
-        };
-    },
-
-    template: `
-    <BinaryFileTypePicker label="File Type" v-model="binaryFileType" help="File type to use to store and retrieve the file. New file types can be configured under 'Admin Tools > General Settings > File Types'" />
-    `
-});
+export { ConfigurationComponent };
