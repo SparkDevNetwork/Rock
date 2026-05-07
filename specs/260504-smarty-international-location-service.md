@@ -37,8 +37,9 @@ Primary (where the fix lands):
 
 - [`Rock/Address/SmartyStreets.cs`](../Rock/Address/SmartyStreets.cs) — existing US component; reference for structure and field mapping patterns.
 - `Rock/Address/SmartyStreetsInternational.cs` — new component class (Option B) or the file above updated (Option A).
-- `Rock/SystemGuid/` — new GUID constant for the new component's `[SystemGuid]` attribute.
-- Rock Migrations — seed the new component's `EntityType`, `Attribute` values, and any `DefinedValue` entries.
+- [`Rock/SystemGuid/Attribute.cs`](../Rock/SystemGuid/Attribute.cs) — new `COUNTRY_ISO3166_ALPHA3` GUID constant (under `#region Country Attributes`) and new GUID for the component's `[SystemGuid.EntityTypeGuid]` attribute.
+- [`Rock/SystemKey/CountryAttributeKey.cs`](../Rock/SystemKey/CountryAttributeKey.cs) — new `ISO3166Alpha3` key constant.
+- Rock Migrations — (a) `UpdateEntityType` to register the new component, (b) add the `ISO 3166 Alpha-3` attribute to the Countries `DefinedType`, (c) seed `AddDefinedValueAttributeValue` for all ~249 country `DefinedValue`s.
 
 Secondary (verify unaffected):
 
@@ -48,7 +49,9 @@ Secondary (verify unaffected):
 
 ## UI/UX Design
 
-Add an **International Smarty Streets Location Service** `DefinedValue` under the `Location Services` `DefinedType` (or update the existing Smarty value to include international settings). The component's attribute editor exposes the following configuration properties:
+Once the new component class is compiled and decorated with `[Export(typeof(VerificationComponent))]`, it will appear automatically in Rock under **Settings > System > Location Services** alongside the existing Smarty Streets entry. No `DefinedType` or `DefinedValue` is involved — the page is MEF-driven. Admins can reorder the components using the drag handle and toggle them active/inactive from that same page.
+
+The new component's configuration attributes (accessible via the edit icon on that page) should expose the following properties:
 
 | # | Property | Notes |
 |---|---|---|
@@ -102,21 +105,53 @@ The table below defines how Rock's `Location` model fields map to the Internatio
 
 ### Response (API → Rock Location)
 
-The International API returns pre-assembled, correctly formatted mailing lines in the root-level `address1` through `address12` fields. These are ready to use directly — **no manual component assembly is needed.** The `metadata.address_format` field is a display template that explains how Smarty composed those lines (useful for debugging), but the implementation should read from `address1`/`address2`, not parse `address_format`.
+The International API returns pre-assembled mailing lines in the root-level `address1` through `address12` fields, and individual parsed values in `components`. **Do not use root `address` fields for `City`, `State`, or `PostalCode` — always read those from `components` directly.** The root `address` fields are only used for street lines, and only when the precision is sufficient.
 
-Per the Smarty docs, `address1`-`address12` contain correctly formatted address lines only when `analysis.address_precision` = `DeliveryPoint` or `Premise`. At lower precisions the fields may contain standardized or original input data. Rock's implementation should only write these fields to `Location.Street1`/`Street2` when precision is `DeliveryPoint` or `Premise`; otherwise leave the street fields unchanged.
+The reason: root `address` fields mirror `metadata.address_format` lines verbatim. For a Canadian address the format is `"premise thoroughfare|locality administrative_area  postal_code"`, which means `address1` = the street line and `address2` = the city/province/postal line. Writing `address2` to `Street2` would duplicate the locality data that is already being written to `City`, `State`, and `PostalCode` from `components`.
 
-The `building` component (`"Millwoods Pentacostal Assembly"` in the Canada example) may appear as `address1` when the address resolves to a named building. Rock already stores this kind of name in `Location.Name`, so if `address1` matches `location.Name` (case-insensitive trim), the implementation should skip it and promote `address2` → `Street1`, `address3` → `Street2` to avoid duplicating the name in the address lines.
+**Standardization and geocoding are evaluated independently.** Either can succeed without the other. The street line algorithm below governs standardization only (`Street1`, `Street2`, `City`, `State`, `PostalCode`, `Country` and `VerificationResult.Standardized`). Geocoding (`GeoPoint` and `VerificationResult.Geocoded`) is gated separately on `metadata.geocode_precision` vs. the configured Acceptable Geocode Precisions list — see "Result flag logic" below.
+
+**Street line selection algorithm (standardization only):**
+
+1. Only proceed if `analysis.address_precision` is in the component's configured **Acceptable Address Precisions** list. This is the same gate that controls `VerificationResult.Standardized` (see "Result flag logic" below) — the address fields and the result flag are updated together or not at all. If `address_precision` is not in the acceptable list, leave all address fields unchanged.
+2. Parse `metadata.address_format` on `|` to get the ordered list of line templates. A line is a **street line** if it contains only street-level tokens from this set: `premise`, `premise_extra`, `sub_building`, `thoroughfare`, `dependent_thoroughfare`, `post_box`. A line is **not** a street line if it contains `building`, `locality`, `administrative_area`, `postal_code`, or similar.
+3. `building` is always excluded from street line classification. Rock sends `Street1`/`Street2` to the API as `address1`/`address2` with no separate building field, so any `building` value in the response is Smarty's own inference from the free-text input — not a distinct Rock field. The building name is analogous to a mailing salutation (business or person name) and is not a component of the postal address. Excluding it produces a clean, consistent standardized street address.
+4. Collect only the street lines, in order. Map the first street line's corresponding root `address` field to `Street1`, the second (if present) to `Street2`.
+5. If no street lines remain after exclusions (e.g., the entire address resolved to only a building name), leave `Street1` and `Street2` unchanged.
+
+**Worked example 1** — `"4919 20th Ave NW, Calgary AB"`:
+
+`address_format` = `"premise thoroughfare|locality administrative_area  postal_code"`
+
+Line 0 tokens: `premise thoroughfare` — street tokens → street line → `address1` = `"4919 20 Ave NW"` → **`Street1` = `"4919 20 Ave NW"`**
+
+Line 1 tokens: `locality administrative_area postal_code` — locality tokens → not a street line → skip
+
+**`Street2` = unchanged**
+
+---
+
+**Worked example 2** — `"Millwoods Pentacostal Assembly 2225 66 St NW, Edmonton AB"`:
+
+`address_format` = `"building|premise thoroughfare|locality administrative_area  postal_code"`
+
+Line 0 tokens: `building` — excluded (building is never a street line) → skip
+
+Line 1 tokens: `premise thoroughfare` — street tokens → street line → `address2` = `"2225 66 St NW"` → **`Street1` = `"2225 66 St NW"`**
+
+Line 2 tokens: `locality administrative_area postal_code` — locality tokens → not a street line → skip
+
+**`Street2` = unchanged**
 
 | International API source | Rock `Location` field | US API equivalent | Notes |
 |---|---|---|---|
-| `address1` (see note above re: `building`) | `Street1` | `delivery_line_1` | Only map when `analysis.address_precision` = `DeliveryPoint` or `Premise`; skip if value matches `Location.Name` and promote next line |
-| `address2` (or `address3` if `address1` was skipped) | `Street2` | `delivery_line_2` | May be absent; leave `Street2` unchanged if empty |
-| `components.locality` | `City` | `components.city_name` | City / municipality |
-| `components.administrative_area` | `State` | `components.state_abbreviation` | Province / state; use `administrative_area` (short form), not `administrative_area_iso2` |
-| `components.postal_code` | `PostalCode` | `components.zipcode + "-" + components.plus4_code` | International API returns the full postal code as-is; no plus-4 concept |
-| `components.country_iso_3` | `Country` | (not in response) | ISO 3166-1 alpha-3 (e.g., `"CAN"`); normalize to alpha-2 (e.g., `"CA"`) before storing, to match Rock's existing country convention |
-| `metadata.latitude` | `GeoPoint` (via `SetLocationPointFromLatLong`) | `metadata.latitude` | Only set when `Enable Geocoding` is true and `metadata.geocode_precision` is in the acceptable list |
+| Root `address` field for first street line (per algorithm above) | `Street1` | `delivery_line_1` | Only when `analysis.address_precision` is in the configured `Acceptable Address Precisions` list; `building`-only lines are excluded (see algorithm) |
+| Root `address` field for second street line (per algorithm above) | `Street2` | `delivery_line_2` | Same gate as `Street1`; leave unchanged if no second street line exists |
+| `components.locality` | `City` | `components.city_name` | Always from `components`, never from a root `address` field |
+| `components.administrative_area` | `State` | `components.state_abbreviation` | Short form (e.g., `"AB"`); use `administrative_area`, not `administrative_area_iso2` |
+| `components.postal_code` | `PostalCode` | `components.zipcode + "-" + components.plus4_code` | Full postal code as-is; no plus-4 concept |
+| `components.country_iso_3` | `Country` | (not in response) | ISO 3166-1 alpha-3 (e.g., `"CAN"`); look up alpha-2 via Countries `DefinedType` attribute — see "ISO 3166 Country Code Lookup" below |
+| `metadata.latitude` | `GeoPoint` (via `SetLocationPointFromLatLong`) | `metadata.latitude` | Only when `Enable Geocoding` is true and `metadata.geocode_precision` is in the acceptable list |
 | `metadata.longitude` | `GeoPoint` (via `SetLocationPointFromLatLong`) | `metadata.longitude` | Same condition as above |
 | `metadata.geocode_precision` | `GeocodeAttemptedResult` | `metadata.precision` | Stored for audit; compared against `Acceptable Geocode Precisions` setting. Valid values: `None`, `AdministrativeArea`, `Locality`, `PostalCode`, `Thoroughfare`, `Premise` |
 | `analysis.verification_status` | `StandardizeAttemptedResult` | `analysis.dpv_match_code` | Compared against `Acceptable Verification Statuses` setting. Valid values: `Verified`, `Partial`, `Ambiguous`, `None` |
@@ -124,14 +159,106 @@ The `building` component (`"Millwoods Pentacostal Assembly"` in the Canada examp
 | (no equivalent) | `Barcode` | `delivery_point_barcode` | International API has no barcode concept; leave `Barcode` unchanged |
 | (no equivalent) | `County` | `metadata.county_name` | International API has no county concept; leave `County` unchanged |
 
+### ISO 3166 Country Code Lookup
+
+The International API always returns `components.country_iso_3` as an ISO 3166-1 alpha-3 code (e.g., `"CAN"`, `"EGY"`, `"GBR"`). Rock's Countries `DefinedType` (`D7979EA1-44E9-46E2-BF37-DDAF7F741378`) stores two-character alpha-2 values in `DefinedValue.Value` (e.g., `"CA"`, `"EG"`, `"GB"`). There is no reliable algorithmic conversion between the two — the codes are independently assigned with no common pattern (e.g., `ALA` → `AX` for Åland Islands).
+
+Rather than a static dictionary in code, the mapping is stored as a new well-known `Attribute` on the Countries `DefinedType`, following the exact pattern used for `PostalCodeLabel` and the Languages ISO attributes. This makes the mapping data-driven, admin-inspectable, and available to any future code that needs alpha-3 lookups — not just this component.
+
+**Four deliverables are required:**
+
+**1. New key in `Rock/SystemKey/CountryAttributeKey.cs`**
+
+Add alongside the existing `PostalCodeLabel`, `CityLabel`, etc.:
+
+```csharp
+/// <summary>
+/// The ISO 3166-1 alpha-3 code for this country.
+/// Used to map responses from the Smarty International Street Address API
+/// (which returns alpha-3) back to Rock's alpha-2 country values.
+/// </summary>
+public const string ISO3166Alpha3 = "core_CountryISO3166Alpha3";
+```
+
+**2. New GUID in `Rock/SystemGuid/Attribute.cs`** (under the `#region Country Attributes` block)
+
+```csharp
+/// <summary>
+/// Country - ISO 3166-1 Alpha-3 Code
+/// </summary>
+public const string COUNTRY_ISO3166_ALPHA3 = "{new-guid-here}";
+```
+
+Generate a new uppercase GUID following the existing convention in that file.
+
+**3. Migration — add the `Attribute` to the `DefinedType`**
+
+```csharp
+RockMigrationHelper.AddDefinedTypeAttribute(
+    Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES,
+    Rock.SystemGuid.FieldType.TEXT,
+    "ISO 3166 Alpha-3",
+    Rock.SystemKey.CountryAttributeKey.ISO3166Alpha3,
+    "The ISO 3166-1 alpha-3 country code (e.g., \"CAN\" for Canada). Used to match responses from international address verification services.",
+    0,
+    true,
+    string.Empty,
+    false,
+    true,
+    Rock.SystemGuid.Attribute.COUNTRY_ISO3166_ALPHA3 );
+```
+
+**4. Migration — seed `AddDefinedValueAttributeValue` for all existing country `DefinedValue`s**
+
+For every country `DefinedValue` in Rock's Countries `DefinedType`, add its alpha-3 value using `AddDefinedValueAttributeValue`. ISO 3166-1 covers approximately 249 entries including territories and dependencies — not just 193 UN member states (e.g., `ALA` for Åland Islands, `GGY` for Guernsey, `IMN` for Isle of Man, `JEY` for Jersey). The implementer must source the complete mapping from the authoritative ISO 3166-1 standard or a well-known open-source dataset (e.g., the `iso-codes` Debian package). The call pattern matches the Languages migration exactly:
+
+```csharp
+// Canada
+RockMigrationHelper.AddDefinedValueAttributeValue(
+    "{guid-of-canada-defined-value}",
+    Rock.SystemGuid.Attribute.COUNTRY_ISO3166_ALPHA3,
+    "CAN" );
+
+// United States
+RockMigrationHelper.AddDefinedValueAttributeValue(
+    "{guid-of-us-defined-value}",
+    Rock.SystemGuid.Attribute.COUNTRY_ISO3166_ALPHA3,
+    "USA" );
+
+// ... one call per country DefinedValue
+```
+
+The `Down()` migration calls `RockMigrationHelper.DeleteAttribute( Rock.SystemGuid.Attribute.COUNTRY_ISO3166_ALPHA3 )`.
+
+**Component lookup in `Verify()`**
+
+Once the attribute is seeded, the component resolves the alpha-3 code to alpha-2 by querying the Countries `DefinedType` cache:
+
+```csharp
+var iso3 = candidate.components?.country_iso_3;
+if ( !string.IsNullOrWhiteSpace( iso3 ) )
+{
+    var countryValue = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES )
+        ?.DefinedValues
+        .FirstOrDefault( dv => dv.GetAttributeValue( Rock.SystemKey.CountryAttributeKey.ISO3166Alpha3 )
+            .Equals( iso3, StringComparison.OrdinalIgnoreCase ) );
+
+    location.Country = countryValue?.Value ?? iso3;
+}
+```
+
+If no matching `DefinedValue` is found (e.g., a territory whose alpha-3 was not seeded), the raw alpha-3 value is stored as a fallback rather than leaving `Location.Country` blank.
+
 ### Result flag logic
 
 | Condition | `VerificationResult` flags set |
 |---|---|
-| `verification_status` is in `Acceptable Verification Statuses` | `Standardized` |
-| `geocode_precision` is in `Acceptable Geocode Precisions` AND `Enable Geocoding` is true | `Geocoded` |
+| `analysis.address_precision` is in the configured **Acceptable Address Precisions** list | `Standardized` — location fields (`Street1`, `Street2`, `City`, `State`, `PostalCode`, `Country`) are updated at the same time |
+| `metadata.geocode_precision` is in the configured **Acceptable Geocode Precisions** list AND `Enable Geocoding` is true | `Geocoded` — `GeoPoint` is updated at the same time |
 | HTTP status is not 200 | `ConnectionError` |
 | API returns an empty candidate list | `None` |
+
+`analysis.verification_status` and `analysis.address_precision` are both recorded in `resultMsg` for the Rock Service Log regardless of whether the flags are set. `verification_status` alone does not gate any field updates or result flags — `address_precision` is the sole standardization gate.
 
 ---
 
@@ -182,12 +309,19 @@ This requires the unified component to carry the full US Street API implementati
 
 ### Two-service configuration (Option B recommended setup)
 
-Configure both components in Rock Admin under `General Settings > Location Services`:
+Configure both components active in Rock Admin under `General Settings > Location Services`. **The order does not affect correctness** — the US-skip guard inside the International component's `Verify()` is sufficient to prevent it from ever processing a US address, regardless of which component runs first.
 
-1. **Smarty Streets** (existing) — order 1, active. Handles US addresses.
-2. **Smarty Streets International** (new) — order 2, active. The US-skip logic above ensures it never attempts a US address even if the US service failed to geocode one (e.g., a connection error), since the country field will still be US/empty.
+`LocationService` only breaks out of the loop when both `standardized` and `geocoded` are `true` (lines 607-610). If the US component standardizes but does not geocode, or geocodes but does not standardize, the loop continues to the next component. The US-skip guard therefore matters in all of these cases, not just when the International component runs first:
 
-If the US service is not configured (international-only installation), set the international component to order 1. US addresses will be returned as `VerificationResult.None` and left un-geocoded, which is the expected behavior for a church that has no US congregation members.
+- If the US component runs first and sets both flags, the loop breaks before the International component is called.
+- If the US component runs first but only partially succeeds (standardized but not geocoded, or connection error), `LocationService` continues to the International component. The skip guard returns `VerificationResult.None` immediately, preventing the International component from re-standardizing the US address or attempting to geocode it via the International API.
+- If the International component runs first, the skip guard returns `VerificationResult.None` immediately, and `LocationService` continues to the US component.
+
+In all cases, a US address is standardized exactly once by the US Street API and never touches the International API.
+
+This ordering-independence relies on one assumption that must be preserved: **the existing `SmartyStreets.cs` component does not write `Location.Country`**. The US Street API response contains no country field, and the current implementation does not set `Location.Country` from any other source. As long as this remains true, a US address will always have an empty or `"US"` country value when the International component's skip guard evaluates it. If a future change to `SmartyStreets.cs` were to write `Location.Country`, this guarantee would need to be re-evaluated.
+
+If the US service is not configured (international-only installation), US addresses will be returned as `VerificationResult.None` and left un-geocoded, which is the expected behavior for a church with no US congregation members.
 
 ---
 
@@ -227,7 +361,18 @@ Implement **Option B** first, as it is lower risk and independently shippable. I
 - Geocode coordinates are returned in the `metadata` object as `latitude` and `longitude`.
 - Country detection: check `Location.Country`. If null or `"US"` (or `"USA"`), treat as US. Otherwise pass through to the International API.
 - The existing `CandidateAddress` / `Components` / `Metadata` / `Analysis` inner classes in `SmartyStreets.cs` are US-specific; a parallel set of inner classes is needed for the international response shape (see "Location Field Mapping" above).
-- Decorate the new component class with `[SystemGuid.EntityTypeGuid( "..." )]` matching the pattern in `SmartyStreets.cs` (GUID `4278E7EF-221B-45E6-B9C6-5D11884389EF`). Generate a new GUID for the international component.
+- Decorate the new component class with `[Rock.SystemGuid.EntityTypeGuid( "..." )]`. Generate a new uppercase GUID for the international component and register it in `Rock/SystemGuid/`.
+- Register the component's `EntityType` in the migration using `UpdateEntityType`, following the same pattern used when `Rock.Address.SmartyStreets` was originally added:
+
+```csharp
+RockMigrationHelper.UpdateEntityType(
+    "Rock.Address.SmartyStreetsInternational",
+    "Smarty Streets International",
+    "Rock.Address.SmartyStreetsInternational, Rock, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    false,
+    true,
+    "{new-guid-here}" );
+```
 
 ## Fix Risks
 
