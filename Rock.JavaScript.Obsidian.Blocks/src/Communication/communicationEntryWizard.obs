@@ -387,6 +387,8 @@
     const bccEmails = ref<string>(config.communication?.bccEmails ?? "");
     const ccEmails = ref<string>(config.communication?.ccEmails ?? "");
     const communicationId = ref<number | null | undefined>(config.communication?.communicationId);
+    const communicationIdKey = ref<string | null | undefined>(config.communication?.communicationIdKey);
+    const communicationDetailUrl = ref<string | null | undefined>(config.communication?.communicationDetailUrl);
     const communicationGuid = ref<Guid>(config.communication?.communicationGuid ?? newGuid());
     const communicationListGroupGuid = ref<Guid | null | undefined>(config.communication?.communicationListGroupGuid);
     const communicationName = ref<string>(config.communication?.communicationName ?? "");
@@ -682,7 +684,7 @@
 
     const simpleCommunicationPageUrl = computed<string | null>(() => {
         if (config.navigationUrls?.[NavigationUrlKey.SimpleCommunicationPage]) {
-            return config.navigationUrls[NavigationUrlKey.SimpleCommunicationPage].replace("((Key))", (communicationId.value ?? 0).toString());
+            return config.navigationUrls[NavigationUrlKey.SimpleCommunicationPage].replace("((Key))", communicationIdKey.value ?? "");
         }
 
         return null;
@@ -721,19 +723,6 @@
         }
 
         return result;
-    }
-
-    function replaceQueryParam(key: string, value: string): void {
-        // Ensure URL and URLSearchParams are supported
-        if (typeof window !== "undefined" && window.location) {
-            const url = new URL(window.location.href);
-
-            // Add or update the query parameter.
-            url.searchParams.set(key, value);
-
-            // Update the URL without reloading.
-            history.replaceState(null, "", url.toString());
-        }
     }
 
     function scrollToTopOfBlock(): void {
@@ -807,6 +796,8 @@
         // Shared medium fields.
         communicationGuid.value = bag.communicationGuid;
         communicationId.value = bag.communicationId;
+        communicationIdKey.value = bag.communicationIdKey;
+        communicationDetailUrl.value = bag.communicationDetailUrl;
         communicationListGroupGuid.value = bag.communicationListGroupGuid;
         communicationName.value = bag.communicationName ?? "";
         communicationTemplateGuid.value = bag.communicationTemplateGuid;
@@ -1340,6 +1331,14 @@
             communicationId.value = bag.data["communicationId"];
         }
 
+        if (bag.data?.["communicationIdKey"]) {
+            communicationIdKey.value = bag.data["communicationIdKey"];
+        }
+
+        if (bag.data?.["communicationDetailUrl"]) {
+            communicationDetailUrl.value = bag.data["communicationDetailUrl"];
+        }
+
         finalMessage.value = bag.message ?? "Communication has been queued for sending.";
 
         if (bag.errors?.length) {
@@ -1383,19 +1382,15 @@
     }
 
     function onViewCommunication(): void {
-        const url = new URL(window.location.href);
-
-        url.searchParams.set("CommunicationId", (communicationId.value ?? 0).toString());
-
-        window.location.href = url.toString();
+        if (communicationDetailUrl.value) {
+            window.location.href = communicationDetailUrl.value;
+        }
     }
 
     function onNewCommunication(): void {
-        const url = new URL(window.location.href);
-
-        url.search = "";
-
-        window.location.href = url.toString();
+        if (config.createNewCommunicationUrl) {
+            window.location.href = config.createNewCommunicationUrl;
+        }
     }
 
     // #endregion Event Handlers
@@ -1408,9 +1403,12 @@
         }
     });
 
-    watch(communicationId, (newValue, _oldValue) => {
-        if (newValue) {
-            replaceQueryParam("CommunicationId", newValue.toString());
+    watch(communicationDetailUrl, (newValue, _oldValue) => {
+        if (newValue && typeof window !== "undefined" && window.history) {
+            // Rewrite the address bar in place with the canonical IdKey URL so
+            // a refresh doesn't try to resolve an integer-based ID that the
+            // detail block no longer allows.
+            history.replaceState(null, "", newValue);
         }
     });
 

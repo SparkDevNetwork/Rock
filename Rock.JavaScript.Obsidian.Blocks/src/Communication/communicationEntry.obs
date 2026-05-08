@@ -222,8 +222,8 @@
             queryParams.delete(keyToDelete);
         }
 
-        // Add the "CommunicationId" param.
-        queryParams.set("CommunicationId", value.communicationId.toString());
+        // Add the "CommunicationId" param using the IdKey.
+        queryParams.set("CommunicationId", value.communicationIdKey ?? "");
 
         if (value.redirectToViewMode) {
             window.location.href = url.href;
@@ -260,8 +260,8 @@
             queryParams.delete(keyToDelete);
         }
 
-        // Add the "CommunicationId" param.
-        queryParams.set("CommunicationId", value.communicationId.toString());
+        // Add the "CommunicationId" param using the IdKey.
+        queryParams.set("CommunicationId", value.communicationIdKey ?? "");
 
         if (value.redirectToViewMode) {
             window.location.href = url.href;

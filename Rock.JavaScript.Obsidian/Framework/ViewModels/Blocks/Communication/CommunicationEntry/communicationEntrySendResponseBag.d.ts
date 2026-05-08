@@ -32,6 +32,9 @@ export type CommunicationEntrySendResponseBag = {
     /** Gets the communication identifier. */
     communicationId: number;
 
+    /** Gets or sets the hashed communication identifier key. */
+    communicationIdKey?: string | null;
+
     /** Gets or sets the communication status. */
     communicationStatus?: CommunicationStatus | null;
 
