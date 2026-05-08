@@ -43,6 +43,7 @@ using Ical.Net.DataTypes;
 
 using ImageResizer;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
@@ -68,8 +69,6 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 using TimeZoneConverter;
-
-using UAParser;
 
 namespace Rock.Lava
 {
@@ -3576,10 +3575,7 @@ namespace Rock.Lava
                     }
                 case "BROWSER":
                     {
-                        Parser uaParser = Parser.GetDefault();
-                        ClientInfo client = uaParser.Parse( HttpContext.Current.Request.UserAgent.ToStringSafe() );
-
-                        return client;
+                        return RockApp.Current.GetRequiredService<Rock.Net.IUserAgentParser>().Parse( HttpContext.Current.Request.UserAgent.ToStringSafe() );
                     }
                 case "PARMLIST":
                     {

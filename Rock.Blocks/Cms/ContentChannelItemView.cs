@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Lava;
@@ -624,8 +625,7 @@ Guid - ContentChannelItem Guid";
                 return bag;
             }
 
-            var userAgent = RequestContext?.ClientInformation?.UserAgent;
-            if ( InteractionDeviceType.GetClientType( userAgent ) == "Crawler" )
+            if ( RequestContext?.ClientInformation?.BrowserInfo?.ClientType == "Crawler" )
             {
                 return bag;
             }

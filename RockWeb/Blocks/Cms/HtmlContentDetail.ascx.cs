@@ -16,23 +16,25 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
+using HtmlAgilityPack;
+
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
+using Rock.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.ComponentModel;
-using Rock.Data;
-using Rock.Web.Cache;
-using System.Text;
-using HtmlAgilityPack;
-using System.Web;
-using Rock.Lava;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -835,7 +837,7 @@ namespace RockWeb.Blocks.Cms
                                 mergeFields.TryAdd( "Person", CurrentPerson );
                             }
 
-                            mergeFields.Add( "CurrentBrowser", this.RockPage.BrowserClient );
+                            mergeFields.Add( "CurrentBrowser", new CurrentBrowserMergeField( RequestContext.ClientInformation?.BrowserInfo ) );
 
                             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                             mergeFields.Add( "CurrentPersonCanEdit", IsUserAuthorized( Authorization.EDIT ) );
@@ -943,6 +945,131 @@ namespace RockWeb.Blocks.Cms
 
                 upnlHtmlContentView.Update();
             }
+        }
+
+        #endregion
+
+        #region CurrentBrowser Merge Field Wrapper
+
+        /// <summary>
+        /// Lava-safe wrapper exposing the legacy <c>BrowserClient</c> shape
+        /// for the <c>CurrentBrowser</c> merge field. Built on top of the
+        /// public <see cref="UserAgentInfo"/> surface so it survives removal
+        /// of the obsolete deprecation-window holdover.
+        /// </summary>
+        [LavaType]
+        private sealed class CurrentBrowserMergeField : RockDynamic
+        {
+            private readonly UserAgentInfo _userAgentInfo;
+            private CurrentBrowserInfo _browserInfo;
+
+            public string ClientType => _userAgentInfo?.ClientType;
+
+            public bool IsMobile => _userAgentInfo?.ClientType == "Mobile";
+
+            public CurrentBrowserInfo BrowserInfo
+            {
+                get
+                {
+                    // This property is created lazily. This is because accessing
+                    // 'CurrentBrowser.BrowserInfo' is super rare. If it is
+                    // accessed then we will create all child properties needed
+                    // at that point. But since this will almost never happen we
+                    // do not need to lazily construct all grand-child instances.
+                    if ( _browserInfo == null && _userAgentInfo != null )
+                    {
+                        _browserInfo = new CurrentBrowserInfo( _userAgentInfo );
+                    }
+
+                    return _browserInfo;
+                }
+            }
+
+            public CurrentBrowserMergeField( UserAgentInfo info )
+            {
+                _userAgentInfo = info;
+            }
+        }
+
+        /// <summary>
+        /// Lava-safe wrapper for <c>BrowserClient.BrowserInfo</c>.
+        /// </summary>
+        [LavaType]
+        private sealed class CurrentBrowserInfo : RockDynamic
+        {
+            private readonly UserAgentInfo _userAgentInfo;
+
+            public string String => _userAgentInfo?.ToString();
+
+            public CurrentBrowserVersion OS { get; }
+
+            public CurrentBrowserDevice Device { get; }
+
+            public CurrentBrowserVersion UserAgent { get; }
+
+            public CurrentBrowserInfo( UserAgentInfo info )
+            {
+                _userAgentInfo = info;
+
+                OS = new CurrentBrowserVersion( info.OSFamily, info.OSVersion, info.GetOSFamilyVersion() );
+                Device = new CurrentBrowserDevice( info );
+                UserAgent = new CurrentBrowserVersion( info.BrowserFamily, info.BrowserVersion, info.GetBrowserFamilyVersion() );
+            }
+
+            public override string ToString() => _userAgentInfo?.ToString() ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Lava-safe wrapper for <c>BrowserClient.BrowserInfo.OS</c>. Renders
+        /// non-numeric version segments as an empty string (see spec).
+        /// </summary>
+        [LavaType]
+        private sealed class CurrentBrowserVersion : RockDynamic
+        {
+            private readonly UserAgentVersion _userAgentVersion;
+
+            private readonly string _description;
+
+            public string Family { get; }
+
+            public string Major => _userAgentVersion?.Major?.ToString() ?? string.Empty;
+
+            public string Minor => _userAgentVersion?.Minor?.ToString() ?? string.Empty;
+
+            public string Patch => _userAgentVersion?.Patch?.ToString() ?? string.Empty;
+
+            public string PatchMinor => _userAgentVersion?.PatchMinor?.ToString() ?? string.Empty;
+
+            public CurrentBrowserVersion( string family, UserAgentVersion version, string description )
+            {
+                Family = family ?? string.Empty;
+                _userAgentVersion = version;
+                _description = description ?? string.Empty;
+            }
+
+            public override string ToString() => _description;
+        }
+
+        /// <summary>
+        /// Lava-safe wrapper for <c>BrowserClient.BrowserInfo.Device</c>.
+        /// </summary>
+        [LavaType]
+        private sealed class CurrentBrowserDevice : RockDynamic
+        {
+            private readonly UserAgentInfo _userAgentInfo;
+
+            public string Family => _userAgentInfo?.DeviceFamily ?? string.Empty;
+
+            public string Brand => _userAgentInfo?.DeviceBrand ?? string.Empty;
+
+            public string Model => _userAgentInfo?.DeviceModel ?? string.Empty;
+
+            public CurrentBrowserDevice( UserAgentInfo info )
+            {
+                _userAgentInfo = info;
+            }
+
+            public override string ToString() => $"{Brand} {Family} {Model}";
         }
 
         #endregion

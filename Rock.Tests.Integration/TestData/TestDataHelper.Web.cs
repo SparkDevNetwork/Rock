@@ -16,7 +16,10 @@
 //
 using System.Collections.Generic;
 
-using Rock.Model;
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.Configuration;
+using Rock.Net;
 
 namespace Rock.Tests.Integration.TestData
 {
@@ -24,7 +27,6 @@ namespace Rock.Tests.Integration.TestData
     {
         public static class Web
         {
-            private static UAParser.Parser _uaParser = UAParser.Parser.GetDefault();
 
             public static List<string> GetHttpUserAgentList()
             {
@@ -187,11 +189,11 @@ namespace Rock.Tests.Integration.TestData
 
             public static void ParseUserAgentString( string userAgent, out string deviceOs, out string deviceApplication, out string deviceClientType )
             {
-                userAgent = userAgent ?? string.Empty;
+                var browserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( userAgent ?? string.Empty );
 
-                deviceOs = _uaParser.ParseOS( userAgent ).ToString();
-                deviceApplication = _uaParser.ParseUserAgent( userAgent ).ToString();
-                deviceClientType = InteractionDeviceType.GetClientType( userAgent );
+                deviceOs = browserInfo.GetOSFamilyVersion();
+                deviceApplication = browserInfo.GetBrowserFamilyVersion();
+                deviceClientType = browserInfo.ClientType;
             }
         }
     }

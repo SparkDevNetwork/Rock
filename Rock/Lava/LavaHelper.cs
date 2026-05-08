@@ -22,6 +22,8 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -32,8 +34,6 @@ using Rock.Net;
 using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-
-using UAParser;
 
 namespace Rock.Lava
 {
@@ -177,16 +177,15 @@ namespace Rock.Lava
             {
                 if ( request != null && !string.IsNullOrEmpty( request.UserAgent ) )
                 {
-                    Parser uaParser = Parser.GetDefault();
-                    ClientInfo client = uaParser.Parse( request.UserAgent );
+                    var browserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( request.UserAgent );
                     if ( options.GetOSFamily )
                     {
-                        mergeFields.Add( "OSFamily", client.OS.Family.ToLower() );
+                        mergeFields.Add( "OSFamily", browserInfo.OSFamily.ToLower() );
                     }
 
                     if ( options.GetDeviceFamily )
                     {
-                        mergeFields.Add( "DeviceFamily", client.Device.Family );
+                        mergeFields.Add( "DeviceFamily", browserInfo.DeviceFamily );
                     }
                 }
             }

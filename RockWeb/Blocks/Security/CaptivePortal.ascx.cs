@@ -20,10 +20,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -282,7 +286,7 @@ namespace RockWeb.Blocks.Security
         /// <returns>Returns true if the device was created, false it already existed</returns>
         private PersonalDevice CreateDevice( string macAddress )
         {
-            UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( Request.UserAgent );
+            var browserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( Request.UserAgent );
 
             RockContext rockContext = new RockContext();
             PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
@@ -291,8 +295,8 @@ namespace RockWeb.Blocks.Security
             personalDevice.MACAddress = macAddress;
 
             personalDevice.PersonalDeviceTypeValueId = GetDeviceTypeValueId();
-            personalDevice.PlatformValueId = GetDevicePlatformValueId( client );
-            personalDevice.DeviceVersion = GetDeviceOsVersion( client );
+            personalDevice.PlatformValueId = GetDevicePlatformValueId( browserInfo );
+            personalDevice.DeviceVersion = GetDeviceOsVersion( browserInfo );
 
             personalDeviceService.Add( personalDevice );
             rockContext.SaveChanges();
@@ -306,15 +310,15 @@ namespace RockWeb.Blocks.Security
         /// <param name="personalDevice">The personal device.</param>
         private PersonalDevice VerifyDeviceInfo( string macAddress )
         {
-            UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( Request.UserAgent );
+            var browserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( Request.UserAgent );
 
             RockContext rockContext = new RockContext();
             PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
 
             PersonalDevice personalDevice = personalDeviceService.GetByMACAddress( macAddress );
             personalDevice.PersonalDeviceTypeValueId = GetDeviceTypeValueId();
-            personalDevice.PlatformValueId = GetDevicePlatformValueId( client );
-            personalDevice.DeviceVersion = GetDeviceOsVersion( client );
+            personalDevice.PlatformValueId = GetDevicePlatformValueId( browserInfo );
+            personalDevice.DeviceVersion = GetDeviceOsVersion( browserInfo );
 
             rockContext.SaveChanges();
 
@@ -331,7 +335,7 @@ namespace RockWeb.Blocks.Security
             DefinedTypeCache definedTypeCache = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE.AsGuid() );
             DefinedValueCache definedValueCache = null;
 
-            var clientType = InteractionDeviceType.GetClientType( Request.UserAgent );
+            var clientType = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( Request.UserAgent ).ClientType;
             clientType = clientType == "Mobile" || clientType == "Tablet" ? "Mobile" : "Computer";
 
             if ( definedTypeCache != null )
@@ -350,14 +354,14 @@ namespace RockWeb.Blocks.Security
         }
 
         /// <summary>
-        /// Parses ClientInfo to find the OS family
+        /// Parses the parsed browser info to find the OS family
         /// </summary>
-        /// <param name="client">The client.</param>
+        /// <param name="browserInfo">The browser info.</param>
         /// <returns>DefinedValueId for the found OS. Uses "Other" if the OS is not in DefinedValue. Null if there is a data issue and the DefinedType is missing</returns>
-        private int? GetDevicePlatformValueId( UAParser.ClientInfo client )
+        private int? GetDevicePlatformValueId( UserAgentInfo browserInfo )
         {
             // get the OS
-            string platform = client.OS.Family.Split( ' ' ).First();
+            string platform = browserInfo.OSFamily.Split( ' ' ).First();
 
             DefinedTypeCache definedTypeCache = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() );
             DefinedValueCache definedValueCache = null;
@@ -377,24 +381,19 @@ namespace RockWeb.Blocks.Security
         }
 
         /// <summary>
-        /// Parses ClientInfo and gets the device os version. If it cannot be determined returns the OS family string without the platform
+        /// Parses the parsed browser info and gets the device os version. If it cannot be determined returns the OS family string without the platform
         /// </summary>
-        /// <param name="client">The client.</param>
+        /// <param name="browserInfo">The browser info.</param>
         /// <returns></returns>
-        private string GetDeviceOsVersion( UAParser.ClientInfo client )
+        private string GetDeviceOsVersion( UserAgentInfo browserInfo )
         {
-            if ( client.OS.Major == null )
+            if ( browserInfo.OSVersion?.Major == null )
             {
-                string platform = client.OS.Family.Split( ' ' ).First();
-                return client.OS.Family.Replace( platform, string.Empty ).Trim();
+                string platform = browserInfo.OSFamily.Split( ' ' ).First();
+                return browserInfo.OSFamily.Replace( platform, string.Empty ).Trim();
             }
 
-            return string.Format(
-                "{0}.{1}.{2}.{3}",
-                client.OS.Major ?? "0",
-                client.OS.Minor ?? "0",
-                client.OS.Patch ?? "0",
-                client.OS.PatchMinor ?? "0" );
+            return browserInfo.OSVersion.ToString();
         }
 
         /// <summary>

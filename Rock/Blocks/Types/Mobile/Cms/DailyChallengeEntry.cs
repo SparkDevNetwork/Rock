@@ -264,7 +264,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             {
                 interaction = interactionService.CreateInteraction(
                     componentId,
-                    RequestContext.ClientInformation?.Browser?.String,
+                    RequestContext.ClientInformation?.UserAgent,
                     null,
                     RequestContext.ClientInformation.IpAddress,
                     null );
@@ -315,7 +315,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             // year.
             var interaction = interactionService.CreateInteraction(
                 componentId,
-                RequestContext.ClientInformation?.Browser?.String,
+                RequestContext.ClientInformation?.UserAgent,
                 null,
                 RequestContext.ClientInformation.IpAddress,
                 null );

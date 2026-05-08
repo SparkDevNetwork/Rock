@@ -26,6 +26,7 @@ using Moq;
 
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Net;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Shared.TestFramework
@@ -254,6 +255,7 @@ namespace Rock.Tests.Shared.TestFramework
             sc.AddSingleton<IConnectionStringProvider>( new TestConnectionStringProvider( connectionString ) );
             sc.AddSingleton<IInitializationSettings, TestInitializationSettings>();
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
+            sc.AddSingleton<IUserAgentParser, UserAgentParser>();
             sc.AddSingleton( hostingMock.Object );
 
             sc.AddSingleton<IRockContextFactory, RockContextFactory>();

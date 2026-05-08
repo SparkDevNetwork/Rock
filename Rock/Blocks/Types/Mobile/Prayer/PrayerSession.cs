@@ -360,7 +360,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
                 if ( CreateInteractionsForPrayers )
                 {
-                    PrayerRequestService.EnqueuePrayerInteraction( lastRequest, RequestContext.CurrentPerson, PageCache.Layout.Site.Name, RequestContext.ClientInformation?.Browser?.String, RequestContext.ClientInformation.IpAddress, null );
+                    PrayerRequestService.EnqueuePrayerInteraction( lastRequest, RequestContext.CurrentPerson, PageCache.Layout.Site.Name, RequestContext.ClientInformation?.UserAgent, RequestContext.ClientInformation.IpAddress, null );
                 }
 
                 //

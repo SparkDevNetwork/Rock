@@ -1012,14 +1012,14 @@ namespace Rock.Net
                 mergeFields.Add( "PageParameter", PageParameters );
             }
 
-            if ( options.GetOSFamily && ClientInformation.Browser != null )
+            if ( options.GetOSFamily && ClientInformation.BrowserInfo != null )
             {
-                mergeFields.Add( "OSFamily", ClientInformation.Browser.OS.Family.ToLower() );
+                mergeFields.Add( "OSFamily", ClientInformation.BrowserInfo.OSFamily.ToLower() );
             }
 
-            if ( options.GetDeviceFamily && ClientInformation.Browser != null )
+            if ( options.GetDeviceFamily && ClientInformation.BrowserInfo != null )
             {
-                mergeFields.Add( "DeviceFamily", ClientInformation.Browser.Device.Family );
+                mergeFields.Add( "DeviceFamily", ClientInformation.BrowserInfo.DeviceFamily );
             }
 
             var person = currentPersonOverride ?? CurrentPerson;

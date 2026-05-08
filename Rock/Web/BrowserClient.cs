@@ -14,6 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.Configuration;
 using Rock.Utility;
 using UAParser;
 
@@ -22,6 +27,8 @@ namespace Rock.Web
     /// <summary>
     /// Class to hold details about a
     /// </summary>
+    [Obsolete( "Use Rock.Net.UserAgentInfo (via ClientInformation.BrowserInfo or IUserAgentParser) instead." )]
+    [RockObsolete( "20.0" )]
     public class BrowserClient : RockDynamic
     {
         /// <summary>
@@ -52,6 +59,8 @@ namespace Rock.Web
     /// <summary>
     /// Information about the browser
     /// </summary>
+    [Obsolete( "Use Rock.Net.UserAgentInfo (via ClientInformation.BrowserInfo or IUserAgentParser) instead." )]
+    [RockObsolete( "20.0" )]
     public class BrowserInfo : RockDynamic
     {
         private readonly ClientInfo _client = null;
@@ -71,8 +80,15 @@ namespace Rock.Web
         /// <param name="userAgent">The user agent.</param>
         public BrowserInfo( string userAgent )
         {
-            // Get the client info from cache or create it.
-            _client = Rock.Net.ClientInformation.GetClientInfoForUserAgent( userAgent );
+            if ( userAgent.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            var browserInfo = RockApp.Current.GetRequiredService<Rock.Net.IUserAgentParser>().Parse( userAgent );
+#pragma warning disable CS0618 // OriginalClientInfo is obsolete; legitimate use during the BrowserClient deprecation window.
+            _client = browserInfo?.OriginalClientInfo;
+#pragma warning restore CS0618
         }
 
         /// <summary>
@@ -162,6 +178,8 @@ namespace Rock.Web
     /// <summary>
     /// Information about the browser's OS
     /// </summary>
+    [Obsolete( "Use Rock.Net.UserAgentVersion (via Rock.Net.UserAgentInfo.OSVersion) instead." )]
+    [RockObsolete( "20.0" )]
     public class BrowserOS : RockDynamic
     {
         /// <summary>
@@ -236,6 +254,8 @@ namespace Rock.Web
     /// <summary>
     /// Information about the browser device
     /// </summary>
+    [Obsolete( "Use Rock.Net.UserAgentInfo (via ClientInformation.BrowserInfo or IUserAgentParser) instead." )]
+    [RockObsolete( "20.0" )]
     public class BrowserDevice : RockDynamic
     {
         /// <summary>
@@ -290,6 +310,8 @@ namespace Rock.Web
     /// <summary>
     /// The browser Agent
     /// </summary>
+    [Obsolete( "Use Rock.Net.UserAgentVersion (via Rock.Net.UserAgentInfo.BrowserVersion) instead." )]
+    [RockObsolete( "20.0" )]
     public class BrowserUserAgent : RockDynamic
     {
         /// <summary>
