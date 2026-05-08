@@ -42,10 +42,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.ApiKey,
         Order = 0 )]
 
-    [TextField( "OpenAI Model",
-        Description = "The realtime OpenAI model used for audio interactions. Leave blank when using xAI.",
-        IsRequired = false,
-        DefaultValue = "gpt-realtime-mini",
+    [TextField( "Model",
+        Description = "The realtime model used for audio interactions.",
+        IsRequired = true,
+        DefaultValue = "",
         Key = AttributeKeys.Model,
         Order = 1 )]
 
