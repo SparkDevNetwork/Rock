@@ -282,6 +282,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             return apiKey;
         }
 
+        /// <summary>
         /// Determines the voice agent provider based on the configured API key.
         /// </summary>
         /// <remarks>The method inspects the prefix of the API key to identify the provider. If the key
