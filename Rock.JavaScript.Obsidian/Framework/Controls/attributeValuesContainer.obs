@@ -61,7 +61,7 @@
 
             <template v-else-if="displayAsContentSection">
                 <ContentSection v-if="attributeCategories.length > 0"
-                                title="Attributes"
+                                :title="contentSectionTitle"
                                 icon="ti ti-binary-tree-2"
                                 :disableCollapse="isContentSectionCollapseDisabled">
                     <ContentStack v-for="cat in attributeCategories"
@@ -196,6 +196,14 @@
         isContentSectionCollapseDisabled: {
             type: Boolean,
             default: false
+        },
+        /**
+         * The title shown on the wrapping ContentSection when
+         * `displayAsContentSection` is enabled. Defaults to "Attributes".
+         */
+        contentSectionTitle: {
+            type: String as PropType<string>,
+            default: "Attributes"
         },
         showCategoryLabel: {
             type: Boolean,
