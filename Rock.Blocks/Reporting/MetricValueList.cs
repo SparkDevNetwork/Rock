@@ -163,10 +163,14 @@ namespace Rock.Blocks.Reporting
         /// <summary>
         /// Gets a value indicating whether the current person can view metric
         /// values for the resolved metric (drives whether the grid is shown).
-        /// Edit implies View.
+        /// Block-level Edit (block admin) overrides; otherwise the metric's own
+        /// View authorization is enforced. Metric-level Edit does not imply
+        /// View, so an explicit View-Deny on the metric is respected even when
+        /// the user has inherited Edit (e.g. from the parent category).
         /// </summary>
         private bool CanView => _canView ??= ResolvedMetric != null
-            && ( CanEdit || ResolvedMetric.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) );
+            && ( BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                || ResolvedMetric.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) );
 
         /// <summary>
         /// Gets the sliding date range filter currently saved in person preferences,
@@ -219,23 +223,16 @@ namespace Rock.Blocks.Reporting
 
             if ( ResolvedMetric == null )
             {
-                box.ErrorMessage = "Select a metric to view its values.";
-                box.Options = new MetricValueListOptionsBag
-                {
-                    PartitionFilters = new List<MetricPartitionFilterBag>(),
-                    MetricValueTypeItems = new List<ListItemBag>()
-                };
+                // Match WebForms: when no metric is in scope (e.g. user is on a
+                // category node or about to add a new metric), the block renders
+                // nothing rather than showing a notification.
                 return box;
             }
 
             if ( !CanView )
             {
-                box.ErrorMessage = "You are not authorized to view values for this metric.";
-                box.Options = new MetricValueListOptionsBag
-                {
-                    PartitionFilters = new List<MetricPartitionFilterBag>(),
-                    MetricValueTypeItems = new List<ListItemBag>()
-                };
+                // Match WebForms: when the user lacks View access on the metric,
+                // the block hides itself entirely rather than surfacing a message.
                 return box;
             }
 
@@ -261,6 +258,7 @@ namespace Rock.Blocks.Reporting
 
             return new MetricValueListOptionsBag
             {
+                IsBlockVisible = true,
                 MetricIdKey = metric?.IdKey,
                 MetricValueTypeItems = typeof( MetricValueType ).ToEnumListItemBag(),
                 PartitionFilters = BuildPartitionFilters( metric ),
