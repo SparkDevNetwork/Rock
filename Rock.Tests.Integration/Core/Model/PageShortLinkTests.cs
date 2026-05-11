@@ -300,6 +300,127 @@ namespace Rock.Tests.Integration.Core.Model
                 shortlink.UrlWithUtm );
         }
 
+        [TestMethod]
+        public void PageShortlink_GetUrlWithUtm_WithInboundUtm_FillsUnconfiguredKeys()
+        {
+            // When the shortlink has no UTM values configured, UTM values appended to the inbound shortlink URL flow
+            // through to the resolved destination URL. Prior to the inbound-fallback fix, these values were silently
+            // dropped.
+            var settings = new UtmSettings();
+
+            var result = PageShortLinkCache.GetUrlWithUtm(
+                "https://mywebsite.com/landing",
+                settings,
+                "https://shortener.example/myToken?utm_source=fb&utm_campaign=spring" );
+
+            var parsed = new Interaction();
+            parsed.SetUTMFieldsFromURL( result );
+
+            Assert.AreEqual( "https://mywebsite.com/landing", new Uri( result ).GetLeftPart( UriPartial.Path ) );
+            Assert.AreEqual( "fb", parsed.Source );
+            Assert.AreEqual( "spring", parsed.Campaign );
+            Assert.IsTrue( parsed.Medium.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Term.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Content.IsNullOrWhiteSpace() );
+        }
+
+        [TestMethod]
+        public void PageShortlink_GetUrlWithUtm_WithConfiguredAndInbound_ConfiguredWins()
+        {
+            // When both the shortlink configuration and the inbound URL specify the same UTM key, the configured value wins.
+            var sourceValueId = CoreDataManager.Current.GetDefinedValueIdOrNull( SystemGuid.DefinedType.UTM_SOURCE, "youtube" );
+            var settings = new UtmSettings { UtmSourceValueId = sourceValueId };
+
+            var result = PageShortLinkCache.GetUrlWithUtm(
+                "https://mywebsite.com/landing",
+                settings,
+                "https://shortener.example/myToken?utm_source=fb" );
+
+            var parsed = new Interaction();
+            parsed.SetUTMFieldsFromURL( result );
+
+            Assert.AreEqual( "https://mywebsite.com/landing", new Uri( result ).GetLeftPart( UriPartial.Path ) );
+            Assert.AreEqual( sourceValueId, parsed.SourceValueId );
+            Assert.AreEqual( "youtube", parsed.Source );
+            Assert.IsTrue( parsed.Medium.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Campaign.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Term.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Content.IsNullOrWhiteSpace() );
+        }
+
+        [TestMethod]
+        public void PageShortlink_GetUrlWithUtm_WithPartialConfigured_InboundFillsRemaining()
+        {
+            // Per-key fallback: a configured utm_source still wins over an inbound utm_source, but an inbound
+            // utm_medium flows through because nothing was configured for that key.
+            var sourceValueId = CoreDataManager.Current.GetDefinedValueIdOrNull( SystemGuid.DefinedType.UTM_SOURCE, "youtube" );
+            var settings = new UtmSettings { UtmSourceValueId = sourceValueId };
+
+            var result = PageShortLinkCache.GetUrlWithUtm(
+                "https://mywebsite.com/landing",
+                settings,
+                "https://shortener.example/myToken?utm_medium=newsletter" );
+
+            var parsed = new Interaction();
+            parsed.SetUTMFieldsFromURL( result );
+
+            Assert.AreEqual( "https://mywebsite.com/landing", new Uri( result ).GetLeftPart( UriPartial.Path ) );
+            Assert.AreEqual( sourceValueId, parsed.SourceValueId );
+            Assert.AreEqual( "youtube", parsed.Source );
+            Assert.AreEqual( "newsletter", parsed.Medium );
+            Assert.IsTrue( parsed.Campaign.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Term.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Content.IsNullOrWhiteSpace() );
+        }
+
+        [TestMethod]
+        public void PageShortlink_GetUrlWithUtm_WithInboundAndBaked_InboundOverridesBaked()
+        {
+            // Precedence: when nothing is configured on the shortlink and the destination URL has a baked-in UTM,
+            // an inbound UTM overrides the baked-in value.
+            var settings = new UtmSettings();
+
+            var result = PageShortLinkCache.GetUrlWithUtm(
+                "https://mywebsite.com/landing?utm_source=baked",
+                settings,
+                "https://shortener.example/myToken?utm_source=fb" );
+
+            var parsed = new Interaction();
+            parsed.SetUTMFieldsFromURL( result );
+
+            Assert.AreEqual( "https://mywebsite.com/landing", new Uri( result ).GetLeftPart( UriPartial.Path ) );
+            Assert.AreEqual( "fb", parsed.Source );
+            Assert.IsTrue( parsed.Medium.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Campaign.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Term.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Content.IsNullOrWhiteSpace() );
+        }
+
+        [TestMethod]
+        public void PageShortlink_GetUrlWithUtm_WithConfiguredAndBaked_ConfiguredReplacesBaked()
+        {
+            // Latent bug fix: a configured utm_term replaces a destination-baked utm_term rather than appending to it.
+            // Before the fix, NameValueCollection.Add produced two utm_term entries in the query string which downstream
+            // parsers then lost entirely. Parsing via SetUTMFieldsFromURL would have returned "baked,alpha" (comma-joined)
+            // for the duplicate-key shape, so asserting Term == "alpha" guards against regression.
+            var settings = new UtmSettings { UtmTerm = "alpha" };
+
+            var result = PageShortLinkCache.GetUrlWithUtm(
+                "https://mywebsite.com/landing?utm_term=baked",
+                settings,
+                null );
+
+            var parsed = new Interaction();
+            parsed.SetUTMFieldsFromURL( result );
+
+            Assert.AreEqual( "https://mywebsite.com/landing", new Uri( result ).GetLeftPart( UriPartial.Path ) );
+            Assert.AreEqual( "alpha", parsed.Term );
+            Assert.IsTrue( parsed.Source.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Medium.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Campaign.IsNullOrWhiteSpace() );
+            Assert.IsTrue( parsed.Content.IsNullOrWhiteSpace() );
+        }
+
         private static PageShortLink CreateTestPageShortlinkWithUtmValues( string token, string url, string sourceValue, string mediumValue, string campaignValue, string term, string content )
         {
             var externalSite = EntityLookup.GetByNameOrThrow<Rock.Model.Site>( "External Website" );
