@@ -188,5 +188,13 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// Gets or sets the custom text content used by the communication entry wizard.
         /// </summary>
         public CommunicationEntryWizardCustomTextBag CustomText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL the client should navigate to when the admin clicks
+        /// "Create New Communication" after queueing a send. The URL targets the
+        /// current page with no communication identifier so the wizard renders a
+        /// fresh state on load.
+        /// </summary>
+        public string CreateNewCommunicationUrl { get; set; }
     }
 }

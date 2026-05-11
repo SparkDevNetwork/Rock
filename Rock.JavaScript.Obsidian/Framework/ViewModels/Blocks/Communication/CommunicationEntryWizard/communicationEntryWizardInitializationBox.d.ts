@@ -53,6 +53,14 @@ export type CommunicationEntryWizardInitializationBox = {
     /** Gets or sets the communication topic values. */
     communicationTopicValues?: ListItemBag[] | null;
 
+    /**
+     * Gets or sets the URL the client should navigate to when the admin clicks
+     * "Create New Communication" after queueing a send. The URL targets the
+     * current page with no communication identifier so the wizard renders a
+     * fresh state on load.
+     */
+    createNewCommunicationUrl?: string | null;
+
     /** Gets or sets the custom text content used by the communication entry wizard. */
     customText?: CommunicationEntryWizardCustomTextBag | null;
 
