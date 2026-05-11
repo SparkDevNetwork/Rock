@@ -29,7 +29,8 @@
                     :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
-        <TextColumn name="campus"
+        <TextColumn v-if="config.options?.isCampusColumnVisible"
+                    name="campus"
                     title="Campus"
                     field="campus"
                     :filter="pickExistingValueFilter"
@@ -45,6 +46,7 @@
                     title="Request"
                     field="text"
                     :filter="textValueFilter"
+                    width="70%"
                     visiblePriority="xs" />
 
         <NumberColumn name="prayerCount"

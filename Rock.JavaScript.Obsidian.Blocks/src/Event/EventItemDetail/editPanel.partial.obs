@@ -248,11 +248,6 @@
     }
 
     function toAttributeGridRowItem(bag: EventItemOccurenceAttributeBag): Record<string, unknown> {
-
-        if (bag.attribute?.key && !reservedKeyNames.value.includes(bag.attribute?.key)) {
-            reservedKeyNames.value.push(bag.attribute.key);
-        }
-
         return {
             guid: bag.attribute?.guid,
             name: bag.attribute?.name,
@@ -303,7 +298,6 @@
         if (selectedAttribute?.attribute) {
             occurrenceAttribute.value = selectedAttribute.attribute;
             isAttributeModalOpen.value = true;
-            reservedKeyNames.value = reservedKeyNames.value.filter(x => x !== selectedAttribute.attribute?.key);
         }
         else {
             onAddAttribute();
@@ -312,12 +306,7 @@
 
     const onDeleteAttribute = async (key: string): Promise<void> => {
         isAttributeModalOpen.value = false;
-        const deletedAttribute = eventOccurenceAttributes.value.find(s => s.attribute?.guid === key);
         eventOccurenceAttributes.value = eventOccurenceAttributes.value.filter(s => s.attribute?.guid !== key);
-
-        if (deletedAttribute?.attribute) {
-            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== deletedAttribute.attribute?.key);
-        }
     };
 
     const onSaveAttribute = (): void => {
@@ -421,16 +410,19 @@
         emit("update:modelValue", newValue);
     }, { deep: true });
 
-    watch(isAttributeModalOpen, () => {
-        if (isAttributeModalOpen.value) {
-            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== occurrenceAttribute.value?.key);
-        }
-        else {
-            if (occurrenceAttribute.value?.key && !reservedKeyNames.value.some(k => k === occurrenceAttribute.value?.key)) {
-                reservedKeyNames.value.push(occurrenceAttribute.value.key);
-            }
-        }
-    });
+    // Maintain reservedKeyNames as a derived list of keys from the
+    // existing attributes, excluding the attribute currently being
+    // edited (matched by guid since the user may be changing the key).
+    watch([eventOccurenceAttributes, isAttributeModalOpen, occurrenceAttribute], () => {
+        const editingGuid = isAttributeModalOpen.value
+            ? occurrenceAttribute.value?.guid
+            : null;
+
+        reservedKeyNames.value = (eventOccurenceAttributes.value ?? [])
+            .filter(a => !editingGuid || a.attribute?.guid !== editingGuid)
+            .map(a => a.attribute?.key)
+            .filter((k): k is string => !!k);
+    }, { immediate: true, deep: true });
 
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.
