@@ -603,7 +603,8 @@ namespace Rock.Blocks.Core
             category.Description = bag.Description;
             category.IconCssClass = bag.IconCssClass;
             category.HighlightColor = bag.HighlightColor;
-            category.ParentCategoryId = bag.ParentCategory.GetEntityId<Category>( RockContext );
+
+            category.ParentCategoryId = context.ParentCategoryId ?? bag.ParentCategory.GetEntityId<Category>( RockContext );
 
             category.LoadAttributes( RockContext );
             if ( bag.AttributeValues != null )
