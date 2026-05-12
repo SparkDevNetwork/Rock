@@ -61,14 +61,30 @@ namespace Rock.Model
         {
             var currencySymbol = RockCurrencyCodeInfo.GetCurrencySymbol();
 
+            /*
+                5/12/2026 - MSE
+
+                Each registrant has a DiscountApplies flag, set when the registration is saved
+                based on the discount's MaxRegistrants limit. The TotalDiscount and
+                DiscountQualifiedCost calculations must honor that flag, otherwise the report
+                shows the discount applied to every registrant even when MaxRegistrants would
+                limit it to fewer.
+
+                The new DiscountedRegistrantCount column counts only the registrants whose
+                discount applies, and is used by the fixed-amount math. The DiscountQualifiedCost
+                subqueries use the same filter so the percentage math is also accurate.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6825
+            */
             string query = $@"
                 WITH
-	            cte([RegistrationId], [RegisteredByName], [RegistrationDate], [RegistrantCount], [DiscountCode], [DiscountAmount], [DiscountPercentage], [DiscountType], [TotalCost], [DiscountQualifiedCost])
+	            cte([RegistrationId], [RegisteredByName], [RegistrationDate], [RegistrantCount], [DiscountedRegistrantCount], [DiscountCode], [DiscountAmount], [DiscountPercentage], [DiscountType], [TotalCost], [DiscountQualifiedCost])
 	            AS
 	            (SELECT [Registration].[Id] AS [RegistrationId]
 		            , [Registration].[FirstName] + ' ' + [Registration].[LastName] AS [RegisteredByName]
 		            , [Registration].[CreatedDateTime] AS [RegistrationDate]
 		            , ( SELECT COUNT(*) FROM [RegistrationRegistrant] WHERE [RegistrationId] = [Registration].[Id]) AS [RegistrantCount]
+		            , ( SELECT COUNT(*) FROM [RegistrationRegistrant] WHERE [RegistrationId] = [Registration].[Id] AND [DiscountApplies] = 1) AS [DiscountedRegistrantCount]
 		            , [Registration].[DiscountCode] AS [DiscountCode]
 		            , [Registration].[DiscountAmount] AS [DiscountAmount]
 		            , [Registration].[DiscountPercentage] * 100 AS [DiscountPercentage]
@@ -81,13 +97,13 @@ namespace Rock.Model
 				            WHERE [RegistrationId] = [Registration].[id]), 0)
 				            )
 			            ) AS [TotalCost]
-		            , (( SELECT SUM([Cost]) FROM [RegistrationRegistrant] WHERE [RegistrationId] = [Registration].[Id])
+		            , (( SELECT SUM([Cost]) FROM [RegistrationRegistrant] WHERE [RegistrationId] = [Registration].[Id] AND [DiscountApplies] = 1)
 			            + (COALESCE(
 				            (SELECT SUM([RegistrationRegistrantFee].[Cost])
 				            FROM [RegistrationRegistrant]
 				            LEFT JOIN [RegistrationRegistrantFee] ON [RegistrationRegistrant].[Id] = [RegistrationRegistrantFee].[RegistrationRegistrantId]
 				            JOIN [RegistrationTemplateFee] ON [RegistrationTemplateFee].[Id] = [RegistrationRegistrantFee].[RegistrationTemplateFeeId]
-				            WHERE [RegistrationId] = [Registration].[id] AND [RegistrationTemplateFee].[DiscountApplies] = 1)
+				            WHERE [RegistrationId] = [Registration].[id] AND [RegistrationRegistrant].[DiscountApplies] = 1 AND [RegistrationTemplateFee].[DiscountApplies] = 1)
 				            , 0)
 				            )
 			            ) AS [DiscountQualifiedCost]
@@ -98,7 +114,7 @@ namespace Rock.Model
 	            AS
 	            (SELECT [RegistrationId], [RegisteredByName], [RegistrationDate], [RegistrantCount], [DiscountCode], [DiscountAmount], [DiscountPercentage], [DiscountType], [TotalCost], [DiscountQualifiedCost]
 		            , CASE WHEN [DiscountPercentage] > 0 THEN [DiscountQualifiedCost] * ([DiscountPercentage]/100)
-			            ELSE ([RegistrantCount] * [DiscountAmount])
+			            ELSE ([DiscountedRegistrantCount] * [DiscountAmount])
 			            END AS [TotalDiscount]
 	            FROM cte)
 
