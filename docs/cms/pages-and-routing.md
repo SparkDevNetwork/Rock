@@ -1,6 +1,8 @@
 ---
 title: Pages and Routing
-last_updated: 2026-05-01
+last_updated: 2026-05-11
+related_specs:
+  - specs/completed/cms/260507-inbound-shortlink-url-utm-fallback.md
 related_files:
   - Rock/Model/CMS/Page/Page.cs
   - Rock/Model/CMS/Page/Page.SaveHook.cs
@@ -9,6 +11,9 @@ related_files:
   - Rock/Model/CMS/Block/Block.cs
   - Rock/Model/CMS/BlockType/BlockType.cs
   - Rock/Model/CMS/PageShortLink/PageShortLink.Logic.cs
+  - Rock/Web/Cache/Entities/PageShortLinkCache.cs
+  - Rock/Web/RockRouteHandler.cs
+  - Rock/Tasks/AddShortLinkInteraction.cs
 ---
 
 # Pages and Routing
@@ -56,6 +61,8 @@ A request to `https://example.com/foo` resolves: Site (by domain) -> Layout (def
 **`Site.SiteDomain` lets one Site serve multiple domains.** Useful for redirects and multi-domain configurations.
 
 **Page Short Links can expire.** Since `75e8de1bc4`, the Short Link entity supports expiration dates. The Cleanup job removes expired links plus their interaction data.
+
+**Page Short Links honor inbound UTM values per key.** Since `600919e68c` (2026-05-11), UTM query parameters appended to the inbound shortlink URL fill in any of the five canonical UTM keys (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`) that the shortlink itself does not configure. Configured shortlink values still take precedence per key, and destination-baked UTMs come last. Both the 302 redirect URL and the `Interaction` row reflect the same resolved precedence, so downstream analytics on the destination site see what was logged.
 
 **Pages can have a Context Entity.** `PageContext` rows tie a Page to a specific entity type for context-aware rendering. Used by detail pages that need entity-specific UI.
 
@@ -180,5 +187,10 @@ Rejected. Per-deployment branding requires configurable layouts.
 
 ## Recent Impactful Changes
 
+- **2026-05-11** ([commit `600919e68c`](https://github.com/SparkDevNetwork/Rock/commit/600919e68c)). Page Short Links honor inbound `utm_*` query parameters as a per-key fallback to configured values. The 302 redirect URL and the `Interaction` row both reflect the resolved precedence: configured shortlink values win, then inbound, then destination-baked.
 - **2026-01-01** ([commit `75e8de1bc4`](https://github.com/SparkDevNetwork/Rock/commit/75e8de1bc4)). Page Short Links can have expiration dates; expired links and their interaction data are removed by the Cleanup job.
 - **2025-04-19** ([commit `9b9da70e28`](https://github.com/SparkDevNetwork/Rock/commit/9b9da70e28)). IP Geolocation feature added: block visitor access from specific countries (instance-wide or per-Page).
+
+## Related Specs
+
+- [Inbound Shortlink URL UTM Fallback](../../specs/completed/cms/260507-inbound-shortlink-url-utm-fallback.md), 2026-05-07 (Jon Edmiston)

@@ -13,5 +13,5 @@ If you are new, start with [cms-overview.md](cms-overview.md). Sub-topics worth 
 | [Content Collections](content-collections.md) | Cross-channel aggregation, Lucene vs Elasticsearch backends, indexing-job resilience. |
 | [Lava Applications](lava-applications.md) | URL-routable Lava endpoints, Helix reactivity, Body merge fields, RenderLavaEndpoint composition. |
 | [Media Elements](media-elements.md) | Account/Folder/Element hierarchy, external provider integration, sync jobs, mediaplayer shortcode. |
-| [Pages and Routing](pages-and-routing.md) | Site/Layout/Page/Block four-layer hierarchy, friendly URLs, page short links with expiration, IP geolocation. |
+| [Pages and Routing](pages-and-routing.md) | Site/Layout/Page/Block four-layer hierarchy, friendly URLs, page short links with expiration and inbound UTM fallback, IP geolocation. |
 | [Personalization and Segments](personalization-and-segments.md) | PersonalizationSegment + RequestFilter + AdaptiveMessage, persistent membership, anonymous + authenticated personalization. |
