@@ -1123,7 +1123,13 @@
         const workbook = new exceljs.Workbook();
         workbook.created = new Date();
         workbook.modified = new Date();
-        const worksheet = workbook.addWorksheet(title);
+
+        // Excel worksheet names cannot contain * ? : \ / [ ] and are limited to 31
+        // characters; exceljs throws if the title violates either rule. Sanitize for
+        // the worksheet only, leaving the source title (used elsewhere) untouched.
+        // See https://github.com/SparkDevNetwork/Rock/issues/6821
+        const worksheetName = title.replace(/[*?:\\/[\]]/g, "").substring(0, 31) || "Sheet1";
+        const worksheet = workbook.addWorksheet(worksheetName);
 
         // Build the header row
         const columns: Column[] = [];
