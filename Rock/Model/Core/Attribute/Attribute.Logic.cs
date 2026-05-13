@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -39,6 +40,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AbbreviatedName
         {
             get

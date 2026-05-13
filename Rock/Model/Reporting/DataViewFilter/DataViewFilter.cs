@@ -22,8 +22,10 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Reporting;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -83,6 +85,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> containing the value to be used as a filter.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Selection { get; set; }
 
         /// <summary>

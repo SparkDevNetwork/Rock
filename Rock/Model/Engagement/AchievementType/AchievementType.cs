@@ -24,6 +24,8 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -46,18 +48,21 @@ namespace Rock.Model
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
         [Required]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets a description of the achievement type.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the configuration from the <see cref="ComponentEntityTypeId"/>.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ComponentConfigJson { get; set; }
 
         /// <summary>
@@ -117,12 +122,14 @@ namespace Rock.Model
         /// Gets or sets the lava template used to render a badge.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string BadgeLavaTemplate { get; set; }
 
         /// <summary>
         /// Gets or sets the lava template used to render results.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ResultsLavaTemplate { get; set; }
 
         /// <summary>
@@ -130,6 +137,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AchievementIconCssClass { get; set; }
 
         /// <summary>
@@ -186,6 +194,7 @@ namespace Rock.Model
         /// The custom summary lava template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CustomSummaryLavaTemplate { get; set; }
 
         /// <summary>
@@ -196,6 +205,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string HighlightColor { get; set; }
 
         /// <summary>

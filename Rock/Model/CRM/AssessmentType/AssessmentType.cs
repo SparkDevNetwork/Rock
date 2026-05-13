@@ -23,6 +23,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -48,6 +50,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Title { get; set; }
 
         /// <summary>
@@ -57,6 +60,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> for the Description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string Description { get; set; }
 
         /// <summary>
@@ -68,6 +72,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AssessmentPath { get; set; }
 
         /// <summary>
@@ -78,6 +83,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AssessmentResultsPath { get; set; }
 
         /// <summary>
@@ -137,6 +143,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -147,6 +154,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 7 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string BadgeColor { get; set; }
 
         /// <summary>
@@ -156,6 +164,7 @@ namespace Rock.Model
         /// The badge summary lava.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string BadgeSummaryLava { get; set; }
 
         #endregion Entity Properties

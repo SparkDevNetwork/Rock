@@ -26,6 +26,7 @@ using Newtonsoft.Json;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Cms;
+using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Security;
 using Rock.Utility;
@@ -58,6 +59,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string InternalName { get; set; }
 
         /// <summary>
@@ -68,6 +70,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PageTitle { get; set; }
 
 
@@ -85,6 +88,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string BrowserTitle { get; set; }
 
         /// <summary>
@@ -324,6 +328,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the Page description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string Description { get; set; }
 
         /// <summary>
@@ -333,6 +338,7 @@ namespace Rock.Model
         /// The key words.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string KeyWords { get; set; }
 
         /// <summary>
@@ -342,6 +348,7 @@ namespace Rock.Model
         /// The content of the header.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string HeaderContent { get; set; }
 
         /// <summary>
@@ -367,6 +374,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -393,6 +401,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string BodyCssClass { get; set; }
 
         /// <summary>
@@ -413,10 +422,12 @@ namespace Rock.Model
         [Obsolete( "Use AdditionalSettingsJson instead." )]
         [RockObsolete( "1.16" )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettings { get; set; }
 
         /// <inheritdoc/>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         /// <summary>
@@ -439,6 +450,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CacheControlHeaderSettings
         {
             get => _cacheControlHeaderSettings;

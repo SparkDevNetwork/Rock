@@ -21,6 +21,8 @@ using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -49,6 +51,7 @@ namespace Rock.Model
         [Required( ErrorMessage = "Name is required" )]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -71,6 +74,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Identifier )]
         public string Key { get; set; }
 
         /// <summary>
@@ -78,6 +82,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>A <see cref="string"/> that describes the search.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string Description { get; set; }
 
         /// <summary>
@@ -93,6 +98,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>A <see cref="string"/> containing the dynamic LINQ <c>Where()</c> expression.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string WhereExpression { get; set; }
 
         /// <summary>
@@ -101,6 +107,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>A <see cref="string"/> containing the dynamic LINQ <c>GroupBy()</c> expression.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GroupByExpression { get; set; }
 
         /// <summary>
@@ -109,6 +116,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>A <see cref="string"/> containing the dynamic LINQ <c>Select()</c> expression.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SelectExpression { get; set; }
 
         /// <summary>
@@ -118,6 +126,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>A <see cref="string"/> containing the dynamic LINQ <c>SelectMany()</c> expression.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SelectManyExpression { get; set; }
 
         /// <summary>
@@ -126,6 +135,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>A <see cref="string"/> containing the dynamic LINQ <c>OrderBy()</c> expression.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SortExpression { get; set; }
 
         /// <summary>
@@ -157,6 +167,7 @@ namespace Rock.Model
         /// <value>The property paths to include as a comma seperated list.</value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IncludePaths { get; set; }
 
         /// <summary>

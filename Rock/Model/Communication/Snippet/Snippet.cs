@@ -16,7 +16,9 @@
 //
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -45,6 +47,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -54,6 +57,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string Description { get; set; }
 
         /// <summary>
@@ -77,6 +81,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The content.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Content { get; set; }
 
         /// <summary>

@@ -16,6 +16,8 @@
 //
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -46,6 +48,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -55,6 +58,7 @@ namespace Rock.Model
         /// The request filter key.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Identifier )]
         public string RequestFilterKey { get; set; }
 
         /// <summary>
@@ -82,6 +86,7 @@ namespace Rock.Model
         /// The filter json.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string FilterJson { get; set; }
 
         #endregion Entity Properties

@@ -22,7 +22,9 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.Event;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -95,6 +97,7 @@ namespace Rock.Model
         /// The search value entered.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string SearchValue { get; set; }
 
         /// <summary>
@@ -197,6 +200,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the note.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml )]
         public string Note { get; set; }
 
         /// <summary>

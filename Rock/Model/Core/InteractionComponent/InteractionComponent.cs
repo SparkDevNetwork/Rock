@@ -21,6 +21,8 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -46,6 +48,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 250 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Name { get; set; }
 
         /// <summary>
@@ -55,6 +58,7 @@ namespace Rock.Model
         /// The interaction component data.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ComponentData { get; set; }
 
         /// <summary>
@@ -64,6 +68,7 @@ namespace Rock.Model
         /// The component summary.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ComponentSummary { get; set; }
 
         /// <summary>
@@ -107,6 +112,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ChannelCustom1 { get; set; }
 
         /// <summary>
@@ -117,6 +123,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ChannelCustom2 { get; set; }
 
         /// <summary>
@@ -127,6 +134,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ChannelCustomIndexed1 { get; set; }
 
         #endregion

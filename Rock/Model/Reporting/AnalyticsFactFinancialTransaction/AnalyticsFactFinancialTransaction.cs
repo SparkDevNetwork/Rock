@@ -15,6 +15,8 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -43,6 +45,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string TransactionType { get; set; }
 
         /// <summary>
@@ -52,6 +55,7 @@ namespace Rock.Model
         /// The transaction source.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string TransactionSource { get; set; }
 
         /// <summary>
@@ -61,6 +65,7 @@ namespace Rock.Model
         /// The type of the schedule.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ScheduleType { get; set; }
 
         /// <summary>
@@ -119,6 +124,7 @@ namespace Rock.Model
         /// The gateway identifier.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string FinancialGateway { get; set; }
 
         /// <summary>
@@ -128,6 +134,7 @@ namespace Rock.Model
         /// The entity type identifier.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string EntityTypeName { get; set; }
 
         /// <summary>
@@ -137,6 +144,7 @@ namespace Rock.Model
         /// The type of the currency.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CurrencyType { get; set; }
 
         /// <summary>
@@ -146,6 +154,7 @@ namespace Rock.Model
         /// The type of the credit card.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CreditCardType { get; set; }
 
         #endregion Entity Properties

@@ -21,7 +21,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -74,6 +76,7 @@ namespace Rock.Model
         /// A Json formatted <see cref="System.String"/> containing the AdditionalMergeValues for the EntitySet Item
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalMergeValuesJson
         {
             get

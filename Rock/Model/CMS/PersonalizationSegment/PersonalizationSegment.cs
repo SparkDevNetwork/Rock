@@ -15,6 +15,8 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 using System.Collections.Generic;
@@ -48,6 +50,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -57,6 +60,7 @@ namespace Rock.Model
         /// The segment key.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Identifier )]
         public string SegmentKey { get; set; }
 
         /// <summary>
@@ -84,6 +88,7 @@ namespace Rock.Model
         /// The additional filter json.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalFilterJson { get; set; }
 
         /// <summary>
@@ -104,6 +109,7 @@ namespace Rock.Model
         /// The description of the segment.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string Description { get; set; }
 
         /// <summary>

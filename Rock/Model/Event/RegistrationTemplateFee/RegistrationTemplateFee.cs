@@ -24,7 +24,9 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -49,6 +51,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -79,6 +82,7 @@ namespace Rock.Model
         [DataMember]
         [RockObsolete( "1.9" )]
         [Obsolete( "Use FeeItems instead", true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CostValue { get; set; }
 
         /// <summary>

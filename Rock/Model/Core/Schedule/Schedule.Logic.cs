@@ -22,6 +22,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Ical.Net;
 using Ical.Net.DataTypes;
+using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Web.Cache;
 using Ical.Net.CalendarComponents;
@@ -42,6 +43,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/>representing the  content of the iCalendar.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string iCalendarContent
         {
             get
@@ -312,6 +314,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string AbbreviatedName
         {
             get

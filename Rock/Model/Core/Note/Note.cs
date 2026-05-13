@@ -16,6 +16,8 @@
 //
 using Newtonsoft.Json;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -76,6 +78,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Caption { get; set; }
 
         /// <summary>
@@ -112,6 +115,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the text/body of the note.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string Text { get; set; }
 
         /// <summary>
@@ -181,6 +185,7 @@ namespace Rock.Model
         /// The note URL.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string NoteUrl { get; set; }
 
         /// <summary>

@@ -21,7 +21,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -67,6 +69,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> reference identifier needed by the payment provider to use as a payment token (customer vault id).
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReferenceNumber { get; set; }
 
         /// <summary>
@@ -78,6 +81,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -89,6 +93,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string TransactionCode { get; set; }
 
         /// <summary>
@@ -118,6 +123,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GatewayPersonIdentifier { get; set; }
 
         /// <summary>
@@ -162,6 +168,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string LastErrorCode { get; set; }
 
         /// <summary>

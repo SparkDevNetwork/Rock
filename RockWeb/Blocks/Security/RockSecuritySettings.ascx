@@ -80,12 +80,20 @@
                     </div>
                 </div>
                 <div class="row mt-3">
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <Rock:RockCheckBox
                             ID="cbDisablePredictableIds"
                             runat="server"
                             Label="Disable Predictable IDs"
                             Help="When checked, the GetFile, GetImage and GetAvatar endpoints will use IdKeys and GUID values instead of predictable IDs.  Note: Enabling this may cause plugins that are not yet compatible with this feature to stop working correctly." />
+                    </div>
+
+                    <div class="col-md-3">
+                        <Rock:RockCheckBox
+                            ID="cbDisableServerModelValidation"
+                            runat="server"
+                            Label="Disable Server Model Validation"
+                            Help="When checked, the server will disable certain validation checks when saving data to the database and instead log exceptions. Rock must be restarted for this change to take effect. This is a temporary option that will be removed in the future. It exists as an escape hatch in case validation is over aggressive during a critical usage of Rock." />
                     </div>
                 </div>
                 <div class="row mt-3">

@@ -31,6 +31,7 @@ using System.Web;
 using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Net;
+using Rock.Security;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.UniversalSearch;
@@ -634,6 +635,19 @@ namespace Rock.Data
                         }
                     }
                 }
+
+                var updatedItemValues = updatedItems.Values.ToList();
+
+                // If there are any changed items, validate the new values
+                // before saving. This should be the last step before the save,
+                // so that any changes made by the PreSaveChanges() calls will
+                // be included in the validation.
+                if ( updatedItemValues.Count > 0 )
+                {
+                    ValidatePropertyValues( updatedItemValues );
+                }
+
+                return updatedItemValues;
             }
             catch
             {
@@ -643,8 +657,6 @@ namespace Rock.Data
 
                 throw;
             }
-
-            return updatedItems.Values.ToList();
         }
 
         /// <summary>
@@ -936,6 +948,30 @@ namespace Rock.Data
                         // rest of the cleanup.
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Validates all the property values for the set of modified entities.
+        /// </summary>
+        /// <param name="contextItems">The context items that represent the entities.</param>
+        private void ValidatePropertyValues( List<ContextItem> contextItems )
+        {
+            // This code was benchmarked on 5/12/2026 by DSH. The timings showed
+            // that adding a new person (creating family, group member, etc.)
+            // caused an additional 0.038ms in this method. Saving an existing
+            // Person generated an additional 0.016ms. This was deemed acceptable
+            // for the gains of having this happen for every save rather than
+            // implementing the logic at a higher level in multiple places.
+
+            foreach ( var contextItem in contextItems )
+            {
+                if ( contextItem.PreSaveState != EntityContextState.Added && contextItem.PreSaveState != EntityContextState.Modified )
+                {
+                    continue;
+                }
+
+                StringValueValidator.ValidateAllStrings( contextItem.Entity );
             }
         }
 

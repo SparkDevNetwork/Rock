@@ -15,6 +15,8 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
@@ -59,6 +61,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [Index( IsUnique = true )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -68,6 +71,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string Description { get; set; }
 
         /// <summary>
@@ -88,6 +92,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ShortCode { get; set; }
 
         /// <summary>
@@ -97,6 +102,7 @@ namespace Rock.Model
         /// The URL.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Url { get; set; }
 
         /// <summary>
@@ -115,6 +121,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the campus phone number.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PhoneNumber { get; set; }
 
         /// <summary>
@@ -134,6 +141,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 500 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ServiceTimes { get; set; }
 
         /// <summary>
@@ -155,6 +163,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string TimeZoneId { get; set; }
 
         /// <summary>
