@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -195,10 +195,37 @@ namespace Rock.Blocks.Core
             var rows = componentDescriptions.Select( d =>
             {
                 var entityType = EntityTypeCache.Get( d.Type );
+
+                /*
+                   5/13/2026 - NA
+
+                   Append a "(plugin)" suffix when the component is implemented in a non-Rock assembly
+                   so administrators can distinguish core components from third-party plugins in the picker.
+                   Failures here must never break the list, so any reflection is guarded.
+
+                   Reason: Temporary solution for v19
+                */
+                var itemName = d.Name;
+                try
+                {
+                    var componentAssemblyName = d.Type?.Assembly?.GetName()?.Name;
+                    if ( !string.IsNullOrEmpty( componentAssemblyName )
+                         && componentAssemblyName != "Rock"
+                         && !componentAssemblyName.StartsWith( "Rock.", StringComparison.Ordinal ) )
+                    {
+                        itemName = $"{itemName} (plugin)";
+                    }
+                }
+                catch
+                {
+                    // Intentionally ignored: plugin-suffix detection is cosmetic and
+                    // must never prevent a component from appearing in the picker.
+                }
+
                 return new ComponentListRowBag
                 {
                     Guid = entityType?.Guid ?? Guid.Empty,
-                    Name = d.Name,
+                    Name = itemName,
                     Description = d.Description,
                     IsActive = d.IsActive,
                     EntityTypeId = entityType?.Id ?? 0

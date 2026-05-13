@@ -11256,6 +11256,31 @@ namespace Rock.Rest.v2
 
                 var itemText = componentValue.IsActive ? componentName : $"{componentName} (inactive)";
 
+                /*
+                     5/13/2026 - NA
+
+                     Append a "(plugin)" suffix when the component is implemented in a non-Rock assembly
+                     so administrators can distinguish core components from third-party plugins in the picker.
+                     Failures here must never break the list, so any reflection is guarded.
+
+                     Reason: Temporary solution for v19
+                */
+                try
+                {
+                    var componentAssemblyName = componentValue?.GetType()?.Assembly?.GetName()?.Name;
+                    if ( !string.IsNullOrEmpty( componentAssemblyName )
+                         && componentAssemblyName != "Rock"
+                         && !componentAssemblyName.StartsWith( "Rock.", StringComparison.Ordinal ) )
+                    {
+                        itemText = $"{itemText} (plugin)";
+                    }
+                }
+                catch
+                {
+                    // Intentionally ignored: plugin-suffix detection is cosmetic and
+                    // must never prevent a component from appearing in the picker.
+                }
+
                 items.Add( new ListItemBag
                 {
                     Text = itemText,
