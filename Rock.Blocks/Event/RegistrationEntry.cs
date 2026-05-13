@@ -5705,7 +5705,8 @@ namespace Rock.Blocks.Event
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
 
             var costs = registrationInstanceService.GetRegistrationCostSummaryInfo( context, args.AsArgsOrNull() );
-            var totalDiscountedCost = costs.Sum( c => c.DiscountedCost );
+
+            var totalDiscountedCost = costs.Sum( c => c.DiscountedCost ).AsCurrency();
 
             if ( context.Registration != null )
             {
