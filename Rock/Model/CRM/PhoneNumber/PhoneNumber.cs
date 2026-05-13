@@ -23,7 +23,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -68,6 +70,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 3 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CountryCode { get; set; }
 
         /// <summary>
@@ -79,6 +82,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 20 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Number { get; set; }
 
         /// <summary>
@@ -89,6 +93,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string NumberFormatted { get; set; }
 
         /// <summary>
@@ -98,6 +103,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the phone number without string formatting.
         /// </value>
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string NumberReversed { get; set; }
 
         /// <summary>
@@ -108,6 +114,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Extension { get; set; }
 
         /// <summary>
@@ -146,6 +153,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [LavaHidden]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Description { get; set; }
 
         /// <summary>

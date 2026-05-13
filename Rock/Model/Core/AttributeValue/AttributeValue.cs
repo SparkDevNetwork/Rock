@@ -24,6 +24,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Lava;
 
@@ -113,6 +115,7 @@ namespace Rock.Model
         /// A <see cref="string"/> representing the raw value.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Value
         {
             get => _value ?? string.Empty;
@@ -124,6 +127,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The persisted text value.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PersistedTextValue
         {
             get => _persistedTextValue ?? string.Empty;
@@ -135,6 +139,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The persisted HTML value.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PersistedHtmlValue
         {
             get => _persistedHtmlValue ?? string.Empty;
@@ -146,6 +151,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The persisted condensed text value.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PersistedCondensedTextValue
         {
             get => _persistedCondensedTextValue ?? string.Empty;
@@ -157,6 +163,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The persisted condensed HTML value.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PersistedCondensedHtmlValue
         {
             get => _persistedCondensedHtmlValue ?? string.Empty;

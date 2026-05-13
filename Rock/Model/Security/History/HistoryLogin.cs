@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -47,6 +48,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 255 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string UserName { get; set; }
 
         /// <summary>
@@ -88,6 +90,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 45 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ClientIpAddress { get; set; }
 
         /// <summary>
@@ -98,6 +101,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AuthClientClientId { get; set; }
 
         /// <summary>
@@ -108,6 +112,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ExternalSource { get; set; }
 
         /// <summary>
@@ -132,6 +137,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents any related data.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string RelatedDataJson { get; set; }
 
         /// <summary>
@@ -142,6 +148,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 2048 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string DestinationUrl { get; set; }
 
         /// <summary>
@@ -169,6 +176,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the login failure message, if login was unsuccessful.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string LoginFailureMessage { get; set; }
 
         #endregion Entity Properties

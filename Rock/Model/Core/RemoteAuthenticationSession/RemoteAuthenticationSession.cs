@@ -21,6 +21,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -45,6 +47,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 20 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Code { get; set; }
 
         /// <summary>
@@ -91,6 +94,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 45 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ClientIpAddress { get; set; }
 
         /// <summary>
@@ -101,6 +105,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 45 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AuthenticationIpAddress { get; set; }
 
         /// <summary>
@@ -117,6 +122,7 @@ namespace Rock.Model
         /// </remarks>
         [DataMember]
         [MaxLength( 75 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string DeviceUniqueIdentifier { get; set; }
 
         /// <summary>

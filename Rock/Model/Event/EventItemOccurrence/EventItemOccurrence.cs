@@ -23,7 +23,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -68,6 +70,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Location { get; set; }
 
         /// <summary>
@@ -109,6 +112,7 @@ namespace Rock.Model
         [Previewable]
         [EmailAddressValidation]
         [Index( "IX_Email" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ContactEmail { get; set; }
 
         /// <summary>
@@ -118,6 +122,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the campus note.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml )]
         public string Note { get; set; }
 
         /// <summary>

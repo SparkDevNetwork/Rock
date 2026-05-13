@@ -21,7 +21,9 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.Communication.Chat;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -69,6 +71,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -78,6 +81,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the user defined description of the GroupRole.
         /// </value>
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string Description { get; set; }
 
         /// <summary>

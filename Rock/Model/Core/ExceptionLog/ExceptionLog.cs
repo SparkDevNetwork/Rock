@@ -19,7 +19,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -86,6 +88,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 10 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string StatusCode { get; set; }
 
         /// <summary>
@@ -96,6 +99,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 150 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ExceptionType { get; set; }
 
         /// <summary>
@@ -105,6 +109,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the description of the exception.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string Description { get; set; }
 
         /// <summary>
@@ -115,6 +120,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Source { get; set; }
 
         /// <summary>
@@ -124,6 +130,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the StackTrace of the exception that occurred.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string StackTrace { get; set; }
 
         /// <summary>
@@ -134,6 +141,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PageUrl { get; set; }
 
         /// <summary>
@@ -143,6 +151,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> containing a table of the ServerVariables at the time the exception occurred.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ServerVariables { get; set; }
 
         /// <summary>
@@ -152,6 +161,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the URL Query String from the page that threw the exception.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string QueryString { get; set; }
 
         /// <summary>
@@ -161,6 +171,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing a table containing the value of the form items posted during the page request.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Form { get; set; }
 
         /// <summary>
@@ -170,6 +181,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> containing the session cooks from the client when the exception occurred
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Cookies { get; set; }
 
         #endregion

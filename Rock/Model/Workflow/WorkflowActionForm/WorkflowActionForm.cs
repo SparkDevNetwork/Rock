@@ -16,7 +16,9 @@
 //
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
@@ -76,6 +78,7 @@ namespace Rock.Model
         /// The header.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Header { get; set; }
 
         /// <summary>
@@ -85,6 +88,7 @@ namespace Rock.Model
         /// The footer.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Footer { get; set; }
 
         /// <summary>
@@ -95,6 +99,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 2000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Actions { get; set; }
 
         /// <summary>
@@ -133,6 +138,7 @@ namespace Rock.Model
         /// The person entry preHTML.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PersonEntryPreHtml { get; set; }
 
         /// <summary>
@@ -142,6 +148,7 @@ namespace Rock.Model
         /// The person entry post HTML.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PersonEntryPostHtml { get; set; }
 
         /// <summary>
@@ -269,6 +276,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember( IsRequired = false )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PersonEntrySpouseLabel { get; set; } = "Spouse";
 
         /// <summary>
@@ -368,6 +376,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 500 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PersonEntryTitle { get; set; }
 
         /// <summary>
@@ -377,6 +386,7 @@ namespace Rock.Model
         /// The person entry description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PersonEntryDescription { get; set; }
 
         /// <summary>
@@ -392,6 +402,7 @@ namespace Rock.Model
 
         /// <inheritdoc/>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion Entity Properties

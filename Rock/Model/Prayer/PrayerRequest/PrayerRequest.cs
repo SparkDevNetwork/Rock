@@ -22,7 +22,9 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.AI;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -49,6 +51,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         [Previewable]
+        [StringValidation( StringValidationProfile.Name )]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -60,6 +63,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember( IsRequired = false )]
         [Previewable]
+        [StringValidation( StringValidationProfile.Name )]
         public string LastName { get; set; }
 
         /// <summary>
@@ -72,6 +76,7 @@ namespace Rock.Model
         [MaxLength( 254 )]
         [Previewable]
         [EmailAddressValidation]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Email { get; set; }
 
         /// <summary>
@@ -102,6 +107,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Text { get; set; }
 
         /// <summary>
@@ -111,6 +117,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that contains a description of how God answered the prayer request.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Answer { get; set; }
 
         /// <summary>
@@ -246,6 +253,7 @@ namespace Rock.Model
         /// Gets or sets the Original Text of the PrayerRequest.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string OriginalRequest { get; set; }
 
         /// <summary>

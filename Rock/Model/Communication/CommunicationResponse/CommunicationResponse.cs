@@ -24,6 +24,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -50,6 +52,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 1000 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string MessageKey { get; set; }
 
         /// <summary>
@@ -134,6 +137,7 @@ namespace Rock.Model
         /// The response.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Response { get; set; }
 
         #endregion Entity Properties

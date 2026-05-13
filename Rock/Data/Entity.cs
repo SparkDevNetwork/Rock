@@ -22,8 +22,10 @@ using System.Reflection;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
+
+using Rock.Enums.Security;
 using Rock.Lava;
-using Rock.Tasks;
+using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -133,6 +135,7 @@ namespace Rock.Data
         [MaxLength( 100 )]
         [DataMember]
         [HideFromReporting]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ForeignKey { get; set; }
 
         #endregion

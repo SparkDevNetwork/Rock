@@ -74,6 +74,7 @@
     <Compile Include="ExtensionMethods\StringPluralizationExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RockObsolete.cs" />
+    <Compile Include="Security\StringValidationAttribute.cs" />
     <Compile Include="Utilities\ColorPair.cs" />
     <Compile Include="Utilities\Enums\DayOfWeekFlag.cs" />
     <Compile Include="Utilities\RockColor.cs" />

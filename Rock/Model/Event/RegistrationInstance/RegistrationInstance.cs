@@ -23,6 +23,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -47,6 +49,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -102,6 +105,7 @@ namespace Rock.Model
         /// The details.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Details { get; set; }
 
         /// <summary>
@@ -176,6 +180,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ContactPhone { get; set; }
 
         /// <summary>
@@ -186,6 +191,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ContactEmail { get; set; }
 
         /// <summary>
@@ -195,6 +201,7 @@ namespace Rock.Model
         /// The additional reminder details.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalReminderDetails { get; set; }
 
         /// <summary>
@@ -204,6 +211,7 @@ namespace Rock.Model
         /// The additional confirmation details.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalConfirmationDetails { get; set; }
 
         /// <summary>
@@ -213,6 +221,7 @@ namespace Rock.Model
         /// The registration instructions.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string RegistrationInstructions { get; set; }
 
         /// <summary>

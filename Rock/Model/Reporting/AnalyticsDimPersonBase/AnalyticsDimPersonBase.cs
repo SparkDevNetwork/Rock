@@ -15,6 +15,8 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
@@ -42,6 +44,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting] // Hide from Reporting because Reporting will already have a Marital Status from MaritalStatusValueId
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MaritalStatus { get; set; }
 
         /// <summary>
@@ -52,6 +55,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting] // Hide from Reporting because Reporting will already have a Connection Status from ConnectionStatusValueId
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ConnectionStatus { get; set; }
 
         /// <summary>
@@ -62,6 +66,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting] // Hide from Reporting because Reporting will already have a ReviewReason from ReviewReasonValueId
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReviewReason { get; set; }
 
         /// <summary>
@@ -72,6 +77,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting] // Hide from Reporting because Reporting will already have a RecordStatus from RecordStatusValueId
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string RecordStatus { get; set; }
 
         /// <summary>
@@ -82,6 +88,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting] // Hide from Reporting because Reporting will already have a RecordStatusReason from RecordStatusReasonValueId
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string RecordStatusReason { get; set; }
 
         /// <summary>
@@ -92,6 +99,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting] // Hide from Reporting because Reporting will already have a RecordType from RecordTypeValueId
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string RecordType { get; set; }
 
         /// <summary>
@@ -102,6 +110,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting] // Hide from Reporting because Reporting will already have a Suffix from SuffixValueId
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Suffix { get; set; }
 
         /// <summary>
@@ -112,6 +121,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting] // Hide from Reporting because Reporting will already have a Title from TitleValueId
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Title { get; set; }
 
         #endregion Denormalized Lookup Values
@@ -126,6 +136,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting] // Hide from Reporting because Reporting will already show Text value of the Gender enum
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GenderText { get; set; }
 
         /// <summary>
@@ -136,6 +147,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting] // Hide from Reporting because Reporting will already show the Text value of EmailPreferenceEnum
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string EmailPreferenceText { get; set; }
 
         #endregion Enum Values Converted to Text
@@ -167,6 +179,7 @@ namespace Rock.Model
         /// The name of the campus.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CampusName { get; set; }
 
         /// <summary>
@@ -176,6 +189,7 @@ namespace Rock.Model
         /// The campus short code.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CampusShortCode { get; set; }
 
         #endregion Campus (of the Person's Primary Family)
@@ -191,6 +205,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressStreet1 { get; set; }
 
         /// <summary>
@@ -202,6 +217,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressStreet2 { get; set; }
 
         /// <summary>
@@ -213,6 +229,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressCity { get; set; }
 
         /// <summary>
@@ -223,6 +240,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressCounty { get; set; }
 
         /// <summary>
@@ -234,6 +252,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressState { get; set; }
 
         /// <summary>
@@ -245,6 +264,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressCountry { get; set; }
 
         /// <summary>
@@ -256,6 +276,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressPostalCode { get; set; }
 
         /// <summary>
@@ -308,6 +329,7 @@ namespace Rock.Model
         /// The mailing address full.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressFull { get; set; }
 
         #endregion Mailing Address (of the Person's Primary Family)
@@ -323,6 +345,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressStreet1 { get; set; }
 
         /// <summary>
@@ -334,6 +357,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressStreet2 { get; set; }
 
         /// <summary>
@@ -345,6 +369,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressCity { get; set; }
 
         /// <summary>
@@ -355,6 +380,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressCounty { get; set; }
 
         /// <summary>
@@ -366,6 +392,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressState { get; set; }
 
         /// <summary>
@@ -377,6 +404,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressCountry { get; set; }
 
         /// <summary>
@@ -388,6 +416,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressPostalCode { get; set; }
 
         /// <summary>
@@ -440,6 +469,7 @@ namespace Rock.Model
         /// The mapped address full.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressFull { get; set; }
 
         #endregion Mapped Address (of the Person's Primary Family)

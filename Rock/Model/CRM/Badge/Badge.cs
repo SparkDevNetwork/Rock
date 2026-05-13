@@ -20,6 +20,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -42,12 +44,14 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets a description of the badge.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string Description { get; set; }
 
         /// <summary>
@@ -69,6 +73,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Identifier )]
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
@@ -76,6 +81,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>

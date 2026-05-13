@@ -24,7 +24,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Chart;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -59,6 +61,7 @@ namespace Rock.Model
         /// The x value.
         /// </value>
         [DataMember( IsRequired = false )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string XValue { get; set; }
 
         /// <summary>
@@ -89,6 +92,7 @@ namespace Rock.Model
         /// The note.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Note { get; set; }
 
         /// <summary>

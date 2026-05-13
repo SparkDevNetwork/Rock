@@ -145,6 +145,10 @@ namespace Rock.WebStartup
 
             ShowDebugTimingMessage( "Configure Entity SaveHooks" );
 
+            // Disable the string value validator before we start EF. During
+            // startup we don't want validation to cause Rock to fail to start.
+            Security.StringValueValidator.DisableEnforcement = true;
+
             // Now that EF Migrations have gotten the Schema in sync with our Models,
             // get the RockContext initialized (which can take several seconds).
             // This will help reduce the chances of multiple RockWeb instances causing problems,

@@ -15,6 +15,8 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -44,6 +46,7 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         [MaxLength( 40 )]
         [Index( "IX_TransactionKey", IsUnique = true )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string TransactionKey { get; set; }
 
         /// <summary>
@@ -121,6 +124,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 250 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string TransactionFrequency { get; set; }
 
         /// <summary>
@@ -143,6 +147,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 20 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GivingId { get; set; }
 
         /// <summary>
@@ -177,6 +182,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string TransactionCode { get; set; }
 
         /// <summary>
@@ -186,6 +192,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing a summary of the transaction.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Summary { get; set; }
 
         /// <summary>
