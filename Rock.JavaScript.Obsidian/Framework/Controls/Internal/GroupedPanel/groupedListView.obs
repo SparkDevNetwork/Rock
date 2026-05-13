@@ -22,7 +22,7 @@
                 </template>
                 <template #headerActions>
                     <slot name="headerActions" v-bind="{ groupRows: group.gridData.rows }" />
-                    <HighlightLabel>
+                    <HighlightLabel v-if="getIsCountMessageVisible(group)">
                         {{ getCountMessage(group.key, group.gridData.rows) }}
                     </HighlightLabel>
                 </template>
@@ -80,6 +80,17 @@
         itemTerm: {
             type: String,
             default: "Item"
+        },
+
+        /**
+         * Controls visibility of the per-group count label in each section header.
+         * Accepts a boolean for uniform behavior across all groups, or a predicate
+         * that receives the group so individual sections can show/hide the label
+         * independently.
+         */
+        isCountMessageVisible: {
+            type: [Boolean, Function] as PropType<boolean | ((group: GroupedGrid) => boolean)>,
+            default: true
         }
     });
 
@@ -137,6 +148,14 @@
     }
 
     defineExpose({ clearSelectedKeys, expandAll, collapseAll });
+
+    /** Resolves the `isCountMessageVisible` prop for a specific group. */
+    function getIsCountMessageVisible(group: GroupedGrid): boolean {
+        if (typeof props.isCountMessageVisible === "function") {
+            return props.isCountMessageVisible(group);
+        }
+        return props.isCountMessageVisible;
+    }
 
     /**
      * Returns the count label for a group header. Shows "X of Y Items" when

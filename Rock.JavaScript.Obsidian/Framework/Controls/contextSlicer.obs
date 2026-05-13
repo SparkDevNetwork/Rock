@@ -4,7 +4,9 @@
      If you add other slot-driven controls, you must provide custom `isVisible` logic
      at template level to prevent the slicer from displaying when those slots are empty. -->
 <template>
-    <div ref="slicerEl" v-show="($slots.default && $slots.default().length > 0) || isCampusPickerVisible" class="contextslicer">
+    <div ref="slicerEl"
+         v-show="($slots.default && $slots.default().length > 0) || ($slots.rightContent && $slots.rightContent().length > 0) || isCampusPickerVisible"
+         class="contextslicer">
         <div class="contextslicer-title">{{ props.title }}</div>
 
         <div class="contextslicer-content">
@@ -14,6 +16,8 @@
                                  :campusStatusFilter="campusStatusFilter"
                                  :campusTypeFilter="campusTypeFilter"
                                  @isVisible="isCampusPickerVisible = $event" />
+
+            <slot name="rightContent" />
         </div>
     </div>
 </template>

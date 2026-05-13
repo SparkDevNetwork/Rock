@@ -6,13 +6,15 @@
            panelHeaderCssClass="flex-shrink-0">
         <template #headerActions>
             <div v-if="groupingFields.length > 1" class="d-flex align-items-center gap-xs">
-                <RockLabel class="text-interface-stronger text-xs">
-                    Group By
-                </RockLabel>
                 <ButtonDropDownList v-model="groupingKey"
                                     :items="groupingFields"
                                     :dropdownClass="viewModeItems.length > 1 ? 'dropdown-right' : ''"
-                                    :btnSize="BtnSize.ExtraSmall" />
+                                    :btnSize="BtnSize.ExtraSmall">
+                    <template #selectionPrepend>
+                        <i class="ti ti-list-details mr-spacing-tiny"></i>
+                        <span>Group By:</span>
+                    </template>
+                </ButtonDropDownList>
             </div>
             <ButtonGroup v-if="viewModeItems.length > 1"
                          v-model="internalViewMode"
@@ -64,7 +66,8 @@
                              :totalGroupCounts="totalGroupCounts"
                              :groupingKey="groupingKey"
                              :isAutoCollapseEnabled="isAutoCollapseEnabled"
-                             :itemTerm="itemTerm">
+                             :itemTerm="itemTerm"
+                             :isCountMessageVisible="isCountMessageVisible">
                 <template #headerActions="slotProps">
                     <slot name="headerActions" v-bind="slotProps" />
                 </template>
@@ -271,6 +274,17 @@
             type: Number,
             required: false,
             default: 0
+        },
+
+        /**
+         * Controls visibility of the per-group count label in the list view's
+         * section headers. Accepts a boolean for uniform behavior across all
+         * groups, or a predicate that receives the group so individual sections
+         * can show/hide the label independently.
+         */
+        isCountMessageVisible: {
+            type: [Boolean, Function] as PropType<boolean | ((group: GroupedGrid) => boolean)>,
+            default: true
         }
     });
 

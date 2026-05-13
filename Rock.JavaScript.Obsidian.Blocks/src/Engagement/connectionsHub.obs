@@ -1,15 +1,31 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContextSlicer title="Filters"
-                   class="mb-spacing-lg"
+    <ContextSlicer title="View"
+                   class="mb-spacing-lg connections-hub-slicer"
                    showCampus>
         <template #default>
-            <DropDownList v-model="areOnlyMyRequestsVisible"
-                          :items="requestToggleItems"
-                          :showBlankItem="false" />
-            <DropDownList v-model="selectedOpportunity"
-                          :items="box.options?.connectionOpportunities ?? []"
-                          blankValue="All Opportunities" />
+            <div class="slicer-slot-content">
+                <ButtonGroup v-if="enabledViews.length > 1"
+                             v-model="selectedView"
+                             :items="enabledViews"
+                             :btnSize="BtnSize.ExtraSmall" />
+                <div class="slicer-content-right">
+                    <DropDownList v-model="areOnlyMyRequestsVisible"
+                                  :items="requestToggleItems"
+                                  :showBlankItem="false" />
+                    <DropDownList v-model="selectedOpportunity"
+                                  :items="box.options?.connectionOpportunities ?? []"
+                                  blankValue="All Opportunities" />
+
+                </div>
+            </div>
+        </template>
+        <template #rightContent>
+            <RockButton isSquare
+                        title="My Connections"
+                        :btnSize="BtnSize.Small">
+                <i class="ti ti-user-circle"></i>
+            </RockButton>
         </template>
     </ContextSlicer>
 
@@ -25,8 +41,8 @@
                   :filteredAndSortedRows="visibleRowsFilteredByGrid"
                   :panelSettingsActive="hasSettingsFilters"
                   :groupingFields="groupingFields"
-                  :viewModeItems="enabledViews"
                   itemTerm="Request"
+                  :isCountMessageVisible="isGroupCountMessageVisible"
                   hasFullscreen
                   :onAddItem="canEditConnectionRequests ? onAddItem : undefined"
                   :onPanelSettingsClick="onPanelSettingsClick"
@@ -123,11 +139,11 @@
                 </div>
             </div>
         </template>
-        <template #headerActions="{ groupRows }" v-if="selectedGrouping !== 'dueStatusGrouping'">
-            <HighlightLabel labelType="warning">
+        <template #headerActions="{ groupRows }">
+            <HighlightLabel v-if="shouldShowDueSoonHighlight(groupRows)" labelType="warning">
                 {{ getDueSoonCount(groupRows) }} Due Soon
             </HighlightLabel>
-            <HighlightLabel labelType="danger">
+            <HighlightLabel v-if="shouldShowOverdueHighlight(groupRows)" labelType="danger">
                 {{ getOverdueCount(groupRows) }} Overdue
             </HighlightLabel>
         </template>
@@ -836,6 +852,26 @@
     color: var(--color-interface-medium);
 }
 
+.connections-hub-slicer > :deep(.contextslicer-title) {
+    flex-grow: 0;
+}
+
+.connections-hub-slicer > :deep(.contextslicer-content) {
+    flex: 1;
+}
+
+.slicer-slot-content {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.slicer-slot-content > .slicer-content-right {
+    display: flex;
+    gap: var(--spacing-medium);
+}
+
 /* The .grid-cell class sets overflow: hidden. This prevens the dropdown menu from working within the cell. This class will set overflow: visible for any grid column with the itemClass "grid-cell-overflow" */
 :deep(.grid-cell.grid-cell-overflow) {
     overflow: visible;
@@ -1069,7 +1105,8 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ConnectionRequestCard from "./ConnectionsHub/connectionRequestCard.partial.obs";
     import { vTooltip } from "@Obsidian/Directives/tooltip";
-
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 
     const box = useConfigurationValues<ListBlockBox<ConnectionsHubOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -1832,6 +1869,39 @@
 
     function getDueSoonCount(rows: Record<string, unknown>[]): number {
         return rows.filter(r => r["dueStatus"] === DueStatus.DueSoon).length;
+    }
+
+    /*
+        Each row within a "Due Status" group shares the same dueStatus, so we can
+        infer the group's status from any row to decide which highlight label belongs
+        in that group's header.
+    */
+    function shouldShowDueSoonHighlight(rows: Record<string, unknown>[]): boolean {
+        if (selectedGrouping.value !== "dueStatusGrouping") {
+            return true;
+        }
+        return rows[0]?.["dueStatus"] === DueStatus.DueSoon;
+    }
+
+    function shouldShowOverdueHighlight(rows: Record<string, unknown>[]): boolean {
+        if (selectedGrouping.value !== "dueStatusGrouping") {
+            return true;
+        }
+        return rows[0]?.["dueStatus"] === DueStatus.Overdue;
+    }
+
+    /*
+        In Due Status grouping, the Overdue and Due Soon sections show their own
+        status-specific highlight label, so the generic "X Requests" label is
+        suppressed there to avoid duplication. The other group (On Track)
+        keeps the generic label.
+    */
+    function isGroupCountMessageVisible(group: GroupedGrid): boolean {
+        if (selectedGrouping.value !== "dueStatusGrouping") {
+            return true;
+        }
+        const groupDueStatus = group.gridData.rows[0]?.["dueStatus"];
+        return groupDueStatus !== DueStatus.Overdue && groupDueStatus !== DueStatus.DueSoon;
     }
 
     /**
