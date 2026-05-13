@@ -205,7 +205,9 @@ namespace Rock.Blocks.Core
 
                    Reason: Temporary solution for v19
                 */
-                var itemName = d.Name;
+                var itemName = string.IsNullOrEmpty( entityType.FriendlyName )
+                    ? d.Name
+                    : entityType.FriendlyName;
                 try
                 {
                     var componentAssemblyName = d.Type?.Assembly?.GetName()?.Name;

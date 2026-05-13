@@ -77,6 +77,8 @@ IF @LegacyAzureBlobStorageEntityTypeId IS NOT NULL
    AND ( @CoreActive IS NULL OR @CoreActive <> N'True' )
 BEGIN
 
+    UPDATE [EntityType] SET [FriendlyName] = 'Azure Blob Storage (legacy)' WHERE [Id] = @LegacyAzureBlobStorageEntityTypeId
+
     /* -----------------------------------------------------------------------
         STEP 1: Copy component-level AttributeValues (EntityId = 0) from the
         legacy provider to the Core provider, matched by Attribute.[Key].
