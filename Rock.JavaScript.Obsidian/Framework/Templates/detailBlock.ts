@@ -968,8 +968,8 @@ export default defineComponent({
     <template v-if="showLabels && showLabelsInHeader" #panelLabels>
         <div class="label-group">
             <span v-for="action in labels" :class="getClassForLabelAction(action)" :title="action.tooltip" @click="onActionClick(action, $event)">
+                <i v-if="action.iconCssClass" :class="action.iconCssClass"></i>
                 <template v-if="action.title">{{ action.title }}</template>
-                <i v-else :class="action.iconCssClass"></i>
             </span>
         </div>
     </template>
@@ -978,8 +978,8 @@ export default defineComponent({
         <div class="d-flex">
             <div v-if="showLabels && !showLabelsInHeader" class="label-group">
                 <span v-for="action in labels" :class="getClassForLabelAction(action)" @click="onActionClick(action, $event)">
+                    <i v-if="action.iconCssClass" :class="action.iconCssClass"></i>
                     <template v-if="action.title">{{ action.title }}</template>
-                    <i v-else :class="action.iconCssClass"></i>
                 </span>
             </div>
 
