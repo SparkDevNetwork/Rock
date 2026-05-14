@@ -27,10 +27,12 @@ using Rock.Enums.Blocks.Group.Scheduling;
 using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Security;
+using Rock.Transactions;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Group.Scheduling
 {
@@ -1836,14 +1838,53 @@ namespace Rock.Blocks.Group.Scheduling
                         .Where( a => attendanceOccurrenceIds.Contains( a.OccurrenceId ) )
                         .Where( a => a.ScheduleConfirmationSent != true );
 
-                    // Make sure we save changes after calling the following method, to mark successful sends in the database
-                    // and prevent duplicate sends the next time this method is called.
-                    var sendMessageResult = attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery, true );
-                    rockContext.SaveChanges();
+                    // Snapshot the matching attendance IDs synchronously and defer the
+                    // SendScheduleConfirmationCommunication + SaveChanges work to a queued
+                    // transaction so the HTTP response returns before the reverse proxy
+                    // can time out on large filter sets.
+                    var attendanceIdsToSend = sendConfirmationAttendancesQuery
+                        .Select( a => a.Id )
+                        .ToList();
 
-                    response.Errors = sendMessageResult.Errors;
-                    response.Warnings = sendMessageResult.Warnings;
-                    response.CommunicationsSentCount = sendMessageResult.MessagesSent;
+                    // Filter out attendance IDs that are already queued by a recent
+                    // request (same user re-clicking, browser refresh, cross-tab, or --
+                    // in multi-server deployments with a distributed cache configured --
+                    // a click on another web server). The transaction releases its
+                    // cache claim when it drains, so this only filters out work that
+                    // is genuinely in flight.
+                    var alreadyQueuedIds = new HashSet<int>();
+                    foreach ( var id in attendanceIdsToSend )
+                    {
+                        if ( RockCache.Get( SendGroupScheduleConfirmationsTransaction.GetCacheKey( id ), SendGroupScheduleConfirmationsTransaction.CacheRegion ) != null )
+                        {
+                            alreadyQueuedIds.Add( id );
+                        }
+                    }
+
+                    var newIdsToQueue = attendanceIdsToSend
+                        .Where( id => !alreadyQueuedIds.Contains( id ) )
+                        .ToList();
+
+                    response.Errors = new List<string>();
+                    response.Warnings = new List<string>();
+                    response.CommunicationsSentCount = newIdsToQueue.Count;
+
+                    if ( newIdsToQueue.Any() )
+                    {
+                        // Claim the new IDs in the cache before enqueueing so a
+                        // near-simultaneous re-click (or a click on another web server)
+                        // sees them as in flight.
+                        foreach ( var id in newIdsToQueue )
+                        {
+                            RockCache.AddOrUpdate(
+                                SendGroupScheduleConfirmationsTransaction.GetCacheKey( id ),
+                                SendGroupScheduleConfirmationsTransaction.CacheRegion,
+                                true,
+                                SendGroupScheduleConfirmationsTransaction.CacheTtl );
+                        }
+
+                        RockQueue.Enqueue( new SendGroupScheduleConfirmationsTransaction( newIdsToQueue ) );
+                    }
 
                     // Check to see if any group types are missing a system communication so we can alert the current person.
                     var groupTypeNamesWithoutSystemCommunication = sendConfirmationAttendancesQuery
@@ -1866,7 +1907,17 @@ namespace Rock.Blocks.Group.Scheduling
                         && !response.Errors.Any()
                         && !response.Warnings.Any() )
                     {
-                        response.AnyCommunicationsToSend = sendConfirmationAttendancesQuery.Any();
+                        // If every matching attendance was filtered out by the cache
+                        // dedup, surface the existing "already sent" message rather
+                        // than letting the modal render with an empty body.
+                        if ( alreadyQueuedIds.Any() )
+                        {
+                            response.AnyCommunicationsToSend = false;
+                        }
+                        else
+                        {
+                            response.AnyCommunicationsToSend = sendConfirmationAttendancesQuery.Any();
+                        }
                     }
                 }
             }

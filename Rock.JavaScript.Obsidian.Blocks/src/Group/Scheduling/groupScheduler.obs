@@ -368,6 +368,13 @@
     const sendConfirmationsResponse = ref<GroupSchedulerSendConfirmationsResponseBag | null>(null);
     const isSendConfirmationsModalVisible = ref(false);
 
+    // Cooldown applied to the Send Confirmations button after a successful queue,
+    // so a near-immediate re-click (which the server-side RockCache dedup would
+    // already discard) is prevented at the UI layer. Sized to cover the typical
+    // standard-queue drain interval plus a small execution buffer.
+    const sendConfirmationsCooldownSeconds = ref(0);
+    let sendConfirmationsCooldownIntervalId: number | null = null;
+
     const reloadAllOccurrences = ref(false);
     const reloadOccurrencesContainingResource = ref<number | null>(null);
 
@@ -582,7 +589,10 @@
         let message = "";
 
         if (sentCount.value > 0) {
-            message = `<p>Successfully sent ${sentCount.value} ${pluralize("confirmation", sentCount.value)}.</p>`;
+            // The send is now queued to a background transaction rather than performed
+            // synchronously, so the count reflects what has been queued. The first
+            // emails typically arrive within ~60 seconds.
+            message = `<p>${sentCount.value} ${pluralize("confirmation", sentCount.value)} queued for sending. Emails will begin arriving within about a minute.</p>`;
         }
         else if (!anySendErrors.value && !anySendWarnings.value && !anyCommunicationsToSend.value) {
             message = "<p>Everybody has already been sent a confirmation. No additional confirmations sent.</p>";
@@ -596,7 +606,10 @@
             || isSelectingCloneSettings.value
             || isCloningSchedules.value
             || isAutoScheduling.value
-            || isSendingConfirmations.value;
+            || isSendingConfirmations.value
+            // Keep Send Confirmations (and sibling scheduling actions) disabled while
+            // the cooldown is active so re-clicks cannot queue duplicate work.
+            || sendConfirmationsCooldownSeconds.value > 0;
     });
 
     const isSchedulingDisabled = computed((): boolean => {
@@ -1029,6 +1042,34 @@
     }
 
     /**
+     * Starts the Send Confirmations cooldown. The button (and the sibling
+     * scheduling actions, via `isBusy`) stays disabled until the cooldown
+     * reaches zero. Works in concert with the server-side RockCache dedup to
+     * prevent duplicate queueing on near-immediate re-clicks.
+     */
+    function startSendConfirmationsCooldown(seconds: number): void {
+        sendConfirmationsCooldownSeconds.value = seconds;
+
+        if (sendConfirmationsCooldownIntervalId !== null) {
+            window.clearInterval(sendConfirmationsCooldownIntervalId);
+            sendConfirmationsCooldownIntervalId = null;
+        }
+
+        sendConfirmationsCooldownIntervalId = window.setInterval(() => {
+            sendConfirmationsCooldownSeconds.value--;
+
+            if (sendConfirmationsCooldownSeconds.value <= 0) {
+                sendConfirmationsCooldownSeconds.value = 0;
+
+                if (sendConfirmationsCooldownIntervalId !== null) {
+                    window.clearInterval(sendConfirmationsCooldownIntervalId);
+                    sendConfirmationsCooldownIntervalId = null;
+                }
+            }
+        }, 1000);
+    }
+
+    /**
      * Sends confirmations based on the currently-applied filters.
      */
     async function sendConfirmations(): Promise<void> {
@@ -1052,6 +1093,13 @@
 
         sendConfirmationsResponse.value = result.data;
         isSendConfirmationsModalVisible.value = true;
+
+        // Only start the cooldown when this click actually queued new work. If
+        // everything was dedup'd (count == 0) the cache is already protecting us,
+        // and if no matching records existed there is nothing in flight to wait for.
+        if ((result.data?.communicationsSentCount ?? 0) > 0) {
+            startSendConfirmationsCooldown(90);
+        }
     }
 
     /**
@@ -1136,6 +1184,13 @@
     onUnmounted(() => {
         if (schedulesResizeObserver) {
             schedulesResizeObserver.disconnect();
+        }
+
+        // Clear the Send Confirmations cooldown interval if the component
+        // unmounts while the cooldown is active (route change, page navigation, etc.).
+        if (sendConfirmationsCooldownIntervalId !== null) {
+            window.clearInterval(sendConfirmationsCooldownIntervalId);
+            sendConfirmationsCooldownIntervalId = null;
         }
     });
 </script>
