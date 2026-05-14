@@ -58,7 +58,7 @@ namespace Rock.Model
         /// The request filter key.
         /// </value>
         [DataMember]
-        [StringValidation( StringValidationProfile.Identifier )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RequestFilterKey { get; set; }
 
         /// <summary>

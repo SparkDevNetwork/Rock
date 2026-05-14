@@ -102,15 +102,5 @@ namespace Rock.Enums.Security
         /// rule does not interfere with international text.
         /// </summary>
         BidiOverrides = 0x0080,
-
-        /// <summary>
-        /// The only allowlist rule in the set. Fires when the value contains any
-        /// character outside the URL-safe slug set ( <c>A-Z</c>, <c>a-z</c>, <c>0-9</c>,
-        /// <c>-</c>, <c>_</c> ). Intended for properties holding identifiers, codes,
-        /// or slugs; every blocklist concern (HTML, Lava, control characters, bidi
-        /// overrides) is subsumed by this allowlist because none of those characters
-        /// are URL-safe.
-        /// </summary>
-        NonUrlSlugCharacters = 0x0100,
     }
 }

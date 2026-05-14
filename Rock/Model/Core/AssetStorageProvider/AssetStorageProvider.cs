@@ -86,7 +86,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
-        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         #endregion Entity Properties

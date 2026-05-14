@@ -168,7 +168,7 @@ namespace Rock.Model
         /// The message.
         /// </value>
         [DataMember]
-        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string AcceptConfirmationMessage { get; set; }
 
         /// <summary>
@@ -178,7 +178,7 @@ namespace Rock.Model
         /// The message.
         /// </value>
         [DataMember]
-        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string DeclineConfirmationMessage { get; set; }
 
         /// <summary>

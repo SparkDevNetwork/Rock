@@ -61,7 +61,7 @@ namespace Rock.Model
         [MaxLength( 200 )]
         [Index]
         [DataMember( IsRequired = true )]
-        [StringValidation( StringValidationProfile.Identifier )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Key { get; set; }
 
         /// <summary>

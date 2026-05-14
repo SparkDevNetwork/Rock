@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.CheckIn
         )]
 
     [CodeEditorField(
-        "Identify you Prompt Template <span class='tip tip-lava'></span>",
+        "Identify you Prompt Template",
         Key = AttributeKey.IdentifyYouPromptTemplate,
         Category = "Text",
         DefaultValue = "Before we proceed we'll need to identify you for check-in.",
@@ -131,7 +131,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 2 )]
 
     [CodeEditorField(
-        "Allow Location Prompt <span class='tip tip-lava'></span>",
+        "Allow Location Prompt",
         Key = AttributeKey.AllowLocationPermissionPromptTemplate,
         Category = "Text",
         DefaultValue = "We need to determine your location to complete the check-in process. You'll notice a request window pop-up. Be sure to allow permissions. We'll only have permission to your location when you're visiting this site.",
@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 3 )]
 
     [CodeEditorField(
-        "Location Progress <span class='tip tip-lava'></span>",
+        "Location Progress",
         Key = AttributeKey.LocationProgress,
         Category = "Text",
         DefaultValue = "Determining location...",
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 4 )]
 
     [CodeEditorField(
-        "Welcome Back <span class='tip tip-lava'></span>",
+        "Welcome Back",
         Key = AttributeKey.WelcomeBackTemplate,
         Category = "Text",
         DefaultValue = "Hi {{ CurrentPerson.NickName }}! Great to see you back. Select the check-in button to get started.",
@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 5 )]
 
     [CodeEditorField(
-        "No Services <span class='tip tip-lava'></span>",
+        "No Services",
         Key = AttributeKey.NoScheduledDevicesAvailableTemplate,
         Category = "Text",
         DefaultValue = "Hi {{ CurrentPerson.NickName }}! There are currently no services ready for check-in at this time.",
@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 6 )]
 
     [CodeEditorField(
-        "Can't Determine Location <span class='tip tip-lava'></span>",
+        "Can't Determine Location",
         Key = AttributeKey.UnableToDetermineMobileLocationTemplate,
         Category = "Text",
         DefaultValue = "Hi {{ CurrentPerson.NickName }}! We can't determine your location. Please be sure to enable location permissions for your device.",
@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 7 )]
 
     [CodeEditorField(
-        "No Devices Found <span class='tip tip-lava'></span>",
+        "No Devices Found",
         Key = AttributeKey.NoDevicesFoundTemplate,
         Category = "Text",
         DefaultValue = "Hi {{ CurrentPerson.NickName }}! Currently, you're not close enough to check in. Please try again once you're closer to the campus.",
@@ -201,7 +201,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 8 )]
 
     [CodeEditorField(
-        "No Campuses Found <span class='tip tip-lava'></span>",
+        "No Campuses Found",
         Key = AttributeKey.NoCampusesFoundTemplate,
         Category = "Text",
         DefaultValue = "Hi {{ CurrentPerson.NickName }}! There are currently no active campuses ready for check-in at this time.",

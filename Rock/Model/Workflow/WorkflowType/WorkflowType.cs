@@ -90,7 +90,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        [StringValidation( StringValidationProfile.Identifier )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string WorkflowIdPrefix { get; set; }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing a description/summary of the WorkflowType.
         /// </value>
         [DataMember]
-        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -314,7 +314,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 400 )]
         [DataMember]
-        [StringValidation( StringValidationProfile.Identifier )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Slug { get; set; }
 
         #endregion Entity Properties

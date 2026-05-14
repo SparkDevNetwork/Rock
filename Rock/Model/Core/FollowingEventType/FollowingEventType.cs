@@ -56,7 +56,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the user defined description of the FollowingEvent.
         /// </value>
         [DataMember]
-        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>

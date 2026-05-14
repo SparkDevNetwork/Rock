@@ -77,7 +77,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> containing a description or summary about this WorkflowActivityType.
         /// </value>
         [DataMember]
-        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>

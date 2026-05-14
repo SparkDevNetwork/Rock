@@ -74,7 +74,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
-        [StringValidation( StringValidationProfile.Identifier )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Key { get; set; }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>A <see cref="string"/> that describes the search.</value>
         [DataMember]
-        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>

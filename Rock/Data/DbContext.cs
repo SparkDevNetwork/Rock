@@ -28,6 +28,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Web;
 
+using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Net;
@@ -49,6 +50,16 @@ namespace Rock.Data
     public abstract class DbContext : System.Data.Entity.DbContext
     {
         #region Properties
+
+        /// <summary>
+        /// Used to enable the validation of string values when it has been
+        /// enabled in the system settings. This should be removed in the
+        /// future, say around Rock v21, and the validation should then no
+        /// longer be optional. It is automatically enabled at the end of Rock
+        /// startup if the security setting is enabled.
+        /// </summary>
+        [RockInternal( "17.8", keepInternalForever: true )]
+        public static bool EnableStringValidation { get; set; }
 
         /// <summary>
         /// Gets or sets the entity save hook provider.
@@ -644,7 +655,21 @@ namespace Rock.Data
                 // be included in the validation.
                 if ( updatedItemValues.Count > 0 )
                 {
-                    ValidatePropertyValues( updatedItemValues );
+                    try
+                    {
+                        ValidatePropertyValues( updatedItemValues );
+                    }
+                    catch ( PropertyValidationException ex )
+                    {
+                        if ( EnableStringValidation )
+                        {
+                            throw;
+                        }
+                        else
+                        {
+                            ExceptionLogService.LogException( new Exception( "Property validation failed.", ex ) );
+                        }
+                    }
                 }
 
                 return updatedItemValues;

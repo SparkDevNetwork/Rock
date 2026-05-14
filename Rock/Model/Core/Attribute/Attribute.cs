@@ -88,7 +88,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        [StringValidation( StringValidationProfile.Identifier )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Rock.Model
         [MaxLength( 1000 )]
         [DataMember( IsRequired = true )]
         [TypeScriptType( "string" )]
-        [StringValidation( StringValidationProfile.Identifier )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Key { get; set; }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the description of the Attribute.
         /// </value>
         [DataMember]
-        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>

@@ -118,10 +118,10 @@ namespace Rock.Security
         /// <summary>
         /// Determines if the server model validation logic is enabled. If not
         /// exceptions will be logged instead of thrown. Rock must be restarted
-        /// for changes to thsi setting to take effect.
+        /// in order for changes to this setting to take effect.
         /// </summary>
         [RockInternal( "17.8", keepInternalForever: true )]
-        public bool DisableServerModelValidation { get; set; }
+        public bool EnableServerModelValidation { get; set; }
 
         /// <summary>
         /// Gets or sets the date time used to reject authentication cookies that were issued before then.
