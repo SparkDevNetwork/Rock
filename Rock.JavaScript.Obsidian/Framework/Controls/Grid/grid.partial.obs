@@ -1128,10 +1128,14 @@
         workbook.modified = new Date();
 
         // Excel worksheet names cannot contain * ? : \ / [ ] and are limited to 31
-        // characters; exceljs throws if the title violates either rule. Sanitize for
-        // the worksheet only, leaving the source title (used elsewhere) untouched.
+        // characters; exceljs throws if the title violates either rule. It also throws
+        // when the worksheet name is exactly "History" (capital H), so append "Log" in
+        // that case. Sanitize for the worksheet only, leaving the source title (used
+        // elsewhere) untouched.
         // See https://github.com/SparkDevNetwork/Rock/issues/6821
-        const worksheetName = title.replace(/[*?:\\/[\]]/g, "").substring(0, 31) || "Sheet1";
+        const sanitizedTitle = title.replace(/[*?:\\/[\]]/g, "").substring(0, 31) || "Sheet1";
+        const worksheetName = sanitizedTitle === "History" ? "HistoryLog" : sanitizedTitle;
+
         const worksheet = workbook.addWorksheet(worksheetName);
 
         // Build the header row
