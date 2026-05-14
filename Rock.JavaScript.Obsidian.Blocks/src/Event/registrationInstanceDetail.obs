@@ -142,7 +142,11 @@
         }
 
         if (!bag.isActive) {
-            labels.push({ title: "Inactive", type: "danger" });
+            labels.push({
+                title: "Inactive",
+                type: "danger",
+                iconCssClass: "ti ti-bulb"
+            });
         }
 
         if (bag.registrationTemplateName) {

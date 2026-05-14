@@ -130,13 +130,15 @@
         if (eventItemViewBag.value?.isApproved === true) {
             labels.push({
                 title: "Approved",
-                type: "info"
+                type: "info",
+                iconCssClass: "ti ti-check"
             });
         }
         else {
             labels.push({
                 title: "Not Approved",
-                type: "warning"
+                type: "warning",
+                iconCssClass: "ti ti-clock"
             });
         }
 
