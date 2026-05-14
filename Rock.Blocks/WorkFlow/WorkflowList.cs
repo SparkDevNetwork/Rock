@@ -199,9 +199,9 @@ namespace Rock.Blocks.Workflow
                 var workflowService = new WorkflowService( rockContext );
 
                 workflows = workflowService
-	                .Queryable( "Activities.ActivityType,Activities.AssignedGroup.Members,Activities.AssignedPersonAlias.Person,Activities.Actions.ActionType,InitiatorPersonAlias.Person,WorkflowType" )
-	                .AsNoTracking()
-	                .Where( w => w.WorkflowTypeId.Equals( workflowType.Id ) );
+                    .Queryable( "Activities,InitiatorPersonAlias.Person" )
+                    .AsNoTracking()
+                    .Where( w => w.WorkflowTypeId.Equals( workflowType.Id ) );
 
                 // Activated Date Range Filter
                 if ( FilterActivatedDateRangeLowerValue.HasValue )
@@ -238,19 +238,23 @@ namespace Rock.Blocks.Workflow
         /// <inheritdoc/>
         protected override GridBuilder<Rock.Model.Workflow> GetGridBuilder()
         {
+            // All workflows in this list belong to the same WorkflowType, so we
+            // can resolve the IdKey once from cache rather than including the
+            // WorkflowType navigation property on every row.
+            var workflowTypeIdKey = GetWorkflowType()?.IdKey;
+
             return new GridBuilder<Rock.Model.Workflow>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "workflowId", a => a.WorkflowId )
                 .AddTextField( "name", a => a.Name )
                 .AddPersonField( "initiator", a => a.InitiatorPersonAlias?.Person )
-                .AddField( "activities", a => a.Activities.Where( wa => wa.ActivatedDateTime.HasValue && !wa.CompletedDateTime.HasValue ).OrderBy( wa => wa.ActivityType.Order ).Select( wa => wa.ActivityType.Name ) )
+                .AddField( "activities", a => a.Activities.Where( wa => wa.ActivatedDateTime.HasValue && !wa.CompletedDateTime.HasValue ).OrderBy( wa => wa.ActivityTypeCache.Order ).Select( wa => wa.ActivityTypeCache.Name ) )
                 .AddDateTimeField( "createdDateTime", a => a.CreatedDateTime )
                 .AddTextField( "status", a => a.Status )
                 .AddField( "isCompleted", a => a.CompletedDateTime.HasValue )
                 .AddField( "guid", a => a.Guid )
-                .AddField( "workflowTypeIdKey", a => a.WorkflowType.IdKey )
-                .AddField( "hasActiveEntryForm", a => a.HasActiveEntryForm( GetCurrentPerson() ) )
+                .AddField( "workflowTypeIdKey", _ => workflowTypeIdKey )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
@@ -389,6 +393,25 @@ namespace Rock.Blocks.Workflow
             RockContext.SaveChanges();
 
             return ActionOk();
+        }
+
+        /// <summary>
+        /// Determines whether the specified workflow has an active entry form for the current person.
+        /// </summary>
+        /// <param name="key">The identifier of the workflow to check.</param>
+        /// <returns>A result containing <c>true</c> if the workflow has an active entry form; otherwise <c>false</c>.</returns>
+        [BlockAction]
+        public BlockActionResult HasActiveEntryForm( string key )
+        {
+            var workflowService = new WorkflowService( RockContext );
+            var workflow = workflowService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( workflow == null )
+            {
+                return ActionNotFound();
+            }
+
+            return ActionOk( workflow.HasActiveEntryForm( GetCurrentPerson() ) );
         }
 
         /// <summary>
