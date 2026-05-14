@@ -33,6 +33,7 @@
 
                 <ComponentPicker v-model="storageEntityType"
                                  containerType="Rock.Storage.ProviderContainer, Rock"
+                                 :includeInactive=true
                                  label="Storage Type"
                                  rules="required" />
                 <div class="attributes">
