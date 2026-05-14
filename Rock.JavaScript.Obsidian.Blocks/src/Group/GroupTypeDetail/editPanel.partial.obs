@@ -586,13 +586,13 @@
                                             help="When enabled, chat channels of this type are always shown in the channel list, even for people who have not joined. Public visibility also allows anyone to join via the chat application."
                                             :disabled="isSystem" />
                         </div>
-                    </ContentStack>
 
-                    <RadioButtonList label="Default Channel Notification Setting"
-                                     v-model="chatPushNotificationModeValue"
-                                     :items="enumToListItemBag(ChatNotificationModeDescription)"
-                                     help="Specifies how push notifications are sent for chat channels of this type."
-                                     :disabled="isSystem" />
+                        <RadioButtonList label="Default Channel Notification Setting"
+                                         v-model="chatPushNotificationModeValue"
+                                         :items="enumToListItemBag(ChatNotificationModeDescription)"
+                                         help="Specifies how push notifications are sent for chat channels of this type."
+                                         :disabled="isSystem" />
+                    </ContentStack>
                 </div>
             </TransitionVerticalCollapse>
         </ContentSection>
