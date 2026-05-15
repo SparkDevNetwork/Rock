@@ -300,15 +300,10 @@ namespace Rock.Security
         {
             var realType = type.IsDynamicProxyType() ? type.BaseType : type;
 
-            // For now, skip plugins. They may be included in the future.
-            if ( realType.Assembly != typeof( Data.RockContext ).Assembly )
-            {
-                return new List<ValidationProperty>();
-            }
-
             return type.GetProperties()
                 .Where( p => p.PropertyType == typeof( string )
                     && p.GetIndexParameters().Length == 0
+                    && p.GetCustomAttribute<StringValidationAttribute>() != null
                     && p.GetCustomAttribute<DataMemberAttribute>() != null
                     && p.GetCustomAttribute<NotMappedAttribute>() == null
                     && p.GetSetMethod() != null )
