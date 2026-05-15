@@ -23,11 +23,14 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Communication;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -49,6 +52,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -62,6 +66,7 @@ namespace Rock.Model
         /// Gets or sets the description.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
         
         /// <summary>
@@ -156,6 +161,7 @@ namespace Rock.Model
         /// </remarks>
         [MaxLength( 500 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string PublicName { get; set; }
 
         /// <summary>
@@ -172,6 +178,7 @@ namespace Rock.Model
 
         /// <inheritdoc />
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion Entity Properties

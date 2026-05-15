@@ -363,6 +363,7 @@ namespace Rock.Model
         /// generated from the location’s address.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         #endregion Entity Properties

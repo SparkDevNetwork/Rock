@@ -224,18 +224,21 @@ namespace Rock.Model
         /// Gets or sets the label for the call to action button.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CallToActionLabel { get; set; }
 
         /// <summary>
         /// Gets or sets the URL link for the call to action button.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CallToActionLink { get; set; }
 
         /// <summary>
         /// Gets or sets the description displayed with the call to action button.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CallToActionDescription { get; set; }
 
         /// <summary>

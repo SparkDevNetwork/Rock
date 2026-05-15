@@ -886,6 +886,7 @@ namespace Rock.Model
 
         /// <inheritdoc/>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion Entity Properties

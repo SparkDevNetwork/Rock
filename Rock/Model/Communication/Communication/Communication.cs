@@ -507,6 +507,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 600 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Summary { get; set; }
 
         #endregion

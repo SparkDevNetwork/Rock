@@ -168,6 +168,7 @@ namespace Rock.Model
         /// Gets or sets the additional settings as a JSON document.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion
