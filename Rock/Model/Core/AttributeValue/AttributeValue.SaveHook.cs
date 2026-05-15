@@ -62,7 +62,7 @@ namespace Rock.Model
                     // Don't use BinaryFileFieldType as that type of attribute's file can be used by more than one attribute
                     var field = attributeCache.FieldType.Field;
 
-                    if ( valueWasModified && field != null )
+                    if ( valueWasModified && field != null && field.GetType().Assembly.FullName.StartsWith( "Rock" ) )
                     {
                         var rules = field.GetValidationRules( attributeCache.ConfigurationValues );
 

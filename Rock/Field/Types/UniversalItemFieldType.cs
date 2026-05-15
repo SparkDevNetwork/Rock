@@ -18,12 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.ViewModels.Utility;
@@ -245,6 +245,12 @@ namespace Rock.Field.Types
         public sealed override bool IsValid( string value, bool required, out string message )
         {
             return base.IsValid( value, required, out message );
+        }
+
+        /// <inheritdoc/>
+        public sealed override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return base.GetValidationRules( privateConfigurationValues );
         }
 
         /// <inheritdoc/>
