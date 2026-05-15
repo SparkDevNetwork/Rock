@@ -297,7 +297,7 @@
             memoryCacheDurationHours: memoryCacheDuration.value,
             expireDateTime: expiresOn.value,
             persistedScheduleIntervalType: typeOfInterval.value,
-            persistenceType: isPersistenceEnabled.value ? persistenceType.value : null,
+            persistenceType: isPersistenceEnabled.value ? typeOfPersistence.value : null,
             persistedScheduleType: isPersistenceEnabled.value ? typeOfSchedule.value : null,
             refreshInterval: isPersistenceEnabled.value && typeOfPersistence.value === "Interval" ? intervalMinutes.value : null,
             persistedSchedule: isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" && typeOfSchedule.value === "Unique" ? persistedSchedule.value : null,
@@ -339,6 +339,10 @@
     });
 
     watch(() => typeOfInterval.value, () => {
+        emitUpdate();
+    });
+
+    watch(() => typeOfPersistence.value, () => {
         emitUpdate();
     });
     // #endregion
