@@ -23,6 +23,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -70,6 +72,7 @@ namespace Rock.Model
         [MaxLength( 255 )]
         [DataMember]
         [Index( "IX_SearchTypeValueId_SearchValue", IsUnique = false, Order = 2 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string SearchValue { get; set; }
 
         /// <summary>

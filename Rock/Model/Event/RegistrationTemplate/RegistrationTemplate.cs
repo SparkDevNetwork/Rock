@@ -26,7 +26,7 @@ using Newtonsoft.Json;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Enums.CheckIn;
+using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Security;
 
@@ -54,6 +54,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         [IncludeForReporting]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -63,6 +64,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the description of the registration template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -119,6 +121,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string FeeTerm { get; set; }
 
         /// <summary>
@@ -129,6 +132,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RegistrantTerm { get; set; }
 
         /// <summary>
@@ -139,6 +143,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RegistrationTerm { get; set; }
 
         /// <summary>
@@ -149,6 +154,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string DiscountCodeTerm { get; set; }
 
         /// <summary>
@@ -159,6 +165,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RegistrationAttributeTitleStart { get; set; }
 
         /// <summary>
@@ -169,6 +176,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RegistrationAttributeTitleEnd { get; set; }
 
         /// <summary>
@@ -179,6 +187,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ConfirmationFromName { get; set; }
 
         /// <summary>
@@ -189,6 +198,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ConfirmationFromEmail { get; set; }
 
         /// <summary>
@@ -199,6 +209,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ConfirmationSubject { get; set; }
 
         /// <summary>
@@ -208,6 +219,7 @@ namespace Rock.Model
         /// The confirmation email template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ConfirmationEmailTemplate { get; set; }
 
         /// <summary>
@@ -218,6 +230,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReminderFromName { get; set; }
 
         /// <summary>
@@ -228,6 +241,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReminderFromEmail { get; set; }
 
         /// <summary>
@@ -238,6 +252,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReminderSubject { get; set; }
 
         /// <summary>
@@ -247,6 +262,7 @@ namespace Rock.Model
         /// The reminder email template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReminderEmailTemplate { get; set; }
 
         /// <summary>
@@ -257,6 +273,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string WaitListTransitionFromName { get; set; }
 
         /// <summary>
@@ -267,6 +284,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string WaitListTransitionFromEmail { get; set; }
 
         /// <summary>
@@ -277,6 +295,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string WaitListTransitionSubject { get; set; }
 
         /// <summary>
@@ -286,6 +305,7 @@ namespace Rock.Model
         /// The wait list transition email template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string WaitListTransitionEmailTemplate { get; set; }
 
         /// <summary>
@@ -359,6 +379,7 @@ namespace Rock.Model
         /// The name of the request entry.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RequestEntryName { get; set; }
 
         /// <summary>
@@ -368,6 +389,7 @@ namespace Rock.Model
         /// The registration instructions.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string RegistrationInstructions { get; set; }
 
         /// <summary>
@@ -377,6 +399,7 @@ namespace Rock.Model
         /// The success title.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string SuccessTitle { get; set; }
 
         /// <summary>
@@ -386,6 +409,7 @@ namespace Rock.Model
         /// The success text.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SuccessText { get; set; }
 
         /// <summary>
@@ -458,6 +482,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PaymentReminderFromName { get; set; }
 
         /// <summary>
@@ -468,6 +493,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PaymentReminderFromEmail { get; set; }
 
         /// <summary>
@@ -478,6 +504,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PaymentReminderSubject { get; set; }
 
         /// <summary>
@@ -487,6 +514,7 @@ namespace Rock.Model
         /// The payment reminder email template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PaymentReminderEmailTemplate { get; set; }
 
         /// <summary>
@@ -505,6 +533,7 @@ namespace Rock.Model
         /// The batch name prefix.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string BatchNamePrefix { get; set; }
 
         /// <summary>
@@ -612,6 +641,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PaymentPlanFrequencyValueIds { get; set; }
 
         /// <summary>

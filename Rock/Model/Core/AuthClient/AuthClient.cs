@@ -19,6 +19,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -50,6 +52,7 @@ namespace Rock.Model
         /// The allowed claims.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AllowedClaims { get; set; }
 
         /// <summary>
@@ -59,6 +62,7 @@ namespace Rock.Model
         /// The allowed scopes.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AllowedScopes { get; set; }
 
         /// <summary>
@@ -78,6 +82,7 @@ namespace Rock.Model
         /// </value>
         [DataMember( IsRequired = true )]
         [Required]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -90,6 +95,7 @@ namespace Rock.Model
         [Required]
         [Index( IsUnique = true )]
         [MaxLength(50)]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ClientId { get; set; }
 
         /// <summary>
@@ -99,6 +105,7 @@ namespace Rock.Model
         /// The client secret hash.
         /// </value>
         [HideFromReporting]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ClientSecretHash { get; set; }
 
         /// <summary>
@@ -109,6 +116,7 @@ namespace Rock.Model
         /// </value>
         [DataMember( IsRequired = true )]
         [Required]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RedirectUri { get; set; }
 
         /// <summary>
@@ -119,6 +127,7 @@ namespace Rock.Model
         /// </value>
         [DataMember( IsRequired = true )]
         [Required]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PostLogoutRedirectUri { get; set; }
 
         /// <summary>

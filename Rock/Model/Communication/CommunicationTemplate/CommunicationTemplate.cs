@@ -21,12 +21,14 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Communication;
 using Rock.Data;
 using Rock.Enums.Communication;
+using Rock.Enums.Security;
 using Rock.Security;
 using Rock.Utility;
 
@@ -53,6 +55,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -62,6 +65,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -164,6 +168,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 1000 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Subject { get; set; }
 
         /// <summary>
@@ -174,6 +179,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string FromName { get; set; }
 
         /// <summary>
@@ -184,6 +190,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string FromEmail { get; set; }
 
         /// <summary>
@@ -194,6 +201,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReplyToEmail { get; set; }
 
         /// <summary>
@@ -203,6 +211,7 @@ namespace Rock.Model
         /// The cc emails.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CCEmails { get; set; }
 
         /// <summary>
@@ -212,6 +221,7 @@ namespace Rock.Model
         /// The BCC emails.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string BCCEmails { get; set; }
 
         /// <summary>
@@ -221,6 +231,7 @@ namespace Rock.Model
         /// The message.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Message { get; set; }
 
         /// <summary>
@@ -230,6 +241,7 @@ namespace Rock.Model
         /// The message meta data.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MessageMetaData { get; set; }
 
         /// <summary>
@@ -239,6 +251,7 @@ namespace Rock.Model
         /// The lava fields json
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string LavaFieldsJson
         {
             get
@@ -283,6 +296,7 @@ namespace Rock.Model
         /// The message.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SMSMessage { get; set; }
 
         #endregion
@@ -297,6 +311,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PushTitle { get; set; }
 
         /// <summary>
@@ -306,6 +321,7 @@ namespace Rock.Model
         /// The message.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PushMessage { get; set; }
 
         /// <summary>
@@ -316,6 +332,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PushSound { get; set; }
 
         /// <summary>
@@ -343,6 +360,7 @@ namespace Rock.Model
         /// The push open message.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PushOpenMessage { get; set; }
 
         /// <summary>
@@ -352,6 +370,7 @@ namespace Rock.Model
         /// The push open message structured content JSON.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PushOpenMessageJson { get; set; }
 
         /// <summary>
@@ -361,6 +380,7 @@ namespace Rock.Model
         /// The push data.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PushData { get; set; }
         #endregion
 

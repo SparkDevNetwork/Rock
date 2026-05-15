@@ -21,7 +21,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -55,6 +57,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -65,6 +68,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string DocumentKey { get; set; }
 
         /// <summary>
@@ -147,6 +151,7 @@ namespace Rock.Model
         /// The signed document text.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SignedDocumentText { get; set; }
 
         /// <summary>
@@ -157,6 +162,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string SignedName { get; set; }
 
         /// <summary>
@@ -167,6 +173,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 128 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string SignedClientIp { get; set; }
 
         /// <summary>
@@ -176,6 +183,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the signed client user agent.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string SignedClientUserAgent { get; set; }
 
         /// <summary>
@@ -195,6 +203,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 75 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string SignedByEmail { get; set; }
 
         /// <summary>
@@ -215,6 +224,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SignatureDataEncrypted { get; set; }
 
         /* 1/25/2022 MDP
@@ -231,6 +241,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 40 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SignatureVerificationHash { get; set; }
 
         /// <summary>

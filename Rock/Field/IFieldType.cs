@@ -20,6 +20,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 
 using Rock.Attribute;
+using Rock.Enums.Security;
 using Rock.Reporting;
 
 namespace Rock.Field
@@ -315,6 +316,17 @@ namespace Rock.Field
         ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
         /// </returns>
         bool IsValid( string value, bool required, out string message );
+
+        /// <summary>
+        /// Gets the string validation rule bitmask to use when saving values
+        /// for this field type. This is used during the SaveChanges hook on
+        /// AttributeValue. This is meant to cover security related concerns
+        /// such as attempts to save XSS attacks. This is not meant for general
+        /// validation such as the value being within an accepted range.
+        /// </summary>
+        /// <param name="privateConfigurationValues">The private (database) configuration values.</param>
+        /// <returns>The bitmask representing the rules to apply to the raw string value.</returns>
+        StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues );
 
         #endregion
 

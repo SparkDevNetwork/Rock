@@ -22,6 +22,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -46,6 +48,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -57,6 +60,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string PublicName { get; set; }
 
         /// <summary>
@@ -67,6 +71,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Summary { get; set; }
 
         /// <summary>
@@ -76,6 +81,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the full description of the LearningCourse.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -113,6 +119,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 12 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CourseCode { get; set; }
 
         /// <summary>

@@ -21,7 +21,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -46,6 +48,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 500 )]
         [DataMember( IsRequired = false )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Title { get; set; }
 
         /// <summary>
@@ -55,6 +58,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> containing a description or summary about this WorkflowActionFormSection.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -73,6 +77,7 @@ namespace Rock.Model
         /// The section visibility rules json.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SectionVisibilityRulesJSON { get; set; }
 
         /// <summary>

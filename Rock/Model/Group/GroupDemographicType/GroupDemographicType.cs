@@ -19,6 +19,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -54,6 +56,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [Previewable]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -64,6 +67,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Previewable]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -84,6 +88,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RoleFilter { get; set; }
 
         /// <summary>

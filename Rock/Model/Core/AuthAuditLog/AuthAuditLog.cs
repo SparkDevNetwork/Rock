@@ -21,7 +21,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -65,6 +67,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Action { get; set; }
 
         /// <summary>
@@ -100,6 +103,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PreAllowOrDeny { get; set; }
 
         /// <summary>
@@ -110,6 +114,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PostAllowOrDeny { get; set; }
 
         /// <summary>

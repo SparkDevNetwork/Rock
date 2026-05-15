@@ -23,6 +23,8 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.Lms;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -47,6 +49,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -58,6 +61,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string PublicName { get; set; }
 
         /// <summary>
@@ -68,6 +72,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Summary { get; set; }
 
         /// <summary>
@@ -77,6 +82,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the full description of the LearningProgram.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -87,6 +93,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; } = "ti ti-building-bank";
 
         /// <summary>
@@ -97,6 +104,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string HighlightColor { get; set; }
 
         /// <summary>
@@ -199,6 +207,7 @@ namespace Rock.Model
         /// The additional settings json.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         /// <summary>
