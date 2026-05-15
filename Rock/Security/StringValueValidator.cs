@@ -155,6 +155,21 @@ namespace Rock.Security
         }
 
         /// <summary>
+        /// Resolves an attribute's declared profile and per-property overrides
+        /// to its effective rule bitmask.
+        /// </summary>
+        /// <param name="profile">The profile that defines the standard set of rules.</param>
+        /// <param name="additionalRules">The additional rules that should be added to the ones from <paramref name="profile"/>.</param>
+        /// <param name="excludedRules">The rules from <paramref name="profile"/> that should be excluded.</param>
+        /// <returns>The effective rule bitmask for the attribute.</returns>
+        public static StringValidationRule GetEffectiveRules( StringValidationProfile profile, StringValidationRule additionalRules = StringValidationRule.None, StringValidationRule excludedRules = StringValidationRule.None )
+        {
+            var profileRules = ProfileRules[profile];
+
+            return ( profileRules & ~excludedRules ) | additionalRules;
+        }
+
+        /// <summary>
         /// Validates all string properties of the given source object. This
         /// will include only properties that are decorated with
         /// <see cref="DataMemberAttribute"/> and not decorated with
