@@ -249,6 +249,7 @@ namespace Rock.Model
         /// Additional configuration settings stored as JSON.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion

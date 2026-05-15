@@ -232,6 +232,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         #endregion
