@@ -10,11 +10,16 @@
                              :items="enabledViews"
                              :btnSize="BtnSize.ExtraSmall" />
                 <div class="slicer-content-right">
-                    <DropDownList v-model="areOnlyMyRequestsVisible"
+                    <DropDownList v-if="isMyConnectionsView"
+                                  v-model="selectedType"
+                                  :items="box.options?.connectionTypeItems ?? []"
+                                  blankValue="All Types" />
+                    <DropDownList v-else
+                                  v-model="areOnlyMyRequestsVisible"
                                   :items="requestToggleItems"
                                   :showBlankItem="false" />
                     <DropDownList v-model="selectedOpportunity"
-                                  :items="box.options?.connectionOpportunities ?? []"
+                                  :items="connectionOpportunities ?? []"
                                   blankValue="All Opportunities" />
 
                 </div>
@@ -673,6 +678,8 @@
                                :isExistingActiveRequesterOnConnectionType="isExistingActiveRequesterOnConnectionType"
                                :isSaving="isModalSaving"
                                :errorMessage="modalErrorMessage"
+                               :connectionOpportunities="connectionOpportunities ?? []"
+                               :isMyConnectionsView="isMyConnectionsView"
                                @dismissErrorMessage="onModalErrorMessageDismissed"
                                @checkForActiveRequester="checkForActiveRequester"
                                @save="onAddRequest"
@@ -684,7 +691,7 @@
 
     <AddFromCampaignModal v-model:visible="isAddFromCampaignModalVisible"
                           :selectedOpportunityGuid="selectedOpportunity"
-                          :allConnectionOpportunityItems="box.options?.connectionOpportunities ?? []"
+                          :allConnectionOpportunityItems="connectionOpportunities ?? []"
                           :isLoading="areCampaignsLoading"
                           :isSaving="isModalSaving"
                           :campaignRecordBags="campaignRecordBags"
@@ -1184,12 +1191,23 @@
         });
     }
 
+    const isMyConnectionsView = ref<boolean>(box.options?.isMyConnectionsView ?? false);
+
     // Soft security check to see if the user can edit the list of connection requests.
-    const canEditGlobalConnectionRequests = ref<boolean>(box.options?.canEditConnectionRequests ?? false);
+    const canEditGlobalConnectionRequests = ref<boolean>((() => {
+        if (!isMyConnectionsView.value) {
+            return false;
+        }
+
+        const allTypes = Object.values(box.options?.connectionTypeOptionsByIdKey ?? {});
+
+        return allTypes.flatMap(t => t.canEditConnectionRequests).some(t => t === true);
+    })());
 
     // Context Slicer configuration
     const selectedCampus = ref<ListItemBag | null>(null);
     const areOnlyMyRequestsVisible = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.AreOnlyMyRequestsVisible)) ? "true" : preferences.getValue(PreferenceKey.AreOnlyMyRequestsVisible));
+    const internalSelectedType = ref(preferences.getValue(PreferenceKey.FilterConnectionType));
     const internalSelectedOpportunity = ref(box.options?.connectionOpportunityGuidFromPageParameter ?? preferences.getValue(getConnectionFilterKey(PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey)));
     const internalSelectedConnector = ref<ListItemBag | null | undefined>(box.options?.selectedConnector);
     const requestToggleItems = ref<ListItemBag[]>([
@@ -1309,7 +1327,10 @@
         if (selectedView.value === "board") {
             return "statusGrouping";
         }
-        return isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? "connectorGrouping" : preferences.getValue(PreferenceKey.SelectedGroupByMode);
+
+        const defaultGrouping = isMyConnectionsView.value ? "typeGrouping" : "connectorGrouping";
+
+        return isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? defaultGrouping : preferences.getValue(PreferenceKey.SelectedGroupByMode);
     })());
 
     const gridViewGridRef = ref();
@@ -1400,12 +1421,34 @@
         return actions;
     });
 
+    // Computed setter normalizes v-model updates so the dropdown’s blank "All Types" value is never stored in component state.
+    const selectedType = computed({
+        get: () => internalSelectedType.value,
+        set: value => {
+            internalSelectedType.value = toGuidOrNull(value) ?? "";
+        }
+    });
+
     // Computed setter normalizes v-model updates so the dropdown’s blank "All Opportunities" value is never stored in component state.
     const selectedOpportunity = computed({
         get: () => internalSelectedOpportunity.value,
         set: value => {
             internalSelectedOpportunity.value = toGuidOrNull(value) ?? "";
         }
+    });
+
+    const connectionOpportunities = computed(() => {
+        if (!isMyConnectionsView.value) {
+            return box.options?.connectionOpportunities;
+        }
+
+        const allTypes = Object.values(box.options?.connectionTypeOptionsByIdKey ?? {});
+
+        if (isNullOrWhiteSpace(selectedType.value)) {
+            return allTypes.flatMap(t => t.connectionOpportunities ?? []);
+        }
+
+        return allTypes.find(t => areEqual(t.guid, selectedType.value))?.connectionOpportunities ?? [];
     });
 
     const groupingFields = computed(() => {
@@ -1416,8 +1459,11 @@
             return [];
         }
 
-        if (box.options?.isMyConnectionsView) {
+        if (isMyConnectionsView.value) {
             filteredGroupingFields = filteredGroupingFields.filter(g => g.value !== "opportunityGrouping" && g.value !== "connectorGrouping");
+            if (!isNullOrWhiteSpace(selectedType.value)) {
+                filteredGroupingFields = filteredGroupingFields.filter(g => g.value !== "typeGrouping");
+            }
         }
         else {
             filteredGroupingFields = filteredGroupingFields.filter(g => g.value !== "typeGrouping");
@@ -2237,6 +2283,9 @@
      * @returns The resolved preference key, or an empty string if unavailable.
      */
     function getConnectionFilterKey(preferenceKey: string): string {
+        if (isMyConnectionsView.value) {
+            return preferenceKey.replace("{0}", "my-connections");
+        }
         if (!box.options?.connectionTypeIdKey) {
             return "";
         }
@@ -4235,6 +4284,51 @@
             ...newConnectionRequest.value.bag,
             campusGuid: selectedCampus.value?.value ?? null
         };
+    });
+
+    watch(selectedType, async () => {
+        if (!isMyConnectionsView.value) {
+            return;
+        }
+
+        preferences.setValue(PreferenceKey.FilterConnectionType, selectedType.value);
+
+        await preferences.save();
+
+        // TODO - Likely do something similar for type
+
+        // newConnectionRequest.value.bag = {
+        //     connectionOpportunityGuid: selectedType.value
+        // };
+        // if (!isNullOrWhiteSpace(selectedType.value)) {
+        //     await fetchConnectionOpportunityDetails(selectedType.value);
+        // }
+        // else {
+        //     connectionOpportunityDetails.value = {};
+        // }
+
+        // Remove the Connection Opportunity query param and ensure ConnectionType is present.
+        // removeCurrentUrlQueryParams("ConnectionOpportunity");
+
+        // If there is no connection type query string parameter present, we need to add it
+        // because we've just removed the Connection Opportunity query string parameter.
+        // if (box.options?.connectionTypeIdKey) {
+        //     const url = new URL(window.location.href);
+        //     if (!url.searchParams.has("ConnectionType")) {
+        //         url.searchParams.set("ConnectionType", box.options.connectionTypeIdKey);
+        //         history.replaceState(null, "", url.toString());
+        //     }
+        // }
+
+        if (!isNullOrWhiteSpace(selectedType.value)) {
+            await refreshUserEditPermissions();
+        }
+        else {
+            const allTypes = Object.values(box.options?.connectionTypeOptionsByIdKey ?? {});
+            canEditGlobalConnectionRequests.value = allTypes.flatMap(t => t.canEditConnectionRequests).some(t => t === true);
+        }
+
+        loadGridData();
     });
 
     watch(selectedOpportunity, async () => {

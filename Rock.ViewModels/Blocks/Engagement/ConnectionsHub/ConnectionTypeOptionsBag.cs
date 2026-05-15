@@ -30,6 +30,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
     public class ConnectionTypeOptionsBag
     {
         /// <summary>
+        /// Gets or sets the unique identifier of the Connection Type these options describe.
+        /// </summary>
+        public Guid Guid { get; set; }
+
+        /// <summary>
         /// Gets or sets the boolean value indicating whether the current user can edit Connection Requests.
         /// </summary>
         public bool CanEditConnectionRequests { get; set; }

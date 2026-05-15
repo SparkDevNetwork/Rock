@@ -167,6 +167,16 @@ namespace Rock.Blocks.Engagement
             .GetValue( PreferenceKey.AreOnlyMyRequestsVisible )
             .AsBoolean( true );
 
+        /// <summary>
+        /// Gets a value indicating whether the block is rendering in "My Connections" mode:
+        /// a Connector page parameter is supplied without a specific Connection Type or
+        /// Opportunity, so the grid spans every active type the connector has access to.
+        /// </summary>
+        protected bool IsMyConnectionsMode =>
+            PageParameter( PageParameterKey.Connector ).IsNotNullOrWhiteSpace()
+            && PageParameter( PageParameterKey.ConnectionType ).IsNullOrWhiteSpace()
+            && PageParameter( PageParameterKey.ConnectionOpportunity ).IsNullOrWhiteSpace();
+
         protected Guid? SelectedConnector => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.SelectedConnector )
             .AsGuidOrNull();
@@ -258,6 +268,7 @@ namespace Rock.Blocks.Engagement
             }
 
             string preferenceKey;
+            options.GridDataToShowItems = new List<GridDataToShowItemBag>();
 
             if ( connectionType == null && PageParameter( PageParameterKey.Connector ).IsNotNullOrWhiteSpace() )
             {
@@ -352,7 +363,7 @@ namespace Rock.Blocks.Engagement
 
             // Built-in columns are always available regardless of opportunity filter.
             // The values should equal the field names for each respective column.
-            options.GridDataToShowItems = new List<GridDataToShowItemBag>
+            options.GridDataToShowItems.AddRange( new[]
             {
                 new GridDataToShowItemBag
                 {
@@ -366,7 +377,7 @@ namespace Rock.Blocks.Engagement
                 {
                     ListItemBag = new ListItemBag { Text = "Activity Count / Days", Value = "activity" }
                 }
-            };
+            } );
 
             return options;
         }
@@ -744,6 +755,7 @@ namespace Rock.Blocks.Engagement
         {
             var options = new ConnectionTypeOptionsBag();
 
+            options.Guid = connectionType.Guid;
             options.CanEditConnectionRequests = CanEditConnectionRequests( connectionType );
 
             // Exclude inactive and archived connector groups. A global query filter sets the
@@ -776,7 +788,12 @@ namespace Rock.Blocks.Engagement
 
             options.AllPossibleConnectors = connectors;
 
-            options.ConnectionOpportunities = connectionType.ConnectionOpportunities.Where( o => o.IsActive ).ToListItemBagList();
+            options.ConnectionOpportunities = connectionType.ConnectionOpportunities.Where( o => o.IsActive ).Select( o => new ListItemBag
+            {
+                Text = o.Name,
+                Value = o.Guid.ToString(),
+                Category = connectionType.Name
+            } ).ToList();
             options.RequestSourceItems = connectionType.ConnectionTypeSources.ToListItemBagList();
             options.IsFutureFollowUpEnabled = connectionType.EnableFutureFollowup;
             options.IsRequestSecurityEnabled = connectionType.EnableRequestSecurity;
@@ -877,6 +894,11 @@ namespace Rock.Blocks.Engagement
         private Guid? GetConnectionOpportunityFilter( string connectionTypeIdKey )
         {
             var preferences = GetBlockPersonPreferences();
+
+            if ( IsMyConnectionsMode )
+            {
+                return preferences.GetValue( string.Format( PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey, "my-connections" ) ).AsGuidOrNull();
+            }
 
             return preferences.GetValue( string.Format( PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey, connectionTypeIdKey ) ).AsGuidOrNull();
         }
@@ -3670,21 +3692,15 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
         [BlockAction]
         public BlockActionResult GetGridData()
         {
-            // "My Connections" mode: a Connector page parameter is supplied without a
-            // specific Connection Type or Opportunity. The grid spans every active type
-            // the connector has access to and the slicer's optional Connection Type filter
-            // is read from a person preference (FilterConnectionType) like every other
-            // slicer filter.
-            var isMyConnectionsMode = PageParameter( PageParameterKey.Connector ).IsNotNullOrWhiteSpace()
-                && PageParameter( PageParameterKey.ConnectionType ).IsNullOrWhiteSpace()
-                && PageParameter( PageParameterKey.ConnectionOpportunity ).IsNullOrWhiteSpace();
-
+            // In My Connections mode the grid spans every active type the connector has
+            // access to, and the slicer's optional Connection Type filter is read from a
+            // person preference (FilterConnectionType) like every other slicer filter.
             ConnectionType connectionType;
-            if ( isMyConnectionsMode )
+            if ( IsMyConnectionsMode )
             {
-                var selectedTypeIdKey = this.PersonPreferences.GetValue( PreferenceKey.FilterConnectionType );
-                connectionType = selectedTypeIdKey.IsNotNullOrWhiteSpace()
-                    ? new ConnectionTypeService( RockContext ).GetInclude( selectedTypeIdKey, a => a.ConnectionStatuses, !PageCache.Layout.Site.DisablePredictableIds )
+                var selectedConnectionType = this.PersonPreferences.GetValue( PreferenceKey.FilterConnectionType );
+                connectionType = selectedConnectionType.IsNotNullOrWhiteSpace()
+                    ? new ConnectionTypeService( RockContext ).Get( selectedConnectionType, !PageCache.Layout.Site.DisablePredictableIds )
                     : null;
             }
             else
@@ -3697,7 +3713,7 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
                 }
                 else
                 {
-                    connectionType = new ConnectionTypeService( RockContext ).GetInclude( PageParameter( PageParameterKey.ConnectionType ), a => a.ConnectionStatuses, !PageCache.Layout.Site.DisablePredictableIds );
+                    connectionType = new ConnectionTypeService( RockContext ).Get( PageParameter( PageParameterKey.ConnectionType ), !PageCache.Layout.Site.DisablePredictableIds );
                 }
 
                 if ( connectionType == null )

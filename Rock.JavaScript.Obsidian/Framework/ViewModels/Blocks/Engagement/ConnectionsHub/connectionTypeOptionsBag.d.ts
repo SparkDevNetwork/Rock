@@ -25,6 +25,7 @@ import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagemen
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
 import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionWorkflowBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { Guid } from "@Obsidian/Types";
 
 /** The additional configuration options for a specfic Connection Type. */
 export type ConnectionTypeOptionsBag = {
@@ -51,6 +52,9 @@ export type ConnectionTypeOptionsBag = {
 
     /** Gets or sets the list of connection statuses available for this Connection Type. */
     connectionStatuses?: ConnectionStatusBag[] | null;
+
+    /** Gets or sets the unique identifier of the Connection Type these options describe. */
+    guid?: Guid | null;
 
     /** Gets or sets a value indicating whether the future follow-up feature is enabled for this Connection Type. */
     isFutureFollowUpEnabled: boolean;
