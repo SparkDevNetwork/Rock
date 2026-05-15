@@ -22,6 +22,8 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.AI.Agent;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -64,6 +66,7 @@ namespace Rock.Model
         /// The text content of the message.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Message { get; set; }
 
         /// <summary>
@@ -102,6 +105,7 @@ namespace Rock.Model
 
         /// <inheritdoc/>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion

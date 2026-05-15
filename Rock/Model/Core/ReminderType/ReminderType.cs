@@ -24,6 +24,8 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -47,6 +49,7 @@ namespace Rock.Model
         /// The name.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -56,6 +59,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -129,6 +133,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string HighlightColor { get; set; }
 
         #endregion Entity Properties

@@ -20,6 +20,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -43,6 +45,7 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         [MaxLength( 6 )]
         [Index( IsUnique = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Code { get; set; }
 
         /// <summary>

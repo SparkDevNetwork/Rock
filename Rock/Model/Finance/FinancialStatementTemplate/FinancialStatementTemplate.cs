@@ -20,7 +20,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Financial;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -45,6 +47,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -54,6 +57,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -74,6 +78,7 @@ namespace Rock.Model
         /// The report template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReportTemplate { get; set; }
 
         /// <summary>
@@ -83,6 +88,7 @@ namespace Rock.Model
         /// The footer template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string FooterSettingsJson
         {
             get
@@ -103,6 +109,7 @@ namespace Rock.Model
         /// The report settings.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReportSettingsJson
         {
             get

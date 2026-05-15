@@ -25,7 +25,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -115,6 +117,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the note.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Note { get; set; }
 
         /// <summary>

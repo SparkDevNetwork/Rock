@@ -23,7 +23,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -83,6 +85,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -93,6 +96,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string LastName { get; set; }
 
         /// <summary>
@@ -103,6 +107,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 75 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ConfirmationEmail { get; set; }
 
         /// <summary>
@@ -113,6 +118,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string DiscountCode { get; set; }
 
         /// <summary>

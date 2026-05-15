@@ -20,6 +20,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -85,6 +87,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Verb { get; set; }
 
         /// <summary>
@@ -95,6 +98,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Caption { get; set; }
 
         /// <summary>
@@ -123,6 +127,7 @@ namespace Rock.Model
         /// The related data.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string RelatedData { get; set; }
 
         /// <summary>
@@ -134,6 +139,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ChangeType { get; set; }
 
         /// <summary>
@@ -144,6 +150,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ValueName { get; set; }
 
         /// <summary>
@@ -153,6 +160,7 @@ namespace Rock.Model
         /// The new value.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string NewValue { get; set; }
 
         /// <summary>
@@ -163,6 +171,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string NewRawValue { get; set; }
 
         /// <summary>
@@ -172,6 +181,7 @@ namespace Rock.Model
         /// The old value.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string OldValue { get; set; }
 
         /// <summary>
@@ -182,6 +192,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string OldRawValue { get; set; }
 
         /// <summary>
@@ -201,6 +212,7 @@ namespace Rock.Model
         /// The source of change.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SourceOfChange { get; set; }
 
         #endregion

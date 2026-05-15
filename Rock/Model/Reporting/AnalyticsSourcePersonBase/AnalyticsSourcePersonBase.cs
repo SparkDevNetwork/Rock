@@ -15,6 +15,8 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -187,6 +189,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -201,6 +204,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string NickName { get; set; }
 
         /// <summary>
@@ -211,6 +215,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MiddleName { get; set; }
 
         /// <summary>
@@ -223,6 +228,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string LastName { get; set; }
 
         /// <summary>
@@ -356,6 +362,7 @@ namespace Rock.Model
         /// The giver identifier.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GivingId { get; set; }
 
         /// <summary>
@@ -377,6 +384,7 @@ namespace Rock.Model
         [MaxLength( 75 )]
         [DataMember]
         [Previewable]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Email { get; set; }
 
         /// <summary>
@@ -397,6 +405,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReviewReasonNote { get; set; }
 
         /// <summary>
@@ -407,6 +416,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string InactiveReasonNote { get; set; }
 
         /// <summary>
@@ -417,6 +427,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SystemNote { get; set; }
 
         /// <summary>

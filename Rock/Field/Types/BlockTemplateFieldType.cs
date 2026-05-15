@@ -19,10 +19,13 @@ using System.Collections.Generic;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
+
 #endif
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -184,6 +187,12 @@ namespace Rock.Field.Types
             }
 
             return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.Unrestricted );
         }
 
         #endregion

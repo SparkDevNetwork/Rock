@@ -24,6 +24,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Enums.Cms;
+using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -124,6 +125,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Zone { get; set; }
 
         /// <summary>
@@ -147,6 +149,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [Required( ErrorMessage = "Name is required" )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -157,6 +160,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CssClass { get; set; }
 
         /// <summary>
@@ -166,6 +170,7 @@ namespace Rock.Model
         /// The pre HTML.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PreHtml { get; set; }
 
         /// <summary>
@@ -175,6 +180,7 @@ namespace Rock.Model
         /// The post HTML.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PostHtml { get; set; }
 
         /// <summary>
@@ -194,6 +200,7 @@ namespace Rock.Model
         /// The additional settings.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettings { get; set; }
 
         /// <summary>
