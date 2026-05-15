@@ -189,5 +189,23 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// so the client can hide filters for attributes that do not apply to the active opportunity.
         /// </summary>
         public List<ConnectionRequestAttributeFilterBag> AttributeFilters { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current view is the "My Connections" view.
+        /// </summary>
+        public bool IsMyConnectionsView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of connection types for the context slicer filter in the "My Connections" view.
+        /// </summary>
+        public List<ListItemBag> ConnectionTypeItems { get; set; }
+
+        /// <summary>
+        /// TODO - If we stick with this approach, consider updating the standard Hub to use this.
+        /// Gets or sets the options for each Connection Type, keyed by the Connection Type's encrypted identifier key.
+        /// This allows the client to adjust its behavior and available UI actions based on multiple Connection Types
+        /// present within the view.
+        /// </summary>
+        public Dictionary<string, ConnectionTypeOptionsBag> ConnectionTypeOptionsByIdKey { get; set; }
     }
 }

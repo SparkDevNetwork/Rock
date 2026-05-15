@@ -1138,6 +1138,10 @@
             value: "statusGrouping"
         },
         {
+            text: "Type",
+            value: "typeGrouping"
+        },
+        {
             text: "Opportunity",
             value: "opportunityGrouping"
         },
@@ -1148,7 +1152,7 @@
         {
             text: "Due Status",
             value: "dueStatusGrouping"
-        },
+        }
     ];
 
     type IconListItemBag = {
@@ -1410,6 +1414,13 @@
         // No grouping on Grid View
         if (selectedView.value === "grid") {
             return [];
+        }
+
+        if (box.options?.isMyConnectionsView) {
+            filteredGroupingFields = filteredGroupingFields.filter(g => g.value !== "opportunityGrouping" && g.value !== "connectorGrouping");
+        }
+        else {
+            filteredGroupingFields = filteredGroupingFields.filter(g => g.value !== "typeGrouping");
         }
 
         // Board mode only allows status grouping.

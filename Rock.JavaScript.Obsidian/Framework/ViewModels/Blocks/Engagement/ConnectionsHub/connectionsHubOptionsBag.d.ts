@@ -28,6 +28,7 @@ import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagemen
 import { ConnectionOpportunityDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionOpportunityDetailBag";
 import { ConnectionRequestAttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestAttributeFilterBag";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
+import { ConnectionTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionTypeOptionsBag";
 import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionWorkflowBag";
 import { GridDataToShowItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/gridDataToShowItemBag";
 import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
@@ -96,6 +97,17 @@ export type ConnectionsHubOptionsBag = {
     /** Gets or sets the encrypted identifier key of the Connection Type being viewed. */
     connectionTypeIdKey?: string | null;
 
+    /** Gets or sets the list of connection types for the context slicer filter in the "My Connections" view. */
+    connectionTypeItems?: ListItemBag[] | null;
+
+    /**
+     * TODO - If we stick with this approach, consider updating the standard Hub to use this.
+     * Gets or sets the options for each Connection Type, keyed by the Connection Type's encrypted identifier key.
+     * This allows the client to adjust its behavior and available UI actions based on multiple Connection Types
+     * present within the view.
+     */
+    connectionTypeOptionsByIdKey?: Record<string, ConnectionTypeOptionsBag> | null;
+
     /** Gets or sets the enabled views for this connection type. */
     enabledViews: EnabledViewFlags;
 
@@ -116,6 +128,9 @@ export type ConnectionsHubOptionsBag = {
 
     /** Gets whether list view is enabled for this connection type. */
     isListViewEnabled: boolean;
+
+    /** Gets or sets a value indicating whether the current view is the "My Connections" view. */
+    isMyConnectionsView: boolean;
 
     /** Gets or sets a value indicating whether per-request security is enabled, allowing individual requests to have their own security settings. */
     isRequestSecurityEnabled: boolean;
