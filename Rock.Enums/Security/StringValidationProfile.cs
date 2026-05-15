@@ -67,13 +67,12 @@ namespace Rock.Enums.Security
         Name = 3,
 
         /// <summary>
-        /// URL slugs, codes, and keys. The only profile that uses an allowlist:
-        /// accepts only <c>A-Z</c>, <c>a-z</c>, <c>0-9</c>, <c>-</c>, and <c>_</c>.
-        /// Strictly more restrictive than <see cref="Name"/>.
+        /// Simple inline formatting only. Blocks <c>&lt;script&gt;</c> tags, the
+        /// <c>javascript:</c> protocol, event-handler attributes. Intended
+        /// for short rich-text fields that should accept basic markup and templating
+        /// like <c>&lt;b&gt;</c> or <c>{{ CurrentPerson.FirstName }}</c> but not full
+        /// HTML.
         /// </summary>
-        Identifier = 4,
-
-        // Ordinal 5 is reserved for a future Html profile; see the Server-Side
-        // Field Validation spec, "Future Steps".
+        LavaAndBasicHtml = 4,
     }
 }

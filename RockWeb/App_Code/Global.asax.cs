@@ -249,8 +249,8 @@ namespace RockWeb
 
             Rock.Bus.RockMessageBus.IsRockStarted = true;
 
-            // Re-enable enforcement unless it is disabled in the security settings.
-            StringValueValidator.DisableEnforcement = new SecuritySettingsService().SecuritySettings.DisableServerModelValidation;
+            // Enable enforcement if it has been requested in the security settings.
+            DbContext.EnableStringValidation = new SecuritySettingsService().SecuritySettings.EnableServerModelValidation;
         }
 
         /// <summary>

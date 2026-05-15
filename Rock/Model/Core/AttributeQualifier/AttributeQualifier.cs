@@ -73,7 +73,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         [Index( "IX_AttributeIdKey", 1, IsUnique = true )]
-        [StringValidation( StringValidationProfile.Identifier )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Key { get; set; }
         
         /// <summary>

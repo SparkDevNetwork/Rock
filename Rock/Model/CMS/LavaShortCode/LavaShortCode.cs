@@ -60,7 +60,7 @@ namespace Rock.Model
         /// The description of the shortcode. This is used as a public description.
         /// </value>
         [DataMember]
-        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Rock.Model
         /// The technical description that serves as documentation.
         /// </value>
         [DataMember]
-        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Documentation { get; set; }
 
         /// <summary>

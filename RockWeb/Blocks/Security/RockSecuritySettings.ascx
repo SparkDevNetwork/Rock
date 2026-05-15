@@ -90,10 +90,10 @@
 
                     <div class="col-md-3">
                         <Rock:RockCheckBox
-                            ID="cbDisableServerModelValidation"
+                            ID="cbEnableServerModelValidation"
                             runat="server"
-                            Label="Disable Server Model Validation"
-                            Help="When checked, the server will disable certain validation checks when saving data to the database and instead log exceptions. Rock must be restarted for this change to take effect. This is a temporary option that will be removed in the future. It exists as an escape hatch in case validation is over aggressive during a critical usage of Rock." />
+                            Label="Enable Server Model Validation"
+                            Help="When checked, the server will enable additional validation checks when saving data to the database. Rock must be restarted for this change to take effect. This is a temporary option, in the future this will no longer be optional." />
                     </div>
                 </div>
                 <div class="row mt-3">

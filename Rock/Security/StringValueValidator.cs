@@ -76,11 +76,10 @@ namespace Rock.Security
                     StringValidationRule.ControlCharacters |
                     StringValidationRule.BidiOverrides,
 
-                // Identifier is intentionally just the allowlist. Every
-                // other blocklist rule (HTML, Lava, control chars,
-                // bidi overrides) is subsumed by the slug allowlist,
-                // because none of those characters are URL-safe.
-                [StringValidationProfile.Identifier] = StringValidationRule.NonUrlSlugCharacters,
+                [StringValidationProfile.LavaAndBasicHtml] =
+                    StringValidationRule.ScriptTags |
+                    StringValidationRule.JavascriptProtocol |
+                    StringValidationRule.EventHandlerAttributes,
             };
 
         private const RegexOptions DefaultOptions = RegexOptions.Compiled | RegexOptions.CultureInvariant;
@@ -121,18 +120,6 @@ namespace Rock.Security
 
         private static readonly Regex BidiOverridePattern = new Regex( "[\u202A-\u202E\u2066-\u2069]", DefaultOptions );
 
-        private static readonly Regex NonUrlSlugPattern = new Regex( "[^A-Za-z0-9_-]", DefaultOptions );
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Used to temporarily disable string validation enforcement when it
-        /// has been disabled in the system settings.
-        /// </summary>
-        public static bool DisableEnforcement { get; set; }
-
         #endregion
 
         #region Methods
@@ -165,6 +152,21 @@ namespace Rock.Security
             var profileRules = ProfileRules[attribute.Profile];
 
             return ( profileRules & ~attribute.ExcludedRules ) | attribute.AdditionalRules;
+        }
+
+        /// <summary>
+        /// Resolves an attribute's declared profile and per-property overrides
+        /// to its effective rule bitmask.
+        /// </summary>
+        /// <param name="profile">The profile that defines the standard set of rules.</param>
+        /// <param name="additionalRules">The additional rules that should be added to the ones from <paramref name="profile"/>.</param>
+        /// <param name="excludedRules">The rules from <paramref name="profile"/> that should be excluded.</param>
+        /// <returns>The effective rule bitmask for the attribute.</returns>
+        public static StringValidationRule GetEffectiveRules( StringValidationProfile profile, StringValidationRule additionalRules = StringValidationRule.None, StringValidationRule excludedRules = StringValidationRule.None )
+        {
+            var profileRules = ProfileRules[profile];
+
+            return ( profileRules & ~excludedRules ) | additionalRules;
         }
 
         /// <summary>
@@ -213,62 +215,44 @@ namespace Rock.Security
             // TODO: Benchmark and see if bitwise operations are enough of a speed increase to be worth using.
             if ( rules.HasFlag( StringValidationRule.LavaFormatting ) && ContainsLavaFormatting( value ) )
             {
-                Fail( type, propertyName, "may not contain Lava formatting" );
+                throw new PropertyValidationException( type, propertyName, "may not contain Lava formatting" );
             }
 
             if ( rules.HasFlag( StringValidationRule.LavaCommands ) && ContainsLavaCommands( value ) )
             {
-                Fail( type, propertyName, "may not contain Lava commands" );
+                throw new PropertyValidationException( type, propertyName, "may not contain Lava commands" );
             }
 
             if ( rules.HasFlag( StringValidationRule.ScriptTags ) && ScriptTagPattern.IsMatch( value ) )
             {
-                Fail( type, propertyName, "may not contain script tags" );
+                throw new PropertyValidationException( type, propertyName, "may not contain script tags" );
             }
 
             if ( rules.HasFlag( StringValidationRule.JavascriptProtocol ) && JavascriptProtocolPattern.IsMatch( value ) )
             {
-                Fail( type, propertyName, "may not contain JavaScript actions" );
+                throw new PropertyValidationException( type, propertyName, "may not contain JavaScript actions" );
             }
 
             if ( rules.HasFlag( StringValidationRule.EventHandlerAttributes ) && EventHandlerPattern.IsMatch( value ) )
             {
-                Fail( type, propertyName, "may not contain JavaScript event handler attributes" );
+                throw new PropertyValidationException( type, propertyName, "may not contain JavaScript event handler attributes" );
             }
 
             if ( rules.HasFlag( StringValidationRule.AnyHtmlTags ) && AnyHtmlTagPattern.IsMatch( value ) )
             {
-                Fail( type, propertyName, "may not contain HTML tags" );
+                throw new PropertyValidationException( type, propertyName, "may not contain HTML tags" );
             }
 
             if ( rules.HasFlag( StringValidationRule.ControlCharacters ) && ControlCharacterPattern.IsMatch( value ) )
             {
-                Fail( type, propertyName, "may not contain control characters" );
+                throw new PropertyValidationException( type, propertyName, "may not contain control characters" );
             }
 
             if ( rules.HasFlag( StringValidationRule.BidiOverrides ) && BidiOverridePattern.IsMatch( value ) )
             {
-                Fail( type, propertyName, "may not contain direction override characters" );
+                throw new PropertyValidationException( type, propertyName, "may not contain direction override characters" );
 
             }
-
-            if ( rules.HasFlag( StringValidationRule.NonUrlSlugCharacters ) && NonUrlSlugPattern.IsMatch( value ) )
-            {
-                Fail( type, propertyName, "may not contain non-URL slug characters" );
-            }
-        }
-
-        private static void Fail( Type type, string propertyName, string message )
-        {
-            var ex = new PropertyValidationException( type, propertyName, message );
-
-            if ( DisableEnforcement )
-            {
-                Model.ExceptionLogService.LogException( ex );
-                return;
-            }
-
-            throw ex;
         }
 
         /// <summary>

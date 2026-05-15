@@ -115,7 +115,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the text/body of the note.
         /// </value>
         [DataMember]
-        [StringValidation( StringValidationProfile.BasicHtml, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Text { get; set; }
 
         /// <summary>

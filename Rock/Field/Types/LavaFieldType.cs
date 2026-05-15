@@ -22,7 +22,9 @@ using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Field.Types
 {
@@ -47,6 +49,16 @@ namespace Rock.Field.Types
         {
             // Default method tries to HTML encode which we don't want to do.
             return GetHtmlValue( privateValue, null, privateConfigurationValues );
+        }
+
+        #endregion
+
+        #region Editor Control
+
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.Unrestricted );
         }
 
         #endregion
