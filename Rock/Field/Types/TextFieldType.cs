@@ -20,10 +20,13 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 #endif
 using Rock.Attribute;
+using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -93,6 +96,18 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateConfigurationValues?.TryGetValue( IS_FIRST_NAME, out var isFirstName ) == true && isFirstName.AsBoolean() )
+            {
+                return StringValueValidator.GetEffectiveRules( StringValidationProfile.Name );
+            }
+
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.PlainText,
+                excludedRules: StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands );
+        }
 
         #endregion
 

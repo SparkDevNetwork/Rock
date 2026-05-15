@@ -20,6 +20,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -71,6 +73,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the completion json for the activity component.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ActivityComponentCompletionJson { get; set; }
 
         /// <summary>
@@ -111,6 +114,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the comment made by the <see cref="Rock.Model.LearningParticipant">facilitator</see>.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string FacilitatorComment { get; set; }
 
         /// <summary>
@@ -120,6 +124,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the comment made by the <see cref="Rock.Model.LearningParticipant">student</see>.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string StudentComment { get; set; }
 
         /// <summary>

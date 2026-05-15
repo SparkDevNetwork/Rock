@@ -23,7 +23,9 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -58,6 +60,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string EntityValue { get; set; }
         
         /// <summary>
@@ -77,6 +80,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the HTML content that will appear as part of the block.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Content { get; set; }
         
         /// <summary>

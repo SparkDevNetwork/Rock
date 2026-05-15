@@ -15,6 +15,8 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
@@ -181,6 +183,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the Name of the Check-in Search Type <see cref="Rock.Model.DefinedValue"/> that was used to search for the person/family.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SearchTypeName { get; set; }
 
         /// <summary>
@@ -227,6 +230,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the note.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Note { get; set; }
 
         /// <summary>

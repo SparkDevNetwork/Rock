@@ -20,8 +20,10 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Enums.Engagement;
+using Rock.Enums.Security;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -87,12 +89,14 @@ namespace Rock.Model
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
         [Required]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets a description of the step type.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -100,6 +104,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -145,6 +150,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string HighlightColor { get; set; }
 
         /// <summary>
@@ -159,6 +165,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string MergeTemplateDescriptor { get; set; }
 
         /// <summary>
@@ -176,6 +183,7 @@ namespace Rock.Model
         /// Gets or sets the lava template used to render custom card details.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CardLavaTemplate
         {
             get

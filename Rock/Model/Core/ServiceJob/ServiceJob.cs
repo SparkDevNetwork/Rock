@@ -24,7 +24,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using CronExpressionDescriptor;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -79,6 +81,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -88,6 +91,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the description of the Job.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -99,6 +103,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 260 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string Assembly { get; set; }
 
         /// <summary>
@@ -111,6 +116,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         [EnableAttributeQualification]
+        [StringValidation( StringValidationProfile.Name )]
         public string Class { get; set; }
 
         /// <summary>
@@ -125,6 +131,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 120 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CronExpression { get; set; }
 
         /// <summary>
@@ -162,6 +169,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string LastStatus { get; set; }
 
         /// <summary>
@@ -172,6 +180,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the Status Message that returned the last time that the job ran.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string LastStatusMessage { get; set; }
 
         /// <summary>
@@ -183,6 +192,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 40 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string LastRunSchedulerName { get; set; }
 
         /// <summary>
@@ -195,6 +205,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string NotificationEmails { get; set; }
 
         /// <summary>

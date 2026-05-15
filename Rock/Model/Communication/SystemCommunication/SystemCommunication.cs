@@ -22,6 +22,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -76,6 +78,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Title { get; set; }
 
         /// <summary>
@@ -86,6 +89,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string From { get; set; }
 
         /// <summary>
@@ -96,6 +100,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string FromName { get; set; }
 
         /// <summary>
@@ -107,6 +112,7 @@ namespace Rock.Model
         /// be null.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string To { get; set; }
 
         /// <summary>
@@ -118,6 +124,7 @@ namespace Rock.Model
         /// distribution list, this property will be null.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Cc { get; set; }
 
         /// <summary>
@@ -129,6 +136,7 @@ namespace Rock.Model
         /// distribution list this property will remain null.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Bcc { get; set; }
 
         /// <summary>
@@ -140,6 +148,7 @@ namespace Rock.Model
         [Required(AllowEmptyStrings = true)]
         [MaxLength( 1000 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Subject { get; set; }
 
         /// <summary>
@@ -150,6 +159,7 @@ namespace Rock.Model
         /// </value>
         [Required(AllowEmptyStrings = true)]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Body { get; set; }
 
         /// <summary>
@@ -170,6 +180,7 @@ namespace Rock.Model
         /// A <see cref="System.String" /> containing the message text.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SMSMessage { get; set; }
 
         /// <summary>
@@ -199,6 +210,7 @@ namespace Rock.Model
         /// The lava fields json
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string LavaFieldsJson
         {
             get
@@ -224,6 +236,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PushTitle { get; set; }
 
         /// <summary>
@@ -233,6 +246,7 @@ namespace Rock.Model
         /// A <see cref="System.String" /> containing the notification text.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PushMessage { get; set; }
 
         /// <summary>
@@ -243,6 +257,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PushSound { get; set; }
 
         /// <summary>
@@ -270,6 +285,7 @@ namespace Rock.Model
         /// The push open message.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PushOpenMessage { get; set; }
 
         /// <summary>
@@ -279,6 +295,7 @@ namespace Rock.Model
         /// The push open message structured content JSON.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PushOpenMessageJson { get; set; }
 
         /// <summary>
@@ -288,6 +305,7 @@ namespace Rock.Model
         /// The push data.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PushData { get; set; }
         #endregion
 

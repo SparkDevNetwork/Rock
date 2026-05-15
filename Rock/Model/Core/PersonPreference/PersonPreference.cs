@@ -22,6 +22,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -73,6 +75,7 @@ namespace Rock.Model
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
         [Index( "IX_PersonAliasIdKey", 1, IsUnique = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Key { get; set; }
 
         /// <summary>
@@ -98,6 +101,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The preference value.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Value { get; set; }
 
         /// <summary>

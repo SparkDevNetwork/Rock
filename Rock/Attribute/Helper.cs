@@ -245,6 +245,7 @@ namespace Rock.Attribute
 
                 // Check to see if the existing attribute record needs to be updated
                 if ( attributeCache.Name != property.Name ||
+                    attributeCache.AbbreviatedName != property.Name ||
                     attributeCache.DefaultValue != property.DefaultValue ||
                     attributeCache.Description != property.Description ||
                     attributeCache.Order != property.Order ||
@@ -317,6 +318,7 @@ namespace Rock.Attribute
 
             // Update the attribute
             attribute.Name = property.Name;
+            attribute.AbbreviatedName = property.Name;
             attribute.Description = property.Description;
             attribute.DefaultValue = property.DefaultValue;
             attribute.Order = property.Order;

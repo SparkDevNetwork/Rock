@@ -251,6 +251,9 @@ namespace RockWeb
             StartEnsureChromeEngineThread();
 
             Rock.Bus.RockMessageBus.IsRockStarted = true;
+
+            // Enable enforcement if it has been requested in the security settings.
+            DbContext.EnableStringValidation = new SecuritySettingsService().SecuritySettings.EnableServerModelValidation;
         }
 
         /// <summary>

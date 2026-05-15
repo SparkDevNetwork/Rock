@@ -22,6 +22,8 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.CheckIn.Labels;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.CheckIn.Labels;
 using Rock.ViewModels.Reporting;
@@ -46,6 +48,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -53,6 +56,7 @@ namespace Rock.Model
         /// information it shows.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -99,6 +103,7 @@ namespace Rock.Model
         /// <see cref="LabelFormat"/>.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Content { get; set; }
 
         /// <summary>
@@ -112,6 +117,7 @@ namespace Rock.Model
         /// <inheritdoc/>
         [DataMember]
         [HideFromReporting]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion

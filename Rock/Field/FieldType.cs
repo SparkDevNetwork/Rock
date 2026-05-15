@@ -24,8 +24,10 @@ using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field
@@ -429,6 +431,12 @@ namespace Rock.Field
 
             message = string.Empty;
             return true;
+        }
+
+        /// <inheritdoc/>
+        public virtual StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.PlainText );
         }
 
         /// <summary>

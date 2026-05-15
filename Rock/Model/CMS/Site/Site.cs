@@ -25,7 +25,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Enums.Cms;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.Crawler;
 using Rock.UniversalSearch.IndexModels;
@@ -65,6 +67,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -101,6 +104,7 @@ namespace Rock.Model
         /// The additional settings.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettings { get; set; }
 
         /// <summary>
@@ -129,6 +133,7 @@ namespace Rock.Model
         ///  this value will be an null string.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -139,6 +144,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Theme { get; set; }
 
         /// <summary>
@@ -276,6 +282,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 260 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ErrorPage { get; set; }
 
         /// <summary>
@@ -286,6 +293,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string GoogleAnalyticsCode { get; set; }
 
         /// <summary>
@@ -314,6 +322,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 260 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ExternalUrl { get; set; }
 
         /// <summary>
@@ -326,6 +335,7 @@ namespace Rock.Model
         /// A space delimited list of domains.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AllowedFrameDomains { get; set; }
 
         /// <summary>
@@ -360,6 +370,7 @@ namespace Rock.Model
         /// The content of the page header.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PageHeaderContent { get; set; }
 
         /// <summary>
@@ -393,6 +404,7 @@ namespace Rock.Model
         /// The index starting location.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IndexStartingLocation { get; set; }
 
         /// <summary>

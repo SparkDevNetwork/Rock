@@ -19,7 +19,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -106,6 +108,7 @@ namespace Rock.Model
         /// The pre text.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PreText { get; set; }
 
         /// <summary>
@@ -115,6 +118,7 @@ namespace Rock.Model
         /// The post text.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PostText { get; set; }
 
         /// <summary>
@@ -160,6 +164,7 @@ namespace Rock.Model
         /// The field visibility rules json.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string FieldVisibilityRulesJSON
         {
             get

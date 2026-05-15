@@ -18,9 +18,12 @@ using System.Collections.Generic;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 #endif
 using Rock.Attribute;
+using Rock.Enums.Security;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -59,6 +62,18 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateConfigurationValues?.TryGetValue( ALLOW_HTML, out var allowHtml ) == true && allowHtml.AsBoolean() )
+            {
+                return StringValueValidator.GetEffectiveRules( StringValidationProfile.LavaAndBasicHtml );
+            }
+
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.PlainText,
+                excludedRules: StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands );
+        }
 
         #endregion
 
