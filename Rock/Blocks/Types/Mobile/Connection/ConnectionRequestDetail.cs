@@ -689,7 +689,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 } )
                 .ToList();
 
-            return states;
+                return states;
         }
 
         /// <summary>
@@ -1990,20 +1990,28 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     return ActionBadRequest( "Unable to find that connection activity type." );
                 }
 
-                if ( !activity.ConnectorGuid.HasValue )
-                {
-                    return ActionBadRequest( "Invalid connector was specified." );
+                int? connectorAliasId = null;
 
-                }
-                var connectorAliasId = personAliasService.GetPrimaryAliasId( activity.ConnectorGuid.Value );
-
-                if ( !connectorAliasId.HasValue )
+                // Load the connector primary alias from the database and verify
+                // that it is valid option.
+                if ( activity.ConnectorGuid.HasValue )
                 {
-                    return ActionBadRequest( "Invalid connector was specified." );
+                    var connectors = GetAvailableConnectors( request, rockContext );
+
+                    if ( !connectors.Any( c => c.Guid == activity.ConnectorGuid.Value ) )
+                    {
+                        return ActionBadRequest( "Invalid connector was specified." );
+                    }
+
+                    connectorAliasId = personAliasService.GetPrimaryAliasId( activity.ConnectorGuid.Value );
+
+                    if ( !connectorAliasId.HasValue )
+                    {
+                        return ActionBadRequest( "Invalid connector was specified." );
+                    }
                 }
 
                 activityToUpdate.ConnectionActivityTypeId = connectionActivityType.Id;
-                activityToUpdate.ConnectorPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
                 var mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( activity.Note, activityToUpdate.Note );
                 activityToUpdate.Note = activity.Note;
                 activityToUpdate.ConnectorPersonAliasId = connectorAliasId;
