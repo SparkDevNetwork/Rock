@@ -99,7 +99,8 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
-        public String ContactPhone { get; set; }
+        [StringValidation( StringValidationProfile.PlainText )]
+        public string ContactPhone { get; set; }
 
         /// <summary>
         /// Gets or sets the Contact Person's email address.
