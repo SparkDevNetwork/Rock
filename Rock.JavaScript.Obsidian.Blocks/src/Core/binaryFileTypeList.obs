@@ -34,13 +34,7 @@
                       title="File Count"
                       field="fileCount"
                       :filter="numberValueFilter"
-                      visiblePriority="lg">
-            <template #format="{ row }">
-                <div class="flex-grow-1 text-right">
-                    {{ row.fileCount }}
-                </div>
-            </template>
-        </NumberColumn>
+                      visiblePriority="lg" />
 
 
         <BooleanColumn name="isSystem"
