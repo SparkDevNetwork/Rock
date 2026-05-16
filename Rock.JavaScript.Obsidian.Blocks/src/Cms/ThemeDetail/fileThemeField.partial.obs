@@ -6,7 +6,8 @@
         </RockLabel>
 
         <div class="d-flex align-items-end" style="gap: 8px;">
-            <FileUploader v-model="value" />
+            <FileUploader v-model="value"
+                          :binaryFileTypeGuid="BinaryFiletype.Default" />
 
             <button v-if="internalValue !== null"
                     type="button"
@@ -22,13 +23,14 @@
 <script setup lang="ts">
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { ThemeFieldBag } from "@Obsidian/ViewModels/Blocks/Cms/ThemeDetail/themeFieldBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, PropType, ref, watch } from "vue";
 
     const props = defineProps({
-        field: {
-            type: Object as PropType<ThemeFieldBag>,
+    field: {
+    type: Object as PropType<ThemeFieldBag>,
             required: true
         },
 

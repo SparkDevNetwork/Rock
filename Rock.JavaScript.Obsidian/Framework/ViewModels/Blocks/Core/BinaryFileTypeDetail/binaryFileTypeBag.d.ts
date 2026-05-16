@@ -83,4 +83,7 @@ export type BinaryFileTypeBag = {
 
     /** Gets or sets the storage mode Rock.Model.EntityType. */
     storageEntityType?: ListItemBag | null;
+
+    /** Gets or sets a value indicating whether the type is publicly viewable. */
+    isPublicViewable: boolean
 };
