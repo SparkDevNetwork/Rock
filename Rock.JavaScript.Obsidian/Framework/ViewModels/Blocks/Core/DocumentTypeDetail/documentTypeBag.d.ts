@@ -41,13 +41,13 @@ export type DocumentTypeBag = {
     entityType?: ListItemBag | null;
 
     /**
-     * Gets or sets the name of the qualifier column/property on the Rock.Model.EntityType that this Docuement Type applies to. If this is not 
+     * Gets or sets the name of the qualifier column/property on the Rock.Model.EntityType that this Docuement Type applies to. If this is not
      * provided, the document type can be used on all entities of the provided Rock.Model.EntityType.
      */
     entityTypeQualifierColumn?: string | null;
 
     /**
-     * Gets or sets the qualifier value in the qualifier column that this document type applies to.  For instance this note type and related notes will only be applicable to entity 
+     * Gets or sets the qualifier value in the qualifier column that this document type applies to.  For instance this note type and related notes will only be applicable to entity
      * if the value in the EntityTypeQualiferColumn matches this value. This property should not be populated without also populating the EntityTypeQualifierColumn property.
      */
     entityTypeQualifierValue?: string | null;
@@ -72,4 +72,7 @@ export type DocumentTypeBag = {
 
     /** Gets or sets a value indicating whether the type is user selectable. */
     userSelectable: boolean;
+
+    /** Gets or sets a value indicating whether the type is publicly viewable. */
+    isPublicViewable: boolean
 };

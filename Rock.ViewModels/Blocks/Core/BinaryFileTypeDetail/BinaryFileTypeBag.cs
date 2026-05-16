@@ -115,5 +115,10 @@ namespace Rock.ViewModels.Blocks.Core.BinaryFileTypeDetail
         /// The edit mode message.
         /// </value>
         public string EditModeMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the type is publicly viewable.
+        /// </summary>
+        public bool IsPublicViewable { get; set; }
     }
 }

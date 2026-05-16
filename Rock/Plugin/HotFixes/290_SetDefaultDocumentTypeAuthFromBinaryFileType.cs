@@ -1,0 +1,97 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Copies existing Auth rows from each BinaryFileType onto its corresponding
+    /// DocumentType (linked via [DocumentType].[BinaryFileTypeId]) so that
+    /// previously configured permissions continue to be enforced after the v14
+    /// change where GetFile.ashx and GetImage.ashx began authorizing
+    /// person-document downloads against the parent DocumentType rather than
+    /// the BinaryFileType. The copy is only performed for DocumentTypes that
+    /// currently have no Auth rows of their own, so any permissions already
+    /// configured by an administrator on the DocumentType are preserved.
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 290, "17.7" )]
+    public class SetDefaultDocumentTypeAuthFromBinaryFileType : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            Sql( @"
+DECLARE @BinaryFileEntityTypeId   INT = ( SELECT [Id] FROM [EntityType] WHERE [Guid] = '62AF597F-F193-412B-94EA-291CF713327D' );
+DECLARE @DocumentTypeEntityTypeId INT = ( SELECT [Id] FROM [EntityType] WHERE [Guid] = '18CF366F-46B6-49CA-B557-BCABD6BBD175' );
+
+IF @BinaryFileEntityTypeId IS NOT NULL AND @DocumentTypeEntityTypeId IS NOT NULL
+BEGIN
+    /*
+        For every DocumentType (in the Guid list below) that points to a BinaryFileType,
+        copy that BinaryFileType's Auth rows onto the DocumentType -- but only when the
+        DocumentType currently has no Auth rows of its own. The NOT EXISTS
+        guard is correlated per DocumentType so any DocumentType that an
+        administrator has already secured is left entirely untouched, and the
+        statement is safely re-runnable.
+    */
+    INSERT INTO [Auth] (
+        [EntityTypeId], [EntityId], [Order], [Action], [AllowOrDeny],
+        [SpecialRole], [GroupId], [PersonAliasId], [Guid],
+        [CreatedDateTime], [ModifiedDateTime]
+    )
+    SELECT
+        @DocumentTypeEntityTypeId,
+        [dt].[Id],
+        [srcAuth].[Order],
+        [srcAuth].[Action],
+        [srcAuth].[AllowOrDeny],
+        [srcAuth].[SpecialRole],
+        [srcAuth].[GroupId],
+        [srcAuth].[PersonAliasId],
+        NEWID(),
+        GETDATE(),
+        GETDATE()
+    FROM [DocumentType] AS [dt]
+    INNER JOIN [Auth] AS [srcAuth]
+        ON  [srcAuth].[EntityTypeId] = @BinaryFileEntityTypeId
+        AND [srcAuth].[EntityId]     = [dt].[BinaryFileTypeId]
+    WHERE [dt].[BinaryFileTypeId] IS NOT NULL
+      AND [dt].[Guid] IN (
+          '2FACE26D-FC22-4041-AA76-81BE4A914B5E', -- General Person Document
+          'E8513F11-165D-4EDB-AC27-9204B84FB016'  -- Giving Statement
+      )
+      AND NOT EXISTS (
+          SELECT 1
+          FROM [Auth] AS [targetAuth]
+          WHERE [targetAuth].[EntityTypeId] = @DocumentTypeEntityTypeId
+            AND [targetAuth].[EntityId]     = [dt].[Id]
+      );
+END
+" );
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            // Down migrations are not yet supported in plug-in migrations.
+        }
+    }
+}
