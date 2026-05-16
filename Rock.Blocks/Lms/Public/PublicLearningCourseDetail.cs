@@ -67,7 +67,7 @@ namespace Rock.Blocks.Lms
         Description = "If selected, all non-public classes will be excluded.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.PublicOnly,
         Order = 5 )]
 

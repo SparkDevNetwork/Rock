@@ -67,7 +67,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Hide Overcapacity Groups",
         Description = "Hides groups that have already reached their capacity limit.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = true,
         Key = AttributeKey.HideOvercapacityGroups,
         Order = 2 )]
@@ -76,7 +76,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Show Results on Initial Page Load",
         Description = "Bypasses the filter and shows results immediately. Can also be set in query string with LoadResults=true.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = false,
         Key = AttributeKey.ShowResultsOnInitialPageLoad,
         Order = 3 )]
@@ -110,7 +110,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Show Location Filter",
         Description = "Shows the location search filter and enables ordering results by distance.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = true,
         Key = AttributeKey.ShowLocationFilter,
         Order = 7 )]
@@ -119,7 +119,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Show Campus Filter",
         Description = "Shows the campus search filter and enables filtering by campus.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = true,
         Key = AttributeKey.ShowCampusFilter,
         Order = 8 )]
@@ -146,7 +146,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Show Day of Week Filter",
         Description = "Shows the day of week filter and enables filtering to groups that meet on the selected day.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = true,
         Key = AttributeKey.ShowDayOfWeekFilter,
         Order = 11 )]
@@ -155,7 +155,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Show Time Period Filter",
         Description = "Shows a filter that enables filtering based on morning, afternoon and evening.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = true,
         Key = AttributeKey.ShowTimePeriodFilter,
         Order = 12 )]
@@ -164,7 +164,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Campus Context Enabled",
         Description = "Automatically sets the campus filter to the current campus context.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = false,
         Key = AttributeKey.CampusContextEnabled,
         Order = 13 )]

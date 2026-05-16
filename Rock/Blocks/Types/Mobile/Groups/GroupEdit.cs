@@ -47,7 +47,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "If enabled, a 'Group Details' header will be displayed.",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowHeader,
         Order = 0 )]
 
@@ -55,7 +55,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowGroupName,
         Order = 1 )]
 
@@ -63,7 +63,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableGroupNameEdit,
         Order = 2 )]
 
@@ -71,7 +71,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowDescription,
         Order = 3 )]
 
@@ -79,7 +79,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableDescriptionEdit,
         Order = 4 )]
 
@@ -87,7 +87,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowCampus,
         Order = 5 )]
 
@@ -95,7 +95,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableCampusEdit,
         Order = 6 )]
 
@@ -103,7 +103,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowGroupCapacity,
         Order = 7 )]
 
@@ -111,7 +111,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableGroupCapacityEdit,
         Order = 8 )]
 
@@ -119,7 +119,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowActiveStatus,
         Order = 9 )]
 
@@ -127,7 +127,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableActiveStatusEdit,
         Order = 10 )]
 
@@ -135,7 +135,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowPublicStatus,
         Order = 11 )]
 
@@ -143,7 +143,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnablePublicStatusEdit,
         Order = 12 )]
 

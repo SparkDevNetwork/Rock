@@ -278,7 +278,7 @@ namespace Rock.Blocks.Security
         Key = AttributeKey.CreateCommunicationRecord,
         Description = "Should a record of communication from this block be saved to the recipient's profile?",
         DefaultBooleanValue = false,
-        ControlType = Rock.Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Order = 27 )]
 
     [CustomDropdownListField(

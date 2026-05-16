@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+
+using Rock.Enums.Controls;
 using Rock.Field.Types;
 
 namespace Rock.Attribute
@@ -87,12 +89,12 @@ namespace Rock.Attribute
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrNull( BooleanFieldType.ConfigurationKey.TrueText );
+                return FieldConfigurationValues.GetValueOrNull( "truetext" );
             }
 
             set
             {
-                FieldConfigurationValues.AddOrReplace( BooleanFieldType.ConfigurationKey.TrueText, new Field.ConfigurationValue( value ) );
+                FieldConfigurationValues.AddOrReplace( "truetext", new Field.ConfigurationValue( value ) );
             }
         }
 
@@ -106,12 +108,12 @@ namespace Rock.Attribute
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrNull( BooleanFieldType.ConfigurationKey.FalseText );
+                return FieldConfigurationValues.GetValueOrNull( "falsetext" );
             }
 
             set
             {
-                FieldConfigurationValues.AddOrReplace( BooleanFieldType.ConfigurationKey.FalseText, new Field.ConfigurationValue( value ) );
+                FieldConfigurationValues.AddOrReplace( "falsetext", new Field.ConfigurationValue( value ) );
             }
         }
 
@@ -121,16 +123,35 @@ namespace Rock.Attribute
         /// <value>
         /// The type of the control.
         /// </value>
+        [Obsolete( "Use EditControlType instead." )]
+        [RockObsolete( "20.0" )]
         public BooleanFieldType.BooleanControlType ControlType
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrNull( BooleanFieldType.ConfigurationKey.BooleanControlType ).ConvertToEnumOrNull<BooleanFieldType.BooleanControlType>() ?? BooleanFieldType.BooleanControlType.DropDown;
+                return FieldConfigurationValues.GetValueOrNull( "BooleanControlType" ).ConvertToEnumOrNull<BooleanFieldType.BooleanControlType>() ?? BooleanFieldType.BooleanControlType.DropDown;
             }
 
             set
             {
-                FieldConfigurationValues.AddOrReplace( BooleanFieldType.ConfigurationKey.BooleanControlType, new Field.ConfigurationValue( value.ConvertToString( false ) ) );
+                FieldConfigurationValues.AddOrReplace( "BooleanControlType", new Field.ConfigurationValue( value.ConvertToString( false ) ) );
+            }
+        }
+
+        /// <summary>
+        /// The type of the control (DropDown, CheckBox, Toggle, or Switch) to
+        /// use when editing the value.
+        /// </summary>
+        public BooleanControlType EditControlType
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( "BooleanControlType" ).ConvertToEnumOrNull<BooleanControlType>() ?? BooleanControlType.DropDown;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( "BooleanControlType", new Field.ConfigurationValue( value.ConvertToString( false ) ) );
             }
         }
     }

@@ -64,7 +64,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "If enabled a save button will be shown (recommended for large groups), otherwise no save button will be displayed and a save will be triggered with each selection (recommended for smaller groups).",
         IsRequired = true,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowSaveButton,
         Order = 3 )]
 
@@ -72,7 +72,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "If enabled a date picker will be shown, otherwise a dropdown with only the valid dates will be shown.",
         IsRequired = true,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.AllowAnyDateSelection,
         Order = 4 )]
 
@@ -80,7 +80,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "Enables collecting notes about the attendance. This will automatically show the save button as well.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowAttendanceNotes,
         Order = 5 )]
 

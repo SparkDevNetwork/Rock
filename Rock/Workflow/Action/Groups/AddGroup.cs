@@ -72,7 +72,7 @@ namespace Rock.Workflow.Action.Groups
 
     [BooleanField( "Is Security Role",
         Key = AttributeKey.IsSecurityRole,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Description = "When checked this will mark the Group as a Security Role even though it isn't a SecurityRole Group Type.",
         Order = 5 )]
 

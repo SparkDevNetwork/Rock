@@ -95,7 +95,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "Includes prayer requests that are attached to a group.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.IncludeGroupRequests,
         Order = 7 )]
 

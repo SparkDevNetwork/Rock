@@ -77,7 +77,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "If enabled then the user will be able to apply custom filtering.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowFilter,
         Order = 4 )]
 
@@ -85,7 +85,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "Determines if all events for the month should be listed in the detail section or only the selected days events.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowAllEventsInDetail,
         Order = 5 )]
 
@@ -93,7 +93,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "Determines if multiple colored dots will be used on the calendar to indicate which audience types exist on that day.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowPerAudienceEventIndicators,
         Order = 6 )]
 

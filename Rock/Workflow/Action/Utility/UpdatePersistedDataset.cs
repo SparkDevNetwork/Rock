@@ -43,7 +43,7 @@ namespace Rock.Workflow.Action
 
     [BooleanField( "Delay Processing Until Complete",
         Key = AttributeKey.DelayProcessingUntilComplete,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Description = "When checked the action will wait until the persisted dataset is done being updated. Otherwise it will trigger the update to begin then continue before it's complete",
         Order = 1 )]
 

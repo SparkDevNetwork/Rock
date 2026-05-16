@@ -48,7 +48,7 @@ namespace Rock.Blocks.Engagement.SignUp
     [BooleanField( "Set Page Title",
         Key = AttributeKey.SetPageTitle,
         Description = "When enabled, sets the page title to be the name of the sign-up project.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         Order = 1 )]
 

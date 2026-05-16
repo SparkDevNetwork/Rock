@@ -53,7 +53,7 @@ namespace Rock.Blocks.Security
     [BooleanField( "Enable Person Context",
         Key = AttributeKey.EnablePersonContext,
         Description = @"If enabled and the page has a person context, its value will be used to limit the grid results to only this person, and the ""Person"" column will be hidden.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         IsRequired = false )]
 

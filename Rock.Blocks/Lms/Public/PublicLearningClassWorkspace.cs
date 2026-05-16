@@ -76,7 +76,7 @@ namespace Rock.Blocks.Lms
         "Show Grades",
         Key = AttributeKey.ShowGrades,
         Description = "Determines if grades will be shown on the class overview page.",
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         IsRequired = true,
         DefaultBooleanValue = true,
         Order = 4 )]
@@ -85,7 +85,7 @@ namespace Rock.Blocks.Lms
         "Enable Smart Scroll",
         Key = AttributeKey.EnableSmartScroll,
         Description = "Determines if the block should automatically scroll the main content section to the top whenever an activity is selected.",
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        EditControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         IsRequired = false,
         DefaultBooleanValue = true,
         Order = 5 )]
