@@ -9,6 +9,7 @@
                  :name="panelName"
                  :title="panelTitle"
                  :labels="blockLabels"
+                 :alwaysShowLabels="true"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="Binary File Type"
@@ -109,8 +110,12 @@
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
-        if (panelMode.value !== DetailPanelMode.View) {
-            return undefined;
+        if (binaryFileTypeViewBag.value?.isPublicViewable === true) {
+            labels.push({
+                iconCssClass: "fa fa-unlock",
+                title: "Public Viewable",
+                type: "warning"
+            });
         }
 
         return labels;

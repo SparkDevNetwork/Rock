@@ -171,6 +171,12 @@ namespace Rock.Blocks.Core
             };
             var cacheability = entity.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>() ?? defaultCacheability;
 
+            // The BinaryFileType is publicly viewable if the non-logged in person (no person) 
+            // or a generic logged-in (All Authenticated Users) person can view.
+            var isPublicViewable = !entity.RequiresViewSecurity
+                || entity.IsAuthorized( Rock.Security.Authorization.VIEW, null )
+                || entity.IsAuthorized( Rock.Security.Authorization.VIEW, new Person() { Guid = Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid() } );
+
             return new BinaryFileTypeBag
             {
                 IdKey = entity.IdKey,
@@ -186,7 +192,8 @@ namespace Rock.Blocks.Core
                 Name = entity.Name,
                 PreferredRequired = entity.PreferredRequired,
                 RequiresViewSecurity = entity.RequiresViewSecurity,
-                StorageEntityType = entity.StorageEntityType.ToListItemBag()
+                StorageEntityType = entity.StorageEntityType.ToListItemBag(),
+                IsPublicViewable = isPublicViewable
             };
         }
 

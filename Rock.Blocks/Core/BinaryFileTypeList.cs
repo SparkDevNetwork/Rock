@@ -160,6 +160,14 @@ namespace Rock.Blocks.Core
                 LavaObject = row => row.BinaryFileType
             };
 
+            // Reused across all rows so we don't allocate a Person per row. The
+            // anonymous visitor instance is only a vehicle for the Guid lookup
+            // inside Authorization's in-memory cache.
+            var anonymousVisitorPerson = new Person
+            {
+                Guid = Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid()
+            };
+
             return new GridBuilder<BinaryFileTypeData>()
                 .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.BinaryFileType.IdKey )
@@ -171,7 +179,16 @@ namespace Rock.Blocks.Core
                 .AddField( "cacheToServerFileSystem", a => a.BinaryFileType.CacheToServerFileSystem )
                 .AddField( "requiresViewSecurity", a => a.BinaryFileType.RequiresViewSecurity )
                 .AddField( "isSecurityDisabled", a => !a.BinaryFileType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isPublicViewable", a => !a.BinaryFileType.RequiresViewSecurity
+                    || a.BinaryFileType.IsAuthorized( Authorization.VIEW, null )
+                    || a.BinaryFileType.IsAuthorized( Authorization.VIEW, anonymousVisitorPerson ) )
                 .AddAttributeFieldsFrom( a => a.BinaryFileType, _gridAttributes.Value );
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<BinaryFileTypeData> GetOrderedListQueryable( IQueryable<BinaryFileTypeData> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.BinaryFileType.Name );
         }
 
         /// <summary>

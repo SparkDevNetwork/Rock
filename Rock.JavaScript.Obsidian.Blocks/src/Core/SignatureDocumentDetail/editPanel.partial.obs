@@ -19,6 +19,7 @@
         <div class="row">
             <div class="col-md-6">
                 <FileUploader v-model="binaryFile"
+                              :binaryFileTypeGuid="BinaryFiletype.SignedDocumentFileType"
                               :disabled="!isLegacyDocument"
                               label="Document" />
             </div>
@@ -39,7 +40,7 @@
                               help="The person that this document was assigned to for getting a signature."
                               rules="required" />
                 <template v-else>
-                    <RockLabel>Assigned To</RockLabel> 
+                    <RockLabel>Assigned To</RockLabel>
                     <div>{{ assignedToPersonAlias?.text }}</div>
                 </template>
 
@@ -65,6 +66,7 @@
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { SignatureDocumentBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentDetail/signatureDocumentBag";
@@ -142,7 +144,7 @@
         const newValue: ValidPropertiesBox<SignatureDocumentBag> = {
             bag: { ...props.modelValue.bag } as SignatureDocumentBag
         };
-        
+
         setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
         setPropertiesBoxValue(newValue, "name", name.value);
         setPropertiesBoxValue(newValue, "status", toNumber(status.value) as SignatureDocumentStatus);
