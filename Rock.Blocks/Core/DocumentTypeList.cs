@@ -125,6 +125,14 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override GridBuilder<DocumentType> GetGridBuilder()
         {
+            // Reused across all rows so we don't allocate a Person per row. The
+            // anonymous visitor instance is only a vehicle for the Guid lookup
+            // inside Authorization's in-memory cache.
+            var anonymousVisitorPerson = new Person
+            {
+                Guid = Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid()
+            };
+
             return new GridBuilder<DocumentType>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
@@ -133,7 +141,9 @@ namespace Rock.Blocks.Core
                 .AddTextField( "fileTypeName", a => a.BinaryFileType.Name )
                 .AddTextField( "entityTypeName", a => a.EntityType.FriendlyName )
                 .AddField( "isSystem", a => a.IsSystem )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isPublicViewable", a => a.IsAuthorized( Authorization.VIEW, null )
+                    || a.IsAuthorized( Authorization.VIEW, anonymousVisitorPerson ) );
         }
 
         #endregion

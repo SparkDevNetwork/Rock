@@ -49,6 +49,8 @@ export const BinaryFiletype = {
     MergeTemplate: "BD63EC0C-2DF8-4C55-97E3-616870C67C59",
     /** The mobile application bundle file type guid */
     MobileAppBundle: "ED456BF6-78F4-4954-9043-CA6849DA2D7E",
+    /** The Person Document file type guid */
+    PersonDocument: "2C0A9DA7-85B5-4D30-8C8C-638C3902B711",
     /** The Person Image file type guid */
     PersonImage: "03BD8476-8A9F-4078-B628-5B538F967AFC",
     /** The Signed Document Default File Type */
