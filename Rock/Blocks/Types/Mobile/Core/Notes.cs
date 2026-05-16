@@ -245,7 +245,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <value>
         /// The XAML template to parse on the shell.
         /// </value>
-        protected string NotesTemplate => Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.NotesTemplate ) );
+        protected string NotesTemplate => GetAttributeValueTemplateContent( AttributeKey.NotesTemplate );
 
         /// <summary>
         /// When in template mode, this is the amount of notes retrieved, when in List mode, this

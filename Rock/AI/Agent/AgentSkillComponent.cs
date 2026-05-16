@@ -328,10 +328,10 @@ namespace Rock.AI.Agent
                 .GetCustomAttributes( true )
                 .Where( a => typeof( FieldAttribute ).IsAssignableFrom( a.GetType() ) )
                 .Cast<FieldAttribute>()
-                .Where( fa => fa.FieldTypeClass != typeof( FileFieldType ).FullName
-                    && fa.FieldTypeClass != typeof( ImageFieldType ).FullName
-                    && fa.FieldTypeClass != typeof( BackgroundCheckFieldType ).FullName
-                    && fa.FieldTypeClass != typeof( StructureContentEditorFieldType ).FullName )
+                .Where( fa => fa.FieldTypeClass != "Rock.Field.Types.FileFieldType"
+                    && fa.FieldTypeClass != "Rock.Field.Types.ImageFieldType"
+                    && fa.FieldTypeClass != "Rock.Field.Types.BackgroundCheckFieldType"
+                    && fa.FieldTypeClass != "Rock.Field.Types.StructureContentEditorFieldType" )
                 .OrderBy( a => a.Order )
                 .ToList();
         }

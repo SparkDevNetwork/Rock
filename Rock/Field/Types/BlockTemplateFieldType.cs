@@ -237,6 +237,8 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>The content of the selected template.</returns>
+        [Obsolete( "Use the GetAttributeValueTemplateContent method on RockBlockType instead." )]
+        [RockObsolete( "20.0" )]
         public static string GetTemplateContent( string value )
         {
             var values = value.Split( new[] { '|' }, 2 );

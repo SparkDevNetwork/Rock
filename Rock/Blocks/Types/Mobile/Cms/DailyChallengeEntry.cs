@@ -132,7 +132,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <value>
         /// The template to use when rendering the block.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
+        protected string Template => GetAttributeValueTemplateContent( AttributeKeys.Template );
 
         #endregion
 

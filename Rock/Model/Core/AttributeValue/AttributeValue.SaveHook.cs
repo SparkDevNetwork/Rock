@@ -61,6 +61,7 @@ namespace Rock.Model
                     // The Label field type is a list of existing labels so should not be included, but the image field type uploads a new file so we do want it included.
                     // Don't use BinaryFileFieldType as that type of attribute's file can be used by more than one attribute
                     var field = attributeCache.FieldType.Field;
+                    var fieldGuid = attributeCache.FieldType.Guid;
 
                     if ( valueWasModified && field != null && field.GetType().Assembly.FullName.StartsWith( "Rock" ) )
                     {
@@ -70,16 +71,16 @@ namespace Rock.Model
                     }
 
                     if ( field != null && (
-                        field is Field.Types.FileFieldType ||
-                        field is Field.Types.ImageFieldType ||
-                        field is Field.Types.BackgroundCheckFieldType ) )
+                        fieldGuid == SystemGuid.FieldType.FILE.AsGuid() ||
+                        fieldGuid == SystemGuid.FieldType.IMAGE.AsGuid() ||
+                        fieldGuid == SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid() ) )
                     {
                         PreSaveBinaryFile( rockContext );
                     }
 
                     // Check to see if this attribute value is for a StructureContentEditorFieldType.
                     // If so then we need to detect any changes in the content blocks.
-                    if ( field is Field.Types.StructureContentEditorFieldType )
+                    if ( fieldGuid == SystemGuid.FieldType.STRUCTURE_CONTENT_EDITOR.AsGuid() )
                     {
                         PreSaveStructuredContent( rockContext );
                     }

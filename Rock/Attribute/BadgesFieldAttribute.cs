@@ -50,7 +50,7 @@ namespace Rock.Attribute
         /// <param name="key">The key.</param>
         public BadgesFieldAttribute( string name = "Badges", string description = "", bool required = true, string defaultBadgeTypeGuids = "", string category = "",
             int order = 0, string key = null, string entityTypeGuid = SystemGuid.EntityType.PERSON )
-            : base( name, description, required, defaultBadgeTypeGuids, category, order, key, typeof( Rock.Field.Types.BadgesFieldType ).FullName )
+            : base( name, description, required, defaultBadgeTypeGuids, category, order, key, "Rock.Field.Types.BadgesFieldType" )
         {
             EntityTypeGuid = entityTypeGuid;
         }

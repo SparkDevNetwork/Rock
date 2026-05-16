@@ -37,7 +37,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public BlockTemplateFieldAttribute( string name, string description = "", string templateBlockValueGuid = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.BlockTemplateFieldType ).FullName )
+            : base( name, description, required, defaultValue, category, order, key, "Rock.Field.Types.BlockTemplateFieldType" )
         {
             TemplateBlockValueGuid = templateBlockValueGuid;
         }
@@ -52,7 +52,7 @@ namespace Rock.Attribute
         {
             get
             {
-                var definedTypeGuid = FieldConfigurationValues.GetValueOrNull( Rock.Field.Types.BlockTemplateFieldType.TEMPLATE_BLOCK_KEY ).AsGuidOrNull();
+                var definedTypeGuid = FieldConfigurationValues.GetValueOrNull( "templateblock" ).AsGuidOrNull();
                 if ( definedTypeGuid.HasValue )
                 {
                     return definedTypeGuid.Value.ToString();
@@ -70,7 +70,7 @@ namespace Rock.Attribute
                     definedTypeGuid = Guid.Empty;
                 }
 
-                FieldConfigurationValues.AddOrReplace( Rock.Field.Types.BlockTemplateFieldType.TEMPLATE_BLOCK_KEY, new Field.ConfigurationValue( definedTypeGuid.Value.ToString() ) );
+                FieldConfigurationValues.AddOrReplace( "templateblock", new Field.ConfigurationValue( definedTypeGuid.Value.ToString() ) );
             }
         }
     }

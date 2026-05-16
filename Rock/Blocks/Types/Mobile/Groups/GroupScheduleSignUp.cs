@@ -108,7 +108,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <summary>
         /// Gets the landing template.
         /// </summary>
-        protected string LandingTemplate => Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.LandingTemplate ) );
+        protected string LandingTemplate => GetAttributeValueTemplateContent( AttributeKey.LandingTemplate );
 
         /// <summary>
         /// Gets the amount of future weeks to show.

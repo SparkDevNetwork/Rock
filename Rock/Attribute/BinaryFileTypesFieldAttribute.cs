@@ -35,7 +35,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public BinaryFileTypesFieldAttribute( string name = "Binary File Types", string description = "", bool required = true, string defaultBinaryFileTypeGuids = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultBinaryFileTypeGuids, category, order, key, typeof( Rock.Field.Types.BinaryFileTypesFieldType ).FullName )
+            : base( name, description, required, defaultBinaryFileTypeGuids, category, order, key, "Rock.Field.Types.BinaryFileTypesFieldType" )
         {
         }
     }

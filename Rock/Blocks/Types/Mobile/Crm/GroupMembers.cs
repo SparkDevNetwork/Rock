@@ -127,7 +127,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
         /// <returns>System.String.</returns>
         private string GetMembersTemplateInternal( Rock.Model.Person person )
         {
-            var template = Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.MembersTemplate ) );
+            var template = GetAttributeValueTemplateContent( AttributeKey.MembersTemplate );
             var mergeFields = RequestContext.GetCommonMergeFields();
 
             // Get the group type, or the family group type as a default.

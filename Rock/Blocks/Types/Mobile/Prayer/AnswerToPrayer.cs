@@ -122,7 +122,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// <value>
         /// The template.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
+        protected string Template => GetAttributeValueTemplateContent( AttributeKeys.Template );
 
         #endregion
 

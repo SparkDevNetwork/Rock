@@ -226,7 +226,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// <value>
         /// The template.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
+        protected string Template => GetAttributeValueTemplateContent( AttributeKeys.Template );
 
         /// <summary>
         /// Gets a value indicating whether interactions are created for prayers.

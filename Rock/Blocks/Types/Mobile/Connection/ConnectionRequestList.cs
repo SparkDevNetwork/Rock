@@ -108,7 +108,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <value>
         /// The request template.
         /// </value>
-        protected string RequestTemplate => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.RequestTemplate ) );
+        protected string RequestTemplate => GetAttributeValueTemplateContent( AttributeKey.RequestTemplate );
 
         /// <summary>
         /// Gets the detail page unique identifier.

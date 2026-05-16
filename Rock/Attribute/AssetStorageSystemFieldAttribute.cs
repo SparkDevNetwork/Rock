@@ -23,7 +23,7 @@ namespace Rock.Attribute
     {
         
         public AssetStorageProviderFieldAttributeAttribute( string name = "Asset Storage System", string description = "", bool required = true, string defaultFinancialGatewayGuid = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultFinancialGatewayGuid, category, order, key, typeof( Rock.Field.Types.AssetStorageProviderFieldType ).FullName )
+            : base( name, description, required, defaultFinancialGatewayGuid, category, order, key, "Rock.Field.Types.AssetStorageProviderFieldType" )
         {
         }
     }

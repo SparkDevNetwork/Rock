@@ -30,7 +30,7 @@ namespace Rock.Attribute
         /// <param name="name">The name.</param>
         public AchievementTypeFieldAttribute( string name ) : base (
             name,
-            fieldTypeClass: typeof( Field.Types.AchievementTypeFieldType ).FullName )
+            fieldTypeClass: "Rock.Field.Types.AchievementTypeFieldType" )
         {
         }
     }

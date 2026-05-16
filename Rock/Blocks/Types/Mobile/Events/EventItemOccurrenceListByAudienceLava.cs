@@ -240,7 +240,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// <value>
         /// The lava template.
         /// </value>
-        protected string LavaTemplate => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.LavaTemplate ) );
+        protected string LavaTemplate => GetAttributeValueTemplateContent( AttributeKeys.LavaTemplate );
 
         /// <summary>
         /// Gets the enabled lava commands.

@@ -82,7 +82,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <summary>
         /// Gets the Scheduled Transaction Template.
         /// </summary>
-        private string ScheduledTransactionItemTemplate => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.ResultItemTemplate ) );
+        private string ScheduledTransactionItemTemplate => GetAttributeValueTemplateContent( AttributeKey.ResultItemTemplate );
 
         /// <summary>
         /// Gets the Detail Page Guid.

@@ -183,7 +183,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// <value>
         /// The event template.
         /// </value>
-        protected string EventTemplate => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.EventTemplate ) );
+        protected string EventTemplate => GetAttributeValueTemplateContent( AttributeKeys.EventTemplate );
 
         /// <summary>
         /// Gets the day header template.

@@ -38,7 +38,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public BackgroundCheckFieldAttribute( string binaryFileTypeGuid, string name = "Background Check", string description = "", bool required = true, string defaultBinaryFileGuid = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultBinaryFileGuid, category, order, key, typeof( Rock.Field.Types.BackgroundCheckFieldType ).FullName )
+            : base( name, description, required, defaultBinaryFileGuid, category, order, key, "Rock.Field.Types.BackgroundCheckFieldType" )
         {
             var configValue = new Field.ConfigurationValue( binaryFileTypeGuid );
             FieldConfigurationValues.Add( BINARY_FILE_TYPE, configValue );

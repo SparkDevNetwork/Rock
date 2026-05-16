@@ -35,7 +35,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public AddressFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.AddressFieldType).FullName )
+            : base( name, description, required, defaultValue, category, order, key, "Rock.Field.Types.AddressFieldType" )
         {
         }
 

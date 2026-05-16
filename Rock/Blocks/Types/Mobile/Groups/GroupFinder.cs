@@ -313,7 +313,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <value>
         /// The template.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.Template ) );
+        protected string Template => GetAttributeValueTemplateContent( AttributeKey.Template );
 
         /// <summary>
         /// Gets the maximum results to be returned.

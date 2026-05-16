@@ -250,7 +250,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// <value>
         /// The template.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.Template ) );
+        protected string Template => GetAttributeValueTemplateContent( AttributeKey.Template );
 
         /// <summary>
         /// Gets the title content to display above the prayer cards.
