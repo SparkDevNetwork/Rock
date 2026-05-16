@@ -27,7 +27,6 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Reporting;
@@ -609,9 +608,8 @@ namespace RockWeb.Blocks.Groups
             SetAttributeValue( AttributeKey.AttributeColumns, cblGridAttributes.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
             SetAttributeValue( AttributeKey.IncludePending, cbIncludePending.Checked.ToString() );
 
-            var ppFieldType = new PageReferenceFieldType();
-            SetAttributeValue( AttributeKey.GroupDetailPage, ppFieldType.GetEditValue( ppGroupDetailPage, null ) );
-            SetAttributeValue( AttributeKey.RegisterPage, ppFieldType.GetEditValue( ppRegisterPage, null ) );
+            SetAttributeValue( AttributeKey.GroupDetailPage, ppGroupDetailPage.GetValueAsAttributeValue() );
+            SetAttributeValue( AttributeKey.RegisterPage, ppRegisterPage.GetValueAsAttributeValue() );
 
             SaveAttributeValues();
 
@@ -811,9 +809,8 @@ namespace RockWeb.Blocks.Groups
 
             cbIncludePending.Checked = GetAttributeValue( AttributeKey.IncludePending ).AsBoolean();
 
-            var ppFieldType = new PageReferenceFieldType();
-            ppFieldType.SetEditValue( ppGroupDetailPage, null, GetAttributeValue( AttributeKey.GroupDetailPage ) );
-            ppFieldType.SetEditValue( ppRegisterPage, null, GetAttributeValue( AttributeKey.RegisterPage ) );
+            ppGroupDetailPage.SetValueFromAttributeValue( GetAttributeValue( AttributeKey.GroupDetailPage ) );
+            ppRegisterPage.SetValueFromAttributeValue( GetAttributeValue( AttributeKey.RegisterPage ) );
 
             upnlContent.Update();
         }

@@ -459,7 +459,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
                         else
                         {                            
-                            if ( attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                            if ( attribute.FieldType.Guid == Rock.SystemGuid.FieldType.IMAGE.AsGuid() )
                             {
                                 formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attribute.EntityTypeId, Person.Id, attributeValue, attribute.QualifierValues, true );
                             }
