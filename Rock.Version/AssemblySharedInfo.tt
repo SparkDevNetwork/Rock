@@ -4,7 +4,7 @@
 <#@ output extension=".cs" #>
 <#
      int major = 17; 
-     int minor = 7; 
+     int minor = 8; 
      int build = 0; 
   
      try
@@ -17,7 +17,7 @@
      }
      catch
      {
-         build = 0; 
+         build = 0;
      }
  #>
 //<#= build #>
