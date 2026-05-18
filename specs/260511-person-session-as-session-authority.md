@@ -54,7 +54,7 @@ Inherits from `Rock.Data.Model<PersonSession>` (gains the standard `Id`, `Guid`,
 | Column | Type | Nullable | Notes |
 |---|---|---|---|
 | `PersonAliasId` | int (FK PersonAlias) | No | Owner of the session. Standard Rock `PersonAlias` semantics apply: on Person merge, `PersonSession` rows are left pointing at their original alias (no fix-up). `PersonAlias` deletion is an admin-only direct-SQL operation requiring manual FK cleanup, not a supported runtime path; no cascade behavior is defined for it. |
-| `UserLoginId` | int (FK UserLogin) | Yes | Null for impersonation tokens, passwordless flows, and other cases where there is no concrete `UserLogin`. |
+| `UserLoginId` | int (FK UserLogin) | Yes | Null for impersonation tokens, passwordless flows, and other cases where there is no concrete `UserLogin`. The FK uses `ON DELETE SET NULL` so deleting a `UserLogin` (which is also how an API key gets revoked under the current Rock model) leaves the historical `PersonSession` row in place with `UserLoginId = null`, rather than cascading the deletion through all of the user's sessions. |
 | `IsActive` | bool | No | Set to `false` once `ExpiresDateTime` is reached or the session is manually revoked. Inactive sessions cannot be used for validation and do not appear in admin UI by default. |
 | `IssuedDateTime` | datetime | No | When the session was created. Public setter on purpose so unit tests and legitimate backdating scenarios can write it. Unlike `InactiveDateTime`, it has no co-dependent column whose state could be corrupted by an inconsistent caller. |
 | `InactiveDateTime` | datetime | Yes | When `IsActive` flipped to `false`. MUST be a private-set property, set automatically by the service during the `PreSave` event. The reason is to keep this column in lockstep with `IsActive`: a caller should never be able to set `IsActive = false` without an `InactiveDateTime`, or stamp an `InactiveDateTime` without flipping `IsActive`. Contradictory states would leave operators unsure how to interpret the row. |
@@ -65,8 +65,8 @@ Inherits from `Rock.Data.Model<PersonSession>` (gains the standard `Id`, `Guid`,
 | `IsPersistent` | bool | No | `true` when the session was created from a "remember me" login. Drives cleanup horizon. |
 | `UserAgent` | nvarchar | Yes | Captured at session creation for forensics and "new device" emails. Null or empty is permitted; SignalR, server-side REST, and OIDC flows may not have a meaningful UA string. Long-term retention inherits the same PII considerations that already apply to other UA-storing tables in Rock; a platform-wide PII / retention policy is out of scope for this spec. |
 | `AuthenticationComponentId` | int (FK EntityType) | Yes | Component used for initial authentication. |
-| `CreationSource` | enum `PersonSessionCreationSource` | No | How the session was created. Values: `Unknown` (safe default, should not be persisted in normal flows), `Component` (regular authentication via an `AuthenticationComponent`), `Impersonation` (admin-initiated impersonation, restorable to the impersonator's prior session), `UserToken` (user-facing token like an `rckipid` email link, not restorable). Drives `IsImpersonated()`, `GetImpersonatorSession()`, and `EndImpersonationAndRestore()` semantics on `PersonSessionService`. |
-| `AdditionalSettingsJson` | nvarchar(max) | Yes | Backing store for `IHasAdditionalSettings`. Read and written exclusively through the categorized extension methods, never touched directly. Known consumers: (1) admin-impersonation restore state, under a dedicated key, carrying the impersonator's prior `PersonSession.Guid`; (2) for `UserToken` sessions, a possible link to the originating `PersonToken` row (e.g. its Guid) so per-request validation can re-check page-scope, expiration, or revocation against the source token. Whether (2) is required depends on the page-scope research in Pre-Implementation Research. Future per-session metadata (device fingerprint hints, channel-specific context, etc.) can be added under additional keys without a schema change. |
+| `CreationSource` | enum `PersonSessionCreationSource` | No | How the session was created. Values: `Unknown` (safe default, should not be persisted in normal flows), `Component` (regular authentication via an `AuthenticationComponent`), `Impersonation` (admin-initiated impersonation, restorable to the impersonator's prior session), `UserToken` (user-facing token like an `rckipid` email link, not restorable), `ApiKey` (long-lived session tied to a `UserLogin` whose `ApiKey` property is set; reused across all requests from that key, see "API key requests" subsection). Drives `IsImpersonated()`, `GetImpersonatorSession()`, and `EndImpersonationAndRestore()` semantics on `PersonSessionService`. |
+| `AdditionalSettingsJson` | nvarchar(max) | Yes | Backing store for `IHasAdditionalSettings`. Read and written exclusively through the categorized extension methods, never touched directly. Known consumers: (1) admin-impersonation restore state, under a dedicated key, carrying the impersorator's prior `PersonSession.Guid`; (2) for `UserToken` sessions, a link to the originating `PersonToken` row (its Guid) so per-request validation can re-check page-scope, expiration, and revocation against the source token. Consumer (2) is required: page-scope enforcement happens on every request while in a `UserToken` session, not just at session creation. Future per-session metadata (device fingerprint hints, channel-specific context, etc.) can be added under additional keys without a schema change. |
 
 ### Method: `GetAuthenticationStrength()`
 
@@ -210,25 +210,41 @@ For impersonation specifically, the original `PersonSession` Guid (and any compa
 
 ### API key requests
 
-Requests authenticated by API key continue to work as today. No `PersonSession` is created, no `InteractionSession` is recorded.
+Requests authenticated by a Rock API key (`UserLogin.ApiKey` matched via the `Authorization-Token` header or `?apikey=` query parameter) participate in `PersonSession`. The API key remains a property of `UserLogin`; nothing about the key's storage or issuance changes. What changes is the activity-tracking model.
 
-This same "no session created" rule applies to the other bearer-token paths handled by `Rock.Rest/Filters/AuthenticateAttribute.cs`: JWT tokens (`HeaderTokens.JWT`) and OAuth bearer tokens via ASOS. These are treated as API-key-class authentication: the request is authenticated against the bearer, the current user is set for the duration of the request, but no `PersonSession` row exists and `UpdatePersonSessionLastActivity` is not invoked. The rationale: like API keys, these tokens are issued out-of-band and validated on each request from their own state (signature, issuer claims, ASOS authorization grant). Persisting a session per request would add database churn without giving the platform any new authority it doesn't already have from the token itself.
+On each API-key request, `AuthenticateAttribute` (after resolving the `UserLogin` by `ApiKey`) calls `PersonSessionService.FindOrCreateApiKeySession( userLogin )`. The service returns the active `PersonSession` for that `UserLogin` with `CreationSource = ApiKey`, or creates a new one if none exists. The session is long-lived: subsequent API-key requests from the same key reuse the same row, and `LastActivityDateTime` flows through the standard `UpdatePersonSessionLastActivity` bus task (throttled the same way it is for browser requests). The session has no `ExpiresDateTime` (API keys are intentionally durable; cleanup is by `UserLogin` deletion, not session expiration).
 
-The OIDC password-grant flow (`Rock.Oidc/Authorization/AuthorizationProvider.cs:120-182`) falls under the same rule. That endpoint exchanges username/password for an access token via `context.Validate(ticket)`; it does NOT authenticate the requesting HTTP connection. The issued token is later replayed via the ASOS bearer path above, which is already classified. OAuth access tokens and `.ROCK` cookies are different artifacts (different transport, different validation middleware, different consumers), so an OIDC-issued token cannot authenticate a RockPage / Obsidian page load even if a caller tried to inject it as a cookie. `AuthenticateAndTrack` continues to update `UserLogin.LastLoginDateTime` as a side effect; that behavior is preserved.
+The find-or-create logic uses the same upsert-with-unique-key pattern that `InteractionSession` adoption uses (`Rock/Model/Core/Interaction/InteractionService.cs:583`), so concurrent API-key requests for the same `UserLogin` cannot race to create duplicate rows.
+
+`InteractionSession` is NOT created for API-key requests; that behavior is unchanged from today. API-key requests participate in `PersonSession.LastActivityDateTime` tracking, but they do not generate interaction records.
+
+When a `UserLogin` is deleted (the way an API key is revoked under the current Rock model), the FK's `ON DELETE SET NULL` behavior sets the associated `PersonSession.UserLoginId` to null, leaving an orphaned historical row that no subsequent request can resurrect (no `UserLogin` matches the deleted key). Rock Cleanup can mark such orphaned rows inactive based on activity staleness.
+
+**JWT and OAuth bearer tokens are different.** The other bearer-token paths handled by `Rock.Rest/Filters/AuthenticateAttribute.cs` (JWT via `HeaderTokens.JWT`, OAuth bearer via ASOS) do NOT create a `PersonSession` and do not participate in activity tracking. The rationale: these tokens are issued out-of-band by third-party clients and validated per-request from their own state (signature, issuer claims, ASOS authorization grant). Persisting a session per token-bearing request would add database churn without giving the platform any authority it doesn't already have from the token itself. The OIDC password-grant flow (`Rock.Oidc/Authorization/AuthorizationProvider.cs:120-182`) is in the same category: it exchanges credentials for an access token but does not authenticate the requesting HTTP connection. OAuth access tokens and `.ROCK` cookies are different artifacts (different transport, different validation middleware, different consumers), so an OIDC-issued token cannot authenticate a RockPage / Obsidian page load even if a caller tried to inject it as a cookie. `AuthenticateAndTrack` continues to update `UserLogin.LastLoginDateTime` as a side effect; that behavior is preserved.
 
 ### Mobile and TV device authentication
 
-Mobile and TV clients today authenticate by storing an encrypted `FormsAuthenticationTicket` on the device and replaying it via the `Authorization` header on every API call. The ticket is produced by `Rock/Mobile/MobileHelper.cs:206` and `Rock/Tv/TvHelper.cs:193` and never goes through `Authorization.SetAuthCookie`. Under the new model these flows participate in `PersonSession` fully:
+Mobile and TV clients today authenticate via the same `.ROCK` cookie as browsers. The mobile login endpoint produces an encrypted `FormsAuthenticationTicket` (`Rock/Mobile/MobileHelper.cs:206`, `Rock/Tv/TvHelper.cs:193`) and returns it to the client as a string in the response body (rather than as a `Set-Cookie` header, because the device manages cookie storage manually). The client then sends the ticket back as a `Cookie: .ROCK=...` header on every subsequent request. The standard `FormsAuthenticationModule` (registered in `web.config`) decrypts the cookie on the inbound ASP.NET pipeline and sets the request principal. By the time `AuthenticateAttribute` runs, the principal is already populated and its lines 70-77 short-circuit (`AuthenticateAttribute.cs:215-219` comment: "this is normally already set from the .ROCK cookie"). So mobile and TV requests use the cookie pipeline, not a separate `Authorization`-header branch.
+
+Under the new model:
 
 - Mobile and TV sessions are **full persistent sessions**, not API keys. `CreationSource = Component`, `IsPersistent = true`, `AuthenticationComponentId` set to whichever component authenticated the login. They are long-lived authenticated sessions tied to a specific person and device.
 - Mobile and TV login flows obey the same auth-state-transition rules as the web login flow (per the InteractionSession sync table above): anonymous → new session; same-person re-login → reuse the existing active session; different-person → new session; logout → mark inactive.
-- The mobile/TV login block calls `CreateSession` (or selects an existing active session per the transition rules), then calls `GetCookieValue` to obtain the opaque value to hand back to the device. It does NOT call `SetAuthCookie`, because mobile/TV clients do not store cookies in the browser sense.
+- The mobile/TV login block calls `CreateSession` (or selects an existing active session per the transition rules), then calls `GetCookieValue` to obtain the opaque value to hand back to the device in the response body. It does NOT call `SetAuthCookie`, because the device is responsible for cookie storage, not the server response.
 - Device token refresh (the device asks for a new token without re-entering credentials) is the pure reuse case: the existing `PersonSession` is unchanged and `GetCookieValue` is called against it to produce a fresh opaque value for the device.
-- `Rock.Rest/Filters/AuthenticateAttribute.cs` is updated so the mobile/TV branch (Authorization header carrying an encrypted Rock cookie value) decodes the value, resolves the `PersonSession.Guid`, validates the session, sets the current user, and triggers the standard `UpdatePersonSessionLastActivity` bus task. This makes mobile/TV requests participate in activity tracking exactly the way browser requests do.
+- Subsequent mobile/TV API requests carry the cookie value as a `Cookie: .ROCK=...` header. The cookie validation path (in whatever container the cookie-container open question lands on) decodes it, resolves the `PersonSession.Guid`, validates the session, sets the current user, and triggers the standard `UpdatePersonSessionLastActivity` bus task. No special branch in `AuthenticateAttribute` is required: the existing "principal already set" short-circuit (`AuthenticateAttribute.cs:70-77`) continues to be the mobile/TV entry point.
 - The `IsImpersonated` and `IsTwoFactorAuthenticated` flags previously embedded in the device's ticket are dropped, consistent with the new cookie format. Impersonation context lives on `PersonSession`; MFA recency lives on `LastMultiFactorAuthenticationDateTime`.
 - Today's `Authorization.GetSimpleAuthCookie` (`Rock/Security/Authorization.cs:853`) is the existing non-emitting variant used by the mobile login block; the new `GetCookieValue` supersedes it cleanly. The old method becomes a thin wrapper during deprecation.
 
-**Out of scope for this subsection:** the JWT (`HeaderTokens.JWT`) and ASOS bearer-token paths in `AuthenticateAttribute` are not mobile/TV device tokens; they are independent authentication mechanisms that happen to share the same filter. Both are classified as API-key-pattern flows (see "API key requests" above): they do not create a `PersonSession` and do not participate in activity tracking.
+A direct consequence of mobile/TV using the cookie: the existing `RejectAuthenticationCookiesIssuedBefore` kill-switch already covers mobile/TV requests, because `Request.Cookies[FormsCookieName]` is non-null on those requests. No mobile/TV-specific extension is needed.
+
+**Out of scope for this subsection:** the JWT (`HeaderTokens.JWT`) and ASOS bearer-token paths in `AuthenticateAttribute` are independent authentication mechanisms that happen to share the same filter. Both are classified as API-key-pattern flows (see "API key requests" above): they do not create a `PersonSession` and do not participate in activity tracking.
+
+### SignalR real-time hubs
+
+SignalR hub connections are read-only consumers of session state. The hub uses the existing `.ROCK` cookie that the browser already holds; on connection, the platform resolves the cookie to a `PersonSession` and makes it available to hub actions (so they can determine "who is the current person" when handling messages). The hub does **not** create a `PersonSession`. There is no "login via SignalR" path; if no session exists, the connection proceeds anonymously and the hub actions see no current person.
+
+This keeps SignalR aligned with the rest of Rock: authentication happens through the regular cookie pipeline, the hub just consumes the result. The `UpdatePersonSessionLastActivity` bus task is NOT triggered by SignalR traffic — long-lived hub connections would otherwise generate excessive activity writes for a single browser session that already updates `LastActivityDateTime` through normal page loads.
 
 ### MFA detection
 
@@ -280,7 +296,8 @@ Rock currently uses the term "impersonation" for two different flows that share 
 
 - A new `PersonSession` is created for the token's target person with `CreationSource = UserToken`.
 - `AdditionalSettingsJson` carries no impersonation-restore state; there is no impersonator session to restore to.
-- `AdditionalSettingsJson` MAY carry a reference to the originating `PersonToken` row (e.g. its Guid) so per-request validation can re-check page-scope, expiration, or revocation against the source token on every request, not just at session creation. Whether this link is required depends on the page-scope research item in Pre-Implementation Research; if page-scoped tokens must continue to enforce their page restriction across an active session, the link is required.
+- `AdditionalSettingsJson` carries a reference to the originating `PersonToken.Guid`. On every subsequent request while this session is active, the platform re-validates the token's page-scope, expiration, and revocation status against the source `PersonToken` row. If the user navigates to a page the token does not authorize, they receive a not-authorized error (matching today's behavior). If the token has since expired or been revoked, the session is marked inactive on the next request.
+- `PersonToken.TimesUsed` is incremented only when `rckipid` is present in the query string AND differs from the token referenced by the current session. This is what makes `UsageLimit = 1` work for an entire browsing session: the token is "consumed" once to establish the session; subsequent page navigation does not re-consume it because the URL no longer carries `rckipid` after the initial redirect. The user can re-click the email link until they sign out (or the session expires), at which point a re-click attempts to use the token again and would fail if the usage limit has been reached.
 - The session is not restorable. `GetImpersonatorSession` returns null, `EndImpersonationAndRestore` is a no-op.
 
 **Distinguishing the two.** Both flows produce a `PersonSession` and both make `IsImpersonated` return true. `CreationSource` is the authoritative discriminator: `Impersonation` for admin (restorable), `UserToken` for email-link (not restorable), `Component` for normal authenticated sessions. The cookie does not need to carry this distinction.
@@ -289,12 +306,12 @@ Rock currently uses the term "impersonation" for two different flows that share 
 
 - **Pattern A** (most callers): the code only wants to know "is this an impersonated session?". This is a simple boolean read against `PersonSession`. `IsImpersonated()` covers it. `Rock/Web/UI/RockPage.cs:2076`, `Rock/Model/CRM/UserLogin/UserLogin.WebForms.cs:101`, and similar audit-and-display call sites are Pattern A.
 - **Pattern B** (request-init only): the code is inspecting the `rckipid` query parameter on an incoming request to decide whether to start a new session. This belongs at a single seam, `PersonSessionService.ProcessImpersonationToken()`, which applies these rules in order:
-  1. If the token is invalid or expired, return failure and leave the current session unchanged.
+  1. If the token is invalid, expired (by `ExpireDateTime` or `UsageLimit`), or revoked: mark the current session inactive (so the user is not silently left "still logged in as themselves" with a misleading impression that the token worked) and return redirect-required so the `rckipid` is stripped from the URL. The resulting page load is anonymous; the user can authenticate normally if they have other means. This matches the existing behavior of the `rckipid` flow when a token is no longer usable.
   2. If the current session has `CreationSource = UserToken` and its target person matches the token's target, do NOT create a new session row, but DO return redirect-required so the token is stripped from the URL. The session continues unchanged. This both protects against row-spam and prevents the token from persisting in browser history when the same `rckipid` URL is followed across multiple page loads.
   3. If the current session has `CreationSource = Impersonation` (admin impersonation), abandon the impersonation session and create a fresh `UserToken` session for the token, **even if the token's target matches the admin or the currently-impersonated person**. Admin impersonation carries restore state, audit context, and MFA recency from the admin's prior session that should not be inherited by a token-driven access. The case is an edge that should not happen in normal flows, but explicit handling avoids subtle confusion.
   4. If the current session has `CreationSource = Component` AND the token's target matches the currently-logged-in person, do NOT change session state but DO return redirect-required so the token is stripped from the URL. The session is already sufficient to view the content; reissuing a cookie or creating a row would be churn, and no authentication event has actually occurred. The redirect prevents the token from persisting in browser history and from being re-processed on every subsequent page load. `LastActivityDateTime` advancement is unaffected because it happens through the activity bus task, not through this seam.
   5. Otherwise (Anonymous, `Component` for a different person, or `UserToken` for a different target), mark any current session inactive and create a new `UserToken` session for the token.
-  6. Return a status indicating whether the caller must redirect to a token-free URL. Redirect is required for rules 2, 3, 4, and 5 (anywhere a token reached the helper). Only rule 1 (invalid token) and the never-called-because-no-token case return no-redirect.
+  6. Return a status indicating whether the caller must redirect to a token-free URL. Redirect is required for every rule above (1 through 5): anywhere the helper was called, the `rckipid` must come out of the URL so it does not persist in browser history, get re-processed on the next page load, or get leaked via referer.
 
 Pattern B callers MUST go through this helper and MUST NOT reimplement token processing. `Rock/Web/UI/RockPage.cs:2111` (`ProcessImpersonation`) is the canonical Pattern B caller and is the single highest-priority migration target during implementation. The `rckipid=` prefix parsing in `Rock.Rest/ApiControllerBase.cs:103`, `Rock/Web/HttpModules/RockGateway.cs:499`, and the `UserLogin.WebForms.cs` helpers are also Pattern B and must move to the same seam.
 
@@ -315,7 +332,7 @@ The motivating reason to consider option 2 now: `FormsAuthenticationTicket` is a
 
 | Item | Action |
 |---|---|
-| `UserLogin.LastActivityDateTime` | Deprecate. Core call sites (Active Users block, Data Automation job) move to `PersonSession`. |
+| `UserLogin.LastActivityDateTime` | Deprecate fully. No writers remain after the change: page-load updates go to `PersonSession.LastActivityDateTime`, and API-key request activity now goes there too via the `ApiKey` `CreationSource` session (see "API key requests" subsection). Readers (Active Users block, Data Automation job) move to `PersonSession`. |
 | `UserLogin.IsOnLine` | Deprecate, and remove ALL writers wholesale. The new model derives "is the user online?" from `PersonSession.LastActivityDateTime`, so there is no boolean flag to clear on app start/stop or on logout. Code being deleted: `MarkOnlineUsersOffline()` at app startup and shutdown (`RockWeb/App_Code/Global.asax.cs:203,782,834`), the `Session_End` handler's offline-flag write (`Global.asax.cs:547-568`), and every `UpdateUserLastActivity.Message.Send( ..., IsOnline = false )` call from logout paths (`Rock.Blocks/Security/Logout.cs:109`, `LoginStatus.cs:332`, `ConfirmAccount.cs:391`, `Rock/Web/UI/RockPage.cs:843`, `Rock/Model/CRM/UserLogin/UserLoginService.WebForms.cs:78`). Readers (Active Users block) move to `PersonSession`. The bus task's `IsOnline` property is deprecated alongside. |
 | `UserLastActivityTransaction` | Remove (already deprecated in v13). |
 | `UpdateUserLastActivity` bus task | Deprecate. Add a new `UpdatePersonSessionLastActivity` bus task that updates `PersonSession.LastActivityDateTime`. The new task name pairs with the new entity, and a clean split (rather than a property-deprecation pass on the old task) avoids leaving the legacy message class half-meaningful for plugins still on the old API. |
@@ -336,54 +353,15 @@ The motivating reason to consider option 2 now: `FormsAuthenticationTicket` is a
 
 The items below are NOT design decisions; they are behaviors of the existing system that must be understood before the new implementation can faithfully replicate or intentionally diverge from them. Each item should be investigated and the findings folded back into the spec (as updates to Design, Test Plan, or Open Questions) before coding begins.
 
-### Page-scoped `rckipid` tokens
+### Other auth flows (research complete)
 
-`Rock/Web/UI/RockPage.cs` routes incoming `rckipid` values through `PersonService.GetByImpersonationToken( token, pageId, ... )`, which loads the row from the `PersonToken` table and performs additional validation including a page-scope check. Tokens can be issued bound to a specific page, meaning the token authorizes access to page 123 but NOT page 456. The spec's Pattern B description treats `rckipid` as a single concept; in practice the existing validation is richer.
+All items in this list have been resolved through code investigation and product decisions:
 
-Investigate the current behavior in these scenarios so we can replicate it correctly:
-
-- Email link takes the recipient to page 123 (which the token authorizes). The recipient clicks a link to page 456 (which the token does NOT authorize). Does the user get access denied? A login prompt? Silent fallback to anonymous? Does the session persist?
-- Same as above, but the recipient also has a regular Component session in another tab.
-- Token has no page restriction (page-id = null on the token row): does navigation continue to work across pages, or is the token consumed after first use?
-- Token has expired (past its `ExpireDateTime` on `PersonToken`): does the existing flow swallow it silently or surface an error?
-
-Findings feed back into:
-- The Pattern B rule list (Design): may need a rule about "token is valid but not for this page".
-- The Test Plan matrix: add page-scope cases.
-- The `PersonSession` schema: may need to record the page-scope or token Guid so subsequent requests can re-validate against the same `PersonToken` row.
-
-### `PersonToken` and admin-impersonation
-
-Determine whether the admin-impersonation flow (Person Bio block "Impersonate" action) creates a row in the `PersonToken` table, or whether it uses a different mechanism. If a row IS created:
-
-- Is it used for anything beyond seeding the initial cookie? (audit trail, replay protection, page-scope enforcement?)
-- Can admin-impersonation function with NO `PersonToken` row, given that the new model stores the restore reference in `PersonSession.AdditionalSettingsJson` and the impersonator's audit context on the impersonator's prior `PersonSession`?
-
-If `PersonToken` is only used by admin-impersonation as a transient handoff (Person Bio writes a row, RockPage reads and consumes it on the next request), the new flow can replace that with a direct cookie reissue and never write to `PersonToken`. If `PersonToken` carries longer-lived state (e.g. is referenced by audit reporting), keeping the row is the right call.
-
-Findings feed back into:
-- Design: whether admin-impersonation continues to write a `PersonToken` row or not.
-- Touch-points: whether `PersonTokenService.CreateNew` or similar needs a deprecation pass.
-
-### MFA overstamp on user-token flow
-
-`Rock/Web/UI/RockPage.cs` `ProcessImpersonation` sets `isTwoFactorAuthenticated: true` on the reissued cookie, with an engineering note stating the purpose is to avoid requiring an admin to re-enter MFA when starting impersonation. The code path appears to fire for user-token (`rckipid` email link) flows as well, not only the admin "Impersonate from Bio" flow. Verify:
-
-- Does `ProcessImpersonation` actually run for user-token email links, or only for the admin-initiated impersonation flow? Trace the call path from each entry point and confirm.
-- If user-token flows DO reach `ProcessImpersonation`, is the `isTwoFactorAuthenticated: true` flag actually applied to the cookie issued for the email recipient? Or does some upstream guard skip the flag for non-admin paths?
-- Where is `IsTwoFactorAuthenticated` consumed outside of `RockPage`'s general high-security-profile check? Any other readers change the scope of the security implication described in Open Questions.
-
-Findings feed back into the Open Questions item "MFA recency for user-token sessions" and into Test Plan (add user-token + MFA-required-profile cases).
-
-### Other auth flows not yet audited
-
-The earlier codebase audit ran out of time before reaching these. Each must be verified before implementation:
-
-- Auth0 plugin auth flow (where does `SetAuthCookie` get called from after the redirect?).
-- SignalR real-time hub authentication — does a hub connection count as a session?
-- Stream-based chat authentication via `ChatHelper.GetChatUserAuthenticationAsync` (`Rock.Rest/Controllers/MobileController.cs:136`).
-- Mobile/TV equivalents of `RejectAuthenticationCookiesIssuedBefore`.
-- WebForms blocks that call `FormsAuthentication.RedirectToLoginPage()` and any assumptions about cookie format.
+- **SignalR real-time hub authentication.** Resolved by product decision. The hub consumes the existing `.ROCK` cookie session so the current `PersonSession` is available to hub actions; the hub never creates a session. There is no "login via SignalR" path. See Design ("SignalR real-time hubs").
+- **Stream-based chat authentication via `ChatHelper.GetChatUserAuthenticationAsync`.** Resolved as unrelated. The method returns the data required to log a Rock person in to the external Stream chat service (the mobile app talks directly to Stream). No `PersonSession` interaction; no spec impact.
+- **Auth0 plugin auth flow.** Alive code, no special handling needed. The Auth0 plugin (`Rock.Security.Authentication.Auth0/Auth0Authentication.cs`) is registered via MEF auto-discovery and implements `IExternalRedirectAuthentication`. The OAuth redirect callback flows through the Obsidian Login block (`Rock.Blocks/Security/Login.cs:1350-1355`), which iterates active external-redirect providers, casts to `IExternalRedirectAuthentication`, validates the return, and then calls the standard `Authenticate` method at `Login.cs:718`, which calls `Authorization.SetAuthCookie` at `Login.cs:730` (or `:734` for the no-expiration overload). Auth0 itself never calls `SetAuthCookie`; cookie issuance is centralized in the Login block. Under the new model, the Login block's `SetAuthCookie` call is replaced by the standard `CreateSession` + `SetAuthCookie` pipeline (`CreationSource = Component`), and Auth0 (and any other `IExternalRedirectAuthentication` provider) is covered automatically without Auth0-specific work.
+- **Mobile/TV equivalents of `RejectAuthenticationCookiesIssuedBefore`.** No gap. Mobile and TV clients send the encrypted ticket as a `.ROCK` cookie (not in the `Authorization` header, contrary to the original research finding). The standard `FormsAuthenticationModule` processes the cookie on every ASP.NET request, and `Application_BeginRequest`'s kill-switch check (`Global.asax.cs:582-604`) finds the cookie via `Request.Cookies[FormsCookieName]` and runs against it just like a browser request. `AuthenticateAttribute.cs:215-219` confirms this with the inline comment "this is normally already set from the .ROCK cookie." Verified through the actual cookie-vs-header transport check, correcting the earlier audit assumption. No new open question needed for this.
+- **`FormsAuthentication.RedirectToLoginPage()` callers.** Four callers exist (`Rock/Web/UI/RockPage.cs:954`, `RockWeb/Blocks/Fundraising/FundraisingParticipant.ascx.cs:877`, `RockWeb/Blocks/Fundraising/FundraisingOpportunityView.ascx.cs:555`, `RockWeb/Blocks/CheckIn/AttendanceSelfEntry.ascx.cs:496`). All four are generic fallback redirects fired when the site has no configured login page; none inspect the cookie or assume anything about its format. No spec impact.
 
 ## Test Plan
 
@@ -429,7 +407,7 @@ The implementation MUST be accompanied by unit and integration tests covering th
 - Admin-impersonation creation copies `LastMultiFactorAuthenticationDateTime` from the impersonator's prior session to the new impersonation session.
 - Admin-impersonation creation when the impersonator's prior session has null recency timestamps leaves the new session's recency timestamps null (no-op copy, not stamped to now).
 - `EndImpersonationAndRestore` does NOT modify the restored session's recency timestamps.
-- `UserToken` session recency on creation: TBD (see Open Questions: "MFA recency for user-token sessions"). Tests follow once the security decision is made.
+- `UserToken` session recency on creation: TBD (see Open Questions: "MFA recency for user-token sessions"). Once the decision lands, tests cover both the MFA-required-page case (with and without recency stamped) and confirm the only RockPage consumer of `IsTwoFactorAuthenticated` behaves as expected.
 
 ### Impersonation: `ProcessImpersonationToken` matrix
 
@@ -446,6 +424,8 @@ The full state matrix. The "Current session" column shows `CreationSource`-for-t
 | `Impersonation` (admin A → person B) | Token for C | Abandon impersonation, create `UserToken`-for-C | Redirect required |
 | `Component`-for-X | Token for X | No session change (rule 4); user is already viewing own data | Redirect required (clean URL) |
 | `Component`-for-X | Token for Y | Mark inactive, create `UserToken`-for-Y | Redirect required |
+| Any | Token that is expired, revoked, or beyond `UsageLimit` | Mark current session inactive (rule 1); user becomes anonymous | Redirect required (clean URL) |
+| `UserToken`-for-X (page-scoped to page A) | (navigation to page B, no `rckipid`) | Per-request page-scope re-validation fails; not-authorized error | n/a (not Pattern B; this is a separate per-request check) |
 
 ### Cookie format and upgrade
 
@@ -467,6 +447,17 @@ The full state matrix. The "Current session" column shows `CreationSource`-for-t
 - Sessions past `ExpiresDateTime` are marked inactive by the Rock Cleanup job.
 - Inactive sessions are NOT deleted by the Rock Cleanup job.
 - Marking inactive stamps `InactiveDateTime`.
+
+### API-key requests
+
+- First API-key request for a `UserLogin.ApiKey` creates a `PersonSession` with `CreationSource = ApiKey`, `IsPersistent = true` (long-lived; durable across requests), and `ExpiresDateTime = null`.
+- Subsequent API-key requests from the same `ApiKey` reuse the existing active `PersonSession`; no new row is created.
+- API-key requests trigger the `UpdatePersonSessionLastActivity` bus task (throttled the same way browser requests are).
+- API-key requests do NOT create `InteractionSession` rows (unchanged from current behavior).
+- Concurrent API-key requests for the same `UserLogin` (parallel inserts on first use) result in exactly one `PersonSession` row, not duplicates. (Upsert pattern matches `InteractionSession` adoption.)
+- Deleting a `UserLogin` that has an active `ApiKey` `PersonSession` sets the session's `UserLoginId` to null via `ON DELETE SET NULL`; the historical row is preserved.
+- An API-key request whose `UserLogin` was deleted (no row matches the key) authenticates as unauthenticated; the orphaned `PersonSession` is not resurrected.
+- JWT (`HeaderTokens.JWT`) and ASOS bearer-token requests do NOT create a `PersonSession` and do NOT trigger the activity bus task.
 
 ### Mobile and TV device authentication
 
@@ -507,26 +498,29 @@ A codebase audit surfaced a number of items that need decisions before or during
 
 The "Impersonation: two distinct cases" subsection under Design addresses the original Blocker by partitioning impersonation into admin vs user-token flows (discriminated by `CreationSource`), storing admin-impersonation restore state in `AdditionalSettingsJson`, and naming the Pattern A / Pattern B migration targets. The remaining items:
 
-- **MFA recency for user-token sessions: security implication.** [Significant] Today's `ProcessImpersonation` (`Rock/Web/UI/RockPage.cs:2096,2163`) force-sets `isTwoFactorAuthenticated: true` on the reissued cookie. The engineering note in that method states the intent is admin-impersonation (so admins don't re-prompt MFA), but the code path appears to also fire for user-token (`rckipid` email link) flows. Verification is captured in Pre-Implementation Research. If the verification confirms user-token flows hit this overstamp, the new model has to make a call:
-  1. **Preserve current behavior.** On `UserToken` session creation, stamp `LastMultiFactorAuthenticationDateTime = Now`. Pro: no behavior change, existing `rckipid` email links continue to work for users in high-security protection profiles. Con: the `rckipid` link in an email lets such a user bypass the MFA gate they would otherwise be forced through, which is a security concern.
-  2. **Diverge from current behavior.** Leave `LastMultiFactorAuthenticationDateTime` null on `UserToken` session creation. Pro: closes the bypass; the high-security protection profile's MFA requirement is enforced consistently. Con: this is a behavior change. Users in those profiles who click an `rckipid` email link land at content that prompts them to authenticate properly first.
+- **MFA recency for user-token sessions: security implication.** [Significant] **Verified** (Pre-Implementation Research now resolved): today's `ProcessImpersonation` (`Rock/Web/UI/RockPage.cs:2096,2163`) force-sets `isTwoFactorAuthenticated: true` on the reissued cookie for BOTH admin-impersonation AND user-token (`rckipid` email link) flows. Also verified: `IsTwoFactorAuthenticated` is consumed by `RockPage` exclusively when the requested page is marked as requiring two-factor authentication; outside that single check the flag has no other observable effect. The new model has to make a call for the user-token path:
+  1. **Preserve current behavior.** On `UserToken` session creation, stamp `LastMultiFactorAuthenticationDateTime = Now`. Pro: no behavior change; existing `rckipid` email links continue to grant access to MFA-required pages for recipients. Con: a recipient in a high-security protection profile bypasses the page's MFA requirement just by following an email link, which is a security exposure.
+  2. **Diverge from current behavior.** Leave `LastMultiFactorAuthenticationDateTime` null on `UserToken` session creation. Pro: closes the bypass; pages marked as requiring MFA enforce that requirement consistently. Con: existing `rckipid` email links to MFA-required pages stop working for recipients in high-security protection profiles; those recipients will be prompted to authenticate properly first when they click the link.
 
   This is a security / product-level decision and cannot be settled inside this spec alone. Needs explicit sign-off before implementation. Admin impersonation is unaffected; its handling is settled in Design (copy recency from impersonator).
 
-### Activity tracking, logout, and app lifecycle
+  **Author's suggested pick:** option 2 (diverge from current behavior). The MFA-bypass-via-email-link is safer to close, and a page marked as requiring MFA being bypassable by a token in an email feels like a latent bug rather than a feature worth preserving.
 
-- **API-key `UserLogin` activity tracking.** [Significant] Today `UserLogin.LastActivityDateTime` and `UserLogin.LastLoginDateTime` are updated for API-key `UserLogin` rows. ("API key" is a property of `UserLogin`: a row is treated as an API key when its `ApiKey` property is set; there is no separate entity type.) API-key requests do NOT currently create a `PersonSession` (settled), so the `PersonSession.LastActivityDateTime` path does not cover them. Three options:
+- **Admin impersonation: bypass `PersonToken`?** [Significant] **Verified** (Pre-Implementation Research now resolved): admin-impersonation today creates a `PersonToken` row with `UsageLimit = 1` purely as a handoff mechanism. The Person Bio block creates the token, redirects to the same page with the new `rckipid` query parameter, the token is consumed (`TimesUsed` → 1), and the token is effectively disabled. Nothing reads the `PersonToken` row after that single consumption; historical tracking of the impersonation event is already captured by `HistoryLogin` (which is written by the `rckipid` handling). The new model has to decide:
+  1. **Preserve current behavior.** Admin-impersonation continues to write a `PersonToken` row as part of the flow, even though the new design (cookie reissued, restore state stamped in `AdditionalSettingsJson`, redirect to token-free URL) does not need it. Slight overhead but matches what's there today.
+  2. **Skip `PersonToken` for admin-impersonation.** The new flow handles everything inline; `HistoryLogin` continues to capture the audit event. `PersonToken` is reserved exclusively for user-token (`rckipid` email link) flows. Cleaner architecturally (admin and user flows fully separated), but a behavior change for anyone who happened to be reading the `PersonToken` table for admin-impersonation history (unlikely given the row's transient nature, but possible).
 
-  1. **Keep `UserLogin.LastActivityDateTime` alive, scoped to API-key callers only.** Stop writing it from every page load (the deprecation) but continue writing it from API-key request handling. Update its XML doc to state that the column is now updated exclusively from `?apikey=` and `Authorization: ApiKey ...` requests; all other consumers move to `PersonSession`. API keys stay on `UserLogin` exactly as today. Minimal-disruption path.
+  Product-level decision. Option 2 is the recommended end-state; option 1 preserves a vestigial write that no one reads.
 
-  2. **Bring API-key callers into `PersonSession`; keep the key on `UserLogin`.** API keys remain a property of `UserLogin` (`UserLogin.ApiKey`). On each API-key request, find an active `PersonSession` with `CreationSource = ApiKey` for the resolved `UserLogin` and reuse it; create one if none exists. `LastActivityDateTime` flows through the normal `PersonSession` path. Requires adding `ApiKey` to the `PersonSessionCreationSource` enum and defining the API-key session lifecycle (when does it go inactive: when `UserLogin.ApiKey` is cleared? on a schedule? never?). Medium cost; activity tracking moves under one roof.
-
-  3. **Move API keys out of `UserLogin` entirely.** The `UserLogin.ApiKey` property goes away. An API key IS an active `PersonSession` with `CreationSource = ApiKey`; the key itself becomes a direct column on `PersonSession` (NOT stored in `AdditionalSettingsJson`, because it needs to be queryable / indexable for the per-request lookup). Requires both the new `CreationSource = ApiKey` enum value AND a new `ApiKey` column on `PersonSession`, plus a data migration that moves existing `UserLogin.ApiKey` values onto new `PersonSession` rows, plus deprecation passes on every reader of `UserLogin.ApiKey`. Architecturally the cleanest: one model for "credential that authenticates as a person". Largest change; warrants its own follow-on spec rather than riding in on this one.
-
-  Decision deferred. Option 1 is the safe default for this spec. Option 2 is the natural next step if the "ghost column" on `UserLogin` feels awkward. Option 3 is the eventual end-state but should be sequenced as a separate piece of work.
-
+  **Author's suggested pick:** option 2 (skip `PersonToken` for admin-impersonation). Admin and user-token flows already diverge in every other respect under the new design; making them share a `PersonToken` write just to preserve a row no consumer reads is not worth the coupling.
 
 ## Considered but Rejected
+
+### Keep `UserLogin.LastActivityDateTime` alive, scoped to API-key callers only
+Rejected. This was the minimal-disruption option for API-key activity tracking: stop writing the column from page loads but keep writing it from API-key request handling. Rejected because the column would become a half-deprecated "ghost column" with mixed meaning (some readers expecting the old broad semantic, some expecting the new API-key-only semantic). The cleaner path is to deprecate `UserLogin.LastActivityDateTime` fully and route API-key activity through a `PersonSession` with `CreationSource = ApiKey`, which the spec now adopts (see "API key requests" subsection).
+
+### Move API keys out of `UserLogin` entirely (into `PersonSession`)
+Rejected for this spec; deferred to a follow-on. The architecturally cleanest end-state would be: `UserLogin.ApiKey` goes away, an "API key" IS a `PersonSession` with `CreationSource = ApiKey` and a queryable `ApiKey` column. But that requires a data migration plus a sweep of every reader of `UserLogin.ApiKey`, which is a bigger change than this spec should absorb. The adopted approach (keep the key on `UserLogin`, find-or-create a `PersonSession` on each API-key request) puts the foundation in place; if the full migration is pursued later, it builds on this work rather than reworking it.
 
 ### Make MFA a recency check on the same field as step-up
 Rejected. Industry practice distinguishes "user proved themselves recently" from "user proved themselves recently *with a second factor*". Conflating the two would lose the ability to gate features specifically behind MFA.
