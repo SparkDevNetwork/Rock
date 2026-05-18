@@ -25,14 +25,18 @@ using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
+using Rock.Common.Mobile.Enums;
 using Rock.Core.NotificationMessageTypes;
 using Rock.Data;
+using Rock.Enums.Connection;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
+using ConnectionState = Rock.Model.ConnectionState;
+using DueStatus = Rock.Common.Mobile.Enums.DueStatus;
 using GroupMemberStatus = Rock.Model.GroupMemberStatus;
 using MeetsGroupRequirement = Rock.Model.MeetsGroupRequirement;
 
@@ -427,6 +431,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
             var viewModel = new RequestViewModel
             {
+                DueStatus = GetRequestDueStatus( request ),
                 ActivityContent = activityContent,
                 Attributes = GetPublicAttributeValues( request ),
                 CampusGuid = request.Campus?.Guid,
@@ -464,6 +469,51 @@ namespace Rock.Blocks.Types.Mobile.Connection
             }
 
             return viewModel;
+        }
+
+        private DueStatus GetRequestDueStatus( ConnectionRequest request )
+        {
+            var now = RockDateTime.Now.Date;
+            var dueDate = request.DueDate;
+            var connectionState = request.ConnectionState;
+            var completedDateTime = request.ConnectedDateTime;
+            var dueSoonDate = request.DueSoonDate;
+
+            if ( !dueDate.HasValue || connectionState == ConnectionState.Inactive )
+            {
+                return DueStatus.DueLater;
+            }
+
+            var due = dueDate.Value.Date;
+
+            if ( connectionState == ConnectionState.Connected )
+            {
+                if ( !completedDateTime.HasValue )
+                {
+                    return DueStatus.DueLater;
+                }
+
+                var completedDate = completedDateTime.Value.Date;
+
+                if ( completedDate > due )
+                {
+                    return DueStatus.Overdue;
+                }
+
+                return DueStatus.DueLater;
+            }
+
+            if ( now > due )
+            {
+                return DueStatus.Overdue;
+            }
+
+            if ( dueSoonDate.HasValue && now >= dueSoonDate.Value.Date )
+            {
+                return DueStatus.DueSoon;
+            }
+
+            return DueStatus.DueLater;
         }
 
         /// <summary>
@@ -689,7 +739,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 } )
                 .ToList();
 
-                return states;
+            return states;
         }
 
         /// <summary>
@@ -2566,6 +2616,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <seealso cref="RequestViewModelBase" />
         public class RequestViewModel : RequestViewModelBase
         {
+            /// <summary>
+            /// Gets or sets the due status of the request.
+            /// </summary>
+            public Common.Mobile.Enums.DueStatus DueStatus { get; set; }
+
             /// <summary>
             /// Gets or sets the content of the header.
             /// </summary>
