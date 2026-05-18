@@ -177,6 +177,17 @@
                               title="Request Details"
                               field="requestDetails" />
 
+                <Column v-if="isMyConnectionsView"
+                        name="type"
+                        field="connectionTypeName"
+                        width="80px">
+                    <template #format="{ row }">
+                        <div class="type-icon-container" v-tooltip="`Type: ${row.connectionTypeName}`">
+                            <i :class="row.connectionTypeIconCssClass" class="type-icon"></i>
+                        </div>
+                    </template>
+                </Column>
+
                 <Column v-if="viewOptions.gridDataToShow?.includes('connectionOpportunity') && selectedGrouping !== 'opportunityGrouping'"
                         name="connectionOpportunity"
                         field="connectionOpportunity">
@@ -217,12 +228,12 @@
                     </template>
                 </Column>
 
-                <Column v-if="box.options?.areGroupPlacementsEnabled"
+                <Column v-if="box.options?.areGroupPlacementsEnabled || (isMyConnectionsView && allConnectionTypeOptions.some(t => t.areGroupPlacementsEnabled))"
                         name="group"
                         title="Group"
                         field="group">
                     <template #format="{ row }">
-                        <template v-if="!!row.group">
+                        <template v-if="!!row.group && connectionTypeOptionsByIdKey[row.connectionTypeIdKey].areGroupPlacementsEnabled">
                             <div v-if="row.isPendingMember" :class="{ 'text-muted': !!row.isPlacementGroupInactiveOrArchived }" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
                                 {{ row.group }}
                                 <i class="ti ti-user-share text-interface-medium"></i>
@@ -280,55 +291,65 @@
 
                 <AttributeColumns :attributes="attributesToShow" />
 
-                <Column v-if="box.options?.areCelebrationsEnabled"
+                <Column v-if="box.options?.areCelebrationsEnabled || (isMyConnectionsView && allConnectionTypeOptions.some(t => t.areCelebrationsEnabled))"
                         name="celebration"
                         field="celebration"
                         width="52">
                     <template #format="{ row }">
-                        <i v-if="isNullOrWhiteSpace(row.celebrationText)"
-                           class="ti ti-confetti cursor-pointer"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           data-original-title="Add Celebration"
-                           @click.stop="showCelebrationModal(row)">
-                        </i>
-                        <i v-else
-                           class="ti ti-confetti-filled cursor-pointer text-info-strong"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           data-original-title="Has Celebration"
-                           @click.stop="showCelebrationModal(row)">
-                        </i>
+                        <template v-if="!isMyConnectionsView || connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areCelebrationsEnabled === true">
+                            <i v-if="isNullOrWhiteSpace(row.celebrationText)"
+                               class="ti ti-confetti cursor-pointer"
+                               :ref="(el) => addTooltip(el as Element)"
+                               data-toggle="tooltip"
+                               data-placement="auto"
+                               data-container="body"
+                               data-original-title="Add Celebration"
+                               @click.stop="showCelebrationModal(row)">
+                            </i>
+                            <i v-else
+                               class="ti ti-confetti-filled cursor-pointer text-info-strong"
+                               :ref="(el) => addTooltip(el as Element)"
+                               data-toggle="tooltip"
+                               data-placement="auto"
+                               data-container="body"
+                               data-original-title="Has Celebration"
+                               @click.stop="showCelebrationModal(row)">
+                            </i>
+                        </template>
+                        <template v-else>
+                            <i class="ti ti-confetti disabled"></i>
+                        </template>
                     </template>
                 </Column>
 
-                <Column v-if="box.options?.areRemindersEnabled"
+                <Column v-if="box.options?.areRemindersEnabled || (isMyConnectionsView && allConnectionTypeOptions.some(t => t.areRemindersEnabled))"
                         name="reminder"
                         field="reminder"
                         width="52">
                     <template #format="{ row }">
-                        <i v-if="row.reminderCount > 0"
-                           class="ti ti-bell-filled cursor-pointer text-info-strong"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           :data-original-title="`${row.reminderCount} ${pluralize('Reminder', row.reminderCount)}`"
-                           @click.stop="showReminderModal(row)">
-                        </i>
-                        <i v-else
-                           class="ti ti-bell cursor-pointer"
-                           :ref="(el) => addTooltip(el as Element)"
-                           data-toggle="tooltip"
-                           data-placement="auto"
-                           data-container="body"
-                           data-original-title="Add Reminder"
-                           @click.stop="showReminderModal(row)">
-                        </i>
+                        <template v-if="!isMyConnectionsView || connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areRemindersEnabled === true">
+                            <i v-if="row.reminderCount > 0"
+                               class="ti ti-bell-filled cursor-pointer text-info-strong"
+                               :ref="(el) => addTooltip(el as Element)"
+                               data-toggle="tooltip"
+                               data-placement="auto"
+                               data-container="body"
+                               :data-original-title="`${row.reminderCount} ${pluralize('Reminder', row.reminderCount)}`"
+                               @click.stop="showReminderModal(row)">
+                            </i>
+                            <i v-else
+                               class="ti ti-bell cursor-pointer"
+                               :ref="(el) => addTooltip(el as Element)"
+                               data-toggle="tooltip"
+                               data-placement="auto"
+                               data-container="body"
+                               data-original-title="Add Reminder"
+                               @click.stop="showReminderModal(row)">
+                            </i>
+                        </template>
+                        <template v-else>
+                            <i class="ti ti-bell disabled"></i>
+                        </template>
                     </template>
                 </Column>
 
@@ -337,7 +358,7 @@
                     <template #format="{ row }">
                         <div class="w-100">
                             <template v-if="row.connectionState === ConnectionState.Active">
-                                <ConnectionStatusButton :isSequentialStatusMode="box.options?.isSequentialStatusMode"
+                                <ConnectionStatusButton :isSequentialStatusMode="connectionTypeOptionsByIdKey[row.connectionTypeIdKey].isSequentialStatusMode"
                                                         :highlightColor="row.connectionStatus.highlightColor"
                                                         :currentStatusName="row.connectionStatus.name"
                                                         :disabled="!canEditConnectionRequests"
@@ -529,6 +550,11 @@
                     </template>
                 </Column>
 
+                <TextColumn name="connectionTypeName"
+                            title="Type"
+                            field="connectionTypeName"
+                            :filter="pickExistingValueFilter" />
+
                 <Column v-if="viewOptions.gridDataToShow?.includes('connectionOpportunity')"
                         name="connectionOpportunity"
                         title="Opportunity"
@@ -550,13 +576,13 @@
                     </template>
                 </Column>
 
-                <Column v-if="box.options?.areGroupPlacementsEnabled"
+                <Column v-if="box.options?.areGroupPlacementsEnabled || (isMyConnectionsView && allConnectionTypeOptions.some(t => t.areGroupPlacementsEnabled))"
                         name="group"
                         title="Group"
                         field="group"
                         :filter="pickExistingValueFilter">
                     <template #format="{ row }">
-                        <template v-if="!!row.group">
+                        <template v-if="!!row.group && (!isMyConnectionsView || connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areGroupPlacementsEnabled === true)">
                             <div v-if="row.isPendingMember" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
                                 {{ row.group }}
                                 <i class="ti ti-user-share text-interface-medium"></i>
@@ -662,8 +688,7 @@
                         :anchorEl="flyoutAnchorEl"
                         :connectionRequestUpdateBag="connectionRequestUpdateBag"
                         :isNoteRequired="isNoteRequired"
-                        :isSequentialMode="isSequentialStatus"
-                        :connectionStatusItems="connectionStatusItems"
+                        :connectionTypeOptions="currentConnectionTypeOptions"
                         @updateStatus="changeRequestStatus"
                         @updateState="updateStateFromFlyout"
                         @dismissErrorMessage="flyoutErrorMessage = ''"
@@ -672,14 +697,14 @@
     <AddConnectionRequestModal :modelValue="newConnectionRequest"
                                v-model:visible="isAddConnectionRequestModalVisible"
                                :options="box.options"
+                               :connectionTypeOptionsByIdKey="connectionTypeOptionsByIdKey"
+                               :selectedConnectionTypeOptions="selectedConnectionTypeOptions"
                                :connectionOpportunityDetails="connectionOpportunityDetails"
                                :placementGroupDetails="placementGroupDetails"
                                :isConnectionOpportunityFilterSelected="hasSelectedOpportunity"
                                :isExistingActiveRequesterOnConnectionType="isExistingActiveRequesterOnConnectionType"
                                :isSaving="isModalSaving"
                                :errorMessage="modalErrorMessage"
-                               :connectionOpportunities="connectionOpportunities ?? []"
-                               :isMyConnectionsView="isMyConnectionsView"
                                @dismissErrorMessage="onModalErrorMessageDismissed"
                                @checkForActiveRequester="checkForActiveRequester"
                                @save="onAddRequest"
@@ -899,6 +924,23 @@
     border-bottom-right-radius: var(--rounded-medium);
 }
 
+.type-icon-container {
+    width: 36px;
+    height: 36px;
+    padding: var(--spacing-xsmall);
+    background-color: var(--color-interface-softer);
+    border-radius: var(--rounded-small);
+}
+
+.type-icon-container > .type-icon {
+    font-size: 20px;
+}
+
+i.disabled {
+    color: var(--color-interface-medium);
+    cursor: not-allowed;
+}
+
 .activity-metric {
     display: flex;
     align-items: center;
@@ -1025,6 +1067,7 @@
     import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
+    import { ConnectionTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionTypeOptionsBag";
     import Grid, { Column, PersonColumn, SelectColumn, AttributeColumns, SecurityColumn, pickExistingValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
     import { GridDataToShowItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/gridDataToShowItemBag";
     import { ConnectionRequestAttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestAttributeFilterBag";
@@ -1193,15 +1236,21 @@
 
     const isMyConnectionsView = ref<boolean>(box.options?.isMyConnectionsView ?? false);
 
+    // Always-defined view of the per-Connection-Type options dictionary, so consumers can
+    // index into it without repeating the null and optional-chain dance on every access.
+    const connectionTypeOptionsByIdKey = computed<Record<string, ConnectionTypeOptionsBag>>(() => box.options?.connectionTypeOptionsByIdKey ?? {});
+
+    // Flat list of per-Connection-Type options. Use with `.some()` / `.every()` / `.filter()`
+    // when you need to check or aggregate a property across all loaded Connection Types.
+    const allConnectionTypeOptions = computed<ConnectionTypeOptionsBag[]>(() => Object.values(connectionTypeOptionsByIdKey.value));
+
     // Soft security check to see if the user can edit the list of connection requests.
     const canEditGlobalConnectionRequests = ref<boolean>((() => {
         if (!isMyConnectionsView.value) {
-            return false;
+            return box.options?.canEditConnectionRequests ?? false;
         }
 
-        const allTypes = Object.values(box.options?.connectionTypeOptionsByIdKey ?? {});
-
-        return allTypes.flatMap(t => t.canEditConnectionRequests).some(t => t === true);
+        return allConnectionTypeOptions.value.flatMap(t => t.canEditConnectionRequests).some(t => t === true);
     })());
 
     // Context Slicer configuration
@@ -1317,6 +1366,9 @@
     const dockedPanelCloseOnOutsideClick = ref<boolean>(true);
     // Breadcrumbs are used when a user navigates to an "additional request"
     const connectionRequestBreadcrumbs = ref<ListItemBag[]>([]);
+
+    // Used to keep track of the specific connection type options for a selected Connection Request.
+    const currentConnectionTypeOptions = ref<ConnectionTypeOptionsBag>({} as ConnectionTypeOptionsBag);
 
     const selectedView = ref<string>((() => {
         const preferenceValue = preferences.getValue(getConnectionFilterKey(PreferenceKey.SelectedViewConnectionTypeIdKey));
@@ -1442,13 +1494,29 @@
             return box.options?.connectionOpportunities;
         }
 
-        const allTypes = Object.values(box.options?.connectionTypeOptionsByIdKey ?? {});
-
         if (isNullOrWhiteSpace(selectedType.value)) {
-            return allTypes.flatMap(t => t.connectionOpportunities ?? []);
+            return allConnectionTypeOptions.value.flatMap(t => t.connectionOpportunities ?? []);
         }
 
-        return allTypes.find(t => areEqual(t.guid, selectedType.value))?.connectionOpportunities ?? [];
+        return allConnectionTypeOptions.value.find(t => areEqual(t.guid, selectedType.value))?.connectionOpportunities ?? [];
+    });
+
+    // Resolves the per-Type options bag the Add Connection Request modal should
+    // drive its Status, Source, IsSequentialStatusMode, and Connectors lists from.
+    // Standard mode populates the dictionary with a single entry on the server,
+    // so the lookup-by-filter falls through to "first entry" when no filter is set.
+    // In My Connections mode with no Type filter selected, the modal will resolve
+    // the Type from whichever Opportunity the user picks.
+    const selectedConnectionTypeOptions = computed(() => {
+        if (!isNullOrWhiteSpace(selectedType.value)) {
+            return allConnectionTypeOptions.value.find(t => areEqual(t.guid, selectedType.value)) ?? null;
+        }
+
+        if (allConnectionTypeOptions.value.length === 1) {
+            return allConnectionTypeOptions.value[0];
+        }
+
+        return null;
     });
 
     const groupingFields = computed(() => {
@@ -1643,12 +1711,12 @@
 
     const normalizedQuickFilter = computed(() => debouncedQuickFilter.value.toLowerCase());
 
-    const isSequentialStatus = computed<boolean>(() => {
-        if (isDockedPanelVisible.value) {
-            return dockedPanelDetailsBox.value?.options?.isSequentialStatusMode ?? false;
-        }
-        return box.options?.isSequentialStatusMode ?? false;
-    });
+    // const isSequentialStatus = computed<boolean>(() => {
+    //     if (isDockedPanelVisible.value) {
+    //         return dockedPanelDetailsBox.value?.options?.isSequentialStatusMode ?? false;
+    //     }
+    //     return box.options?.isSequentialStatusMode ?? false;
+    // });
 
     const connectionStatusItems = computed<ListItemBag[]>(() => {
         let statuses: ConnectionStatusBag[] | null | undefined;
@@ -3192,6 +3260,7 @@
         const status = row["connectionStatus"] as ConnectionStatusBag | undefined;
         const hasPlacementGroup = row["hasPlacementGroup"] as boolean | undefined;
         const hasRequiredGroupRequirements = row["hasRequiredGroupRequirements"] as boolean | undefined;
+        const connectionTypeIdKey = row["connectionTypeIdKey"] as string | null | undefined;
 
         if (!status
             || !key
@@ -3199,11 +3268,13 @@
             || state === undefined
             || hasPlacementGroup === undefined
             || hasRequiredGroupRequirements === undefined
+            || !connectionTypeIdKey
             || typeof status !== "object"
             || typeof key !== "string"
             || typeof state !== "number"
             || typeof hasPlacementGroup !== "boolean"
-            || typeof hasRequiredGroupRequirements !== "boolean") {
+            || typeof hasRequiredGroupRequirements !== "boolean"
+            || typeof connectionTypeIdKey !== "string") {
             return;
         }
 
@@ -3217,6 +3288,9 @@
             connectionStatusKey: status.guid,
             connectionState: state
         };
+
+        // Set the current connection type options to equal the connection type of the request.
+        currentConnectionTypeOptions.value = connectionTypeOptionsByIdKey.value[connectionTypeIdKey];
 
         if (box?.options?.requiresPlacementGroupToComplete && !hasPlacementGroup) {
             connectionRequestUpdateBag.value.canCompleteRequest = false;
@@ -4023,9 +4097,10 @@
         }
     }
 
-    async function checkForActiveRequester(requesterPersonAliasGuid: string): Promise<void> {
+    async function checkForActiveRequester(requesterPersonAliasGuid: string, typeIdKey: string): Promise<void> {
         const result = await invokeBlockAction<boolean>("CheckForActiveRequest", {
             requesterPersonAliasGuid,
+            connectionTypeIdKey: typeIdKey
         });
 
         if (result.isSuccess && result.data !== null) {
@@ -4324,8 +4399,7 @@
             await refreshUserEditPermissions();
         }
         else {
-            const allTypes = Object.values(box.options?.connectionTypeOptionsByIdKey ?? {});
-            canEditGlobalConnectionRequests.value = allTypes.flatMap(t => t.canEditConnectionRequests).some(t => t === true);
+            canEditGlobalConnectionRequests.value = allConnectionTypeOptions.value.flatMap(t => t.canEditConnectionRequests).some(t => t === true);
         }
 
         loadGridData();

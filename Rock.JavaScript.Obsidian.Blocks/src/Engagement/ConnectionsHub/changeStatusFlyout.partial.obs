@@ -18,7 +18,7 @@
                 <p class="text-interface-stronger mb-spacing-none">This request has reached its final status. Would you like to mark it as Complete?</p>
             </template>
             <template v-else>
-                <template v-if="isSequentialMode">
+                <template v-if="connectionTypeOptions.isSequentialStatusMode">
                     <p class="text-interface-stronger mb-spacing-sm">Are you sure you want to advance to the next status for this request?</p>
                     <div class="row mb-spacing-sm">
                         <div class="col-md-6">
@@ -86,7 +86,7 @@
                                 :btnSize="BtnSize.Small"
                                 :btnType="BtnType.Primary"
                                 :disabled="isSaving">
-                        {{ isSequentialMode ? "Confirm" : "Save" }}
+                        {{ connectionTypeOptions.isSequentialStatusMode ? "Confirm" : "Save" }}
                     </RockButton>
                     <RockButton @click="closeFlyout"
                                 :btnSize="BtnSize.Small"
@@ -120,6 +120,8 @@
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { ConnectionState } from "@Obsidian/Enums/Connection/connectionState";
     import { UpdateConnectionRequestStatesBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/updateConnectionRequestStatesBag";
+    import { ConnectionTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionTypeOptionsBag";
+    import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
 
 
     const props = defineProps({
@@ -143,8 +145,8 @@
             required: true
         },
 
-        isSequentialMode: {
-            type: Boolean as PropType<boolean>,
+        connectionTypeOptions: {
+            type: Object as PropType<ConnectionTypeOptionsBag>,
             required: true
         },
 
@@ -155,11 +157,6 @@
 
         anchorEl: {
             type: Object as PropType<HTMLElement | null>,
-            required: true
-        },
-
-        connectionStatusItems: {
-            type: Array as PropType<ListItemBag[]>,
             required: true
         },
 
@@ -184,12 +181,25 @@
     const status = ref("");
     const note = ref("");
 
+    const connectionStatusItems = computed<ListItemBag[]>(() => {
+        let statuses: ConnectionStatusBag[] | null | undefined = props.connectionTypeOptions.connectionStatuses;
+
+        return (
+            statuses?.slice() // avoid mutating source
+                .sort((a, b) => a.order - b.order)
+                .map(s => ({
+                    value: s.guid,
+                    text: s.name
+                })) ?? []
+        );
+    });
+
     const currentStatusIndex = computed(() => {
-        if (!status.value || !props.isSequentialMode) {
+        if (!status.value || !props.connectionTypeOptions.isSequentialStatusMode) {
             return -1;
         }
 
-        return props.connectionStatusItems.findIndex(
+        return connectionStatusItems.value.findIndex(
             s => s.value === status.value
         );
     });
@@ -197,7 +207,7 @@
     const isLastStatus = computed(() => {
         return (
             currentStatusIndex.value !== -1 &&
-            currentStatusIndex.value === props.connectionStatusItems.length - 1
+            currentStatusIndex.value === connectionStatusItems.value.length - 1
         );
     });
 
@@ -206,7 +216,7 @@
             return null;
         }
 
-        return props.connectionStatusItems[currentStatusIndex.value];
+        return connectionStatusItems.value[currentStatusIndex.value];
     });
 
     const nextStatus = computed(() => {
@@ -214,7 +224,7 @@
             return null;
         }
 
-        return props.connectionStatusItems[currentStatusIndex.value + 1];
+        return connectionStatusItems.value[currentStatusIndex.value + 1];
     });
 
     const completeButtonTooltip = computed(() => {
@@ -243,7 +253,7 @@
     }
 
     function onFlyoutSubmit(): void {
-        const newStatus = props.isSequentialMode ? nextStatus.value?.value : status.value;
+        const newStatus = props.connectionTypeOptions.isSequentialStatusMode ? nextStatus.value?.value : status.value;
         const updateBag: ConnectionRequestUpdateBag = {
             ...props.connectionRequestUpdateBag,
             connectionStatusKey: newStatus,

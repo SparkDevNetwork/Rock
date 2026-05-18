@@ -101,10 +101,13 @@ export type ConnectionsHubOptionsBag = {
     connectionTypeItems?: ListItemBag[] | null;
 
     /**
-     * TODO - If we stick with this approach, consider updating the standard Hub to use this.
      * Gets or sets the options for each Connection Type, keyed by the Connection Type's encrypted identifier key.
-     * This allows the client to adjust its behavior and available UI actions based on multiple Connection Types
-     * present within the view.
+     * Populated with a single entry in standard mode and with one entry per active Connection Type in My Connections mode.
+     * This allows the client to adjust its behavior and available UI actions based on the Connection Type that owns
+     * the currently selected request or opportunity.
+     * TODO - Migrate remaining consumers off the flat per-Type fields on this bag (ConnectionStatuses, RequestSourceItems,
+     * IsSequentialStatusMode, AllPossibleConnectors, ConnectionActivities, WorkflowItems, ConnectionOpportunities) so they
+     * can be removed.
      */
     connectionTypeOptionsByIdKey?: Record<string, ConnectionTypeOptionsBag> | null;
 

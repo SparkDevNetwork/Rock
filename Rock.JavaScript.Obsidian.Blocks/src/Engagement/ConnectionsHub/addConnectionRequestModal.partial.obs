@@ -29,17 +29,18 @@
                     <div class="row">
                         <div class="col-md-6">
                             <DropDownList v-model="connectionOpportunityGuid"
-                                          :items="connectionOpportunities"
+                                          :items="connectionOpportunityItems"
                                           label="Connection Opportunity"
                                           rules="required"
-                                          :grouped="isMyConnectionsView"
+                                          :grouped="isOpportunityDropdownGrouped"
+                                          enhanceForLongLists
                                           @update:modelValue="onConnectionOpportunityChanged" />
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <DropDownList v-model="requestSourceGuid"
-                                          :items="props.options?.requestSourceItems ?? []"
+                                          :items="currentConnectionTypeOptions?.requestSourceItems ?? []"
                                           label="Request Source" />
                         </div>
                     </div>
@@ -89,7 +90,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <div v-if="options?.isSequentialStatusMode"
+                            <div v-if="currentConnectionTypeOptions?.isSequentialStatusMode"
                                  class="form-group">
                                 <RockLabel class="text-interface-medium">Status</RockLabel>
                                 <div class="text-interface-stronger">{{ connectionStatusText }}</div>
@@ -178,10 +179,12 @@
     import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
+    import { ConnectionTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionTypeOptionsBag";
     import { ConnectionState } from "@Obsidian/Enums/Connection/connectionState";
     import { ConnectionOpportunityDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionOpportunityDetailBag";
     import { PlacementGroupDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/placementGroupDetailsBag";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { areEqual } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
@@ -235,21 +238,28 @@
             required: true
         },
 
-        connectionOpportunities: {
-            type: Array as PropType<ListItemBag[]>,
-            default: []
+        // Per-Type options for every Connection Type available to the current view.
+        // Standard mode populates this with a single entry; My Connections mode populates
+        // one entry per active Connection Type. The modal uses this as the canonical
+        // source for Statuses, Sources, Connectors, and IsSequentialStatusMode.
+        connectionTypeOptionsByIdKey: {
+            type: Object as PropType<Record<string, ConnectionTypeOptionsBag>>,
+            default: () => ({})
         },
 
-        isMyConnectionsView: {
-            type: Boolean as PropType<boolean>,
-            default: false
+        // The Connection Type bag the parent has resolved from the hub-level filter.
+        // Null in My Connections mode when "All Types" is selected; in that case the
+        // modal derives the current Type from whichever Opportunity the user picks.
+        selectedConnectionTypeOptions: {
+            type: Object as PropType<ConnectionTypeOptionsBag | null>,
+            default: null
         }
     });
 
     const emit = defineEmits<{
         (e: "save", value: ValidPropertiesBox<ConnectionRequestBag>): void;
         (e: "update:visible", value: boolean): void;
-        (e: "checkForActiveRequester", value: string): void;
+        (e: "checkForActiveRequester", value: string, typeIdKey: string): void;
         (e: "fetchConnectionOpportunityDetails", connectionOpportunityGuid: string, campusGuid: string): void;
         (e: "fetchConnectorOptions", connectionOpportunityGuid: string, campusGuid: string): void;
         (e: "fetchPlacementGroupItems", connectionOpportunityGuid: string, campusGuid: string): void;
@@ -265,11 +275,10 @@
     const connectorPersonAliasGuid = propertyRef(props.modelValue.bag?.connectorPersonAliasGuid ?? "", "ConnectorPersonAliasGuid");
     const connectionState = propertyRef(props.modelValue.bag?.connectionState?.toString() ?? ConnectionState.Active.toString(), "ConnectionState");
     const followUpDate = propertyRef(props.modelValue.bag?.followUpDate ?? "", "FollowUpDate");
-    // In sequential status mode the first status in the list is always the starting point.
-    // Otherwise, default to whichever status is marked as the default.
-    const connectionStatusGuid = propertyRef(props.options?.isSequentialStatusMode
-        ? props.options?.connectionStatuses?.[0]?.guid ?? ""
-        : props.options?.connectionStatuses?.find(s => s.isDefaultStatus)?.guid ?? "", "ConnectionStatusGuid");
+    // Status seeds against the Type the parent has already resolved from the filter.
+    // In My Connections + "All Types" mode that's null until the user picks an Opportunity;
+    // the seed runs again from onConnectionOpportunityChanged at that point.
+    const connectionStatusGuid = propertyRef(getDefaultStatusGuid(props.selectedConnectionTypeOptions), "ConnectionStatusGuid");
     const campusGuid = propertyRef(props.modelValue.bag?.campusGuid ?? "", "CampusGuid");
     const placementGroupGuid = propertyRef(props.modelValue.bag?.placementGroupGuid ?? "", "PlacementGroupGuid");
     const groupMemberRoleGuid = propertyRef(props.modelValue.bag?.groupMemberRoleGuid ?? "", "GroupMemberRoleGuid");
@@ -283,6 +292,70 @@
     // objects returned by propertyRef().
     // const propRefs = [requester, connectionOpportunityGuid, connectorPersonAliasGuid, connectionState, connectionStatusGuid, placementGroupGuid, groupMemberRoleGuid, groupMemberStatus,
     //     placementGroupMemberAttributeValues, comments, requestSourceGuid, connectionRequestAttributeValues];
+
+    /**
+     * Returns the default Status Guid for a Connection Type bag.
+     * In sequential status mode the first status is always the starting point;
+     * otherwise the status flagged as the default is used.
+     */
+    function getDefaultStatusGuid(typeOptions: ConnectionTypeOptionsBag | null | undefined): string {
+        if (!typeOptions) {
+            return "";
+        }
+        return typeOptions.isSequentialStatusMode
+            ? typeOptions.connectionStatuses?.[0]?.guid ?? ""
+            : typeOptions.connectionStatuses?.find(s => s.isDefaultStatus)?.guid ?? "";
+    }
+
+    /**
+     * Resolves the Connection Type bag the modal should drive its Status, Source,
+     * IsSequentialStatusMode, and Connector lists from. Falls back to deriving the
+     * Type from the chosen Opportunity when the parent has not pre-selected one
+     * (the My Connections + "All Types" case).
+     */
+    const currentConnectionTypeOptions = computed<ConnectionTypeOptionsBag | null>(() => {
+        if (props.selectedConnectionTypeOptions) {
+            return props.selectedConnectionTypeOptions;
+        }
+
+        const opportunityGuid = connectionOpportunityGuid.value;
+        if (isNullOrWhiteSpace(opportunityGuid)) {
+            return null;
+        }
+
+        for (const typeBag of Object.values(props.connectionTypeOptionsByIdKey)) {
+            if (typeBag.connectionOpportunities?.some(o => areEqual(o.value, opportunityGuid))) {
+                return typeBag;
+            }
+        }
+
+        return null;
+    });
+
+    /**
+     * Opportunity items shown in the modal's Opportunity dropdown. When a Type
+     * has already been resolved (filter set, or only one Type in the dict) the
+     * list is restricted to that Type's opportunities; otherwise opportunities
+     * from every Type are concatenated and the grouped dropdown uses each
+     * item's category (set server-side to the Connection Type's name) to render
+     * group headers.
+     */
+    const connectionOpportunityItems = computed<ListItemBag[]>(() => {
+        if (props.selectedConnectionTypeOptions) {
+            return props.selectedConnectionTypeOptions.connectionOpportunities ?? [];
+        }
+
+        return Object.values(props.connectionTypeOptionsByIdKey).flatMap(t => t.connectionOpportunities ?? []);
+    });
+
+    /**
+     * Group the Opportunity dropdown only when the user actually has multiple
+     * Types to choose from (My Connections + "All Types"). When a single Type
+     * has already been resolved, the list is flat and ungrouped.
+     */
+    const isOpportunityDropdownGrouped = computed<boolean>(() => {
+        return !props.selectedConnectionTypeOptions && Object.keys(props.connectionTypeOptionsByIdKey).length > 1;
+    });
 
     /**
      * Computed boolean to determine whether we should render the conditional well for the selected group.
@@ -329,7 +402,7 @@
 
     const connectionStatusItems = computed<ListItemBag[]>(() => {
         return (
-            props.options?.connectionStatuses?.map(s => ({
+            currentConnectionTypeOptions.value?.connectionStatuses?.map(s => ({
                 value: s.guid,
                 text: s.name
             })) ?? []
@@ -473,6 +546,18 @@
             return;
         }
 
+        // Picking an Opportunity in My Connections + "All Types" mode implicitly
+        // changes the Connection Type, which means the previously selected Status
+        // no longer belongs to a valid status list. Only re-seed when that's the
+        // case so the user's Status pick is preserved across Opportunity changes
+        // within the same Type. currentConnectionTypeOptions has already
+        // recomputed against the new connectionOpportunityGuid value at this point.
+        const newTypeStatuses = currentConnectionTypeOptions.value?.connectionStatuses ?? [];
+        const currentStatusStillValid = newTypeStatuses.some(s => areEqual(s.guid, connectionStatusGuid.value));
+        if (!currentStatusStillValid) {
+            connectionStatusGuid.value = getDefaultStatusGuid(currentConnectionTypeOptions.value);
+        }
+
         emit("fetchConnectionOpportunityDetails", guid, campusGuid.value);
     }
 
@@ -494,12 +579,12 @@
         pruneAndSeedAttributeValues();
     });
 
-    watch(requester, () => {
-        if (!requester.value?.value || isNullOrWhiteSpace(requester.value.value)) {
+    watch([requester, currentConnectionTypeOptions], () => {
+        if (!requester.value?.value || isNullOrWhiteSpace(requester.value.value) || !currentConnectionTypeOptions.value) {
             return;
         }
 
-        emit("checkForActiveRequester", requester.value.value);
+        emit("checkForActiveRequester", requester.value.value, currentConnectionTypeOptions.value.idKey ?? "");
     });
 
     watch(() => props.connectionOpportunityDetails, () => {
@@ -538,9 +623,7 @@
         updateRefValue(connectionRequestAttributeValues, props.modelValue.bag?.connectionRequestAttributeValues ?? {});
         updateRefValue(connectionState, props.modelValue.bag?.connectionState?.toString() ?? ConnectionState.Active.toString());
         // Mirror the same default status logic used during initialization.
-        const defaultStatusGuid = props.options?.isSequentialStatusMode
-            ? props.options?.connectionStatuses?.[0]?.guid ?? ""
-            : props.options?.connectionStatuses?.find(s => s.isDefaultStatus)?.guid ?? "";
+        const defaultStatusGuid = getDefaultStatusGuid(currentConnectionTypeOptions.value);
         updateRefValue(connectionStatusGuid, props.modelValue.bag?.connectionStatusGuid ?? defaultStatusGuid);
         updateRefValue(connectorPersonAliasGuid, props.modelValue.bag?.connectorPersonAliasGuid ?? "");
         updateRefValue(groupMemberRoleGuid, props.modelValue.bag?.groupMemberRoleGuid ?? "");

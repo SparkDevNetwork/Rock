@@ -30,6 +30,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
     public class ConnectionTypeOptionsBag
     {
         /// <summary>
+        /// Gets or sets the IdKey of the Connection Type
+        /// </summary>
+        public string IdKey { get; set; }
+
+        /// <summary>
         /// Gets or sets the unique identifier of the Connection Type these options describe.
         /// </summary>
         public Guid Guid { get; set; }

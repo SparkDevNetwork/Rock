@@ -676,6 +676,17 @@ namespace Rock.Blocks.Engagement
                         : null
                 } )
                 .ToList();
+
+            // Populate the per-Type options dictionary with a single entry so that
+            // shared client code (e.g. the Add Connection Request modal) can read
+            // from one canonical source in both standard and My Connections modes.
+            // The flat options bag fields above are still populated during this
+            // transition; remaining consumers will migrate to the dictionary in
+            // follow-up changes.
+            options.ConnectionTypeOptionsByIdKey = new Dictionary<string, ConnectionTypeOptionsBag>
+            {
+                [connectionType.IdKey] = GetConnectionTypeOptions( connectionType )
+            };
         }
 
         private void SetMyConnectionsModeOptions( ConnectionsHubOptionsBag options )
@@ -755,8 +766,10 @@ namespace Rock.Blocks.Engagement
         {
             var options = new ConnectionTypeOptionsBag();
 
+            options.IdKey = connectionType.IdKey;
             options.Guid = connectionType.Guid;
             options.CanEditConnectionRequests = CanEditConnectionRequests( connectionType );
+            options.IsSequentialStatusMode = connectionType.IsSequentialStatusEnforced;
 
             // Exclude inactive and archived connector groups. A global query filter sets the
             // ConnectorGroup navigation to null for archived groups, so guard against null as well.
@@ -2070,14 +2083,6 @@ namespace Rock.Blocks.Engagement
             }
             else
             {
-                var connectionType = GetConnectionTypeCacheFromPageParameters();
-                if ( connectionType == null )
-                {
-                    error = ActionBadRequest( $"{ConnectionType.FriendlyTypeName} not found." );
-                    entity = null;
-                    return false;
-                }
-
                 // Resolve the opportunity now so the security check can evaluate against the
                 // correct opportunity rather than the default Id of 0 on the unsaved entity.
                 if ( !connectionOpportunityGuid.HasValue )
@@ -2094,6 +2099,8 @@ namespace Rock.Blocks.Engagement
                     entity = null;
                     return false;
                 }
+
+                var connectionType = ConnectionTypeCache.Get( connectionOpportunity.ConnectionTypeId );
 
                 entity = new ConnectionRequest();
                 entity.ConnectionTypeId = connectionType.Id;
@@ -5021,9 +5028,9 @@ WHERE 1 = 1" );
         /// <param name="requesterPersonAliasGuid">The GUID of the Person Alias to check for active Connection Requests.</param>
         /// <returns>A Block Action Result containing true if the person has at least one active Connection Request for the resolved Connection Type; otherwise false. Returns a bad request result if the Connection Type cannot be resolved.</returns>
         [BlockAction]
-        public BlockActionResult CheckForActiveRequest( Guid requesterPersonAliasGuid )
+        public BlockActionResult CheckForActiveRequest( Guid requesterPersonAliasGuid, string connectionTypeIdKey )
         {
-            var connectionType = GetConnectionTypeCacheFromPageParameters();
+            var connectionType = GetConnectionTypeCacheFromPageParameters( connectionTypeIdKey );
             if ( connectionType == null )
             {
                 return ActionBadRequest( $"{Rock.Model.ConnectionType.FriendlyTypeName} not found." );
