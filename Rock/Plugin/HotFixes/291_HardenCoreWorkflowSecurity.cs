@@ -1,0 +1,289 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Hardens security on out-of-the-box workflows.
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 291, "17.8" )]
+    public class HardenCoreWorkflowSecurity : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            AddSanitizeSqlToWorkflowSqlQueryLavaFix_Up();
+            RestrictViewOnCoreWorkflowTypes_Up();
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            // Down migrations are not yet supported in plug-in migrations.
+        }
+
+        /// <summary>
+        /// Adds the <c>| SanitizeSql</c> Lava filter to any 
+        /// <c>{{ Workflow | Attribute:... }}</c> expression in the
+        /// <c>SQLQuery</c> attribute value for of out-of-the-box Workflow Type's
+        /// Action rows.
+        /// </summary>
+        private void AddSanitizeSqlToWorkflowSqlQueryLavaFix_Up()
+        {
+            /*
+                5/18/26 - NA
+
+                T-SQL has no regular-expression, so we narrow to the tiny
+                set of candidate AttributeValue rows by AttributeId before
+                doing any string work, then walk each row's Value one {{ ... }}
+                segment at a time. Within each segment, we only insert
+                " | SanitizeSql " when it (a) contains both "Workflow" and
+                "Attribute:" and (b) does not already contain "SanitizeSql". This
+                preserves any segment that is already correct -- including rows
+                where some segments are fixed and others are not.
+
+                Reason: AttributeValue can contain ~1B rows on large Rock
+                installs; touching only the AttributeId-indexed candidate set
+                keeps this migration bounded to dozens of rows regardless of
+                table size.
+            */
+            Sql( @"
+DECLARE @WorkflowActionTypeEntityTypeId INT =
+    ( SELECT [Id] FROM [EntityType] WHERE [Guid] = '23E3273A-B137-48A3-9AFF-C8DC832DDCA6' );
+
+IF @WorkflowActionTypeEntityTypeId IS NOT NULL
+BEGIN
+    -- Candidate Attribute Ids: SQLQuery key on WorkflowActionType.
+    DECLARE @SqlQueryAttributeIds TABLE ( [Id] INT PRIMARY KEY );
+    INSERT INTO @SqlQueryAttributeIds ( [Id] )
+    SELECT [Id]
+    FROM   [Attribute]
+    WHERE  [EntityTypeId] = @WorkflowActionTypeEntityTypeId
+      AND  [Key] = 'SQLQuery';
+
+    IF EXISTS ( SELECT 1 FROM @SqlQueryAttributeIds )
+    BEGIN
+        DECLARE @Id INT;
+        DECLARE @Value NVARCHAR(MAX);
+        DECLARE @NewValue NVARCHAR(MAX);
+        DECLARE @Remaining NVARCHAR(MAX);
+        DECLARE @OpenIdx INT;
+        DECLARE @CloseIdx INT;
+        DECLARE @Segment NVARCHAR(MAX);
+        DECLARE @Inner NVARCHAR(MAX);
+
+        -- Coarse pre-filter on Value happens AFTER AttributeId narrowing,
+        -- so the LIKE only ever scans the small candidate set.
+        DECLARE [WorkflowSqlQueryCursor] CURSOR LOCAL FAST_FORWARD FOR
+            SELECT [av].[Id], [av].[Value]
+            FROM   [AttributeValue] AS [av]
+            WHERE  [av].[AttributeId] IN ( SELECT [Id] FROM @SqlQueryAttributeIds )
+              AND  [av].[IsSystem] = 1
+              AND  [av].[Value] LIKE '%{{%Workflow%Attribute:%}}%';
+
+        OPEN [WorkflowSqlQueryCursor];
+        FETCH NEXT FROM [WorkflowSqlQueryCursor] INTO @Id, @Value;
+
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            SET @NewValue = N'';
+            SET @Remaining = @Value;
+
+            -- Walk every {{ ... }} segment exactly once.
+            WHILE 1 = 1
+            BEGIN
+                SET @OpenIdx = CHARINDEX( N'{{', @Remaining );
+                IF @OpenIdx = 0 BREAK;
+
+                SET @CloseIdx = CHARINDEX( N'}}', @Remaining, @OpenIdx );
+                IF @CloseIdx = 0 BREAK;
+
+                SET @Segment = SUBSTRING( @Remaining, @OpenIdx, @CloseIdx - @OpenIdx + 2 );
+
+                -- Rewrite only segments that are Workflow Attribute lookups
+                -- and have not already been sanitized. Whitespace around the
+                -- pipe(s) inside the segment is irrelevant to these LIKE
+                -- checks, which is what we want.
+                IF @Segment LIKE N'%Workflow%Attribute:%'
+                    AND @Segment NOT LIKE N'%SanitizeSql%'
+                BEGIN
+                    SET @Inner = LEFT( @Segment, LEN( @Segment ) - 2 );  -- drop trailing }}
+                    SET @Inner = RTRIM( @Inner );                        -- normalize spacing before pipe
+                    SET @Segment = @Inner + N' | SanitizeSql }}';
+                END
+
+                SET @NewValue = @NewValue + SUBSTRING( @Remaining, 1, @OpenIdx - 1 ) + @Segment;
+                SET @Remaining = SUBSTRING( @Remaining, @CloseIdx + 2, LEN( @Remaining ) );
+            END
+
+            SET @NewValue = @NewValue + @Remaining;
+
+            -- Only update when something actually changed. This is what
+            -- makes the migration cheap to re-run.
+            IF @NewValue <> @Value
+            BEGIN
+                UPDATE [AttributeValue]
+                SET    [Value] = @NewValue,
+                       [IsPersistedValueDirty] = 1,
+                       [ModifiedDateTime] = GETDATE()
+                WHERE  [Id] = @Id;
+            END
+
+            FETCH NEXT FROM [WorkflowSqlQueryCursor] INTO @Id, @Value;
+        END
+
+        CLOSE [WorkflowSqlQueryCursor];
+        DEALLOCATE [WorkflowSqlQueryCursor];
+    END
+END
+" );
+        }
+
+        /// <summary>
+        /// Inserts the standard "Staff + Staff Like + Rock Administration
+        /// Allow, All Users Deny" set of <c>View</c> Auth rows for the listed
+        /// core Workflow Types, but only when the target workflow type has no
+        /// existing <c>View</c> Auth rows of its own. Any where an administrator
+        /// has already configured <c>View</c> security is left untouched.
+        /// </summary>
+        private void RestrictViewOnCoreWorkflowTypes_Up()
+        {
+            /*
+                5/18/26 - NA
+
+                Several core workflow types ship with no [Auth] rows for the
+                'View' action, which means they fall through to the global default
+                "everyone can view" behavior.
+
+                Only insert defaults when the workflow type currently has
+                NO 'View' Auth rows at all (NOT EXISTS guard). If an
+                administrator has already configured 'View' security on a
+                given workflow type -- even partially -- we leave it alone.
+                This keeps the migration idempotent and respectful of
+                Rock Admin customizations.
+            */
+            Sql( @"
+DECLARE @WorkflowTypeEntityTypeId INT = ( SELECT [Id] FROM [EntityType] WHERE [Guid] = 'C9F3C4A5-1526-474D-803F-D6C7A45CBBAE' ); -- Rock.Model.WorkflowType
+
+DECLARE @StaffWorkersGroupId            INT = ( SELECT [Id] FROM [Group] WHERE [Guid] = '2C112948-FF4C-46E7-981A-0257681EADF4' ); -- RSR - Staff Workers
+DECLARE @StaffLikeWorkersGroupId        INT = ( SELECT [Id] FROM [Group] WHERE [Guid] = '300BA2C8-49A3-44BA-A82A-82E3FD8C3745' ); -- RSR - Staff Like Workers
+DECLARE @RSRRockAdministrationGroupId   INT = ( SELECT [Id] FROM [Group] WHERE [Guid] = '628C51A8-4613-43ED-A18D-4A6FB999273E' ); -- RSR - Rock Administration
+
+IF  @WorkflowTypeEntityTypeId IS NOT NULL
+AND @StaffWorkersGroupId IS NOT NULL
+AND @StaffLikeWorkersGroupId IS NOT NULL
+AND @RSRRockAdministrationGroupId IS NOT NULL
+BEGIN
+    -- The workflow types we are securing.
+    DECLARE @WorkflowTypeGuidsToSecure TABLE ( [Guid] UNIQUEIDENTIFIER PRIMARY KEY );
+    INSERT INTO @WorkflowTypeGuidsToSecure ( [Guid] ) VALUES
+        ( '885CBA61-44EA-4B4A-B6E1-289041B6A195' ), -- DISC Request
+        ( '221BF486-A82C-40A7-85B7-BB44DA45582F' ), -- Person Data Error
+        ( '417D8016-92DC-4F25-ACFF-A071B591FA4F' ), -- Facilities Request
+        ( '51FE9641-FB8F-41BF-B09E-235900C3E53E' ), -- IT Support
+        ( '036F2F0B-C2DC-49D0-A17B-CCDAC7FC71E2' ), -- Photo Request
+        ( '655BE2A4-2735-4CF9-AEC8-7EF5BE92724C' ), -- Position Approval
+        ( '31DDC001-C91A-4418-B375-CAB1475F7A62' ); -- Request Assessment
+
+    DECLARE @Now DATETIME = GETDATE();
+
+    -- Only target workflow types that currently have zero 'View' Auth rows.
+    -- Anything an admin has already touched is left alone.
+    ;WITH [TargetWorkflowTypes] AS
+    (
+        SELECT [wt].[Id]
+        FROM   [WorkflowType] AS [wt]
+        INNER JOIN @WorkflowTypeGuidsToSecure AS [g]
+            ON [g].[Guid] = [wt].[Guid]
+        WHERE  NOT EXISTS
+        (
+            SELECT 1
+            FROM   [Auth] AS [a]
+            WHERE  [a].[EntityTypeId] = @WorkflowTypeEntityTypeId
+              AND  [a].[EntityId]     = [wt].[Id]
+              AND  [a].[Action]       = 'View'
+        )
+    ),
+    -- One row per (workflow type, Auth slot) combination.
+    [AuthSlotsToInsert] AS
+    (
+        SELECT
+            [t].[Id] AS [EntityId]
+            ,0        AS [Order]
+            ,'A'      AS [AllowOrDeny]
+            ,0        AS [SpecialRole]
+            ,@StaffWorkersGroupId AS [GroupId]
+        FROM [TargetWorkflowTypes] AS [t]
+
+        UNION ALL
+
+        SELECT
+            [t].[Id]
+            ,1
+            ,'A'
+            ,0
+            ,@StaffLikeWorkersGroupId
+        FROM [TargetWorkflowTypes] AS [t]
+
+        UNION ALL
+
+        SELECT
+            [t].[Id]
+            ,2
+            ,'A'
+            ,0
+            ,@RSRRockAdministrationGroupId
+        FROM [TargetWorkflowTypes] AS [t]
+
+        UNION ALL
+
+        SELECT
+            [t].[Id]
+            ,3
+            ,'D'
+            ,1
+            ,NULL
+        FROM [TargetWorkflowTypes] AS [t]
+    )
+    INSERT INTO [Auth] (
+        [EntityTypeId], [EntityId], [Order], [Action], [AllowOrDeny],
+        [SpecialRole], [GroupId], [PersonAliasId], [Guid],
+        [CreatedDateTime], [ModifiedDateTime]
+    )
+    SELECT
+        @WorkflowTypeEntityTypeId,
+        [s].[EntityId],
+        [s].[Order],
+        'View',
+        [s].[AllowOrDeny],
+        [s].[SpecialRole],
+        [s].[GroupId],
+        NULL,
+        NEWID(),
+        @Now,
+        @Now
+    FROM [AuthSlotsToInsert] AS [s];
+END
+" );
+        }
+    }
+}
