@@ -1834,6 +1834,7 @@
     <Compile Include="Plugin\HotFixes\260_MigrationRollupsForV17_3_1.cs" />
     <Compile Include="Plugin\HotFixes\259_MigrateTransactionBlocksFor17_3.cs" />
     <Compile Include="Plugin\HotFixes\290_SetDefaultDocumentTypeAuthFromBinaryFileType.cs" />
+    <Compile Include="Plugin\HotFixes\291_HardenCoreWorkflowSecurity.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
