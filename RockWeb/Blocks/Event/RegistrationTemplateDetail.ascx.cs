@@ -937,6 +937,26 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.IsPaymentPlanAllowed = paymentPlansFeatureData.IsPaymentPlanAllowed;
             registrationTemplate.PaymentPlanFrequencyValueIdsCollection = paymentPlansFeatureData.PaymentPlanFrequencyValueIds;
 
+            // Require Full Payment or Payment Plan settings.
+            if ( paymentPlansFeatureData.IsPaymentPlanAllowed )
+            {
+                registrationTemplate.IsFullPaymentOrPaymentPlanRequired = cbRequireFullPaymentOrPaymentPlan.Checked;
+                if ( registrationTemplate.IsFullPaymentOrPaymentPlanRequired )
+                {
+                    var messageText = tbFullPaymentOrPaymentPlanRequiredMessage.Text;
+                    registrationTemplate.FullPaymentOrPaymentPlanRequiredMessage = messageText.IsNullOrWhiteSpace() ? null : messageText;
+                }
+                else
+                {
+                    registrationTemplate.FullPaymentOrPaymentPlanRequiredMessage = null;
+                }
+            }
+            else
+            {
+                registrationTemplate.IsFullPaymentOrPaymentPlanRequired = false;
+                registrationTemplate.FullPaymentOrPaymentPlanRequiredMessage = null;
+            }
+
             registrationTemplate.ConfirmationFromName = tbConfirmationFromName.Text;
             registrationTemplate.ConfirmationFromEmail = tbConfirmationFromEmail.Text;
             registrationTemplate.ConfirmationSubject = tbConfirmationSubject.Text;
@@ -2684,6 +2704,8 @@ The logged-in person's information will be used to complete the registrar inform
             cbCost.Value = registrationTemplate.Cost;
             cbMinimumInitialPayment.Value = registrationTemplate.MinimumInitialPayment;
             cbDefaultPaymentAmount.Value = registrationTemplate.DefaultPayment;
+            cbRequireFullPaymentOrPaymentPlan.Checked = registrationTemplate.IsFullPaymentOrPaymentPlanRequired;
+            tbFullPaymentOrPaymentPlanRequiredMessage.Text = registrationTemplate.FullPaymentOrPaymentPlanRequiredMessage;
             fgpFinancialGateway.SetValue( registrationTemplate.FinancialGatewayId );
 
             if ( IsRedirectionGateway( rockContext ) )
@@ -4393,7 +4415,16 @@ The logged-in person's information will be used to complete the registrar inform
         {
             cbEnablePaymentPlans.Enabled = paymentPlansFeatureData.IsPaymentPlansFeatureSupported;
             cbEnablePaymentPlans.Checked = paymentPlansFeatureData.GetValueIfFeatureSupportedOrDefault( p => p.IsPaymentPlanAllowed );
-            cblSelectablePaymentFrequencies.Visible = paymentPlansFeatureData.GetValueIfFeatureSupportedOrDefault( p => p.IsPaymentPlanAllowed );
+
+            var isPaymentPlanAllowed = paymentPlansFeatureData.GetValueIfFeatureSupportedOrDefault( p => p.IsPaymentPlanAllowed );
+            cblSelectablePaymentFrequencies.Visible = isPaymentPlanAllowed;
+            cbRequireFullPaymentOrPaymentPlan.Visible = isPaymentPlanAllowed;
+
+            // Always render the message field row so JS can show/hide it without a postback when cbRequireFullPaymentOrPaymentPlan toggles.
+            // Initial display is set via inline style so the field is in the DOM and JS can find it.
+            divFullPaymentOrPaymentPlanRequiredMessageRow.Style["display"] = ( isPaymentPlanAllowed && cbRequireFullPaymentOrPaymentPlan.Checked )
+                ? string.Empty
+                : "none";
 
             // Clear selectable payment frequencies before adding them.
             cblSelectablePaymentFrequencies.Items.Clear();

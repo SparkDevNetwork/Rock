@@ -645,6 +645,44 @@ namespace Rock.Model
         public string PaymentPlanFrequencyValueIds { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether a registrant must either pay the registration in full
+        /// or establish a valid payment plan that covers the remaining balance before saving the registration.
+        /// <para>
+        ///     Only meaningful when <see cref="IsPaymentPlanAllowed"/> is <see langword="true"/>. When this is enabled,
+        ///     the Registration Entry block enforces (on the final Submit/Finish step) the equation:
+        ///     <c>amount_to_pay_today + (amount_per_payment * number_of_payments) == AmountRemaining</c> with strict equality.
+        ///     This setting takes precedence over other payment-related settings (such as
+        ///     <see cref="MinimumInitialPayment"/>); those still apply as floors but cannot relax this requirement.
+        /// </para>
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if full payment or a valid payment plan is required to save the registration; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsFullPaymentOrPaymentPlanRequired { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message displayed to a registrant when validation fails for the
+        /// <see cref="IsFullPaymentOrPaymentPlanRequired"/> rule on the Registration Entry block.
+        /// <para>
+        ///     Supports HTML and Markdown. Lava-enabled with the following context:
+        ///     <c>RegistrationInstance</c> (always) and <c>Registration</c> (always; for new registrations, a transient unsaved
+        ///     <see cref="Registration"/> is materialized from the current wizard state, so authors should avoid
+        ///     referencing <c>Registration.Id</c>, <c>Registration.Guid</c>, or <c>Registration.Payments</c> in this
+        ///     message because those are not meaningful pre-save).
+        /// </para>
+        /// <para>
+        ///     Only meaningful when <see cref="IsFullPaymentOrPaymentPlanRequired"/> is <see langword="true"/>.
+        /// </para>
+        /// </summary>
+        /// <value>
+        /// The Lava-enabled validation failure message, or <see langword="null"/> if no configured message is set.
+        /// </value>
+        [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
+        public string FullPaymentOrPaymentPlanRequiredMessage { get; set; }
+
+        /// <summary>
         /// Gets or sets the connection status value identifier.
         /// </summary>
         /// <value>

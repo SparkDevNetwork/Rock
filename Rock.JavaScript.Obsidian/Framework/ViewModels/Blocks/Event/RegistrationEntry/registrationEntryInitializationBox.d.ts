@@ -128,6 +128,9 @@ export type RegistrationEntryInitializationBox = {
     /** Gets value indicating whether registrants should be able to pay their registration costs in multiple, scheduled installments. */
     isPaymentPlanAllowed: boolean;
 
+    /** Gets a value indicating whether the registrant must either pay the registration in full or establish a valid payment plan that covers the remaining balance before saving the registration. */
+    isFullPaymentOrPaymentPlanRequired: boolean;
+
     /** Gets a value indicating whether the payment plan has been configured. */
     isPaymentPlanConfigured: boolean;
 
