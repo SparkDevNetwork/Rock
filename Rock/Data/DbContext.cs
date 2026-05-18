@@ -907,6 +907,8 @@ namespace Rock.Data
             var deleteContentCollectionIndexingMsgs = new List<BusStartedTaskMessage>();
             var addInteractionEntityTransactions = new List<AddInteractionEntityTransaction>();
             var interactionGuid = RockRequestContextAccessor.Current?.RelatedInteractionGuid;
+            var cacheSaveOptions = GetOptions<UpdateCacheSaveOptions>();
+            var isUpdateCacheDisabled = cacheSaveOptions?.IsUpdateCacheDisabled ?? false;
 
             foreach ( var item in updatedItems )
             {
@@ -957,7 +959,7 @@ namespace Rock.Data
                     }
                 }
 
-                if ( item.Entity is ICacheable cacheable )
+                if ( !isUpdateCacheDisabled && item.Entity is ICacheable cacheable )
                 {
                     /* 04/14/2022 MDP
 
