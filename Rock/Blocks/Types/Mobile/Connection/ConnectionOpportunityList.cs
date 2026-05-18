@@ -204,21 +204,21 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     } )
                     .ToDictionary( x => x.ConnectionOpportunityId );
 
-                var dueSoonCounts = opportunityIds.ToDictionary(
-                    id => id,
-                    id => dueDateCounts.ContainsKey( id ) ? dueDateCounts[id].DueSoonCount : 0 );
-
-                var overdueCounts = opportunityIds.ToDictionary(
-                    id => id,
-                    id => dueDateCounts.ContainsKey( id ) ? dueDateCounts[id].OverdueCount : 0 );
+                foreach ( var opportunityId in opportunityIds )
+                {
+                    if ( requestCounts.TryGetValue( opportunityId, out var counts ) )
+                    {
+                        dynamic dynamicCounts = counts;
+                        dynamicCounts.YourDueSoonCount = dueDateCounts.ContainsKey( opportunityId ) ? dueDateCounts[opportunityId].DueSoonCount : 0;
+                        dynamicCounts.YourOverdueCount = dueDateCounts.ContainsKey( opportunityId ) ? dueDateCounts[opportunityId].OverdueCount : 0;
+                    }
+                }
 
                 // Process the connection opportunities with the template.
                 var mergeFields = RequestContext.GetCommonMergeFields();
                 mergeFields.AddOrReplace( "ConnectionOpportunities", opportunities );
                 mergeFields.AddOrReplace( "DetailPage", DetailPageGuid );
                 mergeFields.AddOrReplace( "ConnectionRequestCounts", requestCounts );
-                mergeFields.AddOrReplace( "DueSoonCounts", dueSoonCounts );
-                mergeFields.AddOrReplace( "OverdueCounts", overdueCounts );
 
                 var content = OpportunityTemplate.ResolveMergeFields( mergeFields );
 

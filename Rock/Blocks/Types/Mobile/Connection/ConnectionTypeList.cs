@@ -21,6 +21,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 
+using Lucene.Net.Codecs;
+
 using Rock.Attribute;
 using Rock.ClientService.Connection.ConnectionType;
 using Rock.Data;
@@ -168,8 +170,6 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     .ToDictionary( k => k.Key, k => new RockDynamic( k.Value ) );
 
                 var currentPersonAliasId = GetCurrentPerson().PrimaryAliasId;
-                // Calculate due soon and overdue counts per connection type
-                // using the same date logic as ConnectionRequest.IsDueSoon/IsOverdue.
                 var today = RockDateTime.Today;
                 var dueDateCounts = new ConnectionRequestService( rockContext ).Queryable()
                     .Where( r => connectionTypeIds.Contains( r.ConnectionOpportunity.ConnectionTypeId )
@@ -189,21 +189,21 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     } )
                     .ToDictionary( x => x.ConnectionTypeId );
 
-                var dueSoonCounts = connectionTypeIds.ToDictionary(
-                    id => id,
-                    id => dueDateCounts.ContainsKey( id ) ? dueDateCounts[id].DueSoonCount : 0 );
-
-                var overdueCounts = connectionTypeIds.ToDictionary(
-                    id => id,
-                    id => dueDateCounts.ContainsKey( id ) ? dueDateCounts[id].OverdueCount : 0 );
+                foreach ( var connectionTypeId in connectionTypeIds )
+                {
+                    if ( requestCounts.TryGetValue( connectionTypeId, out var counts ) )
+                    {
+                        dynamic dynamicCounts = counts;
+                        dynamicCounts.YourDueSoonCount = dueDateCounts.ContainsKey( connectionTypeId ) ? dueDateCounts[connectionTypeId].DueSoonCount : 0;
+                        dynamicCounts.YourOverdueCount = dueDateCounts.ContainsKey( connectionTypeId ) ? dueDateCounts[connectionTypeId].OverdueCount : 0;
+                    }
+                }
 
                 // Process the connection opportunities with the template.
                 var mergeFields = RequestContext.GetCommonMergeFields();
                 mergeFields.AddOrReplace( "ConnectionTypes", types );
                 mergeFields.AddOrReplace( "DetailPage", DetailPageGuid );
                 mergeFields.AddOrReplace( "ConnectionRequestCounts", requestCounts );
-                mergeFields.AddOrReplace( "DueSoonCounts", dueSoonCounts );
-                mergeFields.AddOrReplace( "OverdueCounts", overdueCounts );
 
                 var content = TypeTemplate.ResolveMergeFields( mergeFields );
 
