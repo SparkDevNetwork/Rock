@@ -177,7 +177,15 @@ namespace RockWeb.Blocks.Administration
 
             SortProperty sortProperty = gBinaryFileType.SortProperty;
 
-            // join so we can both get BinaryFileCount quickly and be able to sort by it (having SQL do all the work)
+            // Reused across all rows so we don't allocate a Person per row. The
+            // anonymous visitor instance is only a vehicle for the Guid lookup
+            // inside Authorization's in-memory cache.
+            var anonymousVisitorPerson = new Person
+            {
+                Guid = Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid()
+            };
+
+            // 1) join so we can both get BinaryFileCount quickly and be able to sort by it (having SQL do all the work)
             var qry = from ft in binaryFileTypeService.Queryable()
                       join bf in binaryFileService.Queryable().GroupBy( b => b.BinaryFileTypeId )
                       on ft.Id equals bf.Key into joinResult
@@ -191,18 +199,45 @@ namespace RockWeb.Blocks.Administration
                           StorageEntityType = ft.StorageEntityType != null ? ft.StorageEntityType.FriendlyName : string.Empty,
                           ft.IsSystem,
                           ft.CacheToServerFileSystem,
-                          RequiresViewSecurity = ft.RequiresViewSecurity
+                          RequiresViewSecurity = ft.RequiresViewSecurity,
+                          PublicViewable = false
                       };
 
-            if ( sortProperty != null )
-            {
-                gBinaryFileType.DataSource = qry.Sort( sortProperty ).ToList();
-            }
-            else
-            {
-                gBinaryFileType.DataSource = qry.OrderBy( p => p.Name ).ToList();
-            }
+            // 2) Materialize with original sorting logic intact.
+            var items = sortProperty != null
+                ? qry.Sort( sortProperty ).ToList()
+                : qry.OrderBy( p => p.Name ).ToList();
 
+            // 3) Bulk-load the matching entities once so IsAuthorized can run in memory.
+            var ids = items.Select( i => i.Id ).ToList();
+
+            var binaryFileTypesById = binaryFileTypeService.Queryable()
+                .Where( ft => ids.Contains( ft.Id ) )
+                .ToList()
+                .ToDictionary( ft => ft.Id );
+
+            // 4) Project to final objects with PublicViewable computed in memory.
+            var result = items.Select( item =>
+            {
+                var ft = binaryFileTypesById[item.Id];
+
+                return new
+                {
+                    item.Id,
+                    item.Name,
+                    item.Description,
+                    item.BinaryFileCount,
+                    item.StorageEntityType,
+                    item.IsSystem,
+                    item.CacheToServerFileSystem,
+                    item.RequiresViewSecurity,
+                    PublicViewable = !item.RequiresViewSecurity
+                        || ft.IsAuthorized( Authorization.VIEW, null )
+                        || ft.IsAuthorized( Authorization.VIEW, anonymousVisitorPerson )
+                };
+            } ).ToList();
+
+            gBinaryFileType.DataSource = result;
             gBinaryFileType.EntityTypeId = EntityTypeCache.Get<Rock.Model.BinaryFileType>().Id;
             gBinaryFileType.DataBind();
         }

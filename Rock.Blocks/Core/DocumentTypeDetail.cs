@@ -190,6 +190,11 @@ namespace Rock.Blocks.Core
                 return null;
             }
 
+            // The DocumentType is publicly viewable if the non-logged in person (no person) 
+            // or a generic logged-in (All Authenticated Users) person can view.
+            var isPublicViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, null )
+                || entity.IsAuthorized( Rock.Security.Authorization.VIEW, new Person() { Guid = Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid() } );
+
             return new DocumentTypeBag
             {
                 IdKey = entity.IdKey,
@@ -203,7 +208,8 @@ namespace Rock.Blocks.Core
                 IsSystem = entity.IsSystem,
                 MaxDocumentsPerEntity = entity.MaxDocumentsPerEntity.ToString(),
                 Name = entity.Name,
-                UserSelectable = entity.UserSelectable
+                UserSelectable = entity.UserSelectable,
+                IsPublicViewable = isPublicViewable
             };
         }
 

@@ -20,6 +20,7 @@
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:BoolField DataField="CacheToServerFileSystem" HeaderText="Cache To Server" SortExpression="CacheToServerFileSystem" />
                             <Rock:BoolField DataField="RequiresViewSecurity" HeaderText="Requires View Security" SortExpression="RequiresViewSecurity" />
+                            <Rock:BoolField DataField="PublicViewable" HeaderText="Public Viewable" SortExpression="PublicViewable" />
                             <Rock:SecurityField TitleField="Name" />
                             <Rock:DeleteField OnClick="gBinaryFileType_Delete" />
                         </Columns>

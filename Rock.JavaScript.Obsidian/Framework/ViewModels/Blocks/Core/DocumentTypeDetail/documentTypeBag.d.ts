@@ -72,4 +72,7 @@ export type DocumentTypeBag = {
 
     /** Gets or sets a value indicating whether the type is user selectable. */
     userSelectable: boolean;
+
+    /** Gets or sets a value indicating whether the type is publicly viewable. */
+    isPublicViewable: boolean
 };
