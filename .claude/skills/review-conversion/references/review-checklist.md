@@ -92,6 +92,10 @@ Spot-check = scan for issues the per-block artifacts didn't capture (e.g., a bug
 - [ ] Complex/HTML columns have `filterValue` and `quickFilterValue` functions
 - [ ] Display-only computed columns have `:excludeFromExport="true"`
 - [ ] `v-for` `:key` uses `index` as fallback (not `''`) when key could be null
+- [ ] Name columns that display a description / subtitle below the name use `HighlightDetailColumn` (or `PersonColumn` for people, with `:hideAvatar="true"` if no avatar is wanted) — NOT a custom `<template #format>` with `<b>...</b><br>` or `text-semibold` + `text-muted`
+- [ ] If a Name column uses `HighlightDetailColumn` with `detailField`, any standalone Description column displaying the same field has been removed
+- [ ] No redundant `sortValue` / `filterValue` / `quickFilterValue` props on `HighlightDetailColumn` that just concatenate `field + detailField` (the column does this by default)
+- [ ] No custom two-line `<template #skeleton>` on `HighlightDetailColumn` (the default skeleton handles it)
 
 ---
 
@@ -189,7 +193,8 @@ Use this matrix to verify every grid column uses the correct component for its d
 | `bool` / `bool?` | `BooleanColumn` | Using `TextColumn` |
 | `DateTime` / `DateTime?` | `DateColumn` or `DateTimeColumn` | Using `TextColumn` |
 | `int` / `decimal` / `double` | `NumberColumn` | Using `TextColumn` |
-| `string` (person name) | `PersonColumn` | Using `TextColumn` without `filterValue` |
+| `string` (name with adjacent description / subtitle) | `HighlightDetailColumn` (`field` + `detailField`) | Hand-rolled `<template #format>` with `<b>...</b><br>` or `text-semibold` + `text-muted` |
+| `string` (person name) | `PersonColumn` (with `:hideAvatar="true"` if no avatar wanted; `detailField` for subtext) | Using `TextColumn` without `filterValue`; using `HighlightDetailColumn` for a person |
 | `string` (currency) | `CurrencyColumn` | Using `TextColumn` or `NumberColumn` |
 | `string` (enum display) | `TextColumn` with `filterValue` | Missing `filterValue` for filtering |
 | `string` (HTML content) | `TextColumn` with `filterValue` + `quickFilterValue` | Missing filter functions, missing `:excludeFromExport` |
@@ -201,6 +206,7 @@ Use this matrix to verify every grid column uses the correct component for its d
 - [ ] Columns displaying HTML or rich content have `quickFilterValue` for search
 - [ ] Computed/display-only columns (e.g., concatenated fields) have `:excludeFromExport="true"`
 - [ ] Grid settings modal emits `close` and the parent watches for it (standard pattern)
+- [ ] `HighlightDetailColumn` consumers do NOT redefine `filterValue` / `quickFilterValue` to `${field} ${detailField}` — the column already does this via `getCombinedFilterValue`
 
 ---
 

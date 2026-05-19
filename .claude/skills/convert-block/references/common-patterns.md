@@ -304,10 +304,10 @@ import { deepEqual } from "@Obsidian/Utility/util";
 import { usePersonPreferences } from "@Obsidian/Utility/block";
 
 // Grid
-import Grid, { TextColumn, NumberColumn, BooleanColumn, DateTimeColumn, DateColumn,
-    DeleteColumn, ReorderColumn,
+import Grid, { TextColumn, HighlightDetailColumn, PersonColumn, NumberColumn, BooleanColumn, DateTimeColumn, DateColumn,
+    DeleteColumn, ReorderColumn, SecurityColumn,
     textValueFilter, numberValueFilter, booleanValueFilter, dateValueFilter,
-    dateRangeValueFilter } from "@Obsidian/Controls/grid";
+    dateRangeValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
 
 // UI Controls
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";

@@ -22,6 +22,7 @@ Patterns specific to List block conversions. Load this file when the block is cl
 | C# Grid Builder Method | Frontend Column | Filter |
 |---|---|---|
 | `AddTextField` (strings, IdKey) | `TextColumn` | `textValueFilter` |
+| `AddTextField` (name with adjacent description / subtitle) | `HighlightDetailColumn` | `textValueFilter` (the column auto-combines `field` + `detailField` for filtering) |
 | `AddField` (bool) | `BooleanColumn` | `booleanValueFilter` |
 | `AddField` (int, decimal, number) | `NumberColumn` | `numberValueFilter` |
 | `AddDateTimeField` | `DateTimeColumn` or `DateColumn` | `dateValueFilter` |
@@ -51,6 +52,78 @@ function getPersonFilterValue(row: Record<string, unknown>): string {
 
 ---
 
+### Name + Subtext: Always `HighlightDetailColumn` (or `PersonColumn`)
+
+When the WebForms grid shows a primary name with a secondary line below it (description, subtitle, path, status, etc.), do **not** hand-roll the markup with `<b>{{ name }}</b><br>{{ description }}`, `<span class="text-semibold">` + `<div class="text-muted">`, or any custom `<template #format>` two-line layout. Always use `HighlightDetailColumn`, which emits the framework's `<div class="highlight-title">` + `<div class="highlight-detail">` markup so typography and dark-mode tokens work everywhere.
+
+**Decision rule:**
+- If the title represents a **person** (the row exposes a `PersonFieldBag`, or the WebForms cell linked to `/Person/...`) → use `PersonColumn` with `:hideAvatar="true"` (set to `false` only if the avatar is actually desired). `PersonColumn` exposes a `detailField` prop just like `HighlightDetailColumn`.
+- Otherwise → use `HighlightDetailColumn`.
+
+**Drop-in (no leading icon):**
+```html
+<HighlightDetailColumn name="name"
+                       title="Name"
+                       field="name"
+                       detailField="description"
+                       :filter="textValueFilter"
+                       visiblePriority="xs" />
+```
+
+**With a leading icon / badge / avatar (keep `#format`, but render the framework classes inside):**
+```html
+<HighlightDetailColumn name="course"
+                       title="Course"
+                       field="course"
+                       detailField="summary"
+                       :filter="textValueFilter"
+                       visiblePriority="xs">
+    <template #format="{ row }">
+        <div class="d-flex flex-fill align-items-center">
+            <i :style="'color: ' + row.categoryColor" :class="'mr-2 flex-shrink-0 ti-2x fw ' + (row.categoryIconCssClass ?? '')"></i>
+            <div class="flex-grow-1">
+                <div class="highlight-title">{{ row.course }}</div>
+                <div class="highlight-detail">{{ row.summary }}</div>
+            </div>
+        </div>
+    </template>
+</HighlightDetailColumn>
+```
+
+**Person variant:**
+```html
+<PersonColumn name="requestedBy"
+              title="Name"
+              field="requestedBy"
+              detailField="connectionStatus"
+              :hideAvatar="true"
+              :showAsLink="true"
+              :filter="pickExistingValueFilter"
+              :filterValue="getPersonNameFilterValue"
+              :quickFilterValue="getPersonNameFilterValue"
+              visiblePriority="xs" />
+```
+
+**When converting, also remove now-redundant props:**
+- Custom `sortValue`, `filterValue`, `quickFilterValue` that just concatenated `row.name + " " + row.description`. `HighlightDetailColumn` now overrides BOTH `quickFilterValue` AND `filterValue` to return `${field} ${detailField}` (or the rendered `#detailFormat` text), so the grid-wide quick filter and the per-column filter both search title + detail automatically. See `getCombinedFilterValue` in `Rock.JavaScript.Obsidian/Framework/Controls/Grid/Columns/highlightDetailColumn.partial.ts`.
+- Per-block two-line `<template #skeleton>` markup. The column's default skeleton already renders the two-line shape.
+- `<template #export>` that just emits the title field. `HighlightDetailColumn` exports `field` by default.
+- Inline annotations like `<span class="text-muted text-xs">{{ row.id }}</span>` unless the block has an explicit, documented reason for them.
+
+**Collapse standalone description columns.** If the WebForms grid has both a Name column and a separate Description column displaying `Site.Description` (or similar), prefer collapsing the Description into `detailField="description"` on the Name column rather than keeping a second column. Example: `tvApplicationList.obs` dropped its standalone description `TextColumn` when Name became a `HighlightDetailColumn`.
+
+**Canonical references (already correct, copy from these):**
+- `Rock.JavaScript.Obsidian.Blocks/src/Finance/financialBatchList.obs` (slot-based detail)
+- `Rock.JavaScript.Obsidian.Blocks/src/Cms/blockTypeList.obs` (drop-in)
+- `Rock.JavaScript.Obsidian.Blocks/src/Core/binaryFileTypeList.obs` (drop-in)
+- `Rock.JavaScript.Obsidian.Blocks/src/Core/restControllerList.obs` (drop-in with field + detailField)
+- `Rock.JavaScript.Obsidian.Blocks/src/CheckIn/Manager/Roster/singleScheduleGrid.partial.obs` (icon variant)
+- `Rock.JavaScript.Obsidian.Blocks/src/Cms/adaptiveMessageList.obs` (drop-in, recently converted)
+- `Rock.JavaScript.Obsidian.Blocks/src/Cms/personalizationSegmentList.obs` (drop-in, recently converted)
+- `Rock.JavaScript.Obsidian.Blocks/src/Tv/tvApplicationList.obs` (drop-in + collapsed standalone description column)
+
+---
+
 ### Special grid fields
 
 | Field name | Purpose | Correct usage |
@@ -72,6 +145,13 @@ See `Rock.Blocks/Engagement/StepTypeList.cs` for a complete `GetGridBuilder()` e
 ## Person Fields
 
 When the WebForms grid has a column bound to a person (e.g., `CreatedByPersonAlias.Person.FullName`), use `AddPersonField` in the grid builder and `PersonColumn` on the frontend — **not** `AddTextField` with `TextColumn`. The `PersonColumn` requires a `PersonFieldBag` filter value function since its data is an object, not a string. Import `PersonFieldBag` from `@Obsidian/ViewModels/Core/Grid/personFieldBag`.
+
+**Useful `PersonColumn` props:**
+- `:hideAvatar="true"` — suppress the avatar so the cell renders as `highlight-title` + `highlight-detail` only. Use this when the WebForms grid did not show a photo.
+- `:showAsLink="true"` — link the name to the person detail page.
+- `detailField="someField"` — render a second line under the name (same semantics as `HighlightDetailColumn`'s `detailField`).
+
+See the *Name + Subtext* section below for when to prefer `PersonColumn` over `HighlightDetailColumn`.
 
 ---
 
