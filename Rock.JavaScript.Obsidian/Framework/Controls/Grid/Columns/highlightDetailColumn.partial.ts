@@ -104,12 +104,12 @@ export default defineComponent({
         },
 
         quickFilterValue: {
-            type: Function as PropType<QuickFilterValueFunction>,
+            type: Object as PropType<QuickFilterValueFunction | string>,
             default: getCombinedFilterValue
         },
 
         filterValue: {
-            type: Function as PropType<FilterValueFunction>,
+            type: Object as PropType<FilterValueFunction | string>,
             default: getCombinedFilterValue
         },
 
