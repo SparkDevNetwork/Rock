@@ -23,11 +23,13 @@ The change unlocks step-up and MFA recency tracking, deterministic session expir
 
 Several long-standing problems all trace back to the cookie-as-authority model:
 
+- **WebForms coupling.** The current authentication flow is tightly coupled to both WebForms in general and the RockPage.cs WebForms implementation. This makes it difficult to migrate to .NET Core and also makes it difficult to introduce a new non-WebForms page rendering system.
 - **No notion of session recency.** "User authenticated with password 90 days ago and has clicked around since" looks identical to "user just typed their password". Blocks that should require recent (re-)authentication (giving history, profile edits, financial settings) have no platform-supplied way to ask the question.
 - **MFA is invisible after the fact.** Rock cannot tell whether the current session ever involved a second factor, and so cannot enforce MFA-gated features after login.
 - **Activity tracking is bolted on.** `UserLogin.LastActivityDateTime` and `UserLogin.IsOnLine` are updated on every page load via a bus task and then read in a handful of places. There is no clean separation between "user exists" and "user has an active session".
 - **Persistent ("remember me") sessions are not modeled.** Cleanup behavior, expiration semantics, and revocation are all implicit.
 - **Session events have nowhere to hang.** "Send an email when a new session starts on a new device" requires an event the platform does not currently fire.
+- **Existing sessions can't be terminated.** The only way to kill an existing cookie session is with the emergency kill-switch that revokes all cookies.
 
 Adopting an industry-standard session model lets the rest of the platform stop guessing at session state and gives blocks a single policy primitive to enforce.
 
@@ -41,7 +43,8 @@ Adopting an industry-standard session model lets the rest of the platform stop g
 - Step-up and MFA recency MUST be tracked as distinct timestamps on the session.
 - Persistent ("remember me") sessions MUST be distinguishable from transient sessions and SHOULD have a longer cleanup horizon.
 - Expired sessions MUST be retained (marked inactive, not deleted) so historical reporting and forensics still work. The Rock Cleanup job is responsible for marking them inactive when `ExpiresDateTime` is reached.
-- API key authentication MUST continue to work unchanged and MUST NOT create a `PersonSession`.
+- API key authentication MUST continue to function for external callers without changes to the request shape (the existing `Authorization-Token` header and `?apikey=` query parameter remain valid). Internally, API-key requests participate in `PersonSession` via a long-lived find-or-create session per `UserLogin` with `CreationSource = ApiKey` (see "API key requests" under Design).
+- JWT and OAuth bearer token authentication MUST NOT create a `PersonSession` and MUST NOT participate in activity tracking.
 - `InteractionSession` MUST gain a nullable `PersonSessionId` set once on creation, and the platform MUST keep the two in sync across login, logout, and impersonation events.
 - Existing public methods MUST NOT change signatures. New behavior is added via new methods/overloads.
 
@@ -65,7 +68,7 @@ Inherits from `Rock.Data.Model<PersonSession>` (gains the standard `Id`, `Guid`,
 | `IsPersistent` | bool | No | `true` when the session was created from a "remember me" login. Drives cleanup horizon. |
 | `UserAgent` | nvarchar | Yes | Captured at session creation for forensics and "new device" emails. Null or empty is permitted; SignalR, server-side REST, and OIDC flows may not have a meaningful UA string. Long-term retention inherits the same PII considerations that already apply to other UA-storing tables in Rock; a platform-wide PII / retention policy is out of scope for this spec. |
 | `AuthenticationComponentId` | int (FK EntityType) | Yes | Component used for initial authentication. |
-| `CreationSource` | enum `PersonSessionCreationSource` | No | How the session was created. Values: `Unknown` (safe default, should not be persisted in normal flows), `Component` (regular authentication via an `AuthenticationComponent`), `Impersonation` (admin-initiated impersonation, restorable to the impersonator's prior session), `UserToken` (user-facing token like an `rckipid` email link, not restorable), `ApiKey` (long-lived session tied to a `UserLogin` whose `ApiKey` property is set; reused across all requests from that key, see "API key requests" subsection). Drives `IsImpersonated()`, `GetImpersonatorSession()`, and `EndImpersonationAndRestore()` semantics on `PersonSessionService`. |
+| `CreationSource` | enum `PersonSessionCreationSource` | No | How the session was created. Values: `Unknown` (safe default, should not be persisted in normal flows), `Component` (regular authentication via an `AuthenticationComponent`), `Impersonation` (admin-initiated impersonation, restorable to the impersonator's prior session), `UserToken` (user-facing token like an `rckipid` email link, not restorable), `ApiKey` (long-lived session tied to a `UserLogin` whose `ApiKey` property is set; reused across all requests from that key, see "API key requests" subsection), `Legacy` (created during legacy `FormsAuthenticationTicket` cookie upgrade; isolates the upgrade row from real `Component` sessions so the composite-key lookup in "Cookie upgrade path" cannot accidentally collide with a live session for the same user, see "Cookie upgrade path"). Drives `IsImpersonated()`, `GetImpersonatorSession()`, and `EndImpersonationAndRestore()` semantics on `PersonSessionService`. |
 | `AdditionalSettingsJson` | nvarchar(max) | Yes | Backing store for `IHasAdditionalSettings`. Read and written exclusively through the categorized extension methods, never touched directly. Known consumers: (1) admin-impersonation restore state, under a dedicated key, carrying the impersorator's prior `PersonSession.Guid`; (2) for `UserToken` sessions, a link to the originating `PersonToken` row (its Guid) so per-request validation can re-check page-scope, expiration, and revocation against the source token. Consumer (2) is required: page-scope enforcement happens on every request while in a `UserToken` session, not just at session creation. Future per-session metadata (device fingerprint hints, channel-specific context, etc.) can be added under additional keys without a schema change. |
 
 ### Method: `GetAuthenticationStrength()`
@@ -116,11 +119,13 @@ The raw window values stay private. If a future UI needs to display "session exp
 ```csharp
 bool IsImpersonated( PersonSession session );
 PersonSession GetImpersonatorSession( PersonSession session );  // null if not admin-impersonation
-PersonSession EndImpersonationAndRestore( PersonSession session );  // admin only; null if no impersonator to restore
-ImpersonationProcessResult ProcessImpersonationToken( string rckipidToken );  // pattern B entry point
+internal PersonSession EndImpersonationAndRestore( PersonSession session );  // admin only; null if no impersonator to restore
+internal ImpersonationProcessResult ProcessImpersonationToken( string rckipidToken );  // pattern B entry point
 ```
 
-See the "Impersonation: two distinct cases" subsection below for what each helper does in each impersonation flow. Keeping these on the service preserves the cookie payload as a black box. If the cookie container later changes (see Open Questions) only these methods change; callers don't.
+`EndImpersonationAndRestore` and `ProcessImpersonationToken` are `internal` because starting and ending impersonation are not extension points — only core code drives those state transitions. `IsImpersonated` and `GetImpersonatorSession` remain `public` because they are read-only and legitimately useful to plugins, blocks, and Lava.
+
+See the "Impersonation: two distinct cases" subsection below for what each helper does in each impersonation flow. Keeping these on the service preserves the cookie payload as a black box. If the cookie container or payload format ever changes in the future, only these methods change; callers don't.
 
 ### Enums
 
@@ -141,6 +146,57 @@ MultiFactor        caller requires a recent MFA event
 ```
 
 Two enums (rather than one shared enum) so the requirement set can grow independently of the strength set. A future `TrustedNetwork` requirement, for example, would let a block say "show giving history if the session meets `Elevated` OR the request is on a trusted network", without contaminating the strength enum, which describes only what the session itself can attest to. (Industry-standard split.)
+
+#### `PersonSessionCreationSource` (Rock.Enums)
+
+Backs the `PersonSession.CreationSource` column. Drives the `IsImpersonated()`, `GetImpersonatorSession()`, and `EndImpersonationAndRestore()` semantics on `PersonSessionService`, and is the discriminator used by the legacy-cookie composite-key lookup under "Cookie upgrade path."
+
+```
+Unknown            safe default; should not be persisted in normal flows
+Component          regular authentication via an AuthenticationComponent
+Impersonation      admin-initiated impersonation, restorable to the impersonator's prior session
+UserToken          user-facing token (e.g. rckipid email link), not restorable
+ApiKey             long-lived session tied to a UserLogin whose ApiKey property is set
+Legacy             created during the FormsAuthenticationTicket cookie upgrade
+```
+
+Notes on specific values:
+
+- `Component` covers every standard authentication flow: web login, mobile login, TV login, Auth0, and any other `IExternalRedirectAuthentication` provider. The component that authenticated the session is recorded on `PersonSession.AuthenticationComponentId`.
+- `ApiKey` sessions are reused across requests for the same `UserLogin.ApiKey`. See "API key requests" under Design. `ExpiresDateTime` is null on these rows.
+- `Legacy` is created exclusively by the upgrade path defined under "Cookie upgrade path." The value isolates upgrade rows from real `Component` sessions so the composite-key lookup `(UserLoginId, IssuedDateTime, CreationSource = Legacy)` cannot collide with a live session for the same user. `Legacy` is NOT deprecated alongside the upgrade code itself: when the migration helpers are removed (`RockObsolete( "20.0" )`, expected removal around v23), historical rows with `CreationSource = Legacy` remain queryable and continue to report their origin correctly.
+- `Unknown` exists as a safe default so the column never has to be nullable, but no normal code path produces this value.
+
+### Result types
+
+#### `ImpersonationProcessResult` (internal)
+
+Return type for `PersonSessionService.ProcessImpersonationToken`. A small POCO, not an enum — the value carries both the resulting session reference and the redirect signal in one shape so callers do not have to fetch one and infer the other.
+
+```csharp
+internal class ImpersonationProcessResult
+{
+    /// <summary>
+    /// True if the caller MUST redirect to a URL without the rckipid query parameter.
+    /// Set for every rule defined in the ProcessImpersonationToken matrix (1 through 5),
+    /// including the failure case where the token did not resolve to a valid session.
+    /// The flag is explicit rather than implicit ("always true") so future code paths
+    /// that do not require redirect (AJAX, server-side fixtures) can produce a result
+    /// with IsRedirectRequired = false without breaking the contract.
+    /// </summary>
+    public bool IsRedirectRequired { get; init; }
+
+    /// <summary>
+    /// The PersonSession the request is associated with after processing.
+    /// Null if the request is now anonymous (e.g., the token was invalid and there was
+    /// no other auth context). Callers can also fetch the current session from
+    /// RockRequestContext; this property is exposed primarily for audit / test convenience.
+    /// </summary>
+    public PersonSession Session { get; init; }
+}
+```
+
+The type is `internal` for the same reason the methods that return it are `internal`: starting impersonation is a core-only operation, and the result shape should be free to evolve without a breaking-change cost on plugins.
 
 ### `RockRequestContext` integration
 
@@ -169,28 +225,46 @@ stateDiagram-v2
 
 ### Central creation path
 
-All session creation MUST flow through `PersonSessionService.CreateSession`. This is the seam where downstream events (new-device email, audit logging, anomaly detection) get hooked in later. Direct construction of `PersonSession` rows outside this method is prohibited.
+All session creation MUST flow through `PersonSessionService`. Direct construction of `PersonSession` rows outside the service is prohibited. The service surface exposes one entry point per creation flow because the required inputs diverge enough between flows that a single options POCO would carry illegal-state combinations (e.g. `OriginatingTokenGuid` set on a `Component` flow). Naming reflects whether the method saves:
 
-The service surface is intentionally split into three methods to decouple cookie production from HTTP-environment manipulation:
+- **`Start*Session` methods populate but do not save.** They return a fully-initialized `PersonSession` entity. The caller is responsible for `rockContext.PersonSessions.Add(...)` and `rockContext.SaveChanges()`. This is what allows session creation to participate in a larger transaction (e.g. admin impersonation also writes `HistoryLogin` in the same logical operation).
+- **`FindOrCreate*Session` methods save when they create.** Their canonical callers are single, well-known paths (`AuthenticateAttribute` for API keys; the legacy-cookie upgrade hook) that have no natural coupling with other writes and that must coordinate concurrent first-request races internally via the upsert-with-unique-key pattern. Auto-saving inside these methods keeps that race-handling self-contained.
 
 ```csharp
-PersonSession CreateSession( ... );                                // creates the DB row
-string         GetCookieValue( PersonSession session );            // opaque encrypted cookie value
-void           SetAuthCookie( PersonSession session, RockRequestContext context );  // attaches cookie via context
+// Populate-but-don't-save creation flows. Caller commits.
+internal PersonSession StartComponentSession( int personAliasId, int userLoginId, int authComponentId, bool isPersistent, DateTime? mfaRecency = null );
+internal PersonSession StartImpersonationSession( int targetPersonAliasId, PersonSession impersonatorSession );
+internal PersonSession StartUserTokenSession( int targetPersonAliasId, PersonToken token );
+
+// Find-or-create flows. Save internally when a create is needed.
+internal PersonSession FindOrCreateApiKeySession( UserLogin userLogin );
+internal PersonSession FindOrCreateLegacyUpgradeSession( int userLoginId, DateTime ticketIssueDate );
+
+// Cookie production (orthogonal to creation).
+string GetCookieValue( PersonSession session );                                       // opaque encrypted cookie value
+void   SetAuthCookie( PersonSession session, RockRequestContext context );           // attaches cookie via context
 ```
 
-`SetAuthCookie` internally calls `GetCookieValue` and then writes the cookie through `RockRequestContext`, which abstracts the HTTP response. `GetCookieValue` MUST NOT touch `HttpContext` directly; it returns a pure opaque string suitable for any caller (browser cookie, device token, test fixture). The architectural rule applies to all helpers on `PersonSessionService`: no direct `HttpContext` access. Cookie/HTTP work routes through `RockRequestContext`. The reason is .NET Core portability: `HttpContext` semantics differ enough between System.Web and ASP.NET Core that direct dependencies create migration friction.
+All `Start*` and `FindOrCreate*` methods delegate to a private `PopulateNewSession(...)` helper that owns the shared invariants (`IsActive = true`, audit-column wiring, `IssuedDateTime` defaulting to `RockDateTime.Now` if not supplied, `IsPersistent` default, etc.). This is the structural seam for any future cross-cutting validation.
+
+Downstream events (new-device email, audit logging, anomaly detection) fire from `PersonSession.PostSave` rather than from the creation methods themselves. This is intentional and has two consequences:
+
+1. Events fire **only on successful commit**, not on object construction. A caller that builds a session and then rolls back the transaction does not trigger spurious notifications.
+2. Events fire **regardless of which entry point built the session**. A new code path that calls `StartComponentSession` later inherits the same downstream behavior without re-registering.
+
+`SetAuthCookie` internally calls `GetCookieValue` and writes the cookie through `RockRequestContext`, which abstracts the HTTP response. `GetCookieValue` MUST NOT touch `HttpContext` directly; it returns a pure opaque string suitable for any caller (browser cookie, device token, test fixture). The architectural rule applies to all helpers on `PersonSessionService`: no direct `HttpContext` access. Cookie/HTTP work routes through `RockRequestContext`. The reason is .NET Core portability: `HttpContext` semantics differ enough between System.Web and ASP.NET Core that direct dependencies create migration friction.
 
 This separation is what unblocks non-cookie flows (Mobile and TV device authentication, server-side test fixtures, future SignalR / push integrations) from going through the central creation seam without needing a fake HTTP response.
 
 ### Interaction with `InteractionSession` and ASP.NET Session
 
-`InteractionSession` gains a nullable `PersonSessionId`. The column is populated by either of two paths:
+`InteractionSession` gains a nullable `PersonSessionId`. The column is populated by one of three paths:
 
 1. **Stamp at creation.** When `InteractionSession` is created and a `PersonSession` already exists on the current request, the new row is inserted with `PersonSessionId` set to that session's Id. This covers the "user arrives already authenticated via a persisted cookie" case.
 2. **Adopt by update at login.** When a person logs in mid-session (the common visitor-becomes-authenticated flow: browse anonymously → eventually log in), the existing `InteractionSession` for the current browser session is updated to set `PersonSessionId` to the new `PersonSession`. The full pre-auth journey thereby attaches retroactively to the now-known person, which is the whole point of adopting rather than creating a fresh row.
+3. **Adopt by update at legacy cookie upgrade.** When a request arrives with a legacy `.ROCK` cookie and `FindOrCreateLegacyUpgradeSession` resolves or creates a `Legacy` `PersonSession`, any existing `InteractionSession` for the current browser session is updated to set `PersonSessionId` to that session. Mechanically identical to path 2; the trigger differs (cookie upgrade rather than fresh login). This matters because a user who has been browsing under the legacy cookie may already have an `InteractionSession` row that pre-dates the upgrade, and that row's downstream activity should be attached to the upgraded `PersonSession` rather than left orphaned.
 
-The SQL-driven upsert at `Rock/Model/Core/Interaction/InteractionService.cs:583` is insert-only today; it must gain a path that updates `PersonSessionId` on an existing row keyed by `RockSessionId`. The race-condition surface is unchanged from today (the unique key on `RockSessionId` continues to mediate concurrent inserts; the new column just rides along).
+The SQL-driven upsert at `Rock/Model/Core/Interaction/InteractionService.cs:583` is insert-only today; it must gain a path that updates `PersonSessionId` on an existing row keyed by `RockSessionId`. The same update path serves both adoption flows (paths 2 and 3). The race-condition surface is unchanged from today (the unique key on `RockSessionId` continues to mediate concurrent inserts; the new column just rides along).
 
 To keep the three (`PersonSession`, `InteractionSession`, ASP.NET Session) in sync, authentication events drive resets:
 
@@ -200,11 +274,12 @@ To keep the three (`PersonSession`, `InteractionSession`, ASP.NET Session) in sy
 | Login, already authenticated, different person | Create new | Create new | Create new |
 | Login, already authenticated, same person (step-up only) | Reuse existing | Reuse existing | Reuse existing |
 | Logout | Mark inactive | Create new | Create new |
-| Admin impersonation, start | Create new (impersonator's session Guid stashed in cookie side payload) | Create new | Create new |
-| Admin impersonation, end / restore | Mark current inactive; restore prior session from cookie side payload | Create new | Create new |
+| Admin impersonation, start | Create new (impersonator's session Guid stamped in `AdditionalSettingsJson` on the new row) | Create new | Create new |
+| Admin impersonation, end / restore | Mark current inactive; restore prior session from `AdditionalSettingsJson` on the impersonation session | Create new | Create new |
 | User-token impersonation (`rckipid` email link) | Create new (no impersonator session) | Create new | Create new |
+| Legacy cookie upgrade | Find or create (composite key `UserLoginId`, `IssuedDateTime`, `CreationSource = Legacy`) | Adopt existing | Reuse existing |
 
-For impersonation specifically, the original `PersonSession` Guid (and any companion resume state) is stashed inside the new auth cookie so it can be restored on impersonation exit, giving a clean resumption. ASP.NET Session is deliberately not used for this. Beyond the technical fit (rare feature, short-lived, small payload), the long-term direction for Rock is to move off ASP.NET Session entirely because it enforces single-page-per-session processing (the session lock serializes requests for the same user, hurting concurrent page loads and API calls). This spec does not migrate every ASP.NET Session use case off the platform, but it deliberately does not add a new dependency on it either.
+For impersonation specifically, the original `PersonSession` Guid (and any companion resume state) is stamped into `AdditionalSettingsJson` on the new impersonation `PersonSession` under a dedicated key, so it can be read back on impersonation exit and the prior session restored cleanly. The cookie itself carries only the session Guid; the restore state never appears on the wire. ASP.NET Session is also deliberately not used for this. Beyond the technical fit (rare feature, short-lived, small payload), the long-term direction for Rock is to move off ASP.NET Session entirely because it enforces single-page-per-session processing (the session lock serializes requests for the same user, hurting concurrent page loads and API calls). This spec does not migrate every ASP.NET Session use case off the platform, but it deliberately does not add a new dependency on it either.
 
 `InteractionSession` for website viewing always recycles on app pool recycle (so practical session duration is bounded at ~24 hours). Creating fresh sessions on auth events is therefore not a meaningful behavior change.
 
@@ -230,9 +305,9 @@ Under the new model:
 
 - Mobile and TV sessions are **full persistent sessions**, not API keys. `CreationSource = Component`, `IsPersistent = true`, `AuthenticationComponentId` set to whichever component authenticated the login. They are long-lived authenticated sessions tied to a specific person and device.
 - Mobile and TV login flows obey the same auth-state-transition rules as the web login flow (per the InteractionSession sync table above): anonymous → new session; same-person re-login → reuse the existing active session; different-person → new session; logout → mark inactive.
-- The mobile/TV login block calls `CreateSession` (or selects an existing active session per the transition rules), then calls `GetCookieValue` to obtain the opaque value to hand back to the device in the response body. It does NOT call `SetAuthCookie`, because the device is responsible for cookie storage, not the server response.
+- The mobile/TV login block calls `StartComponentSession` (or selects an existing active session per the transition rules), saves the rock context, then calls `GetCookieValue` to obtain the opaque value to hand back to the device in the response body. It does NOT call `SetAuthCookie`, because the device is responsible for cookie storage, not the server response.
 - Device token refresh (the device asks for a new token without re-entering credentials) is the pure reuse case: the existing `PersonSession` is unchanged and `GetCookieValue` is called against it to produce a fresh opaque value for the device.
-- Subsequent mobile/TV API requests carry the cookie value as a `Cookie: .ROCK=...` header. The cookie validation path (in whatever container the cookie-container open question lands on) decodes it, resolves the `PersonSession.Guid`, validates the session, sets the current user, and triggers the standard `UpdatePersonSessionLastActivity` bus task. No special branch in `AuthenticateAttribute` is required: the existing "principal already set" short-circuit (`AuthenticateAttribute.cs:70-77`) continues to be the mobile/TV entry point.
+- Subsequent mobile/TV API requests carry the cookie value as a `Cookie: .ROCK=...` header. The cookie validation path defined under "Cookie container" (the `Application_BeginRequest` handler for new-format cookies; the legacy `FormsAuthenticationModule` + `Application_PostAuthenticateRequest` upgrade hook for legacy cookies) decodes it, resolves the `PersonSession.Guid`, validates the session, sets the current user, and triggers the standard `UpdatePersonSessionLastActivity` bus task. No special branch in `AuthenticateAttribute` is required: the existing "principal already set" short-circuit (`AuthenticateAttribute.cs:70-77`) continues to be the mobile/TV entry point.
 - The `IsImpersonated` and `IsTwoFactorAuthenticated` flags previously embedded in the device's ticket are dropped, consistent with the new cookie format. Impersonation context lives on `PersonSession`; MFA recency lives on `LastMultiFactorAuthenticationDateTime`.
 - Today's `Authorization.GetSimpleAuthCookie` (`Rock/Security/Authorization.cs:853`) is the existing non-emitting variant used by the mobile login block; the new `GetCookieValue` supersedes it cleanly. The old method becomes a thin wrapper during deprecation.
 
@@ -267,18 +342,52 @@ A companion `{FormsCookieName}_DOMAIN` cookie stores the cookie domain so cross-
 
 ### New cookie format
 
-The cookie carries **only** the `PersonSession.Guid`. Everything else (the `UserLogin` name, persistence, MFA recency, expiration, impersonation kind, impersonation-restore state) lives on the `PersonSession` row and is looked up server-side per request. The cookie remains signed/encrypted so it cannot be forged.
+The cookie carries **only** the `PersonSession.Guid`. Everything else (the `UserLogin` name, persistence, MFA recency, expiration, impersonation kind, impersonation-restore state) lives on the `PersonSession` row and is looked up server-side per request. The cookie remains signed and encrypted so it cannot be forged.
 
-- The browser-side cookie expiration mirrors `PersonSession.ExpiresDateTime` so the cookie self-cleans when persistence is implicit, but the authoritative expiration check happens against the row.
+- The cookie container is a custom signed-and-encrypted format, **not** a `FormsAuthenticationTicket`. See the "Cookie container" subsection below.
+- Plaintext payload is minified JSON with short keys to keep cumulative request-header weight down: `{"v":1,"sid":"<personSessionGuid>","iat":"<ISO 8601 datetime>"}`.
+  - `v` — payload version. Bumps **only** on breaking changes to existing field meanings. Additive fields land alongside without a `v` bump (JSON's natural forward-compatibility carries this).
+  - `sid` — the `PersonSession.Guid`.
+  - `iat` — issued-at timestamp for **this cookie** (not the session). Drives the sliding-expiration reissue mechanism described under "Cookie reissue" below. Distinct from `PersonSession.IssuedDateTime`, which reflects the session's origin and never changes on reissue.
+- Browser-side cookie expiration is bounded by the shorter of the session's lifetime and the configured forms-authentication timeout. The authoritative expiration check still happens server-side against `PersonSession.ExpiresDateTime`; the browser-side `Expires` attribute is purely a hygiene measure that lets stale cookies self-clean and caps the blast radius of a stolen cookie.
+  - **Persistent ("remember me") sessions:** `cookie.Expires = MIN( PersonSession.ExpiresDateTime ?? DateTime.MaxValue, RockDateTime.Now.Add( FormsAuthentication.Timeout ) )`. With the default 30-day timeout, a session that lives for 400 days still hands out a cookie that the browser only holds for 30 days; a session that expires in 7 days hands out a cookie that the browser also only holds for 7 days. Cookies are reissued at half-life as the user remains active so the cap slides forward (see "Cookie reissue").
+  - **Non-persistent ("don't remember me") sessions:** no `Expires` attribute (session cookie, dies when the browser closes). This matches today's behavior (`Authorization.cs:838-841` only sets `Expires` when the ticket is persistent) and is unchanged under the new model.
 - `IsImpersonated` and `IsTwoFactorAuthenticated` are dropped from the cookie payload. Impersonation context is recorded by `PersonSession.CreationSource` and the impersonator's prior session Guid lives in `PersonSession.AdditionalSettingsJson` (under a dedicated key). MFA recency lives on `LastMultiFactorAuthenticationDateTime`. Callers reach all of this through `PersonSessionService`, never the cookie.
+- The companion `{FormsCookieName}_DOMAIN` cookie is preserved unchanged. It carries no auth data; its sole job is to record the cookie domain so cross-subdomain logout can clear the auth cookie correctly. Same behavior, same lifecycle.
 
 ### Cookie upgrade path
 
-When a request arrives with a legacy `.ROCK` cookie and no corresponding `PersonSession`:
+When a request arrives with a legacy `.ROCK` cookie:
 
 1. If the legacy cookie's `UserData.IsImpersonated == true`, **drop the cookie and treat the request as unauthenticated.** Impersonation cookies were always meant to be short-lived ("let me impersonate Ted real quick to see what he sees"); silently upgrading them into long-lived `PersonSession` rows would extend impersonation past its intended lifetime. The impersonator can simply re-impersonate after the rollout.
-2. Otherwise, create a `PersonSession` from the cookie's `UserLogin` name (the ticket's `Name` field). Reissue the cookie in the new format (session Guid only). The user is not forced to log in again.
-3. `LastStepUpAuthenticationDateTime` and `LastMultiFactorAuthenticationDateTime` start null on the upgraded row, so it reports `Authenticated` (not `Elevated` or `MultiFactor`) until the user next authenticates. The legacy `IsTwoFactorAuthenticated` flag is intentionally not honored on upgrade because the old cookie does not carry a timestamp, so we cannot decide whether it should count as "recent" under the new model.
+2. Look up an existing `PersonSession` by the composite key `(UserLoginId, IssuedDateTime, CreationSource = Legacy)` where `UserLoginId` is resolved from the ticket's `Name` field and `IssuedDateTime` is taken directly from the ticket's `IssueDate`. If found, use it. If not found, create a new `PersonSession` with `IssuedDateTime = ticket.IssueDate` and `CreationSource = Legacy`. The composite lookup is what makes repeated legacy-cookie presentations (from clients that do not honor `Set-Cookie`, see the Mobile/TV discussion under "Cookie container") resolve to the *same* `PersonSession` row across requests rather than spamming new rows. Constraining the lookup to `CreationSource = Legacy` isolates the upgrade row from any live `Component`, `UserToken`, `Impersonation`, or `ApiKey` session that happens to share `(UserLoginId, IssuedDateTime)` — collision is unlikely but the constraint costs nothing and removes the risk entirely. Using the ticket's own `IssueDate` (which is part of the encrypted payload and therefore stable across reads of the same cookie) as `PersonSession.IssuedDateTime` also makes the `RejectAuthenticationCookiesIssuedBefore` kill-switch correct for upgraded sessions for free.
+3. Always reissue the cookie in the new format on the response. Browser clients pick this up on the next request via the standard cookie jar and migrate naturally. Clients that do not honor `Set-Cookie` keep sending the legacy cookie; the lookup in step 2 ensures they continue to resolve to the same `PersonSession` indefinitely with no row spam.
+4. The user is not forced to log in again.
+5. `LastStepUpAuthenticationDateTime` and `LastMultiFactorAuthenticationDateTime` start null on a newly upgraded row, so it reports `Authenticated` (not `Elevated` or `MultiFactor`) until the user next authenticates. The legacy `IsTwoFactorAuthenticated` flag is intentionally not honored on upgrade because the old cookie does not carry a timestamp, so we cannot decide whether it should count as "recent" under the new model.
+
+### Cookie reissue
+
+Persistent cookies have a bounded browser-side lifetime (the formula under "New cookie format"). For a session that lives longer than that lifetime, the cookie must be reissued periodically as the user remains active so the browser-side `Expires` cap slides forward and the user is not logged out by cookie expiration alone. The reissue cadence matches what `FormsAuthentication` does today by default (`<forms slidingExpiration="true">`, reissue at the cookie's half-life): a comparable user experience to current Rock with no rotation surprises.
+
+On every authenticated request, the cookie validation path decrypts the cookie and reads `iat` from the payload:
+
+1. **If `now - iat >= FormsAuthentication.Timeout / 2`** (i.e. the cookie is at or past its half-life — 15 days with the default 30-day timeout), the response emits a fresh `Set-Cookie` with:
+   - A new `iat` (current `RockDateTime.Now`).
+   - A refreshed `Expires` attribute computed from the same `MIN` formula under "New cookie format" (the cap slides forward because `Now` has advanced).
+   - The same `sid` (the session itself does not change).
+2. **If `now - iat < FormsAuthentication.Timeout / 2`**, no reissue. The existing cookie continues to flow.
+
+Reissue MUST NOT change `PersonSession.IssuedDateTime`. That column reflects the session's origin and is what the `RejectAuthenticationCookiesIssuedBefore` kill switch checks against. Reissue only refreshes the cookie's `Expires` attribute and the embedded `iat`.
+
+Additional reissue triggers, orthogonal to the half-life check (any of these forces reissue on the current response regardless of `iat` age):
+
+- The cookie decrypted via an `OldDataEncryptionKey{n}` (`Rock/Security/Encryption.cs:99-110`) rather than the current `DataEncryptionKey`. Reissue with the current key drains rotated keys out of circulation.
+- The cookie's payload `v` is older than the current payload version. Reissue at the current `v` migrates the payload forward.
+- The legacy-cookie upgrade path fired (see "Cookie upgrade path"). The legacy `FormsAuthenticationTicket` is replaced with the new format.
+
+Mobile and TV clients do not honor `Set-Cookie` on non-login responses (see "Cookie container"). The reissue `Set-Cookie` is emitted regardless; mobile/TV clients ignore it and continue sending the original cookie value. The composite-key lookup under "Cookie upgrade path" keeps their resolution correct, and Mobile clients pick up the new cookie organically at the next launch-packet call.
+
+The reissue logic lives inside `PersonSessionService.SetAuthCookie` / `GetCookieValue` so callers never see the decision; they hand the service a `PersonSession` and the service does the right thing with the response.
 
 ### Impersonation: two distinct cases
 
@@ -298,7 +407,7 @@ Rock currently uses the term "impersonation" for two different flows that share 
 - `AdditionalSettingsJson` carries no impersonation-restore state; there is no impersonator session to restore to.
 - `AdditionalSettingsJson` carries a reference to the originating `PersonToken.Guid`. On every subsequent request while this session is active, the platform re-validates the token's page-scope, expiration, and revocation status against the source `PersonToken` row. If the user navigates to a page the token does not authorize, they receive a not-authorized error (matching today's behavior). If the token has since expired or been revoked, the session is marked inactive on the next request.
 - `PersonToken.TimesUsed` is incremented only when `rckipid` is present in the query string AND differs from the token referenced by the current session. This is what makes `UsageLimit = 1` work for an entire browsing session: the token is "consumed" once to establish the session; subsequent page navigation does not re-consume it because the URL no longer carries `rckipid` after the initial redirect. The user can re-click the email link until they sign out (or the session expires), at which point a re-click attempts to use the token again and would fail if the usage limit has been reached.
-- The session is not restorable. `GetImpersonatorSession` returns null, `EndImpersonationAndRestore` is a no-op.
+- The session is not restorable. `GetImpersonatorSession` returns null, `EndImpersonationAndRestore` throws an exception.
 
 **Distinguishing the two.** Both flows produce a `PersonSession` and both make `IsImpersonated` return true. `CreationSource` is the authoritative discriminator: `Impersonation` for admin (restorable), `UserToken` for email-link (not restorable), `Component` for normal authenticated sessions. The cookie does not need to carry this distinction.
 
@@ -306,7 +415,7 @@ Rock currently uses the term "impersonation" for two different flows that share 
 
 - **Pattern A** (most callers): the code only wants to know "is this an impersonated session?". This is a simple boolean read against `PersonSession`. `IsImpersonated()` covers it. `Rock/Web/UI/RockPage.cs:2076`, `Rock/Model/CRM/UserLogin/UserLogin.WebForms.cs:101`, and similar audit-and-display call sites are Pattern A.
 - **Pattern B** (request-init only): the code is inspecting the `rckipid` query parameter on an incoming request to decide whether to start a new session. This belongs at a single seam, `PersonSessionService.ProcessImpersonationToken()`, which applies these rules in order:
-  1. If the token is invalid, expired (by `ExpireDateTime` or `UsageLimit`), or revoked: mark the current session inactive (so the user is not silently left "still logged in as themselves" with a misleading impression that the token worked) and return redirect-required so the `rckipid` is stripped from the URL. The resulting page load is anonymous; the user can authenticate normally if they have other means. This matches the existing behavior of the `rckipid` flow when a token is no longer usable.
+  1. If the token is invalid, expired (by `ExpireDateTime` or `UsageLimit`), or revoked: log them out of the current session (so the user is not silently left "still logged in as themselves" with a misleading impression that the token worked) and return redirect-required so the `rckipid` is stripped from the URL. The resulting page load is anonymous; the user can authenticate normally if they have other means. This matches the existing behavior of the `rckipid` flow when a token is no longer usable.
   2. If the current session has `CreationSource = UserToken` and its target person matches the token's target, do NOT create a new session row, but DO return redirect-required so the token is stripped from the URL. The session continues unchanged. This both protects against row-spam and prevents the token from persisting in browser history when the same `rckipid` URL is followed across multiple page loads.
   3. If the current session has `CreationSource = Impersonation` (admin impersonation), abandon the impersonation session and create a fresh `UserToken` session for the token, **even if the token's target matches the admin or the currently-impersonated person**. Admin impersonation carries restore state, audit context, and MFA recency from the admin's prior session that should not be inherited by a token-driven access. The case is an edge that should not happen in normal flows, but explicit handling avoids subtle confusion.
   4. If the current session has `CreationSource = Component` AND the token's target matches the currently-logged-in person, do NOT change session state but DO return redirect-required so the token is stripped from the URL. The session is already sufficient to view the content; reissuing a cookie or creating a row would be churn, and no authentication event has actually occurred. The redirect prevents the token from persisting in browser history and from being re-processed on every subsequent page load. `LastActivityDateTime` advancement is unaffected because it happens through the activity bus task, not through this seam.
@@ -315,16 +424,35 @@ Rock currently uses the term "impersonation" for two different flows that share 
 
 Pattern B callers MUST go through this helper and MUST NOT reimplement token processing. `Rock/Web/UI/RockPage.cs:2111` (`ProcessImpersonation`) is the canonical Pattern B caller and is the single highest-priority migration target during implementation. The `rckipid=` prefix parsing in `Rock.Rest/ApiControllerBase.cs:103`, `Rock/Web/HttpModules/RockGateway.cs:499`, and the `UserLogin.WebForms.cs` helpers are also Pattern B and must move to the same seam.
 
-This subsection answers most of the impersonation Blocker, but the `PersonSession` representation question (flag vs enum vs side table) is still open and is what the user's next prompt is intended to settle.
+This subsection answers the impersonation Blocker by representing impersonation state via `CreationSource` plus `AdditionalSettingsJson` (for restore state), not via a dedicated flag or side table. Remaining product-level subquestions (MFA recency on `UserToken` sessions; `PersonToken` write on admin impersonation) are tracked under Open Questions.
 
-### Cookie container: WebForms FormsAuthenticationTicket vs custom cookie (TODO)
+### Cookie container
 
-The spec deliberately leaves the underlying cookie container undecided. Two options are on the table:
+Rock moves off `FormsAuthenticationTicket` for the auth cookie and onto a custom container produced by the existing `Rock.Security.Encryption.EncryptString` / `DecryptString` pair (`Rock/Security/Encryption.cs`). The motivating reasons:
 
-1. **Keep `FormsAuthenticationTicket`.** Smallest change. The ticket's `Name` field carries the session Guid (as a string), the rest of the ticket is ignored. Compatible with the existing WebForms auth pipeline and the `FormsAuthentication.SignOut()` / `FormsAuthentication.Encrypt()` plumbing already in `Authorization.cs`.
-2. **Switch to a custom cookie format.** A signed, opaque token (e.g. session Guid + integrity HMAC, or a JWT). Decouples Rock from the WebForms auth pipeline and is portable to .NET Core / .NET 8.
+- **Cross-branch cookie interoperability.** A separate .NET Core branch of Rock is in progress. `FormsAuthenticationTicket` and `FormsAuthentication.Encrypt` do not exist on .NET Core, so a continued reliance on them would force a second cookie migration during the eventual port. `Encryption.EncryptString` uses only primitives present identically on .NET Framework and .NET Core (`Aes.Create`, `HMACSHA256`, HKDF math via `System.Security.Cryptography`), so the same cookie format validates on both branches today and on the .NET Core port tomorrow. Production deployments can run mixed-version farms during cutover without forced re-authentication.
+- **Cryptographic adequacy.** `EncryptString` V2 is AES-256-CBC + HMAC-SHA256 in encrypt-then-MAC construction with HKDF-derived ENC/MAC keys, a `"V2"` footer for O(1) format detection, and constant-time tag comparison before any decryption attempt (verifies at `Rock/Security/Encryption.cs:503`). This is cryptographically equivalent to AES-GCM for our purposes — confidentiality plus authentication, no padding-oracle exposure — and reuses code already audited and shipping in Rock for attribute encryption, financial fields, and the like. No new crypto code to write or review.
+- **Key infrastructure already exists.** The `DataEncryptionKey` web.config app setting is the root secret, already shared across web-farm nodes, and already supports rotation via `OldDataEncryptionKey{n}` app settings (`Rock/Security/Encryption.cs:99-110`). No new configuration is introduced.
 
-The motivating reason to consider option 2 now: `FormsAuthenticationTicket` is a WebForms-era construct that has no direct equivalent in .NET Core. If Rock is going to change the cookie payload anyway as part of this work, it might be worth changing the container at the same time so that the eventual .NET Core port does not need a second cookie migration. The countervailing argument is scope: container change widens the blast radius of this spec significantly (encryption keys, machine-key portability across web farm nodes, third-party tools that read the cookie, etc.). Decision deferred. Capture in Open Questions.
+**Cookie value layout.** The plaintext is the minified JSON described under "New cookie format" above. The cookie value is `Encryption.EncryptString(plaintext)` — a base64 string carrying `[ivLen][IV][CIPHERTEXT][TAG]["V2"]`. A 36-character Guid payload produces roughly 116 characters of cookie value; the entire JSON envelope adds ~20 plaintext bytes and a single base64 block to the encrypted result. This is small enough not to threaten the cumulative request-header limits Rock operates within (IIS default 16KB across all headers).
+
+**Auth pipeline integration during the dual-reader window.** During and after the rollout, both the new format and the legacy `FormsAuthenticationTicket` format must be accepted. The integration uses the same hook point Rock already relies on for the `RejectAuthenticationCookiesIssuedBefore` kill switch (`RockWeb/App_Code/Global.asax.cs:582-604`), avoiding any web.config change to the modules pipeline:
+
+1. `Application_BeginRequest` reads the `.ROCK` cookie. Format detection is cheap — a base64-decode plus a `"V2"` footer check distinguishes new from legacy without a full crypto operation.
+2. **New-format cookie:** decrypt via `Encryption.DecryptString`, parse the JSON, load the `PersonSession`, run the `RejectAuthenticationCookiesIssuedBefore` check against `PersonSession.IssuedDateTime`, and set `HttpContext.User` to an authenticated principal. `FormsAuthenticationModule.OnEnter` short-circuits at its `Context.User != null && Context.User.Identity.IsAuthenticated` guard and does not attempt to decrypt the cookie with the machine key. No `Request.Cookies` mutation is required.
+3. **Legacy cookie:** leave the cookie untouched in `BeginRequest` (apart from the existing kill-switch check). `FormsAuthenticationModule` decrypts as it does today and sets `Context.User` to a `FormsIdentity`. `Application_PostAuthenticateRequest` detects the `FormsIdentity`, runs the upgrade path defined under "Cookie upgrade path" above (create the `PersonSession` from the ticket's `Name`, reissue the cookie in the new format), and replaces `Context.User` with the authenticated principal backed by the new `PersonSession`.
+4. **No cookie:** anonymous request, no work to do.
+
+This pattern reuses the established precedent at `Global.asax.cs:582-604` (intercept in `BeginRequest`, before `FormsAuthenticationModule` runs) rather than removing the module from the pipeline. Rollback is "revert C# in `Global.asax.cs`" — no web.config changes, no IIS configuration changes.
+
+**Mobile/TV cookie reissue.** Rock Mobile and Rock TV treat the `.ROCK` cookie value as an opaque string handed back by the login endpoint and **do not** honor `Set-Cookie` headers from non-login responses (verified by client-code review, not yet by live testing). Cookie migration for these clients therefore cannot rely on the `Set-Cookie` path that browsers use. Two separate stories:
+
+- **Rock Mobile** has a natural migration point via `MobileController.GetLaunchPacket` at `Rock.Rest\Controllers\MobileController.cs:78`. The endpoint is `[Authenticate]`-gated, so the client presents its current `.ROCK` cookie; the server resolves the session and returns a fresh `CurrentPerson.AuthToken` (`MobileController.cs:130`) which the Mobile client stores back as its `.ROCK` cookie value on next launch. Under the new model this same flow naturally produces a new-format token when called with a legacy cookie, so Mobile clients migrate at their next app launch with no client-side change required. Worst-case clients (users who don't relaunch the app for an extended period) continue to work via the legacy-cookie resolution path described under "Cookie upgrade path."
+- **Rock TV** has an analogous server-side `TvController.GetLaunchPacket` (`Rock.Rest\v2\TvController.cs:858`) that *does* return a fresh `AuthToken` in the response, but the TV client (per inspection of the client repo) does NOT use the launch-packet `AuthToken` at all — only the token returned by the initial login is ever used as the `.ROCK` cookie value. TV clients therefore continue to send the original (legacy) cookie indefinitely until either (a) the user signs out and back in (organic re-auth on the new format), (b) a future TV client release wires up the launch-packet token, or (c) the legacy reader is sunset and the user is forced to re-auth. All three are acceptable end-states; the spec preserves correctness in the meantime via the composite-key lookup in step 2 of the upgrade path.
+
+Both findings are based on reading the respective client repos. Hands-on verification is not required: the design's composite-key lookup makes the legacy resolution correct whether or not either client honors the launch-packet token, and the legacy reader is on a defined sunset path regardless (see Deprecations and removals). The Mobile/TV behavior only affects *how quickly* clients migrate organically, not whether the design works.
+
+**`FormsAuthentication.SignOut` callers.** Logout paths that currently call `FormsAuthentication.SignOut()` are routed through `PersonSessionService` (which marks the current `PersonSession` inactive and clears the `.ROCK` cookie via `Response.Cookies`). The static helper itself remains usable during the dual-reader window for any code paths that still need it; full removal can happen after the legacy format is retired.
 
 ### Deprecations and removals
 
@@ -337,17 +465,22 @@ The motivating reason to consider option 2 now: `FormsAuthenticationTicket` is a
 | `UserLastActivityTransaction` | Remove (already deprecated in v13). |
 | `UpdateUserLastActivity` bus task | Deprecate. Add a new `UpdatePersonSessionLastActivity` bus task that updates `PersonSession.LastActivityDateTime`. The new task name pairs with the new entity, and a clean split (rather than a property-deprecation pass on the old task) avoids leaving the legacy message class half-meaningful for plugins still on the old API. |
 | `UserLogin.IsAuthenticated`, `UserLogin.IsTwoFactorAuthenticated` | Mark `[Obsolete]` and `[RockObsolete( "X.Y" )]`. Both properties keep their current signatures but always return `false` after the change. Their original semantics depended on the WebForms auth ticket's `UserData` payload (which the new cookie format does not carry), so faithful preservation is not possible. Known consumers: `Rock.Blocks/Security/ChangePassword.cs:132,228`, `RockWeb/Blocks/Security/Authorize.ascx.cs`, `Rock/Web/UI/RockPage.cs:941`. Each is updated to check the current session via `RockRequestContext` (and `MeetsRequirement()` where the original intent was "user authenticated recently / with MFA"). Lava templates that referenced these properties on a `UserLogin` will silently get `false` after the upgrade; the visible breakage is intentional so template authors notice and migrate. |
+| Legacy cookie upgrade seam (`PersonSessionService.UpgradeLegacyCookie` and internal `FormsAuthenticationTicket` decryption helpers) | Ship marked `[Obsolete]` and `[RockObsolete( "20.0" )]` from day one. The methods are introduced specifically to bridge the rollout window and have no long-term role. Per the standard Rock deprecation cadence this targets actual removal around Rock v23. The timing is safe because the default forms-authentication cookie lifetime is 30 days (`web.config:73` sets `timeout="43200"` minutes; `Authorization.GetAuthCookie` at `Rock/Security/Authorization.cs:812,927` uses `FormsAuthentication.Timeout` as the default; the `expiresIn` overload at `Rock.Blocks/Security/Login.cs:730` has no callers passing a non-null value today), so after any Rock instance has been on a release that issues only new-format cookies for at least 30 days, every legacy `.ROCK` cookie in the wild has organically expired or been replaced. Mobile clients are expected to migrate organically at next app launch via `MobileController.GetLaunchPacket` (based on inspection of the client repo). TV clients that never re-authenticate will lose their session at removal and be prompted to log in; this is acceptable given the multi-year grace window and the option for a TV client release to wire up the launch-packet token any time before sunset. The `CreationSource = Legacy` enum value is NOT deprecated alongside — it remains in place so historical `PersonSession` rows continue to report their origin correctly after the upgrade code is removed. |
 
 `UserLogin.LastLoginDateTime` is set only on actual credential entry (password or impersonation) and is preserved as-is.
 
+**Legacy login/logout helpers.** Beyond the items in the table above, the implementation MUST mark with `[Obsolete]` and `[RockObsolete( "20.0" )]` any existing login/logout method that operates directly on `HttpContext`, `FormsAuthentication`, or the auth cookie — at minimum `Authorization.SetAuthCookie` (and its overloads), `Authorization.GetAuthCookie`, `Authorization.GetSimpleAuthCookie`, and `Authorization.SignOut`. Each `[Obsolete]` message SHOULD name its replacement (e.g. "Use `PersonSessionService.SetAuthCookie` instead") so migrators do not have to guess. The implementer is expected to discover additional helpers in the same family during the migration sweep and apply the same treatment to each. The obsolete markers serve two purposes: (1) compiler warnings surface any internal Rock callers that were missed during the sweep to `PersonSessionService` / `RockRequestContext`, and (2) plugin authors get a multi-version warning window before the methods are removed (following the standard Rock deprecation cadence, around Rock v23 for v20-marked items).
+
 ### Touch-points to update
+
+The list below is **not exhaustive**. It captures the call sites the design audit specifically identified, but the implementation sweep will surface more — especially once the legacy login/logout helpers are marked `[Obsolete]` (see "Legacy login/logout helpers" above) and the compiler starts flagging every internal caller. Treat this list as a starting set; assume additional touch-points will be discovered and addressed during implementation.
 
 - Active Users block.
 - Rock Cleanup job: mark sessions inactive once `ExpiresDateTime` passes.
 - Data Automation job: re-activate people based on `PersonSession.LastActivityDateTime`.
 - All places with bespoke recency / step-up logic move to `MeetsRequirement()`.
 - `AuthController.Login` (`Rock.Rest/Controllers/AuthController.cs:43-58`): **No behavior change.** Continues to produce a `Component` `PersonSession` with MFA recency stamped to `Now`, preserving the endpoint's current `isTwoFactorAuthenticated: true` semantics. The implementer MUST add an engineering note at the method body stating that this endpoint stamps MFA recency without verifying a second factor, that the security concern is intentionally deferred to the v2 REST conversion, and that the v2 replacement endpoint MUST coordinate with the product owner on the desired behavior before going live. Retrofitting the legacy endpoint risks breaking external API consumers that depend on the current MFA-equivalence semantics; a new endpoint is the right place to make the change.
-- `RejectAuthenticationCookiesIssuedBefore` (`RockWeb/App_Code/Global.asax.cs:582-603`, setting in `Rock/Security/SecuritySettings.cs:123`): redirect the kill-switch check from the cookie ticket's `IssueDate` to `PersonSession.IssuedDateTime`. The check fires after cookie validation has resolved a `PersonSession.Guid` and the session is loaded. Sessions whose `IssuedDateTime` precedes the threshold are marked inactive and the cookie is expired. This also closes the long-standing weakness where the kill switch could be bypassed by anyone whose cookie had been reissued (the new `IssuedDateTime` reflects the session's actual start, not the cookie's last refresh). The hook's exact location depends on the cookie-container decision (Open Questions): if we keep `FormsAuthenticationTicket`, the existing `Application_AuthenticateRequest` hook can be extended; if we switch to a custom container, the equivalent check lives in our own validation pipeline.
+- `RejectAuthenticationCookiesIssuedBefore` (`RockWeb/App_Code/Global.asax.cs:582-603`, setting in `Rock/Security/SecuritySettings.cs:123`): redirect the kill-switch check from the cookie ticket's `IssueDate` to `PersonSession.IssuedDateTime`. The check fires after cookie validation has resolved a `PersonSession.Guid` and the session is loaded. Sessions whose `IssuedDateTime` precedes the threshold are marked inactive and the cookie is expired. This also closes the long-standing weakness where the kill switch could be bypassed by anyone whose cookie had been reissued (the new `IssuedDateTime` reflects the session's actual start, not the cookie's last refresh). The check lives in the same `Application_BeginRequest` handler that owns new-format cookie validation (see "Cookie container" in Design); legacy cookies hit the same check after the upgrade path has populated `PersonSession.IssuedDateTime` from `ticket.IssueDate`.
 
 ## Pre-Implementation Research
 
@@ -359,7 +492,7 @@ All items in this list have been resolved through code investigation and product
 
 - **SignalR real-time hub authentication.** Resolved by product decision. The hub consumes the existing `.ROCK` cookie session so the current `PersonSession` is available to hub actions; the hub never creates a session. There is no "login via SignalR" path. See Design ("SignalR real-time hubs").
 - **Stream-based chat authentication via `ChatHelper.GetChatUserAuthenticationAsync`.** Resolved as unrelated. The method returns the data required to log a Rock person in to the external Stream chat service (the mobile app talks directly to Stream). No `PersonSession` interaction; no spec impact.
-- **Auth0 plugin auth flow.** Alive code, no special handling needed. The Auth0 plugin (`Rock.Security.Authentication.Auth0/Auth0Authentication.cs`) is registered via MEF auto-discovery and implements `IExternalRedirectAuthentication`. The OAuth redirect callback flows through the Obsidian Login block (`Rock.Blocks/Security/Login.cs:1350-1355`), which iterates active external-redirect providers, casts to `IExternalRedirectAuthentication`, validates the return, and then calls the standard `Authenticate` method at `Login.cs:718`, which calls `Authorization.SetAuthCookie` at `Login.cs:730` (or `:734` for the no-expiration overload). Auth0 itself never calls `SetAuthCookie`; cookie issuance is centralized in the Login block. Under the new model, the Login block's `SetAuthCookie` call is replaced by the standard `CreateSession` + `SetAuthCookie` pipeline (`CreationSource = Component`), and Auth0 (and any other `IExternalRedirectAuthentication` provider) is covered automatically without Auth0-specific work.
+- **Auth0 plugin auth flow.** Alive code, no special handling needed. The Auth0 plugin (`Rock.Security.Authentication.Auth0/Auth0Authentication.cs`) is registered via MEF auto-discovery and implements `IExternalRedirectAuthentication`. The OAuth redirect callback flows through the Obsidian Login block (`Rock.Blocks/Security/Login.cs:1350-1355`), which iterates active external-redirect providers, casts to `IExternalRedirectAuthentication`, validates the return, and then calls the standard `Authenticate` method at `Login.cs:718`, which calls `Authorization.SetAuthCookie` at `Login.cs:730` (or `:734` for the no-expiration overload). Auth0 itself never calls `SetAuthCookie`; cookie issuance is centralized in the Login block. Under the new model, the Login block's `SetAuthCookie` call is replaced by the standard `StartComponentSession` + save + `SetAuthCookie` pipeline (`CreationSource = Component`), and Auth0 (and any other `IExternalRedirectAuthentication` provider) is covered automatically without Auth0-specific work.
 - **Mobile/TV equivalents of `RejectAuthenticationCookiesIssuedBefore`.** No gap. Mobile and TV clients send the encrypted ticket as a `.ROCK` cookie (not in the `Authorization` header, contrary to the original research finding). The standard `FormsAuthenticationModule` processes the cookie on every ASP.NET request, and `Application_BeginRequest`'s kill-switch check (`Global.asax.cs:582-604`) finds the cookie via `Request.Cookies[FormsCookieName]` and runs against it just like a browser request. `AuthenticateAttribute.cs:215-219` confirms this with the inline comment "this is normally already set from the .ROCK cookie." Verified through the actual cookie-vs-header transport check, correcting the earlier audit assumption. No new open question needed for this.
 - **`FormsAuthentication.RedirectToLoginPage()` callers.** Four callers exist (`Rock/Web/UI/RockPage.cs:954`, `RockWeb/Blocks/Fundraising/FundraisingParticipant.ascx.cs:877`, `RockWeb/Blocks/Fundraising/FundraisingOpportunityView.ascx.cs:555`, `RockWeb/Blocks/CheckIn/AttendanceSelfEntry.ascx.cs:496`). All four are generic fallback redirects fired when the site has no configured login page; none inspect the cookie or assume anything about its format. No spec impact.
 
@@ -367,18 +500,31 @@ All items in this list have been resolved through code investigation and product
 
 The implementation MUST be accompanied by unit and integration tests covering the lifecycle, recency, and impersonation behaviors described in Design. This section is a starter; it is expected to grow during implementation as additional edge cases surface.
 
+### Test classification
+
+Rock has three flavors of test. Pick the cheapest one that can faithfully exercise the behavior under test; do not use a heavier flavor "just to be safe."
+
+- **Plain unit tests.** Pure logic with no database access. Example: parsing or formatting a `DateTime`, computing a recency threshold from a window in minutes, evaluating an `AuthenticationStrength` mapping given a populated `PersonSession` POCO.
+- **Mocked-database unit tests.** Use Rock's mocked `RockContext` helpers to exercise patterns with limited database needs: simple reads and writes, cache loads (e.g. `CampusCache`), find-or-create logic that does NOT depend on `PreSave` / `PostSave` hooks. A worked example is `Rock.Tests\Model\ScheduleServiceTests.cs` in the `UpdateScheduleDates_ShouldNotCreateScheduleDates_WhenScheduleIsNotActive` test: the test seeds a `Schedule` into a mocked context, the code under test queries for the schedule and writes related records, and the test asserts on the resulting state — all without a real database. The mocked-database pattern is roughly **thousands of times faster** than full integration tests, so prefer it whenever the behavior under test does not depend on `PreSave` / `PostSave` hooks, direct SQL, or transaction semantics.
+- **Full integration tests.** Required when the behavior under test touches `PreSave` / `PostSave` hooks, direct-SQL upserts, transactional save semantics, or external services. Each test in this flavor pays ~5 seconds of Docker startup for the real database, so reserve them for cases where nothing lighter will work.
+
+Concrete guidance for this spec:
+
+- The `InactiveDateTime`-stamped-in-`PreSave` invariant (`Test Plan / PersonSession entity invariants` below) is a **full integration test** — it depends on the `PreSave` hook firing.
+- The `IsActive` defaults, `GetAuthenticationStrength` mapping, and `MeetsRequirement` policy tests are **plain unit tests** — pure logic over a POCO.
+- The `FindOrCreate*` upsert-with-unique-key behavior (`Test Plan / API-key requests` "Concurrent API-key requests..." bullet, and the analogous `InteractionSession` adoption race) is a **full integration test** — it exercises the SQL-driven upsert path.
+- Most session-resolution, composite-key-lookup, and cookie-format tests can be **mocked-database** tests; they read and write `PersonSession` rows but do not rely on hooks.
+
+When new test bullets are added below or during implementation, tag them with the flavor where it is not obvious, so the reviewer knows whether a fast feedback loop is available.
+
 ### `PersonSession` entity invariants
 
 - `IsActive` defaults to `true` on creation.
 - `InactiveDateTime` is null while `IsActive` is true.
 - Setting `IsActive = false` via the service stamps `InactiveDateTime` in `PreSave`. Direct caller writes to `InactiveDateTime` are rejected (compile-time, private setter).
-- `IssuedDateTime` accepts caller-supplied values (test fixtures, backdating).
-- `AdditionalSettingsJson` is round-trip stable under `IHasAdditionalSettings` extension methods.
 
-### Recency thresholds and strength mapping
+### Strength mapping
 
-- `GetElevatedAuthenticationThreshold()` returns `RockDateTime.Now` minus 30 minutes (within tolerance).
-- `GetMultiFactorAuthenticationThreshold()` returns `RockDateTime.Now` minus 60 minutes (within tolerance).
 - `GetAuthenticationStrength` returns `NotAuthenticated` for a null session.
 - `GetAuthenticationStrength` returns `NotAuthenticated` for a session with `IsActive = false`.
 - `GetAuthenticationStrength` returns `Authenticated` when the session is active but neither step-up nor MFA timestamp is within window.
@@ -394,15 +540,15 @@ The implementation MUST be accompanied by unit and integration tests covering th
 
 ### Impersonation: query helpers
 
-- `IsImpersonated` returns false for `CreationSource = Component` or `Unknown`.
+- `IsImpersonated` returns false for `CreationSource = Component`, `Unknown`, `Legacy`, or `ApiKey`.
 - `IsImpersonated` returns true for `CreationSource = Impersonation` or `UserToken`.
 - `GetImpersonatorSession` returns the prior session for an `Impersonation` session whose `AdditionalSettings` carries a valid restore Guid.
 - `GetImpersonatorSession` returns null for `UserToken` sessions.
 - `GetImpersonatorSession` returns null for `Component` sessions.
 - `EndImpersonationAndRestore` on an `Impersonation` session marks the current session inactive and returns the impersonator's session.
 - `EndImpersonationAndRestore` on an `Impersonation` session whose restore reference is dangling (impersonator session deleted or itself inactive) returns null AND marks current inactive (the impersonation does not silently continue).
-- `EndImpersonationAndRestore` on a `UserToken` session is a no-op and returns null.
-- `EndImpersonationAndRestore` on a `Component` session is a no-op and returns null.
+- `EndImpersonationAndRestore` on a `UserToken` throws exception.
+- `EndImpersonationAndRestore` on a `Component` throws exception.
 - Admin-impersonation creation copies `LastStepUpAuthenticationDateTime` from the impersonator's prior session to the new impersonation session.
 - Admin-impersonation creation copies `LastMultiFactorAuthenticationDateTime` from the impersonator's prior session to the new impersonation session.
 - Admin-impersonation creation when the impersonator's prior session has null recency timestamps leaves the new session's recency timestamps null (no-op copy, not stamped to now).
@@ -432,10 +578,17 @@ The full state matrix. The "Current session" column shows `CreationSource`-for-t
 - Cookie carrying a valid `PersonSession.Guid` resolves to that session.
 - Cookie with tampered Guid (signature mismatch) is rejected; request is unauthenticated.
 - Legacy `FormsAuthenticationTicket` with `IsImpersonated = true` is dropped on first request; the request is unauthenticated and no `PersonSession` is created.
-- Legacy `FormsAuthenticationTicket` with `IsImpersonated = false` and a valid `UserLogin` name upgrades to a new `PersonSession` with `CreationSource = Component`.
+- Legacy `FormsAuthenticationTicket` with `IsImpersonated = false` and a valid `UserLogin` name upgrades to a new `PersonSession` with `CreationSource = Legacy` and `IssuedDateTime = ticket.IssueDate`. A second request presenting the same legacy cookie resolves to the same row (composite-key lookup hits) and does not create a duplicate.
 - Upgrade sets `LastStepUpAuthenticationDateTime` and `LastMultiFactorAuthenticationDateTime` to null, so the upgraded session reports `Authenticated`, not `Elevated` or `MultiFactor`.
 - A session whose `IssuedDateTime` is before the `RejectAuthenticationCookiesIssuedBefore` setting is marked inactive on first request and its cookie is expired.
 - A session whose cookie was recently reissued, but whose `PersonSession.IssuedDateTime` precedes the kill-switch threshold, is still rejected (closes the prior bypass-via-reissue weakness).
+- Cookie payload round-trips: a cookie issued with `iat = T` round-trips through encrypt/decrypt and reads back as `iat = T` (plain unit test against `Encryption.EncryptString` / `DecryptString`).
+- A cookie whose `iat` is older than `FormsAuthentication.Timeout / 2` triggers reissue: the response carries a fresh `Set-Cookie` with a new `iat` (current `RockDateTime.Now`) and a refreshed `Expires` attribute. The `sid` is unchanged.
+- A cookie whose `iat` is younger than `FormsAuthentication.Timeout / 2` does NOT trigger reissue: no `Set-Cookie` header on the response.
+- Reissue does NOT change `PersonSession.IssuedDateTime` (kill-switch correctness is preserved across reissue).
+- A cookie that decrypts via an `OldDataEncryptionKey{n}` triggers reissue with the current `DataEncryptionKey`, regardless of `iat` age.
+- A cookie with an older payload `v` than the current payload version triggers reissue at the current `v`, regardless of `iat` age.
+- Non-persistent sessions: the cookie is emitted without an `Expires` attribute and reissue logic does not apply (the cookie dies with the browser anyway).
 
 ### Activity tracking
 
@@ -467,8 +620,8 @@ The full state matrix. The "Current session" column shows `CreationSource`-for-t
 - `GetCookieValue` does NOT access `HttpContext` (verify via a test harness that runs without an `HttpContext.Current`).
 - Device token refresh (re-fetch with valid credentials and an existing active session for the same person) returns a cookie value pointing at the existing session; no new `PersonSession` row is created.
 - Mobile login as a different person on a device that already had a session creates a new `PersonSession` and marks the prior session inactive.
-- `AuthenticateAttribute` resolves a mobile cookie value in the `Authorization` header to a `PersonSession` and triggers the `UpdatePersonSessionLastActivity` bus task.
-- `AuthenticateAttribute` rejects a mobile cookie value whose `PersonSession` is inactive or expired.
+- A mobile/TV request carrying the cookie value as a `Cookie: .ROCK=...` header resolves to a `PersonSession` (via the same `Application_BeginRequest` path used for browser cookies) and triggers the `UpdatePersonSessionLastActivity` bus task. `AuthenticateAttribute` sees the principal already populated and short-circuits.
+- A mobile/TV request whose `PersonSession` is inactive or expired is rejected; the principal is not populated.
 
 ### `InteractionSession` integration
 
@@ -477,6 +630,8 @@ The full state matrix. The "Current session" column shows `CreationSource`-for-t
 - Login as a different person: a new `InteractionSession` is created with the new `PersonSessionId`.
 - Logout: a new `InteractionSession` is created on the next request, with `PersonSessionId = null`.
 - Concurrent first-request race: two requests for the same brand-new browser session arrive concurrently, one anonymous and one with a fresh cookie. Verify that exactly one `InteractionSession` row is created (the unique key on `RockSessionId` mediates), and that the final `PersonSessionId` reflects the authenticated request (either set at insert by the authenticated request, or adopted by update from the anonymous insert).
+- Legacy cookie upgrade with an existing `InteractionSession`: the request arrives with a legacy `.ROCK` cookie and an `InteractionSession` row already exists for the current browser session (typical of a user who was browsing before the rollout). The upgrade resolves or creates a `Legacy` `PersonSession`, and the existing `InteractionSession` is updated in place to set `PersonSessionId` to that session (adopt by update; no new `InteractionSession` row).
+- Legacy cookie upgrade with no existing `InteractionSession`: same upgrade scenario but the first request observed under the new model. The `Legacy` `PersonSession` is created first; the first subsequent `InteractionSession` is stamped at creation with that `PersonSessionId`.
 
 ## Out of Scope
 
@@ -490,9 +645,17 @@ The following came up during design but are explicitly NOT addressed by this spe
 
 A codebase audit surfaced a number of items that need decisions before or during implementation. Severity tags: **Blocker** forces design rework, **Significant** needs a decision before coding, **Minor** is worth capturing but not blocking.
 
-### Cookie container and payload
+### Data model
 
-- **Cookie container: `FormsAuthenticationTicket` vs custom format.** [Significant] See the "Cookie container" subsection under Design. The cookie only needs to carry the session Guid (everything else, including impersonation-restore state, lives on the `PersonSession` row via `AdditionalSettingsJson`), so the container question is purely about WebForms compatibility vs .NET Core portability. Smallest change is keep the ticket and put the session Guid in `Name`. Forward-compatible change is to switch to a custom signed token now (e.g. Guid + HMAC), sparing a second cookie migration during the eventual .NET Core port. Needs a decision before implementation.
+- **Use `InteractionDeviceType` instead of a `UserAgent` column on `PersonSession`?** [Significant] The entity table currently specifies a `UserAgent` (nvarchar) column on `PersonSession`. An alternative is to replace it with an `InteractionDeviceTypeId` FK pointing at the existing `InteractionDeviceType` entity (`Rock/Model/Core/InteractionDeviceType/InteractionDeviceType.cs`), which already stores the raw User-Agent string in `DeviceTypeData` plus parsed friendly values: `ClientType` (e.g. "Browser", "Mobile App"), `OperatingSystem`, and `Application` (browser name and version). `InteractionDeviceType` rows are deduplicated across all `Interaction` rows that share the same UA, so storage cost is amortized.
+
+  Trade-offs:
+  - **Use `InteractionDeviceType` (FK).** Free UA-string deduplication across sessions. Parsed device fields (OS, browser, client type) available without re-parsing on read, which is useful for the "new device" email use case the spec already calls out and for any admin UI listing a person's active sessions. Aligns `PersonSession` with the existing pattern `Interaction` and `InteractionSession` already follow. Cost: one join to retrieve the UA string itself.
+  - **Keep `UserAgent` (nvarchar) on `PersonSession` directly.** One column on the same row; no join required for forensics queries. Independent of the Interaction subsystem (no implicit dependency on `InteractionDeviceType` row population).
+
+  This is a product-level data-model decision.
+
+  **Author's suggested pick:** use `InteractionDeviceType`. The parsed fields are valuable for "new device" notifications and any future admin-facing session UI, deduplication is a clean win, and the pattern matches what Rock already does for Interactions. If adopted, `PersonSession.UserAgent` becomes `PersonSession.InteractionDeviceTypeId` (int FK, nullable, no cascade — `InteractionDeviceType` rows are shared and must not be deleted by a session's lifecycle), and the "Platform-wide PII / retention policy for `UserAgent`" item under Out of Scope shifts to be about `InteractionDeviceType.DeviceTypeData` rather than a new column.
 
 ### Impersonation
 
