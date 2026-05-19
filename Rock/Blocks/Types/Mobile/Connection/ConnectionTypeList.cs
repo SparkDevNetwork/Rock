@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 
@@ -166,11 +167,43 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var requestCounts = clientTypeService.GetConnectionTypeCounts( connectionTypeIds )
                     .ToDictionary( k => k.Key, k => new RockDynamic( k.Value ) );
 
+                var currentPersonAliasId = GetCurrentPerson().PrimaryAliasId;
+                // Calculate due soon and overdue counts per connection type
+                // using the same date logic as ConnectionRequest.IsDueSoon/IsOverdue.
+                var today = RockDateTime.Today;
+                var dueDateCounts = new ConnectionRequestService( rockContext ).Queryable()
+                    .Where( r => connectionTypeIds.Contains( r.ConnectionOpportunity.ConnectionTypeId )
+                        && r.ConnectionState == ConnectionState.Active )
+                    .Where( r => r.ConnectorPersonAliasId == currentPersonAliasId )
+                    .GroupBy( r => r.ConnectionOpportunity.ConnectionTypeId )
+                    .Select( g => new
+                    {
+                        ConnectionTypeId = g.Key,
+                        DueSoonCount = g.Count( r =>
+                            r.DueSoonDate.HasValue
+                            && DbFunctions.TruncateTime( r.DueSoonDate.Value ) <= today
+                            && !( r.DueDate.HasValue && DbFunctions.TruncateTime( r.DueDate.Value ) < today ) ),
+                        OverdueCount = g.Count( r =>
+                            r.DueDate.HasValue
+                            && DbFunctions.TruncateTime( r.DueDate.Value ) < today )
+                    } )
+                    .ToDictionary( x => x.ConnectionTypeId );
+
+                var dueSoonCounts = connectionTypeIds.ToDictionary(
+                    id => id,
+                    id => dueDateCounts.ContainsKey( id ) ? dueDateCounts[id].DueSoonCount : 0 );
+
+                var overdueCounts = connectionTypeIds.ToDictionary(
+                    id => id,
+                    id => dueDateCounts.ContainsKey( id ) ? dueDateCounts[id].OverdueCount : 0 );
+
                 // Process the connection opportunities with the template.
                 var mergeFields = RequestContext.GetCommonMergeFields();
                 mergeFields.AddOrReplace( "ConnectionTypes", types );
                 mergeFields.AddOrReplace( "DetailPage", DetailPageGuid );
                 mergeFields.AddOrReplace( "ConnectionRequestCounts", requestCounts );
+                mergeFields.AddOrReplace( "DueSoonCounts", dueSoonCounts );
+                mergeFields.AddOrReplace( "OverdueCounts", overdueCounts );
 
                 var content = TypeTemplate.ResolveMergeFields( mergeFields );
 
