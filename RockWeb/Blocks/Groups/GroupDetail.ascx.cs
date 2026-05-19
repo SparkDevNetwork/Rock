@@ -519,8 +519,19 @@ namespace RockWeb.Blocks.Groups
                 ShowDialog();
             }
 
-            // Rebuild the attribute controls on postback based on group type
-            if ( pnlDetails.Visible )
+            /*
+                5/19/2026 - MSE
+
+                With autoEdit=true, ShowDetail populates the attribute controls on the initial GET via
+                ShowEditDetails. This rebuild block then re-ran with an empty Group and setValues: false,
+                wiping those values and causing Save to persist empty attributes.
+
+                Fix: gate the rebuild on Page.IsPostBack so it only runs in the postback case it was written for.
+
+                Reason: on initial GET, ShowDetail has already populated the controls; the rebuild is only
+                needed during postbacks so dynamic attribute controls exist for LoadPostData binding.
+            */
+            if ( Page.IsPostBack && pnlDetails.Visible )
             {
                 if ( CurrentGroupTypeId > 0 )
                 {
