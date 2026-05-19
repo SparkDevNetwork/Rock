@@ -17,29 +17,13 @@
                     width="25%"
                     visiblePriority="xs" />
 
-        <TextColumn name="type"
-                    title="Type"
-                    :filter="textValueFilter"
-                    :sortValue="getBlockTypeAndPathValue"
-                    :filterValue="getBlockTypeAndPathValue"
-                    :quickFilterValue="getBlockTypeAndPathValue"
-                    width="34%"
-                    visiblePriority="xs">
-            <template #format="{ row }">
-                <div>
-                    <div>
-                        <span class="text-semibold">{{ row.blockTypeName }}</span>
-                    </div>
-                    <div v-if="row.path">
-                        {{ row.path }}
-                    </div>
-                </div>
-            </template>
-
-            <template #skeleton>
-                <div class="skeleton skeleton-text skeleton-rounded" />
-            </template>
-        </TextColumn>
+        <HighlightDetailColumn name="type"
+                               title="Type"
+                               field="blockTypeName"
+                               detailField="path"
+                               :filter="textValueFilter"
+                               width="34%"
+                               visiblePriority="xs" />
 
         <TextColumn name="zone"
                     title="Zone"
@@ -81,7 +65,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, DeleteColumn, SecurityColumn, ButtonColumn, textValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, HighlightDetailColumn, TextColumn, DeleteColumn, SecurityColumn, ButtonColumn, textValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LayoutBlockListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LayoutBlockList/layoutBlockListOptionsBag";
@@ -129,16 +113,6 @@
         if (rowId) {
             Rock.controls.modal.show(undefined, `/BlockProperties/${rowId}?t=Block Properties`);
         }
-    }
-
-    /**
-     * Gets the block type and path value for a row.
-     *
-     * @param row The row to get the value for.
-     * @return The block type and path value as a single string.
-     */
-    function getBlockTypeAndPathValue(row: Record<string, unknown>): string {
-        return `${row.blockTypeName} ${row.path}`;
     }
 
     // #endregion

@@ -13,37 +13,28 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
-        <Column name="name"
-                title="Name"
-                sortValue="{{ row.name }} {{  row.description }}"
-                :filter="textValueFilter"
-                filterValue="{{ row.name }} {{  row.description }}"
-                quickFilterValue="{{ row.name }} {{  row.description }}"
-                width="30%">
+        <HighlightDetailColumn name="name"
+                               title="Name"
+                               field="name"
+                               detailField="description"
+                               :filter="textValueFilter"
+                               width="30%">
             <template #format="{ row }">
                 <div class="d-flex flex-fill align-items-center">
                     <div v-if="config.options?.showSiteIcon !== 'False'" class="mr-2 flex-shrink-0"
                          :style="{ 'width': '50px', 'height': '50px', 'background-image': `url('${row.siteIconUrl}')`, 'background-size': 'cover' }">
                     </div>
                     <div class="flex-grow-1">
-                        <b>{{ row.name }}</b> <br>
-                        {{ row.description }}
+                        <div class="highlight-title">{{ row.name }}</div>
+                        <div class="highlight-detail">{{ row.description }}</div>
                     </div>
-                </div>
-            </template>
-
-            <template #skeleton>
-                <div class="d-flex flex-fill align-items-center">
-                    <div class="mr-2 flex-shrink-0 skeleton skeleton-xs"
-                         style="width: 24px; height: 24px; border-radius: 12px;" />
-                    <div class="skeleton skeleton-text skeleton-sm skeleton-rounded flex-grow-1" />
                 </div>
             </template>
 
             <template #export="{ row }">
                 {{ row.name }}
             </template>
-        </Column>
+        </HighlightDetailColumn>
 
         <TextColumn v-if="showWebColumns"
                     name="domain"
@@ -85,7 +76,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, pickExistingValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, HighlightDetailColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, pickExistingValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { SiteListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteList/siteListOptionsBag";
