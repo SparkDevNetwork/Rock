@@ -120,7 +120,7 @@ namespace Rock.Bus.Consumer
             {
                 try
                 {
-                    if ( !oldActivity.IsStopped )
+                    if ( oldActivity == null || !oldActivity.IsStopped )
                     {
                         System.Diagnostics.Activity.Current = oldActivity;
                     }
