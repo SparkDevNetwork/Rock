@@ -57,6 +57,9 @@ export type BinaryFileTypeBag = {
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
+    /** Gets or sets a value indicating whether the type is publicly viewable. */
+    isPublicViewable: boolean;
+
     /** Gets or sets a flag indicating if this BinaryFileType is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
@@ -83,7 +86,4 @@ export type BinaryFileTypeBag = {
 
     /** Gets or sets the storage mode Rock.Model.EntityType. */
     storageEntityType?: ListItemBag | null;
-
-    /** Gets or sets a value indicating whether the type is publicly viewable. */
-    isPublicViewable: boolean
 };
