@@ -295,6 +295,27 @@ namespace Rock.Blocks.Engagement
                 this.PersonPreferences.Save();
             }
 
+            var connectorPerson = new PersonService( RockContext ).Get( PageParameter( PageParameterKey.Connector ), !PageCache.Layout.Site.DisablePredictableIds );
+            if ( connectorPerson != null )
+            {
+                var connectorListItemBag = new ListItemBag
+                {
+                    Text = $"{connectorPerson.FullName.ToPossessive()} Requests",
+                    Value = connectorPerson.PrimaryAliasGuid.ToString()
+                };
+
+                options.SelectedConnector = connectorListItemBag;
+                this.PersonPreferences.SetValue( PreferenceKey.SelectedConnector, connectorPerson.PrimaryAliasGuid.ToString() );
+
+                // Connector Grouping is intentionally hidden in My Connections View.
+                if ( !IsMyConnectionsMode )
+                {
+                    this.PersonPreferences.SetValue( PreferenceKey.SelectedGroupByMode, "connectorGrouping" );
+                }
+
+                this.PersonPreferences.Save();
+            }
+
             var campusLabels = CampusCache.All()
                 .Select( c => new CampusLabelBag
                 {
@@ -396,9 +417,6 @@ namespace Rock.Blocks.Engagement
             var connectionTypeIdKey = IdHasher.Instance.GetHash( connectionType.Id );
             SetDefaultPreferences( connectionTypeIdKey );
 
-            options.ConnectionTypeIdKey = connectionTypeIdKey;
-            options.RequiresPlacementGroupToComplete = connectionType.RequiresPlacementGroupToConnect;
-            options.IsSequentialStatusMode = connectionType.IsSequentialStatusEnforced;
             options.EnabledViews = connectionType.EnabledViews;
 
             // If a SelectedView was provided as a page parameter, validate it against
@@ -426,117 +444,6 @@ namespace Rock.Blocks.Engagement
                 options.ConnectionOpportunityDetailsFromFilter = GetConnectionOpportunityDetailBag( connectionOpportunity );
             }
 
-            options.CanEditConnectionRequests = CanEditConnectionRequests( connectionType, connectionOpportunity );
-
-            var connectorPerson = new PersonService( RockContext ).Get( PageParameter( PageParameterKey.Connector ), !PageCache.Layout.Site.DisablePredictableIds );
-            if ( connectorPerson != null )
-            {
-                var connectorListItemBag = new ListItemBag
-                {
-                    Text = $"{connectorPerson.FullName.ToPossessive()} Requests",
-                    Value = connectorPerson.PrimaryAliasGuid.ToString()
-                };
-
-                options.SelectedConnector = connectorListItemBag;
-                this.PersonPreferences.SetValue( PreferenceKey.SelectedConnector, connectorPerson.PrimaryAliasGuid.ToString() );
-                this.PersonPreferences.SetValue( PreferenceKey.SelectedGroupByMode, "connectorGrouping" );
-                this.PersonPreferences.Save();
-            }
-
-            List<ConnectionState> ignoredConnectionStates = new List<ConnectionState>();
-
-            if ( !connectionType.EnableFutureFollowup )
-            {
-                ignoredConnectionStates.Add( ConnectionState.FutureFollowUp );
-            }
-
-            // Exclude inactive and archived connector groups. A global query filter sets the
-            // ConnectorGroup navigation to null for archived groups, so guard against null as well.
-            // Also exclude inactive/archived group members so they do not appear as connectors.
-            var connectors = connectionType.ConnectionOpportunities
-                .Where( o => o.IsActive )
-                .SelectMany( o => o.ConnectionOpportunityConnectorGroups )
-                .Where( g => g.ConnectorGroup != null && g.ConnectorGroup.IsActive && !g.ConnectorGroup.IsArchived )
-                .SelectMany( g => g.ConnectorGroup.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived ) )
-                .DistinctBy( m => m.Person.PrimaryAlias.Guid )
-                .Select( m => new ListItemBag
-                {
-                    Value = m.Person.PrimaryAlias.Guid.ToString(),
-                    Text = m.Person.FullName
-                } )
-                .ToList();
-
-            var currentPersonAliasGuid = RequestContext.CurrentPerson.PrimaryAlias?.Guid;
-
-            // Add current person to the connector list to mirror Webforms
-            if ( currentPersonAliasGuid.HasValue && !connectors.Any( c => c.Value == currentPersonAliasGuid.Value.ToString() ) )
-            {
-                connectors.Add( new ListItemBag
-                {
-                    Text = RequestContext.CurrentPerson.FullName,
-                    Value = currentPersonAliasGuid.Value.ToString()
-                } );
-            }
-
-            options.AllPossibleConnectors = connectors;
-            options.ConnectionOpportunities = connectionType.ConnectionOpportunities.Where( o => o.IsActive ).ToListItemBagList();
-            options.ConnectionStates = typeof( ConnectionState ).ToEnumListItemBag()
-                .Where( i => !ignoredConnectionStates.Contains( ( ConnectionState ) i.Value.AsInteger() ) )
-                .ToList();
-            options.RequestSourceItems = connectionType.ConnectionTypeSources.ToListItemBagList();
-            options.IsFutureFollowUpEnabled = connectionType.EnableFutureFollowup;
-            options.IsRequestSecurityEnabled = connectionType.EnableRequestSecurity;
-            options.AreCelebrationsEnabled = connectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.Celebration );
-            options.AreRemindersEnabled = connectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.Reminder );
-            options.AreGroupPlacementsEnabled = connectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.GroupPlacement );
-
-            var manualWorkflows = new List<(ConnectionWorkflow Workflow, Guid? OpportunityGuid)>();
-            var authorizedWorkflowItems = new List<ConnectionWorkflowBag>();
-
-            manualWorkflows.AddRange( connectionType.ConnectionWorkflows
-                .Where( w => w.TriggerType == ConnectionWorkflowTriggerType.Manual && ( w.WorkflowType.IsActive ?? true ) ) // Mirroring Webforms by setting IsActive to true by default.
-                .Select( w => (w, ( Guid? ) null) )
-                .ToList() );
-
-            manualWorkflows.AddRange( connectionType.ConnectionOpportunities
-                .SelectMany( o => o.ConnectionWorkflows.Select( w => (Workflow: w, OpportunityGuid: ( Guid? ) o.Guid) ) )
-                .Where( x => x.Workflow.TriggerType == ConnectionWorkflowTriggerType.Manual && ( x.Workflow.WorkflowType.IsActive ?? true ) ) // Mirroring Webforms by setting IsActive to true by default.
-                .ToList()
-            );
-
-            foreach ( var manualWorkflow in manualWorkflows )
-            {
-                if ( manualWorkflow.Workflow.WorkflowType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
-                {
-                    authorizedWorkflowItems.Add( new ConnectionWorkflowBag
-                    {
-                        ListItemBag = new ListItemBag
-                        {
-                            Text = manualWorkflow.Workflow.WorkflowType.Name,
-                            Value = manualWorkflow.Workflow.Guid.ToString(),
-                            Category = manualWorkflow.Workflow.ConnectionTypeId.HasValue ? "Connection Type Workflows" : "Connection Opportunity Workflows"
-                        },
-                        ConnectionOpportunityGuid = manualWorkflow.OpportunityGuid
-                    } );
-                }
-            }
-
-            options.WorkflowItems = authorizedWorkflowItems;
-
-            options.ConnectionStatuses = connectionType.ConnectionStatuses.Where( s => s.IsActive )
-                .Select( s => new ConnectionStatusBag
-                {
-                    Guid = s.Guid,
-                    IdKey = s.IdKey,
-                    Name = s.Name,
-                    HighlightColor = s.HighlightColor,
-                    Order = s.Order,
-                    IsNoteRequiredOnCompletion = s.IsNoteRequiredOnCompletion,
-                    IsDefaultStatus = s.IsDefault
-                } )
-                .OrderBy( s => s.Order )
-                .ToList();
-
             // Build the available groupings for each grouping dimension. These are
             // used by the board view to render columns for groups that may not have
             // any data rows (e.g., a status with no connection requests).
@@ -559,7 +466,6 @@ namespace Rock.Blocks.Engagement
                 .ToList();
 
             // Connector groupings — all connectors from connector groups plus the current person.
-            // TODO - Consider combining this with all possible connectors logic above.
             var connectorGroupings = connectionType.ConnectionOpportunities
                 .Where( o => o.IsActive )
                 .SelectMany( o => o.ConnectionOpportunityConnectorGroups )
@@ -656,13 +562,6 @@ namespace Rock.Blocks.Engagement
                 };
             } ) );
 
-            options.ConnectionActivities = connectionType.ConnectionActivityTypes.Where( at => at.IsActive )
-                .Select( a => new ConnectionActivityTypeBag
-                {
-                    ActivityType = a.ToListItemBag(),
-                    PersonNoteCreationBehavior = a.PersonNoteCreationBehavior
-                } ).ToList();
-
             // Reuse the same attribute set and per-attribute opportunity scoping that the
             // grid-column dropdown was just populated from. Every attribute available as a
             // grid column is also available as a filter, and we want the client to apply
@@ -734,9 +633,6 @@ namespace Rock.Blocks.Engagement
             {
                 options.ConnectionTypeOptionsByIdKey.Add( connectionType.IdKey, GetConnectionTypeOptions( connectionType ) );
             }
-
-            // In My Connections mode the connection type is not predetermined like it is in the regular hub, so build out the full set of options for connection states.
-            options.ConnectionStates = typeof( ConnectionState ).ToEnumListItemBag().ToList();
 
             // Build the available groupings for each grouping dimension. These are
             // used by the board view to render columns for groups that may not have
@@ -3933,7 +3829,7 @@ WHERE 1 = 1" );
                 sql.Append( "\n  AND cpa.[Guid] = @ConnectorGuid" );
                 sqlParams.Add( new SqlParameter( "@ConnectorGuid", SelectedConnector.Value ) );
             }
-            else if ( AreOnlyMyRequestsVisible )
+            else if ( AreOnlyMyRequestsVisible && !IsMyConnectionsMode )
             {
                 // @CurrentPersonId is already in sqlParams for the reminder subquery.
                 sql.Append( "\n  AND cp.[Id] = @CurrentPersonId" );

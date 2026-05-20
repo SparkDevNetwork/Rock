@@ -70,7 +70,7 @@
                         <span class="activity-btn-label">Assign</span>
                     </RockButton>
                     <RockButton @click="showChangeStatusModal()" class="activity-btn" :disabled="!canEditConnectionRequests">
-                        <template v-if="box.options?.isSequentialStatusMode">
+                        <template v-if="currentConnectionTypeOptions.isSequentialStatusMode">
                             <i class="ti ti-arrow-right"></i>
                             <span class="activity-btn-label">Advance to Next Status</span>
                         </template>
@@ -105,7 +105,7 @@
                                  @click="showChangeStateModal(ConnectionState.Inactive)">
                                 <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
                             </div>
-                            <div v-if="box.options?.isFutureFollowUpEnabled"
+                            <div v-if="currentConnectionTypeOptions.isFutureFollowUpEnabled"
                                  class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
                                  @click="showChangeStateModal(ConnectionState.FutureFollowUp)">
                                 <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
@@ -228,7 +228,7 @@
                     </template>
                 </Column>
 
-                <Column v-if="box.options?.areGroupPlacementsEnabled || (isMyConnectionsView && allConnectionTypeOptions.some(t => t.areGroupPlacementsEnabled))"
+                <Column v-if="allConnectionTypeOptions.some(t => t.areGroupPlacementsEnabled)"
                         name="group"
                         title="Group"
                         field="group">
@@ -291,7 +291,7 @@
 
                 <AttributeColumns :attributes="attributesToShow" />
 
-                <Column v-if="box.options?.areCelebrationsEnabled || (isMyConnectionsView && allConnectionTypeOptions.some(t => t.areCelebrationsEnabled))"
+                <Column v-if="allConnectionTypeOptions.some(t => t.areCelebrationsEnabled)"
                         name="celebration"
                         field="celebration"
                         width="52">
@@ -322,7 +322,7 @@
                     </template>
                 </Column>
 
-                <Column v-if="box.options?.areRemindersEnabled || (isMyConnectionsView && allConnectionTypeOptions.some(t => t.areRemindersEnabled))"
+                <Column v-if="allConnectionTypeOptions.some(t => t.areRemindersEnabled)"
                         name="reminder"
                         field="reminder"
                         width="52">
@@ -403,7 +403,7 @@
                                          @click.stop="showChangeStateModal(ConnectionState.Inactive, row)">
                                         <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
                                     </div>
-                                    <div v-if="box.options?.isFutureFollowUpEnabled"
+                                    <div v-if="box.options?.connectionTypeOptionsByIdKey && box.options.connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.isFutureFollowUpEnabled"
                                          class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
                                          @click.stop="showChangeStateModal(ConnectionState.FutureFollowUp, row)">
                                         <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
@@ -418,7 +418,7 @@
                                     <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
                                 </div>
                                 <template v-if="canEditConnectionRequests">
-                                    <div v-if="box.options?.isRequestSecurityEnabled"
+                                    <div v-if="box.options?.connectionTypeOptionsByIdKey && box.options.connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.isRequestSecurityEnabled"
                                          class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
                                          @click.stop="showSecurityModal(row.idKey)">
                                         <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
@@ -576,7 +576,7 @@
                     </template>
                 </Column>
 
-                <Column v-if="box.options?.areGroupPlacementsEnabled || (isMyConnectionsView && allConnectionTypeOptions.some(t => t.areGroupPlacementsEnabled))"
+                <Column v-if="allConnectionTypeOptions.some(t => t.areGroupPlacementsEnabled)"
                         name="group"
                         title="Group"
                         field="group"
@@ -676,7 +676,8 @@
 
                 <AttributeColumns :attributes="attributesToShow" />
 
-                <SecurityColumn v-if="canEditConnectionRequests && box.options?.isRequestSecurityEnabled" :itemTitle="() => 'Item'" />
+                <!-- TODO - Need to check row level if the user can edit connection requests. -->
+                <SecurityColumn v-if="canEditConnectionRequests" :itemTitle="() => 'Item'" />
             </Grid>
         </template>
     </GroupedPanel>
@@ -750,7 +751,7 @@
     </ReminderModal>
 
     <AssignRequestModal v-model:visible="isAssignRequestModalVisible"
-                        :connectorItems="allPossibleConnectors"
+                        :connectorItems="currentConnectionTypeOptions.allPossibleConnectors ?? []"
                         :requestDetails="requestDetailsForModal"
                         :viewOptions="viewOptions"
                         :isSaving="isModalSaving"
@@ -778,7 +779,7 @@
                         @close="onModalErrorMessageDismissed"
                         @deleteRequests="deleteRequestsFromModal" />
     <ActivityModal v-model:visible="isActivityModalVisible"
-                   :connectorItems="allPossibleConnectors"
+                   :connectorItems="currentConnectionTypeOptions.allPossibleConnectors ?? []"
                    :requestDetails="requestDetailsForModal"
                    :connectionActivities="connectionActivityItems ?? []"
                    :viewOptions="viewOptions"
@@ -791,7 +792,7 @@
                    @upsertActivity="upsertActivity" />
     <ChangeStatusModal v-model:visible="isChangeStatusModalVisible"
                        :connectionStatusItems="connectionStatusItems"
-                       :isSequentialMode="box.options?.isSequentialStatusMode ?? false"
+                       :isSequentialMode="currentConnectionTypeOptions.isSequentialStatusMode"
                        :isSaving="isModalSaving"
                        :requestDetails="requestDetailsForModal"
                        :viewOptions="viewOptions"
@@ -801,7 +802,7 @@
                        @close="onModalErrorMessageDismissed"
                        @updateStatus="updateStatusFromModal" />
     <LaunchWorkflowModal v-model:visible="isLaunchWorkflowModalVisible"
-                         :workflowItems="box.options?.workflowItems ?? []"
+                         :workflowItems="currentConnectionTypeOptions.workflowItems ?? []"
                          :requestDetails="requestDetailsForModal"
                          :viewOptions="viewOptions"
                          :isSaving="isModalSaving"
@@ -823,7 +824,7 @@
                       v-model:visible="isViewOptionsModalVisible"
                       :gridDataToShowItems="filteredGridDataToShowItems"
                       :connectionStates="box.options?.connectionStates ?? []"
-                      :connectionStatuses="box.options?.connectionStatuses ?? []"
+                      :connectionStatuses="staticConnectionTypeOptions?.connectionStatuses ?? []"
                       :attributeFilters="visibleAttributeFilters" />
 
     <ModalAlert v-model="isModalAlertVisible">
@@ -1244,10 +1245,21 @@ i.disabled {
     // when you need to check or aggregate a property across all loaded Connection Types.
     const allConnectionTypeOptions = computed<ConnectionTypeOptionsBag[]>(() => Object.values(connectionTypeOptionsByIdKey.value));
 
+    // In Standard mode the server populates the dictionary with a single entry — the
+    // Connection Type this page is anchored to. This computed surfaces that type so
+    // consumers can read its options without having to derive "first/only entry" inline.
+    // Returns undefined in My Connections mode, where the active type is user-driven.
+    const staticConnectionTypeOptions = computed<ConnectionTypeOptionsBag | undefined>(() => {
+        if (isMyConnectionsView.value) {
+            return undefined;
+        }
+        return allConnectionTypeOptions.value[0];
+    });
+
     // Soft security check to see if the user can edit the list of connection requests.
     const canEditGlobalConnectionRequests = ref<boolean>((() => {
         if (!isMyConnectionsView.value) {
-            return box.options?.canEditConnectionRequests ?? false;
+            return staticConnectionTypeOptions.value?.canEditConnectionRequests ?? false;
         }
 
         return allConnectionTypeOptions.value.flatMap(t => t.canEditConnectionRequests).some(t => t === true);
@@ -1333,7 +1345,6 @@ i.disabled {
         dueFilter: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterDueConnectionTypIdKey))),
         attributeFilterValues: safeParseJson(preferences.getValue(getConnectionFilterKey(PreferenceKey.FilterAttributeValuesConnectionTypeIdKey))) ?? {},
     });
-    const allPossibleConnectors = ref(box.options?.allPossibleConnectors ?? []);
     const selectedStatus = ref<string | null | undefined>();
     const isBulkTransfer = ref<boolean>(false);
     // SMS and Email modal state
@@ -1491,7 +1502,7 @@ i.disabled {
 
     const connectionOpportunities = computed(() => {
         if (!isMyConnectionsView.value) {
-            return box.options?.connectionOpportunities;
+            return staticConnectionTypeOptions.value?.connectionOpportunities;
         }
 
         if (isNullOrWhiteSpace(selectedType.value)) {
@@ -1564,7 +1575,7 @@ i.disabled {
         // columns. Map filter GUIDs to IdKeys via connectionStatuses.
         const activeStatusFilter = viewOptions.value.statusFilter;
         const allowedStatusKeys = activeStatusFilter?.length
-            ? (box.options?.connectionStatuses ?? [])
+            ? (currentConnectionTypeOptions.value?.connectionStatuses ?? [])
                 .filter(s => activeStatusFilter.includes(s.guid) && s.idKey)
                 .map(s => s.idKey!)
             : null;
@@ -1724,9 +1735,10 @@ i.disabled {
         if (isDockedPanelVisible.value && dockedPanelDetailsBox.value?.options?.connectionStatuses) {
             statuses = dockedPanelDetailsBox.value.options.connectionStatuses;
         }
-        else {
-            statuses = box.options?.connectionStatuses;
+        else if (!isMyConnectionsView.value) {
+            statuses = staticConnectionTypeOptions.value?.connectionStatuses;
         }
+        // TODO - Handle my connections mode
 
         return (
             statuses?.slice() // avoid mutating source
@@ -1740,7 +1752,8 @@ i.disabled {
 
     const connectionActivityItems = computed<ConnectionActivityTypeBag[] | null | undefined>(() => {
         const activities = dockedPanelDetailsBox.value?.options?.connectionActivities
-            ?? box.options?.connectionActivities;
+            ?? staticConnectionTypeOptions.value?.connectionActivities;
+        // TODO - Handle my connections mode
 
         return activities;
     });
@@ -2066,7 +2079,9 @@ i.disabled {
 
         // If the connection type has sequential status configured then we must clear
         // selections in any status grouping that does not match the selected group key.
-        if (box.options?.isSequentialStatusMode) {
+        // We can use static connection type options here because the board view can only
+        // be rendered with 1 Connection Type.
+        if (staticConnectionTypeOptions.value?.isSequentialStatusMode) {
             Object.keys(selectedKeys.value)
                 .filter(key => key !== groupKey)
                 .forEach(key => selectedKeys.value[key] = []);
@@ -2099,11 +2114,11 @@ i.disabled {
      * only allow drops on the next sequential status column.
      */
     const canDropOnGroup = computed<((sourceGroupKey: string, targetGroupKey: string) => boolean) | undefined>(() => {
-        if (!box.options?.isSequentialStatusMode || selectedGrouping.value !== "statusGrouping") {
+        if (!staticConnectionTypeOptions.value?.isSequentialStatusMode || selectedGrouping.value !== "statusGrouping") {
             return undefined;
         }
 
-        const statuses = box.options?.connectionStatuses ?? [];
+        const statuses = staticConnectionTypeOptions.value.connectionStatuses ?? [];
         const sortedStatuses = [...statuses].sort((a, b) => a.order - b.order);
         const nextKeyByKey = new Map<string, string>();
 
@@ -2159,7 +2174,7 @@ i.disabled {
         // This Block only supports status grouping, so a cross-column move
         // always represents a status change. Other groupings (connector, state,
         // opportunity, campus, due status) are not supported on the Block at this time.
-        selectedStatus.value = box.options?.connectionStatuses?.find(s => s.idKey === toGroupKey)?.guid;
+        selectedStatus.value = staticConnectionTypeOptions.value?.connectionStatuses?.find(s => s.idKey === toGroupKey)?.guid;
 
         // Pass in null if the card was moved from a group drag, otherwise pass in the data row
         // of the card that has been dragged.
@@ -2624,7 +2639,7 @@ i.disabled {
             getValue: (row) => (row.campus as string) ?? ""
         });
 
-        if (box.options?.areGroupPlacementsEnabled) {
+        if (allConnectionTypeOptions.value.some(t => t.areGroupPlacementsEnabled)) {
             columns.push({
                 key: "group",
                 title: "Placement Group",
@@ -2680,7 +2695,7 @@ i.disabled {
             getValue: (row) => toExcelDate(row.createdDateTime as string | null | undefined)
         });
 
-        if (box.options?.isFutureFollowUpEnabled === true) {
+        if (allConnectionTypeOptions.value.some(t => t.isFutureFollowUpEnabled)) {
             columns.push({
                 key: "followUpDate",
                 title: "Follow-Up Date",
@@ -3059,7 +3074,8 @@ i.disabled {
         const statusUpdateBags: ConnectionRequestUpdateBag[] = [];
         const completedRequests: string[] = [];
 
-        if (box.options?.isSequentialStatusMode) {
+        // TODO need to handle multiple types.
+        if (currentConnectionTypeOptions.value.isSequentialStatusMode) {
             const statusIndexByGuid = new Map(
                 connectionStatusItems.value.map((s, i) => [s.value, i])
             );
@@ -3292,7 +3308,7 @@ i.disabled {
         // Set the current connection type options to equal the connection type of the request.
         currentConnectionTypeOptions.value = connectionTypeOptionsByIdKey.value[connectionTypeIdKey];
 
-        if (box?.options?.requiresPlacementGroupToComplete && !hasPlacementGroup) {
+        if (currentConnectionTypeOptions.value.areGroupPlacementsEnabled && !hasPlacementGroup) {
             connectionRequestUpdateBag.value.canCompleteRequest = false;
         }
         else if (hasRequiredGroupRequirements) {
@@ -3618,7 +3634,7 @@ i.disabled {
         if (result.isSuccess && result.data) {
             const notMeetingIdKeys = result.data;
 
-            const isPlacementGroupRequired = box.options?.requiresPlacementGroupToComplete;
+            const isPlacementGroupRequired = currentConnectionTypeOptions.value.requiresPlacementGroupToComplete;
 
             const { meeting, notMeeting } = requestDetailsForModal.value.reduce(
                 (acc, request) => {
@@ -4338,6 +4354,8 @@ i.disabled {
         if (areOnlyMyRequestsVisible.value !== "true" && areOnlyMyRequestsVisible.value !== "false") {
             return;
         }
+
+        console.log("setting: ", areOnlyMyRequestsVisible.value);
 
         preferences.setValue(PreferenceKey.AreOnlyMyRequestsVisible, areOnlyMyRequestsVisible.value);
 
