@@ -109,7 +109,6 @@
         if (contentChannelViewBag.value?.categories) {
             for (const category of contentChannelViewBag.value.categories) {
                 labels.push({
-                    iconCssClass: "",
                     title: category.text ?? "",
                     type: "info"
                 });
@@ -117,7 +116,6 @@
         }
 
         labels.push({
-            iconCssClass: "",
             title: contentChannelViewBag.value?.contentChannelType?.text ?? "",
             type: "default"
         });

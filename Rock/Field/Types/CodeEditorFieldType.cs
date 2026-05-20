@@ -20,9 +20,12 @@ using System.ComponentModel;
 using System.Reflection;
 #if WEBFORMS
 using System.Web.UI;
+
 #endif
 using Rock.Attribute;
+using Rock.Enums.Security;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
@@ -112,6 +115,12 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Controls
+
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.Unrestricted );
+        }
 
         #endregion
 

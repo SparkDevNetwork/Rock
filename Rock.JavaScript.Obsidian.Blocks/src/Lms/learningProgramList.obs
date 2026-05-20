@@ -17,24 +17,24 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
-        <Column name="name"
-                title="Program"
-                field="name"
-                :filter="textValueFilter"
-                :quickFilterValue="getProgramQuickFilterValue"
-                width="50%"
-                visiblePriority="xs">
+        <HighlightDetailColumn name="name"
+                               title="Program"
+                               field="name"
+                               detailField="summary"
+                               :filter="textValueFilter"
+                               :quickFilterValue="getProgramQuickFilterValue"
+                               width="50%"
+                               visiblePriority="xs">
             <template #format="{ row }">
                 <div class="col-md-1 d-flex flex-column align-items-center justify-content-center">
                     <span v-html="getRowBadge(row)"></span>
                 </div>
                 <div class="col-md-11">
-                    <span class="text-semibold">{{ row.name }}</span>
-
-                    <div class="text-muted">{{ row.summary }}</div>
+                    <div class="highlight-title">{{ row.name }}</div>
+                    <div class="highlight-detail">{{ row.summary }}</div>
                 </div>
             </template>
-        </Column>
+        </HighlightDetailColumn>
         <Column name="category"
                 title="Category"
                 field="category"
@@ -88,7 +88,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { textValueFilter, BooleanColumn, Column, DeleteColumn, SecurityColumn, booleanValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { textValueFilter, BooleanColumn, Column, DeleteColumn, HighlightDetailColumn, SecurityColumn, booleanValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningProgramListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramList/learningProgramListOptionsBag";

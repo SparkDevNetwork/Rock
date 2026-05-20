@@ -20,6 +20,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Lava;
 
@@ -71,6 +73,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         [Index( "IX_AttributeIdKey", 1, IsUnique = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Key { get; set; }
         
         /// <summary>
@@ -80,6 +83,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the value of the AttributeQualifier.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Value { get; set; }
 
         #endregion

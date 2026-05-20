@@ -23,7 +23,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -147,6 +149,7 @@ namespace Rock.Model
         /// The notes.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Notes { get; set; }
 
         /// <summary>
@@ -165,6 +168,7 @@ namespace Rock.Model
         /// The message.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string AcceptConfirmationMessage { get; set; }
 
         /// <summary>
@@ -174,6 +178,7 @@ namespace Rock.Model
         /// The message.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string DeclineConfirmationMessage { get; set; }
 
         /// <summary>
@@ -190,6 +195,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string DeclineReasonValueIds { get; set; }
 
         /// <summary>
@@ -206,6 +212,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>

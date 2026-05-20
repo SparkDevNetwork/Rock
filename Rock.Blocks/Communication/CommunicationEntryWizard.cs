@@ -340,8 +340,9 @@ namespace Rock.Blocks.Communication
                 }
                 else
                 {
-                    // Only allow the CommunicationId to contain an ID, but return it as a string so it can be used as an entity key.
-                    return PageParameter( PageParameterKey.CommunicationId ).AsIntegerOrNull()?.ToString();
+                    // CommunicationId can support Id, Guid, or IdKey values in order to maintain backward compatibility
+                    // with existing links, but return it as a string so it can be used as an entity key.
+                    return PageParameter( PageParameterKey.CommunicationId );
                 }
             }
         }
@@ -431,6 +432,7 @@ namespace Rock.Blocks.Communication
                     .ThenBy( dv => dv.Value )
                     .ThenBy( dv => dv.Id )
                     .ToListItemBagList();
+                box.CreateNewCommunicationUrl = this.GetCurrentPageUrl( null, skipExistingParameters: true );
                 box.CustomText = GetCustomTextBag();
                 box.HasDetailBlockOnCurrentPage = this.PageCache.Blocks.Any( a => a.BlockType.Guid == SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() );
                 box.ImageComponentBinaryFileTypeGuid = this.ImageBinaryFileTypeGuid;
@@ -1618,6 +1620,12 @@ namespace Rock.Blocks.Communication
                 BccEmails = communication.BCCEmails,
                 CcEmails = communication.CCEmails,
                 CommunicationId = communication.Id,
+                CommunicationIdKey = communication.IdKey,
+                CommunicationDetailUrl = communication.Id > 0
+                    ? this.GetCurrentPageUrl(
+                        new Dictionary<string, string> { [PageParameterKey.CommunicationId] = communication.IdKey },
+                        skipExistingParameters: true )
+                    : null,
                 CommunicationGuid = communication.Guid,
                 CommunicationListGroupGuid = communication.ListGroupId.HasValue ? communication.ListGroup?.Guid : defaultCommunicationListGroupGuid,
                 CommunicationName = communication.Name,
@@ -3095,6 +3103,14 @@ namespace Rock.Blocks.Communication
         {
             var currentPerson = GetCurrentPerson();
 
+            // Build the canonical detail URL synchronously while HttpContext is still
+            // available so the app subpath is included. The IdKey is substituted into
+            // the placeholder inside the background task once the communication is saved.
+            const string idKeyPlaceholder = "((Key))";
+            var communicationDetailUrlTemplate = this.GetCurrentPageUrl(
+                new Dictionary<string, string> { [PageParameterKey.CommunicationId] = idKeyPlaceholder },
+                skipExistingParameters: true );
+
             var progressReporter = RealTimeHelper.GetTopicContext<ITaskActivityProgress>().Clients.Channels( new[] { GetCommunicationSendChannel( bag.CommunicationGuid ) } );
 
             // Define a background task for the bulk send process, because it may take considerable time.
@@ -3199,7 +3215,9 @@ namespace Rock.Blocks.Communication
                     Message = finalMessage,
                     Data = new
                     {
-                        CommunicationId = communication.Id
+                        CommunicationId = communication.Id,
+                        CommunicationIdKey = communication.IdKey,
+                        CommunicationDetailUrl = communicationDetailUrlTemplate?.Replace( idKeyPlaceholder, communication.IdKey )
                     },
                     IsStarted = true,
                     IsFinished = true

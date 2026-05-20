@@ -33,7 +33,20 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// Gets or sets the communication identifier.
         /// </summary>
         public int? CommunicationId { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the hashed communication identifier key.
+        /// </summary>
+        public string CommunicationIdKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the canonical URL for the saved communication. The
+        /// wizard uses this to rewrite the browser address bar in place after
+        /// saving so a refresh resolves the IdKey instead of the integer id
+        /// that may still be in the route.
+        /// </summary>
+        public string CommunicationDetailUrl { get; set; }
+
         /// <summary>
         /// Gets or sets the communication unique identifier.
         /// </summary>

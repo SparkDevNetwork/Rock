@@ -110,6 +110,14 @@
             return undefined;
         }
 
+        if (documentTypeViewBag.value?.isPublicViewable === true) {
+            labels.push({
+                iconCssClass: "ti ti-lock-open",
+                title: "Public Viewable",
+                type: "warning"
+            });
+        }
+
         return labels;
     });
 

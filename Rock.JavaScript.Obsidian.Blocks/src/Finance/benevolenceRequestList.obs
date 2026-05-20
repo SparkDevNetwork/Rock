@@ -33,27 +33,17 @@
                     :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
-        <Column name="requestedBy"
-                title="Name"
-                field="requestedBy"
-                :filter="pickExistingValueFilter"
-                :filterValue="getPersonNameFilterValue"
-                :quickFilterValue="getPersonNameFilterValue"
-                :exportValue="getPersonNameExportValue"
-                sortValue="{{ row.firstName }} {{  row.lastName }}"
-                visiblePriority="xs">
-            <template #format="{ row }">
-                <div class="flex-grow-1">
-                    <span v-if="row.requestedBy"><a :href="`/person/${row.requestedByIdKey}`"><strong>{{ row.requestedByFullName }}</strong></a></span>
-                    <span v-else><strong>{{ row.firstName }} {{ row.lastName }}</strong></span>
-                    <div class="text-muted">{{ row.connectionStatus }}</div>
-                </div>
-            </template>
-
-            <template #skeleton>
-                <div class="skeleton skeleton-text skeleton-rounded" />
-            </template>
-        </Column>
+        <PersonColumn name="requestedBy"
+                      title="Name"
+                      field="requestedBy"
+                      detailField="connectionStatus"
+                      :hideAvatar="true"
+                      :showAsLink="true"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
+                      :quickFilterValue="getPersonNameFilterValue"
+                      :exportValue="getPersonNameExportValue"
+                      visiblePriority="xs" />
 
         <TextColumn name="connectionStatus"
                     title="Connection Status"

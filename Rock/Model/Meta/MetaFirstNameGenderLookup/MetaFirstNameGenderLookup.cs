@@ -20,6 +20,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -44,6 +46,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -72,6 +75,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 10 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Country { get; set; }
 
         /// <summary>
@@ -82,6 +86,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 10 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Language { get; set; }
 
         /// <summary>

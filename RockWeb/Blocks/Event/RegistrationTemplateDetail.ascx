@@ -169,6 +169,8 @@
                                         Help="Determines if individuals should be able to pay their registration costs in multiple, scheduled installments. Not all payment gateways support this feature." />
                                     <Rock:RockCheckBoxList ID="cblSelectablePaymentFrequencies" runat="server" Label="Selectable Payment Frequencies" Visible="false"
                                         Help="The payment frequencies that the individual can select from." RepeatDirection="Horizontal" />
+                                    <Rock:RockCheckBox ID="cbRequireFullPaymentOrPaymentPlan" runat="server" Label="Require Full Payment or Payment Plan" Visible="false"
+                                        Help="When enabled, registrants must either pay the registration in full or set up a valid payment plan that covers the remaining balance before they can save the registration. This setting takes precedence over other payment settings (such as Minimum Initial Payment) that would otherwise allow no or partial payment without a plan." />
                                 </div>
                             </div>
                             <div class="row">
@@ -354,6 +356,12 @@
                                 <Rock:RockTextBox ID="tbFeeTerm" runat="server" Label="Fee Term" Placeholder="Additional Options" MaxLength="100" />
                                 <Rock:RockTextBox ID="tbDiscountCodeTerm" runat="server" Label="Discount Code Term" Placeholder="Discount Code" MaxLength="100" />
                                 <Rock:RockTextBox ID="tbRegistrationAttributeTitleEnd" runat="server" Label="Registration Attribute Title - End" Placeholder="Registration Information" Help="The section title for attributes that are collected at the end of the registration entry process." MaxLength="200" />
+                            </div>
+                        </div>
+                        <div id="divFullPaymentOrPaymentPlanRequiredMessageRow" runat="server" class="row">
+                            <div class="col-md-12">
+                                <Rock:RockTextBox ID="tbFullPaymentOrPaymentPlanRequiredMessage" runat="server" Label="Full Payment or Payment Plan Required Message" TextMode="MultiLine" Rows="3"
+                                    Help="The message displayed to a registrant on the Registration Entry block when the registration cannot be saved because it is not paid in full and does not have a valid payment plan that covers the remaining balance. The following merge fields are available: 'RegistrationInstance' and 'Registration'. Note that for new registrations, 'Registration' refers to a transient unsaved object, so avoid referencing 'Registration.Id', 'Registration.Guid', or 'Registration.Payments'. <span class='tip tip-lava'></span>" />
                             </div>
                         </div>
                         <div class="row">
@@ -851,6 +859,28 @@
                             $eligibilityGenderWarning.removeClass("d-block").addClass("d-none");
                         }
                     });
+
+                // Require Full Payment or Payment Plan: cross-panel message field visibility.
+                // Toggling cbRequireFullPaymentOrPaymentPlan (on the Set Cost On Template panel) shows or hides
+                // tbFullPaymentOrPaymentPlanRequiredMessage (on the Terms/Text panel) without a postback.
+                // When the boolean is enabled and the message field is empty, pre-populate with the editor
+                // default below. This default is editor-only; the runtime hardcoded fallback used when the
+                // persisted message is blank lives in Rock.Blocks/Event/RegistrationEntry.cs.
+                var $requireFullPaymentOrPaymentPlan = $("#<%=cbRequireFullPaymentOrPaymentPlan.ClientID %>");
+                var $fullPaymentOrPaymentPlanRequiredMessage = $("#<%=tbFullPaymentOrPaymentPlanRequiredMessage.ClientID %>");
+                var $fullPaymentOrPaymentPlanRequiredMessageRow = $("#<%=divFullPaymentOrPaymentPlanRequiredMessageRow.ClientID %>");
+                var defaultFullPaymentOrPaymentPlanRequiredMessage = "To complete your registration, please either pay the full amount or set up a payment plan.";
+
+                $requireFullPaymentOrPaymentPlan.on("change", function (event) {
+                    if (event.target.checked) {
+                        if (!$fullPaymentOrPaymentPlanRequiredMessage.val()) {
+                            $fullPaymentOrPaymentPlanRequiredMessage.val(defaultFullPaymentOrPaymentPlanRequiredMessage);
+                        }
+                        $fullPaymentOrPaymentPlanRequiredMessageRow.slideDown();
+                    } else {
+                        $fullPaymentOrPaymentPlanRequiredMessageRow.slideUp();
+                    }
+                });
             });
         </script>
     </ContentTemplate>

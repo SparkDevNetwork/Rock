@@ -16,7 +16,9 @@
 //
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 
 using System;
@@ -75,6 +77,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -85,6 +88,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string PublicName
         {
             get
@@ -114,6 +118,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the user defined description of the FinancialAccount.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -123,6 +128,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the user defined public description of the FinancialAccount.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml )]
         public string PublicDescription { get; set; }
 
         /// <summary>
@@ -142,6 +148,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string GlCode { get; set; }
 
         /// <summary>
@@ -225,6 +232,7 @@ namespace Rock.Model
         /// The URL.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Url { get; set; }
 
         /// <summary>

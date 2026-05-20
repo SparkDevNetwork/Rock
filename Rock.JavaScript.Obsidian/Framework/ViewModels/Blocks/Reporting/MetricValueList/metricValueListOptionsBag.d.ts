@@ -27,6 +27,13 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 /** Options sent to the metric value list block on initialization. */
 export type MetricValueListOptionsBag = {
     /**
+     * Gets or sets a value indicating whether the block should render. False
+     * when no metric is in scope (e.g. the user is on a category node) — the
+     * block silently hides itself to match the legacy WebForms behavior.
+     */
+    isBlockVisible: boolean;
+
+    /**
      * Gets or sets a value indicating whether the partitions column should be
      * shown in the grid. Mirrors whether the metric defines any entity-typed
      * partitions.

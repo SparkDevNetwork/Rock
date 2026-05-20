@@ -11,7 +11,8 @@
           :entityTypeGuid="EntityType.Person"
           itemTerm="Invitee"
           title="Invitees"
-          titleIconCssClass="ti ti-door-enter">
+          titleIconCssClass="ti ti-door-enter"
+          liveUpdates>
         <SelectColumn />
 
         <PersonColumn name="person"
@@ -29,6 +30,8 @@
                 title="Status"
                 field="status"
                 :filter="pickExistingValueFilter"
+                :sortValue="getStatusSortValue"
+                :quickFilterValue="getStatusSortValue"
                 width="18%">
             <template #format="{ row }">
                 <div class="flex-grow-1">
@@ -49,6 +52,7 @@
                 :filter="pickExistingValueFilter"
                 :filterValue="getDeclineReasonFilterValue"
                 :quickFilterValue="getDeclineReasonFilterValue"
+                :sortValue="getDeclineReasonFilterValue"
                 :exportValue="getDeclineReasonFilterValue"
                 width="27%">
             <template #format="{ row }">
@@ -68,6 +72,8 @@
                 name="declineNote"
                 title="Decline Note"
                 field="declineNote"
+                :sortValue="getDeclineNoteSortValue"
+                :quickFilterValue="getDeclineNoteSortValue"
                 width="37%">
             <template #format="{ row }">
                 <button v-if="row.status === AttendeeStatus.Decline"
@@ -193,13 +199,23 @@
         return `${person.nickName ?? ""} ${person.lastName ?? ""}`.trim();
     }
 
-    /** Resolves the decline reason Guid to its friendly text for filtering, quick search, and Excel export. */
+    /** Resolves the decline reason Guid to its friendly text for filtering, quick search, sorting, and Excel export. */
     function getDeclineReasonFilterValue(row: Record<string, unknown>): string {
         const guid = row.declineReasonValueGuid as string | null | undefined;
         if (!guid) {
             return "";
         }
         return declineReasonGuidToText.value[guid] ?? "";
+    }
+
+    /** Sort + quick-filter key for the Status column so both match the dropdown's friendly text. */
+    function getStatusSortValue(row: Record<string, unknown>): string {
+        return (row.status as string) ?? "";
+    }
+
+    /** Sort + quick-filter key for the Decline Note column so both read the underlying note text. */
+    function getDeclineNoteSortValue(row: Record<string, unknown>): string {
+        return (row.declineNote as string) ?? "";
     }
 
     /** Updates the row's status and any dependent fields locally, then auto-saves the row. */

@@ -19,6 +19,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -63,6 +65,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing a summary of why the refund was issued.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RefundReasonSummary { get; set; }
 
         #endregion Entity Properties

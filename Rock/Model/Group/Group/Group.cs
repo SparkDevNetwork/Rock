@@ -27,6 +27,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
+using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Security;
 using Rock.UniversalSearch;
@@ -165,6 +166,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         [Previewable]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -175,6 +177,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Previewable]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -389,6 +392,7 @@ namespace Rock.Model
         /// The inactive reason note.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string InactiveReasonNote { get; set; }
 
         /// <summary>
@@ -436,6 +440,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 250 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string GroupSalutation { get; set; }
 
         /// <summary>
@@ -447,6 +452,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 250 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string GroupSalutationFull { get; set; }
 
         /// <summary>
@@ -456,6 +462,7 @@ namespace Rock.Model
         /// The confirmation additional details.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml )]
         public string ConfirmationAdditionalDetails { get; set; }
 
         /// <summary>
@@ -484,6 +491,7 @@ namespace Rock.Model
         /// The reminder additional details.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml )]
         public string ReminderAdditionalDetails { get; set; }
 
         /// <summary>
@@ -638,6 +646,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ChatChannelKey { get; set; }
 
         /// <summary>

@@ -585,6 +585,55 @@ namespace Rock.Blocks.Rsvp
             return ActionOk( BuildAttendeeCounts( occurrence.Id ) );
         }
 
+        /// <summary>
+        /// Creates an entity set for the subset of selected rows in the Invitees grid.
+        /// Required for the grid's Merge Template, Bulk Update, and Merge Person Records
+        /// actions because this detail block does not inherit from RockListBlockType,
+        /// which is where this action is normally defined.
+        /// </summary>
+        /// <returns>An action result that contains the identifier of the entity set.</returns>
+        [BlockAction]
+        public BlockActionResult CreateGridEntitySet( GridEntitySetBag entitySet )
+        {
+            if ( entitySet == null )
+            {
+                return ActionBadRequest( "No entity set data was provided." );
+            }
+
+            var rockEntitySet = GridHelper.CreateEntitySet( entitySet );
+
+            if ( rockEntitySet == null )
+            {
+                return ActionBadRequest( "No entities were found to create the set." );
+            }
+
+            return ActionOk( rockEntitySet.Id.ToString() );
+        }
+
+        /// <summary>
+        /// Creates a communication for the subset of selected rows in the Invitees grid.
+        /// Required for the grid's Communicate action because this detail block does not
+        /// inherit from RockListBlockType, which is where this action is normally defined.
+        /// </summary>
+        /// <returns>An action result that contains the identifier of the communication.</returns>
+        [BlockAction]
+        public BlockActionResult CreateGridCommunication( GridCommunicationBag communication )
+        {
+            if ( communication == null )
+            {
+                return ActionBadRequest( "No communication data was provided." );
+            }
+
+            var rockCommunication = GridHelper.CreateCommunication( communication, RequestContext );
+
+            if ( rockCommunication == null )
+            {
+                return ActionBadRequest( "Grid has no recipients." );
+            }
+
+            return ActionOk( rockCommunication.Id.ToString() );
+        }
+
         #endregion Block Actions
 
         #region Helpers

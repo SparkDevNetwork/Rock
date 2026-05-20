@@ -118,7 +118,18 @@ namespace Rock.Bus.Consumer
             }
             finally
             {
-                System.Diagnostics.Activity.Current = oldActivity;
+                try
+                {
+                    if ( !oldActivity.IsStopped )
+                    {
+                        System.Diagnostics.Activity.Current = oldActivity;
+                    }
+                }
+                catch ( InvalidOperationException )
+                {
+                    // These are silently ignored, it means the activity was
+                    // already stopped and disposed by the time we got here.
+                }
             }
             return RockMessageBus.GetCompletedTask();
         }

@@ -124,7 +124,6 @@
 
         if (mediaAccountViewBag.value?.lastRefresh) {
             labels.push({
-                iconCssClass: "",
                 title: mediaAccountViewBag.value?.lastRefresh ?? "",
                 type: "info"
             });

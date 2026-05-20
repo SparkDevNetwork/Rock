@@ -129,12 +129,23 @@ namespace Rock.Tasks
                         out int? campaignValueId,
                         out string campaignText );
 
-                    interaction.Source = sourceText;
+                    interaction.Source = sourceText.Truncate( 25, false );
                     interaction.SourceValueId = sourceValueId;
-                    interaction.Medium = mediumText;
+                    interaction.Medium = mediumText.Truncate( 25, false );
                     interaction.MediumValueId = mediumValueId;
-                    interaction.Campaign = campaignText;
+                    interaction.Campaign = campaignText.Truncate( 50, false );
                     interaction.CampaignValueId = campaignValueId;
+
+                    if ( message.UtmTerm.IsNotNullOrWhiteSpace() )
+                    {
+                        interaction.Term = System.Uri.UnescapeDataString( message.UtmTerm ).Truncate( 50, false );
+                    }
+
+                    if ( message.UtmContent.IsNotNullOrWhiteSpace() )
+                    {
+                        interaction.Content = System.Uri.UnescapeDataString( message.UtmContent ).Truncate( 50, false );
+                    }
+
                     interaction.ChannelCustomIndexed1 = message.PurposeKey.Truncate( 500, false );
 
                     rockContext.SaveChanges();
@@ -232,6 +243,16 @@ namespace Rock.Tasks
             /// Gets or sets the UTM campaign of the link
             /// </summary>
             public string UtmCampaign { get; set; }
+
+            /// <summary>
+            /// Gets or sets the UTM term of the link.
+            /// </summary>
+            public string UtmTerm { get; set; }
+
+            /// <summary>
+            /// Gets or sets the UTM content of the link.
+            /// </summary>
+            public string UtmContent { get; set; }
 
             /// <summary>
             /// Gets or sets the purpose of the redirect. This is generic data

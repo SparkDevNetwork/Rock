@@ -23,7 +23,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -59,6 +61,7 @@ namespace Rock.Model
         [DataMember]
         [Previewable]
         [Index( "IX_LastName", IsUnique = false )]
+        [StringValidation( StringValidationProfile.Name )]
         public string LastName { get; set; }
 
         #endregion

@@ -27,6 +27,13 @@ namespace Rock.ViewModels.Blocks.Reporting.MetricValueList
     public class MetricValueListOptionsBag
     {
         /// <summary>
+        /// Gets or sets a value indicating whether the block should render. False
+        /// when no metric is in scope (e.g. the user is on a category node) — the
+        /// block silently hides itself to match the legacy WebForms behavior.
+        /// </summary>
+        public bool IsBlockVisible { get; set; }
+
+        /// <summary>
         /// Gets or sets the metric IdKey, used by the client to scope the partition
         /// filter person preference to the current metric.
         /// </summary>

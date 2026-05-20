@@ -21,6 +21,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -59,6 +61,7 @@ namespace Rock.Model
         [MaxLength( 200 )]
         [Index]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Key { get; set; }
 
         /// <summary>
@@ -67,6 +70,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The component data json.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ComponentDataJson { get; set; }
 
         /// <summary>

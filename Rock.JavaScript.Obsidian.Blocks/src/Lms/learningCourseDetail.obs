@@ -117,7 +117,8 @@
         if (learningCourseViewBag.value?.isActive === false) {
             labels.push({
                 title: "Inactive",
-                type: "danger"
+                type: "danger",
+                iconCssClass: "ti ti-bulb"
             });
         }
 

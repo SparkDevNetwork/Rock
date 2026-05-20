@@ -52,28 +52,23 @@
 
         <Panel title="Persistence Schedule" class="mt-4">
             <div>
-                <!-- Toggle Switch for Persistence Schedule -->
                 <Switch v-model="isPersistenceEnabled" text="Persistence Schedule" />
             </div>
-            <!-- Persistence Schedule Settings -->
             <div v-if="isPersistenceEnabled" class="panel-body bottom-border">
                 <div class="row">
-                    <!-- Type Selection: Interval or Schedule -->
                     <div class="col-xs-12 col-md-3">
                         <RadioButtonList v-model="typeOfPersistence"
                                          :items="persistenceTypeOptions"
                                          label="Type" />
                     </div>
 
-                    <!-- Conditional Display Logic -->
                     <template v-if="typeOfPersistence === 'Interval'">
-                        <!-- Interval Picker -->
                         <div class="col-xs-12 col-md-9">
-                            <RangeSlider v-model="intervalMinutes"
+                            <RangeSlider v-model="intervalCount"
                                          label="Persistence Interval"
-                                         :min="intervalMin"
+                                         :min="1"
                                          :max="intervalMax"
-                                         :step="intervalStep"
+                                         :step="1"
                                          :showValueBar="true"
                                          :columnCount="2" />
                             <div class="sliderButtons">
@@ -85,14 +80,13 @@
                     </template>
 
                     <template v-if="typeOfPersistence === 'Schedule'">
-                        <!-- Schedule Type Selection: Unique or Named -->
                         <div class="col-xs-12 col-md-3">
                             <RadioButtonList v-model="typeOfSchedule"
                                              :items="scheduleTypeOptions"
                                              label="Persistence Schedule" />
                         </div>
                         <div v-if="typeOfSchedule === 'Unique'" class="col-xs-12 col-md-6">
-                            <ScheduleBuilder label="Unique" v-model:modelValue="persistedSchedule" :onUpdate:modelValue="handleScheduleData" />
+                            <ScheduleBuilder v-model="persistedSchedule" label="Unique" />
                         </div>
                         <div v-else class="col-xs-12 col-md-6">
                             <DropDownList v-model="selectedNamedSchedule"
@@ -140,6 +134,15 @@
     </fieldset>
 </template>
 
+<style scoped>
+.sliderButtons {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 10px;
+}
+</style>
+
 <script setup lang="ts">
     import { PropType, computed, ref, watch } from "vue";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
@@ -179,12 +182,7 @@
     }>();
 
     // #region Values
-    const typeOfPersistence = ref(props.modelValue.persistenceType as string ?? "");
-    const typeOfSchedule = ref(props.modelValue.persistedScheduleType as string ?? "Unique");
-    const typeOfInterval = ref(props.modelValue.persistedScheduleIntervalType as string ?? "Hours");
-    const intervalMinutes = ref(props.modelValue.refreshInterval as number ?? 12);
-    const isPersistenceEnabled = ref(props.modelValue.persistenceType !== null);
-    const selectedNamedSchedule = ref(props.modelValue.persistedScheduleId?.toString() ?? "");
+
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
@@ -193,16 +191,33 @@
     const entityType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
     const enabledLavaCommands = ref<ListItemBag[]>(props.modelValue.enabledLavaCommands ?? [{ value: "All", text: "All" }]);
     const allowManualRefresh = propertyRef(props.modelValue.allowManualRefresh ?? false, "AllowManualRefresh");
-    const refreshInterval = propertyRef(props.modelValue.refreshIntervalHours, "PersistedScheduleIntervalMinutes");
     const memoryCacheDuration = propertyRef(props.modelValue.memoryCacheDurationHours, "MemoryCacheDurationMS");
     const expiresOn = propertyRef(props.modelValue.expireDateTime ?? "", "ExpireDateTime");
-    const persistedScheduleIntervalMinutes = propertyRef(props.modelValue.refreshInterval ?? 1, "RefreshInterval");
     const persistedSchedule = propertyRef(props.modelValue.persistedSchedule ?? "", "PersistedSchedule");
-    const persistenceIntervalType = propertyRef(props.modelValue.persistedScheduleIntervalType ?? "", "PersistedScheduleIntervalType");
-    const persistedScheduleType = propertyRef(props.modelValue.persistedScheduleType ?? "", "PersistedScheduleType");
-    const persistenceType = propertyRef(typeOfPersistence?.value, "PersistenceType");
 
-    const propRefs = [description, isActive, name, accessKey, buildScript, entityType, enabledLavaCommands, allowManualRefresh, refreshInterval, memoryCacheDuration, expiresOn, persistedScheduleIntervalMinutes, persistedSchedule, persistenceType, persistedScheduleType, persistenceIntervalType];
+    // Persistence Schedule UI state. Each of these is bound directly to a
+    // control in the Persistence Schedule panel and read straight by
+    // emitUpdate; there is no parallel propertyRef shadow copy.
+    const isPersistenceEnabled = ref(props.modelValue.persistenceType != null);
+    const typeOfPersistence = ref(props.modelValue.persistenceType ?? "");
+    const typeOfSchedule = ref(props.modelValue.persistedScheduleType ?? "Unique");
+    const typeOfInterval = ref(props.modelValue.persistedScheduleIntervalType ?? "Hours");
+    const intervalCount = ref(props.modelValue.refreshInterval ?? 12);
+
+    // Only carry persistedScheduleId into the dropdown when the entity is
+    // actually using a Named schedule. For a Unique-schedule entity, the
+    // persistedScheduleId points to that Unique schedule row, which isn't
+    // in the named-schedules dropdown, so we leave the selection blank.
+    const selectedNamedSchedule = ref(
+        props.modelValue.persistedScheduleType === "NamedSchedule"
+            ? props.modelValue.persistedScheduleId?.toString() ?? ""
+            : ""
+    );
+
+    const propRefs = [
+        description, isActive, name, accessKey, buildScript, entityType,
+        allowManualRefresh, memoryCacheDuration, expiresOn, persistedSchedule
+    ];
 
     const persistenceTypeOptions = [
         { value: "Interval", text: "Interval" },
@@ -214,75 +229,46 @@
         { value: "NamedSchedule", text: "Named Schedule" }
     ];
 
-    const namedSchedules = computed(() => props.modelValue.namedSchedules ?? []);
-
     const intervalTypeOptions = [
         { value: "Mins", text: "Mins" },
         { value: "Hours", text: "Hours" },
         { value: "Days", text: "Days" }
     ];
 
-    const intervalMin = computed(() => {
-        switch (typeOfInterval.value) {
-            case "Mins": return 1;
-            case "Hours": return 1;
-            case "Days": return 1;
-        }
-    });
+    const namedSchedules = computed(() => props.modelValue.namedSchedules ?? []);
 
-    const intervalMax = computed(() => {
+    const intervalMax = computed((): number => {
         switch (typeOfInterval.value) {
             case "Mins": return 59;
             case "Hours": return 23;
             case "Days": return 31;
-        }
-    });
-
-    const intervalStep = computed(() => {
-        switch (typeOfInterval.value) {
-            case "Mins": return 1;
-            case "Hours": return 1;
-            case "Days": return 1;
+            default: return 1;
         }
     });
 
     const isSystem = computed(() => props.modelValue.isSystem ?? false);
 
     /**
-     * Returns true the Rock Entity command (or All) is enabled.
+     * Returns true if the Rock Entity command (or All) is enabled.
      */
     const isEntityCommandEnabled = computed((): boolean => {
-        return enabledLavaCommands.value.some((obj) => {
-            if (obj.value === "All" || obj.value === "RockEntity") {
-                return true;
-            }
-            else {
-                return false;
-            }
-        });
+        return enabledLavaCommands.value.some(c => c.value === "All" || c.value === "RockEntity");
     });
 
     // #endregion
 
     // #region Functions
-    function handlePersistenceToggle(): void {
-        if (!isPersistenceEnabled.value) {
-            typeOfPersistence.value = "";
-            typeOfSchedule.value = "Unique";
-            intervalMinutes.value = 12;
-            persistedSchedule.value = "";
-            selectedNamedSchedule.value = "";
-            persistedScheduleIntervalMinutes.value = 1;
-        }
-        emitUpdate();
-    }
 
-    function handleScheduleData(scheduleData: string): void {
-        persistedSchedule.value = scheduleData;
-        emitUpdate();
-    }
-
+    /**
+     * Build a fresh bag from the current ref values and emit it to the
+     * parent. Called by the consolidated watcher whenever any field that
+     * contributes to the bag changes.
+     */
     function emitUpdate(): void {
+        const isInterval = isPersistenceEnabled.value && typeOfPersistence.value === "Interval";
+        const isUniqueSchedule = isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" && typeOfSchedule.value === "Unique";
+        const isNamedSchedule = isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" && typeOfSchedule.value === "NamedSchedule";
+
         const newValue: PersistedDatasetBag = {
             ...props.modelValue,
             description: description.value,
@@ -293,22 +279,42 @@
             entityType: entityType.value,
             enabledLavaCommands: enabledLavaCommands.value,
             allowManualRefresh: allowManualRefresh.value,
-            refreshIntervalHours: refreshInterval.value,
             memoryCacheDurationHours: memoryCacheDuration.value,
             expireDateTime: expiresOn.value,
-            persistedScheduleIntervalType: typeOfInterval.value,
-            persistenceType: isPersistenceEnabled.value ? persistenceType.value : null,
+            persistenceType: isPersistenceEnabled.value ? typeOfPersistence.value : null,
             persistedScheduleType: isPersistenceEnabled.value ? typeOfSchedule.value : null,
-            refreshInterval: isPersistenceEnabled.value && typeOfPersistence.value === "Interval" ? intervalMinutes.value : null,
-            persistedSchedule: isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" && typeOfSchedule.value === "Unique" ? persistedSchedule.value : null,
-            persistedScheduleId: isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" && typeOfSchedule.value === "NamedSchedule" && selectedNamedSchedule.value ? parseInt(selectedNamedSchedule.value) : null,
+            persistedScheduleIntervalType: typeOfInterval.value,
+            refreshInterval: isInterval ? intervalCount.value : null,
+            persistedSchedule: isUniqueSchedule ? persistedSchedule.value : null,
+            persistedScheduleId: isNamedSchedule && selectedNamedSchedule.value ? parseInt(selectedNamedSchedule.value) : null,
             friendlyScheduleText: props.modelValue.friendlyScheduleText,
         };
         emit("update:modelValue", newValue);
     }
+
+    /**
+     * Reset the persistence schedule UI to its defaults when the user
+     * toggles the Switch off. Leaves the refs alone when toggling on so
+     * any previously entered values are preserved.
+     */
+    function resetPersistenceFieldsOnDisable(): void {
+        if (isPersistenceEnabled.value) {
+            return;
+        }
+        typeOfPersistence.value = "";
+        typeOfSchedule.value = "Unique";
+        typeOfInterval.value = "Hours";
+        intervalCount.value = 12;
+        persistedSchedule.value = "";
+        selectedNamedSchedule.value = "";
+    }
+
     // #endregion
 
     // #region Watchers
+
+    // Mirror parent updates (e.g. after Save round-trips a refreshed bag)
+    // into every local ref so the form reflects the latest server state.
     watch(() => props.modelValue, () => {
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(isActive, props.modelValue.isActive ?? false);
@@ -318,39 +324,39 @@
         updateRefValue(entityType, props.modelValue.entityType ?? {});
         updateRefValue(enabledLavaCommands, props.modelValue.enabledLavaCommands ?? []);
         updateRefValue(allowManualRefresh, props.modelValue.allowManualRefresh ?? false);
-        updateRefValue(refreshInterval, props.modelValue.refreshIntervalHours);
         updateRefValue(memoryCacheDuration, props.modelValue.memoryCacheDurationHours);
         updateRefValue(expiresOn, props.modelValue.expireDateTime ?? "");
-        updateRefValue(persistedScheduleIntervalMinutes, props.modelValue.refreshInterval ?? 1);
         updateRefValue(persistedSchedule, props.modelValue.persistedSchedule ?? "");
-        updateRefValue(persistenceType, props.modelValue.refreshInterval != null ? "Interval" : "Schedule");
-        updateRefValue(persistedScheduleType, props.modelValue.refreshInterval != null ? "Unique" : "NamedSchedule");
+        updateRefValue(isPersistenceEnabled, props.modelValue.persistenceType != null);
+        updateRefValue(typeOfPersistence, props.modelValue.persistenceType ?? "");
+        updateRefValue(typeOfSchedule, props.modelValue.persistedScheduleType ?? "Unique");
+        updateRefValue(typeOfInterval, props.modelValue.persistedScheduleIntervalType ?? "Hours");
+        updateRefValue(intervalCount, props.modelValue.refreshInterval ?? 12);
+        updateRefValue(selectedNamedSchedule,
+            props.modelValue.persistedScheduleType === "NamedSchedule"
+                ? props.modelValue.persistedScheduleId?.toString() ?? ""
+                : "");
     });
 
-    watch([...propRefs, selectedNamedSchedule], emitUpdate);
+    watch(isPersistenceEnabled, resetPersistenceFieldsOnDisable);
 
-    watch(() => isPersistenceEnabled.value, handlePersistenceToggle);
+    // Single source of truth for re-emitting the bag. Any ref that
+    // contributes to the bag is listed here; Vue batches changes within
+    // the same tick so resets in resetPersistenceFieldsOnDisable produce
+    // a single emit.
+    watch([
+        ...propRefs,
+        enabledLavaCommands,
+        isPersistenceEnabled,
+        typeOfPersistence,
+        typeOfSchedule,
+        typeOfInterval,
+        intervalCount,
+        selectedNamedSchedule
+    ], emitUpdate);
 
-    watch(() => intervalMinutes.value, () => {
-        if (typeOfPersistence.value === "Interval") {
-            persistedScheduleIntervalMinutes.value = intervalMinutes.value;
-            emitUpdate();
-        }
-    });
-
-    watch(() => typeOfInterval.value, () => {
-        emitUpdate();
-    });
     // #endregion
 
     // Initial setup
     emitUpdate();
 </script>
-<style scoped>
-.sliderButtons {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-top: 10px;
-}
-</style>

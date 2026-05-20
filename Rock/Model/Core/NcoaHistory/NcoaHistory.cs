@@ -21,6 +21,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -109,6 +111,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string OriginalStreet1 { get; set; }
 
         /// <summary>
@@ -119,6 +122,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string OriginalStreet2 { get; set; }
 
         /// <summary>
@@ -129,6 +133,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string OriginalCity { get; set; }
 
         /// <summary>
@@ -139,6 +144,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string OriginalState { get; set; }
 
         /// <summary>
@@ -149,6 +155,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string OriginalPostalCode { get; set; }
 
         /// <summary>
@@ -159,6 +166,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string UpdatedStreet1 { get; set; }
 
         /// <summary>
@@ -169,6 +177,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string UpdatedStreet2 { get; set; }
 
         /// <summary>
@@ -179,6 +188,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string UpdatedCity { get; set; }
 
         /// <summary>
@@ -189,6 +199,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string UpdatedState { get; set; }
 
         /// <summary>
@@ -199,6 +210,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string UpdatedPostalCode { get; set; }
 
         /// <summary>
@@ -209,6 +221,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string UpdatedCountry { get; set; }
 
         /// <summary>
@@ -219,6 +232,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 40 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string UpdatedBarcode { get; set; }
 
         /// <summary>
@@ -282,6 +296,7 @@ namespace Rock.Model
         /// The note for NCOA.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string NcoaNote { get; set; }
 
         #endregion

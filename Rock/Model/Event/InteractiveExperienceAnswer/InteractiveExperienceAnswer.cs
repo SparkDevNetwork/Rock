@@ -22,6 +22,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Enums.Event;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -64,6 +66,7 @@ namespace Rock.Model
         /// The response.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Response { get; set; }
 
         /// <summary>
@@ -119,6 +122,7 @@ namespace Rock.Model
         /// The custom response data JSON.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ResponseDataJson { get; set; }
 
         #endregion

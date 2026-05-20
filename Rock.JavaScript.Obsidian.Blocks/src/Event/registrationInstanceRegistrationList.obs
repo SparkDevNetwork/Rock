@@ -303,14 +303,19 @@
     }
 
     /**
-     * Controls per-row visibility of the Discount Code badge: only show when
-     * the instance has a cost AND the row has a non-empty code.
+     * Controls per-row visibility of the Discount Code badge: show whenever
+     * the row has a non-empty code.
      */
     function shouldShowDiscountCode(row: Record<string, unknown>): boolean {
-        if (!config.options?.instanceHasCost) {
-            return false;
-        }
+        /*
+            5/12/2026 - MSE
 
+            Don't gate on instanceHasCost. A template with Cost = 0 can still have
+            fees and an applied discount code, so the code should show whenever it
+            exists on the registration row.
+
+            Reason: https://github.com/SparkDevNetwork/Rock/issues/6826
+        */
         const code = row.discountCode as string | null | undefined;
         return !!code;
     }

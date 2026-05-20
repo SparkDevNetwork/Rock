@@ -909,6 +909,15 @@ mission. We are so grateful for your commitment.</p>
                 page.PageNavigate += page_PageNavigate;
             }
 
+            // Set the CAPTCHA visibility before BindSavedAccounts() runs, because
+            // BindSavedAccounts() calls rblSavedAccount_SelectedIndexChanged which
+            // reads cpCaptcha.Visible to decide whether to apply the
+            // js-hidden-pending-captcha class to the Next button. Without this, the
+            // default WebControl.Visible (true) is read in Disabled mode and the
+            // Next button ends up hidden even when there is no CAPTCHA to solve.
+            var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+            cpCaptcha.Visible = !( disableCaptchaSupport || !cpCaptcha.IsAvailable );
+
             using ( var rockContext = new RockContext() )
             {
                 SetTargetPerson( rockContext );
@@ -918,40 +927,17 @@ mission. We are so grateful for your commitment.</p>
 
             RegisterScript();
 
-            var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
-            cpCaptcha.Visible = !( disableCaptchaSupport || !cpCaptcha.IsAvailable );
-            cpCaptcha.TokenReceived += CpCaptcha_TokenReceived;
+            // Intentionally not subscribing to cpCaptcha.TokenReceived. Without a
+            // server-side subscriber, captcha.js does not generate a postBackScript
+            // (see Captcha.OnPreRender), so solving the CAPTCHA never causes an async
+            // postback. The hosted payment iframe therefore is not re-rendered and the
+            // user's typed card data is preserved. The CAPTCHA token still ends up in
+            // the hidden field on every postback and is validated server-side in
+            // HandlePaymentInfoNextButton via cpCaptcha.IsResponseValid(). The UI
+            // change (hide widget, reveal Next button) is handled client-side via the
+            // "rockcaptcha:solved" event - see RegisterScript().
 
             InitializeFinancialGatewayControls();
-        }
-
-        /// <summary>
-        /// Handles the TokenReceived event of the CpCaptcha control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Captcha.TokenReceivedEventArgs"/> instance containing the event data.</param>
-        private void CpCaptcha_TokenReceived( object sender, Captcha.TokenReceivedEventArgs e )
-        {
-            if ( e.IsValid )
-            {
-                nbPaymentTokenError.Visible = false;
-                nbPaymentTokenError.Text = string.Empty;
-
-                _hostedPaymentInfoControl.Visible = true;
-                hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
-                cpCaptcha.Visible = false;
-
-                var isSavedAccount = rblSavedAccount.SelectedValue.AsInteger() > 0;
-                btnSavedAccountPaymentInfoNext.Visible = isSavedAccount;
-                btnHostedPaymentInfoNext.Visible = !isSavedAccount;
-                return;
-            }
-
-            nbPaymentTokenError.Visible = true;
-            nbPaymentTokenError.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
-            cpCaptcha.Visible = true;
-            btnHostedPaymentInfoNext.Visible = false;
-            btnSavedAccountPaymentInfoNext.Visible = false;
         }
 
         private void InitializeFinancialGatewayControls()
@@ -973,16 +959,23 @@ mission. We are so grateful for your commitment.</p>
 
             hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
 
-            if ( Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() ) || !cpCaptcha.IsAvailable )
+            // Show the payment fields immediately. The Next button is CSS-hidden
+            // (display: none) when CAPTCHA is required; it must still be rendered
+            // server-side so that the JS handler on "rockcaptcha:solved" can reveal
+            // it without a server postback. See RegisterScript().
+            var isSavedAccount = rblSavedAccount.SelectedValue.AsInteger() > 0;
+            btnSavedAccountPaymentInfoNext.Visible = isSavedAccount;
+            btnHostedPaymentInfoNext.Visible = !isSavedAccount;
+
+            if ( cpCaptcha.Visible )
             {
-                var isSavedAccount = rblSavedAccount.SelectedValue.AsInteger() > 0;
-                btnSavedAccountPaymentInfoNext.Visible = isSavedAccount;
-                btnHostedPaymentInfoNext.Visible = !isSavedAccount;
-            }
-            else
-            {
-                btnHostedPaymentInfoNext.Visible = false;
-                btnSavedAccountPaymentInfoNext.Visible = false;
+                // BootstrapButton overrides AddAttributesToRender and does not emit the
+                // Attributes collection or the inline Style collection, so we have to
+                // hide via a CSS class. The .js-hidden-pending-captcha rule is defined
+                // inline in RegisterScript(). When CAPTCHA is solved, RegisterScript's
+                // JS removes the class as part of revealing the button.
+                var activeNextButton = isSavedAccount ? ( WebControl ) btnSavedAccountPaymentInfoNext : btnHostedPaymentInfoNext;
+                activeNextButton.CssClass += " js-hidden-pending-captcha";
             }
 
             if ( _hostedPaymentInfoControl is IHostedGatewayPaymentControlTokenEvent )
@@ -1797,6 +1790,28 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void HandlePaymentInfoNextButton()
         {
+            // CAPTCHA verification was deferred to submission time so that solving
+            // the CAPTCHA does not trigger an async postback (which would re-render
+            // and wipe the hosted gateway iframe). Validate the token now before
+            // proceeding with payment processing.
+            if ( cpCaptcha.Visible && !cpCaptcha.IsResponseValid() )
+            {
+                ShowMessage( NotificationBoxType.Validation, "Before we finish...", "Please complete the verification again to continue." );
+
+                // Reset the client-side CAPTCHA state so the user can re-solve. The
+                // expired or invalid token in the hidden field would otherwise cause
+                // applyCaptchaState() to keep the widget hidden after the partial
+                // postback completes. The cap.js widget itself gets re-initialized
+                // automatically as part of the Captcha control re-rendering.
+                var resetScript = $@"
+$('#{cpCaptcha.ClientID}_hfToken').val('');
+$('#{cpCaptcha.ClientID}').show();
+$('#{btnHostedPaymentInfoNext.ClientID}, #{btnSavedAccountPaymentInfoNext.ClientID}').addClass('js-hidden-pending-captcha').hide();
+";
+                ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "utility-payment-entry-captcha-reset", resetScript, true );
+                return;
+            }
+
             if ( ValidatePaymentInfo( out string errorMessage ) )
             {
                 ReferencePaymentInfo paymentInfo = GetPaymentInfo( out errorMessage );
@@ -2196,9 +2211,18 @@ mission. We are so grateful for your commitment.</p>
         protected void rblSavedAccount_SelectedIndexChanged( object sender, EventArgs e )
         {
             bool isSavedAccount = rblSavedAccount.SelectedValue.AsInteger() > 0;
-            btnSavedAccountPaymentInfoNext.Visible = isSavedAccount && !cpCaptcha.Visible;
-            btnHostedPaymentInfoNext.Visible = !isSavedAccount && !cpCaptcha.Visible;
+            btnSavedAccountPaymentInfoNext.Visible = isSavedAccount;
+            btnHostedPaymentInfoNext.Visible = !isSavedAccount;
             pnlPaymentInfo.Visible = !isSavedAccount;
+
+            // When CAPTCHA is required, CSS-hide the active Next button until the
+            // user solves the CAPTCHA client-side. applyCaptchaState() will reveal it
+            // by removing the class once the token is present.
+            if ( cpCaptcha.Visible )
+            {
+                var activeNextButton = isSavedAccount ? ( WebControl ) btnSavedAccountPaymentInfoNext : btnHostedPaymentInfoNext;
+                activeNextButton.CssClass += " js-hidden-pending-captcha";
+            }
         }
 
         /// <summary>
@@ -4096,6 +4120,35 @@ mission. We are so grateful for your commitment.</p>
             var currencyCodeInfo = new RockCurrencyCodeInfo();
 
             string script = $@"
+    // Inject the CSS rule used to hide the Next button until CAPTCHA is solved.
+    // BootstrapButton's render skips the Style and Attributes collections, so a
+    // CSS class is the cleanest way to get a server-applied display:none onto it.
+    if ( !document.getElementById('utilityPaymentEntryCaptchaStyle') ) {{
+        var styleEl = document.createElement('style');
+        styleEl.id = 'utilityPaymentEntryCaptchaStyle';
+        styleEl.textContent = '.js-hidden-pending-captcha {{ display: none !important; }}';
+        document.head.appendChild(styleEl);
+    }}
+
+    function applyCaptchaState() {{
+        var $tokenField = $('#{cpCaptcha.ClientID}_hfToken');
+        var $captcha = $('#{cpCaptcha.ClientID}');
+
+        if ( $tokenField.length === 0 || !$tokenField.val() ) {{
+            return;
+        }}
+
+        // CAPTCHA has been solved (token present in the hidden field). Hide the
+        // widget and reveal the Next button that matches the saved-account selection.
+        $captcha.hide();
+
+        var isSavedAccount = parseInt($('#{rblSavedAccount.ClientID} input:checked').val() || '0') > 0;
+        var $activeNext = $('#' + (isSavedAccount ? '{btnSavedAccountPaymentInfoNext.ClientID}' : '{btnHostedPaymentInfoNext.ClientID}'));
+        var $inactiveNext = $('#' + (isSavedAccount ? '{btnHostedPaymentInfoNext.ClientID}' : '{btnSavedAccountPaymentInfoNext.ClientID}'));
+        $activeNext.removeClass('js-hidden-pending-captcha').show();
+        $inactiveNext.hide();
+    }}
+
     Sys.Application.add_load(function () {{
         // As amounts are entered, validate that they are numeric and recalc total
         $('.account-amount').on('change', function() {{
@@ -4125,6 +4178,18 @@ mission. We are so grateful for your commitment.</p>
         // Hide or show a div based on selection of checkbox (Saved Account)
         $('input:checkbox.toggle-input').unbind('click').on('click', function () {{
             $(this).parents('.checkbox').next('.toggle-content').slideToggle();
+        }});
+
+        // Reflect CAPTCHA state on initial load and after any partial postback that
+        // re-renders the payment panel.
+        applyCaptchaState();
+
+        // Reveal the appropriate Next button as soon as CAPTCHA is solved on the
+        // client - no server postback needed, so the hosted gateway iframe is
+        // preserved. Delegated on document so it survives partial postbacks that
+        // replace the widget DOM.
+        $(document).off('rockcaptcha:solved.utilityPaymentEntry').on('rockcaptcha:solved.utilityPaymentEntry', '#{cpCaptcha.ClientID}', function () {{
+            applyCaptchaState();
         }});
     }});
 ";

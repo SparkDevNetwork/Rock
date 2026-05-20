@@ -10,25 +10,15 @@
           stickyHeader
           liveUpdates>
 
-        <Column name="location"
-                title="Location"
-                field="location"
-                :filter="pickExistingValueFilter"
-                :filterValue="getLocationFilterValue"
-                :quickFilterValue="getLocationFilterValue"
-                visiblePriority="xs"
-                width=15%>
-            <template #format="{ row }">
-                <div class="text">
-                    <div>{{ row.location }}</div>
-                    <div><small>{{ row.locationPath }}</small></div>
-                </div>
-            </template>
-
-            <template #skeleton>
-                <div class="skeleton skeleton-text skeleton-rounded" />
-            </template>
-        </Column>
+        <HighlightDetailColumn name="location"
+                               title="Location"
+                               field="location"
+                               detailField="locationPath"
+                               :filter="pickExistingValueFilter"
+                               :filterValue="getLocationFilterValue"
+                               :quickFilterValue="getLocationFilterValue"
+                               visiblePriority="xs"
+                               width="15%" />
 
         <TextColumn name="campus"
                     title="Campus"
@@ -53,26 +43,22 @@
                       :quickFilterValue="getPersonNameFilterValue"
                       visiblePriority="xs" />
 
-        <Column v-if="config.options?.isGroupColumnVisible"
-                name="group"
-                title="Group"
-                field="group"
-                :filter="pickExistingValueFilter"
-                :filterValue="getGroupFilterValue"
-                :quickFilterValue="getGroupFilterValue"
-                :sortValue="getGroupSortValue"
-                visiblePriority="md">
+        <HighlightDetailColumn v-if="config.options?.isGroupColumnVisible"
+                               name="group"
+                               title="Group"
+                               field="group"
+                               :filter="pickExistingValueFilter"
+                               :filterValue="getGroupFilterValue"
+                               :quickFilterValue="getGroupFilterValue"
+                               :sortValue="getGroupSortValue"
+                               visiblePriority="md">
             <template #format="{ row }">
-                <div class="text">
-                    <div>{{ row.groupName }}</div>
-                    <div><small>{{ row.checkInAreaPath }}</small></div>
+                <div>
+                    <div class="highlight-title">{{ row.groupName }}</div>
+                    <div class="highlight-detail">{{ row.checkInAreaPath }}</div>
                 </div>
             </template>
-
-            <template #skeleton>
-                <div class="skeleton skeleton-text skeleton-rounded" />
-            </template>
-        </Column>
+        </HighlightDetailColumn>
 
         <DateTimeColumn name="startDateTime"
                         title="Start Date Time"
@@ -131,7 +117,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, PersonColumn, pickExistingValueFilter, dateValueFilter, booleanValueFilter, TextColumn, DateTimeColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, HighlightDetailColumn, PersonColumn, pickExistingValueFilter, dateValueFilter, booleanValueFilter, TextColumn, DateTimeColumn, Column } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AttendanceHistoryListOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/AttendanceHistoryList/attendanceHistoryListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";

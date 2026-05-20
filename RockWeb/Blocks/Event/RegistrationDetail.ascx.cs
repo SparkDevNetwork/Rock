@@ -2534,6 +2534,14 @@ namespace RockWeb.Blocks.Event
             spanChangeButtonWrapper.Visible = _canEditPaymentPlan;
             lbDeletePaymentPlan.Visible = _canEditPaymentPlan;
 
+            // Warn when the remaining scheduled plan payments don't equal the registration's remaining balance.
+            // This catches plans that no longer cover the balance because registrants were removed,
+            // discount codes were modified, or fees/costs changed after the plan was set up.
+            var paymentPlan = registration.PaymentPlanFinancialScheduledTransaction.PaymentPlan;
+            nbPaymentPlanAmountMismatch.Visible = paymentPlan != null
+                && paymentPlan.IsActive
+                && paymentPlan.PlannedAmountRemaining != registration.BalanceDue;
+
             var paymentPlanFinancialScheduledTransactionId = registration.PaymentPlanFinancialScheduledTransactionId.Value;
             var lastTransactionDate = new FinancialTransactionService( new RockContext() )
                 .Queryable()

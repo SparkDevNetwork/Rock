@@ -16,28 +16,21 @@
           @gridSettingsClick="isGridSettingsVisible = true"
           liveUpdates>
 
-        <Column name="name"
-                title="Name"
-                field="name"
-                :filter="textValueFilter"
-                :quickFilterValue="getRowNameFilterValue"
-                visiblePriority="xs"
-                width="30%">
-            <template #format="{ row }">
-                <div>
-                    <div>
-                        <span class="text-semibold">{{ row.name }}</span>
-                    </div>
-                    <div v-if="row.path">
-                        {{ row.path }}
-                    </div>
-                </div>
+        <HighlightDetailColumn name="name"
+                               title="Name"
+                               field="name"
+                               :filter="textValueFilter"
+                               :quickFilterValue="getRowNameFilterValue"
+                               visiblePriority="xs"
+                               width="30%">
+            <template #detailFormat="{ row }">
+                <template v-if="row.path">{{ row.path }}</template>
             </template>
 
             <template #skeleton>
                 <div class="skeleton skeleton-text skeleton-rounded" />
             </template>
-        </Column>
+        </HighlightDetailColumn>
 
         <TextColumn name="category"
                     title="Category"
@@ -112,7 +105,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, Column, NumberBadgeColumn, numberValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, Column, HighlightDetailColumn, NumberBadgeColumn, numberValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { BlockTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/BlockTypeList/blockTypeListOptionsBag";

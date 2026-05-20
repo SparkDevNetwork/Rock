@@ -21,6 +21,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -68,6 +70,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string TypeQualifier { get; set; }
 
         /// <summary>
@@ -75,6 +78,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string WorkflowName { get; set; }
 
         #endregion Entity Properties

@@ -4,11 +4,12 @@
         {{ config.errorMessage }}
     </NotificationBox>
 
-    <Grid v-else
+    <Grid v-else-if="isBlockVisible"
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Metric Value"
+          title="Metric Values"
           :entityTypeGuid="EntityType.MetricValue"
           stickyHeader
           liveUpdates
@@ -22,28 +23,25 @@
         <DateColumn name="metricValueDateTime"
                     field="metricValueDateTime"
                     title="Date"
-                    :filter="dateValueFilter"
-                    visiblePriority="xs" />
+                    :filter="dateValueFilter" />
 
         <LabelColumn name="metricValueType"
                      field="metricValueType"
                      title="Type"
-                     :filter="pickExistingValueFilter"
-                     visiblePriority="sm" />
+                     :filter="pickExistingValueFilter" />
 
         <NumberColumn name="yValue"
                       field="yValue"
                       title="Value"
                       :filter="numberValueFilter"
-                      headerClass="title-right"
-                      visiblePriority="xs" />
+                      :formatComponent="ValueCell"
+                      headerClass="title-right" />
 
         <TextColumn v-if="isPartitionsColumnVisible"
                     name="partitions"
                     field="partitions"
                     title="Partitions"
-                    :filter="textValueFilter"
-                    visiblePriority="md" />
+                    :filter="textValueFilter" />
 
         <TextColumn name="xValue"
                     field="xValue"
@@ -56,7 +54,7 @@
 
     </Grid>
 
-    <GridSettingsModal v-if="!config.errorMessage"
+    <GridSettingsModal v-if="isBlockVisible"
                        v-model="gridSettings"
                        v-model:visible="isGridSettingsVisible"
                        :metricValueTypeItems="metricValueTypeItems"
@@ -66,6 +64,7 @@
 <script setup lang="ts">
     import { computed, reactive, ref, watch } from "vue";
     import GridSettingsModal from "./MetricValueList/gridSettingsModal.partial.obs";
+    import ValueCell from "./MetricValueList/valueCell.partial.obs";
     import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./MetricValueList/types.partial";
     import Grid, {
         DateColumn, DeleteColumn, LabelColumn, NumberColumn, TextColumn,
@@ -93,6 +92,8 @@
     const preferences = usePersonPreferences().blockPreferences;
 
     onConfigurationValuesChanged(useReloadBlock());
+
+    const isBlockVisible = config.options?.isBlockVisible === true;
 
     // The metric IdKey is the suffix used to scope the partition filter
     // preference per-metric; absent only when no metric is in scope.
@@ -200,7 +201,7 @@
         gridDataSource.value = loadGridData();
     });
 
-    if (!config.errorMessage) {
+    if (isBlockVisible) {
         gridDataSource.value = loadGridData();
     }
 </script>
