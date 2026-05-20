@@ -39,6 +39,14 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         public Guid? RecipientAttributeGuid { get; set; }
 
         /// <summary>
+        /// Identifies whether the resolved primary person, the primary
+        /// person's spouse, or both receive the confirmation e-mail.
+        /// Defaults to <see cref="FormConfirmationEmailRecipientType.Person"/>
+        /// for backward compatibility.
+        /// </summary>
+        public FormConfirmationEmailRecipientType Recipient { get; set; } = FormConfirmationEmailRecipientType.Person;
+
+        /// <summary>
         /// Determines how the content of the e-mail will be generated.
         /// </summary>
         public FormEmailSourceViewModel Source { get; set; }

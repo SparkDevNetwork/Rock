@@ -2,9 +2,12 @@
 <template>
     <div class="rock-header">
         <div class="d-flex flex-wrap justify-content-between">
-            <div>
-                <h4 v-if="props.title" class="title">{{ props.title }}</h4>
-                <p v-if="description" class="description">{{ description }}</p>
+            <div class="section-header-title-block">
+                <i v-if="iconCssClass" :class="iconCssClass" class="section-header-icon"></i>
+                <div>
+                    <h4 v-if="props.title" class="title">{{ props.title }}</h4>
+                    <p v-if="description" class="description">{{ description }}</p>
+                </div>
             </div>
             <div v-if="$slots.actions" class="section-header-actions align-self-end">
                 <slot name="actions" />
@@ -14,6 +17,28 @@
         <hr v-if="!isSeparatorHidden" class="section-header-hr">
     </div>
 </template>
+
+<style scoped>
+.section-header-title-block {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-small, 0.5rem);
+}
+
+.section-header-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    margin-top: 0.125rem;
+    font-size: 1rem;
+    color: var(--color-warning-strong, #c4631c);
+    background-color: var(--color-warning-soft, #fef0e2);
+    border-radius: var(--rounded-small, 0.375rem);
+}
+</style>
 
 <script setup lang="ts">
     import { PropType } from "vue";
@@ -32,6 +57,16 @@
         isSeparatorHidden: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * Optional icon CSS class (e.g. "ti ti-settings") rendered in a soft
+         * tinted square at the start of the header title row. When unset, no
+         * icon is rendered and the header lays out as before.
+         */
+        iconCssClass: {
+            type: String as PropType<string>,
+            default: ""
         }
     });
 </script>
