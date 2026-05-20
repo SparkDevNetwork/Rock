@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Rsvp.RsvpList
 {
     /// <summary>
@@ -22,6 +25,10 @@ namespace Rock.ViewModels.Blocks.Rsvp.RsvpList
     /// </summary>
     public class RsvpListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the locations available for the location filter dropdown.
+        /// </summary>
+        public List<ListItemBag> Locations { get; set; }
+
     }
 }
-
