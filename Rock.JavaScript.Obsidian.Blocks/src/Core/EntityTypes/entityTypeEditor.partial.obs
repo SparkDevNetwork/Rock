@@ -1,17 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-        <div class="row">
-            <TextBox v-model="name"
-                     label="Name"
-                     textMode="singleLine"
-                     :isReadOnly="true" />
-        </div>
-        <div class="row">
-            <TextBox v-model="friendlyName"
-                     label="Friendly Name"
-                     textMode="singleLine" />
-        </div>
+        <TextBox v-model="name"
+                 label="Name"
+                 textMode="singleLine"
+                 :disabled="true" />
+        <TextBox v-model="friendlyName"
+                 label="Friendly Name"
+                 textMode="singleLine" />
         <div class="row">
             <div class="col-md-6">
                 <CheckBox v-model="isCommon"
@@ -27,36 +23,29 @@
         <CodeEditor v-model="indexResultTemplate"
                     label="Index Results Template"
                     help="The Lava used by the Universal Search feature to display results. Available merge fields include CurrentPerson, IndexDocument and DisplayOptions."
-                    :isReadOnly="!isEditable"
                     mode="lava"
-                    editor="monaco"
                     :editorHeight="150" />
         <CodeEditor v-model="indexDocumentUrl"
                     label="Index Document URL Pattern"
                     help="The Lava used by the Universal Search feature to determine the Rock URL of the document. Available merge fields include CurrentPerson, IndexDocument and DisplayOptions."
-                    :isReadOnly="!isEditable"
                     mode="lava"
-                    editor="monaco"
                     :editorHeight="150" />
         <CodeEditor v-model="linkUrlLavaTemplate"
                     label="Link URL Pattern"
                     help="The Lava used when Rock needs to create a URL to an entity based just on the entity type (ie. Tag Report). Available merge field is Entity."
-                    :isReadOnly="!isEditable"
                     mode="lava"
-                    editor="monaco"
                     :editorHeight="80" />
     </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { onMounted, PropType, ref, watch } from "vue";
+    import { PropType, ref, watch } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import { EntityTypesBag } from "@Obsidian/ViewModels/Blocks/Core/EntityTypes/entityTypesBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { updateRefValue } from "@Obsidian/Utility/component";
-    import { tooltip } from "@Obsidian/Utility/tooltip";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     const props = defineProps({
         modelValue: {
@@ -78,7 +67,6 @@
     const indexResultTemplate = ref(props.modelValue.bag?.indexResultTemplate ?? "");
     const indexDocumentUrl = ref(props.modelValue.bag?.indexDocumentUrl ?? "");
     const linkUrlLavaTemplate = ref(props.modelValue.bag?.linkUrlLavaTemplate ?? "");
-    const isEditable = ref(true);
 
     // #endregion
 
@@ -94,18 +82,6 @@
         updateRefValue(indexResultTemplate, props.modelValue.bag?.indexResultTemplate ?? "");
         updateRefValue(indexDocumentUrl, props.modelValue.bag?.indexDocumentUrl ?? "");
         updateRefValue(linkUrlLavaTemplate, props.modelValue.bag?.linkUrlLavaTemplate ?? "");
-    });
-
-    // enable the tooltips for the badges
-    const commonInfoRef = ref<Element | null>(null);
-    const trackInteractionInfoRef = ref<Element | null>(null);
-    onMounted(() => {
-        if (commonInfoRef?.value) {
-            tooltip(commonInfoRef.value);
-        }
-        if (trackInteractionInfoRef?.value) {
-            tooltip(trackInteractionInfoRef.value);
-        }
     });
 
     // Determines which values we want to track changes on (defined in the
