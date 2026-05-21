@@ -62,7 +62,7 @@ This does **not** apply to questions already settled by Rock conventions (rules,
 
 **C#:** PascalCase for classes/methods, camelCase for variables/params, `I` prefix for interfaces, underscore prefix for private fields (no Hungarian notation). Meaningful names — no abbreviations, no single-char variables (except `i` in loops).
 
-**TypeScript:** PascalCase for classes/interfaces/enums/types, camelCase for functions/variables/params/**filenames**. Do **not** prefix private fields with `_`.
+**TypeScript:** PascalCase for classes/interfaces/enums/types, camelCase for functions/variables/params/**filenames**. The leading-underscore convention (`_unusedArg`) silences the unused-vars warning; do not use `_` as a general private-field marker. See `.claude/rules/obsidian-conventions.md` for the full Obsidian/TypeScript style guide.
 
 ---
 
