@@ -15,7 +15,9 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -65,6 +67,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -74,6 +77,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> containing a description or summary about this WorkflowActivityType.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>

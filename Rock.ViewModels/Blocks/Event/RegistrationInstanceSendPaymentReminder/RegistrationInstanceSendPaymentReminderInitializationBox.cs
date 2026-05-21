@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Rock.ViewModels.Core.Grid;
+
 namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceSendPaymentReminder
 {
     /// <summary>
@@ -24,6 +26,13 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceSendPaymentReminder
     /// </summary>
     public class RegistrationInstanceSendPaymentReminderInitializationBox
     {
+        /// <summary>
+        /// Gets or sets the grid definition. The grid is populated client-side
+        /// from <see cref="Registrations"/>, but the definition still drives
+        /// the toolbar action URLs (e.g. Merge Template).
+        /// </summary>
+        public GridDefinitionBag GridDefinition { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether the resolved registration
         /// instance has any registrations with an outstanding balance. When

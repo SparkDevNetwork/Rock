@@ -14,8 +14,12 @@
 // limitations under the License.
 // </copyright>
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Newtonsoft.Json;
-using UAParser;
+
+using Rock.Configuration;
+using Rock.Net;
 
 namespace Rock.SendGrid.Webhook
 {
@@ -210,14 +214,7 @@ namespace Rock.SendGrid.Webhook
         /// <value>
         /// The client os.
         /// </value>
-        public string ClientOs
-        {
-            get
-            {
-                var clientInfo = GetClientInfo();
-                return clientInfo?.OS.Family ?? string.Empty;
-            }
-        }
+        public string ClientOs => GetBrowserInfo()?.OSFamily ?? string.Empty;
 
         /// <summary>
         /// Gets the client browser.
@@ -225,14 +222,7 @@ namespace Rock.SendGrid.Webhook
         /// <value>
         /// The client browser.
         /// </value>
-        public string ClientBrowser
-        {
-            get
-            {
-                var clientInfo = GetClientInfo();
-                return clientInfo?.UA.Family ?? string.Empty;
-            }
-        }
+        public string ClientBrowser => GetBrowserInfo()?.BrowserFamily ?? string.Empty;
 
         /// <summary>
         /// Gets the type of the client device.
@@ -240,14 +230,7 @@ namespace Rock.SendGrid.Webhook
         /// <value>
         /// The type of the client device.
         /// </value>
-        public string ClientDeviceType
-        {
-            get
-            {
-                var clientInfo = GetClientInfo();
-                return clientInfo?.Device.Family ?? string.Empty;
-            }
-        }
+        public string ClientDeviceType => GetBrowserInfo()?.DeviceFamily ?? string.Empty;
 
         /// <summary>
         /// Gets the client device brand.
@@ -255,24 +238,16 @@ namespace Rock.SendGrid.Webhook
         /// <value>
         /// The client device brand.
         /// </value>
-        public string ClientDeviceBrand
-        {
-            get
-            {
-                var clientInfo = GetClientInfo();
-                return clientInfo?.Device.Brand ?? string.Empty;
-            }
-        }
+        public string ClientDeviceBrand => GetBrowserInfo()?.DeviceBrand ?? string.Empty;
 
-        private ClientInfo _clientInfo = null;
-        private ClientInfo GetClientInfo()
+        private UserAgentInfo _browserInfo = null;
+        private UserAgentInfo GetBrowserInfo()
         {
-            if ( _clientInfo == null && UserAgent.IsNotNullOrWhiteSpace() )
+            if ( _browserInfo == null && UserAgent.IsNotNullOrWhiteSpace() )
             {
-                var parser = Parser.GetDefault();
-                _clientInfo = parser.Parse( UserAgent );
+                _browserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( UserAgent );
             }
-            return _clientInfo;
+            return _browserInfo;
         }
     }
 }

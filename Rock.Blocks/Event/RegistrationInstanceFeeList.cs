@@ -149,15 +149,20 @@ namespace Rock.Blocks.Event
         {
             _registrationInstance = RequestContext.GetContextEntity<RegistrationInstance>();
 
-            if ( _registrationInstance == null )
+            if ( _registrationInstance != null )
             {
-                var instanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
-
-                if ( instanceId.HasValue )
-                {
-                    _registrationInstance = new RegistrationInstanceService( RockContext ).Get( instanceId.Value );
-                }
+                return _registrationInstance;
             }
+
+            var registrationInstanceKey = PageParameter( PageParameterKey.RegistrationInstanceId );
+
+            if ( registrationInstanceKey.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            _registrationInstance = new RegistrationInstanceService( RockContext )
+                .Get( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds );
 
             return _registrationInstance;
         }

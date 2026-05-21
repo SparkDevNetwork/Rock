@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Cms;
 using Rock.Configuration;
 using Rock.Enums.Cms;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Cms
 {

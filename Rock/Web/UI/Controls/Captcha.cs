@@ -79,7 +79,11 @@ namespace Rock.Web.UI.Controls
             }
             set
             {
-                ViewState["CaptchaMode"] = value.ToIntSafe().ToString();
+                // Store the underlying integer value rather than the enum's name. ToIntSafe
+                // operates on the enum's ToString() output (e.g., "Invisible"), which fails
+                // int.TryParse and silently falls back to 0, so every value would be persisted
+                // as Visible.
+                ViewState["CaptchaMode"] = value.ConvertToInt().ToString();
             }
         }
 

@@ -24,6 +24,8 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.Event;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -49,6 +51,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -68,6 +71,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> for the Description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -78,6 +82,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PublicLabel { get; set; }
 
         /// <summary>
@@ -106,6 +111,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string PushNotificationTitle { get; set; }
 
         /// <summary>
@@ -116,6 +122,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string PushNotificationDetail { get; set; }
 
         /// <summary>
@@ -126,6 +133,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string WelcomeTitle { get; set; }
 
         /// <summary>
@@ -136,6 +144,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string WelcomeMessage { get; set; }
 
         /// <summary>
@@ -155,6 +164,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string NoActionTitle { get; set; }
 
         /// <summary>
@@ -165,6 +175,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string NoActionMessage { get; set; }
 
         /// <summary>
@@ -184,6 +195,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ActionBackgroundColor { get; set; }
 
         /// <summary>
@@ -194,6 +206,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ActionTextColor { get; set; }
 
         /// <summary>
@@ -204,6 +217,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ActionPrimaryButtonColor { get; set; }
 
         /// <summary>
@@ -214,6 +228,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ActionPrimaryButtonTextColor { get; set; }
 
         /// <summary>
@@ -224,6 +239,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ActionSecondaryButtonColor { get; set; }
 
         /// <summary>
@@ -234,6 +250,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ActionSecondaryButtonTextColor { get; set; }
 
         /// <summary>
@@ -252,6 +269,7 @@ namespace Rock.Model
         /// The custom css for the action.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ActionCustomCss { get; set; }
 
         /// <summary>
@@ -262,6 +280,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AudienceBackgroundColor { get; set; }
 
         /// <summary>
@@ -272,6 +291,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AudienceTextColor { get; set; }
 
         /// <summary>
@@ -282,6 +302,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AudiencePrimaryColor { get; set; }
 
         /// <summary>
@@ -292,6 +313,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AudienceSecondaryColor { get; set; }
 
         /// <summary>
@@ -302,6 +324,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AudienceAccentColor { get; set; }
 
         /// <summary>
@@ -320,6 +343,7 @@ namespace Rock.Model
         /// The custom css for the audience.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AudienceCustomCss { get; set; }
 
         /// <summary>
@@ -329,6 +353,7 @@ namespace Rock.Model
         /// The JSON representing the additional settings.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ExperienceSettingsJson { get; set; }
 
         #endregion

@@ -642,9 +642,8 @@ namespace Rock
                 enabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" );
             }
 
-            var context = LavaService.NewRenderContext( mergeObjects );
-
-            context.SetEnabledCommands( enabledLavaCommands, "," );
+            var enabledCommands = enabledLavaCommands.SplitDelimitedValues( "," );
+            var context = LavaService.NewRenderContext( mergeObjects, enabledCommands );
 
             if ( currentPersonOverride != null )
             {

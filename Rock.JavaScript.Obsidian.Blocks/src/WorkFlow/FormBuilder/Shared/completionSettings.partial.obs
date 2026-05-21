@@ -1,26 +1,39 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <SectionContainer v-model="enabled"
-                      title="Completion Settings"
-                      description="The settings below determine the actions to take after an individual completes the form."
-                      :toggleText="sectionToggleText">
-        <SegmentedPicker v-model="type"
-                         :items="typeOptions" />
+    <ContentSection title="Completion Settings"
+                    icon="ti ti-circle-check"
+                    :hideToggleButton="hasEnable"
+                    :disableCollapse="!hasEnable"
+                    unmountOnCollapse
+                    :isCollapsed="hasEnable && !enabled"
+                    @update:isCollapsed="onHeaderToggle">
+        <template #description>
+            The settings below determine the actions to take after an individual completes the form.
+        </template>
+        <template v-if="hasEnable" #headerActions>
+            <InlineSwitch v-model="enabled" label="Enable" />
+        </template>
 
-        <div v-if="isTypeDisplayMessage">
-            <TextBox v-model="message"
-                     label="Completion Message"
-                     textMode="multiline"
-                     rules="required"
-                     allowHtml />
-        </div>
+        <ContentStack>
+            <RadioButtonList v-model="type"
+                             label="Completion Action"
+                             :items="typeOptions" />
 
-        <div v-else-if="isTypeRedirect">
-            <TextBox v-model="redirectUrl"
-                     label="Redirect URL"
-                     rules="required" />
-        </div>
-    </SectionContainer>
+            <ConditionalWell v-if="isTypeDisplayMessage">
+                <TextBox v-model="message"
+                         label="Completion Message"
+                         textMode="multiline"
+                         rules="required"
+                         allowHtml />
+            </ConditionalWell>
+
+            <ConditionalWell v-else-if="isTypeRedirect">
+                <UrlLinkBox v-model="redirectUrl"
+                            label="Redirect URL"
+                            rules="required" />
+            </ConditionalWell>
+        </ContentStack>
+    </ContentSection>
 </template>
 
 <script setup lang="ts">
@@ -29,8 +42,12 @@
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import SegmentedPicker from "./segmentedPicker.partial.obs";
-    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
     import { FormCompletionActionType, FormCompletionAction } from "./types.partial";
 
     const props = defineProps({
@@ -71,14 +88,26 @@
         }
     ];
 
+    /**
+     * Handles a header click forwarded by ContentSection in
+     * hideToggleButton mode. Only fires when `hasEnable` is true (the
+     * section is collapsible). The handler is also wired when
+     * `hasEnable` is false, but ContentSection's `disableCollapse` guard
+     * suppresses the emit in that case.
+     */
+    function onHeaderToggle(newIsCollapsed: boolean): void {
+        if (!props.hasEnable) {
+            return;
+        }
+
+        enabled.value = !newIsCollapsed;
+    }
+
     /** True if the type is DisplayMessage. */
     const isTypeDisplayMessage = computed((): boolean => type.value === FormCompletionActionType.DisplayMessage.toString());
 
     /** True if the type is Redirect */
     const isTypeRedirect = computed((): boolean => type.value === FormCompletionActionType.Redirect.toString());
-
-    /** The title text of the toggle button on the section. */
-    const sectionToggleText = computed((): string => props.hasEnable ? "Enable" : "");
 
     // Watch for changes in our modelValue and then update all our internal values.
     watch(() => props.modelValue, () => {

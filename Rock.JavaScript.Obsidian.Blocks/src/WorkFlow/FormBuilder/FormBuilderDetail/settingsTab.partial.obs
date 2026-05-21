@@ -3,17 +3,20 @@
     <div class="form-builder-scroll">
         <div class="panel-body">
             <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged">
-                <GeneralSettings v-model="generalSettings"
-                                 :templateOverrides="templateOverrides"
-                                 @getUniqueSlug="$emit('getUniqueSlug')" />
+                <ContentSectionContainer :sidebar="false">
+                    <GeneralSettings v-model="generalSettings"
+                                     :templateOverrides="templateOverrides"
+                                     :hasSubmissions="hasSubmissions"
+                                     @getUniqueSlug="$emit('getUniqueSlug')" />
 
-                <CompletionSettings v-if="!isCompletionForced" v-model="completionSettings" />
-                <NotificationBox v-else alertType="info">
-                    <h4 class="alert-heading">Completion Settings</h4>
-                    <p>
-                        The completion action is defined on the template and cannot be changed.
-                    </p>
-                </NotificationBox>
+                    <CompletionSettings v-if="!isCompletionForced" v-model="completionSettings" />
+                    <NotificationBox v-else alertType="info">
+                        <h4 class="alert-heading">Completion Settings</h4>
+                        <p>
+                            The completion action is defined on the template and cannot be changed.
+                        </p>
+                    </NotificationBox>
+                </ContentSectionContainer>
             </RockForm>
         </div>
     </div>
@@ -22,6 +25,7 @@
 <script setup lang="ts">
     import { computed, ref, PropType, watch } from "vue";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import CompletionSettings from "../Shared/completionSettings.partial.obs";
@@ -47,6 +51,16 @@
         },
 
         submit: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * True when the form already has submissions. Surfaces the
+         * slug-edit warning on the Settings tab so the user knows shared
+         * URLs will break if they rename the slug.
+         */
+        hasSubmissions: {
             type: Boolean as PropType<boolean>,
             default: false
         }

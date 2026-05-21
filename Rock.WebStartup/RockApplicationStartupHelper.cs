@@ -354,6 +354,7 @@ namespace Rock.WebStartup
             sc.AddSingleton<IChatProvider, StreamChatProvider>();
             sc.AddSingleton<ICaptchaProvider, CaptchaProofOfWorkProvider>();
             sc.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
+            sc.AddSingleton<IUserAgentParser, UserAgentParser>();
             sc.AddSingleton<IWebHostEnvironment>( provider => new Utility.WebHostEnvironment
             {
                 WebRootPath = AppDomain.CurrentDomain.BaseDirectory

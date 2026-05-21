@@ -18,7 +18,7 @@ using Rock.Communication.Transport;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 
 using SmtpServer;
 using SmtpServer.Protocol;

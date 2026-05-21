@@ -3,7 +3,7 @@
     <teleport :to="teleportTarget" v-if="props.modelValue">
         <div ref="flyoutEl"
              class="flyout"
-             :style="style"
+             :style="[style, widthStyle]"
              @mouseenter="onFlyoutEnter"
              @mouseleave="onFlyoutLeave">
             <div v-if="hasHeader"
@@ -72,6 +72,15 @@
             type: Function as PropType<(() => void | PromiseLike<void>)>,
             required: false
         },
+
+        /**
+         * Overrides the flyout's default width. Accepts any valid CSS length
+         * (e.g. "600px", "40rem"). When omitted the scoped default applies.
+         */
+        width: {
+            type: String as PropType<string>,
+            required: false
+        },
     });
 
     const emit = defineEmits<{
@@ -89,6 +98,7 @@
     const hasHeader = computed(() => !!slots.header);
     const fullscreenElement = ref<Element | null>(null);
     const teleportTarget = computed(() => fullscreenElement.value ?? document.body);
+    const widthStyle = computed(() => props.width ? { width: props.width } : null);
 
     function updatePosition(): void {
         if (!props.anchorEl || !flyoutEl.value) {

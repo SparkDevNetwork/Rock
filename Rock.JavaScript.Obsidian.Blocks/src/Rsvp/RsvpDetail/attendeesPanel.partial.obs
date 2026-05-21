@@ -1,0 +1,300 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" alertType="danger" dismissible @dismiss="errorMessage = ''">
+        {{ errorMessage }}
+    </NotificationBox>
+
+    <Grid :definition="bag.attendeesGridDefinition ?? undefined"
+          :data="gridData"
+          keyField="personIdKey"
+          personKeyField="personIdKey"
+          :entityTypeGuid="EntityType.Person"
+          itemTerm="Invitee"
+          title="Invitees"
+          titleIconCssClass="ti ti-door-enter"
+          liveUpdates>
+        <SelectColumn />
+
+        <PersonColumn name="person"
+                      title="Invitees"
+                      field="person"
+                      :showAsLink="true"
+                      :detailField="false"
+                      :filter="textValueFilter"
+                      :filterValue="getInviteeFilterValue"
+                      :quickFilterValue="getInviteeFilterValue"
+                      visiblePriority="xs"
+                      width="18%" />
+
+        <Column name="status"
+                title="Status"
+                field="status"
+                :filter="pickExistingValueFilter"
+                :sortValue="getStatusSortValue"
+                :quickFilterValue="getStatusSortValue"
+                width="18%">
+            <template #format="{ row }">
+                <div class="flex-grow-1">
+                    <DropDownList :modelValue="(row.status as string) ?? AttendeeStatus.NoResponse"
+                                  :items="statusItems"
+                                  :showBlankItem="false"
+                                  formGroupClasses="mb-0"
+                                  @update:modelValue="onStatusChanged(row, $event as string)" />
+                </div>
+            </template>
+            <template #condensed="{ row }">{{ (row.status as string) ?? "" }}</template>
+        </Column>
+
+        <Column v-if="bag.showDeclineReasons"
+                name="declineReason"
+                title="Decline Reason"
+                field="declineReasonValueGuid"
+                :filter="pickExistingValueFilter"
+                :filterValue="getDeclineReasonFilterValue"
+                :quickFilterValue="getDeclineReasonFilterValue"
+                :sortValue="getDeclineReasonFilterValue"
+                :exportValue="getDeclineReasonFilterValue"
+                width="27%">
+            <template #format="{ row }">
+                <div class="flex-grow-1">
+                    <DropDownList :modelValue="(row.declineReasonValueGuid as string) ?? ''"
+                                  :items="bag.attendeeDeclineReasons ?? []"
+                                  :showBlankItem="true"
+                                  :disabled="row.status !== AttendeeStatus.Decline"
+                                  formGroupClasses="mb-0"
+                                  @update:modelValue="onDeclineReasonChanged(row, $event as string)" />
+                </div>
+            </template>
+            <template #condensed="{ row }">{{ getDeclineReasonFilterValue(row) }}</template>
+        </Column>
+
+        <Column v-if="bag.showDeclineReasons"
+                name="declineNote"
+                title="Decline Note"
+                field="declineNote"
+                :sortValue="getDeclineNoteSortValue"
+                :quickFilterValue="getDeclineNoteSortValue"
+                width="37%">
+            <template #format="{ row }">
+                <button v-if="row.status === AttendeeStatus.Decline"
+                        type="button"
+                        class="btn btn-link p-0 text-decoration-none d-flex align-items-center w-100 text-left"
+                        @click="onEditNoteClick($event, row)">
+                    <span class="flex-grow-1 text-truncate" :class="row.declineNote ? 'text-body' : 'text-muted'">{{ (row.declineNote as string) || "Add note..." }}</span>
+                    <i class="ti ti-pencil text-muted ml-1"></i>
+                </button>
+            </template>
+        </Column>
+    </Grid>
+
+    <Flyout v-model="isNoteFlyoutOpen"
+            :anchorEl="noteAnchorEl"
+            :onSave="onNoteFlyoutSave"
+            width="600px">
+        <template #header>
+            <h4 class="mb-0">Decline Note</h4>
+        </template>
+
+        <NotificationBox v-if="noteErrorMessage" alertType="danger" dismissible @dismiss="noteErrorMessage = ''">
+            {{ noteErrorMessage }}
+        </NotificationBox>
+
+        <TextBox v-model="editingNote" textMode="multiline" :rows="4" label="Note" />
+
+        <template #footer>
+            <div class="d-flex justify-content-end">
+                <RockButton type="submit"
+                            :btnType="BtnType.Primary"
+                            :btnSize="BtnSize.Small"
+                            :isLoading="isNoteSaving">Save</RockButton>
+                <RockButton :btnType="BtnType.Link"
+                            :btnSize="BtnSize.Small"
+                            @click="isNoteFlyoutOpen = false">Cancel</RockButton>
+            </div>
+        </template>
+    </Flyout>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Flyout from "@Obsidian/Controls/flyout.obs";
+    import Grid, { Column, PersonColumn, SelectColumn, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { RsvpDetailBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/rsvpDetailBag";
+    import { RsvpAttendeeBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/rsvpAttendeeBag";
+    import { RsvpAttendeeCountsBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/rsvpAttendeeCountsBag";
+    import { SaveAttendeesRequestAttendeeBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/saveAttendeesRequestAttendeeBag";
+    import { AttendeeStatus } from "./types.partial";
+
+    type EditableAttendee = RsvpAttendeeBag & Record<string, unknown>;
+
+    const props = defineProps({
+        bag: {
+            type: Object as PropType<RsvpDetailBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "countsChanged", counts: RsvpAttendeeCountsBag): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const statusItems: ListItemBag[] = [
+        { value: AttendeeStatus.Accept, text: AttendeeStatus.Accept },
+        { value: AttendeeStatus.Decline, text: AttendeeStatus.Decline },
+        { value: AttendeeStatus.NoResponse, text: AttendeeStatus.NoResponse }
+    ];
+
+    const attendees = ref<EditableAttendee[]>(
+        (props.bag.attendees ?? []).map(a => ({ ...a })) as EditableAttendee[]
+    );
+
+    watch(() => props.bag.attendees, (next) => {
+        attendees.value = (next ?? []).map(a => ({ ...a })) as EditableAttendee[];
+    });
+
+    const errorMessage = ref<string>("");
+
+    const declineReasonGuidToText = computed<Record<string, string>>(() => {
+        const map: Record<string, string> = {};
+        for (const item of props.bag.attendeeDeclineReasons ?? []) {
+            if (item.value) {
+                map[item.value] = item.text ?? "";
+            }
+        }
+        return map;
+    });
+
+    const gridData = computed<GridDataBag>(() => ({
+        rows: attendees.value as Record<string, unknown>[]
+    }));
+
+    // Decline-note flyout state. The flyout anchors to whichever pencil button was clicked
+    // and edits a single row; on save we PATCH the row through the same per-row save path.
+    const isNoteFlyoutOpen = ref<boolean>(false);
+    const noteAnchorEl = ref<HTMLElement | null>(null);
+    const editingRow = ref<EditableAttendee | null>(null);
+    const editingNote = ref<string>("");
+    const isNoteSaving = ref<boolean>(false);
+    const noteErrorMessage = ref<string>("");
+
+    /** Returns the invitee's display name for the column's filter, quick search, and Excel export. */
+    function getInviteeFilterValue(row: Record<string, unknown>): string {
+        const person = row.person as PersonFieldBag | null | undefined;
+        if (!person) {
+            return "";
+        }
+        return `${person.nickName ?? ""} ${person.lastName ?? ""}`.trim();
+    }
+
+    /** Resolves the decline reason Guid to its friendly text for filtering, quick search, sorting, and Excel export. */
+    function getDeclineReasonFilterValue(row: Record<string, unknown>): string {
+        const guid = row.declineReasonValueGuid as string | null | undefined;
+        if (!guid) {
+            return "";
+        }
+        return declineReasonGuidToText.value[guid] ?? "";
+    }
+
+    /** Sort + quick-filter key for the Status column so both match the dropdown's friendly text. */
+    function getStatusSortValue(row: Record<string, unknown>): string {
+        return (row.status as string) ?? "";
+    }
+
+    /** Sort + quick-filter key for the Decline Note column so both read the underlying note text. */
+    function getDeclineNoteSortValue(row: Record<string, unknown>): string {
+        return (row.declineNote as string) ?? "";
+    }
+
+    /** Updates the row's status and any dependent fields locally, then auto-saves the row. */
+    async function onStatusChanged(row: Record<string, unknown>, value: string): Promise<void> {
+        const status = value || AttendeeStatus.NoResponse;
+        row.status = status;
+
+        // Mirror the server's behavior so the user sees the cleared decline fields immediately
+        // when transitioning out of Decline. The server is the source of truth on save.
+        if (status !== AttendeeStatus.Decline) {
+            row.declineReasonValueGuid = null;
+            row.declineNote = null;
+        }
+
+        await saveRow(row as EditableAttendee);
+    }
+
+    /** Updates the row's decline reason locally, then auto-saves the row. */
+    async function onDeclineReasonChanged(row: Record<string, unknown>, value: string): Promise<void> {
+        row.declineReasonValueGuid = value || null;
+        await saveRow(row as EditableAttendee);
+    }
+
+    /** Opens the Decline Note flyout anchored to the clicked pencil button. */
+    function onEditNoteClick(event: MouseEvent, row: Record<string, unknown>): void {
+        noteAnchorEl.value = event.currentTarget as HTMLElement;
+        editingRow.value = row as EditableAttendee;
+        editingNote.value = (row.declineNote as string) ?? "";
+        noteErrorMessage.value = "";
+        isNoteFlyoutOpen.value = true;
+    }
+
+    /** Save handler wired into the Flyout's RockForm submit. Persists the edited note then closes the flyout. */
+    async function onNoteFlyoutSave(): Promise<void> {
+        if (!editingRow.value || isNoteSaving.value) {
+            return;
+        }
+
+        isNoteSaving.value = true;
+        noteErrorMessage.value = "";
+
+        try {
+            const success = await saveRow(editingRow.value, editingNote.value);
+            if (success) {
+                editingRow.value.declineNote = editingNote.value;
+                isNoteFlyoutOpen.value = false;
+            }
+            else {
+                // Surface the inline-save failure inside the flyout instead of the top NotificationBox
+                // so the user can correct without losing typed text.
+                noteErrorMessage.value = errorMessage.value || "Unable to save the note.";
+                errorMessage.value = "";
+            }
+        }
+        finally {
+            isNoteSaving.value = false;
+        }
+    }
+
+    /** POSTs a single attendee row to SaveAttendee. Returns whether the save succeeded. */
+    async function saveRow(row: EditableAttendee, declineNoteOverride?: string): Promise<boolean> {
+        const request: SaveAttendeesRequestAttendeeBag = {
+            personIdKey: row.personIdKey ?? null,
+            status: row.status ?? AttendeeStatus.NoResponse,
+            declineReasonValueGuid: row.declineReasonValueGuid ?? null,
+            declineNote: (declineNoteOverride ?? row.declineNote) || null
+        };
+
+        const result = await invokeBlockAction<RsvpAttendeeCountsBag>("SaveAttendee", { request });
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage || "Unable to save attendee.";
+            return false;
+        }
+
+        if (result.data) {
+            emit("countsChanged", result.data);
+        }
+
+        errorMessage.value = "";
+        return true;
+    }
+</script>

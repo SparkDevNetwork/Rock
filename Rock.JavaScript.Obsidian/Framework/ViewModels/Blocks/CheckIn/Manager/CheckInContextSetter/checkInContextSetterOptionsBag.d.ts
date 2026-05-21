@@ -29,6 +29,13 @@ export type CheckInContextSetterOptionsBag = {
     /** The list of campuses to display in the dropdown. */
     campuses?: ListItemBag[] | null;
 
+    /**
+     * When a context item changes, this will cause the page to redirect
+     * back to itself so that the new context can be applied to legacy
+     * WebForms blocks.
+     */
+    isRedirectRequired: boolean;
+
     /** The root locations to use for the location picker. */
     rootLocations?: Record<Guid, Guid> | null;
 

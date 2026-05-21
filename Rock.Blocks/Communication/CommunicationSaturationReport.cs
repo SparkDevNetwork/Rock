@@ -201,7 +201,7 @@ namespace Rock.Blocks.Communication
         {
             return new GridBuilder<CommunicationGridDataBag>()
                 //.WithBlock( this )
-                .AddField( "id", a => a.Id )
+                .AddField( "idKey", a => a.Id.AsIdKey() )
                 .AddTextField( "name", a => a.Name )
                 .AddDateTimeField( "dateSent", a => a.SendDateTime )
                 .AddField( "messageCount", a => a.MessageCount )

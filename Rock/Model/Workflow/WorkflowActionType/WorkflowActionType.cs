@@ -15,7 +15,9 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -55,6 +57,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -130,6 +133,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CriteriaValue { get; set; }
 
         /// <summary>

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -30,7 +31,15 @@ namespace Rock.Lava.Fluid
     internal class LavaObjectMemberAccessStrategy : MemberAccessStrategy
     {
         private Dictionary<Type, Dictionary<string, IMemberAccessor>> _map;
+        private readonly object _mapLock = new();
         private readonly MemberAccessStrategy _parent;
+
+        private static readonly ConcurrentDictionary<Type, bool> _isAnonymousTypeCache = new();
+
+        private static bool IsAnonymousType( Type type )
+        {
+            return _isAnonymousTypeCache.GetOrAdd( type, t => t.Name.Contains( "AnonymousType" ) || t.Name.Contains( "AnonType" ) );
+        }
 
         private DynamicMemberAccessor _dynamicMemberAccessor = new DynamicMemberAccessor();
         private LavaDataSourceMemberAccessor _lavaDataSourceMemberAccessor = new LavaDataSourceMemberAccessor();
@@ -63,7 +72,7 @@ namespace Rock.Lava.Fluid
              * This check for an anonymous type is fairly naive, but it works correctly for the .Net and Mono frameworks.
              * Refer https://stackoverflow.com/questions/2483023/how-to-test-if-a-type-is-anonymous.
              */
-            if ( type.Name.Contains( "AnonymousType" ) || type.Name.Contains( "AnonType" ) )
+            if ( IsAnonymousType( type ) )
             {
                 return _dynamicMemberAccessor;
             }
@@ -75,9 +84,11 @@ namespace Rock.Lava.Fluid
                 return _lavaDataSourceMemberAccessor;
             }
 
-            var isMapped = _map.ContainsKey( type );
+            // Capture the current map snapshot once so all reads in this call see a consistent view,
+            // and so a concurrent registration that swaps the field does not affect us mid-traversal.
+            var mapSnapshot = _map;
 
-            if ( !isMapped )
+            if ( !mapSnapshot.ContainsKey( type ) )
             {
                 // Check for LavaTypeAttribute and if it exists, register a new member accessor for the decorated type.
                 // Subsequent requests will use the registered map.
@@ -86,6 +97,9 @@ namespace Rock.Lava.Fluid
                 if ( attr != null )
                 {
                     RegisterLavaTypeProperties( type, attr );
+
+                    // Refresh the snapshot now that registration may have published a new map.
+                    mapSnapshot = _map;
                 }
             }
 
@@ -95,7 +109,7 @@ namespace Rock.Lava.Fluid
             while ( mapType != typeof( object ) )
             {
                 // Look for specific property map
-                if ( _map.TryGetValue( mapType, out var typeMap ) )
+                if ( mapSnapshot.TryGetValue( mapType, out var typeMap ) )
                 {
                     if ( typeMap.TryGetValue( name, out accessor ) || typeMap.TryGetValue( "*", out accessor ) )
                     {
@@ -118,20 +132,23 @@ namespace Rock.Lava.Fluid
 
         private void RegisterLavaTypeProperties( Type type, LavaTypeAttribute attr )
         {
+            // Materialize GetProperties() once and reuse it for both the include and ignore passes
+            // rather than calling the reflection API three times for the same Type.
+            var allProperties = type.GetProperties();
+
             List<PropertyInfo> includedProperties;
 
-            // Get the list of included properties, then remove the ignored properties.
             if ( attr.AllowedMembers == null || !attr.AllowedMembers.Any() )
             {
                 // No included properties have been specified, so assume all are included.
-                includedProperties = type.GetProperties().ToList();
+                includedProperties = allProperties.ToList();
             }
             else
             {
-                includedProperties = type.GetProperties().Where( x => attr.AllowedMembers.Contains( x.Name, StringComparer.OrdinalIgnoreCase ) ).ToList();
+                includedProperties = allProperties.Where( x => attr.AllowedMembers.Contains( x.Name, StringComparer.OrdinalIgnoreCase ) ).ToList();
             }
 
-            var ignoredProperties = type.GetProperties().Where( x => x.GetCustomAttributes( typeof( LavaHiddenAttribute ), false ).Any() ).ToList();
+            var ignoredProperties = allProperties.Where( x => x.GetCustomAttributes( typeof( LavaHiddenAttribute ), false ).Any() ).ToList();
 
             foreach ( var includedProperty in includedProperties )
             {
@@ -148,18 +165,33 @@ namespace Rock.Lava.Fluid
 
         public override void Register( Type type, IEnumerable<KeyValuePair<string, IMemberAccessor>> accessors )
         {
-            if ( !_map.TryGetValue( type, out var typeMap ) )
+            // Copy-on-write: clone the outer map and the inner type-map (if it exists), apply the
+            // mutations on the clones, and atomically publish the new outer dictionary. Reads that
+            // captured the previous reference continue to see a stable snapshot.
+            lock ( _mapLock )
             {
-                typeMap = new Dictionary<string, IMemberAccessor>( IgnoreCasing
-                    ? StringComparer.OrdinalIgnoreCase
-                    : StringComparer.Ordinal );
+                var newMap = new Dictionary<Type, Dictionary<string, IMemberAccessor>>( _map );
 
-                _map[type] = typeMap;
-            }
+                Dictionary<string, IMemberAccessor> typeMap;
+                if ( newMap.TryGetValue( type, out var existingTypeMap ) )
+                {
+                    typeMap = new Dictionary<string, IMemberAccessor>( existingTypeMap, existingTypeMap.Comparer );
+                }
+                else
+                {
+                    typeMap = new Dictionary<string, IMemberAccessor>( IgnoreCasing
+                        ? StringComparer.OrdinalIgnoreCase
+                        : StringComparer.Ordinal );
+                }
 
-            foreach ( var kvp in accessors )
-            {
-                typeMap[kvp.Key] = kvp.Value;
+                foreach ( var kvp in accessors )
+                {
+                    typeMap[kvp.Key] = kvp.Value;
+                }
+
+                newMap[type] = typeMap;
+
+                _map = newMap;
             }
         }
     }
@@ -218,7 +250,7 @@ namespace Rock.Lava.Fluid
     /// </summary>
     public class LavaTypeMemberAccessor : IMemberAccessor
     {
-        private PropertyInfo _info;
+        private readonly PropertyInfo _info;
 
         public LavaTypeMemberAccessor( PropertyInfo info )
         {

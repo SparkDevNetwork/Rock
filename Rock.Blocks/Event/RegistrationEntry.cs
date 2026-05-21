@@ -36,6 +36,7 @@ using Rock.Field;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Model.Event.RegistrationInstance.Options;
+using Rock.Model.Event.RegistrationTemplate.Options;
 using Rock.Pdf;
 using Rock.Security;
 using Rock.Tasks;
@@ -467,13 +468,43 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult GetPaymentRedirect( RegistrationEntryArgsBag args, string returnUrl )
         {
+            if ( args == null )
+            {
+                return ActionBadRequest( "Missing registration arguments." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
+                /*
+                    5/4/26 - JMH
+
+                    The rule must run BEFORE the registrant is redirected to the gateway.
+                    Without that ordering, the registrant could pay at the gateway
+                    and only then have the registration rejected on return.
+
+                    The snapshot happens after FixRegistrationArguments
+                    (which currency-rounds AmountToPayNow so it matches the equation's other terms)
+                    but before GetContext clamps it to the computed amount due
+                    (which would otherwise mask the over-payment case the rule rejects).
+
+                    SubmitRegistration and ValidateFullPaymentOrPaymentPlan follow the same order,
+                    so all three entry points behave identically.
+
+                    Reason: Pre-redirect validation prevents gateway payments on registrations that will fail.
+                */
+                FixRegistrationArguments( args );
+                var submittedAmountToPayNow = args.AmountToPayNow;
+
                 var context = GetContext( rockContext, args, out var errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
                     return ActionBadRequest( errorMessage );
+                }
+
+                if ( !ValidateFullPaymentOrPaymentPlanRequired( rockContext, context, args, submittedAmountToPayNow, out var fullPaymentRequiredMessage ) )
+                {
+                    return ActionBadRequest( fullPaymentRequiredMessage );
                 }
 
                 if ( ResolveIdFromKey( PageParameter( PageParameterKey.GroupId ) ) == null )
@@ -618,6 +649,40 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Validates the "Require Full Payment or Payment Plan" rule against the submitted arguments without persisting anything.
+        /// The Obsidian block calls this before gateway tokenization or a redirect-gateway hand-off
+        /// so the registrar gets a fast failure instead of paying for a registration that will fail on save.
+        /// The actual save paths (<see cref="SubmitRegistration"/> and <see cref="GetPaymentRedirect"/>) still revalidate.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns>OK when validation passes (or does not apply); BadRequest with the rendered failure message HTML otherwise.</returns>
+        [BlockAction]
+        public BlockActionResult ValidateFullPaymentOrPaymentPlan( RegistrationEntryArgsBag args )
+        {
+            if ( args == null )
+            {
+                return ActionBadRequest( "Missing registration arguments." );
+            }
+
+            FixRegistrationArguments( args );
+            var submittedAmountToPayNow = args.AmountToPayNow;
+
+            var context = GetContext( RockContext, args, out var errorMessage );
+
+            if ( !errorMessage.IsNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            if ( !ValidateFullPaymentOrPaymentPlanRequired( RockContext, context, args, submittedAmountToPayNow, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            return ActionOk();
+        }
+
+        /// <summary>
         /// Submits the registration.
         /// </summary>
         /// <param name="args">The arguments.</param>
@@ -641,11 +706,18 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( paymentPlanInvalidErrorMessage );
                 }
 
+                var submittedAmountToPayNow = args.AmountToPayNow;
+
                 var context = GetContext( rockContext, args, out var errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
                     return ActionBadRequest( errorMessage );
+                }
+
+                if ( !ValidateFullPaymentOrPaymentPlanRequired( rockContext, context, args, submittedAmountToPayNow, out var fullPaymentRequiredMessage ) )
+                {
+                    return ActionBadRequest( fullPaymentRequiredMessage );
                 }
 
                 var result = SubmitRegistration( rockContext, context, args, out errorMessage );
@@ -1233,6 +1305,156 @@ namespace Rock.Blocks.Event
             }
 
             errorMessage = null;
+            return true;
+        }
+
+        /// <summary>
+        /// The hardcoded system fallback message displayed when a registrant fails the
+        /// "Require Full Payment or Payment Plan" validation and the template has no configured message.
+        /// This is intentionally distinct from the editor's pre-populate default (inlined in the Registration Template Detail .ascx),
+        /// which seeds the message field on first enable but is never used as a runtime fallback.
+        /// </summary>
+        private const string FullPaymentOrPaymentPlanRequiredFallbackMessage = "Payment in full or a payment plan is required to complete this registration.";
+
+        /// <summary>
+        /// Renders the configured "Require Full Payment or Payment Plan" message into HTML. Returns
+        /// <see langword="null"/> when no message is configured on the template; callers decide whether
+        /// to display the hardcoded system fallback or omit the message entirely.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="context">The registration context.</param>
+        /// <param name="args">The submitted registration arguments.</param>
+        /// <returns>The Lava-resolved, Markdown-rendered, sanitized HTML message, or <see langword="null"/> if no template is configured.</returns>
+        /*
+            5/4/26 - JMH
+
+            Lava context: RegistrationInstance and Registration are added unconditionally,
+            so authors who reference {{ RegistrationInstance.Name }} or {{ Registration.FirstName }}
+            get an empty render rather than a missing-variable error.
+            For new (unsaved) registrations, a transient Registration is materialized from the wizard state,
+            so Registration.Id, Registration.Guid, and Registration.Payments will not be meaningful.
+
+            Sanitization runs after Markdown rendering with strict:false.
+            The message can include registrant-supplied data via Lava merge fields,
+            so unsanitized output would be an XSS vector when v-html'd by the Obsidian block.
+            strict:true would convert the output to InnerText and throw away the Markdown rendering,
+            so we use the allowlist sanitizer (mirrors MarkdownFieldType.FormatValue).
+
+            Reason: Safe rendering of an author-defined, Lava-merged, Markdown-or-HTML message.
+        */
+        private string TryRenderFullPaymentOrPaymentPlanRequiredMessageHtml( RockContext rockContext, RegistrationContext context, RegistrationEntryArgsBag args )
+        {
+            var messageTemplate = context.RegistrationSettings.FullPaymentOrPaymentPlanRequiredMessage;
+            if ( messageTemplate.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var mergeFields = RequestContext.GetCommonMergeFields();
+
+            var registrationInstance = new RegistrationInstanceService( rockContext ).Get( context.RegistrationSettings.RegistrationInstanceId );
+            mergeFields.Add( "RegistrationInstance", registrationInstance );
+
+            var registration = context.Registration ?? new Registration
+            {
+                FirstName = args?.Registrar?.NickName,
+                LastName = args?.Registrar?.LastName,
+                ConfirmationEmail = args?.Registrar?.Email,
+                DiscountCode = args?.DiscountCode,
+            };
+            mergeFields.Add( "Registration", registration );
+
+            return messageTemplate.ResolveMergeFields( mergeFields ).ConvertMarkdownToHtml().SanitizeHtml( strict: false );
+        }
+
+        /// <summary>
+        /// Resolves the configured "Require Full Payment or Payment Plan" failure message into HTML for
+        /// display when validation has failed. Returns the hardcoded system fallback when the configured
+        /// message is blank, so the registrant always sees a reason for the blocked submit.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="context">The registration context.</param>
+        /// <param name="args">The submitted registration arguments.</param>
+        /// <returns>The Lava-resolved, Markdown-rendered HTML message (or the hardcoded fallback).</returns>
+        private string ResolveFullPaymentOrPaymentPlanRequiredMessage( RockContext rockContext, RegistrationContext context, RegistrationEntryArgsBag args )
+        {
+            return TryRenderFullPaymentOrPaymentPlanRequiredMessageHtml( rockContext, context, args ) ?? FullPaymentOrPaymentPlanRequiredFallbackMessage;
+        }
+
+        /// <summary>
+        /// Validates the "Require Full Payment or Payment Plan" rule against the submitted arguments using
+        /// the equation <c>amount_to_pay_today + (amount_per_payment * number_of_payments) == amount_remaining</c>
+        /// with strict equality. The rule is enforced only when the template has the requirement enabled and the
+        /// registration has a non-zero remaining balance. Wait list registrations are exempt because they have
+        /// no balance to enforce.
+        /// </summary>
+        /// <remarks>
+        /// This validation runs at the BlockAction level (before any persistence) so that a failure does not
+        /// leave behind orphaned registrant records. The wait-list payment reduction is intentionally not
+        /// applied here; a force-waitlist scenario falls through to the existing <c>CapacityFullFailure</c>
+        /// path; the validation operates on the registrant's stated intent.
+        /// </remarks>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="context">The registration context.</param>
+        /// <param name="args">The submitted registration arguments.</param>
+        /// <param name="submittedAmountToPayNow">The "amount to pay now" value as the registrant submitted it.
+        /// MUST be captured before <see cref="GetContext"/> runs because GetContext clamps the value to the
+        /// computed amount due, which would silently mask any over-payment scenario the strict-equality rule
+        /// is designed to catch.</param>
+        /// <param name="errorMessage">When validation fails, contains the rendered failure message HTML (or hardcoded fallback).</param>
+        /// <returns><see langword="true"/> if validation passes (or does not apply); otherwise, <see langword="false"/>.</returns>
+        private bool ValidateFullPaymentOrPaymentPlanRequired( RockContext rockContext, RegistrationContext context, RegistrationEntryArgsBag args, decimal submittedAmountToPayNow, out string errorMessage )
+        {
+            errorMessage = null;
+
+            if ( !context.RegistrationSettings.IsFullPaymentOrPaymentPlanRequired )
+            {
+                return true;
+            }
+
+            var registrationCosts = GetRegistrationCosts( rockContext, context, args );
+            var totalDiscountedCost = registrationCosts.Sum( c => c.DiscountedCost );
+            var alreadyPaid = context.Registration?.TotalPaid ?? 0m;
+            var amountRemaining = totalDiscountedCost - alreadyPaid;
+
+            if ( amountRemaining <= 0m )
+            {
+                // Fully paid (or wait-listed with zero cost) means nothing to enforce.
+                return true;
+            }
+
+            /*
+                5/4/26 - JMH
+
+                planTotal is the future-only commitment after this submit.
+                A submitted args.PaymentPlan takes precedence;
+                otherwise we fall back to the existing active plan's PlannedAmountRemaining.
+                PlannedAmountRemaining is correctly future-only because alreadyPaid already includes processed installments.
+
+                User-driven plan modifications are not supported in this version,
+                so we do not expect args.PaymentPlan and a non-zero existing-plan PlannedAmountRemaining
+                to be present on the same submit.
+
+                Reason: Future-only plan commitment is what the strict-equality check compares against.
+            */
+            decimal planTotal;
+            if ( args.PaymentPlan != null )
+            {
+                planTotal = args.PaymentPlan.AmountPerPayment * args.PaymentPlan.NumberOfPayments;
+            }
+            else
+            {
+                var existingPlan = context.Registration?.PaymentPlanFinancialScheduledTransaction?.PaymentPlan;
+                planTotal = ( existingPlan != null && existingPlan.IsActive ) ? existingPlan.PlannedAmountRemaining : 0m;
+            }
+
+            var totalCommitted = submittedAmountToPayNow + planTotal;
+            if ( totalCommitted != amountRemaining )
+            {
+                errorMessage = ResolveFullPaymentOrPaymentPlanRequiredMessage( rockContext, context, args );
+                return false;
+            }
+
             return true;
         }
 
@@ -3975,6 +4197,15 @@ namespace Rock.Blocks.Event
             var registrationTemplate = registrationTemplateService.Get( context.RegistrationSettings.RegistrationTemplateId );
             var registrantEligibilityEvaluator = registrationTemplateService.GetRegistrantEligibility( registrationTemplate );
 
+            // Use Lax mode here so that a family member who is missing data needed by an
+            // eligibility requirement (e.g. age, grade) is still surfaced in the dropdown
+            // as "potentially eligible" rather than being marked Ineligible. The strict
+            // check is still enforced at registration submission.
+            var familyMemberEligibilityOptions = new RegistrantEligibilityEvaluationOptions
+            {
+                Mode = RegistrantEligibilityEvaluationMode.Lax
+            };
+
             var currentPerson = GetCurrentPerson();
             var familyMembers = context.RegistrationSettings.AreCurrentFamilyMembersShown ?
                 currentPerson.GetFamilyMembers( true, rockContext )
@@ -3991,7 +4222,7 @@ namespace Rock.Blocks.Event
                         FamilyGuid = gm.FamilyGuid,
                         FullName = gm.Person.FullName,
                         FieldValues = GetCurrentValueFieldValues( context, rockContext, gm.Person, null, formModels, false ),
-                        IsIneligible = !registrantEligibilityEvaluator.Evaluate( gm.Person )
+                        IsIneligible = !registrantEligibilityEvaluator.Evaluate( gm.Person, familyMemberEligibilityOptions )
                     } )
                     .ToList() :
                     new List<RegistrationEntryFamilyMemberBag>();
@@ -4558,6 +4789,7 @@ namespace Rock.Blocks.Event
                 PaymentDeadlineDate = isPaymentPlanAllowed ? context.RegistrationSettings.PaymentDeadlineDate : null,
                 PaymentPlanFrequencies = isPaymentPlanAllowed ? GetPaymentPlanFrequencyListItemBags( context.RegistrationSettings.PaymentPlanFrequencyValueIds, rockContext ) : null,
                 IsPaymentPlanConfigured = context.Registration?.IsPaymentPlanActive ?? false,
+                IsFullPaymentOrPaymentPlanRequired = isPaymentPlanAllowed && context.RegistrationSettings.IsFullPaymentOrPaymentPlanRequired,
 
                 // Currency Code
                 CurrencyInfo = new CurrencyInfoBag
@@ -5695,7 +5927,8 @@ namespace Rock.Blocks.Event
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
 
             var costs = registrationInstanceService.GetRegistrationCostSummaryInfo( context, args.AsArgsOrNull() );
-            var totalDiscountedCost = costs.Sum( c => c.DiscountedCost );
+
+            var totalDiscountedCost = costs.Sum( c => c.DiscountedCost ).AsCurrency();
 
             if ( context.Registration != null )
             {

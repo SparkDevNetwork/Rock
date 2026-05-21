@@ -35,43 +35,38 @@
         <TextColumn name="name"
                     title="Category"
                     field="name"
-                    :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    :filter="textValueFilter" />
 
         <TextColumn name="iconCssClass"
                     title="Icon Class"
                     field="iconCssClass"
-                    :filter="textValueFilter"
-                    visiblePriority="sm" />
+                    :filter="textValueFilter" />
 
         <NumberColumn name="childCount"
                       title="Child Categories"
                       field="childCount"
                       :filter="numberValueFilter"
                       headerClass="header-text-right"
-                      itemClass="text-right"
-                      visiblePriority="md" />
+                      itemClass="text-right" />
 
         <TextColumn v-if="!config.options?.isEntityTypeContextFixed"
                     name="entityTypeName"
                     title="Entity Type"
                     field="entityTypeName"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="md" />
+                    :filter="pickExistingValueFilter" />
 
         <TextColumn v-if="!config.options?.isEntityTypeContextFixed"
                     name="entityQualifierField"
                     title="Entity Qualifier Field"
                     field="entityQualifierField"
-                    :filter="pickExistingValueFilter"
-                    visiblePriority="lg" />
+                    :filter="pickExistingValueFilter" />
 
         <TextColumn v-if="!config.options?.isEntityTypeContextFixed"
                     name="entityQualifierValue"
                     title="Entity Qualifier Value"
                     field="entityQualifierValue"
                     :filter="pickExistingValueFilter"
-                    visiblePriority="lg" />
+                    :sortValue="qualifierValueSortKey" />
 
         <EditColumn @click="onEditClick"
                     :rowDisabled="(row) => row.isSystem === true" />
@@ -228,6 +223,22 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Sort key for the Entity Qualifier Value column. Values are stored as
+     * strings but are typically numeric ids (e.g., GroupTypeId), so the
+     * grid's default alphabetical sort produces "9, 68, 6, 531" instead of
+     * "6, 9, 68, 531". Zero-padding pure numeric values lets the default
+     * localeCompare sort produce numeric ordering; non-numeric values are
+     * returned as-is and sort alphabetically.
+     */
+    function qualifierValueSortKey(row: Record<string, unknown>): string | undefined {
+        const value = row["entityQualifierValue"];
+        if (typeof value !== "string" || value === "") {
+            return undefined;
+        }
+        return /^\d+$/.test(value) ? value.padStart(20, "0") : value;
+    }
 
     /** Fetches the grid rows from the server. */
     async function loadGridData(): Promise<GridDataBag> {

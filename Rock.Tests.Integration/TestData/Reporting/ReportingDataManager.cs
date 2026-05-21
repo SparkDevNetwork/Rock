@@ -19,7 +19,7 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.TestData.Reporting

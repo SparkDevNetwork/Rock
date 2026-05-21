@@ -87,7 +87,7 @@
                         </dt>
                         <dd :class="getDueDateColor(connectionRequestRow.dueStatus, connectionState === ConnectionState.Connected)">
                             <span v-tooltip="dueDateTooltip">
-                                <template v-if="!isNullOrWhiteSpace(connectionRequestRow.dueDate)">
+                                <template v-if="!isNullOrWhiteSpace(connectionRequestRow.dueDate) && connectionState !== ConnectionState.Inactive">
                                     <template v-if="connectionState === ConnectionState.Connected">
                                         {{ getCustomDateMedium(connectionRequestRow.dueDate) }}
                                     </template>

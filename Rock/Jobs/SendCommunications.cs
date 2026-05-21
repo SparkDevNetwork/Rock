@@ -380,7 +380,7 @@ namespace Rock.Jobs
             {
                 Parameters = new Dictionary<string, string>
                 {
-                    ["CommunicationId"] = data.Communication.Id.ToString()
+                    ["CommunicationId"] = data.Communication.Id.AsIdKey()
                 }
             };
             var metricsUrl = internalApplicationRoot.EnsureTrailingForwardslash() + communicationPage.BuildUrl().RemoveLeadingForwardslash();

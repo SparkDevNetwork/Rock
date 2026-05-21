@@ -22,47 +22,48 @@
 //
 
 export type RsvpListBag = {
-    /** Number of people that have accepted the invitation to the event */
+    /** Number of people that have accepted the invitation to the event. */
     acceptedCount: number;
 
-    /** Get the percentage of people that accepted the invitation to the event. Rounded to the nearest whole number. */
+    /** Gets the percentage of people that accepted the invitation to the event. Rounded to the nearest whole number. */
     acceptedPercentage: number;
 
-    /** Date of RSVP Event */
+    /** Date of RSVP Event. */
     date?: string | null;
 
-    /** Number of people that have declined the invitation to the event */
+    /** Number of people that have declined the invitation to the event. */
     declinedCount: number;
 
-    /** Get the percentage of people that declined the invitation to the event. Rounded to the nearest whole number. */
+    /** Gets the percentage of people that declined the invitation to the event. Rounded to the nearest whole number. */
     declinedPercentage: number;
-
-    groupTypeId: number;
 
     /** Gets or sets the unique identifier for the entity. */
     id: number;
 
-    /** Number of people invited to the event */
+    /** Number of people invited to the event. */
     invitedCount: number;
 
-    /** Unique identifier for the keyfield of uncreated occurrences -&gt; Occurrences are not addeed to the database if part of a schedule and no interactions have occurred. */
+    /**
+     * Unique identifier for the key field of uncreated occurrences. Occurrences are not added
+     * to the database if part of a schedule and no interactions have occurred.
+     */
     keyField?: string | null;
 
-    /** Id for location used to create occurrence if doesn't exist. */
+    /** Id for the location used to create the occurrence if it doesn't exist. */
     locationId?: number | null;
 
-    /** Name of the Location Event is being held at */
+    /** Name of the Location Event is being held at. */
     locationName?: string | null;
 
-    /** Name of RSVP */
+    /** Name of RSVP. */
     name?: string | null;
 
-    /** Number of people invited but not responded to the invitation to the event */
+    /** Number of people invited but who have not responded to the invitation to the event. */
     noResponseCount: number;
 
-    /** ID used for schedule used to create occurrence if doesn't exist. */
+    /** ID used for the schedule used to create the occurrence if it doesn't exist. */
     scheduleId?: number | null;
 
-    /** Name of the Schedule associated with the RSVP */
+    /** Name of the Schedule associated with the RSVP. */
     scheduleName?: string | null;
 };

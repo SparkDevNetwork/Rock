@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -30,6 +31,8 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Rsvp.RsvpList;
 using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Rsvp
@@ -39,25 +42,27 @@ namespace Rock.Blocks.Rsvp
     /// </summary>
 
     [DisplayName( "Rsvp List" )]
-    [Category( "Rsvp" )]
+    [Category( "RSVP" )]
     [Description( "Displays a list of RSVPs." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-    [LinkedPage( "Detail Page",
+    [LinkedPage( "RSVP Detail Page",
         Description = "The page that will show the rsvp details.",
-        Key = AttributeKey.DetailPage )]
+        Key = AttributeKey.RSVPDetailPage,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_RSVP_DETAIL )]
 
     [Rock.SystemGuid.EntityTypeGuid( "1ef2847c-137d-41f2-80b3-d4aa8d9f7790" )]
-    [Rock.SystemGuid.BlockTypeGuid( "57189fa8-ab29-4a66-8c52-392dff6cb91a" )]
+    // WAS [Rock.SystemGuid.BlockTypeGuid( "57189fa8-ab29-4a66-8c52-392dff6cb91a" )]
+    [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.RSVP_LIST )]
     [CustomizedGrid]
-    public class RsvpList : RockListBlockType<RsvpListBag>
+    public class RsvpList : RockListBlockType<RsvpListBag>, IBreadCrumbBlock
     {
         #region Keys
 
         private static class AttributeKey
         {
-            public const string DetailPage = "DetailPage";
+            public const string RSVPDetailPage = "RSVPDetailPage";
         }
 
         private static class NavigationUrlKey
@@ -68,6 +73,7 @@ namespace Rock.Blocks.Rsvp
         private static class PreferenceKey
         {
             public const string FilterDateRange = "filter-date";
+            public const string FilterLocationId = "filter-location-id";
         }
 
         private static class PageParameterKey
@@ -107,6 +113,10 @@ namespace Rock.Blocks.Rsvp
             .GetValue( PreferenceKey.FilterDateRange )
             .ToSlidingDateRangeBagOrNull();
 
+        private int? FilterLocationId => PersonPreferences
+            .GetValue( PreferenceKey.FilterLocationId )
+            .AsIntegerOrNull();
+
         #endregion
 
         #region Methods
@@ -133,8 +143,59 @@ namespace Rock.Blocks.Rsvp
         /// <returns>The options that provide additional details to the block.</returns>
         private RsvpListOptionsBag GetBoxOptions()
         {
-            var options = new RsvpListOptionsBag();
+            var options = new RsvpListOptionsBag
+            {
+                Locations = new List<ListItemBag>()
+            };
+
+            var groupId = PageParameter( PageParameterKey.GroupId );
+            var group = new GroupService( RockContext ).Get( groupId );
+
+            if ( group == null )
+            {
+                return options;
+            }
+
+            var groupLocationQry = new GroupLocationService( RockContext )
+                .Queryable()
+                .Where( gl => gl.GroupId == group.Id )
+                .AsNoTracking();
+
+            // Populate location options.
+            var locationIds = groupLocationQry.Select( gl => gl.LocationId ).ToList();
+            var locations = new LocationService( RockContext )
+                .Queryable()
+                .Where( l => locationIds.Contains( l.Id ) )
+                .AsNoTracking()
+                .ToList();
+
+            foreach ( var location in locations )
+            {
+                var name = location.IsNamedLocation ? location.Name : location.EntityStringValue;
+                options.Locations.Add( new ListItemBag { Text = name, Value = location.Id.ToString() } );
+            }
+
             return options;
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var groupId = pageReference.GetPageParameter( PageParameterKey.GroupId );
+            var group = new GroupService( RockContext ).Get( groupId );
+
+            if ( group == null )
+            {
+                return new BreadCrumbResult();
+            }
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb>
+                {
+                    new BreadCrumbLink( group.Name, pageReference )
+                }
+            };
         }
 
         /// <summary>
@@ -160,7 +221,7 @@ namespace Rock.Blocks.Rsvp
 
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.RSVPDetailPage, queryParams )
             };
         }
 
@@ -203,12 +264,13 @@ namespace Rock.Blocks.Rsvp
 
             if ( filterDateRange != null )
             {
-                // Default to the last 180 days if a null/invalid range was selected.
+                // Default to the last 2 months if a null/invalid range was selected,
+                // matching the GetGroupOccurrences default window.
                 var defaultSlidingDateRange = new SlidingDateRangeBag
                 {
                     RangeType = SlidingDateRangeType.Last,
-                    TimeUnit = TimeUnitType.Day,
-                    TimeValue = 180
+                    TimeUnit = TimeUnitType.Month,
+                    TimeValue = 2
                 };
 
                 var dateRange = filterDateRange.Validate( defaultSlidingDateRange ).ActualDateRange;
@@ -226,14 +288,21 @@ namespace Rock.Blocks.Rsvp
                 }
             }
 
+            // Apply location filter.
+            var filterLocationId = FilterLocationId;
+            if ( filterLocationId.HasValue )
+            {
+                occurrenceQry = occurrenceQry.Where( o => o.LocationId == filterLocationId.Value );
+            }
+
             var qry = occurrenceQry.Select( o => new RsvpListBag
             {
                 Id = o.Id,
                 Name = o.Name,
                 Date = o.OccurrenceDate,
-                LocationId = o.LocationId ?? null,
+                LocationId = o.LocationId,
                 LocationName = o.Location != null ? o.Location.Name : "",
-                ScheduleId = o.ScheduleId ?? null,
+                ScheduleId = o.ScheduleId,
                 ScheduleName =
                     o.Schedule != null
                         ? ( o.Schedule.Name != null && o.Schedule.Name != ""
@@ -243,8 +312,7 @@ namespace Rock.Blocks.Rsvp
                 InvitedCount = o.Attendees.Count(),
                 AcceptedCount = o.Attendees.Count( at => at.RSVP == RSVP.Yes ),
                 DeclinedCount = o.Attendees.Count( at => at.RSVP == RSVP.No ),
-                NoResponseCount = o.Attendees.Count( at => at.RSVP == RSVP.Unknown ),
-                GroupTypeId = group.GroupTypeId
+                NoResponseCount = o.Attendees.Count( at => at.RSVP == RSVP.Unknown )
             } );
 
             return qry;
@@ -252,19 +320,50 @@ namespace Rock.Blocks.Rsvp
 
         protected override List<RsvpListBag> GetListItems( IQueryable<RsvpListBag> queryable, RockContext rockContext )
         {
-            // materialize the DB occurrences
+            // Materialize the DB occurrences.
             var data = queryable.ToList();
 
-            // Get Occurrneces from Schedule that have not been added to DB yet
-            if(data.Any( d => d.ScheduleId.HasValue ) )
+            // Virtual occurrences from the group's schedules are always appended regardless
+            // of the location filter, matching GetGroupOccurrences behavior where the location
+            // filter only applies to the DB query and not to schedule-generated rows.
+            var groupId = PageParameter( PageParameterKey.GroupId );
+            var group = new GroupService( RockContext ).Get( groupId );
+
+            // Mirror GetGroupOccurrences exactly: only Group.ScheduleId is used for virtual
+            // occurrence generation. Location schedules do not produce virtual occurrences.
+            if ( group != null && group.ScheduleId.HasValue )
             {
-                var scheduleId = data.Where( d => d.ScheduleId.HasValue ).Select( d => d.ScheduleId.Value ).FirstOrDefault();
-                var groupTypeId = data.Where( d => d.GroupTypeId != 0 ).Select( d => d.GroupTypeId ).FirstOrDefault();
-                data.AddRange( GetScheduleOccurrences( data, scheduleId, groupTypeId ) );
+                data.AddRange( GetScheduleOccurrences( data, group.ScheduleId.Value, group.GroupTypeId ) );
             }
 
-            var result = data.OrderByDescending( o => o.Date ).ToList();
-            return result;
+            // EF queries cannot call Schedule.ToString() (which returns FriendlyScheduleText)
+            // inside a LINQ projection, so any DB-backed row whose schedule has no Name ends up
+            // with an empty ScheduleName. Post-process those rows to apply the same fallback used
+            // by GetScheduleOccurrences and the WebForms block.
+            var rowsWithMissingScheduleName = data
+                .Where( d => d.ScheduleId.HasValue && d.ScheduleName.IsNullOrWhiteSpace() )
+                .ToList();
+
+            if ( rowsWithMissingScheduleName.Any() )
+            {
+                var scheduleService = new ScheduleService( RockContext );
+                var scheduleLookup = rowsWithMissingScheduleName
+                    .Select( d => d.ScheduleId.Value )
+                    .Distinct()
+                    .Select( id => scheduleService.Get( id ) )
+                    .Where( s => s != null )
+                    .ToDictionary( s => s.Id, s => s.Name.IsNotNullOrWhiteSpace() ? s.Name : s.ToString() );
+
+                foreach ( var row in rowsWithMissingScheduleName )
+                {
+                    if ( row.ScheduleId.HasValue && scheduleLookup.TryGetValue( row.ScheduleId.Value, out var name ) )
+                    {
+                        row.ScheduleName = name;
+                    }
+                }
+            }
+
+            return data.OrderByDescending( o => o.Date ).ToList();
         }
 
         /// <summary>
@@ -286,18 +385,30 @@ namespace Rock.Blocks.Rsvp
                 return newOccurrences;
             }
 
-            var defaultSlidingDateRange = new SlidingDateRangeBag
+            // Mirror GetGroupOccurrences: when no date filter is set, default to the last
+            // 2 months so the row count matches the WebForms block out of the box.
+            DateTime startDate;
+            DateTime endDate;
+
+            var filterDateRange = FilterDateRange;
+            if ( filterDateRange != null )
             {
-                RangeType = SlidingDateRangeType.Last,
-                TimeUnit = TimeUnitType.Day,
-                TimeValue = 180
-            };
+                var defaultSlidingDateRange = new SlidingDateRangeBag
+                {
+                    RangeType = SlidingDateRangeType.Last,
+                    TimeUnit = TimeUnitType.Month,
+                    TimeValue = 2
+                };
 
-            var filterDateRange = FilterDateRange ?? defaultSlidingDateRange;
-            var dateRange = filterDateRange.Validate( defaultSlidingDateRange ).ActualDateRange;
-
-            var startDate = dateRange.Start?.Date ?? RockDateTime.Today.AddMonths( -2 );
-            var endDate = dateRange.End?.Date.AddDays( 1 ) ?? RockDateTime.Today.AddDays( 1 );
+                var dateRange = filterDateRange.Validate( defaultSlidingDateRange ).ActualDateRange;
+                startDate = dateRange.Start?.Date ?? RockDateTime.Today.AddMonths( -2 );
+                endDate = dateRange.End?.Date.AddDays( 1 ) ?? RockDateTime.Today.AddDays( 1 );
+            }
+            else
+            {
+                startDate = RockDateTime.Today.AddMonths( -2 );
+                endDate = RockDateTime.Today.AddDays( 1 );
+            }
 
             var existingDates = existingOccurrences
                 .Where( o => o.ScheduleId.HasValue && o.ScheduleId == groupSchedule.Id )

@@ -24,7 +24,9 @@ using System.Runtime.Serialization;
 
 using Rock.Core.Automation;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -53,6 +55,7 @@ namespace Rock.Model
         [Index( IsUnique = true )]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -61,6 +64,7 @@ namespace Rock.Model
         /// the purpose the trigger serves.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -82,10 +86,12 @@ namespace Rock.Model
         /// This is stored as a dictionary of string key/value pairs.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ComponentConfigurationJson { get; set; }
 
         /// <inheritdoc/>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion

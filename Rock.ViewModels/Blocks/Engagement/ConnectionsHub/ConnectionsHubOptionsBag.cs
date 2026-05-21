@@ -142,7 +142,7 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// <summary>
         /// Gets or sets the list of column options that control which data fields are displayed in the request grid.
         /// </summary>
-        public List<ListItemBag> GridDataToShowItems { get; set; }
+        public List<GridDataToShowItemBag> GridDataToShowItems { get; set; }
 
         /// <summary>
         /// Gets or sets the list of activity types available to log against connection requests.
@@ -181,5 +181,13 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// may not have any data rows.
         /// </summary>
         public Dictionary<string, List<GroupingFieldBag>> AvailableGroupings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of attributes available for filtering the connection request grid.
+        /// Each entry pairs the public attribute (used to render the <c>RockAttributeFilter</c>
+        /// control in the View Options modal) with the Connection Opportunity Guids that scope it,
+        /// so the client can hide filters for attributes that do not apply to the active opportunity.
+        /// </summary>
+        public List<ConnectionRequestAttributeFilterBag> AttributeFilters { get; set; }
     }
 }

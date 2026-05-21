@@ -20,7 +20,7 @@ using System.Globalization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava.Fluid;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Utility;
 
 namespace Rock.Tests.Lava.Filters
 {

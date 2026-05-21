@@ -17,30 +17,13 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rock.Tests.Shared
+namespace Rock.Tests.Shared.Utility
 {
     public static class ArrayExtensions
     {
         #region Random Item Selection
 
-        private static Random _rng = new Random();
-
-        /// <summary>
-        /// Return a random item from an array.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="items"></param>
-        /// <returns></returns>
-        public static T GetRandomElement<T>( this T[] items )
-        {
-            if ( items == null
-                 || items.Length == 0 )
-            {
-                return default( T );
-            }
-
-            return items[_rng.Next( 0, items.Length )];
-        }
+        private static readonly Random _rng = new Random();
 
         /// <summary>
         /// Return a random item from a list
@@ -48,7 +31,7 @@ namespace Rock.Tests.Shared
         /// <typeparam name="T"></typeparam>
         /// <param name="items"></param>
         /// <returns></returns>
-        public static T GetRandomElement<T>( this List<T> items )
+        public static T GetRandomElement<T>( this IList<T> items )
         {
             if ( items == null
                  || items.Count == 0 )

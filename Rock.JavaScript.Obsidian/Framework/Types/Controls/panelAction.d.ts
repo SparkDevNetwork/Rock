@@ -44,4 +44,12 @@ export type PanelAction = {
 
     /** If true then the action will be disabled and not respond to clicks. */
     disabled?: boolean;
+
+    /**
+     * Tooltip text rendered as the HTML `title` attribute on the action's
+     * containing element. Useful for label-style actions where the visible
+     * text is short (e.g. a deploy badge) but the user benefits from
+     * additional context on hover (e.g. the precise deploy timestamp).
+     */
+    tooltip?: string;
 };

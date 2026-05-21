@@ -1,0 +1,102 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="form-sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-back" @click="onBackClick">
+                <i class="ti ti-chevron-left"></i>
+            </div>
+
+            <span class="title">
+                <i class="ti ti-fw icon" :class="iconCssClass"></i>
+                {{ title }}
+            </span>
+        </div>
+
+        <div ref="scrollableElement" class="sidebar-body">
+            <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="sidebar-panels">
+                <div class="panel-body">
+                    <TextBox v-model="internalValue"
+                             label="Content"
+                             textMode="multiline"
+                             :rows="6"
+                             allowHtml
+                             :help="contentHelpText" />
+                </div>
+            </RockForm>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { FormError } from "@Obsidian/Utility/form";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        iconCssClass: {
+            type: String as PropType<string>,
+            default: "ti ti-pencil"
+        },
+
+        contentHelpText: {
+            type: String as PropType<string>,
+            default: "Supports HTML. Use [HEADER] or [FOOTER] as placeholders to inherit template content."
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+        (e: "close"): void;
+        (e: "validationChanged", value: FormError[]): void;
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const validationErrors = ref<FormError[]>([]);
+    const scrollableElement = ref<HTMLElement | null>(null);
+    const formSubmit = ref(false);
+
+    /**
+     * Triggers form validation and reports whether the aside can be closed
+     * without losing user-entered content.
+     */
+    function isSafeToClose(): boolean {
+        formSubmit.value = true;
+
+        const result = validationErrors.value.length === 0;
+
+        if (!result && scrollableElement.value) {
+            scrollableElement.value.scroll({
+                behavior: "smooth",
+                top: 0
+            });
+        }
+
+        return result;
+    }
+
+    function onBackClick(): void {
+        emit("close");
+    }
+
+    function onValidationChanged(errors: FormError[]): void {
+        validationErrors.value = errors;
+        emit("validationChanged", errors);
+    }
+
+    defineExpose({
+        isSafeToClose
+    });
+</script>

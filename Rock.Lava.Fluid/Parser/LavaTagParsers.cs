@@ -350,48 +350,64 @@ namespace Rock.Lava.Fluid
                     // Find the next open tag for this block type.
                     cursor.ResetPosition( currentSearchStart );
 
-                    // Skip whitespace.
-                    context.SkipWhiteSpace();
+                    var canParseImplicitTag = true;
+                    var fluidContext = context as FluidParseContext;
 
-                    // Skip over comment.
-                    isMatch = inlineCommentParser.Parse( context, ref parseTextResult );
-                    if ( isMatch )
+                    if ( fluidContext?.InsideLiquidTag == true
+                         && ( _tagFormat == LavaTagFormatSpecifier.LiquidTag || _tagFormat == LavaTagFormatSpecifier.LavaShortcode ) )
                     {
-                        currentSearchStart = cursor.Position;
-                        continue;
+                        // In a {% liquid %}/{% lava %} body, only treat the start of a logical line as a valid implied tag boundary.
+                        // Otherwise content like "for person in personItems" is misread as a nested "person" block.
+                        canParseImplicitTag = currentSearchStart.Offset == start.Offset
+                            || ( currentSearchStart.Offset > 0 && Character.IsNewLine( context.Scanner.Buffer[currentSearchStart.Offset - 1] ) );
                     }
 
-                    // Skip over raw tag.
-                    isMatch = rawTagParser.Parse( context, ref parseTextResult );
-                    if ( isMatch )
+                    if ( canParseImplicitTag )
                     {
-                        currentSearchStart = cursor.Position;
-                        continue;
-                    }
+                        // Skip indentation before checking for the next implied tag.
+                        context.SkipWhiteSpace();
 
-                    // Count open tag.
-                    isMatch = openTagParser.Parse( context, ref parseTagResult );
-                    if ( isMatch )
-                    {
-                        openTags++;
-                        currentSearchStart = cursor.Position;
-                        continue;
-                    }
+                        // Skip over comment.
+                        isMatch = inlineCommentParser.Parse( context, ref parseTextResult );
+                        if ( isMatch )
+                        {
+                            currentSearchStart = cursor.Position;
+                            continue;
+                        }
 
-                    // Count close tag.
-                    isMatch = closeTagParser.Parse( context, ref parseTagResult );
-                    if ( isMatch )
-                    {
-                        openTags--;
-                        currentSearchStart = cursor.Position;
+                        // Skip over raw tag.
+                        isMatch = rawTagParser.Parse( context, ref parseTextResult );
+                        if ( isMatch )
+                        {
+                            currentSearchStart = cursor.Position;
+                            continue;
+                        }
 
-                        // Capture the tag position.
-                        endTagStartIndex = parseTagResult.Start;
-                        endTagEndIndex = parseTagResult.End;
-                        continue;
+                        // Count open tag.
+                        isMatch = openTagParser.Parse( context, ref parseTagResult );
+                        if ( isMatch )
+                        {
+                            openTags++;
+                            currentSearchStart = cursor.Position;
+                            continue;
+                        }
+
+                        // Count close tag.
+                        isMatch = closeTagParser.Parse( context, ref parseTagResult );
+                        if ( isMatch )
+                        {
+                            openTags--;
+                            currentSearchStart = cursor.Position;
+
+                            // Capture the tag position.
+                            endTagStartIndex = parseTagResult.Start;
+                            endTagEndIndex = parseTagResult.End;
+                            continue;
+                        }
                     }
 
                     // No matched tokens, so advance the cursor to the next character.
+                    cursor.ResetPosition( currentSearchStart );
                     cursor.Advance();
                     currentSearchStart = cursor.Position;
                 }

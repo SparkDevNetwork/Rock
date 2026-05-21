@@ -399,6 +399,33 @@
         return statuses[roleGuid] ?? [];
     });
 
+    /**
+     * When the placement group changes, the previously-saved role/status may not be
+     * valid choices for the new group's opportunity configuration. Clear them so the
+     * server's default-when-single helper picks up single-option cases on save and the
+     * dropdown forces a deliberate pick when there are multiple. The validity check
+     * (rather than clearing unconditionally) keeps initial bag load a no-op when the
+     * persisted role/status already match the persisted group.
+     */
+    watch(selectedPlacementGroupDetails, (details) => {
+        if (!details) {
+            return;
+        }
+
+        const isCurrentRoleValid = details.groupMemberRoles?.some(r => r.value === groupMemberRoleGuid.value) ?? false;
+        if (!isCurrentRoleValid) {
+            groupMemberRoleGuid.value = "";
+        }
+
+        const validStatusesForRole = groupMemberRoleGuid.value
+            ? details.groupMemberStatuses?.[groupMemberRoleGuid.value]
+            : null;
+        const isCurrentStatusValid = validStatusesForRole?.some(s => s.value === groupMemberStatus.value) ?? false;
+        if (!isCurrentStatusValid) {
+            groupMemberStatus.value = "";
+        }
+    });
+
     function onSave(): void {
         const newValue: ValidPropertiesBox<ConnectionRequestBag> = {
             bag: { ...props.modelValue.bag } as ConnectionRequestBag,

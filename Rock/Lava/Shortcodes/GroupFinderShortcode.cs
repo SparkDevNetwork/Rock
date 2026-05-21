@@ -17,21 +17,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Rock.Core.Geography;
-using Rock.Core.Geography.Classes;
+
 using Rock.Data;
+using Rock.Enums.Geography;
 using Rock.Lava.Filters.Internal;
 using Rock.Model;
 using Rock.Net;
-using Rock.Enums.Geography;
-using System.Linq.Expressions;
-using System.Linq.Dynamic.Core;
-using System.Data.Entity;
-using Nest;
+using Rock.Utility.GroupFinder;
 
 namespace Rock.Lava.Shortcodes
 {
@@ -129,7 +126,7 @@ There are two experiences to choose from. One is a simple filtering option that 
 </p>
 
 <div class=""alert alert-info"">
-	To power this functionality, your Rock instance needs an active Google API key stored in the
+    To power this functionality, your Rock instance needs an active Google API key stored in the
     ""Google API Key Server"" global attribute. This is separate from the ""Google API Key"" attribute used for
     client-side JavaScript. The key must have the Routes API enabled.
 </div>
@@ -140,13 +137,13 @@ Providing an origin is easy—just use the <code>origin</code> parameter in the 
 </p>
 
 <ul>
-	<li><strong>Person Id</strong> – Provide an integer to use that person’s mapped location in Rock.</li>
-	<li><strong>Latitude/Longitude</strong> – You can manually provide coordinates.</li>
-	<li><strong>Postal Code</strong> – Use a value like <code>postalcode 85383</code> to filter and sort groups by the center of that ZIP code. We handle the geocoding for you.</li>
-	<li><strong>Address</strong> – Enter an address, and we’ll geocode it as the origin.</li>
-	<li><strong>Cross Streets</strong> – Provide cross streets (e.g., <code>Lake Pleasant & Happy Valley Peoria, AZ</code>), and we’ll use Google’s Routes API to geocode the location. This is great when individuals prefer not to enter their full address. While Google suggests using the exact city, we’ve found that using the metro area usually works fine.</li>
-	<li><strong>City, State</strong> – For broader searches, use the city center as the origin.</li>
-	<li><strong>Named Place</strong> – You can also use a named place like <code>Sky Harbor Airport</code> or <code>Chase Field, Phoenix, AZ</code>.</li>
+    <li><strong>Person Id</strong> – Provide an integer to use that person’s mapped location in Rock.</li>
+    <li><strong>Latitude/Longitude</strong> – You can manually provide coordinates.</li>
+    <li><strong>Postal Code</strong> – Use a value like <code>postalcode 85383</code> to filter and sort groups by the center of that ZIP code. We handle the geocoding for you.</li>
+    <li><strong>Address</strong> – Enter an address, and we’ll geocode it as the origin.</li>
+    <li><strong>Cross Streets</strong> – Provide cross streets (e.g., <code>Lake Pleasant & Happy Valley Peoria, AZ</code>), and we’ll use Google’s Routes API to geocode the location. This is great when individuals prefer not to enter their full address. While Google suggests using the exact city, we’ve found that using the metro area usually works fine.</li>
+    <li><strong>City, State</strong> – For broader searches, use the city center as the origin.</li>
+    <li><strong>Named Place</strong> – You can also use a named place like <code>Sky Harbor Airport</code> or <code>Chase Field, Phoenix, AZ</code>.</li>
 </ul>
 
 <h5>Travel Distance & Time</h5>
@@ -167,7 +164,7 @@ attribute with the specified key.
 </p>
 
 <pre>{[ groupfinder grouptypeids:'25' ]}
-	
+    
     [[ filter type:'attribute' operator:'eq' key:'AllowsChildren' ]]true[[ endfilter ]]
 
     &lt;ul&gt;
@@ -182,12 +179,12 @@ In the example above, we filter groups by the attribute key <code>AllowsChildren
 </p>
 
 <ul>
-	<li><code>eq</code> – Equals (default)</li>
-	<li><code>ne</code> – Not equal</li>
-	<li><code>sw</code> – Starts with</li>
-	<li><code>ew</code> – Ends with</li>
-	<li><code>con</code> – Contains</li>
-	<li><code>in</code> – Checks if the value is in a multi-select attribute list (use commas for multiple values)</li>
+    <li><code>eq</code> – Equals (default)</li>
+    <li><code>ne</code> – Not equal</li>
+    <li><code>sw</code> – Starts with</li>
+    <li><code>ew</code> – Ends with</li>
+    <li><code>con</code> – Contains</li>
+    <li><code>in</code> – Checks if the value is in a multi-select attribute list (use commas for multiple values)</li>
 </ul>
 
 <strong>Campus(es)</strong>
@@ -196,7 +193,7 @@ You can filter by a comma-separated list of campus IDs. This filter doesn’t us
 </p>
 
 <pre>{[ groupfinder grouptypeids:'25' ]}
-	
+    
     [[ filter type:'campus' ]]12,16[[ endfilter ]]
 
     &lt;ul&gt;
@@ -212,7 +209,7 @@ If your group type supports scheduling, you can filter by day of week using name
 </p>
 
 <pre>{[ groupfinder grouptypeids:'25' ]}
-	
+    
     [[ filter type:'dayofweek' ]]Monday,Wednesday[[ endfilter ]]
 
     &lt;ul&gt;
@@ -228,7 +225,7 @@ You can filter by time using multiple filters for ranges. Supported operators in
 </p>
 
 <pre>{[ groupfinder grouptypeids:'25' ]}
-	
+    
     [[ filter type:'timeofday' ]]5:00 PM[[ endfilter ]]
     [[ filter type:'timeofday' operator:'lte' ]]9:00 PM[[ endfilter ]]
 
@@ -243,14 +240,14 @@ You can filter by time using multiple filters for ranges. Supported operators in
 <p>Below is a list of all shortcode parameters:</p>
 
 <ul>
-	<li><strong>grouptypeids</strong> – Comma-separated group type IDs to search.</li>
-	<li><strong>origin</strong> – The point used for distance filtering and sorting.</li>
-	<li><strong>maxresults</strong> (default: 10) – Max number of groups to return.</li>
-	<li><strong>returnonlyclosestlocationpergroup</strong> (default: true) – If true, only the closest location for each group is returned.</li>
-	<li><strong>maxdistance</strong> – Max distance from the origin, in meters.</li>
-	<li><strong>travelmode</strong> – Adds travel distance/time. Options: <code>drive</code>, <code>walk</code>, <code>bicycle</code>.</li>
-	<li><strong>include</strong> – Appended to the query to eager-load group properties.</li>
-	<li><strong>hideovercapacitygroups</strong> (default: true) – Hides groups over capacity (group + role capacity).</li>
+    <li><strong>grouptypeids</strong> – Comma-separated group type IDs to search.</li>
+    <li><strong>origin</strong> – The point used for distance filtering and sorting.</li>
+    <li><strong>maxresults</strong> (default: 10) – Max number of groups to return.</li>
+    <li><strong>returnonlyclosestlocationpergroup</strong> (default: true) – If true, only the closest location for each group is returned.</li>
+    <li><strong>maxdistance</strong> – Max distance from the origin, in meters.</li>
+    <li><strong>travelmode</strong> – Adds travel distance/time. Options: <code>drive</code>, <code>walk</code>, <code>bicycle</code>.</li>
+    <li><strong>include</strong> – Appended to the query to eager-load group properties.</li>
+    <li><strong>hideovercapacitygroups</strong> (default: true) – Hides groups over capacity (group + role capacity).</li>
     <li><strong>enablestrictcampusfiltering</strong> (default: false) – When enabled, only returns groups that have a campus matching the filter. Groups with no campus are excluded.</li>
     <li><strong>enablepublicfilter</strong> (default: true) - This setting lets you turn off the default filter that hides public groups.</li>
 </ul>
@@ -269,12 +266,12 @@ You can filter by time using multiple filters for ranges. Supported operators in
 <p>The Lava merge field <code>MatchedGroups</code> will contain a collection of matching results. Each result includes the following:</p>
 
 <ul>
-	<li><strong>Group</strong> – The matching group.</li>
-	<li><strong>Location</strong> – The group's location.</li>
-	<li><strong>StraightLineDistanceInMeters</strong> – Distance ""as the crow flies"" between origin and group.</li>
-	<li><strong>TravelDistanceInMeters</strong> – Added if <code>travelmode</code> is provided.</li>
-	<li><strong>TravelTimeInMinutes</strong> – Added if <code>travelmode</code> is provided.</li>
-	<li><strong>TravelMode</strong> – The travel mode used.</li>
+    <li><strong>Group</strong> – The matching group.</li>
+    <li><strong>Location</strong> – The group's location.</li>
+    <li><strong>StraightLineDistanceInMeters</strong> – Distance ""as the crow flies"" between origin and group.</li>
+    <li><strong>TravelDistanceInMeters</strong> – Added if <code>travelmode</code> is provided.</li>
+    <li><strong>TravelTimeInMinutes</strong> – Added if <code>travelmode</code> is provided.</li>
+    <li><strong>TravelMode</strong> – The travel mode used.</li>
 </ul>
 
 <h5>Full Example</h5>
@@ -284,7 +281,7 @@ You can filter by time using multiple filters for ranges. Supported operators in
     [[ filter type:'dayofweek' ]]Monday, Tuesday[[ endfilter ]]
     [[ filter type:'timeofday' ]]5:00 PM[[ endfilter ]]
     [[ filter type:'timeofday' operator:'lte' ]]9:00 PM[[ endfilter ]]
-	
+    
     [[ filter type:'attribute' operator:'eq' key:'AllowsChildren' ]]true[[ endfilter ]]
     [[ filter type:'attribute' operator:'in' key:'SupportOptions' ]]1,3[[ endfilter ]]
 
@@ -381,15 +378,20 @@ You may have noticed that distance values are returned in meters. If you're more
                 return;
             }
 
+            var helper = new GroupFinderHelper( _rockContext );
+
             // Get the options for the shortcode
-            var options = new Options
+            var options = new GroupFinderOptions
             {
-                GroupTypeIds = settings[ParameterKeys.GroupTypeIds] ?? "",
+                GroupTypeIds = settings[ParameterKeys.GroupTypeIds]
+                    ?.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
+                    .AsIntegerList()
+                    ?? new List<int>(),
                 MaxResults = settings[ParameterKeys.MaxResults].AsIntegerOrNull() ?? 10,
                 ReturnOnlyClosestLocationPerGroup = settings[ParameterKeys.ReturnOnlyClosestLocationPerGroup].AsBooleanOrNull() ?? true,
                 MaxDistance = settings[ParameterKeys.MaxDistance].AsIntegerOrNull(),
                 Origin = settings[ParameterKeys.Origin].ToString(),
-                OriginPoint = GetOriginPoint( settings[ParameterKeys.Origin].ToString(), context ),
+                OriginPoint = helper.GetOriginPoint( settings[ParameterKeys.Origin].ToString(), GetCurrentPerson( context ) ),
                 TravelMode = settings[ParameterKeys.TravelMode].ToString().ConvertToEnumOrNull<TravelMode>(),
                 Include = string.IsNullOrWhiteSpace( settings[ParameterKeys.Include] ) ? "Group.Schedule" : settings[ParameterKeys.Include],
                 HideOvercapacityGroups = settings[ParameterKeys.HideOvercapacityGroups].AsBooleanOrNull() ?? true,
@@ -398,9 +400,9 @@ You may have noticed that distance values are returned in meters. If you're more
             };
 
             // Create the initial queryable based on whether there is a origin provided.
-            var groupQuery = GetGroupLocationQueryable( options );
+            var groupQuery = helper.GetGroupLocationQueryable( options );
 
-            groupQuery = ApplyFilters( groupQuery, options, childElements );
+            groupQuery = helper.ApplyFilters( groupQuery, options, childElements );
 
             // Convert out origin point to a DbGeography for use in EF queries
             var sourcePoint = options.OriginPoint?.ToDatabase();
@@ -408,16 +410,16 @@ You may have noticed that distance values are returned in meters. If you're more
             // Run query to get the results.
             List<GroupProximityResult> results;
 
-            if (sourcePoint != null )
+            if ( sourcePoint != null )
             {
                 // The nested selects are needed to ensure that the ordering is correct and that we get the correct number of records.
                 results = groupQuery
                     .Select( x => new GroupProximityResult
-                        {
-                            StraightLineDistanceInMeters = x.Location.GeoPoint.Distance( sourcePoint ),
-                            Group = x.Group,
-                            Location = x.Location
-                        } )
+                    {
+                        StraightLineDistanceInMeters = x.Location.GeoPoint.Distance( sourcePoint ),
+                        Group = x.Group,
+                        Location = x.Location
+                    } )
                     .OrderBy( x => x.StraightLineDistanceInMeters )
                     .Take( options.MaxResults )
                     .ToList();
@@ -427,7 +429,7 @@ You may have noticed that distance values are returned in meters. If you're more
                 {
                     try
                     {
-                        results = AppendTravelModeDetails( options.OriginPoint, options.TravelMode.Value, results );
+                        results = helper.AppendTravelModeDetails( options.OriginPoint, options.TravelMode.Value, results );
                     }
                     catch ( Exception ex )
                     {
@@ -441,11 +443,11 @@ You may have noticed that distance values are returned in meters. If you're more
             else
             {
                 results = groupQuery.Select( g => new GroupProximityResult
-                        {
-                            StraightLineDistanceInMeters = null,
-                            Group = g.Group,
-                            Location = g.Location
-                        } )
+                {
+                    StraightLineDistanceInMeters = null,
+                    Group = g.Group,
+                    Location = g.Location
+                } )
                     .Take( options.MaxResults )
                     .ToList();
             }
@@ -457,437 +459,6 @@ You may have noticed that distance values are returned in meters. If you're more
             result.Write( residualBlockContent.ResolveMergeFields( mergeFields ) );
         }
 
-        /// <summary>
-        /// Creates an IQueryable for the search based on the existence of an origin point
-        /// </summary>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        private IQueryable<GroupLocation> GetGroupLocationQueryable( Options options )
-        {
-            // If we don't have an origin, or the person does not have a mapped location, then we'll just provide the filtered list of groups.
-            if ( options.Origin.IsNotNullOrWhiteSpace() && options.OriginPoint != null )
-            {
-                return new GroupService( _rockContext )
-                    .GetNearestGroups( options.OriginPoint, options.GroupTypeIdList, options.ReturnOnlyClosestLocationPerGroup, options.MaxDistance )
-                    .Include( options.Include );
-            }
-            else
-            {
-                return new GroupLocationService( _rockContext ).Queryable()
-                    .Where( gl => options.GroupTypeIdList.Contains( gl.Group.GroupTypeId ) )
-                    .Include( options.Include );
-            }
-        }
-
-        #region Filter Logic
-
-        /// <summary>
-        /// Applies the filters to the search
-        /// </summary>
-        /// <param name="groupQuery"></param>
-        /// <param name="options"></param>
-        /// <param name="childElements"></param>
-        /// <returns></returns>
-        private IQueryable<GroupLocation> ApplyFilters( IQueryable<GroupLocation> groupQuery, Options options, List<ChildBlockElement> childElements )
-        {
-            groupQuery = ApplyFilterGroupOvercapacity( groupQuery, options );
-
-            // Filter out inactive groups
-            groupQuery = groupQuery.Where( g => g.Group.IsActive == true );
-
-            // Filter out non-public groups
-            if ( options.EnablePublicFilter == true )
-            {
-                groupQuery = groupQuery.Where( g => g.Group.IsPublic == true );
-            }
-
-            // Process each of the settings they provided in the child elements.
-            foreach ( var setting in childElements )
-            {
-                if ( setting.Name == "filter" )
-                {
-                    var value = setting.Content;
-
-                    switch ( setting.Parameters.GetValueOrNull( "type" ).ToString() )
-                    {
-                        // Campus(es)
-                        case "campus":
-                            {
-                                groupQuery = ApplyFilterCampus( groupQuery, setting, options );
-                                break;
-                            }
-                        // Attributes
-                        case "attribute":
-                            {
-                                groupQuery = ApplyFilterAttributes( groupQuery, setting, options );
-                                break;
-                            }
-                        // Day of week
-                        case "dayofweek":
-                            {
-                                groupQuery = ApplyFilterDayOfWeek( groupQuery, setting, options );
-                                break;
-                            }
-                        // Time of day
-                        case "timeofday":
-                            {
-                                groupQuery = ApplyFilterTimeOfDay( groupQuery, setting, options );
-                                break;
-                            }
-                    }
-                }
-            }
-
-            return groupQuery;
-        }
-
-        /// <summary>
-        /// Applies the campus filter to the group query.
-        /// </summary>
-        /// <param name="groupQuery"></param>
-        /// <param name="setting"></param>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        private IQueryable<GroupLocation> ApplyFilterAttributes( IQueryable<GroupLocation> groupQuery, ChildBlockElement setting, Options options )
-        {
-            var key = setting.Parameters.GetValueOrNull( "key" ).ToString();
-            var value = setting.Content;
-
-            // No key specified, return unfiltered
-            if ( key.IsNullOrWhiteSpace() )
-            {
-                return groupQuery; 
-            }
-
-            // Default the operator to 'eq' if not specified
-            var filterOperator = setting.Parameters.GetValueOrNull( "operator" ) ?? "eq";
-
-            switch ( filterOperator )
-            {
-                case "con":
-                    {
-                        return groupQuery.Where( gl => gl.Group.GroupAttributeValues.Any( a => a.Key == key && a.Value.Contains( value ) ) );
-                    }
-                case "sw":
-                    {
-                        return groupQuery.Where( gl => gl.Group.GroupAttributeValues.Any( a => a.Key == key && a.Value.StartsWith( value ) ) );
-                    }
-                case "ew":
-                    {
-                        return groupQuery.Where( gl => gl.Group.GroupAttributeValues.Any( a => a.Key == key && a.Value.EndsWith( value ) ) );
-                    }
-                case "in":
-                    {
-                        /*  Here we want to support an input value of 1,3 for an attribute with the key of "MultiValue'
-                            matching to an attribute values of 1,2,3,4,5
-
-                            To do this we'll create an expression tree for our query like:
-
-                            { gl => 
-                                !gl.Group.GroupAttributeValues.Any(a => a.Key == "MultiValue") ||
-                                gl.Group.GroupAttributeValues.Any(a => 
-                                    a.Key == "MultiValue" &&
-                                    (
-                                        a.Value == "1" ||
-                                        a.Value.StartsWith("1,") ||
-                                        a.Value.EndsWith(",1") ||
-                                        a.Value.Contains(",1,") ||
-                                        a.Value == "3" ||
-                                        a.Value.StartsWith("3,") ||
-                                        a.Value.EndsWith(",3") ||
-                                        a.Value.Contains(",3,")
-                                    )
-                                )
-                            )}
-
-                            Note this will return true if the attribute key does not exist. This allows us to search across
-                            multiple group types that might have differing attributes.
-                        */
-
-                        // Split the input
-                        var valueList = value
-                                .Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
-                                .ToList();
-
-                        var aParam = Expression.Parameter( typeof( QueryableAttributeValue ), "a" );
-                        var keyProperty = Expression.Property( aParam, "Key" );
-                        var keyCheck = Expression.Equal( keyProperty, Expression.Constant( key ) );
-
-                        // Build the OR conditions for a.Value
-                        var valueProperty = Expression.Property( aParam, "Value" );
-                        Expression valueConditions = null;
-
-                        // Create a where expression that checks for each value in the list.
-                        foreach ( var valueItem in valueList )
-                        {
-                            var eq = Expression.Equal( valueProperty, Expression.Constant( valueItem ) );
-                            var starts = Expression.Call( valueProperty, nameof( string.StartsWith ), null, Expression.Constant( valueItem + "," ) );
-                            var ends = Expression.Call( valueProperty, nameof( string.EndsWith ), null, Expression.Constant( "," + valueItem ) );
-                            var contains = Expression.Call( valueProperty, nameof( string.Contains ), null, Expression.Constant( "," + valueItem + "," ) );
-
-                            var orBlock = Expression.OrElse(
-                                Expression.OrElse( eq, starts ),
-                                Expression.OrElse( ends, contains )
-                            );
-
-                            valueConditions = valueConditions == null ? orBlock : Expression.OrElse( valueConditions, orBlock );
-                        }
-
-                        // a => a.Key == "MultiValue"
-                        var keyOnlyLambda = Expression.Lambda<Func<QueryableAttributeValue, bool>>( keyCheck, aParam );
-
-                        // a => a.Key == "MultiValue" && valueConditions
-                        var keyAndValueConditions = Expression.AndAlso( keyCheck, valueConditions );
-                        var keyAndValueLambda = Expression.Lambda<Func<QueryableAttributeValue, bool>>( keyAndValueConditions, aParam );
-
-                        // gl.Group.GroupAttributeValues
-                        var glParam = Expression.Parameter( typeof( GroupLocation ), "gl" );
-                        var groupProperty = Expression.Property( glParam, "Group" );
-                        var gavProperty = Expression.Property( groupProperty, "GroupAttributeValues" );
-
-                        // !gl.Group.GroupAttributeValues.Any(a => a.Key == "MultiValue")
-                        var anyKeyOnlyCall = Expression.Call(
-                            typeof( Enumerable ),
-                            "Any",
-                            new[] { typeof( QueryableAttributeValue ) },
-                            gavProperty,
-                            keyOnlyLambda
-                        );
-                        var notAnyKeyOnly = Expression.Not( anyKeyOnlyCall );
-
-                        // gl.Group.GroupAttributeValues.Any(a => a.Key == "MultiValue" && valueConditions)
-                        var anyKeyAndValueCall = Expression.Call(
-                            typeof( Enumerable ),
-                            "Any",
-                            new[] { typeof( QueryableAttributeValue ) },
-                            gavProperty,
-                            keyAndValueLambda
-                        );
-
-                        // Combine: !Any(keyOnly) || Any(key && value)
-                        var finalExpression = Expression.OrElse( notAnyKeyOnly, anyKeyAndValueCall );
-                        var lambda = Expression.Lambda<Func<GroupLocation, bool>>( finalExpression, glParam );
-
-                        // Apply to query
-                        return groupQuery.Where( lambda );
-                    }
-                case "ne":
-                    {
-                        return groupQuery.Where( gl => gl.Group.GroupAttributeValues.Any( a => a.Key == key && a.Value != value ) );
-                    }
-                case "eq":
-                    {
-                        return groupQuery.Where( gl => gl.Group.GroupAttributeValues.Any( a => a.Key == key && a.Value == value ) );
-                    }
-                default:
-                    {
-                        throw new Exception( "Incorrect filter operator provided. Valid values are eq,ne,sw,ew,con,in." );
-                    }
-            }
-        }
-
-        /// <summary>
-        /// Applies the campus filter to the group query.
-        /// </summary>
-        /// <param name="groupQuery"></param>
-        /// <param name="setting"></param>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        private IQueryable<GroupLocation> ApplyFilterCampus( IQueryable<GroupLocation> groupQuery, ChildBlockElement setting, Options options )
-        {
-            var valueList = setting.Content
-                    .Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
-                    .Select( v => int.Parse( v.Trim() ) )
-                    .ToList();
-
-            if ( options.EnableStrictCampusFiltering )
-            {
-                return groupQuery.Where( gl => valueList.Contains( gl.Group.CampusId.Value ) );
-            }
-            else
-            {
-                return groupQuery.Where( gl => gl.Group.CampusId == null || valueList.Contains( gl.Group.CampusId.Value ) );
-            }    
-        }
-
-        /// <summary>
-        /// Applies the day of week filter to the group query.
-        /// </summary>
-        /// <param name="groupQuery"></param>
-        /// <param name="setting"></param>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        private IQueryable<GroupLocation> ApplyFilterDayOfWeek( IQueryable<GroupLocation> groupQuery, ChildBlockElement setting, Options options )
-        {
-            var daysOfWeek = setting.Content
-                    .Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
-                    .Select( s => Enum.TryParse<DayOfWeek>( s.Trim(), true, out var d ) ? d : ( DayOfWeek? ) null )
-                    .Where( d => d.HasValue )
-                    .Select( d => d.Value )
-                    .ToList();
-
-            return groupQuery.Where( g => g.Group.Schedule.WeeklyDayOfWeek.HasValue && daysOfWeek.Contains( g.Group.Schedule.WeeklyDayOfWeek.Value ) );
-        }
-
-        /// <summary>
-        /// Applies the time of day filter to the group query.
-        /// </summary>
-        /// <param name="groupQuery"></param>
-        /// <param name="setting"></param>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        private IQueryable<GroupLocation> ApplyFilterTimeOfDay( IQueryable<GroupLocation> groupQuery, ChildBlockElement setting, Options options )
-        {
-            var time = DateTime.Parse( setting.Content );
-            var timeSpan = time.TimeOfDay;
-
-            // Default the operator to 'gte' if not specified
-            var filterOperator = setting.Parameters.GetValueOrNull( "operator" ) ?? "gte";
-
-            switch ( filterOperator )
-            {
-                case "lte":
-                    {
-                        return groupQuery.Where( g => g.Group.Schedule.WeeklyTimeOfDay.HasValue && g.Group.Schedule.WeeklyTimeOfDay.Value <= timeSpan );
-                    }
-                case "lt":
-                    {
-                        return groupQuery.Where( g => g.Group.Schedule.WeeklyTimeOfDay.HasValue && g.Group.Schedule.WeeklyTimeOfDay.Value < timeSpan );
-                    }
-                case "gt":
-                    {
-                        return groupQuery.Where( g => g.Group.Schedule.WeeklyTimeOfDay.HasValue && g.Group.Schedule.WeeklyTimeOfDay.Value > timeSpan );
-                    }
-                case "eq":
-                    {
-                        return groupQuery.Where( g => g.Group.Schedule.WeeklyTimeOfDay.HasValue && g.Group.Schedule.WeeklyTimeOfDay.Value == timeSpan );
-                    }
-                case "ne":
-                    {
-                        return groupQuery.Where( g => g.Group.Schedule.WeeklyTimeOfDay.HasValue && g.Group.Schedule.WeeklyTimeOfDay.Value != timeSpan );
-                    }
-                case "gte":
-                    {
-                        return groupQuery.Where( g => g.Group.Schedule.WeeklyTimeOfDay.HasValue && g.Group.Schedule.WeeklyTimeOfDay.Value >= timeSpan );
-                    }
-                default:
-                    {
-                        throw new Exception( "Incorrect filter operator provided. Valid values are eq,ne,lte,lt,gte,gt." );
-                    }
-            }
-        }
-
-        /// <summary>
-        /// Applies the filters for group overcapacity
-        /// </summary>
-        /// <param name="groupQuery"></param>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        private IQueryable<GroupLocation> ApplyFilterGroupOvercapacity( IQueryable<GroupLocation> groupQuery, Options options )
-        {
-            // Hide overcapacity groups
-            // This hides the groups that are at or over capacity by doing two things:
-            // 1) If the group has a GroupCapacity, check that we haven't met or exceeded that.
-            // 2) When someone registers for a group on the front-end website, they automatically get added with the group's default
-            //    GroupTypeRole. If that role exists and has a MaxCount, check that we haven't met or exceeded it yet.
-            if ( options.HideOvercapacityGroups )
-            {
-                groupQuery = groupQuery.Where(
-                    g => g.Group.GroupCapacity == null ||
-                    g.Group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).Count() < g.Group.GroupCapacity );
-
-                groupQuery = groupQuery.Where( g =>
-                     g.Group.GroupType == null ||
-                     g.Group.GroupType.DefaultGroupRole == null ||
-                     g.Group.GroupType.DefaultGroupRole.MaxCount == null ||
-                     g.Group.Members.Where( m => m.GroupRoleId == g.Group.GroupType.DefaultGroupRole.Id ).Count() < g.Group.GroupType.DefaultGroupRole.MaxCount );
-            }
-
-            return groupQuery;
-        }
-
-
-        #endregion
-
-        /// <summary>
-        /// Appends the travel time and distances to the results.
-        /// </summary>
-        /// <param name="origin"></param>
-        /// <param name="travelMode"></param>
-        /// <param name="results"></param>
-        /// <returns></returns>
-        private List<GroupProximityResult> AppendTravelModeDetails( GeographyPoint origin, TravelMode travelMode, List<GroupProximityResult> results )
-        {
-            // Get driving distances from location extensions
-            var destinations = results
-                .Where( r => r.Location?.Latitude != null && r.Location?.Longitude != null )
-                .Select( r => new GeographyPoint { Latitude = r.Location.Latitude.Value, Longitude = r.Location.Longitude.Value } )
-                .ToList();
-
-            var travelDistances = Task.Run( () => GeographyHelpers.GetDrivingMatrixAsync( origin, destinations, travelMode ) ).Result;
-
-            // Merge travel distances into group results
-            foreach ( var travelDistance in travelDistances )
-            {
-                // Find matching group result
-                var matches = results.Where( r => r.LocationPoint == travelDistance.DestinationPoint ).ToList();
-
-                foreach ( var match in matches )
-                {
-                    match.TravelDistanceInMeters = travelDistance.DistanceInMeters;
-                    match.TravelTimeInMinutes = travelDistance.TravelTimeInMinutes;
-                    match.TravelMode = travelMode;
-                }
-            }
-
-            return results.OrderBy( g => g.TravelDistanceInMeters ).ToList();
-        }
-
-        /// <summary>
-        /// Gets the origin point from the settings. If the origin is not a lat/long, it will be geocoded.
-        /// </summary>
-        /// <param name="originString"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        private GeographyPoint GetOriginPoint( string originString, ILavaRenderContext context )
-        {
-            originString = originString.Trim();
-
-            // If blank then assume current person
-            if ( originString.IsNullOrWhiteSpace() )
-            {
-                originString = GetCurrentPerson( context )?.Id.ToString();
-            }
-
-            // Check if it's an int, if so this will be a person id and we'll use their mapped address
-            if ( Int32.TryParse( originString, out int personId ) )
-            {
-                var personLocation = new PersonService( _rockContext ).GetGeopoints( personId )?.FirstOrDefault();
-
-                if ( personLocation == null )
-                {
-                    return null;
-                }
-                return GeographyPoint.FromDatabase( personLocation );
-            }
-
-            // Check if it's a lat/long if so return it
-            if ( GeographyPoint.TryParse( originString, out var point ) )
-            {
-                return point;
-            }
-
-            // To search by postal code the user will append postalcode to the front. This prevents zip codes
-            // from being confused with a person id. So we need to remove this so as not to confuse
-            // the Google maps API.
-            if ( originString.StartsWith( "postalcode" ) )
-            {
-                originString = originString.Substring( 3 ).Trim();
-            }
-
-            // Otherwise, run it through the geocoder
-            return Task.Run( () => ( GeographyHelpers.Geocode( originString ) ) ).Result;
-        }
 
         /// <summary>
         /// Gets the current person.
@@ -946,9 +517,9 @@ You may have noticed that distance values are returned in meters. If you're more
         /// <param name="childElements">The child parameters.</param>
         /// <param name="residualBlockContent">The block content that is left over after parsing.</param>
         /// <returns><c>true</c> if the child elements were valid, otherwise <c>false</c>.</returns>
-        private bool ExtractBlockChildElements( ILavaRenderContext context, string blockContent, out List<ChildBlockElement> childElements, out string residualBlockContent )
+        private bool ExtractBlockChildElements( ILavaRenderContext context, string blockContent, out List<GroupFinderFilter> childElements, out string residualBlockContent )
         {
-            childElements = new List<ChildBlockElement>();
+            childElements = new List<GroupFinderFilter>();
 
             var startTagStartExpress = new Regex( @"\[\[\s*" );
 
@@ -995,12 +566,6 @@ You may have noticed that distance values are returned in meters. If you're more
                                 parmContent = engine.RenderTemplate( parmContent, renderParameters ).Text;
                             }
 
-                            var childElement = new ChildBlockElement
-                            {
-                                Name = parmName,
-                                Content = parmContent
-                            };
-
                             // Regex pattern explanation:
                             //
                             //  \S*? Matches any non-whitespace characters (non-greedy) before the colon.
@@ -1017,19 +582,25 @@ You may have noticed that distance values are returned in meters. If you're more
                                 .Select( m => m.Value )
                                 .ToList();
 
+                            var parameters = new Dictionary<string, string>();
                             foreach ( var item in parmItems )
                             {
                                 var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
                                 if ( itemParts.Length > 1 )
                                 {
-                                    childElement.Parameters.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                                    parameters.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
                                 }
                             }
 
-                            childElements.Add( childElement );
-
                             // pull this tag out of the block content
                             blockContent = blockContent.Remove( startTagStartIndex, endTagEndIndex - startTagStartIndex );
+
+                            if ( parmName == "filter" )
+                            {
+                                var filter = new GroupFinderFilter( parameters, parmContent );
+
+                                childElements.Add( filter );
+                            }
                         }
                         else
                         {
@@ -1057,94 +628,6 @@ You may have noticed that distance values are returned in meters. If you're more
             residualBlockContent = blockContent.Trim();
 
             return isValid;
-        }
-        #endregion
-
-        #region Support Classes
-
-        /// <summary>
-        /// The options that can be passed into the network graph.
-        /// </summary>
-        private class Options
-        {
-            /// <summary>
-            /// The group type id to use for the search.
-            /// </summary>
-            public string GroupTypeIds { get; set; }
-
-            /// <summary>
-            /// List of properties to eager load on the initial query.
-            /// </summary>
-            public string Include { get; set; }
-
-            /// <summary>
-            /// The group type ids in a list to use for the search.
-            /// </summary>
-            public List<int> GroupTypeIdList
-            {
-                get
-                {
-                    if ( GroupTypeIds.IsNullOrWhiteSpace() )
-                    {
-                        return new List<int>();
-                    }
-                    return GroupTypeIds.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ).ToList();
-                }
-            }
-
-            /// <summary>
-            /// The maximum number of results to return.
-            /// </summary>
-            public int MaxResults { get; set; }
-
-            /// <summary>
-            /// The maximum distance to search for groups in meters.
-            /// </summary>
-            public int? MaxDistance { get; set; }
-
-            /// <summary>
-            /// If true, only the closest location for each group will be returned. Otherwise, all locations for a group will be considered.
-            /// </summary>
-            public bool ReturnOnlyClosestLocationPerGroup { get; set; }
-
-            /// <summary>
-            /// The origin to use for the search.
-            /// </summary>
-            public string Origin { get; set; }
-
-            /// <summary>
-            /// The origin point to use for the search.
-            /// </summary>
-            public GeographyPoint OriginPoint { get; set; }
-
-            /// <summary>
-            /// The travel mode to use for calculating travel mode distances and times.
-            /// </summary>
-            public TravelMode? TravelMode { get; set; }
-
-            /// <summary>
-            /// Determines whether to hide groups that are over their capacity.
-            /// </summary>
-            public bool HideOvercapacityGroups { get; set; }
-
-            /// <summary>
-            /// Determines if null campus values should be returned when filtering on campuses.
-            /// </summary>
-            public bool EnableStrictCampusFiltering { get; set; }
-
-            /// <summary>
-            /// Determines if filtering for public groups should be enabled.
-            /// </summary>
-            public bool EnablePublicFilter { get; set; }
-        }
-
-        private class ChildBlockElement
-        {
-            public string Name { get; set; }
-
-            public Dictionary<string, string> Parameters { get; } = new Dictionary<string, string>();
-
-            public string Content { get; set; }
         }
 
         #endregion

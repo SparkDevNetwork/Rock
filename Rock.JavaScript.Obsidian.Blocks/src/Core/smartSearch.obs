@@ -1,18 +1,98 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <SearchField v-model="searchTerm" :initialSearchFilters="options?.searchFilters ?? undefined" />
+    <div class="smartsearch searchinput">
+        <i class="ti ti-search"></i>
+        <ul class="nav pull-right smartsearch-type">
+            <li class="dropdown"><a class="dropdown-toggle navbar-link" data-toggle="dropdown"><span>{{ defaultFilterLabel }}</span><b class="ti ti-caret-down-filled"></b></a>
+                <ul class="dropdown-menu">
+                    <li v-for="(filter, index) in searchFilters" :key="filter.key ?? index" :data-key="filter.key" :data-target="filter.resultUrl"><a>{{ filter.label }}</a></li>
+                </ul>
+            </li>
+        </ul>
+        <input type="search" ref="inputElement" :id="uniqueId" v-model="internalValue" accesskey="q" class="searchinput tt-query" autocomplete="off" spellcheck="false" style="position: relative; vertical-align: top; background-color: transparent;" dir="auto">
+        <input type="hidden" ref="hiddenFilterInput" name="searchField_hSearchFilter" id="searchField_hSearchFilter">
+    </div>
 </template>
 
 <script setup lang="ts">
-    import { ref } from "vue";
+    import { computed, ref, watch } from "vue";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
     import { SmartSearchOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SmartSearch/smartSearchOptionsBag";
-    import SearchField from "@Obsidian/Controls/searchField.obs";
+    import { SearchFilterBag } from "@Obsidian/ViewModels/Blocks/Core/SmartSearch/searchFilterBag";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<CustomBlockBox<object, SmartSearchOptionsBag>>();
-    const options = config.options;
-    const searchTerm = ref("");
+
+    // #region Values
+
+    const internalValue = ref("");
+    const http = useHttp();
+    const uniqueId = `rock-searchField-${newGuid()}`;
+    const inputElement = ref<HTMLInputElement>();
+    const hiddenFilterInput = ref<HTMLInputElement>();
+
+    /**
+     * The available search filters.
+     */
+    const searchFilters = ref<SearchFilterBag[]>();
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Gets the display label of the default search filter (e.g. "Name").
+     */
+    const defaultFilterLabel = computed<string>(() => {
+        if (!searchFilters.value || searchFilters.value.length === 0) {
+            return "";
+        }
+
+        return searchFilters.value[0].label ?? "";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Fetches the available search filters from the API. */
+    async function fetchSearchFilters(): Promise<void> {
+        const url = "/api/v2/Controls/SearchFieldGetSearchFilters";
+        const response = await http.post<SearchFilterBag[]>(url);
+
+        if (response.isSuccess && response.data) {
+            searchFilters.value = response.data;
+        }
+        else {
+            console.error("Error fetching items from server", response.errorMessage);
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch([inputElement, hiddenFilterInput, searchFilters], () => {
+        if (inputElement.value && hiddenFilterInput.value && searchFilters.value) {
+            if (searchFilters.value.length > 0) {
+                hiddenFilterInput.value.value = searchFilters.value[0].key ?? "";
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (window["Rock"] as any).controls.searchField.initialize({ controlId: uniqueId });
+        }
+    });
+
+    // #endregion
+
+    if (config.options?.searchFilters) {
+        searchFilters.value = config.options.searchFilters;
+    }
+    else {
+        fetchSearchFilters();
+    }
 
     onConfigurationValuesChanged(useReloadBlock());
 </script>

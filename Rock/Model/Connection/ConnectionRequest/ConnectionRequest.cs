@@ -23,7 +23,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -68,6 +70,7 @@ namespace Rock.Model
         /// The comments.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Comments { get; set; }
 
         /// <summary>
@@ -154,6 +157,7 @@ namespace Rock.Model
         /// in the AttributeValue table. But in this case we must also consider that the AttributeMatrix
         /// could be referenced in this string. This is slow and makes it difficult 'know all the places'. 
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AssignedGroupMemberAttributeValues { get; set; }
 
         /// <summary>

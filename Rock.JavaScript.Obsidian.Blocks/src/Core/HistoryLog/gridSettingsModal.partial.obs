@@ -1,0 +1,109 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div v-if="showCategoryFilter" class="col-md-6">
+                <CategoryPicker v-model="category"
+                                label="Category"
+                                :entityTypeGuid="EntityType.History" />
+            </div>
+
+            <div class="col-md-6">
+                <DateRangePicker v-model="dateRange"
+                                 label="Date Range" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { GridSettingsOptions } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        showCategoryFilter: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const category = ref<ListItemBag | null | undefined>(props.modelValue.category ?? null);
+    const dateRange = ref<DateRangeParts>({
+        lowerValue: props.modelValue.dateRangeLowerValue ?? undefined,
+        upperValue: props.modelValue.dateRangeUpperValue ?? undefined
+    });
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the save button is clicked.
+     */
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            category: props.showCategoryFilter ? category.value ?? null : null,
+            dateRangeLowerValue: dateRange.value?.lowerValue ?? "",
+            dateRangeUpperValue: dateRange.value?.upperValue ?? ""
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        category.value = props.modelValue.category ?? null;
+        dateRange.value = {
+            lowerValue: props.modelValue.dateRangeLowerValue ?? undefined,
+            upperValue: props.modelValue.dateRangeUpperValue ?? undefined
+        };
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+</script>

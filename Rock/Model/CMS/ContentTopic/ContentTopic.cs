@@ -16,6 +16,8 @@
 //
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
@@ -44,6 +46,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -53,6 +56,7 @@ namespace Rock.Model
         /// A <see cref="string"/> representing the description of this ContentTopic.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>

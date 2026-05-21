@@ -469,7 +469,18 @@
         if (!isVisible.value) {
             emit("close");
             followUpDate.value = "";
+            return;
         }
+
+        // Re-seed default attribute values whenever the modal becomes visible.
+        // The parent resets newConnectionRequest on close which wipes
+        // connectionRequestAttributeValues via the modelValue.bag watcher,
+        // and on reopen neither onMounted nor the connectionOpportunityDetails
+        // watcher fires (the modal is not unmounted between opens, and the
+        // opportunity reference is unchanged). Without this, field types whose
+        // edit value JSON is derived from configuration (e.g. Matrix) would be
+        // missing their seeded defaults and fail to render.
+        pruneAndSeedAttributeValues();
     });
 
     watch(requester, () => {
@@ -507,24 +518,6 @@
 
     watch(() => props.placementGroupDetails?.groupMemberAttributes, () => {
         pruneAndSeedPlacementGroupMemberAttributeValues();
-    });
-
-    /**
-     * If there is only one group member role then we will hide the dropdown and set the value to that role by default.
-     */
-    watch(() => props.placementGroupDetails?.groupMemberRoles, () => {
-        if (props.placementGroupDetails?.groupMemberRoles && props.placementGroupDetails.groupMemberRoles.length === 1) {
-            groupMemberRoleGuid.value = props.placementGroupDetails.groupMemberRoles[0].value ?? "";
-        }
-    });
-
-    /**
-     * If there is only one group member status for the selected role then we will hide the dropdown and set the value to that status by default.
-     */
-    watch(groupMemberStatusItems, () => {
-        if (groupMemberStatusItems.value.length === 1) {
-            groupMemberStatus.value = groupMemberStatusItems.value[0].value ?? "";
-        }
     });
 
     watch(() => props.modelValue.bag, () => {

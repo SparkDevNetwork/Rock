@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Rock.Tests.Shared
+namespace Rock.Tests.Shared.Utility
 {
     /// <summary>
     /// Provides logging services for test projects.

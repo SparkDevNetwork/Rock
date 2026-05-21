@@ -15,6 +15,8 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -45,6 +47,7 @@ namespace Rock.Model
         /// The full name of the leader.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string LeaderFullName { get; set; }
 
         /// <summary>
@@ -67,6 +70,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AddressStreet1 { get; set; }
 
         /// <summary>
@@ -78,6 +82,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AddressStreet2 { get; set; }
 
         /// <summary>
@@ -89,6 +94,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AddressCity { get; set; }
 
         /// <summary>
@@ -99,6 +105,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AddressCounty { get; set; }
 
         /// <summary>
@@ -110,6 +117,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AddressState { get; set; }
 
         /// <summary>
@@ -121,6 +129,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AddressCountry { get; set; }
 
         /// <summary>
@@ -132,6 +141,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AddressPostalCode { get; set; }
 
         /// <summary>
@@ -184,6 +194,7 @@ namespace Rock.Model
         /// The  address full.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AddressFull { get; set; }
 
         #endregion Address Fields

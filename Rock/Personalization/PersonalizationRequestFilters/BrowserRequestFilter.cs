@@ -18,6 +18,9 @@ using System;
 using System.ComponentModel;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Net;
 
@@ -30,11 +33,6 @@ namespace Rock.Personalization
     /// <seealso cref="Rock.Personalization.PersonalizationRequestFilter" />
     public class BrowserRequestFilter : PersonalizationRequestFilter
     {
-        /// <summary>
-        /// The ua parser
-        /// </summary>
-        private readonly static UAParser.Parser uaParser = UAParser.Parser.GetDefault();
-
         #region Configuration
 
         /// <summary>
@@ -65,29 +63,28 @@ namespace Rock.Personalization
         /// <inheritdoc/>
         public override bool IsMatch( HttpRequest httpRequest )
         {
-            return IsMatch( uaParser.ParseUserAgent( httpRequest.UserAgent ) );
+            return IsMatch( RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( httpRequest.UserAgent ) );
         }
 
         /// <inheritdoc/>
         internal override bool IsMatch( RockRequestContext request )
         {
-            if ( request.ClientInformation.Browser == null )
+            return IsMatch( request.ClientInformation?.BrowserInfo );
+        }
+
+        /// <summary>
+        /// Determines whether the specified parsed browser info meets the criteria of this filter.
+        /// </summary>
+        /// <param name="browserInfo">The parsed user-agent details.</param>
+        /// <returns><c>true</c> if the specified user agent is a match; otherwise, <c>false</c>.</returns>
+        private bool IsMatch( UserAgentInfo browserInfo )
+        {
+            if ( browserInfo == null )
             {
                 return false;
             }
 
-            return IsMatch( request.ClientInformation.Browser.UA );
-        }
-
-        /// <summary>
-        /// Determines whether the specified HTTP request meets the criteria of this filter.
-        /// </summary>
-        /// <param name="ua">The user agent object.</param>
-        /// <returns><c>true</c> if the specified user agent is a match; otherwise, <c>false</c>.</returns>
-        private bool IsMatch( UAParser.UserAgent ua )
-        {
-            var detectedFamily = ua.Family;
-
+            var detectedFamily = browserInfo.BrowserFamily;
             var filteredBrowserFamily = this.BrowserFamily.ConvertToString();
 
             if ( !detectedFamily.Equals( filteredBrowserFamily, StringComparison.OrdinalIgnoreCase ) )
@@ -97,13 +94,13 @@ namespace Rock.Personalization
                 return false;
             }
 
-            var majorVersion = ua.Major;
-            if ( majorVersion.IsNullOrWhiteSpace() )
+            var majorVersion = browserInfo.BrowserVersion?.Major;
+            if ( !majorVersion.HasValue )
             {
                 return false;
             }
 
-            return majorVersion.CompareTo( MajorVersion.ToString(), VersionComparisonType );
+            return majorVersion.Value.ToString().CompareTo( MajorVersion.ToString(), VersionComparisonType );
         }
 
         /// <summary>

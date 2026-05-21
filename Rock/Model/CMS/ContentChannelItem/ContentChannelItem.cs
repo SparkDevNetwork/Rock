@@ -28,7 +28,9 @@ using Rock.Attribute;
 using Rock.Cms.ContentCollection.Attributes;
 using Rock.Data;
 using Rock.Enums.Cms;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
@@ -79,6 +81,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string Title { get; set; }
 
         /// <summary>
@@ -88,6 +91,7 @@ namespace Rock.Model
         /// The content.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Content { get; set; }
 
         /// <summary>
@@ -97,6 +101,7 @@ namespace Rock.Model
         /// The structured content.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string StructuredContent { get; set; }
 
         /// <summary>
@@ -163,6 +168,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Permalink { get; set; }
 
         /// <summary>
@@ -182,6 +188,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ItemGlobalKey { get; set; }
 
         /// <summary>
@@ -249,6 +256,7 @@ namespace Rock.Model
 
         /// <inheritdoc/>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion Entity Properties

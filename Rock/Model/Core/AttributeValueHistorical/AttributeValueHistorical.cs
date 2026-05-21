@@ -21,6 +21,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -53,6 +55,7 @@ namespace Rock.Model
         /// The value.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Value { get; set; }
 
         /// <summary>
@@ -62,6 +65,7 @@ namespace Rock.Model
         /// The value formatted.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ValueFormatted { get; set; }
 
         /// <summary>

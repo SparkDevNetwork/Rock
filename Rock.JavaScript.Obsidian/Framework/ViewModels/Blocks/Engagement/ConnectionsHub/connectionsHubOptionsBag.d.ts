@@ -26,8 +26,10 @@ import { Guid } from "@Obsidian/Types";
 import { CampusLabelBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/campusLabelBag";
 import { ConnectionActivityTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionActivityTypeBag";
 import { ConnectionOpportunityDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionOpportunityDetailBag";
+import { ConnectionRequestAttributeFilterBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestAttributeFilterBag";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
 import { ConnectionWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionWorkflowBag";
+import { GridDataToShowItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/gridDataToShowItemBag";
 import { GroupingFieldBag } from "@Obsidian/ViewModels/Core/Grid/groupingFieldBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -44,6 +46,14 @@ export type ConnectionsHubOptionsBag = {
 
     /** Gets or sets a value indicating whether reminders are enabled for connection requests. */
     areRemindersEnabled: boolean;
+
+    /**
+     * Gets or sets the list of attributes available for filtering the connection request grid.
+     * Each entry pairs the public attribute (used to render the RockAttributeFilter
+     * control in the View Options modal) with the Connection Opportunity Guids that scope it,
+     * so the client can hide filters for attributes that do not apply to the active opportunity.
+     */
+    attributeFilters?: ConnectionRequestAttributeFilterBag[] | null;
 
     /**
      * Gets or sets the available groupings for each grouping dimension. The dictionary is keyed
@@ -90,7 +100,7 @@ export type ConnectionsHubOptionsBag = {
     enabledViews: EnabledViewFlags;
 
     /** Gets or sets the list of column options that control which data fields are displayed in the request grid. */
-    gridDataToShowItems?: ListItemBag[] | null;
+    gridDataToShowItems?: GridDataToShowItemBag[] | null;
 
     /** Gets or sets the CSS class for the icon to display alongside the block title. */
     iconCssClass?: string | null;

@@ -47,12 +47,15 @@
             <h4>Outstanding Balances</h4>
             <div v-html="config.instructionsHtml ?? ''"></div>
 
-            <Grid :data="gridData"
+            <Grid :definition="config.gridDefinition ?? undefined"
+                  :data="gridData"
                   keyField="idKey"
                   itemTerm="Registration"
+                  :entityTypeGuid="EntityType.Registration"
                   :exportTitle="exportTitle"
                   :markInactiveRows="true"
-                  disablePaging
+                  :showLaunchWorkflow="false"
+                  isTitleHidden
                   @onLoad="onGridLoad"
                   @selectedKeysChanged="onSelectedKeysChanged">
                 <SelectColumn />
@@ -121,6 +124,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import Toggle from "@Obsidian/Controls/toggle.obs";
     import Grid, { CurrencyColumn, DateColumn, SelectColumn, TextColumn, dateValueFilter, numberValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";

@@ -22,7 +22,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.Reporting.DataFilter;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
+using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Shared.Utility;
 
 namespace Rock.Tests.Integration.TestData
 {

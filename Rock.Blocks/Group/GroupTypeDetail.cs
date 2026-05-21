@@ -102,6 +102,7 @@ namespace Rock.Blocks.Group
 
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
+            box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<GroupType>();
 
             return box;
         }
@@ -1959,7 +1960,7 @@ namespace Rock.Blocks.Group
 
                         // Inherited Group attributes
                         responseBag.InheritedGroupAttributes.AddRange(
-                            attributeService.GetByEntityTypeId( groupEntityTypeId, true )
+                            attributeService.GetByEntityTypeId( groupEntityTypeId, false )
                                 .Where( a =>
                                     a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
                                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -1978,7 +1979,7 @@ namespace Rock.Blocks.Group
 
                         // Inherited GroupMember attributes
                         responseBag.InheritedGroupMemberAttributes.AddRange(
-                            attributeService.GetByEntityTypeId( groupMemberEntityTypeId, true )
+                            attributeService.GetByEntityTypeId( groupMemberEntityTypeId, false )
                                 .Where( a =>
                                     a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
                                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -1997,7 +1998,7 @@ namespace Rock.Blocks.Group
 
                         // Inherited GroupType attributes
                         responseBag.InheritedGroupTypeAttributes.AddRange(
-                            attributeService.GetByEntityTypeId( groupTypeEntityTypeId, true )
+                            attributeService.GetByEntityTypeId( groupTypeEntityTypeId, false )
                                 .Where( a =>
                                     a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
                                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )

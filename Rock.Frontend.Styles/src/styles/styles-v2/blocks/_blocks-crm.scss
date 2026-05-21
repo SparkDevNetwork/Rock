@@ -179,8 +179,14 @@ $badge-count-width: 18px;
   border-radius:    .1em;
 
   .badge-icon {
-    font-size:      .65em;
     color:          var(--color-interface-softest);
+    &.fa,
+    &.fas,
+    &.far,
+    &.fal,
+    &.fab {
+      font-size: .65em;
+     }
   }
 
   &.rockbadge-circle {
@@ -354,13 +360,18 @@ $badge-count-width: 18px;
   height:   1em;
 
   .badge-icon {
-    position:     absolute;
-    top:          -6px;
-    right:        0;
-    left:         -5px;
     line-height:  1.15em;
     text-align:   center;
     font-size:   $badge-icon-height;
+
+    &.fa,
+    &.fas,
+    &.far,
+    &.fal,
+    &.fab {
+      font-size: 36px;
+     }
+
   }
 
   &-invert {
@@ -411,18 +422,9 @@ $badge-count-width: 18px;
   }
 }
 
-.rockbadge-signal .metric-value {
-  top:      .35em;
-  bottom:   .65em;
-}
-
 .rockbadge-personaldevice,
 .rockbadge-lastvisitonsite {
   width:  .9em;
-  .badge-content .metric-value {
-    top:  .9em;
-    left: .6em;
-  }
 }
 
 .rockbadge-personaldevice .badge-content .metric-value {

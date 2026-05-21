@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -30,6 +31,13 @@ namespace Rock
         #region Object Extensions
 
         /// <summary>
+        /// Per-type cache of public property lookups keyed by property name.
+        /// The dictionary is built with <see cref="StringComparer.Ordinal"/> to match the case-sensitive
+        /// behavior of <see cref="Type.GetProperty(string)"/>.
+        /// </summary>
+        private static readonly ConcurrentDictionary<Type, Dictionary<string, PropertyInfo>> _propertyInfoCache = new ConcurrentDictionary<Type, Dictionary<string, PropertyInfo>>();
+
+        /// <summary>
         /// Gets the property Value of the object's property as specified by propertyPathName.
         /// If the object is a dictionary, retrieves the value associated with the matching key.
         /// </summary>
@@ -38,25 +46,28 @@ namespace Rock
         /// <returns></returns>
         public static object GetPropertyValue( this object rootObj, string propertyPathName )
         {
-            var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
+            var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries );
 
             object obj = rootObj;
             Type objType = rootObj.GetType();
 
-            while ( propPath.Any() && obj != null )
+            for ( int pathIndex = 0; pathIndex < propPath.Length && obj != null; pathIndex++ )
             {
+                var segment = propPath[pathIndex];
+
                 if ( obj is IDictionary dictionary )
                 {
-                    obj = dictionary[propPath.First()];
+                    obj = dictionary[segment];
                 }
                 else if ( obj is IDictionary<string, object> stringDictionary )
                 {
-                    obj = stringDictionary[propPath.First()];
+                    obj = stringDictionary[segment];
                 }
                 else
                 {
-                    PropertyInfo property = objType.GetProperty( propPath.First() );
-                    if ( property != null )
+                    var propertyMap = _propertyInfoCache.GetOrAdd( objType, t => t.GetProperties().ToDictionary( p => p.Name, StringComparer.Ordinal ) );
+
+                    if ( propertyMap.TryGetValue( segment, out var property ) )
                     {
                         obj = property.GetValue( obj );
                         objType = property.PropertyType;
@@ -66,8 +77,6 @@ namespace Rock
                         obj = null;
                     }
                 }
-
-                propPath = propPath.Skip( 1 ).ToList();
             }
 
             return obj;

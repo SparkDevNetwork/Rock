@@ -47,7 +47,6 @@
     import { PersistedDatasetBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetDetail/persistedDatasetBag";
     import { PersistedDatasetDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetDetail/persistedDatasetDetailOptionsBag";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { ScheduleBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleDetail/scheduleBag";
 
     const config = useConfigurationValues<DetailBlockBox<PersistedDatasetBag, PersistedDatasetDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -76,7 +75,7 @@
         "isActive",
         "memoryCacheDurationHours",
         "name",
-        "refreshIntervalHours",
+        "persistenceType",
         "persistedScheduleId",
         "refreshInterval",
         "persistedScheduleIntervalType",
@@ -258,7 +257,6 @@
     /**
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then leave edit mode or redirect to target page.
-     * Also handles saving the entity's schedule if it has one, and then it creates the schedule in the backend and saves the persisted dataset with a persistedScheduleId that is retreived from the Schedule entity after creating a new schedule.
      *
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
@@ -271,21 +269,14 @@
             validProperties: validProperties
         };
 
-        // Prepare the schedule data as a string
-        const scheduleData: ScheduleBag = {
-            iCalendarContent: persistedDatasetEditBag.value?.persistedSchedule,
-            autoInactivateWhenComplete: false,
-            isActive: true,
-        };
-
         const result = await invokeBlockAction<PersistedDatasetBag | string>("Save", {
-            box: data,
-            scheduleBag: scheduleData,
+            box: data
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
                 persistedDatasetEditBag.value = result.data;
+                persistedDatasetViewBag.value = result.data;
                 return true;
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {

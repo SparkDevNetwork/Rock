@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Mobile
 
             if ( pnlEditPage.Visible )
             {
-                int pageId = PageParameter( PageParameterKeys.Page ).AsInteger();
+                int pageId = ResolvePageIdFromParameter( PageParameter( PageParameterKeys.Page ) ).GetValueOrDefault();
                 var pageCache = PageCache.Get( pageId );
 
                 if ( pageCache != null )
@@ -115,8 +115,8 @@ namespace RockWeb.Blocks.Mobile
         {
             if ( !IsPostBack )
             {
-                int pageId = PageParameter( PageParameterKeys.Page ).AsInteger();
-                int siteId = PageParameter( PageParameterKeys.SiteId ).AsInteger();
+                int pageId = ResolvePageIdFromParameter( PageParameter( PageParameterKeys.Page ) ).GetValueOrDefault();
+                int siteId = ResolveSiteIdFromParameter( PageParameter( PageParameterKeys.SiteId ) ).GetValueOrDefault();
 
                 // Load page picker
                 if ( siteId != 0 )
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Mobile
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? pageId = PageParameter( pageReference, PageParameterKeys.Page ).AsIntegerOrNull();
+            int? pageId = ResolvePageIdFromParameter( PageParameter( pageReference, PageParameterKeys.Page ) );
             if ( pageId != null )
             {
                 var page = new PageService( new RockContext() ).Get( pageId.Value );
@@ -203,6 +203,74 @@ namespace RockWeb.Blocks.Mobile
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Resolves a "Page" page-parameter string to an integer page identifier.
+        /// Accepts an integer Id, a Guid, or an IdKey hash so that links from
+        /// either WebForms (integer) or Obsidian (IdKey) callers resolve to the
+        /// same page. Returns <c>null</c> when the parameter is missing or
+        /// cannot be resolved.
+        /// </summary>
+        /// <param name="parameterValue">The raw page-parameter value.</param>
+        /// <returns>The resolved page identifier, or <c>null</c>.</returns>
+        private static int? ResolvePageIdFromParameter( string parameterValue )
+        {
+            if ( parameterValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            // Try integer first to preserve the legacy AsInteger() path.
+            var pageIdAsInt = parameterValue.AsIntegerOrNull();
+            if ( pageIdAsInt.HasValue )
+            {
+                return pageIdAsInt.Value;
+            }
+
+            // Then try Guid via cache.
+            var pageGuid = parameterValue.AsGuidOrNull();
+            if ( pageGuid.HasValue )
+            {
+                return PageCache.Get( pageGuid.Value )?.Id;
+            }
+
+            // Finally try the IdKey hash that Obsidian list blocks emit.
+            return Rock.Utility.IdHasher.Instance.GetId( parameterValue );
+        }
+
+        /// <summary>
+        /// Resolves a "SiteId" page-parameter string to an integer site identifier.
+        /// Accepts an integer Id, a Guid, or an IdKey hash so that links from
+        /// either WebForms (integer) or Obsidian (IdKey) callers resolve to the
+        /// same site. Returns <c>null</c> when the parameter is missing or
+        /// cannot be resolved.
+        /// </summary>
+        /// <param name="parameterValue">The raw page-parameter value.</param>
+        /// <returns>The resolved site identifier, or <c>null</c>.</returns>
+        private static int? ResolveSiteIdFromParameter( string parameterValue )
+        {
+            if ( parameterValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            // Try integer first to preserve the legacy AsInteger() path.
+            var siteIdAsInt = parameterValue.AsIntegerOrNull();
+            if ( siteIdAsInt.HasValue )
+            {
+                return siteIdAsInt.Value;
+            }
+
+            // Then try Guid via cache.
+            var siteGuid = parameterValue.AsGuidOrNull();
+            if ( siteGuid.HasValue )
+            {
+                return SiteCache.Get( siteGuid.Value )?.Id;
+            }
+
+            // Finally try the IdKey hash that Obsidian list blocks emit.
+            return Rock.Utility.IdHasher.Instance.GetId( parameterValue );
+        }
 
         /// <summary>
         /// Processes the drag events.
@@ -743,7 +811,7 @@ namespace RockWeb.Blocks.Mobile
             if ( pageId == 0 )
             {
                 // If this is a new page then we need to check the site permissions
-                var site = SiteCache.Get( PageParameter( PageParameterKeys.SiteId ).AsInteger() );
+                var site = SiteCache.Get( ResolveSiteIdFromParameter( PageParameter( PageParameterKeys.SiteId ) ).GetValueOrDefault() );
                 if ( site == null || !site.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
                     nbError.Text = Rock.Constants.EditModeMessage.NotAuthorizedToEdit( typeof( Rock.Model.Page ).GetFriendlyTypeName() );
@@ -790,7 +858,7 @@ namespace RockWeb.Blocks.Mobile
             tbRoute.Text = page.PageRoutes.FirstOrDefault()?.Route ?? string.Empty;
 
             // Configure the layout options.
-            var siteId = PageParameter( PageParameterKeys.SiteId ).AsInteger();
+            var siteId = ResolveSiteIdFromParameter( PageParameter( PageParameterKeys.SiteId ) ).GetValueOrDefault();
             ddlLayout.Items.Add( new ListItem() );
             foreach ( var layout in LayoutCache.All().Where( l => l.SiteId == siteId ) )
             {
@@ -1151,9 +1219,9 @@ namespace RockWeb.Blocks.Mobile
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
             var contextService = new PageContextService( rockContext );
-            int parentPageId = SiteCache.Get( PageParameter( PageParameterKeys.SiteId ).AsInteger() ).DefaultPageId.Value;
+            int parentPageId = SiteCache.Get( ResolveSiteIdFromParameter( PageParameter( PageParameterKeys.SiteId ) ).GetValueOrDefault() ).DefaultPageId.Value;
 
-            var page = pageService.Get( PageParameter( PageParameterKeys.Page ).AsInteger() );
+            var page = pageService.Get( ResolvePageIdFromParameter( PageParameter( PageParameterKeys.Page ) ).GetValueOrDefault() );
             if ( page == null )
             {
                 page = new Rock.Model.Page();
@@ -1328,7 +1396,7 @@ namespace RockWeb.Blocks.Mobile
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            ShowPageEdit( PageParameter( PageParameterKeys.Page ).AsInteger() );
+            ShowPageEdit( ResolvePageIdFromParameter( PageParameter( PageParameterKeys.Page ) ).GetValueOrDefault() );
         }
 
         /// <summary>

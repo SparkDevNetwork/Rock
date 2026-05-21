@@ -14,8 +14,8 @@ using Rock.Communication;
 using Rock.Communication.Transport;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Communications

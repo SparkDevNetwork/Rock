@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Enums.CheckIn;
 using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
+using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Security;
 using Rock.Utility;
@@ -67,6 +68,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -76,6 +78,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the description of the GroupType.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -90,6 +93,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string GroupTerm { get; set; } = "Group";
 
         /// <summary>
@@ -105,6 +109,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string GroupMemberTerm { get; set; } = "Member";
 
         /// <summary>
@@ -155,6 +160,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -379,6 +385,7 @@ namespace Rock.Model
         /// The Group View Lava Template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GroupViewLavaTemplate
         {
             get
@@ -629,6 +636,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string GroupTypeColor { get; set; }
 
         /// <summary>
@@ -713,6 +721,7 @@ namespace Rock.Model
         /// <value>The attendance reminder followup days.</value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AttendanceReminderFollowupDays { get; set; }
 
         //AttendanceReminderLastSentDateTime
@@ -877,6 +886,7 @@ namespace Rock.Model
 
         /// <inheritdoc/>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion Entity Properties
@@ -972,6 +982,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AdministratorTerm { get; set; } = "Administrator";
 
         /// <summary>

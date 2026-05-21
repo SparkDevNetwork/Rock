@@ -86,10 +86,11 @@ Use this to verify completeness before finishing Phase 4.
 - [ ] Correct template used (DetailBlock, Block, or custom)
 
 ### Partials (`Rock.JavaScript.Obsidian.Blocks/src/[Category]/[BlockName]/`)
-- [ ] `viewPanel.partial.obs` — uses `ValueDetailList` (detail blocks)
-- [ ] `editPanel.partial.obs` — uses `ContentSectionContainer`, `propertyRef`, `ValidPropertiesBox` (detail blocks)
-- [ ] `types.partial.ts` — created if navigation URLs or shared types exist
-- [ ] `gridSettingsModal.partial.obs` — created if server-side filters are used (list blocks)
+- [ ] `viewPanel.partial.obs` uses `ValueDetailList` (detail blocks)
+- [ ] `editPanel.partial.obs` uses `propertyRef` + `ValidPropertiesBox`, with the appropriate root element from `detail-block-patterns.md` (`<fieldset>` for single-group blocks, `<ContentSectionContainer>` for multi-section blocks)
+- [ ] `types.partial.ts` created if navigation URLs or shared types exist
+- [ ] `gridSettingsModal.partial.obs` created if server-side filters are used (list blocks)
+- [ ] `utils.partial.ts` created if v-model adapters are shared across two or more panels
 
 ### WebForms Chopped
 - [ ] `RockWeb/Blocks/[Category]/[BlockName].ascx` deleted

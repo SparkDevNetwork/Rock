@@ -29,6 +29,12 @@ using Rock.ViewModels.Blocks.Core.McpServerList;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 
+#if WEBFORMS
+using System.Web.UI;
+
+using Rock.Web;
+#endif
+
 namespace Rock.Blocks.Core
 {
     /// <summary>
@@ -40,24 +46,42 @@ namespace Rock.Blocks.Core
     [IconCssClass( "ti ti-robot" )]
     [SupportedSiteTypes( SiteType.Web )]
 
+    [BooleanField( "Append API Key to URL",
+        Description = "When enabled, the individual's API key is appended to the MCP URL. Use this if the MCP server requires authentication via URL parameter rather than using OAuth. Note that API keys grant access based on the permissions of the individual they belong to — treat them as sensitive credentials and avoid sharing or exposing MCP URLs that contain them.",
+        DefaultBooleanValue = false,
+        Order = 0,
+        Key = AttributeKey.AppendApiKeyToUrl )]
+
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "F0B14291-8035-4986-A4D8-DC1AE08E4F7B" )]
     [Rock.SystemGuid.BlockTypeGuid( "54B23A63-87C0-4955-B915-C91F23C36D48" )]
     public class McpServerList : RockBlockType
     {
+        #region Keys
+
+        private static class AttributeKey
+        {
+            public const string AppendApiKeyToUrl = "AppendApiKeyToUrl";
+        }
+
+        #endregion
+
         #region Methods
 
         public override object GetObsidianBlockInitialization()
         {
+            var appendApiKeyToUrl = GetAttributeValue( AttributeKey.AppendApiKeyToUrl ).AsBoolean();
+
             var box = new InitializationBox
             {
-                Items = GetMcpServers()
+                Items = GetMcpServers( appendApiKeyToUrl ),
+                IsApiKeyAppendedToUrl = appendApiKeyToUrl
             };
 
             return box;
         }
 
-        private List<McpServerListItemBag> GetMcpServers()
+        private List<McpServerListItemBag> GetMcpServers( bool appendApiKeyToUrl )
         {
             var mcpAiAgents = AIAgentCache.All()
                 .Where( a => a.AgentType == AgentType.Mcp )
@@ -84,12 +108,14 @@ namespace Rock.Blocks.Core
 
             var publicApplicationRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).RemoveTrailingForwardslash();
 
-            // Create an API Key on block load instead of waiting for the individual to click the Copy URL button.
-            // Doing so here will place the sensitive API Keys in the page's HTML.
-            // If done in a block action, the API Key would be included in the API response which could be logged and
+            // Only create/fetch an API Key when the block is configured to append it to the URL.
+            // When appending, place the API Key in the page's HTML rather than returning it from a block action.
+            // A block action would include the API Key in an API response which could be logged and
             // would be more easily accessible to users inspecting network requests,
             // but including it in the page's HTML means it is less likely to be accidentally exposed in logs and is not included in API responses.
-            var apiKey = Types.Mobile.Cms.VoiceAgent.GetOrCreateMcpApiKeyForCurrentPerson( GetCurrentPerson(), RockContext );
+            var apiKey = appendApiKeyToUrl
+                ? Types.Mobile.Cms.VoiceAgent.GetOrCreateMcpApiKeyForCurrentPerson( GetCurrentPerson(), RockContext )
+                : null;
 
             return mcpAiAgents
                 .Select( aa => new McpServerListItemBag
@@ -97,12 +123,72 @@ namespace Rock.Blocks.Core
                     AudienceType = aa.AudienceType,
                     Name = aa.Name,
                     Description = aa.Description,
-                    PartialUrl = $"{publicApplicationRoot}/api/v2/mcp/{aa.Slug}...",
-                    FullUrl = $"{publicApplicationRoot}/api/v2/mcp/{aa.Slug}?apikey={apiKey}",
+                    PartialUrl = appendApiKeyToUrl
+                        ? $"{publicApplicationRoot}/api/v2/mcp/{aa.Slug}..."
+                        : $"{publicApplicationRoot}/api/v2/mcp/{aa.Slug}",
+                    FullUrl = appendApiKeyToUrl
+                        ? $"{publicApplicationRoot}/api/v2/mcp/{aa.Slug}?apikey={apiKey}"
+                        : $"{publicApplicationRoot}/api/v2/mcp/{aa.Slug}",
                 } )
                 .ToList();
         }
 
         #endregion
+
+#if WEBFORMS
+        #region Custom Settings
+
+        /// <summary>
+        /// Widens Bootstrap tooltips inside the BlockProperties iframe so the verbose
+        /// "Append API Key to URL" help text wraps to fewer lines and fits within the
+        /// iframe's vertical space (the default 200px tooltip width forces the long
+        /// description to wrap into a tall tooltip that gets clipped at the iframe edge).
+        /// </summary>
+        /*
+            5/1/26 - JMH
+
+            This provider only loads when the McpServerList block is being edited, so the
+            injected CSS is naturally scoped to this block's settings dialog and doesn't
+            affect tooltips elsewhere in Rock.
+
+            Reason: Tooltips can't extend past an iframe's boundary; widening them keeps
+            the rendered tooltip short enough to fit.
+        */
+        [CustomSettingsBlockType( typeof( McpServerList ), Model.SiteType.Web )]
+        public class McpServerListCustomSettingsProvider : RockCustomSettingsProvider
+        {
+            private const string TooltipWidthScript = @"
+<script>
+    (function() {
+        var style = document.createElement( 'style' );
+        style.textContent = '.tooltip-inner { max-width: 500px; }';
+        document.head.appendChild( style );
+    })();
+</script>";
+
+            /// <inheritdoc />
+            public override string CustomSettingsTitle => "Basic Settings";
+
+            /// <inheritdoc />
+            public override Control GetCustomSettingsControl( IHasAttributes attributeEntity, Control parent )
+            {
+                return new LiteralControl( TooltipWidthScript );
+            }
+
+            /// <inheritdoc />
+            public override void ReadSettingsFromEntity( IHasAttributes attributeEntity, Control control )
+            {
+                // No persisted state — this provider only injects styling for tooltips.
+            }
+
+            /// <inheritdoc />
+            public override void WriteSettingsToEntity( IHasAttributes attributeEntity, Control control, RockContext rockContext )
+            {
+                // No persisted state — this provider only injects styling for tooltips.
+            }
+        }
+
+        #endregion
+#endif
     }
 }

@@ -27,5 +27,11 @@ namespace Rock.ViewModels.Blocks.Core.McpServerList
         /// Gets or sets the collection of MCP servers.
         /// </summary>
         public List<McpServerListItemBag> Items { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the individual's API key is appended to the MCP URL.
+        /// When <c>true</c>, the URL contains a sensitive credential and a security notice should be displayed.
+        /// </summary>
+        public bool IsApiKeyAppendedToUrl { get; set; }
     }
 }

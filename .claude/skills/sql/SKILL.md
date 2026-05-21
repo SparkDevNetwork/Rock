@@ -14,7 +14,7 @@ description: >-
 argument-hint: "Describe what the script should do (e.g., 'add a new campus' or 'insert 50 attendance records')"
 compatibility: Requires Claude Code with access to the Rock RMS codebase for reading model files and writing .sql output files.
 metadata:
-  version: "1.1"
+  version: "1.2"
   author: "Maxwell Eley"
 ---
 
@@ -63,6 +63,7 @@ Before writing any SQL, read the relevant Entity Framework model files to unders
 - FK navigation properties (e.g., `public virtual PersonAlias CreatedByPersonAlias`)
 - Enum-typed properties — you'll need the int value, not the enum name
 - Default values in constructors or property initializers
+- **`public bool IsSystem`** — verify the model declares this before including `[IsSystem]` in an INSERT (it's per-entity, not on `Model<T>`). See `schema-patterns.md` for the list of common offenders. **#1 first-run failure mode.**
 
 Read `references/schema-patterns.md` for the standard column patterns that apply to every Rock entity.
 
@@ -80,12 +81,16 @@ Follow these rules strictly:
 
 **Every INSERT must include:**
 1. `[Guid]` — use `NEWID()` unless a specific Guid is required
-2. `[IsSystem]` — `0` for user-created data, `1` only for Rock core data
-3. Audit columns where applicable:
+2. Audit columns when the entity inherits from `Model<T>` (most entities, but not all — `Entity<T>` derivatives like `MetricCategory` and the various join tables have no audit columns):
    - `[CreatedDateTime]` = `GETDATE()`
    - `[ModifiedDateTime]` = `GETDATE()`
    - `[CreatedByPersonAliasId]` = looked up from a known person (use admin or sample data person)
    - `[ModifiedByPersonAliasId]` = same as above
+
+**Conditional columns — verify before including:**
+- `[IsSystem]` — only when the entity model declares `public bool IsSystem`.
+- `[Order]` — only when the entity implements `IOrdered` or declares `public int Order` directly.
+- `[ForeignId]` / `[ForeignGuid]` / `[ForeignKey]` — present on `IModel`/`Model<T>`; usually safe to omit (default to NULL).
 
 **PersonAlias vs Person — this is the most common mistake:**
 - Audit fields (`CreatedByPersonAliasId`, `ModifiedByPersonAliasId`) reference `[PersonAlias]`, NOT `[Person]`
@@ -201,8 +206,8 @@ END
 Run through this checklist before giving the script to the user:
 
 1. Every INSERT has `[Guid]` with `NEWID()` (or a specific Guid if required)
-2. Every INSERT to a Model entity has `[CreatedDateTime]` and `[ModifiedDateTime]`
-3. `[IsSystem]` is set to `0` unless this is core Rock data
+2. Every INSERT to a `Model<T>` entity has `[CreatedDateTime]` and `[ModifiedDateTime]` (skip for `Entity<T>` derivatives that have no audit columns)
+3. `[IsSystem]` is included **only** when the model declares it (verified by grep). When in doubt, omit it.
 4. All FK columns reference valid lookups (no hardcoded Ids without a DECLARE)
 5. PersonAlias is used for audit columns, not Person
 6. String values don't exceed `[MaxLength]` from the model
@@ -298,6 +303,8 @@ Result: A transactional script that creates a complete family with attendance da
 ---
 
 ## Troubleshooting
+
+**`Invalid column name 'IsSystem'`:** The entity doesn't declare `IsSystem` (it's per-entity, not on `Model<T>`). Remove `[IsSystem]` from the INSERT column list and the corresponding `0` from the VALUES/SELECT. See `schema-patterns.md` "IsSystem — Per-Entity, Not Base" for the offender list.
 
 **FK constraint violation:** You're referencing an Id that doesn't exist. Check your DECLARE lookups — did the subquery return NULL? Add a NULL check: `IF @SomeId IS NOT NULL BEGIN ... END`
 

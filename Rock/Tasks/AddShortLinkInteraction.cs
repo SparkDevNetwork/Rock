@@ -16,12 +16,15 @@
 //
 using System;
 using System.Linq;
+
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Cms.Utm;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.Cache;
-
-using UAParser;
 
 namespace Rock.Tasks
 {
@@ -50,7 +53,8 @@ namespace Rock.Tasks
             }
 
             // get user agent info
-            var clientType = InteractionDeviceType.GetClientType( userAgent );
+            var browserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( userAgent );
+            var clientType = browserInfo.ClientType;
 
             // don't log visits from crawlers
             if ( clientType != "Crawler" )
@@ -105,10 +109,8 @@ namespace Rock.Tasks
                         personAliasId = new PersonAliasService( rockContext ).GetSelect( message.VisitorPersonAliasIdKey, s => s.Id );
                     }
 
-                    Parser uaParser = Parser.GetDefault();
-                    ClientInfo client = uaParser.Parse( userAgent );
-                    var clientOs = client.OS.ToString();
-                    var clientBrowser = client.UA.ToString();
+                    var clientOs = browserInfo.GetOSFamilyVersion();
+                    var clientBrowser = browserInfo.GetBrowserFamilyVersion();
 
                     var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", message.Url, personAliasId, message.DateViewed, clientBrowser, clientOs, clientType, userAgent, message.IPAddress, message.SessionId?.AsGuidOrNull() );
 
@@ -127,12 +129,23 @@ namespace Rock.Tasks
                         out int? campaignValueId,
                         out string campaignText );
 
-                    interaction.Source = sourceText;
+                    interaction.Source = sourceText.Truncate( 25, false );
                     interaction.SourceValueId = sourceValueId;
-                    interaction.Medium = mediumText;
+                    interaction.Medium = mediumText.Truncate( 25, false );
                     interaction.MediumValueId = mediumValueId;
-                    interaction.Campaign = campaignText;
+                    interaction.Campaign = campaignText.Truncate( 50, false );
                     interaction.CampaignValueId = campaignValueId;
+
+                    if ( message.UtmTerm.IsNotNullOrWhiteSpace() )
+                    {
+                        interaction.Term = System.Uri.UnescapeDataString( message.UtmTerm ).Truncate( 50, false );
+                    }
+
+                    if ( message.UtmContent.IsNotNullOrWhiteSpace() )
+                    {
+                        interaction.Content = System.Uri.UnescapeDataString( message.UtmContent ).Truncate( 50, false );
+                    }
+
                     interaction.ChannelCustomIndexed1 = message.PurposeKey.Truncate( 500, false );
 
                     rockContext.SaveChanges();
@@ -230,6 +243,16 @@ namespace Rock.Tasks
             /// Gets or sets the UTM campaign of the link
             /// </summary>
             public string UtmCampaign { get; set; }
+
+            /// <summary>
+            /// Gets or sets the UTM term of the link.
+            /// </summary>
+            public string UtmTerm { get; set; }
+
+            /// <summary>
+            /// Gets or sets the UTM content of the link.
+            /// </summary>
+            public string UtmContent { get; set; }
 
             /// <summary>
             /// Gets or sets the purpose of the redirect. This is generic data

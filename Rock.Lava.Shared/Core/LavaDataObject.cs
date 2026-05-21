@@ -785,14 +785,14 @@ namespace Rock.Lava
             }
 
             // Finally, try to resolve the reference as a property path.
-            var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
+            var propPath = propertyPathName.Split( ['.'], StringSplitOptions.RemoveEmptyEntries );
 
             object obj = _targetObject ?? this;
 
-            while ( propPath.Any() && obj != null )
+            for ( int pathIndex = 0; pathIndex < propPath.Length && obj != null; pathIndex++ )
             {
                 // Get the property accessor.
-                var propName = propPath.First();
+                var propName = propPath[pathIndex];
 
                 PropertyInfo prop;
                 bool getPropertyValue;
@@ -829,8 +829,6 @@ namespace Rock.Lava
                     // Get the value from the property
                     obj = prop.GetValue( obj, null );
                 }
-
-                propPath = propPath.Skip( 1 ).ToList();
             }
 
             result = obj;

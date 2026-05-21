@@ -90,7 +90,7 @@ namespace Rock.Field.Types
 
             if ( privateConfigurationValues.ContainsKey( BINARY_FILE_TYPE ) )
             {
-                var binaryFileTypeValue = publicConfigurationValues[BINARY_FILE_TYPE].FromJsonOrNull<ListItemBag>();
+                var binaryFileTypeValue = privateConfigurationValues[BINARY_FILE_TYPE].FromJsonOrNull<ListItemBag>();
 
                 if ( binaryFileTypeValue != null )
                 {

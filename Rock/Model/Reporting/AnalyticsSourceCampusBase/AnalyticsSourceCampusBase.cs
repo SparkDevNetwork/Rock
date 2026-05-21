@@ -15,6 +15,8 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
@@ -49,6 +51,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [Index( IsUnique = true )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Name { get; set; }
 
         /// <summary>
@@ -58,6 +61,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Description { get; set; }
 
         /// <summary>
@@ -78,6 +82,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ShortCode { get; set; }
 
         /// <summary>
@@ -87,6 +92,7 @@ namespace Rock.Model
         /// The URL.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Url { get; set; }
 
         /// <summary>
@@ -105,6 +111,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the campus phone number.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PhoneNumber { get; set; }
 
         /// <summary>
@@ -124,6 +131,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 500 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ServiceTimes { get; set; }
 
         /// <summary>

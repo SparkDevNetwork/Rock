@@ -10,7 +10,7 @@
 
     <Grid v-else :definition="config ?? undefined"
           :data="gridData ?? undefined"
-          keyField="id"
+          keyField="idKey"
           title="Communications With Most Recipients"
           itemTerm="Record"
           liveUpdates

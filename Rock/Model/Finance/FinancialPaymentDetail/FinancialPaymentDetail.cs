@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 using System;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Security;
 
 namespace Rock.Model
@@ -44,6 +45,7 @@ namespace Rock.Model
         /// The account number masked.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AccountNumberMasked { get; set; }
 
         /// <summary>
@@ -87,6 +89,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GatewayPersonIdentifier { get; set; }
 
         /// <summary>
@@ -109,6 +112,7 @@ namespace Rock.Model
         [MaxLength( 256 )]
         [Obsolete( "Use NameOnCard" )]
         [RockObsolete( "1.12.4" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string NameOnCardEncrypted
         {
             get
@@ -136,6 +140,7 @@ namespace Rock.Model
         /// The name on card.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string NameOnCard
         {
             get
@@ -172,6 +177,7 @@ namespace Rock.Model
         [MaxLength( 256 )]
         [Obsolete( "Use ExpirationMonth" )]
         [RockObsolete( "1.12.4" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ExpirationMonthEncrypted
         {
             get
@@ -202,6 +208,7 @@ namespace Rock.Model
         [MaxLength( 256 )]
         [Obsolete( "Use ExpirationYear" )]
         [RockObsolete( "1.12.4" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ExpirationYearEncrypted
         {
             get

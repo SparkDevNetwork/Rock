@@ -55,6 +55,16 @@ namespace Rock.Communication
         public int? FromPersonId { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication topic <see cref="DefinedValue"/> identifier
+        /// to assign to the <see cref="Communication"/> record that is created when
+        /// <see cref="RockMessage.CreateCommunicationRecord"/> is <c>true</c>.
+        /// </summary>
+        /// <value>
+        /// The communication topic defined value identifier.
+        /// </value>
+        public int? CommunicationTopicValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets from name.
         /// </summary>
         /// <value>

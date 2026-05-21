@@ -654,6 +654,7 @@ namespace Rock.Lava
                 }
                 else
                 {
+                    // This branch only matches when callers construct LavaRenderContext directly (e.g., new LavaRenderContext() or LavaRenderContext.FromMergeValues(...)), which today is only the test fixtures.
                     if ( parameters.Context.GetType() == typeof( LavaRenderContext ) )
                     {
                         callParameters = parameters.Clone();

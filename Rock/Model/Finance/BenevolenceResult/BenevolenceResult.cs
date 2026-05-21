@@ -19,6 +19,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -72,6 +74,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the details of the result.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ResultSummary { get; set; }
 
         #endregion

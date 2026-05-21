@@ -422,7 +422,9 @@ namespace Rock.Model
                     var action = allDatabaseActions.Where( a =>
                         a.ApiId == newFormatId
                         || a.ApiId == oldFormatId
-                        || ( discoveredAction.ReflectedGuid.HasValue && a.Guid == discoveredAction.ReflectedGuid.Value ) ).FirstOrDefault();
+                        || ( discoveredAction.ReflectedGuid.HasValue && a.Guid == discoveredAction.ReflectedGuid.Value ) )
+                        .OrderByDescending( a => a.Guid == discoveredAction.ReflectedGuid )
+                        .FirstOrDefault();
 
                     if ( action == null )
                     {

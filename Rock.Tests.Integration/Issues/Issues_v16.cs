@@ -21,9 +21,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Field.Types;
 using Rock.Lava.Fluid;
 using Rock.Tests.Integration.Crm;
-using Rock.Tests.Shared;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
 using Rock.Tests.Shared.Lava;
-using Rock.Tests.Shared.TestFramework;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Tests.Integration.Issues

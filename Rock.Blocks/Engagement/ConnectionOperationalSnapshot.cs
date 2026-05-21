@@ -484,7 +484,11 @@ namespace Rock.Blocks.Engagement
                             cr.CreatedDateTime.Value,
                             cr.ConnectedDateTime.Value ) )
                 } )
-                .Where( m => m.ActiveRequestCount > 0 )
+                // Include connectors who currently have active requests as well as those
+                // who have connected at least one request in the last 28 days. This ensures
+                // that quick-moving connectors who have recently completed work are still
+                // represented in the grid even when they have no remaining active requests.
+                .Where( m => m.ActiveRequestCount > 0 || m.CompletedRequestCount > 0 )
                 .ToList();
 
             if ( !metrics.Any() )

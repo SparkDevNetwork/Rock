@@ -20,7 +20,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Field;
 using Rock.Field.Types;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 
 using static Rock.Field.Types.UrlLinkFieldType;
 

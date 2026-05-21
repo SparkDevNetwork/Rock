@@ -96,7 +96,13 @@ namespace Rock.Blocks.Communication
 
         private static class PageParameterKey
         {
+            // Both keys ("Communication" and "CommunicationId") accept Guid or IdKey for the Communication entity.
+            // "CommunicationId" remains the de-facto key because the page's routes and many longstanding links use
+            // "{CommunicationId}" tokens, so callers should prefer it for now. "Communication" is accepted for
+            // forward compatibility if the route tokens are ever renamed.
             public const string Communication = "Communication";
+            public const string CommunicationId = "CommunicationId";
+
             public const string Edit = "Edit";
             public const string Tab = "tab";
         }
@@ -195,6 +201,16 @@ namespace Rock.Blocks.Communication
         #region Fields
 
         /// <summary>
+        /// The backing field for the <see cref="PageParameters"/> property.
+        /// </summary>
+        private IDictionary<string, string> _pageParameters;
+
+        /// <summary>
+        /// The backing field for the <see cref="CommunicationPageParameterKey"/> property.
+        /// </summary>
+        private string _communicationPageParameterKey;
+
+        /// <summary>
         /// The backing field for the <see cref="CommunicationAccessMode"/> property.
         /// </summary>
         private string _communicationAccessMode;
@@ -237,6 +253,48 @@ namespace Rock.Blocks.Communication
         #endregion Fields
 
         #region Properties
+
+        /// <summary>
+        /// Gets the page parameters for this request.
+        /// </summary>
+        private IDictionary<string, string> PageParameters
+        {
+            get
+            {
+                _pageParameters ??= this.RequestContext?.GetPageParameters() ?? new Dictionary<string, string>();
+
+                return _pageParameters;
+            }
+        }
+
+        /// <summary>
+        /// Gets the key of the page parameter - either "Communication" or "CommunicationId" - used to provide
+        /// the <see cref="Model.Communication" /> entity key.
+        /// </summary>
+        private string CommunicationPageParameterKey
+        {
+            get
+            {
+                if ( _communicationPageParameterKey.IsNullOrWhiteSpace() )
+                {
+                    if ( PageParameters.ContainsKey( PageParameterKey.Communication ) )
+                    {
+                        _communicationPageParameterKey = PageParameterKey.Communication;
+                    }
+                    else if ( PageParameters.ContainsKey( PageParameterKey.CommunicationId ) )
+                    {
+                        _communicationPageParameterKey = PageParameterKey.CommunicationId;
+                    }
+                    else
+                    {
+                        // Fall back to the preferred key.
+                        _communicationPageParameterKey = PageParameterKey.Communication;
+                    }
+                }
+
+                return _communicationPageParameterKey;
+            }
+        }
 
         /// <summary>
         /// The level of visibility filtering applied to the communication.
@@ -1208,7 +1266,7 @@ namespace Rock.Blocks.Communication
         private IQueryable<Rock.Model.Communication> GetCommunicationQueryFromPageParameter()
         {
             // Check page parameter for existing communication.
-            var communicationKey = PageParameter( PageParameterKey.Communication );
+            var communicationKey = PageParameter( CommunicationPageParameterKey );
             if ( communicationKey.IsNullOrWhiteSpace() )
             {
                 return null;
@@ -2706,6 +2764,7 @@ namespace Rock.Blocks.Communication
             // Redirect back to the same page with the provided communication identifier.
             var pageParams = RequestContext.GetPageParameters();
             pageParams.AddOrReplace( PageParameterKey.Communication, communicationId.AsIdKey() );
+            pageParams.Remove( PageParameterKey.CommunicationId );
             pageParams.Remove( "PageId" );
 
             return pageParams;

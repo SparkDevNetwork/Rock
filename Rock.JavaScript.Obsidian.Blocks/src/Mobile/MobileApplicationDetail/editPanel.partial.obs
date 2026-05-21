@@ -1,0 +1,611 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection icon="ti ti-info-circle" light disableCollapse>
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="name" label="Application Name" rules="required" />
+                </div>
+                <div class="col-md-6">
+                    <CheckBox v-model="isActive" label="Active" />
+                </div>
+            </div>
+
+            <TextBox v-model="description" label="Description" textMode="multiline" />
+        </ContentSection>
+
+        <ContentSection title="General"
+                        icon="ti ti-device-mobile"
+                        :order="2">
+            <ContentStack title="Shell Type"
+                          description="Pick the navigation pattern the application uses on launch.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <RadioButtonList v-model="applicationType"
+                                         label="Application Type"
+                                         :items="applicationTypeItems"
+                                         horizontal />
+                    </div>
+                    <div v-if="isTabbedShell" class="col-md-6">
+                        <RadioButtonList v-model="androidTabLocation"
+                                         label="Android Tab Location"
+                                         help="Determines where the Tab bar should be displayed on Android. iOS will always display at the bottom."
+                                         :items="androidTabLocationItems"
+                                         horizontal />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Device Orientation"
+                          description="Lock the supported orientations by device class. Leave at default to follow the device.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="lockPhoneOrientation"
+                                      label="Lock Phone Orientation"
+                                      help="Setting this value will lock the orientation on phones to the specified orientation. Leave blank to follow the device."
+                                      :items="deviceOrientationItems" />
+                    </div>
+                    <div class="col-md-6">
+                        <DropDownList v-model="lockTabletOrientation"
+                                      label="Lock Tablet Orientation"
+                                      help="Setting this value will lock the orientation on tablets to the specified orientation. Leave blank to follow the device."
+                                      :items="deviceOrientationItems" />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Pages"
+                        icon="ti ti-stack-2"
+                        :order="3">
+            <ContentStack title="User Account"
+                          description="Pages used for authentication and viewing the signed-in person's profile.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <PagePicker v-model="loginPage" label="Login Page" />
+                    </div>
+                    <div class="col-md-6">
+                        <PagePicker v-model="profilePage" label="Profile Page" />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Features"
+                          description="Pages that back specific application features. Leave blank for any feature not in use.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <PagePicker v-model="interactiveExperiencePage"
+                                    label="Interactive Experience Page"
+                                    help="If you are using interactive experiences then set this page to the mobile page that contains the Live Experience block."
+                                    :siteType="SiteType.Mobile" />
+                    </div>
+                    <div class="col-md-6">
+                        <PagePicker v-model="communicationViewPage" label="Communication View Page" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <PagePicker v-model="smsConversationPage"
+                                    label="SMS Conversation Page"
+                                    help="If you are using the SMS conversations, then set this to the page that contains the SMS Conversation block." />
+                    </div>
+                    <div class="col-md-6">
+                        <PagePicker v-model="chatPage" label="Chat Page" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <PagePicker v-model="outreachToolboxTouchpointPage"
+                                    label="Outreach Toolbox Touchpoint Page"
+                                    help="If you are using the Outreach Toolbox, this should be set to the page that has the Touchpoint Detail block on it. When an individual receives and taps on a notification from the Outreach Toolbox they will be taken to this page." />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Integration"
+                        icon="ti ti-plug-connected"
+                        :order="4">
+            <ContentStack title="API Access"
+                          description="The API key generated for this application's REST traffic.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="apiKey" label="API Key" rules="required" />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Filters"
+                          description="Restrict the campuses visible inside the application and which person attributes ship to the client.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <DataViewPicker v-model="campusFilterDataView"
+                                        label="Campus Filter"
+                                        help="Select a data view of campuses to use for the campus lists within the application. Leave blank if your application does not need to filter content by campus."
+                                        :entityTypeGuid="campusEntityTypeGuid" />
+                    </div>
+                    <div class="col-md-6">
+                        <CategoryPicker v-model="personAttributeCategories"
+                                        label="Person Attribute Categories"
+                                        help="All attributes in selected categories will be sent to the client and made available remotely."
+                                        :multiple="true"
+                                        :entityTypeGuid="personAttributeCategoryEntityTypeGuid"
+                                        :entityTypeQualifierColumn="options.personAttributeCategoryQualifierColumn ?? ''"
+                                        :entityTypeQualifierValue="options.personAttributeCategoryQualifierValue ?? ''" />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack v-if="hasAttributes"
+                          title="Attributes"
+                          description="Additional attribute values configured for this application.">
+                <AttributeValuesContainer v-model="attributeValues"
+                                          :attributes="attributes"
+                                          isEditMode
+                                          :showCategoryLabel="false"
+                                          :numberOfColumns="2" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Authentication Providers"
+                        icon="ti ti-shield-lock"
+                        isCollapsed
+                        :order="5">
+            <ContentStack title="Auth0"
+                          description="Configure Auth0 as a login provider for the mobile application.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="auth0ClientId"
+                                 label="Auth0 Client ID"
+                                 help="Set this to reflect the value in your configured Auth0 application to add support for Auth0 based login in your mobile application." />
+                    </div>
+                    <div class="col-md-6">
+                        <TextBox v-model="auth0Domain"
+                                 label="Auth0 Domain"
+                                 help="Set this to reflect the value in your configured Auth0 application to add support for Auth0 based login in your mobile application." />
+                    </div>
+                    <div v-if="connectionStatusDefinedTypeGuid" class="col-md-6">
+                        <DefinedValuePicker v-model="auth0ConnectionStatus"
+                                            label="Connection Status"
+                                            help="When an Auth0 login creates a person, this connection status will be used."
+                                            :definedTypeGuid="connectionStatusDefinedTypeGuid" />
+                    </div>
+                    <div v-if="recordStatusDefinedTypeGuid" class="col-md-6">
+                        <DefinedValuePicker v-model="auth0RecordStatus"
+                                            label="Record Status"
+                                            help="When an Auth0 login creates a person, this record status will be used."
+                                            :definedTypeGuid="recordStatusDefinedTypeGuid" />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Microsoft Entra (Azure AD)"
+                          description="Configure Microsoft Entra as a login provider for the mobile application.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="entraClientId"
+                                 label="Entra Client ID"
+                                 help="The client ID of the Microsoft Entra application to add authentication support for." />
+                    </div>
+                    <div class="col-md-6">
+                        <TextBox v-model="entraTenantId"
+                                 label="Entra Tenant ID"
+                                 help="The tenant ID of the Microsoft Entra application to add authentication support for." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ComponentPicker v-model="entraAuthenticationComponent"
+                                         label="Microsoft Entra Authentication Provider"
+                                         help="The authentication component used for web Entra authentication. This is typically provided through a plugin."
+                                         containerType="Rock.Security.AuthenticationContainer, Rock" />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Deep Linking"
+                        icon="ti ti-link"
+                        isCollapsed
+                        :order="6">
+            <ContentStack title="Setup"
+                          description="Open approved web URLs inside the application when it is installed on the device.">
+                <CheckBox v-model="isDeepLinkingEnabled"
+                          label="Enable Deep Linking"
+                          help="Determines if specific web links should open in the app if it's installed on the individual's phone." />
+
+                <template v-if="isDeepLinkingEnabled">
+                    <TextBox v-model="deepLinkPathPrefix"
+                             label="Deep Link Path Prefix"
+                             rules="required"
+                             :disabled="isDeepLinkPrefixLocked"
+                             help="The URL path prefix that flags that a URL should be opened in the application. A value of 'm' would mean that all URLs like https://server.com/m/&lt;route&gt; will be routed to the mobile app if it's installed on the individual's phone. This value is locked once an application has been saved with deep linking enabled, since changing it would invalidate every previously-deployed deep link URL on user devices." />
+
+                    <ValueList v-model="deepLinkDomainsList"
+                               label="Deep Linking Domains"
+                               help="The domains that you plan to accept deep links from. To accept all subdomains, use '*.<domain>'." />
+                </template>
+            </ContentStack>
+
+            <ContentStack v-if="isDeepLinkingEnabled"
+                          title="iOS"
+                          description="Identifiers from your iOS shell hosting service.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="teamIdentifier" label="Team Id" rules="required" />
+                    </div>
+                    <div class="col-md-6">
+                        <TextBox v-model="bundleIdentifier"
+                                 label="Bundle Id"
+                                 rules="required"
+                                 help="The iOS bundle id. You will get this value from your shell hosting service." />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack v-if="isDeepLinkingEnabled"
+                          title="Android"
+                          description="Identifiers from your Android shell hosting service.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="packageName"
+                                 label="Package Name"
+                                 rules="required"
+                                 help="The Android package name. You will get this value from your shell hosting service." />
+                    </div>
+                    <div class="col-md-6">
+                        <TextBox v-model="certificateFingerprint"
+                                 label="Certificate Fingerprint"
+                                 rules="required"
+                                 help="The application's certificate fingerprint. You will get this value from your shell hosting service." />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Advanced Settings"
+                        icon="ti ti-adjustments-cog"
+                        isCollapsed
+                        :order="7">
+            <ContentStack title="Notifications"
+                          description="Application-wide notification behavior.">
+                <CheckBox v-model="enableNotificationsAutomatically"
+                          label="Enable Notifications Automatically"
+                          help="When turned on the mobile application will automatically request push notifications permission from the user at launch." />
+            </ContentStack>
+
+            <ContentStack title="XAML Templates"
+                          description="XAML used by core mobile shell elements.">
+                <CodeEditor v-model="flyoutXaml"
+                            label="Flyout XAML"
+                            help="The XAML template to use for the menu in the Flyout Shell."
+                            mode="xml"
+                            rules="required"
+                            :editorHeight="300" />
+
+                <CodeEditor v-model="navigationBarActionXaml"
+                            label="Navigation Bar Action XAML"
+                            help="The XAML template to use for placing content into the top navigation bar."
+                            mode="xml"
+                            :editorHeight="200" />
+            </ContentStack>
+
+            <ContentStack title="Homepage Routing"
+                          description="Lava that decides which page is shown first when the application launches.">
+                <CodeEditor v-model="homepageRoutingLogic"
+                            label="Homepage Routing Logic"
+                            help="The Lava to be executed at application start to determine which page to open initially. Should output blank or a page Guid."
+                            mode="lava"
+                            :editorHeight="200" />
+            </ContentStack>
+
+            <ContentStack title="Application Preview"
+                          description="Image used by Rock to identify the application in lists.">
+                <div class="row">
+                    <div class="col-md-4">
+                        <ImageUploader v-model="previewThumbnailBinaryFile"
+                                       label="Preview Thumbnail"
+                                       help="Preview thumbnail to be used by Rock to distinguish application." />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Update Packaging"
+                          description="Controls for distributing application updates to devices.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="pushTokenUpdateValue"
+                                 label="Force Push Token Update"
+                                 help="Setting or changing this value will force all clients to update their push token. Use with caution." />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="compressUpdatePackages"
+                                  label="Compress Update Packages"
+                                  help="Compresses update packages to reduce their size by up to 95%. Not supported with mobile shell v1." />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Analytics"
+                          description="Retention controls for client-reported analytics data.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <NumberBox v-model="pageViewRetentionPeriodDays"
+                                   label="Page View Retention Period"
+                                   help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import ValueList from "@Obsidian/Controls/valueList.obs";
+    import { SiteType } from "@Obsidian/Enums/Cms/siteType";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { MobileApplicationBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationBag";
+    import { MobileApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationDetailOptionsBag";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ShellTypeValue } from "./types.partial";
+    import { listItemToPageRoute, lockedOrientationFromString, lockedOrientationToString, pageRouteToListItem } from "./utils.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<MobileApplicationBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<MobileApplicationDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<MobileApplicationBag>): void;
+        (e: "propertyChanged", value: string): void;
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? true, "IsActive");
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+
+    const applicationType = propertyRef(String(props.modelValue?.bag?.applicationType ?? 0), "ApplicationType");
+    const androidTabLocation = propertyRef(String(props.modelValue?.bag?.androidTabLocation ?? 0), "AndroidTabLocation");
+    const lockPhoneOrientation = propertyRef(lockedOrientationToString(props.modelValue?.bag?.lockPhoneOrientation), "LockPhoneOrientation");
+    const lockTabletOrientation = propertyRef(lockedOrientationToString(props.modelValue?.bag?.lockTabletOrientation), "LockTabletOrientation");
+
+    const loginPage = propertyRef<PageRouteValueBag | null>(listItemToPageRoute(props.modelValue?.bag?.loginPage), "LoginPage");
+    const profilePage = propertyRef<PageRouteValueBag | null>(listItemToPageRoute(props.modelValue?.bag?.profilePage), "ProfilePage");
+    const interactiveExperiencePage = propertyRef<PageRouteValueBag | null>(listItemToPageRoute(props.modelValue?.bag?.interactiveExperiencePage), "InteractiveExperiencePage");
+    const communicationViewPage = propertyRef<PageRouteValueBag | null>(listItemToPageRoute(props.modelValue?.bag?.communicationViewPage), "CommunicationViewPage");
+    const smsConversationPage = propertyRef<PageRouteValueBag | null>(listItemToPageRoute(props.modelValue?.bag?.smsConversationPage), "SmsConversationPage");
+    const chatPage = propertyRef<PageRouteValueBag | null>(listItemToPageRoute(props.modelValue?.bag?.chatPage), "ChatPage");
+    const outreachToolboxTouchpointPage = propertyRef<PageRouteValueBag | null>(listItemToPageRoute(props.modelValue?.bag?.outreachToolboxTouchpointPage), "OutreachToolboxTouchpointPage");
+
+    const apiKey = propertyRef(props.modelValue?.bag?.apiKey ?? "", "ApiKey");
+    const campusFilterDataView = propertyRef<ListItemBag | null | undefined>(props.modelValue?.bag?.campusFilterDataView, "CampusFilterDataView");
+    const personAttributeCategories = propertyRef<ListItemBag[]>(props.modelValue?.bag?.personAttributeCategories ?? [], "PersonAttributeCategories");
+
+    const auth0ClientId = propertyRef(props.modelValue?.bag?.auth0ClientId ?? "", "Auth0ClientId");
+    const auth0Domain = propertyRef(props.modelValue?.bag?.auth0Domain ?? "", "Auth0Domain");
+    const auth0ConnectionStatus = propertyRef<ListItemBag | null | undefined>(props.modelValue?.bag?.auth0ConnectionStatus, "Auth0ConnectionStatus");
+    const auth0RecordStatus = propertyRef<ListItemBag | null | undefined>(props.modelValue?.bag?.auth0RecordStatus, "Auth0RecordStatus");
+    const entraClientId = propertyRef(props.modelValue?.bag?.entraClientId ?? "", "EntraClientId");
+    const entraTenantId = propertyRef(props.modelValue?.bag?.entraTenantId ?? "", "EntraTenantId");
+    const entraAuthenticationComponent = propertyRef<ListItemBag | null | undefined>(props.modelValue?.bag?.entraAuthenticationComponent, "EntraAuthenticationComponent");
+
+    const enableNotificationsAutomatically = propertyRef(props.modelValue?.bag?.enableNotificationsAutomatically ?? false, "EnableNotificationsAutomatically");
+    const flyoutXaml = propertyRef(props.modelValue?.bag?.flyoutXaml ?? "", "FlyoutXaml");
+    const navigationBarActionXaml = propertyRef(props.modelValue?.bag?.navigationBarActionXaml ?? "", "NavigationBarActionXaml");
+    const homepageRoutingLogic = propertyRef(props.modelValue?.bag?.homepageRoutingLogic ?? "", "HomepageRoutingLogic");
+    const previewThumbnailBinaryFile = propertyRef<ListItemBag | null | undefined>(props.modelValue?.bag?.previewThumbnailBinaryFile, "PreviewThumbnailBinaryFile");
+    const pushTokenUpdateValue = propertyRef(props.modelValue?.bag?.pushTokenUpdateValue ?? "", "PushTokenUpdateValue");
+    const compressUpdatePackages = propertyRef(props.modelValue?.bag?.compressUpdatePackages ?? true, "CompressUpdatePackages");
+    const pageViewRetentionPeriodDays = propertyRef<number | null>(props.modelValue?.bag?.pageViewRetentionPeriodDays ?? null, "PageViewRetentionPeriodDays");
+
+    const isDeepLinkingEnabled = propertyRef(props.modelValue?.bag?.isDeepLinkingEnabled ?? false, "IsDeepLinkingEnabled");
+    const deepLinkPathPrefix = propertyRef(props.modelValue?.bag?.deepLinkPathPrefix ?? "", "DeepLinkPathPrefix");
+    const deepLinkDomains = propertyRef(props.modelValue?.bag?.deepLinkDomains ?? "", "DeepLinkDomains");
+    const bundleIdentifier = propertyRef(props.modelValue?.bag?.bundleIdentifier ?? "", "BundleIdentifier");
+    const teamIdentifier = propertyRef(props.modelValue?.bag?.teamIdentifier ?? "", "TeamIdentifier");
+    const packageName = propertyRef(props.modelValue?.bag?.packageName ?? "", "PackageName");
+    const certificateFingerprint = propertyRef(props.modelValue?.bag?.certificateFingerprint ?? "", "CertificateFingerprint");
+
+    const propRefs = [
+        name, isActive, description, applicationType, androidTabLocation, lockPhoneOrientation, lockTabletOrientation,
+        loginPage, profilePage, interactiveExperiencePage, communicationViewPage, smsConversationPage, chatPage, outreachToolboxTouchpointPage,
+        apiKey, campusFilterDataView, personAttributeCategories, auth0ClientId, auth0Domain, auth0ConnectionStatus, auth0RecordStatus,
+        entraClientId, entraTenantId, entraAuthenticationComponent, enableNotificationsAutomatically, flyoutXaml, navigationBarActionXaml, homepageRoutingLogic,
+        previewThumbnailBinaryFile, pushTokenUpdateValue, compressUpdatePackages, pageViewRetentionPeriodDays,
+        isDeepLinkingEnabled, deepLinkPathPrefix, deepLinkDomains, bundleIdentifier, teamIdentifier, packageName, certificateFingerprint
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Picker / dropdown items sourced from the options bag. */
+    const applicationTypeItems = computed((): ListItemBag[] => props.options?.applicationTypes ?? []);
+    const androidTabLocationItems = computed((): ListItemBag[] => props.options?.androidTabLocations ?? []);
+    const deviceOrientationItems = computed((): ListItemBag[] => props.options?.deviceOrientations ?? []);
+
+    /** Picker entity-type / defined-type qualifiers from the options bag. */
+    const personAttributeCategoryEntityTypeGuid = computed((): string => props.options?.personAttributeCategoryEntityTypeGuid ?? "");
+    const campusEntityTypeGuid = computed((): string => props.options?.campusFilterEntityTypeGuid ?? "");
+    const connectionStatusDefinedTypeGuid = computed((): string => props.options?.connectionStatusDefinedTypeGuid ?? "");
+    const recordStatusDefinedTypeGuid = computed((): string => props.options?.recordStatusDefinedTypeGuid ?? "");
+
+    /**
+     * The deep-link domain `ValueList` control consumes / produces a
+     * `string[]`, but the persisted format is a pipe-delimited string.
+     * This writable computed bridges the two shapes.
+     */
+    const deepLinkDomainsList = computed<string[]>({
+        get() {
+            const raw = deepLinkDomains.value;
+            if (!raw) {
+                return [];
+            }
+            return raw.split("|").filter(s => s.length > 0);
+        },
+        set(value) {
+            deepLinkDomains.value = (value ?? []).join("|");
+        }
+    });
+
+    /**
+     * Server-supplied flag — locked once an application has been saved
+     * with deep linking enabled. Server-authoritative; not edited on the
+     * client.
+     */
+    const isDeepLinkPrefixLocked = computed((): boolean => props.modelValue?.bag?.isDeepLinkPrefixLocked === true);
+
+    /** Whether the user has selected the Tabbed shell type. */
+    const isTabbedShell = computed((): boolean => parseInt(applicationType.value, 10) === ShellTypeValue.Tabbed);
+
+    /** Whether the application has any custom attributes to render. */
+    const hasAttributes = computed((): boolean => Object.keys(attributes.value).length > 0);
+
+    // #endregion
+
+    // #region Watchers
+
+    /**
+     * Re-hydrates every ref whenever the parent supplies a new bag (for
+     * example, after a Save round-trip).
+     */
+    watch(() => props.modelValue, () => {
+        const bag = props.modelValue?.bag;
+        if (!bag) {
+            return;
+        }
+
+        updateRefValue(attributes, bag.attributes ?? {});
+        updateRefValue(attributeValues, bag.attributeValues ?? {});
+        updateRefValue(name, bag.name ?? "");
+        updateRefValue(isActive, bag.isActive ?? true);
+        updateRefValue(description, bag.description ?? "");
+        updateRefValue(applicationType, String(bag.applicationType ?? 0));
+        updateRefValue(androidTabLocation, String(bag.androidTabLocation ?? 0));
+        updateRefValue(lockPhoneOrientation, lockedOrientationToString(bag.lockPhoneOrientation));
+        updateRefValue(lockTabletOrientation, lockedOrientationToString(bag.lockTabletOrientation));
+        updateRefValue(loginPage, listItemToPageRoute(bag.loginPage));
+        updateRefValue(profilePage, listItemToPageRoute(bag.profilePage));
+        updateRefValue(interactiveExperiencePage, listItemToPageRoute(bag.interactiveExperiencePage));
+        updateRefValue(communicationViewPage, listItemToPageRoute(bag.communicationViewPage));
+        updateRefValue(smsConversationPage, listItemToPageRoute(bag.smsConversationPage));
+        updateRefValue(chatPage, listItemToPageRoute(bag.chatPage));
+        updateRefValue(outreachToolboxTouchpointPage, listItemToPageRoute(bag.outreachToolboxTouchpointPage));
+        updateRefValue(apiKey, bag.apiKey ?? "");
+        updateRefValue(campusFilterDataView, bag.campusFilterDataView);
+        updateRefValue(personAttributeCategories, bag.personAttributeCategories ?? []);
+        updateRefValue(auth0ClientId, bag.auth0ClientId ?? "");
+        updateRefValue(auth0Domain, bag.auth0Domain ?? "");
+        updateRefValue(auth0ConnectionStatus, bag.auth0ConnectionStatus);
+        updateRefValue(auth0RecordStatus, bag.auth0RecordStatus);
+        updateRefValue(entraClientId, bag.entraClientId ?? "");
+        updateRefValue(entraTenantId, bag.entraTenantId ?? "");
+        updateRefValue(entraAuthenticationComponent, bag.entraAuthenticationComponent);
+        updateRefValue(enableNotificationsAutomatically, bag.enableNotificationsAutomatically ?? false);
+        updateRefValue(flyoutXaml, bag.flyoutXaml ?? "");
+        updateRefValue(navigationBarActionXaml, bag.navigationBarActionXaml ?? "");
+        updateRefValue(homepageRoutingLogic, bag.homepageRoutingLogic ?? "");
+        updateRefValue(previewThumbnailBinaryFile, bag.previewThumbnailBinaryFile);
+        updateRefValue(pushTokenUpdateValue, bag.pushTokenUpdateValue ?? "");
+        updateRefValue(compressUpdatePackages, bag.compressUpdatePackages ?? true);
+        updateRefValue(pageViewRetentionPeriodDays, bag.pageViewRetentionPeriodDays ?? null);
+        updateRefValue(isDeepLinkingEnabled, bag.isDeepLinkingEnabled ?? false);
+        updateRefValue(deepLinkPathPrefix, bag.deepLinkPathPrefix ?? "");
+        updateRefValue(deepLinkDomains, bag.deepLinkDomains ?? "");
+        updateRefValue(bundleIdentifier, bag.bundleIdentifier ?? "");
+        updateRefValue(teamIdentifier, bag.teamIdentifier ?? "");
+        updateRefValue(packageName, bag.packageName ?? "");
+        updateRefValue(certificateFingerprint, bag.certificateFingerprint ?? "");
+    });
+
+    /**
+     * Emits a fresh ValidPropertiesBox whenever any of the tracked refs
+     * change.
+     */
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<MobileApplicationBag> = {
+            bag: { ...props.modelValue.bag } as MobileApplicationBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "applicationType", parseInt(applicationType.value, 10));
+        setPropertiesBoxValue(newValue, "androidTabLocation", parseInt(androidTabLocation.value, 10));
+        setPropertiesBoxValue(newValue, "lockPhoneOrientation", lockedOrientationFromString(lockPhoneOrientation.value));
+        setPropertiesBoxValue(newValue, "lockTabletOrientation", lockedOrientationFromString(lockTabletOrientation.value));
+        setPropertiesBoxValue(newValue, "loginPage", pageRouteToListItem(loginPage.value));
+        setPropertiesBoxValue(newValue, "profilePage", pageRouteToListItem(profilePage.value));
+        setPropertiesBoxValue(newValue, "interactiveExperiencePage", pageRouteToListItem(interactiveExperiencePage.value));
+        setPropertiesBoxValue(newValue, "communicationViewPage", pageRouteToListItem(communicationViewPage.value));
+        setPropertiesBoxValue(newValue, "smsConversationPage", pageRouteToListItem(smsConversationPage.value));
+        setPropertiesBoxValue(newValue, "chatPage", pageRouteToListItem(chatPage.value));
+        setPropertiesBoxValue(newValue, "outreachToolboxTouchpointPage", pageRouteToListItem(outreachToolboxTouchpointPage.value));
+        setPropertiesBoxValue(newValue, "apiKey", apiKey.value);
+        setPropertiesBoxValue(newValue, "campusFilterDataView", campusFilterDataView.value ?? null);
+        setPropertiesBoxValue(newValue, "personAttributeCategories", personAttributeCategories.value ?? []);
+        setPropertiesBoxValue(newValue, "auth0ClientId", auth0ClientId.value);
+        setPropertiesBoxValue(newValue, "auth0Domain", auth0Domain.value);
+        setPropertiesBoxValue(newValue, "auth0ConnectionStatus", auth0ConnectionStatus.value ?? null);
+        setPropertiesBoxValue(newValue, "auth0RecordStatus", auth0RecordStatus.value ?? null);
+        setPropertiesBoxValue(newValue, "entraClientId", entraClientId.value);
+        setPropertiesBoxValue(newValue, "entraTenantId", entraTenantId.value);
+        setPropertiesBoxValue(newValue, "entraAuthenticationComponent", entraAuthenticationComponent.value ?? null);
+        setPropertiesBoxValue(newValue, "enableNotificationsAutomatically", enableNotificationsAutomatically.value);
+        setPropertiesBoxValue(newValue, "flyoutXaml", flyoutXaml.value);
+        setPropertiesBoxValue(newValue, "navigationBarActionXaml", navigationBarActionXaml.value);
+        setPropertiesBoxValue(newValue, "homepageRoutingLogic", homepageRoutingLogic.value);
+        setPropertiesBoxValue(newValue, "previewThumbnailBinaryFile", previewThumbnailBinaryFile.value ?? null);
+        setPropertiesBoxValue(newValue, "pushTokenUpdateValue", pushTokenUpdateValue.value);
+        setPropertiesBoxValue(newValue, "compressUpdatePackages", compressUpdatePackages.value);
+        setPropertiesBoxValue(newValue, "pageViewRetentionPeriodDays", pageViewRetentionPeriodDays.value ?? null);
+        setPropertiesBoxValue(newValue, "isDeepLinkingEnabled", isDeepLinkingEnabled.value);
+        setPropertiesBoxValue(newValue, "deepLinkPathPrefix", deepLinkPathPrefix.value);
+        setPropertiesBoxValue(newValue, "deepLinkDomains", deepLinkDomains.value);
+        setPropertiesBoxValue(newValue, "bundleIdentifier", bundleIdentifier.value);
+        setPropertiesBoxValue(newValue, "teamIdentifier", teamIdentifier.value);
+        setPropertiesBoxValue(newValue, "packageName", packageName.value);
+        setPropertiesBoxValue(newValue, "certificateFingerprint", certificateFingerprint.value);
+
+        emit("update:modelValue", newValue);
+    }, { deep: true });
+
+    watchPropertyChanges(propRefs, emit);
+
+    // #endregion
+</script>

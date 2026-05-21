@@ -21,7 +21,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock;
+using Rock.Configuration;
 using Rock.Core;
 using Rock.Data;
 using Rock.Model;
@@ -212,7 +215,8 @@ namespace Rock.Transactions
             }
 
             // Get the distinct list of user agent strings within the interactions to be logged.
-            var userAgentsLookup = interactionTransactionInfos.Where( a => a.UserAgent.IsNotNullOrWhiteSpace() ).Select( a => a.UserAgent ).Distinct().ToList().ToDictionary( a => a, v => InteractionDeviceType.GetClientType( v ) );
+            var userAgentParser = RockApp.Current.GetRequiredService<IUserAgentParser>();
+            var userAgentsLookup = interactionTransactionInfos.Where( a => a.UserAgent.IsNotNullOrWhiteSpace() ).Select( a => a.UserAgent ).Distinct().ToList().ToDictionary( a => a, v => userAgentParser.Parse( v ).ClientType );
 
             // Include/exclude crawlers based on caller input.
             interactionTransactionInfos = interactionTransactionInfos.Where( a => a.LogCrawlers || a.UserAgent.IsNullOrWhiteSpace() || userAgentsLookup.GetValueOrNull( a.UserAgent ) != "Crawler" ).ToList();

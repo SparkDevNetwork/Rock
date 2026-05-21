@@ -37,6 +37,7 @@ using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.ContentChannelView;
 using Rock.ViewModels.Cms;
+using Rock.ViewModels.Reporting;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -214,7 +215,8 @@ namespace Rock.Blocks.Cms
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "0F84D787-0A18-472A-892B-2BA2DB7F5E2D" )]
-    [Rock.SystemGuid.BlockTypeGuid( "4C2DE663-B2E1-48E1-917D-330D181548F0" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "4C2DE663-B2E1-48E1-917D-330D181548F0" )]
+    [Rock.SystemGuid.BlockTypeGuid( "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F" )]
     public partial class ContentChannelView : RockBlockType, IHasCustomActions, IBreadCrumbBlock
     {
         #region Keys and Constants
@@ -366,44 +368,52 @@ namespace Rock.Blocks.Cms
             box.IfValidProperty( nameof( box.Settings.DataViewFilter ),
                 () =>
                 {
-                    var dataViewFilter = DataFilterObsidianHelper.ToEntity( box.Settings.DataViewFilter, typeof( ContentChannelItem ), RockContext, RequestContext );
+                    var dataViewFilterService = new DataViewFilterService( RockContext );
 
-                    if ( dataViewFilter == null )
+                    if ( IsEffectivelyEmptyFilterBag( box.Settings.DataViewFilter ) )
                     {
-                        // Null stores an empty string. GetAttributeValue( FilterId ).AsIntegerOrNull()
-                        // then returns null, skipping the data filter in GetContentChannelItemQuery.
+                        // The filter editor was saved with no configured filters.
+                        // Clean up the previously stored filter (if this block was its sole owner)
+                        // and clear the FilterId attribute so nothing is applied to the query.
+                        var existingFilterId = block.GetAttributeValue( AttributeKey.FilterId ).AsIntegerOrNull();
+
+                        if ( existingFilterId.HasValue )
+                        {
+                            var oldDataViewFilter = dataViewFilterService.Get( existingFilterId.Value );
+                            TryDeleteOldDataViewFilter( oldDataViewFilter, dataViewFilterService );
+                            RockContext.SaveChanges();
+                        }
+
                         block.SetAttributeValue( AttributeKey.FilterId, null );
                     }
                     else
                     {
-                        var dataViewFilterService = new DataViewFilterService( RockContext );
+                        var dataViewFilter = DataFilterObsidianHelper.ToEntity( box.Settings.DataViewFilter, typeof( ContentChannelItem ), RockContext, RequestContext );
+
+                        // Look up any previously stored filter by GUID so we can decide whether to delete it.
+                        // The bag carries the GUID of the filter that was last persisted for this block.
                         var oldDataViewFilter = dataViewFilterService.Get( dataViewFilter.Guid );
 
-                        if ( oldDataViewFilter != null )
-                        {
-                            // If another ContentChannelView block uses the same DataViewFilter don't delete it.
-                            // In this case it likely means this block is a copy of, or was copied from another page/block.
-                            // Instead we'll create a new DataViewFilter and remove references to the existing one(s).
-                            var blockEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.BLOCK ).ToIntSafe();
-                            var contentChannelViewWebFormsBlockTypeId = BlockTypeCache.GetId( Rock.SystemGuid.BlockType.CONTENT_CHANNEL_VIEW.AsGuid() ).ToIntSafe().ToString();
-                            var contentChannelViewObsidianBlockTypeId = BlockCache.BlockTypeId.ToString();
-                            
-                            var countOfWebFormsContentChannelViewsUsingFilterId = new AttributeValueService( RockContext )
-                                .GetByEntityTypeQualified( blockEntityTypeId, "BlockTypeId", contentChannelViewWebFormsBlockTypeId )
-                                .Count( av => av.Attribute.Key == AttributeKey.FilterId && av.Value == oldDataViewFilter.Id.ToString() );
+                        // If another ContentChannelView block uses the same DataViewFilter don't delete it.
+                        // In this case it likely means this block is a copy of, or was copied from another page/block.
+                        // Instead we'll create a new DataViewFilter and remove references to the existing one(s).
+                        TryDeleteOldDataViewFilter( oldDataViewFilter, dataViewFilterService );
 
-                            var countOfObsidianContentChannelViewsUsingFilterId = new AttributeValueService( RockContext )
-                                .GetByEntityTypeQualified( blockEntityTypeId, "BlockTypeId", contentChannelViewObsidianBlockTypeId )
-                                .Count( av => av.Attribute.Key == AttributeKey.FilterId && av.Value == oldDataViewFilter.Id.ToString() );
+                        /*
+                            5/5/2026 - JMH
 
-                            var countOfContentChannelViewsUsingFilterId = countOfWebFormsContentChannelViewsUsingFilterId + countOfObsidianContentChannelViewsUsingFilterId;
+                            Reassign fresh GUIDs to every node in the new filter tree before
+                            calling Add(). EF6 does not guarantee that DELETEs are flushed
+                            before INSERTs within the same SaveChanges(), so reusing the old
+                            GUID can trigger a IX_Guid unique-index violation even when the
+                            old filter was marked for deletion above. Generating new GUIDs
+                            also avoids the conflict when the old filter is intentionally
+                            kept (shared by multiple blocks) and the new filter would
+                            otherwise collide with it.
 
-                            if ( countOfContentChannelViewsUsingFilterId == 1 )
-                            {
-                                // If we're the only block instance using this DataViewFilterId it's safe to delete the old one.
-                                DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
-                            }
-                        }
+                            Reason: DbUpdateException / SqlException duplicate GUID on save.
+                        */
+                        RegenerateDataViewFilterGuids( dataViewFilter );
 
                         dataViewFilterService.Add( dataViewFilter );
                         RockContext.SaveChanges();
@@ -585,6 +595,71 @@ namespace Rock.Blocks.Cms
             }
         }
 
+        /// <summary>
+        /// Recursively assigns a new <see cref="Guid"/> to every node in a <see cref="DataViewFilter"/> tree.
+        /// Call this before adding a newly-constructed filter tree so its GUIDs never collide with
+        /// any existing rows that are still present in the database.
+        /// </summary>
+        private void RegenerateDataViewFilterGuids( DataViewFilter filter )
+        {
+            if ( filter == null )
+            {
+                return;
+            }
+
+            filter.Guid = Guid.NewGuid();
+
+            foreach ( var child in filter.ChildFilters )
+            {
+                RegenerateDataViewFilterGuids( child );
+            }
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> when the bag represents no meaningful filter criteria: either it is
+        /// <c>null</c>, or it is a group node whose entire subtree contains no leaf with a
+        /// <see cref="DataViewFilterBag.FilterTypeGuid"/> selected.
+        /// </summary>
+        private bool IsEffectivelyEmptyFilterBag( DataViewFilterBag bag )
+        {
+            if ( bag == null )
+            {
+                return true;
+            }
+
+            if ( bag.ExpressionType == FilterExpressionType.Filter )
+            {
+                return !bag.FilterTypeGuid.HasValue;
+            }
+
+            return bag.ChildFilters == null || bag.ChildFilters.All( IsEffectivelyEmptyFilterBag );
+        }
+
+        /// <summary>
+        /// Performs the count-check and conditionally deletes <paramref name="oldDataViewFilter"/>
+        /// (plus its children) when this block is the sole owner. Does not call SaveChanges —
+        /// the caller is responsible for flushing.
+        /// </summary>
+        private void TryDeleteOldDataViewFilter( DataViewFilter oldDataViewFilter, DataViewFilterService dataViewFilterService )
+        {
+            if ( oldDataViewFilter == null )
+            {
+                return;
+            }
+
+            var blockEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.BLOCK ).ToIntSafe();
+            var blockTypeId = BlockCache.BlockTypeId.ToString();
+
+            var countOfContentChannelViewsUsingFilterId = new AttributeValueService( RockContext )
+                .GetByEntityTypeQualified( blockEntityTypeId, "BlockTypeId", blockTypeId )
+                .Count( av => av.Attribute.Key == AttributeKey.FilterId && av.Value == oldDataViewFilter.Id.ToString() );
+
+            if ( countOfContentChannelViewsUsingFilterId == 1 )
+            {
+                DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
+            }
+        }
+
         private BlockActionResult GetSettingsForContentChannel( Guid? contentChannelGuid )
         {
             var settings = new ContentChannelViewCustomSettingsBag();
@@ -663,6 +738,9 @@ namespace Rock.Blocks.Cms
             }
 
             // Data View Filter
+            // Always send a bag so the filter editor initializes with the saved state
+            // (or an empty GroupAll group) rather than using its own createDefaultDataViewFilter()
+            // fallback, which injects an unwanted empty child node.
             var dataViewFilterId = GetAttributeValue( AttributeKey.FilterId ).AsIntegerOrNull();
             if ( dataViewFilterId.HasValue )
             {
@@ -672,6 +750,13 @@ namespace Rock.Blocks.Cms
                     settings.DataViewFilter = DataFilterObsidianHelper.ToBag( dataViewFilter, typeof( ContentChannelItem ), RockContext, RequestContext );
                 }
             }
+
+            settings.DataViewFilter = settings.DataViewFilter ?? new DataViewFilterBag
+            {
+                Guid = Guid.NewGuid(),
+                ExpressionType = FilterExpressionType.GroupAll,
+                ChildFilters = new List<DataViewFilterBag>()
+            };
 
             if ( contentChannel != null )
             {
@@ -895,10 +980,15 @@ namespace Rock.Blocks.Cms
                 }
             }
 
+            // Match the WebForms block's LinkedPages shape so existing Lava templates work unchanged.
+            // DetailPage  = route template (e.g. "blog/{Slug}") used by templates that check for
+            //               slug placeholders or build URLs by string manipulation.
+            // DetailPageRoute = raw "PageGuid,RouteGuid" attribute value consumed by the
+            //               PageRoute Lava filter to resolve a fully-qualified URL.
             var linkedPages = new Dictionary<string, object>
             {
-                ["DetailPage"] = this.GetLinkedPageUrl( AttributeKey.DetailPage ),
-                ["DetailPageRoute"] = new PageReference( GetAttributeValue( AttributeKey.DetailPage ) ).Route ?? string.Empty
+                ["DetailPage"] = new PageReference( GetAttributeValue( AttributeKey.DetailPage ) ).Route ?? string.Empty,
+                ["DetailPageRoute"] = GetAttributeValue( AttributeKey.DetailPage )
             };
 
             var contentItemResults = GetContent( isQueryParameterFilteringEnabled, isTagListEnabled, isArchiveSummaryEnabled );
@@ -1173,7 +1263,19 @@ namespace Rock.Blocks.Cms
 
             if ( items == null || ( isQueryParameterFilteringEnabled && HasPageParameters() ) || contentChannel.EnablePersonalization )
             {
-                var contentChannelItemService = new ContentChannelItemService( RockContext );
+                /*
+                    5/5/26 - JMH
+
+                    A dedicated RockContext (not the block's per-request one) is intentionally
+                    not disposed here. The cached EF proxy entities hold a reference back to this
+                    context, keeping it alive for the duration of the cache entry and allowing
+                    Lava templates to lazy-load navigation properties on cached items without
+                    throwing an ObjectDisposedException.
+
+                    Reason: Prevent ObjectDisposedException on cached items during Lava rendering.
+                */
+                var contentRockContext = new RockContext();
+                var contentChannelItemService = new ContentChannelItemService( contentRockContext );
                 var itemId = PageParameter( PageParameterKey.Item ).AsIntegerOrNull();
                 var dataFilterId = GetAttributeValue( AttributeKey.FilterId ).AsIntegerOrNull();
                 var statuses = ( GetAttributeValue( AttributeKey.Status ) ?? "2" )
@@ -1184,7 +1286,7 @@ namespace Rock.Blocks.Cms
                     .ToList();
 
                 var contentChannelItemQuery = GetContentChannelItemQuery(
-                    RockContext,
+                    contentRockContext,
                     contentChannelItemService,
                     contentChannelGuid.Value,
                     itemId,
@@ -1309,11 +1411,11 @@ namespace Rock.Blocks.Cms
                     matchedQuery = contentChannelItemQuery;
                 }
 
-                items = GetContentChannelItems( RockContext, matchedQuery );
+                items = GetContentChannelItems( contentRockContext, matchedQuery );
 
                 if ( hasNonMatchedQuery )
                 {
-                    var nonMatchedItems = GetContentChannelItems( RockContext, nonMatchedQuery );
+                    var nonMatchedItems = GetContentChannelItems( contentRockContext, nonMatchedQuery );
                     if ( nonMatchedItems.Any() )
                     {
                         items.AddRange( nonMatchedItems );

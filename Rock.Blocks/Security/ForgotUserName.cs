@@ -261,7 +261,7 @@ namespace Rock.Blocks.Security
             if ( results.Count > 0 && hasAccountWithPasswordResetAbility )
             {
                 var mergeFields = this.RequestContext.GetCommonMergeFields( this.GetCurrentPerson() );
-                mergeFields.Add( "ConfirmAccountUrl", RequestContext.RootUrlPath + url.TrimStart( '/' ) );
+                mergeFields.Add( "ConfirmAccountUrl", RequestContext.RootUrlPath.EnsureTrailingForwardslash() + url.TrimStart( '/' ) );
                 mergeFields.Add( "Results", results.ToArray() );
 
                 var emailMessage = new RockEmailMessage( this.EmailTemplateGuid );

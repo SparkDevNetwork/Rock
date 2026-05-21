@@ -11,31 +11,12 @@
           @selectItem="onSelectItem">
 
 
-        <Column name="name"
-                title="Name"
-                :filter="textValueFilter"
-                :filterValue="getRowNameFilterValue"
-                :quickFilterValue="getRowNameFilterValue"
-                visiblePriority="xs">
-            <template #format="{ row }">
-                <div>
-                    <div>
-                        <span class="text-semibold">{{ row.name }}</span> <span class="text-muted text-xs">{{ row.id }}</span>
-                    </div>
-                    <div v-if="row.description">
-                        {{ row.description }}
-                    </div>
-                </div>
-            </template>
-
-            <template #skeleton>
-                <div class="skeleton skeleton-text skeleton-rounded" />
-            </template>
-
-            <template #export="{ row }">
-                {{ row.name }}
-            </template>
-        </Column>
+        <HighlightDetailColumn name="name"
+                               title="Name"
+                               field="name"
+                               detailField="description"
+                               :filter="textValueFilter"
+                               visiblePriority="xs" />
 
         <TextColumn name="filterDataViewName"
                     title="Data View"
@@ -118,12 +99,12 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, numberValueFilter, NumberColumn, TextColumn, SecurityColumn, textValueFilter, DeleteColumn, ButtonColumn, pickExistingValueFilter, booleanValueFilter, LabelColumn, AttributeColumns } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, HighlightDetailColumn, numberValueFilter, NumberColumn, TextColumn, SecurityColumn, textValueFilter, DeleteColumn, ButtonColumn, pickExistingValueFilter, booleanValueFilter, LabelColumn, AttributeColumns } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PersonalizationSegmentListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalizationSegmentList/personalizationSegmentListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey, Row } from "./PersonalizationSegmentList/types.partial";
+    import { NavigationUrlKey } from "./PersonalizationSegmentList/types.partial";
     import { reactive, ref } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<PersonalizationSegmentListOptionsBag>>();
@@ -156,17 +137,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
-    }
-
-    /**
-     * Gets the filter value text to use for the name column.
-     *
-     * @param row The row to be filtered.
-     */
-    function getRowNameFilterValue(row: Record<string, unknown>): string {
-        const r = row as Row;
-
-        return `${r.name} ${r.description ?? ""}`;
     }
 
     // #endregion

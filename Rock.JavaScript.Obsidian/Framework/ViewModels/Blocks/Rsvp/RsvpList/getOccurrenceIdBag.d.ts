@@ -22,12 +22,12 @@
 //
 
 export type GetOccurrenceIdBag = {
-    /** Id of the location used for the occurrence */
+    /** Id of the location used for the occurrence. */
     locationId?: number | null;
 
     /** Date of the occurrence to get the Id for. This will be used to find an existing occurrence or create a new one if it doesn't exist. */
     occurrenceDate?: string | null;
 
-    /** Id of the schedule used for the occurrence */
+    /** Id of the schedule used for the occurrence. */
     scheduleId?: number | null;
 };

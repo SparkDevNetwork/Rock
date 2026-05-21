@@ -67,7 +67,13 @@ namespace Rock.Web.UI
         private PageCache _pageCache = null;
 
         private string _clientType = null;
+
+        [Obsolete( "Use RequestContext.BrowserInfo or IUserAgentParser instead." )]
+        [RockObsolete( "20.0" )]
         private BrowserInfo _browserInfo = null;
+
+        [Obsolete( "Use RequestContext.BrowserInfo or IUserAgentParser instead." )]
+        [RockObsolete( "20.0" )]
         private BrowserClient _browserClient = null;
 
         private TimeSpan _tsDuration;
@@ -492,7 +498,7 @@ namespace Rock.Web.UI
             {
                 if ( _clientType == null )
                 {
-                    _clientType = InteractionDeviceType.GetClientType( Request.UserAgent ?? "" );
+                    _clientType = RequestContext?.ClientInformation?.BrowserInfo?.ClientType ?? "None";
                 }
                 return _clientType;
             }
@@ -505,6 +511,8 @@ namespace Rock.Web.UI
         /// <value>
         /// The client information.
         /// </value>
+        [Obsolete( "Use RequestContext.BrowserInfo or IUserAgentParser instead." )]
+        [RockObsolete( "20.0" )]
         public BrowserInfo BrowserInfo
         {
             get
@@ -551,6 +559,8 @@ namespace Rock.Web.UI
         /// <value>
         /// The browser client.
         /// </value>
+        [Obsolete( "Use RequestContext.BrowserInfo or IUserAgentParser instead." )]
+        [RockObsolete( "20.0" )]
         public BrowserClient BrowserClient
         {
             get

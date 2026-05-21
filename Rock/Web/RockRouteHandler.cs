@@ -23,12 +23,15 @@ using System.Web;
 using System.Web.Compilation;
 using System.Web.Routing;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Rock.Bus.Message;
 using Rock.Cms.Utm;
+using Rock.Configuration;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net;
 using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -201,13 +204,16 @@ namespace Rock.Web
                                                 }
                                             }
 
-                                            var (_, urlWithUtm, purposeKey) = pageShortLinkCache.GetCurrentUrlData( rockContext );
+                                            var inboundRequestUrl = routeHttpRequest.Url?.OriginalString;
+                                            var (_, urlWithUtm, purposeKey) = pageShortLinkCache.GetCurrentUrlData( rockContext, inboundRequestUrl );
 
-                                            // Dummy interaction to get UTM source value from the Request/ShortLink url.
+                                            // A dummy interaction is used to resolve the UTM defined values for the
+                                            // redirect URL. The `GetCurrentUrlData()` call above has already applied
+                                            // the precedence of UTM values (configured vs inbound vs baked in), so we
+                                            // can just do a single pass of resolving the UTM values from the URL for
+                                            // logging the interaction with the correct UTM values.
                                             var interactionUtm = new Interaction();
 
-                                            // First, set the UTM field values associated with the shortlink;
-                                            // then overwrite with any values that are specified in the original request.
                                             interactionUtm.SetUTMFieldsFromURL( urlWithUtm );
 
                                             var addShortLinkInteractionMsg = new AddShortLinkInteraction.Message
@@ -223,6 +229,8 @@ namespace Rock.Web
                                                 UtmSource = UtmHelper.GetUtmSourceNameFromDefinedValueOrText( interactionUtm.SourceValueId, interactionUtm.Source ),
                                                 UtmMedium = UtmHelper.GetUtmMediumNameFromDefinedValueOrText( interactionUtm.MediumValueId, interactionUtm.Medium ),
                                                 UtmCampaign = UtmHelper.GetUtmCampaignNameFromDefinedValueOrText( interactionUtm.CampaignValueId, interactionUtm.Campaign ),
+                                                UtmTerm = interactionUtm.Term,
+                                                UtmContent = interactionUtm.Content,
                                                 PurposeKey = purposeKey
                                             };
 
@@ -263,7 +271,7 @@ namespace Rock.Web
                             // get the device type
                             string u = routeHttpRequest.UserAgent;
 
-                            var clientType = InteractionDeviceType.GetClientType( u );
+                            var clientType = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( u ).ClientType;
 
                             bool redirect = false;
 

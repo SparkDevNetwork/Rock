@@ -27,7 +27,9 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Obsidian.UI;
 using Rock.ViewModels.Blocks.Event.RegistrationInstanceSendPaymentReminder;
+using Rock.ViewModels.Core.Grid;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Event
@@ -117,6 +119,9 @@ namespace Rock.Blocks.Event
 
             var gridData = BuildRegistrationGridData( outstandingRegistrations, paymentReminderTimeSpanDays );
 
+            box.GridDefinition = new GridBuilder<RegistrationBalanceBag>()
+                .WithBlock( this )
+                .BuildDefinition();
             box.HasOutstandingBalances = true;
             box.FromName = template.PaymentReminderFromName?.ResolveMergeFields( sampleMergeFields ) ?? string.Empty;
             box.FromEmail = template.PaymentReminderFromEmail?.ResolveMergeFields( sampleMergeFields ) ?? string.Empty;
@@ -332,6 +337,28 @@ namespace Rock.Blocks.Event
         #endregion Methods
 
         #region Block Actions
+
+        /// <summary>
+        /// Creates an entity set for the subset of selected rows in the grid.
+        /// Used by the toolbar's Merge Template / Communicate / etc. actions.
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult CreateGridEntitySet( GridEntitySetBag entitySet )
+        {
+            if ( entitySet == null )
+            {
+                return ActionBadRequest( "No entity set data was provided." );
+            }
+
+            var rockEntitySet = GridHelper.CreateEntitySet( entitySet );
+
+            if ( rockEntitySet == null )
+            {
+                return ActionBadRequest( "No entities were found to create the set." );
+            }
+
+            return ActionOk( rockEntitySet.Id.ToString() );
+        }
 
         /// <summary>
         /// Resolves the message body against a sample registration's merge fields for the preview iframe.

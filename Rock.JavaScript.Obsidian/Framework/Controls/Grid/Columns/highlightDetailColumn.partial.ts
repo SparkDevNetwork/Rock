@@ -19,7 +19,7 @@ import { standardColumnProps } from "@Obsidian/Core/Controls/grid";
 import { Component, PropType, defineComponent } from "vue";
 import HighlightDetailCell from "../Cells/highlightDetailCell.partial.obs";
 import HighlightDetailSkeletonCell from "../Cells/highlightDetailSkeletonCell.partial.obs";
-import { ColumnDefinition, ExportValueFunction, IGridState, QuickFilterValueFunction } from "@Obsidian/Types/Controls/grid";
+import { ColumnDefinition, ExportValueFunction, FilterValueFunction, IGridState, QuickFilterValueFunction } from "@Obsidian/Types/Controls/grid";
 import { extractText } from "@Obsidian/Utility/component";
 
 /**
@@ -45,7 +45,9 @@ function getExportValue(row: Record<string, unknown>, column: ColumnDefinition):
 }
 
 /**
- * Gets the value to use when quick filtering a cell of this column.
+ * Gets the combined title + detail text to use when filtering a cell of this
+ * column. Used for both the grid-wide quick filter and the per-column filter
+ * so that searches match either line of the cell.
  *
  * @param row The row that will be filtered.
  * @param column The column that will be filtered.
@@ -53,7 +55,7 @@ function getExportValue(row: Record<string, unknown>, column: ColumnDefinition):
  *
  * @returns A string value or undefined if the cell has no value.
  */
-function getQuickFilterValue(row: Record<string, unknown>, column: ColumnDefinition, grid: IGridState): string | undefined {
+function getCombinedFilterValue(row: Record<string, unknown>, column: ColumnDefinition, grid: IGridState): string | undefined {
     if (!column.field) {
         return undefined;
     }
@@ -102,8 +104,13 @@ export default defineComponent({
         },
 
         quickFilterValue: {
-            type: Function as PropType<QuickFilterValueFunction>,
-            default: getQuickFilterValue
+            type: Object as PropType<QuickFilterValueFunction | string>,
+            default: getCombinedFilterValue
+        },
+
+        filterValue: {
+            type: Object as PropType<FilterValueFunction | string>,
+            default: getCombinedFilterValue
         },
 
         exportValue: {

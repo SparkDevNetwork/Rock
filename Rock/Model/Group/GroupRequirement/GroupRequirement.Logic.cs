@@ -178,11 +178,22 @@ namespace Rock.Model
 
                             // Get the nullable group member requirement ID based on the PersonId, GroupRequirementId, GroupId, and GroupRoleId.
                             int? groupMemberRequirementId = groupMemberRequirementService.GetIdByPersonIdRequirementIdGroupIdGroupRoleId( a.PersonId, this.Id, groupId, groupRoleId );
+
+                            // Calculate the due date for every person so the status surfaces it to the UI
+                            // regardless of whether the person meets the requirement (matches the Manual branch).
+                            var possibleDueDate = CalculateGroupMemberRequirementDueDate(
+                                this.GroupRequirementType.DueDateType,
+                                this.GroupRequirementType.DueDateOffsetInDays,
+                                this.DueDateStaticDate,
+                                this.DueDateAttributeId.HasValue ? new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( this.DueDateAttributeId.Value, this.GroupId )?.Value.AsDateTime() ?? null : null,
+                                new GroupService( rockContext ).Get( groupId ).Members.Where( m => m.PersonId == a.PersonId && m.GroupRoleId == groupRoleId ).Select( m => m.DateTimeAdded ).DefaultIfEmpty( null ).FirstOrDefault() );
+
                             var personGroupRequirementStatus = new PersonGroupRequirementStatus
                             {
                                 PersonId = a.PersonId,
                                 GroupRequirement = this,
                                 GroupMemberRequirementId = groupMemberRequirementId,
+                                RequirementDueDate = possibleDueDate,
                             };
 
                             var hasWarning = warningDataViewPersonIdList?.Contains( a.PersonId ) == true;
@@ -201,13 +212,6 @@ namespace Rock.Model
                             }
                             else
                             {
-                                var possibleDueDate = CalculateGroupMemberRequirementDueDate(
-                                    this.GroupRequirementType.DueDateType,
-                                    this.GroupRequirementType.DueDateOffsetInDays,
-                                    this.DueDateStaticDate,
-                                    this.DueDateAttributeId.HasValue ? new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( this.DueDateAttributeId.Value, this.GroupId )?.Value.AsDateTime() ?? null : null,
-                                    new GroupService( rockContext ).Get( groupId ).Members.Where( m => m.PersonId == a.PersonId && m.GroupRoleId == groupRoleId ).Select( m => m.DateTimeAdded ).DefaultIfEmpty( null ).FirstOrDefault() );
-
                                 bool isRequirementDue = possibleDueDate.HasValue ? possibleDueDate <= RockDateTime.Now : true;
 
                                 if ( !isRequirementDue )
@@ -303,6 +307,7 @@ namespace Rock.Model
                                 PersonId = a,
                                 GroupRequirement = this,
                                 GroupMemberRequirementId = groupMemberRequirementService.GetIdByPersonIdRequirementIdGroupIdGroupRoleId( a, this.Id, groupId, groupRoleId ),
+                                RequirementDueDate = possibleDueDate,
                                 MeetsGroupRequirement = personIds.Contains( a )
                                     ? ( ( warningPersonIds != null && warningPersonIds.Contains( a ) )
                                           ? MeetsGroupRequirement.MeetsWithWarning

@@ -16,6 +16,7 @@
 
 import { nextTick } from "vue";
 import { tooltip } from "@Obsidian/Utility/tooltip";
+import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 
 export const enum PreferenceKey {
     ConnectionmOpportunityFilterConnectionTypeIdKey = "ConnectionOpportunityFilter_ConnectionTypeIdKey_{0}",
@@ -30,6 +31,7 @@ export const enum PreferenceKey {
     FilterStateConnectionTypIdKey = "FilterState_ConnectionTypeIdKey_{0}",
     FilterStatusConnectionTypIdKey = "FilterStatus_ConnectionTypeIdKey_{0}",
     FilterDueConnectionTypIdKey = "FilterDue_ConnectionTypeIdKey_{0}",
+    FilterAttributeValuesConnectionTypeIdKey = "FilterAttributeValues_ConnectionTypeIdKey_{0}",
     SelectedViewConnectionTypeIdKey = "SelectedView_ConnectionTypeIdKey_{0}",
 }
 
@@ -44,7 +46,8 @@ export type ViewOptions = {
     isRequestSourceShown: boolean,
     stateFilter?: string[] | null,
     statusFilter?: string[] | null,
-    dueFilter?: string[] | null
+    dueFilter?: string[] | null,
+    attributeFilterValues?: Record<string, ComparisonValue> | null
 };
 
 function isTextOverflowing(el: HTMLElement): boolean {

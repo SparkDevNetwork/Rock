@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.Cms;
+using Rock.Enums.Security;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -53,6 +54,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [Required]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -62,6 +64,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -72,6 +75,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int LavaApplicationId { get; set; }
 
         /// <summary>
@@ -82,6 +86,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Slug { get; set; }
 
         /// <summary>
@@ -119,6 +124,7 @@ namespace Rock.Model
         /// The additional settings json.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         /// <summary>
@@ -137,6 +143,7 @@ namespace Rock.Model
         /// The code template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CodeTemplate { get; set; }
 
         /// <summary>
@@ -147,6 +154,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string EnabledLavaCommands { get; set; }
 
         /// <summary>
@@ -157,6 +165,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CacheControlHeaderSettings { get; set; }
 
         /// <summary>

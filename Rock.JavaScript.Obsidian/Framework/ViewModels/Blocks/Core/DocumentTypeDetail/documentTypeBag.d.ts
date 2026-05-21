@@ -61,6 +61,9 @@ export type DocumentTypeBag = {
     /** Gets or sets the IsImage flag for the Rock.Model.DocumentType. */
     isImage: boolean;
 
+    /** Gets or sets a value indicating whether the type is publicly viewable. */
+    isPublicViewable: boolean;
+
     /** Gets or sets a flag indicating if this DocumentType is part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 

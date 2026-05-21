@@ -360,7 +360,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ListItemBag): void
+        (e: "update:modelValue", value: FileAsset[] | undefined): void
         (e: "update:openFolders", value: string[]): void
         (e: "update:selectedFolder", value: string | null): void
     }>();
@@ -571,8 +571,6 @@
         isMoveFolderModalLoading.value = true;
         moveFolderModalError.value = "";
 
-        parseFolderName;
-
         try {
             const options: AssetManagerGetListOfAllFoldersOptionsBag = {
                 encryptedRoot: props.encryptedRootFolder,
@@ -638,7 +636,7 @@
             isMoveFolderModalVisible.value = false;
         }
         catch (e) {
-            moveFolderModalError.value = (e as Error)?.message || "An unknown error occurred while renaming the folder.";
+            moveFolderModalError.value = (e as Error)?.message || "An unknown error occurred while moving the folder.";
         }
         finally {
             isMoveFolderModalLoading.value = false;
@@ -863,7 +861,7 @@
     const zipFileInputElement = ref<HTMLInputElement | null>(null);
 
     const isUploadDisabled = computed(() => !isFolderSelected.value || isUploadingFile.value || isLoadingFiles.value);
-    const isZipUploadDisabled = computed(() => isUploadDisabled.value || isUploadRestricted.value);
+    const isZipUploadDisabled = computed(() => isUploadDisabled.value || isUploadRestricted.value || !isFolderLocal.value);
 
     const isFilePaneActionLoading = ref(false);
 
@@ -1101,7 +1099,7 @@
 
     function getFileDropDownMenuItems(file: FileAsset): MenuAction[] {
         const actions: MenuAction[] = [];
-        if (isFolderLocal.value && !!props.editFilePage && !restrictedFileExtensions.includes(Path.getExtension(file.key))) {
+        if (isFolderLocal.value && !!props.editFilePage && !restrictedFileExtensions.includes(Path.getExtension(file.key).toLowerCase())) {
             actions.push({
                 title: "Edit",
                 type: "default",

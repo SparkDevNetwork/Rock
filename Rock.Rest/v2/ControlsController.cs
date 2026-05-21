@@ -5777,13 +5777,36 @@ namespace Rock.Rest.v2
                 valueFormat = hintFieldType.GetFieldHints( configurationValues )?.ValueFormat;
             }
 
+            // If the field type contributes security grant rules (e.g. an
+            // Asset field that needs the asset/file manager picker to work),
+            // mint an attribute-specific token here so the default value
+            // editor has the access it needs before the attribute has been
+            // saved. Mirrors the per-attribute grant generated in
+            // PublicAttributeHelper.GetPublicAttributeForEdit and lets
+            // RockField.obs pick it up via the attribute's securityGrantToken.
+            string securityGrantToken = null;
+
+            if ( fieldType is ISecurityGrantFieldType securityGrantFieldType )
+            {
+                var securityGrant = new SecurityGrant();
+
+                securityGrantFieldType.AddRulesToSecurityGrant( securityGrant, configurationValues );
+
+                if ( securityGrant.Rules.Count > 0 )
+                {
+                    securityGrant.SetLifetime( TimeSpan.FromDays( 1 ) );
+                    securityGrantToken = securityGrant.ToToken();
+                }
+            }
+
             return Ok( new FieldTypeEditorUpdateAttributeConfigurationResultBag
             {
                 ConfigurationProperties = configurationProperties,
                 AdminConfigurationValues = publicAdminConfigurationValues,
                 EditConfigurationValues = publicEditConfigurationValues,
                 ValueFormat = valueFormat,
-                DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues )
+                DefaultValue = fieldType.GetPublicEditValue( privateDefaultValue, configurationValues ),
+                SecurityGrantToken = securityGrantToken
             } );
         }
 
@@ -7717,7 +7740,8 @@ namespace Rock.Rest.v2
                     grant,
                     locationService,
                     LocationItemPickerGetAutoExpandGuids( options.ExpandToValues ),
-                    0 );
+                    0,
+                    options.IncludeInactive );
 
                 return Ok( locationNameList );
             }
@@ -7769,8 +7793,9 @@ namespace Rock.Rest.v2
         /// <param name="locationService">The service to use when accessing the database.</param>
         /// <param name="autoExpandGuids">The unique identifiers of the items to automatically expand.</param>
         /// <param name="depth">The current depth for recursion safety.</param>
+        /// <param name="includeInactive">Whether to include inactive locations.</param>
         /// <returns>A list of tree items.</returns>
-        private List<TreeItemBag> LocationItemPickerGetChildrenInternal( Guid parentLocationGuid, Guid rootLocationGuid, SecurityGrant grant, LocationService locationService, List<Guid> autoExpandGuids, int depth )
+        private List<TreeItemBag> LocationItemPickerGetChildrenInternal( Guid parentLocationGuid, Guid rootLocationGuid, SecurityGrant grant, LocationService locationService, List<Guid> autoExpandGuids, int depth, bool includeInactive )
         {
             if ( depth > 50 )
             {
@@ -7794,7 +7819,10 @@ namespace Rock.Rest.v2
             }
 
             // limit to only active locations.
-            qry = qry.Where( a => a.IsActive );
+            if ( !includeInactive )
+            {
+                qry = qry.Where( a => a.IsActive );
+            }
 
             // limit to only Named Locations (don't show home addresses, etc)
             qry = qry.Where( a => a.Name != null && a.Name != string.Empty );
@@ -7816,7 +7844,7 @@ namespace Rock.Rest.v2
 
                     if ( autoExpandGuids.Contains( location.Guid ) )
                     {
-                        treeViewItem.Children = LocationItemPickerGetChildrenInternal( location.Guid, Guid.Empty, grant, locationService, autoExpandGuids, depth + 1 );
+                        treeViewItem.Children = LocationItemPickerGetChildrenInternal( location.Guid, Guid.Empty, grant, locationService, autoExpandGuids, depth + 1, includeInactive );
                     }
                 }
             }
@@ -11513,6 +11541,31 @@ namespace Rock.Rest.v2
                 }
 
                 var itemText = componentValue.IsActive ? componentName : $"{componentName} (inactive)";
+
+                /*
+                     5/13/2026 - NA
+
+                     Append a "(plugin)" suffix when the component is implemented in a non-Rock assembly
+                     so administrators can distinguish core components from third-party plugins in the picker.
+                     Failures here must never break the list, so any reflection is guarded.
+
+                     Reason: Temporary solution for v19
+                */
+                try
+                {
+                    var componentAssemblyName = componentValue?.GetType()?.Assembly?.GetName()?.Name;
+                    if ( !string.IsNullOrEmpty( componentAssemblyName )
+                         && componentAssemblyName != "Rock"
+                         && !componentAssemblyName.StartsWith( "Rock.", StringComparison.Ordinal ) )
+                    {
+                        itemText = $"{itemText} (plugin)";
+                    }
+                }
+                catch
+                {
+                    // Intentionally ignored: plugin-suffix detection is cosmetic and
+                    // must never prevent a component from appearing in the picker.
+                }
 
                 items.Add( new ListItemBag
                 {

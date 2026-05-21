@@ -108,6 +108,24 @@ namespace Rock.Model
                             History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", numberTypeName ), Entry.OriginalValues[nameof( PhoneNumber.IsUnlisted )].ToStringSafe().AsBooleanOrNull(), Entity.IsUnlisted );
                             History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", numberTypeName ), Entry.OriginalValues[nameof( PhoneNumber.IsMessagingEnabled )].ToStringSafe().AsBooleanOrNull(), Entity.IsMessagingEnabled );
 
+                            /*
+                                5/4/26 - JPH
+
+                                Opt-out is tied to a specific phone number, not to a person. If the underlying number digits actually
+                                changed (the admin entered a different phone number on this same record), clear the opt-out flag and
+                                date so the new number is not silently suppressed and the danger icon does not persist from the prior
+                                number's state. Other field edits (type, country code, IsMessagingEnabled, IsUnlisted, etc.) leave the
+                                opt-out state alone, which preserves the protection a real recipient STOP provides.
+
+                                Reason: Issue #6816 - changing the phone number digits should not inherit the previous number's opt-out.
+                            */
+                            var originalNumber = Entry.OriginalValues[nameof( PhoneNumber.Number )].ToStringSafe();
+                            if ( Entity.IsMessagingOptedOut && originalNumber != Entity.Number )
+                            {
+                                Entity.IsMessagingOptedOut = false;
+                                Entity.MessagingOptedOutDateTime = null;
+                            }
+
                             break;
                         }
 

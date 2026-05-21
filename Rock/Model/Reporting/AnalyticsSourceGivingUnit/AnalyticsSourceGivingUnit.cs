@@ -20,6 +20,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -44,6 +46,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 20 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GivingId { get; set; }
 
         /// <summary>
@@ -59,12 +62,14 @@ namespace Rock.Model
         /// See <seealso cref="Group.GroupSalutation"/>
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GivingSalutation { get; set; }
 
         /// <summary>
         /// See <seealso cref="Group.GroupSalutationFull"/>
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GivingSalutationFull { get; set; }
 
         /// <summary>
@@ -138,6 +143,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 250 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Frequency { get; set; }
 
         /// <summary>
@@ -158,6 +164,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 250 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PreferredCurrency { get; set; }
 
         /// <summary>
@@ -178,6 +185,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PreferredSource { get; set; }
 
         #endregion Entity Properties

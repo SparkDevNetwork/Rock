@@ -19,7 +19,7 @@ using System.Web;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Utility;
 using Rock.Utility;
 
 namespace Rock.Tests.Utility

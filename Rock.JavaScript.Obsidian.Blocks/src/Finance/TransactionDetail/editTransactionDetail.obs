@@ -1,0 +1,188 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal
+           v-model="isOpen"
+           title="Distribute to Account"
+           saveText="Save"
+           @save="onSave"
+           @closeModal="onClose">
+
+        <div class="row">
+            <div class="col-md-12">
+                <AccountPicker v-model="account"
+                               label="Account"
+                               rules="required"
+                               help="Choose the account this portion of the transaction should be applied to." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <CurrencyBox v-model="amount"
+                             label="Amount"
+                             rules="required" />
+            </div>
+        </div>
+
+        <div class="row" v-if="foreignCurrencyCodeGuid">
+            <div class="col-md-6">
+                <CurrencyBox v-model="foreignCurrencyAmount"
+                             label="Foreign Currency Amount"
+                             :currencyCodeDefinedValueGuid="foreignCurrencyCodeGuid" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <CurrencyBox v-model="feeAmount"
+                             label="Processing Fee"
+                             help="Enter the processing fee charged for this transaction." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <CurrencyBox
+                             v-model="feeCoverageAmount"
+                             label="Fee Amount Covered"
+                             help="Enter the amount the person/business chose to cover toward processing fees." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <TextBox v-model="summary"
+                         label="Details"
+                         textMode="multiline"
+                         help="Add details about this account allocation if needed." />
+            </div>
+        </div>
+
+        <ContentSection v-if="hasAttributes"
+                        icon="ti ti-binary-tree-2"
+                        title="Attributes"
+                        :disableCollapse="true">
+            <AttributeValuesContainer v-if="hasAttributes"
+                                      v-model="attributeValues"
+                                      :attributes="attributes"
+                                      isEditMode
+                                      :numberOfColumns="1"
+                                      :showEmptyValues="true" />
+        </ContentSection>
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { TransactionLineItemBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionDetail/transactionLineItemBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<TransactionLineItemBag>,
+            required: true
+        },
+        foreignCurrencyCodeGuid: {
+            type: String as PropType<string | undefined>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "save", value: TransactionLineItemBag): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const emptyAccount: ListItemBag = {
+        value: "",
+        text: ""
+    };
+
+    const account = ref<ListItemBag>(
+        props.modelValue.account?.value
+            ? { value: String(props.modelValue.account.value), text: props.modelValue.account.text ?? "" }
+            : emptyAccount
+    );
+
+    const isOpen = ref(true);
+
+    const amount = ref<number | null>(props.modelValue.amount ?? null);
+    const foreignCurrencyAmount = ref<number | null>(props.modelValue.foreignCurrencyAmount ?? null);
+    const foreignCurrencyCodeGuid = ref<string | undefined>(props.foreignCurrencyCodeGuid ?? undefined);
+    const feeAmount = ref<number | null>(props.modelValue.feeAmount ?? null);
+    const feeCoverageAmount = ref<number | null>(props.modelValue.feeCoverageAmount ?? null);
+    const summary = ref<string>(props.modelValue.summary ?? "");
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** True when the line item has at least one public attribute, showing the attributes section. */
+    const hasAttributes = computed(() => Object.keys(attributes.value).length > 0);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the individual manually closes the modal.
+     */
+    async function onClose(): Promise<void> {
+        isOpen.value = false;
+        await nextTick();
+        emit("close");
+    }
+
+    /**
+     * Called when the individual clicks the "Save" button. Construct
+     * the updated value and emit our own save event.
+     */
+    function onSave(): void {
+        const newValue: TransactionLineItemBag = {
+            ...props.modelValue,
+            account: account.value,
+            amount: amount.value ?? 0,
+            foreignCurrencyAmount: foreignCurrencyAmount.value ?? undefined,
+            feeAmount: feeAmount.value ?? undefined,
+            feeCoverageAmount: feeCoverageAmount.value ?? undefined,
+            summary: summary.value,
+            attributeValues: attributeValues.value
+        };
+
+        emit("save", newValue);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(account, props.modelValue.account?.value
+            ? { value: String(props.modelValue.account?.value), text: props.modelValue.account?.text ?? "" }
+            : emptyAccount);
+        updateRefValue(amount, props.modelValue.amount ?? null);
+        updateRefValue(foreignCurrencyAmount, props.modelValue.foreignCurrencyAmount ?? null);
+        updateRefValue(foreignCurrencyCodeGuid, props.foreignCurrencyCodeGuid ?? undefined);
+        updateRefValue(feeAmount, props.modelValue.feeAmount ?? null);
+        updateRefValue(feeCoverageAmount, props.modelValue.feeCoverageAmount ?? null);
+        updateRefValue(summary, props.modelValue.summary ?? "");
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+    });
+
+    // #endregion Watchers
+</script>

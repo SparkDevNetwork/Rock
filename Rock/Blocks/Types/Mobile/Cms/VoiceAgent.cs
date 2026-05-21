@@ -42,10 +42,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.ApiKey,
         Order = 0 )]
 
-    [TextField( "OpenAI Model",
-        Description = "The realtime OpenAI model used for audio interactions. Leave blank when using xAI.",
-        IsRequired = false,
-        DefaultValue = "gpt-realtime-mini",
+    [TextField( "Model",
+        Description = "The realtime model used for audio interactions.",
+        IsRequired = true,
+        DefaultValue = "",
         Key = AttributeKeys.Model,
         Order = 1 )]
 
@@ -54,15 +54,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         IsRequired = false,
         DefaultValue = @"
                   You are a helpful voice assistant.
-                    # Tool behavior (very important)
-                    - Before ANY tool call, say ONE short natural line out loud like:
-                      “I’m checking that now.”
-                      “One moment while I look that up.”
-                      “Let me pull that up for you.”
-                      “Just a second…”
-                    - Then immediately call the tool. Do not ask for confirmation first.
-                    - After you get the tool result, continue the conversation naturally.
-                    (Keep the rest of your normal personality/instructions here...)
+                  When the user asks for information about a person (or anything else requiring a tool call), the tool results are safe to share, including contact details like email, phone, and address.
                 ",
         Key = AttributeKeys.Instruction,
         AllowHtml = true,
@@ -282,6 +274,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             return apiKey;
         }
 
+        /// <summary>
         /// Determines the voice agent provider based on the configured API key.
         /// </summary>
         /// <remarks>The method inspects the prefix of the API key to identify the provider. If the key

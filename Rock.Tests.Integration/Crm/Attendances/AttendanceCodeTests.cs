@@ -9,6 +9,7 @@ using Moq;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Crm.Attendance

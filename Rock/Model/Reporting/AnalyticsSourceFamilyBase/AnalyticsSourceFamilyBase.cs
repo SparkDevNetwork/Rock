@@ -15,6 +15,8 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -96,6 +98,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Name { get; set; }
 
         /// <summary>
@@ -106,6 +109,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string FamilyTitle { get; set; }
 
         /// <summary>
@@ -125,6 +129,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ConnectionStatus { get; set; }
 
         /// <summary>

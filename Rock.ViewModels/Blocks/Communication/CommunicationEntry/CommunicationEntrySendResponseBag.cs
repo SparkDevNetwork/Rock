@@ -59,6 +59,14 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         public int CommunicationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the hashed communication identifier key.
+        /// </summary>
+        /// <value>
+        /// The hashed communication identifier key.
+        /// </value>
+        public string CommunicationIdKey { get; set; }
+
+        /// <summary>
         /// Gets the communication unique identifier.
         /// </summary>
         /// <value>

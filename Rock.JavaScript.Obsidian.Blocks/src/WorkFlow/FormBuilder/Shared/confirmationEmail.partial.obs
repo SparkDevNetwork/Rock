@@ -1,32 +1,58 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <SectionContainer v-model="enabled"
-                      toggleText="Enable"
-                      title="Confirmation Email"
-                      description="The following settings will be used to send an email to the individual who submitted the form.">
-        <div class="row">
-            <div class="col-md-4">
-                <DropDownList v-model="recipientAttributeGuidOrEmptyString"
-                              label="Recipient"
-                              rules="required"
-                              :items="recipientOptions" />
-            </div>
-        </div>
+    <ContentSection title="Confirmation Email"
+                    icon="ti ti-mail-check"
+                    hideToggleButton
+                    unmountOnCollapse
+                    :isCollapsed="!enabled"
+                    @update:isCollapsed="onHeaderToggle">
+        <template #description>
+            The following settings will be used to send an email to the individual who submitted the form.
+        </template>
+        <template #headerActions>
+            <InlineSwitch v-model="enabled" :disabled="!hasAnyRecipientSource" label="Enable" />
+        </template>
 
-        <div class="mt-3">
+        <template #preBody>
+            <NotificationBox v-if="!hasAnyRecipientSource" alertType="warning" class="mb-3">
+                Confirmation Email requires either Person Entry to be enabled on the Form Builder tab or at least one Person or Email field to be added to the form.
+            </NotificationBox>
+        </template>
+
+        <ContentStack title="Email Settings"
+                      description="Customize the email sent to the form's primary person when they submit the form.">
+            <RadioButtonList v-model="recipientValue"
+                             label="Recipient"
+                             help="Send the e-mail to the form's Person, Spouse, a specific Person/Email field on the form, or Both (sends to the form's recipient and their spouse, when present)."
+                             rules="required"
+                             :items="recipientItems" />
+
             <EmailSource v-model="source" :templateOptions="sourceTemplateOptions" />
-        </div>
-    </SectionContainer>
+        </ContentStack>
+    </ContentSection>
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { computed, PropType, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import EmailSource from "./emailSource.partial.obs";
-    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
-    import { FormConfirmationEmail, FormEmailSource } from "./types.partial";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import { FormConfirmationEmail, FormConfirmationEmailRecipientType, FormEmailSource } from "./types.partial";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
+
+    /*
+        Sentinel value for the "Both" radio option. Real attribute Guids
+        never collide with this string (they always contain hyphens and
+        never start with a colon). When "Both" is picked the server-side
+        `recipient` enum is set to Both and `recipientAttributeGuid` is
+        cleared — the runtime will resolve the recipient from Person Entry
+        and additionally send to that person's spouse when present.
+    */
+    const RECIPIENT_BOTH = ":both";
 
     const props = defineProps({
         modelValue: {
@@ -34,6 +60,13 @@
             required: true
         },
 
+        /**
+         * Form/workflow attributes (Person or Email field types) that may
+         * be used as the recipient. Provided by the parent so the radio
+         * list refreshes when fields are added on the Form Builder tab.
+         * Already includes the auto-generated "Person" and "Spouse"
+         * workflow attributes when Person Entry is enabled.
+         */
         recipientOptions: {
             type: Array as PropType<ListItemBag[]>,
             default: []
@@ -42,6 +75,16 @@
         sourceTemplateOptions: {
             type: Array as PropType<ListItemBag[]>,
             default: []
+        },
+
+        /**
+         * Whether Person Entry is enabled on the Form Builder tab. The
+         * "Both" recipient option requires Person Entry, so it is hidden
+         * from the radio list when Person Entry is off.
+         */
+        isPersonEntryEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -52,21 +95,125 @@
     const enabled = ref(props.modelValue.enabled ?? false);
     /** The workflow confirmation recipient attribute guid (or empty string if not provided). */
     const recipientAttributeGuidOrEmptyString = ref<string>(props.modelValue.recipientAttributeGuid ?? "");
+    /** Person / Spouse / Both selector for who in the family receives the e-mail. */
+    const recipient = ref<string>((props.modelValue.recipient ?? FormConfirmationEmailRecipientType.Person).toString());
     const source = ref<FormEmailSource>(props.modelValue.source ?? {});
+
+    /*
+        True when there is at least one way to address a recipient: either
+        Person Entry is enabled (which auto-creates the workflow's Person /
+        Spouse attributes) or the form has at least one Person- or Email-
+        typed field surfaced through recipientOptions. When this is false
+        the section has nothing to point at, so we disable Enable and
+        surface a warning instead of letting the user save a broken
+        configuration.
+    */
+    const hasAnyRecipientSource = computed<boolean>(() => {
+        return props.isPersonEntryEnabled || (props.recipientOptions?.length ?? 0) > 0;
+    });
+
+    /*
+        When the recipient source disappears (Person Entry switched off
+        and no Email/Person field left on the form), force-disable the
+        section so we never persist Enabled=true with no resolvable
+        recipient.
+    */
+    watch(hasAnyRecipientSource, (canConfigure) => {
+        if (!canConfigure && enabled.value) {
+            enabled.value = false;
+        }
+    });
+
+    /**
+     * Handles a header click forwarded by ContentSection in
+     * hideToggleButton mode. Ignored when the Enable switch is currently
+     * locked off (no recipient source) so clicking the header can't open
+     * a section the user can't configure.
+     */
+    function onHeaderToggle(newIsCollapsed: boolean): void {
+        if (!hasAnyRecipientSource.value) {
+            return;
+        }
+
+        enabled.value = !newIsCollapsed;
+    }
+
+    /*
+        Radio options: every Person/Email form attribute (already includes
+        the Person Entry "Person" and "Spouse" attributes), followed by a
+        "Both" sentinel that opts into sending to the primary person + spouse.
+
+        The Both option is gated on Person Entry being enabled because the
+        runtime fallback for Both resolves the primary recipient from the
+        workflow's "Person" attribute, which only exists when Person Entry
+        is turned on.
+    */
+    const recipientItems = computed<ListItemBag[]>(() => {
+        const items: ListItemBag[] = [...(props.recipientOptions ?? [])];
+
+        if (props.isPersonEntryEnabled) {
+            items.push({ value: RECIPIENT_BOTH, text: "Both" });
+        }
+
+        return items;
+    });
+
+    /*
+        Guard against persisted state where Recipient=Both is saved but
+        Person Entry was later turned off. If that happens, fall back to
+        clearing the Both sentinel so the radio doesn't render a stale
+        selection that the runtime can no longer honor.
+    */
+    watch(() => props.isPersonEntryEnabled, (isEnabled) => {
+        if (!isEnabled && recipient.value === FormConfirmationEmailRecipientType.Both.toString()) {
+            recipient.value = FormConfirmationEmailRecipientType.Person.toString();
+        }
+    });
+
+    /**
+     * The single value bound to the Recipient radio. Reads as either an
+     * attribute Guid or the Both sentinel, and writes back into the two
+     * underlying server fields.
+     */
+    const recipientValue = computed<string>({
+        get() {
+            if (recipient.value === FormConfirmationEmailRecipientType.Both.toString()) {
+                return RECIPIENT_BOTH;
+            }
+
+            return recipientAttributeGuidOrEmptyString.value;
+        },
+        set(value: string) {
+            if (value === RECIPIENT_BOTH) {
+                recipient.value = FormConfirmationEmailRecipientType.Both.toString();
+                recipientAttributeGuidOrEmptyString.value = "";
+            }
+            else {
+                // Treat anything else as an attribute Guid pointing at a
+                // Person or Email form attribute. The Person enum is the
+                // safe default for the family selector when an explicit
+                // attribute is doing the routing.
+                recipientAttributeGuidOrEmptyString.value = value ?? "";
+                recipient.value = FormConfirmationEmailRecipientType.Person.toString();
+            }
+        }
+    });
 
     // Watch for changes in our modelValue and then update all our internal values.
     watch(() => props.modelValue, () => {
         enabled.value = props.modelValue.enabled ?? false;
         recipientAttributeGuidOrEmptyString.value = props.modelValue.recipientAttributeGuid ?? "";
+        recipient.value = (props.modelValue.recipient ?? FormConfirmationEmailRecipientType.Person).toString();
         source.value = props.modelValue.source ?? {};
     });
 
     // Watch for changes on any of our internal values and then update the modelValue.
-    watch([enabled, recipientAttributeGuidOrEmptyString, source], () => {
+    watch([enabled, recipientAttributeGuidOrEmptyString, recipient, source], () => {
         const newValue: FormConfirmationEmail = {
             ...props.modelValue,
             enabled: enabled.value,
             recipientAttributeGuid: toGuidOrNull(recipientAttributeGuidOrEmptyString.value),
+            recipient: parseInt(recipient.value, 10) || FormConfirmationEmailRecipientType.Person,
             source: source.value
         };
 

@@ -1,0 +1,416 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="danger" v-html="blockError" />
+
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :alwaysShowLabels="true"
+                 :showLabelsInHeader="true"
+                 :name="panelName"
+                 :title="panelName"
+                 :labels="blockLabels"
+                 :footerActions="footerActions"
+                 :entityKey="entityKey"
+                 :entityTypeGuid="EntityType.Site"
+                 entityTypeName="Mobile Application"
+                 :isAuditHidden="isAuditHidden"
+                 :isBadgesVisible="false"
+                 :isDeleteVisible="false"
+                 :isEditVisible="isEditButtonVisible"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
+                 @cancelEdit="onCancelEdit"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel ref="viewPanelRef"
+                       :modelValue="applicationViewBag"
+                       :options="options"
+                       v-model:selectedTab="selectedTab"
+                       @optionsPatch="onOptionsPatch" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="applicationEditBag"
+                       :options="options"
+                       @propertyChanged="baseBlock.onPropertyChanged" />
+        </template>
+
+        <template v-if="canDeploy" #footerSecondaryActions>
+            <RockButton btnType="default"
+                        :isLoading="isDeploying"
+                        loadingText="Deploying..."
+                        @click="onDeployClick">
+                <i class="ti ti-upload"></i> Deploy
+            </RockButton>
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./MobileApplicationDetail/editPanel.partial.obs";
+    import ViewPanel from "./MobileApplicationDetail/viewPanel.partial.obs";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { MobileApplicationTab, NavigationUrlKey, PageParameterKey } from "./MobileApplicationDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { MobileApplicationBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationBag";
+    import { MobileApplicationDeployResponseBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationDeployResponseBag";
+    import { MobileApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationDetailOptionsBag";
+    import { MobileApplicationSaveResponseBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationSaveResponseBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const config = useConfigurationValues<DetailBlockBox<MobileApplicationBag, MobileApplicationDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+    const isDeploying = ref(false);
+
+    const viewPanelRef = ref<InstanceType<typeof ViewPanel> | null>(null);
+
+    const applicationViewBag = ref(config.entity);
+    const applicationEditBag = ref<ValidPropertiesBox<MobileApplicationBag>>({
+        bag: {} as MobileApplicationBag
+    });
+
+    const optionsRef = ref<MobileApplicationDetailOptionsBag>(config.options ?? {} as MobileApplicationDetailOptionsBag);
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const selectedTab = ref(getInitialTab());
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: applicationEditBag
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isAuditHidden = computed((): boolean => {
+        return !applicationViewBag.value?.idKey;
+    });
+
+    const panelName = computed((): string => {
+        if (panelMode.value === DetailPanelMode.Add) {
+            return "Add Application";
+        }
+        return applicationViewBag.value?.name ?? "Mobile Application";
+    });
+
+    const entityKey = computed((): string => {
+        return applicationViewBag.value?.idKey ?? "";
+    });
+
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (panelMode.value !== DetailPanelMode.View) {
+            return undefined;
+        }
+
+        if (optionsRef.value.siteId && optionsRef.value.siteId > 0) {
+            labels.push({
+                title: `Site Id: ${optionsRef.value.siteId}`,
+                type: "default"
+            });
+        }
+
+        if (optionsRef.value.lastDeployText) {
+            labels.push({
+                title: optionsRef.value.lastDeployText,
+                tooltip: optionsRef.value.lastDeployTooltip ?? undefined,
+                type: "success"
+            });
+        }
+        else if (applicationViewBag.value?.idKey) {
+            labels.push({
+                title: "Not Deployed",
+                type: "warning"
+            });
+        }
+
+        return labels;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): MobileApplicationDetailOptionsBag => {
+        return optionsRef.value;
+    });
+
+    const parentPageUrl = computed((): string => {
+        return config.navigationUrls?.[NavigationUrlKey.ParentPage] ?? "";
+    });
+
+    /**
+     * The Edit / Cancel / Deploy chrome only makes sense on the Application
+     * tab — the other tabs either edit a different bag (Styles) or are
+     * list views (Layouts, Pages, Deep Links).
+     */
+    const isApplicationTab = computed((): boolean => {
+        return selectedTab.value === MobileApplicationTab.Application;
+    });
+
+    const isStylesTab = computed((): boolean => {
+        return selectedTab.value === MobileApplicationTab.Styles;
+    });
+
+    const isEditButtonVisible = computed((): boolean => {
+        return isEditable.value && isApplicationTab.value;
+    });
+
+    const canDeploy = computed((): boolean => {
+        return isEditable.value && !!applicationViewBag.value?.idKey && isApplicationTab.value;
+    });
+
+    const footerActions = computed((): PanelAction[] => {
+        if (panelMode.value !== DetailPanelMode.View) {
+            return [];
+        }
+
+        if (isStylesTab.value) {
+            if (!isEditable.value) {
+                return [];
+            }
+
+            return [{
+                title: "Save",
+                type: "primary",
+                handler: onStylesSaveClick
+            }];
+        }
+
+        if (!isApplicationTab.value) {
+            return [];
+        }
+
+        const actions: PanelAction[] = [];
+
+        if (parentPageUrl.value) {
+            actions.push({
+                title: "Cancel",
+                type: "link",
+                handler: onCancelClick
+            });
+        }
+
+        return actions;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Reads the initial tab from the URL "Tab" query parameter so children
+     * navigating back via parent-page URLs (which carry Tab=Layouts/Pages/etc.)
+     * land on the correct tab. Tabs that are not visible for the current
+     * application (e.g. Deep Links when deep linking is disabled) are
+     * excluded so a stale URL parameter falls back to Application instead
+     * of leaving the panel empty.
+     */
+    function getInitialTab(): string {
+        const params = new URLSearchParams(window.location.search);
+        const requested = params.get(PageParameterKey.Tab);
+
+        if (!requested) {
+            return MobileApplicationTab.Application;
+        }
+
+        const normalized = requested.toLowerCase();
+        const allowed: string[] = [
+            MobileApplicationTab.Application,
+            MobileApplicationTab.Styles,
+            MobileApplicationTab.Layouts,
+            MobileApplicationTab.Pages
+        ];
+
+        if (config.entity?.isDeepLinkingEnabled === true) {
+            allowed.push(MobileApplicationTab.DeepLinks);
+
+            /*
+                Backward-compatibility alias: older bookmarks and email
+                links may still carry "DeepLinks" (no space) for the Tab
+                parameter while the current value is "Deep Links" (with a
+                space). Both should resolve to the Deep Links tab.
+            */
+            if (normalized === "deeplinks") {
+                return MobileApplicationTab.DeepLinks;
+            }
+        }
+
+        const match = allowed.find(t => t.toLowerCase() === normalized);
+        return match ?? MobileApplicationTab.Application;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Cancel from edit-mode either returns to view or — for an Add — kicks
+     * back to the parent page since there is no view-mode entity to revert
+     * to.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (applicationEditBag.value?.bag?.idKey) {
+            return true;
+        }
+
+        return parentPageUrl.value || false;
+    }
+
+    /**
+     * Loads the editable bag from the server and switches the panel into
+     * Edit mode on success.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<MobileApplicationBag>>("Edit", {
+            key: applicationViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            applicationEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+            return true;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while loading the application for editing.";
+            return false;
+        }
+    }
+
+    /**
+     * Persists the edited bag. For an existing application the server
+     * returns a refreshed view bag plus the option-bag fields whose
+     * values depend on freshly-saved state so the view panel can reflect
+     * the changes without a full block reload. For a brand-new application
+     * the server returns the new entity URL and the client redirects.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<MobileApplicationSaveResponseBag | string>("Save", {
+            box: applicationEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object" && result.data.bag?.bag) {
+                applicationViewBag.value = result.data.bag.bag;
+
+                onOptionsPatch({
+                    applicationDetailsHtml: result.data.applicationDetailsHtml ?? null,
+                    previewThumbnailUrl: result.data.previewThumbnailUrl ?? null,
+                    deepLinkDomainsText: result.data.deepLinkDomainsText ?? null
+                });
+
+                return true;
+            }
+            else if (result.statusCode === 201 && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while saving the application.";
+        return false;
+    }
+
+    /**
+     * Sub-panels (Styles, Application, etc.) push updated server-derived
+     * options up via this single channel after their own save / deploy
+     * actions. We merge the partial so the view-mode UI reflects fresh
+     * values without forcing a full block reload.
+     */
+    function onOptionsPatch(partial: Partial<MobileApplicationDetailOptionsBag>): void {
+        optionsRef.value = {
+            ...optionsRef.value,
+            ...partial
+        };
+    }
+
+    /**
+     * Navigates back to the parent page when the in-view Cancel link is
+     * clicked.
+     */
+    function onCancelClick(): void {
+        if (parentPageUrl.value) {
+            window.location.href = parentPageUrl.value;
+        }
+    }
+
+    /**
+     * Forwards the footer Save button click on the Styles tab to the
+     * styles panel which owns the save flow for that tab.
+     */
+    async function onStylesSaveClick(): Promise<void> {
+        await viewPanelRef.value?.saveStyles();
+    }
+
+    /**
+     * Confirms with the user, triggers an asynchronous build of the
+     * mobile application package, and patches the deploy badge plus the
+     * application summary HTML on success.
+     */
+    async function onDeployClick(): Promise<void> {
+        const confirmed = await confirm("Are you sure you wish to replace the current package and deploy a new one?");
+
+        if (!confirmed) {
+            return;
+        }
+
+        errorMessage.value = "";
+        isDeploying.value = true;
+
+        try {
+            const result = await invokeBlockAction<MobileApplicationDeployResponseBag>("Deploy");
+
+            if (result.isSuccess && result.data) {
+                onOptionsPatch({
+                    lastDeployText: result.data.lastDeployText ?? null,
+                    lastDeployTooltip: result.data.lastDeployTooltip ?? null,
+                    applicationDetailsHtml: result.data.applicationDetailsHtml ?? null
+                });
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "Unable to deploy the application.";
+            }
+        }
+        finally {
+            isDeploying.value = false;
+        }
+    }
+
+    // #endregion
+
+    // Initial error / Add-mode bootstrapping.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified mobile application could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        applicationEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

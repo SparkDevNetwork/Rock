@@ -114,10 +114,11 @@
 .chat-bot .footer-actions {
   /* this is ugly, don't use as final */
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 10px; /* don't cover the scrollbar */
+  bottom: 1px;
+  left: 1px;
+  right: var(--spacing-medium); /* don't cover the scrollbar */
   padding: var(--spacing-large);
+  border-radius: var(--rounded-medium); /* Don't clip the container corners. */
   background: linear-gradient(
     to top,
     var(--color-interface-softest) 50%,
@@ -132,6 +133,8 @@
   color: var(--color-warning-strong);
   box-shadow: unset !important;
   border: 0;
+  padding: 0 var(--spacing-tiny);
+  margin: 0 var(--spacing-tiny);
 }
 
 .chat-bot .action-bar .btn-default {
@@ -152,14 +155,22 @@
 }
 
 .chat-bot .action-bar-container {
+  display: flex;
+  align-items: center;
   background-color: var(--color-interface-softest);
   border: 1px solid var(--color-interface-soft);
   padding: var(--spacing-small);
-  border-radius: 1000px;
+  border-radius: var(--rounded-huge);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-.chat-bot .action-bar-container input {
+.chat-bot .action-bar-container :first-child {
+  flex-grow: 1;
+}
+
+.chat-bot .action-bar-container textarea {
+  flex-grow: 1;
+  resize: none;
   border: none;
   box-shadow: none;
 }
@@ -176,7 +187,7 @@
   overflow-y: auto;
   gap: var(--spacing-small);
   margin-bottom: 0;
-  padding: var(--spacing-medium) var(--spacing-medium) 120px var(--spacing-medium);
+  padding: var(--spacing-medium);
   border: 1px solid var(--color-interface-soft);
   border-radius: var(--rounded-small);
   background-color: var(--color-interface-softest)
@@ -303,6 +314,39 @@
   .messages-container {
     border: 0;
     border-radius: 0;
+  }
+}
+
+/*
+ * When docked panel in push mode and screen width is less than 1440px
+ * show the chat bot header so they can close the panel.
+ */
+body[data-docked-panel-mode="push"] .chat-bot-header {
+  display: none;
+  border-bottom: 1px solid var(--color-interface-soft);
+}
+
+body[data-docked-panel-mode="push"] .chat-bot-header .chat-bot-close-panel {
+  margin-left: auto;
+  width: 56px;
+  height: 56px;
+  border-left: 1px solid var(--color-interface-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-interface-medium);
+}
+
+body[data-docked-panel-mode="push"] .chat-bot-header .chat-bot-close-panel:hover {
+  color: var(--color-interface-stronger);
+  background-color: var(--color-interface-soft);
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+@media (max-width: 1439px) {
+  body[data-docked-panel-mode="push"] .chat-bot-header {
+    display: block;
   }
 }
 

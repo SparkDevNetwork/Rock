@@ -8,11 +8,12 @@
           keyField="idKey"
           itemTerm="Entity"
           :entityTypeGuid="EntityType.EntityType"
+          :showLaunchWorkflow="false"
           liveUpdates
           @selectItem="onSelectItem">
 
         <TextColumn name="name"
-                    title="Name"
+                    title="Entity Type"
                     field="name"
                     width="50%"
                     :filter="textValueFilter"
@@ -28,7 +29,6 @@
         <BooleanColumn name="isCommon"
                        title="Common"
                        field="isCommon"
-                       width="100px"
                        :filter="booleanValueFilter"
                        visiblePriority="xs" />
 

@@ -16,6 +16,14 @@
                      minWidth="500px"
                      maxWidth="50%"
                      mode="push">
+            <template #header>
+                <div class="chat-bot-header">
+                    <span class="chat-bot-close-panel" @click="isDockedChatOpen = false">
+                        <i class="ti ti-x"></i>
+                    </span>
+                </div>
+            </template>
+
             <div ref="dockedChatContainer"
                  class="chat-bot chat-bot-docked"
                  style="height: 100%; display: flex;">
@@ -24,6 +32,7 @@
                                  :liveMessage="liveMessage"
                                  :isSending="isSending"
                                  :isDebugEnabled="isDebugEnabled"
+                                 :bottomPadding="messageContainerPadding"
                                  @showMessageDebug="onShowMessageDebug" />
 
                     <FooterActions v-model:message="message"
@@ -34,7 +43,8 @@
                                    @deleteAnchor="onDeleteAnchor"
                                    @toggleDebug="onToggleDebugClick"
                                    @clearMessages="onClearMessages"
-                                   @submit="onSubmit" />
+                                   @submit="onSubmit"
+                                   @updateBottomPadding="messageContainerPadding = $event" />
                 </div>
             </div>
         </DockedPanel>
@@ -64,6 +74,7 @@
                          :liveMessage="liveMessage"
                          :isSending="isSending"
                          :isDebugEnabled="isDebugEnabled"
+                         :bottomPadding="messageContainerPadding"
                          @showMessageDebug="onShowMessageDebug" />
 
             <FooterActions v-model:message="message"
@@ -74,7 +85,8 @@
                            @deleteAnchor="onDeleteAnchor"
                            @toggleDebug="onToggleDebugClick"
                            @clearMessages="onClearMessages"
-                           @submit="onSubmit" />
+                           @submit="onSubmit"
+                           @updateBottomPadding="messageContainerPadding = $event" />
         </div>
     </div>
 
@@ -135,6 +147,8 @@
     const isDockedPanelReady = ref(true);
     const dockedChatWidth = ref("500px");
     const saveSessionData = debounce(saveSessionDataInternal, 100);
+
+    const messageContainerPadding = ref(120);
 
     // #endregion
 
@@ -522,8 +536,8 @@
         messagesContainer.value = dockedChatContainer.value?.querySelector(".messages-container") ?? undefined;
     });
 
-    watch(messagesContainer, () => {
-        messagesContainer.value?.removeEventListener("scroll", saveSessionData);
+    watch(messagesContainer, (_, oldValue) => {
+        oldValue?.removeEventListener("scroll", saveSessionData);
 
         if (!isDockedMode) {
             // Force scroll bar to be at the bottom on initial load so that it
@@ -538,7 +552,7 @@
     });
 
     onMounted(() => {
-        if (isDockedMode) {
+        if (isDockedMode.value) {
             messagesContainer.value = dockedChatContainer.value?.querySelector(".messages-container") ?? undefined;
 
             // Try to restore the scroll position.

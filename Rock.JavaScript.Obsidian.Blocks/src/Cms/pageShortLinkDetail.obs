@@ -18,7 +18,6 @@
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
                  :isFullScreenVisible="false"
-                 :footerSecondaryActions="internalFooterSecondaryActions"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -114,21 +113,6 @@
         return config.options ?? {};
     });
 
-    /** Adding the copy button as a secondary footer action in the block. */
-    const internalFooterSecondaryActions = computed((): PanelAction[] => {
-        const actions: PanelAction[] = [];
-
-        if (panelMode.value === DetailPanelMode.View) {
-            actions.push({
-                iconCssClass: "ti ti-clipboard",
-                title: "Copy",
-                type: "default",
-                handler: onCopyLink
-            });
-        }
-        return actions;
-    });
-
     // #endregion
 
     // #region Functions
@@ -199,12 +183,6 @@
         }
     }
 
-    /** The event handler to copy the website link to the clipboard */
-    function onCopyLink(): void {
-        const copyLink = pageShortLinkViewBag.value?.copyLink ?? "";
-        navigator.clipboard.writeText(copyLink);
-    }
-
     /**
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then leave edit mode or redirect to target page.
@@ -255,7 +233,6 @@
     }
 
     function getFileName(ext: "svg" | "png"): string {
-        console.log(pageShortLinkViewBag.value);
         const shortCode = pageShortLinkViewBag.value?.token?.split("/").pop() ?? "shortlink";
         return `shortlink-${shortCode}-qr.${ext}`;
     }

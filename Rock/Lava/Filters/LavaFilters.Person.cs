@@ -57,7 +57,6 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using UAParser;
 
 namespace Rock.Lava
 {

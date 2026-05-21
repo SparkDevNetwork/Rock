@@ -24,34 +24,6 @@
     </div>
 </template>
 
-<!-- These styles cannot be scoped since they're being used in a tooltip. -->
-<style>
-.group-scheduler-progress-bar-tooltip {
-    min-width: 130px;
-}
-
-.group-scheduler-progress-bar-tooltip-label {
-    font-weight: bold;
-}
-
-.group-scheduler-progress-bar-tooltip-responses {
-    margin-top: 12px;
-}
-
-.group-scheduler-progress-bar-tooltip-counts {
-    margin-top: 4px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-}
-
-.group-scheduler-progress-bar-tooltip-counts > span {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
     import { IScheduleProgress, ProgressState } from "./types.partial";

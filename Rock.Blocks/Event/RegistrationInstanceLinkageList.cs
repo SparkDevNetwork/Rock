@@ -345,30 +345,23 @@ namespace Rock.Blocks.Event
         /// <returns></returns>
         private RegistrationInstance GetRegistrationInstance()
         {
-            if ( _registrationInstance == null )
+            if ( _registrationInstance != null )
             {
-                var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
-
-                if ( registrationInstanceId.HasValue )
-                {
-                    _registrationInstance = new RegistrationInstanceService( RockContext )
-                        .Queryable()
-                        .Include( a => a.RegistrationTemplate )
-                        .Where( a => a.Id == registrationInstanceId.Value )
-                        .AsNoTracking().FirstOrDefault();
-
-                    if ( _registrationInstance == null )
-                    {
-                        return null;
-                    }
-
-                    // Load the Registration Template.
-                    if ( _registrationInstance.RegistrationTemplate == null && _registrationInstance.RegistrationTemplateId > 0 )
-                    {
-                        _registrationInstance.RegistrationTemplate = new RegistrationTemplateService( RockContext ).Get( _registrationInstance.RegistrationTemplateId );
-                    }
-                }
+                return _registrationInstance;
             }
+
+            var registrationInstanceKey = PageParameter( PageParameterKey.RegistrationInstanceId );
+
+            if ( registrationInstanceKey.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            _registrationInstance = new RegistrationInstanceService( RockContext )
+                .GetQueryableByKey( registrationInstanceKey, !PageCache.Layout.Site.DisablePredictableIds )
+                .Include( a => a.RegistrationTemplate )
+                .AsNoTracking()
+                .FirstOrDefault();
 
             return _registrationInstance;
         }

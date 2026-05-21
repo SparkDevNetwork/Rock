@@ -33,18 +33,13 @@ namespace Rock.Lava.Fluid
         private const string _InternalFieldKeyPrefix = "$_";
         private const string _InternalFieldKeyEnabledCommands = "EnabledCommands";
 
+        private static readonly char[] _commandSeparator = [','];
+
         #region Constructors
 
         public FluidRenderContext( TemplateContext context )
         {
             _context = context;
-
-            // By default, built-in keywords are case-sensitive.
-            // For ease of use, add these upper/lower case entries.
-            _context.SetValue( "Blank", BlankValue.Instance );
-            _context.SetValue( "blank", BlankValue.Instance );
-            _context.SetValue( "Empty", EmptyValue.Instance );
-            _context.SetValue( "empty", EmptyValue.Instance );
         }
 
         #endregion
@@ -164,7 +159,7 @@ namespace Rock.Lava.Fluid
 
             if ( enabledCommands != null )
             {
-                return enabledCommands.ToString().Split( ",".ToCharArray(), StringSplitOptions.RemoveEmptyEntries ).ToList();
+                return enabledCommands.ToString().Split( _commandSeparator, StringSplitOptions.RemoveEmptyEntries ).ToList();
             }
 
             return new List<string>();
@@ -287,36 +282,19 @@ namespace Rock.Lava.Fluid
 
             while ( scope != null )
             {
-                var properties = GetScopeDefinedValues( scope, includeInternalFields );
-
-                foreach ( var key in properties.Keys )
+                foreach ( var key in scope.Properties )
                 {
-                    dictionary.TryAdd( key, properties[key] );
+                    if ( !includeInternalFields && key.StartsWith( _InternalFieldKeyPrefix ) )
+                    {
+                        continue;
+                    }
+
+                    // TryAdd preserves the inner-most-scope-wins semantic: a key already added by a
+                    // child scope is not overwritten by an ancestor scope's value.
+                    dictionary.TryAdd( key, scope.GetValue( key ).ToRealObjectValue() );
                 }
 
                 scope = scope.Parent;
-            }
-
-            return dictionary;
-        }
-
-        /// <summary>
-        /// Gets an aggregated set of key/value pairs for variables defined in the current scope.
-        /// </summary>
-        /// <param name="scope"></param>
-        /// <returns></returns>
-        private Dictionary<string, object> GetScopeDefinedValues( Scope scope, bool includeInternalFields )
-        {
-            var dictionary = new Dictionary<string, object>();
-
-            var properties = scope.Properties;
-            if ( !includeInternalFields )
-            {
-                properties = properties.Where( x => !x.StartsWith( _InternalFieldKeyPrefix ) );
-            }
-            foreach ( var key in properties )
-            {
-                dictionary.AddOrReplace( key, scope.GetValue( key ).ToRealObjectValue() );
             }
 
             return dictionary;

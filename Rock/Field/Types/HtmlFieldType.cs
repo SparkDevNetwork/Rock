@@ -19,12 +19,14 @@ using System.Collections.Generic;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
+
 #endif
 using Rock.Attribute;
 using Rock.Reporting;
 using Rock.Security.SecurityGrantRules;
 using Rock.Security;
 using Rock.Web.UI.Controls;
+using Rock.Enums.Security;
 
 namespace Rock.Field.Types
 {
@@ -81,6 +83,12 @@ namespace Rock.Field.Types
             privateConfig.Remove( ENCRYPTED_IMAGE_FOLDER_ROOT );
 
             return privateConfig;
+        }
+
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.Unrestricted );
         }
 
         #endregion

@@ -284,7 +284,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 // Per-config URLs:
                 [NavigationUrlKey.AreasAndGroupsPage] = "/admin/checkins/configuration-areas-groups/((Key))",
                 [NavigationUrlKey.ScheduleBuilderPage] = "/admin/checkins/configuration-schedule-builder/((Key))",
-                [NavigationUrlKey.ConfigurationSettingsPage] = "/admin/checkins/configuration-settings/((Key))",
+                [NavigationUrlKey.ConfigurationSettingsPage] = "/admin/checkins/configuration-settings/((Key))?autoEdit=true",
 
                 // Related settings URLs:
                 [NavigationUrlKey.NamedLocationsPage] = "/admin/checkins/named-locations",

@@ -129,6 +129,7 @@ namespace Rock.Blocks.Prayer
         {
             var options = new PrayerRequestListOptionsBag();
             options.ShowIsApprovedColumn = IsPersonApproveAuthorized();
+            options.IsCampusColumnVisible = CampusCache.All( false ).Count > 1;
 
             return options;
         }

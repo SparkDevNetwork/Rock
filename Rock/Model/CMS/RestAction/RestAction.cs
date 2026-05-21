@@ -20,6 +20,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Lava;
 using Rock.Attribute;
@@ -56,6 +58,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Method { get; set; }
 
         /// <summary>
@@ -66,6 +69,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 2000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ApiId { get; set; }
 
         /// <summary>
@@ -76,6 +80,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 2000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Path { get; set; }
 
         private string _cacheControlHeaderSettings;
@@ -87,6 +92,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CacheControlHeaderSettings
         {
             get => _cacheControlHeaderSettings;
@@ -103,6 +109,7 @@ namespace Rock.Model
         /// <inheritdoc/>
         [RockInternal( "17.0" )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion

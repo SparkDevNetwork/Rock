@@ -56,6 +56,10 @@
                 </div>
             </div>
         </div>
+
+        <template #customButtons>
+            <RockButton v-if="traces" btnType="link" @click="downloadTimings">Download</RockButton>
+        </template>
     </Modal>
 </template>
 
@@ -63,10 +67,13 @@
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import PageDebugTraceRow from "./pageDebugTraceRow.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
     import { computed, ref, watch } from "vue";
     import { useHttp } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { downloadFile } from "@Obsidian/Utility/file";
+    import { Enumerable } from "@Obsidian/Utility/linq";
 
     type TraceRecordBag = {
         traceId?: string | null;
@@ -219,6 +226,54 @@
         });
 
         footers[0].appendChild(openButton);
+    }
+
+    function downloadTimings(): void {
+        const data = {
+            resourceSpans: [
+                {
+                    "resource": {
+                        attributes: [
+                            {
+                                key: "service.name",
+                                value: {
+                                    stringValue: "Rock Page Timings"
+                                }
+                            }
+                        ]
+                    },
+                    scopeSpans: [
+                        {
+                            scope: {
+                                name: "Rock Page Timings",
+                                version: "1.0"
+                            },
+                            spans: (traces.value ?? []).map(trace => ({
+                                traceId: trace.traceId,
+                                spanId: trace.spanId,
+                                parentSpanId: trace.parentSpanId ?? "",
+                                name: trace.name,
+                                startTimeUnixNano: `${Math.floor(trace.startTime * 1000000)}`,
+                                endTimeUnixNano: `${Math.floor((trace.startTime + trace.duration) * 1000000)}`,
+                                kind: 1,
+                                attributes: Enumerable.from(trace.tags ?? [])
+                                    .distinctBy(tag => tag.value)
+                                    .toArray().map(tag => ({
+                                        key: tag.value ?? "",
+                                        value: {
+                                            stringValue: tag.text ?? ""
+                                        }
+                                    }))
+                            }))
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+
+        downloadFile(blob, `PageDebugTimings-${new Date().toISOString()}.json`);
     }
 
     // #endregion

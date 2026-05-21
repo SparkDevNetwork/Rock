@@ -21,9 +21,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 
 namespace RockWeb
@@ -139,10 +143,10 @@ namespace RockWeb
 
                             var userAgent = context.Request.UserAgent ?? "";
 
-                            UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( userAgent );
-                            var clientOs = client.OS.ToString();
-                            var clientBrowser = client.UA.ToString();
-                            var clientType = InteractionDeviceType.GetClientType( userAgent );
+                            var browserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( userAgent );
+                            var clientOs = browserInfo.GetOSFamilyVersion();
+                            var clientBrowser = browserInfo.GetBrowserFamilyVersion();
+                            var clientType = browserInfo.ClientType;
 
                             interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Opened", "", recipient.PersonAliasId, RockDateTime.Now, clientBrowser, clientOs, clientType, userAgent, ipAddress, null );
 

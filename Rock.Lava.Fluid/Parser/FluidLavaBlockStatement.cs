@@ -52,9 +52,10 @@ namespace Rock.Lava.Fluid
 
             lock ( _factoryLock )
             {
-                _factoryMethods[name] = factoryMethod;
+                var newFactoryMethods = new Dictionary<string, Func<string, ILavaBlock>>( _factoryMethods, _factoryMethods.Comparer );
+                newFactoryMethods[name] = factoryMethod;
+                _factoryMethods = newFactoryMethods;
             }
-
         }
 
         #endregion
@@ -64,21 +65,45 @@ namespace Rock.Lava.Fluid
         private readonly string _attributesMarkup;
         private readonly string _blockContent;
         private readonly string _tagName;
+        private readonly bool _isLiquidTagBody;
         private LavaTagFormatSpecifier _tagFormat;
 
         private readonly LavaFluidParser _parser;
 
-        internal FluidLavaBlockStatement( LavaFluidParser parser, string tagName, LavaTagFormatSpecifier tagFormat, in TextSpan attributesMarkup, in TextSpan blockContent )
+        private readonly Lazy<List<string>> _cachedTokens;
+        private readonly Lazy<IReadOnlyList<Statement>> _cachedStatements;
+
+        internal FluidLavaBlockStatement( LavaFluidParser parser, string tagName, LavaTagFormatSpecifier tagFormat, in TextSpan attributesMarkup, in TextSpan blockContent, bool isLiquidTagBody )
         {
             _parser = parser;
             _tagName = tagName;
             _tagFormat = tagFormat;
+            _isLiquidTagBody = isLiquidTagBody;
 
             _attributesMarkup = attributesMarkup.ToString() ?? string.Empty;
 
             _attributesMarkup = _attributesMarkup.Trim();
 
             _blockContent = blockContent.ToString() ?? string.Empty;
+
+            _cachedTokens = new Lazy<List<string>>( () => LavaFluidParser.ParseToTokens( _blockContent ) );
+            _cachedStatements = new Lazy<IReadOnlyList<Statement>>( ParseBlockStatements );
+        }
+
+        private IReadOnlyList<Statement> ParseBlockStatements()
+        {
+            // Re-wrap inner block content in a synthetic {% liquid %} tag so nested Fluid blocks (for/if/case/etc.)
+            // are parsed by the exact same code path as top-level {% liquid %}/{% lava %} content.
+            var template = _isLiquidTagBody
+                ? $"{{% liquid\r\n{_blockContent}\r\n%}}"
+                : _blockContent;
+
+            var blockContext = new FluidParseContext( template );
+            var parseResult = new ParseResult<IReadOnlyList<Statement>>();
+
+            _ = _parser.Grammar.Parse( blockContext, ref parseResult );
+
+            return parseResult.Value ?? new List<Statement>();
         }
 
         #endregion
@@ -91,10 +116,8 @@ namespace Rock.Lava.Fluid
 
             ILavaBlock lavaBlock = null;
 
-            if ( _factoryMethods.ContainsKey( registeredTagName ) )
+            if ( _factoryMethods.TryGetValue( registeredTagName, out var factoryMethod ) )
             {
-                var factoryMethod = _factoryMethods[registeredTagName];
-
                 lavaBlock = factoryMethod( _tagName );
             }
 
@@ -105,8 +128,9 @@ namespace Rock.Lava.Fluid
                 throw new Exception( $"FluidLavaBlock factory failed. Could not create an instance of block \"${_tagName}\"." );
             }
 
-            // Parse the block content into tokens.
-            var tokens = LavaFluidParser.ParseToTokens( _blockContent );
+            // Use the cached parsed token list, copied to a fresh list so OnInitialize can mutate
+            // it without affecting subsequent renders.
+            var tokens = new List<string>( _cachedTokens.Value );
 
             // Custom Lava blocks created for previous implementations of the Lava library expect a set of tokens that excludes the opening tag and includes the closing tag.
             // This behavior is preserved by default, but can be disabled explicitly to simplify parsing.
@@ -116,7 +140,7 @@ namespace Rock.Lava.Fluid
                 addEndToken = blockBase.IncludeClosingTokenInParseResult;
             }
             if ( addEndToken )
-            { 
+            {
                 if ( _tagFormat == LavaTagFormatSpecifier.LavaShortcode )
                 {
                     tokens.Add( $"{{[ end{_tagName} ]}}" );
@@ -140,19 +164,11 @@ namespace Rock.Lava.Fluid
 
         void ILiquidFrameworkElementRenderer.Render( ILiquidFrameworkElementRenderer baseRenderer, ILavaRenderContext context, TextWriter writer, TextEncoder encoder )
         {
-            // The default render implementation for the block is to parse the block content into a series of Fluid statements and
-            // write the output of those statements to the provided stream.
+            // The default render implementation writes the cached parsed statements to the provided
+            // stream. Parsing is paid once at first render via _cachedStatements (F1).
             var fluidContext = ( ( FluidRenderContext ) context ).FluidContext;
 
-            // Parse the content of the block into a set of Fluid statements.
-            var blockContext = new FluidParseContext( _blockContent );
-
-            var parseResult = new ParseResult<IReadOnlyList<Statement>>();
-
-            _ = _parser.Grammar.Parse( blockContext, ref parseResult );
-
-            // Execute each of the statements in the block.
-            var statements = parseResult.Value;
+            var statements = _cachedStatements.Value;
 
             if ( encoder == null )
             {
@@ -161,11 +177,21 @@ namespace Rock.Lava.Fluid
 
             foreach ( var statement in statements )
             {
-                var task = statement.WriteToAsync( writer, encoder, fluidContext ).AsTask();
+                // ValueTask exposes its own awaiter, so the synchronous fast-path can be taken
+                // without forcing a Task allocation via AsTask().
+                var task = statement.WriteToAsync( writer, encoder, fluidContext );
 
-                task.Wait();
+                Completion completion;
+                if ( task.IsCompletedSuccessfully )
+                {
+                    completion = task.Result;
+                }
+                else
+                {
+                    completion = task.AsTask().GetAwaiter().GetResult();
+                }
 
-                if ( task.Result != Completion.Normal )
+                if ( completion != Completion.Normal )
                 {
                     // Stop processing the block statements
                     return;

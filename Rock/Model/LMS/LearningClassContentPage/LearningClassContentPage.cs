@@ -21,6 +21,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -54,6 +56,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Title { get; set; }
 
         /// <summary>
@@ -63,6 +66,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the structured content of the tab.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Content { get; set; }
 
         /// <summary>

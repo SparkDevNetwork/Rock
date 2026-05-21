@@ -263,6 +263,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 requests = requests.Take( MaxRequestsToShow ).ToList();
 
                 // Process the connection requests with the template.
+                // Each ConnectionRequest exposes IsDueSoon and IsOverdue
+                // as computed properties accessible in Lava.
                 var mergeFields = RequestContext.GetCommonMergeFields();
                 mergeFields.AddOrReplace( "ConnectionRequests", requests );
                 mergeFields.AddOrReplace( "DetailPage", DetailPageGuid );

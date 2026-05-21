@@ -21,6 +21,7 @@ import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterG
 import { FormBuilderDetailLinkToFormBag } from "@Obsidian/ViewModels/Blocks/Workflow/FormBuilder/formBuilderDetailLinkToFormBag";
 import {
     FormConfirmationEmail,
+    FormConnectionRequests,
     FormFieldType,
     FormNotificationEmail,
     FormPersonEntry,
@@ -90,6 +91,9 @@ export type FormCommunication = {
 
     /** The notification e-mail settings for this form. */
     notificationEmail?: FormNotificationEmail;
+
+    /** The Connection Requests settings for this form. */
+    connectionRequests?: FormConnectionRequests;
 };
 
 /**
@@ -190,6 +194,14 @@ export type FormValueSources = {
 
     /** Gets or sets the list of pages that are available to pick from. */
     linkToFormOptions?: FormBuilderDetailLinkToFormBag[] | null;
+
+    /**
+     * The list of all Connection Types available for the Automations tab's
+     * Connection Requests editor. Opportunities, statuses, and sources are
+     * loaded on-demand via block actions because they are scoped to the
+     * selected type.
+     */
+    connectionTypeOptions?: ListItemBag[] | null;
 };
 
 /**
@@ -212,12 +224,6 @@ export type FormOtherAttribute = {
  * by the FormBuilder block.
  */
 export type FormBuilderDetailConfiguration = {
-    /** The URL to redirect the individual to when the Submissions tab is clicked. */
-    submissionsPageUrl?: string | null;
-
-    /** The URL to redirect the individual to when the Analytics tab is clicked. */
-    analyticsPageUrl?: string | null;
-
     /** The source of information for various pickers and controls. */
     sources?: FormValueSources | null;
 
@@ -231,6 +237,14 @@ export type FormBuilderDetailConfiguration = {
     otherAttributes?: FormOtherAttribute[] | null;
 
     defaultPreviewPage?: FormBuilderDetailLinkToFormBag | null;
+
+    /**
+     * True when the form already has one or more workflow instances. Drives
+     * the Settings tab's warn-only alert when a user renames the slug of a
+     * shared form, since existing share URLs will stop resolving against the
+     * new slug.
+     */
+    hasSubmissions?: boolean | null;
 };
 
 // #endregion

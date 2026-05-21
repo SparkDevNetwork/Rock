@@ -586,13 +586,13 @@
                                             help="When enabled, chat channels of this type are always shown in the channel list, even for people who have not joined. Public visibility also allows anyone to join via the chat application."
                                             :disabled="isSystem" />
                         </div>
-                    </ContentStack>
 
-                    <RadioButtonList label="Default Channel Notification Setting"
-                                     v-model="chatPushNotificationModeValue"
-                                     :items="enumToListItemBag(ChatNotificationModeDescription)"
-                                     help="Specifies how push notifications are sent for chat channels of this type."
-                                     :disabled="isSystem" />
+                        <RadioButtonList label="Default Channel Notification Setting"
+                                         v-model="chatPushNotificationModeValue"
+                                         :items="enumToListItemBag(ChatNotificationModeDescription)"
+                                         help="Specifies how push notifications are sent for chat channels of this type."
+                                         :disabled="isSystem" />
+                    </ContentStack>
                 </div>
             </TransitionVerticalCollapse>
         </ContentSection>
@@ -631,6 +631,7 @@
     import IconPicker from "@Obsidian/Controls/iconPicker.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
     import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
@@ -650,7 +651,7 @@
     import GroupTypeAttributes from "./groupTypeAttributes.partial.obs";
     import { GroupTypeInheritedAttributeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/groupTypeInheritedAttributeBag";
     import { GetInheritedAttributesResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeDetail/getInheritedAttributesResponseBag";
-    import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, newGuid } from "@Obsidian/Utility/guid";
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
     import { ScheduleConfirmationLogic, ScheduleConfirmationLogicDescription } from "@Obsidian/Enums/Group/scheduleConfirmationLogic";
@@ -1213,11 +1214,23 @@
         }));
     });
 
+    /*
+        5/12/2026 - ME
+
+        The Due Date Group Attribute dropdown only accepts Date or
+        DateTime attributes. The requirement framework reads a date
+        from the selected attribute at runtime; any other field type
+        will fail.
+
+        Reason: Restrict dropdown to date-typed attributes.
+    */
     const groupAttributeOptions = computed<ListItemBag[]>(() => {
-        return (groupAttributes.value ?? []).map(a => ({
-            value: a.guid,
-            text: a.name
-        }));
+        return (groupAttributes.value ?? [])
+            .filter(a => areEqual(a.fieldTypeGuid, FieldType.Date) || areEqual(a.fieldTypeGuid, FieldType.DateTime))
+            .map(a => ({
+                value: a.guid,
+                text: a.name
+            }));
     });
 
     const groupRequirementRoles = computed((): string[] => {

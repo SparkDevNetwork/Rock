@@ -71,6 +71,15 @@ namespace Rock.Workflow.FormBuilder
         public Guid? RecipientAttributeGuid { get; set; }
 
         /// <summary>
+        /// Identifies whether the resolved primary person, the primary
+        /// person's spouse, or both receive the confirmation e-mail. Sits
+        /// orthogonally to <see cref="Destination"/> and
+        /// <see cref="RecipientAttributeGuid"/>, which together identify the
+        /// primary person.
+        /// </summary>
+        public FormConfirmationEmailRecipientType Recipient { get; set; } = FormConfirmationEmailRecipientType.Person;
+
+        /// <summary>
         /// Determines how the content of the e-mail will be generated.
         /// </summary>
         public FormEmailSourceSettings Source { get; set; }
