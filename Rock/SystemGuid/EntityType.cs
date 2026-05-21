@@ -1805,12 +1805,17 @@ namespace Rock.SystemGuid
         public const string PERSON_SCHEDULE_EXCLUSION = "07204F06-C09C-4B37-921A-C31C042938B9";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.PersonSearchKey"/> 
+        /// The EntityType Guid for <see cref="Rock.Model.PersonSearchKey"/>
         /// </summary>
         public const string PERSON_SEARCH_KEY = "914FE998-4F61-4005-ACCC-A8D0433CAD47";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.PersonToken"/> 
+        /// The EntityType Guid for <see cref="Rock.Model.PersonSession"/>
+        /// </summary>
+        public const string PERSON_SESSION = "04A39CD2-E175-4285-AF62-415DF3FBCA3F";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.PersonToken"/>
         /// </summary>
         public const string PERSON_TOKEN = "846B2BCE-7101-46B9-B89C-CD68073712CE";
 

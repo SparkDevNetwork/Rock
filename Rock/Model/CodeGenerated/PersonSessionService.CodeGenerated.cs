@@ -29,15 +29,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// InteractionSession Service class
+    /// PersonSession Service class
     /// </summary>
-    public partial class InteractionSessionService : Service<InteractionSession>
+    public partial class PersonSessionService : Service<PersonSession>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="InteractionSessionService"/> class
+        /// Initializes a new instance of the <see cref="PersonSessionService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public InteractionSessionService(RockContext context) : base(context)
+        public PersonSessionService(RockContext context) : base(context)
         {
         }
 
@@ -49,27 +49,15 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( InteractionSession item, out string errorMessage )
+        public bool CanDelete( PersonSession item, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            if ( new Service<Interaction>( Context ).Queryable().Any( a => a.InteractionSessionId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionSession.FriendlyTypeName, Interaction.FriendlyTypeName );
-                return false;
-            }
-
-            if ( new Service<InteractiveExperienceAnswer>( Context ).Queryable().Any( a => a.InteractionSessionId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionSession.FriendlyTypeName, InteractiveExperienceAnswer.FriendlyTypeName );
-                return false;
-            }
             return true;
         }
     }
 
-    [HasQueryableAttributes( typeof( InteractionSession.InteractionSessionQueryableAttributeValue ), nameof( InteractionSessionAttributeValues ) )]
-    public partial class InteractionSession
+    [HasQueryableAttributes( typeof( PersonSession.PersonSessionQueryableAttributeValue ), nameof( PersonSessionAttributeValues ) )]
+    public partial class PersonSession
     {
         /// <summary>
         /// Gets the entity attribute values. This should only be used inside
@@ -78,10 +66,10 @@ namespace Rock.Model
         /// or selecting values. Do <b>not</b> use it for accessing the
         /// attributes after the entity has been loaded.
         /// </summary>
-        public virtual ICollection<InteractionSessionQueryableAttributeValue> InteractionSessionAttributeValues { get; set; } 
+        public virtual ICollection<PersonSessionQueryableAttributeValue> PersonSessionAttributeValues { get; set; } 
 
         /// <inheritdoc/>
-        public class InteractionSessionQueryableAttributeValue : QueryableAttributeValue
+        public class PersonSessionQueryableAttributeValue : QueryableAttributeValue
         {
         }
     }
@@ -89,36 +77,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class InteractionSessionExtensionMethods
+    public static partial class PersonSessionExtensionMethods
     {
         /// <summary>
-        /// Clones this InteractionSession object to a new InteractionSession object
+        /// Clones this PersonSession object to a new PersonSession object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static InteractionSession Clone( this InteractionSession source, bool deepCopy )
+        public static PersonSession Clone( this PersonSession source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as InteractionSession;
+                return source.Clone() as PersonSession;
             }
             else
             {
-                var target = new InteractionSession();
+                var target = new PersonSession();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this InteractionSession object to a new InteractionSession object with default values for the properties in the Entity and Model base classes.
+        /// Clones this PersonSession object to a new PersonSession object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static InteractionSession CloneWithoutIdentity( this InteractionSession source )
+        public static PersonSession CloneWithoutIdentity( this PersonSession source )
         {
-            var target = new InteractionSession();
+            var target = new PersonSession();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -135,26 +123,28 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another InteractionSession object to this InteractionSession object
+        /// Copies the properties from another PersonSession object to this PersonSession object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this InteractionSession target, InteractionSession source )
+        public static void CopyPropertiesFrom( this PersonSession target, PersonSession source )
         {
             target.Id = source.Id;
-            target.DeviceTypeId = source.DeviceTypeId;
-            target.DurationLastCalculatedDateTime = source.DurationLastCalculatedDateTime;
-            target.DurationSeconds = source.DurationSeconds;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
+            target.AuthenticationComponentId = source.AuthenticationComponentId;
+            target.CreationSource = source.CreationSource;
+            target.ExpiresDateTime = source.ExpiresDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.InteractionChannelId = source.InteractionChannelId;
-            target.InteractionCount = source.InteractionCount;
-            target.InteractionMode = source.InteractionMode;
-            target.InteractionSessionLocationId = source.InteractionSessionLocationId;
-            target.IpAddress = source.IpAddress;
-            target.PersonSessionId = source.PersonSessionId;
-            target.SessionData = source.SessionData;
-            target.SessionStartDateKey = source.SessionStartDateKey;
+            target.InteractionDeviceTypeId = source.InteractionDeviceTypeId;
+            target.IsActive = source.IsActive;
+            target.IsPersistent = source.IsPersistent;
+            target.IssuedDateTime = source.IssuedDateTime;
+            target.LastActivityDateTime = source.LastActivityDateTime;
+            target.LastMultiFactorAuthenticationDateTime = source.LastMultiFactorAuthenticationDateTime;
+            target.LastStepUpAuthenticationDateTime = source.LastStepUpAuthenticationDateTime;
+            target.PersonAliasId = source.PersonAliasId;
+            target.UserLoginId = source.UserLoginId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

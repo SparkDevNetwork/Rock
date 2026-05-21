@@ -137,6 +137,13 @@ namespace Rock.Model
         [DataMember]
         public int? InteractionCount { get; set; }
 
+        /// <summary>
+        /// The Id of the <see cref="Rock.Model.PersonSession"/> this instance
+        /// is associated with, when one is known.
+        /// </summary>
+        [DataMember]
+        public int? PersonSessionId { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -181,6 +188,12 @@ namespace Rock.Model
         /// </value>
         public virtual InteractionChannel InteractionChannel { get; set; }
 
+        /// <summary>
+        /// The <see cref="Rock.Model.PersonSession"/> this instance is
+        /// associated with, when one is known.
+        /// </summary>
+        public virtual PersonSession PersonSession { get; set; }
+
         #endregion
     }
 
@@ -199,6 +212,7 @@ namespace Rock.Model
             this.HasOptional( r => r.DeviceType ).WithMany().HasForeignKey( r => r.DeviceTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.InteractionSessionLocation ).WithMany( r => r.InteractionSessions ).HasForeignKey( r => r.InteractionSessionLocationId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.InteractionChannel ).WithMany( r => r.InteractionSessions ).HasForeignKey( r => r.InteractionChannelId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.PersonSession ).WithMany().HasForeignKey( r => r.PersonSessionId ).WillCascadeOnDelete( false );
         }
     }
 
