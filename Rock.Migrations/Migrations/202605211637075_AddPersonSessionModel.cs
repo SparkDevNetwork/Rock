@@ -84,11 +84,39 @@ namespace Rock.Migrations
 
             // ON DELETE SET NULL on UserLoginId needs raw SQL: EF's AddForeignKey
             // exposes cascadeDelete: true/false but no SET NULL option.
+            //
+            // The two filtered unique indexes below back the race-free
+            // upsert-with-unique-key pattern that
+            // PersonSessionService.FindOrCreateApiKeySession and
+            // FindOrCreateLegacyUpgradeSession rely on (mirroring the
+            // Guid-unique pattern InteractionService:583 uses for
+            // InteractionSession adoption):
+            //
+            //   * ApiKey  - one active row per UserLogin
+            //               (CreationSource = 4, IsActive = 1).
+            //   * Legacy  - one row per (UserLogin, IssuedDateTime) tuple
+            //               (CreationSource = 5).
+            //
+            // Component, Impersonation, and UserToken sessions deliberately
+            // have NO uniqueness constraint: multiple concurrent sessions per
+            // UserLogin are legitimate for those sources (different devices,
+            // different browser sessions).
             Sql( """
                 ALTER TABLE [dbo].[PersonSession]
                 ADD CONSTRAINT [FK_dbo.PersonSession_dbo.UserLogin_UserLoginId] FOREIGN KEY ([UserLoginId])
                 REFERENCES [dbo].[UserLogin] ([Id])
-                ON DELETE SET NULL
+                ON DELETE SET NULL;
+
+                CREATE UNIQUE NONCLUSTERED INDEX [IX_ApiKey_UserLoginId] ON [dbo].[PersonSession]
+                (
+                    [UserLoginId] ASC
+                ) WHERE [UserLoginId] IS NOT NULL AND [CreationSource] = 4 AND [IsActive] = 1;
+
+                CREATE UNIQUE NONCLUSTERED INDEX [IX_Legacy_UserLoginId_IssuedDateTime] ON [dbo].[PersonSession]
+                (
+                    [UserLoginId] ASC,
+                    [IssuedDateTime] ASC
+                ) WHERE [UserLoginId] IS NOT NULL AND [CreationSource] = 5
                 """ );
 
             AddColumn( "dbo.InteractionSession", "PersonSessionId", c => c.Int() );
@@ -105,9 +133,14 @@ namespace Rock.Migrations
             DropIndex( "dbo.InteractionSession", new[] { "PersonSessionId" } );
             DropColumn( "dbo.InteractionSession", "PersonSessionId" );
 
-            // The UserLoginId foreign key was created in raw SQL during Up()
-            // (ON DELETE SET NULL), so it must be dropped in raw SQL too.
-            Sql( @"ALTER TABLE [dbo].[PersonSession] DROP CONSTRAINT [FK_dbo.PersonSession_dbo.UserLogin_UserLoginId];" );
+            // The two filtered unique indexes and the UserLoginId foreign key
+            // were created in raw SQL during Up(), so they must be dropped in
+            // raw SQL too.
+            Sql( """
+                DROP INDEX [IX_Legacy_UserLoginId_IssuedDateTime] ON [dbo].[PersonSession];
+                DROP INDEX [IX_ApiKey_UserLoginId] ON [dbo].[PersonSession];
+                ALTER TABLE [dbo].[PersonSession] DROP CONSTRAINT [FK_dbo.PersonSession_dbo.UserLogin_UserLoginId];
+                """ );
 
             DropForeignKey( "dbo.PersonSession", "PersonAliasId", "dbo.PersonAlias" );
             DropForeignKey( "dbo.PersonSession", "ModifiedByPersonAliasId", "dbo.PersonAlias" );

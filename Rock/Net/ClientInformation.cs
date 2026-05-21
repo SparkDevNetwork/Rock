@@ -128,6 +128,11 @@ namespace Rock.Net
             Geolocation = IpGeoLookup.Instance.GetGeolocation( IpAddress );
 
             UserAgent = request.Headers.GetValues( "USER-AGENT" )?.FirstOrDefault() ?? string.Empty;
+
+            if ( UserAgent.IsNotNullOrWhiteSpace() )
+            {
+                BrowserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( UserAgent );
+            }
         }
 
         #endregion
