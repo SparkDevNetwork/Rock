@@ -232,6 +232,7 @@ namespace Rock.Attribute
             var categoryService = new CategoryService( rockContext );
 
             var propertyCategories = property.Category.SplitDelimitedValues( false ).ToList();
+            var abbreviatedName = property.Name.Truncate( 100, false );
 
             // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
             var attributeCache = AttributeCache.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true )
@@ -245,7 +246,7 @@ namespace Rock.Attribute
 
                 // Check to see if the existing attribute record needs to be updated
                 if ( attributeCache.Name != property.Name ||
-                    attributeCache.AbbreviatedName != property.Name ||
+                    attributeCache.AbbreviatedName != abbreviatedName ||
                     attributeCache.DefaultValue != property.DefaultValue ||
                     attributeCache.Description != property.Description ||
                     attributeCache.Order != property.Order ||
@@ -318,7 +319,7 @@ namespace Rock.Attribute
 
             // Update the attribute
             attribute.Name = property.Name;
-            attribute.AbbreviatedName = property.Name;
+            attribute.AbbreviatedName = abbreviatedName;
             attribute.Description = property.Description;
             attribute.DefaultValue = property.DefaultValue;
             attribute.Order = property.Order;
