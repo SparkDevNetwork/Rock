@@ -158,10 +158,12 @@ namespace Rock.Model
             target.FinancialGatewayId = source.FinancialGatewayId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.FullPaymentOrPaymentPlanRequiredMessage = source.FullPaymentOrPaymentPlanRequiredMessage;
             target.GroupMemberRoleId = source.GroupMemberRoleId;
             target.GroupMemberStatus = source.GroupMemberStatus;
             target.GroupTypeId = source.GroupTypeId;
             target.IsActive = source.IsActive;
+            target.IsFullPaymentOrPaymentPlanRequired = source.IsFullPaymentOrPaymentPlanRequired;
             target.IsPaymentPlanAllowed = source.IsPaymentPlanAllowed;
             target.IsRegistrationMeteringEnabled = source.IsRegistrationMeteringEnabled;
             target.LoginRequired = source.LoginRequired;
