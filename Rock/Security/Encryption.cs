@@ -21,8 +21,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Web;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Rock.Security
 {
@@ -316,7 +314,7 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// Decrypt the given string.  Assumes the string was encrypted using 
+        /// Decrypt the given string.  Assumes the string was encrypted using
         /// EncryptString(), using an identical sharedSecret.
         /// </summary>
         /// <returns>decrypted string; otherwise <c>null</c>.</returns>
@@ -327,6 +325,27 @@ namespace Rock.Security
         /// (or similar) then you would NOT know it was encrypted with non-legacy encryption.</param>
         public static string DecryptString( string cipherText, bool isLegacyAllowed )
         {
+            return DecryptString( cipherText, isLegacyAllowed, out _ );
+        }
+
+        /// <summary>
+        /// Decrypts the given string and reports whether the current
+        /// <c>DataEncryptionKey</c> was sufficient or whether an
+        /// <c>OldDataEncryptionKey{n}</c> had to be tried.
+        /// </summary>
+        /// <param name="cipherText">The text to decrypt.</param>
+        /// <param name="isLegacyAllowed">When true, legacy decryption can be used to check the encrypted string.</param>
+        /// <param name="decryptedWithCurrentKey">
+        /// <c>true</c> when the decryption succeeded on the current
+        /// <c>DataEncryptionKey</c>; <c>false</c> when it succeeded only via
+        /// an <c>OldDataEncryptionKey{n}</c> rotation fallback, or when
+        /// decryption failed.
+        /// </param>
+        /// <returns>The decrypted plaintext, or <c>null</c> when decryption failed for every key.</returns>
+        internal static string DecryptString( string cipherText, bool isLegacyAllowed, out bool decryptedWithCurrentKey )
+        {
+            decryptedWithCurrentKey = false;
+
             string plainText = null;
 
             try
@@ -338,8 +357,15 @@ namespace Rock.Security
                 // Intentionally left blank
             }
 
+            // Use a plain null check here (not IsNotNullOrWhiteSpace) so a
+            // legitimately whitespace-only or empty-string plaintext still
+            // round-trips. The asymmetric IsNotNullOrWhiteSpace gate on the
+            // old-keys loop below is an intentional sanity check that pre-dates
+            // this overload; only the current-key path treats whatever the
+            // primitive returned as the canonical answer.
             if ( plainText != null )
             {
+                decryptedWithCurrentKey = true;
                 return plainText;
             }
 

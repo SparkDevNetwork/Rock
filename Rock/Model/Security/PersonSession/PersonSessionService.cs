@@ -16,17 +16,18 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text.Json;
 
-using Microsoft.Azure.Amqp.Framing;
-
-using Rock.Configuration;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Net;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model;
 
@@ -48,7 +49,65 @@ public partial class PersonSessionService
     /// </summary>
     private const int MultiFactorWindowMinutes = 60;
 
+    /// <summary>
+    /// Current schema version stamped into the <c>v</c> field of
+    /// <see cref="PersonSessionCookiePayload"/>. Bumps <strong>only</strong>
+    /// on breaking changes to existing field meanings. <c>ResolveSessionForRequest</c>
+    /// reissues a fresh cookie when a presented cookie's <c>v</c> is older
+    /// than this constant.
+    /// </summary>
+    internal const int CookiePayloadVersion = 1;
+
     #endregion Constants
+
+    #region Auth Cookie Settings
+
+    /// <summary>
+    /// The configured <c>.ROCK</c> authentication cookie name.
+    /// </summary>
+    /// <remarks>
+    /// The plan's "no <c>System.Web</c> in <c>PersonSessionService</c>" rule
+    /// allows this single getter to read
+    /// <c>System.Web.Security.FormsAuthentication.FormsCookieName</c> directly
+    /// (fully qualified) so the rest of the service does not need a config
+    /// abstraction yet. The <c>#if WEBFORMS</c> boundary is the seam the
+    /// .NET Core port will swap when it lands. Use this property — not raw
+    /// <c>System.Web</c> reads — anywhere else in the service that needs the
+    /// cookie name.
+    /// </remarks>
+    internal static string AuthCookieName
+    {
+        get
+        {
+#if WEBFORMS
+            return System.Web.Security.FormsAuthentication.FormsCookieName;
+#else
+            return ".ROCK";
+#endif
+        }
+    }
+
+    /// <summary>
+    /// The configured forms-authentication timeout, used as the upper bound on
+    /// the browser-side <c>Expires</c> attribute under the
+    /// <c>MIN( PersonSession.ExpiresDateTime ?? MaxValue, Now + Timeout )</c>
+    /// formula. Same <c>#if WEBFORMS</c> seam as <see cref="AuthCookieName"/>.
+    /// Default (43200 minutes = 30 days) matches the Rock
+    /// <c>web.config.example</c> default.
+    /// </summary>
+    internal static TimeSpan AuthCookieTimeout
+    {
+        get
+        {
+#if WEBFORMS
+            return System.Web.Security.FormsAuthentication.Timeout;
+#else
+            return TimeSpan.FromMinutes( 43200 );
+#endif
+        }
+    }
+
+    #endregion Auth Cookie Settings
 
     #region Recency Thresholds
 
@@ -475,4 +534,283 @@ public partial class PersonSessionService
     }
 
     #endregion Impersonation Query Helpers
+
+    #region Cookie I/O
+
+    /// <summary>
+    /// Encodes the supplied <paramref name="session"/> into the opaque,
+    /// encrypted cookie value the auth pipeline transmits.
+    /// </summary>
+    /// <param name="session">The <see cref="PersonSession"/> to encode.</param>
+    /// <returns>The opaque encrypted cookie value.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="session"/> is null.</exception>
+    public string GetCookieValue( PersonSession session )
+    {
+        if ( session == null )
+        {
+            throw new ArgumentNullException( nameof( session ) );
+        }
+
+        var payload = new PersonSessionCookiePayload
+        {
+            Version = CookiePayloadVersion,
+            SessionGuid = session.Guid,
+            IssuedAt = RockDateTime.Now,
+        };
+
+        // System.Text.Json (not Rock's .ToJson() / Newtonsoft) on purpose:
+        // the cookie payload is a black box owned end-to-end by this service,
+        // nothing external touches it, and STJ is faster than Newtonsoft.
+        var plaintext = JsonSerializer.Serialize( payload );
+
+        return Encryption.EncryptString( plaintext );
+    }
+
+    /// <summary>
+    /// Decodes a previously-encoded cookie value back into its payload and
+    /// metadata. Returns <c>false</c> for non-new-format cookies (legacy
+    /// <c>FormsAuthenticationTicket</c>, tampered, or otherwise undecodable);
+    /// legacy-format cookies are intentionally left alone for the cookie
+    /// upgrade path to pickup and deal with.
+    /// </summary>
+    /// <param name="cookieValue">The opaque cookie value to decode.</param>
+    /// <param name="payload">The parsed payload on success; <c>null</c> on failure.</param>
+    /// <param name="metadata">The decode metadata on success; <c>null</c> on failure.</param>
+    /// <returns><c>true</c> when the cookie is a valid new-format payload; otherwise <c>false</c>.</returns>
+    internal static bool TryDecodeCookie( string cookieValue, out PersonSessionCookiePayload payload, out PersonSessionCookieDecodeMetadata metadata )
+    {
+        payload = null;
+        metadata = null;
+
+        if ( cookieValue.IsNullOrWhiteSpace() )
+        {
+            return false;
+        }
+
+        // Encryption.DecryptString with isLegacyAllowed: false short-circuits
+        // when the V2 footer is absent, so a legacy FormsAuthenticationTicket
+        // value returns null here without expensive crypto work.
+        string plaintext;
+        bool decryptedWithCurrentKey;
+        try
+        {
+            plaintext = Encryption.DecryptString( cookieValue, isLegacyAllowed: false, out decryptedWithCurrentKey );
+        }
+        catch
+        {
+            return false;
+        }
+
+        if ( plaintext.IsNullOrWhiteSpace() )
+        {
+            return false;
+        }
+
+        // Try to decode the JSON payload. Failure here most likely means that
+        // the cookie was tampered with.
+        PersonSessionCookiePayload decoded;
+        try
+        {
+            decoded = JsonSerializer.Deserialize<PersonSessionCookiePayload>( plaintext );
+        }
+        catch ( JsonException )
+        {
+            return false;
+        }
+
+        if ( decoded == null || decoded.SessionGuid == Guid.Empty )
+        {
+            return false;
+        }
+
+        payload = decoded;
+        metadata = new PersonSessionCookieDecodeMetadata
+        {
+            DecryptedWithOldKey = !decryptedWithCurrentKey,
+            PayloadVersion = decoded.Version,
+        };
+
+        return true;
+    }
+
+    /// <summary>
+    /// Writes the supplied <paramref name="session"/>'s opaque cookie value to
+    /// the response via <paramref name="requestContext"/>.
+    /// </summary>
+    /// <param name="session">The <see cref="PersonSession"/> whose cookie should be written.</param>
+    /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
+    /// <exception cref="ArgumentNullException">Thrown when either argument is null.</exception>
+    public void SetAuthCookie( PersonSession session, RockRequestContext requestContext )
+    {
+        if ( session == null )
+        {
+            throw new ArgumentNullException( nameof( session ) );
+        }
+
+        if ( requestContext == null )
+        {
+            throw new ArgumentNullException( nameof( requestContext ) );
+        }
+
+        var cookieValue = GetCookieValue( session );
+
+        var cookie = new BrowserCookie
+        {
+            Name = AuthCookieName,
+            Value = cookieValue,
+            Path = "/",
+            HttpOnly = true,
+            IsEssential = true,
+            Domain = GetCookieDomain( requestContext ),
+        };
+
+        if ( session.IsPersistent )
+        {
+            var cap = RockDateTime.Now.Add( AuthCookieTimeout );
+
+            cookie.Expires = ( session.ExpiresDateTime.HasValue && session.ExpiresDateTime.Value < cap )
+                ? session.ExpiresDateTime.Value
+                : cap;
+        }
+
+        requestContext.Response.AddCookie( cookie );
+    }
+
+    /// <summary>
+    /// <para>
+    /// Owns the full read-side cookie lifecycle: read the cookie value off
+    /// the request, decode it, validate the session, enforce the
+    /// <c>RejectAuthenticationCookiesIssuedBefore</c> kill switch, apply
+    /// reissue triggers, and return the resolved session. Legacy-format
+    /// cookies are intentionally left alone here; the legacy upgrade path
+    /// picks them up and creates new-format sessions for them.
+    /// </para>
+    /// <para>
+    /// If the session is valid but expired, then the cookie is expired via the
+    /// response and the <c>PersonSession</c> is updated to be inactive.
+    /// <c>SaveChanges</c> is called in this case.
+    /// </para>
+    /// </summary>
+    /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
+    /// <returns>The resolved <see cref="PersonSession"/>, or <c>null</c> when no valid session is present.</returns>
+    [RockInternal( "20.0", keepInternalForever: true )]
+    public PersonSession ResolveSessionForRequest( RockRequestContext requestContext )
+    {
+        if ( requestContext == null )
+        {
+            throw new ArgumentNullException( nameof( requestContext ) );
+        }
+
+        var cookieValue = requestContext.GetCookieValue( AuthCookieName );
+        if ( cookieValue.IsNullOrWhiteSpace() )
+        {
+            return null;
+        }
+
+        if ( !TryDecodeCookie( cookieValue, out var payload, out var metadata ) )
+        {
+            // Legacy-format cookie, tampered, or otherwise undecodable.
+            return null;
+        }
+
+        var session = Get( payload.SessionGuid );
+
+        if ( session == null
+            || !session.IsActive
+            || ( session.ExpiresDateTime.HasValue && session.ExpiresDateTime.Value <= RockDateTime.Now ) )
+        {
+            ExpireAuthCookie( requestContext );
+            return null;
+        }
+
+        // Kill-switch check. Always compares against PersonSession.IssuedDateTime,
+        // never the cookie's iat, which closes the prior bypass-via-reissue
+        // weakness.
+        var killSwitchThreshold = new SecuritySettingsService()
+            .SecuritySettings?
+            .RejectAuthenticationCookiesIssuedBefore;
+
+        if ( killSwitchThreshold.HasValue
+            && killSwitchThreshold.Value <= RockDateTime.Now
+            && session.IssuedDateTime < killSwitchThreshold.Value )
+        {
+            // Mark inactive; SaveHook stamps InactiveDateTime.
+            session.IsActive = false;
+            ( Context as RockContext ).SaveChanges();
+            ExpireAuthCookie( requestContext );
+            return null;
+        }
+
+        // Reissue triggers (any one fires reissue). Reissue MUST NOT touch
+        // PersonSession.IssuedDateTime — only the cookie's iat changes.
+        var halfLife = TimeSpan.FromTicks( AuthCookieTimeout.Ticks / 2 );
+        var halfLifeReached = ( RockDateTime.Now - payload.IssuedAt ) >= halfLife;
+        var olderPayloadVersion = payload.Version < CookiePayloadVersion;
+
+        if ( halfLifeReached || metadata.DecryptedWithOldKey || olderPayloadVersion )
+        {
+            SetAuthCookie( session, requestContext );
+        }
+
+        return session;
+    }
+
+    /// <summary>
+    /// Removes the <c>.ROCK</c> cookie from the client via
+    /// <paramref name="requestContext"/>. Used when the resolved session is
+    /// rejected (inactive, expired, kill-switch fire).
+    /// </summary>
+    private static void ExpireAuthCookie( RockRequestContext requestContext )
+    {
+        requestContext.Response.RemoveCookie( new BrowserCookie
+        {
+            Name = AuthCookieName,
+            Path = "/",
+            Domain = GetCookieDomain( requestContext ),
+        } );
+    }
+
+    /// <summary>
+    /// Computes the cookie <c>Domain</c> attribute from the current request's
+    /// host and the <c>DOMAINS_SHARING_LOGINS</c> defined type. Returns
+    /// <c>null</c> when no configured cross-subdomain entry matches (the
+    /// cookie is then host-only).
+    /// </summary>
+    /// <remarks>
+    /// Equivalent to <c>Authorization.GetCookieDomain()</c> in behavior but
+    /// reads the host from <see cref="RockRequestContext"/> rather than
+    /// <c>HttpContext.Current</c>. Drops the <c>FormsAuthentication.CookieDomain</c>
+    /// fallback the legacy helper used (a host-only cookie is the safer modern
+    /// default when no explicit domain is configured).
+    /// </remarks>
+    private static string GetCookieDomain( RockRequestContext requestContext )
+    {
+        var host = requestContext?.RequestUri?.Host;
+        if ( host.IsNullOrWhiteSpace() )
+        {
+            return null;
+        }
+
+        var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.DOMAINS_SHARING_LOGINS.AsGuid() );
+        var sharedDomains = definedType?.DefinedValues.Select( v => v.Value ).ToList() ?? [];
+
+        // Get the first domain in the list that the current request's host
+        // name ends with.
+        var matchingDomain = sharedDomains.FirstOrDefault( d => host.ToLower().EndsWith( d.ToLower() ) );
+        if ( matchingDomain.IsNullOrWhiteSpace() )
+        {
+            return null;
+        }
+
+        // Ensure the domain is prefixed with a '.' (required for cross-subdomain cookies).
+        if ( !matchingDomain.StartsWith( "." ) )
+        {
+            matchingDomain = $".{matchingDomain}";
+        }
+
+        // Browsers require at least two '.' characters in a cookie Domain.
+        return matchingDomain.Count( c => c == '.' ) >= 2 ? matchingDomain : null;
+    }
+
+    #endregion Cookie I/O
 }

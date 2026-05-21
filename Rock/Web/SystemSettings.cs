@@ -230,7 +230,7 @@ namespace Rock.Web
         /// <param name="guid">The guid to use if there are no system settings associated with the provided <paramref name="key"/>.</param>
         public static void SetValue( string key, string value, Guid guid )
         {
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
             var attribute = attributeService.GetSystemSetting( key );
 
@@ -238,7 +238,7 @@ namespace Rock.Web
             {
                 attribute = new Rock.Model.Attribute
                 {
-                    FieldTypeId = FieldTypeCache.Get( new Guid( SystemGuid.FieldType.TEXT ) ).Id,
+                    FieldTypeId = FieldTypeCache.Get( new Guid( SystemGuid.FieldType.TEXT ), rockContext ).Id,
                     EntityTypeQualifierColumn = Rock.Model.Attribute.SYSTEM_SETTING_QUALIFIER,
                     EntityTypeQualifierValue = string.Empty,
                     Key = key,

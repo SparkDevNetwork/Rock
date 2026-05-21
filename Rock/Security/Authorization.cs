@@ -850,6 +850,19 @@ namespace Rock.Security
         /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
         /// <param name="isImpersonated">if set to <c>true</c> [is impersonated].</param>
         /// <returns></returns>
+        /// <remarks>
+        /// Deprecated as part of the <c>PersonSession</c> rollout. Returns a
+        /// legacy <c>FormsAuthenticationTicket</c>-format cookie value; under
+        /// the new model the canonical cookie producer is
+        /// <c>PersonSessionService.GetCookieValue(PersonSession)</c>, called
+        /// against a session built via <c>StartComponentSession(...)</c> and
+        /// saved through the standard <c>RockContext.SaveChanges()</c> flow.
+        /// Kept usable during the dual-reader window so existing Mobile / TV
+        /// callers continue to function until Phase 11 migrates them; full
+        /// removal targets Rock v23 alongside the rest of the legacy reader.
+        /// </remarks>
+        [Obsolete( "Use PersonSessionService.StartComponentSession + RockContext.SaveChanges + PersonSessionService.GetCookieValue(session) instead. This legacy helper produces a FormsAuthenticationTicket-format cookie that the new PersonSession-based auth pipeline does not consume." )]
+        [RockObsolete( "20.0" )]
         public static SimpleCookie GetSimpleAuthCookie( string userName, bool isPersisted, bool isImpersonated )
         {
             var authCookie = GetAuthCookie( userName, isPersisted, isImpersonated, isTwoFactorAuthenticated: false );
