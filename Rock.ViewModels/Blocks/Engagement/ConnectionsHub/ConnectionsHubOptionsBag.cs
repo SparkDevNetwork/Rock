@@ -55,6 +55,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public ListItemBag SelectedConnector { get; set; }
 
         /// <summary>
+        /// Gets or sets the person id key for the selected connector
+        /// </summary>
+        public string SelectedConnectorIdKey { get; set; }
+
+        /// <summary>
         /// Gets or sets a list of Campus Labels
         /// </summary>
         public List<CampusLabelBag> CampusLabels { get; set; }

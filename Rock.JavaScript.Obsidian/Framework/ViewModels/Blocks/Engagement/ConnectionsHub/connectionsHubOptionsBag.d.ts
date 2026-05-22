@@ -64,12 +64,6 @@ export type ConnectionsHubOptionsBag = {
     /** Gets or sets the encrypted identifier key of the Connection Request being viewed or edited. */
     connectionRequestIdKey?: string | null;
 
-    /** Gets or sets the list of connection states (e.g., Active, Inactive, Future Follow-up) available for filtering. */
-    connectionStates?: ListItemBag[] | null;
-
-    /** Gets or sets the encrypted identifier key of the Connection Type being viewed. */
-    connectionTypeIdKey?: string | null;
-
     /** Gets or sets the list of connection types for the context slicer filter in the "My Connections" view. */
     connectionTypeItems?: ListItemBag[] | null;
 
@@ -78,6 +72,9 @@ export type ConnectionsHubOptionsBag = {
      * Populated with a single entry in standard mode and with one entry per active Connection Type in My Connections mode.
      * This allows the client to adjust its behavior and available UI actions based on the Connection Type that owns
      * the currently selected request or opportunity.
+     * TODO - Migrate remaining consumers off the flat per-Type fields on this bag (ConnectionStatuses, RequestSourceItems,
+     * IsSequentialStatusMode, AllPossibleConnectors, ConnectionActivities, WorkflowItems, ConnectionOpportunities) so they
+     * can be removed.
      */
     connectionTypeOptionsByIdKey?: Record<string, ConnectionTypeOptionsBag> | null;
 
@@ -104,6 +101,9 @@ export type ConnectionsHubOptionsBag = {
 
     /** Gets or sets the currently selected connector used to filter the request list. */
     selectedConnector?: ListItemBag | null;
+
+    /** Gets or sets the person id key for the selected connector */
+    selectedConnectorIdKey?: string | null;
 
     /** Gets or sets the title to display for the Connections Hub block. */
     title?: string | null;

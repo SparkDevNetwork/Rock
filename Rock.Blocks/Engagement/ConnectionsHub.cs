@@ -305,6 +305,7 @@ namespace Rock.Blocks.Engagement
                 };
 
                 options.SelectedConnector = connectorListItemBag;
+                options.SelectedConnectorIdKey = connectorPerson.IdKey;
                 this.PersonPreferences.SetValue( PreferenceKey.SelectedConnector, connectorPerson.PrimaryAliasGuid.ToString() );
 
                 // Connector Grouping is intentionally hidden in My Connections View.
@@ -821,8 +822,14 @@ namespace Rock.Blocks.Engagement
         private List<ConnectionState> GetStateFilter( string connectionTypeIdKey )
         {
             var preferences = GetBlockPersonPreferences();
+            string key = connectionTypeIdKey;
 
-            return preferences.GetValue( string.Format( PreferenceKey.FilterStateConnectionTypeIdKey, connectionTypeIdKey ) )
+            if ( IsMyConnectionsMode )
+            {
+                key = "my-connections";
+            }
+
+            return preferences.GetValue( string.Format( PreferenceKey.FilterStateConnectionTypeIdKey, key ) )
                 .FromJsonOrNull<List<int>>()
                 ?.Select( i => ( ConnectionState ) i )
                 .ToList() ?? new List<ConnectionState>();
@@ -3784,42 +3791,38 @@ WHERE 1 = 1" );
                 sqlParams.Add( new SqlParameter( "@CampusId", campusContext.Id ) );
             }
 
+            string connectionTypeIdKey = string.Empty;
+
             // Connection Type scope. In standard mode this always applies. In My Connections
             // mode it only applies when the slicer's Connection Type filter has been chosen.
             if ( connectionType != null )
             {
                 sql.Append( "\n  AND ct.[Id] = @ConnectionTypeId" );
+
+                connectionTypeIdKey = IdHasher.Instance.GetHash( connectionType.Id );
             }
 
-            // Opportunity, state, and attribute filters come from person preferences keyed by
-            // Connection Type, so they are only consulted when the request is bounded to one.
-            string connectionTypeIdKey = null;
-            if ( connectionType != null )
+            // Connection Opportunity Filter
+            var connectionOpportunityFilter = GetConnectionOpportunityFilter( connectionTypeIdKey );
+            if ( connectionOpportunityFilter.HasValue )
             {
-                connectionTypeIdKey = IdHasher.Instance.GetHash( connectionType.Id );
+                sql.Append( "\n  AND co.[Guid] = @OpportunityGuid" );
+                sqlParams.Add( new SqlParameter( "@OpportunityGuid", connectionOpportunityFilter.Value ) );
+            }
 
-                // Connection Opportunity Filter
-                var connectionOpportunityFilter = GetConnectionOpportunityFilter( connectionTypeIdKey );
-                if ( connectionOpportunityFilter.HasValue )
+            // Connection State Filter
+            var stateFilter = GetStateFilter( connectionTypeIdKey );
+            if ( stateFilter.Count > 0 )
+            {
+                var statePlaceholders = stateFilter
+                    .Select( ( _, i ) => $"@state{i}" )
+                    .ToList();
+
+                sql.Append( $"\n  AND cr.[ConnectionState] IN ({string.Join( ", ", statePlaceholders )})" );
+
+                for ( var i = 0; i < stateFilter.Count; i++ )
                 {
-                    sql.Append( "\n  AND co.[Guid] = @OpportunityGuid" );
-                    sqlParams.Add( new SqlParameter( "@OpportunityGuid", connectionOpportunityFilter.Value ) );
-                }
-
-                // Connection State Filter
-                var stateFilter = GetStateFilter( connectionTypeIdKey );
-                if ( stateFilter.Count > 0 )
-                {
-                    var statePlaceholders = stateFilter
-                        .Select( ( _, i ) => $"@state{i}" )
-                        .ToList();
-
-                    sql.Append( $"\n  AND cr.[ConnectionState] IN ({string.Join( ", ", statePlaceholders )})" );
-
-                    for ( var i = 0; i < stateFilter.Count; i++ )
-                    {
-                        sqlParams.Add( new SqlParameter( $"@state{i}", ( int ) stateFilter[i] ) );
-                    }
+                    sqlParams.Add( new SqlParameter( $"@state{i}", ( int ) stateFilter[i] ) );
                 }
             }
 
@@ -4455,9 +4458,9 @@ WHERE 1 = 1" );
         /// <param name="completedRequestIdKeys">A list of Connection Request IdKeys to mark as Connected (completed), triggering placement group assignment if configured.</param>
         /// <returns>A Block Action Result containing a list of <see cref="ConnectionListGridUpdateBag"/> objects to refresh the state, status, and due status columns in the grid. Returns a bad request result if the Connection Type cannot be resolved, the user lacks edit permissions, a required note is missing, or placement group assignment fails.</returns>
         [BlockAction]
-        public BlockActionResult UpdateRequestStatuses( List<ConnectionRequestUpdateBag> statusUpdateBags, List<string> completedRequestIdKeys )
+        public BlockActionResult UpdateRequestStatuses( List<ConnectionRequestUpdateBag> statusUpdateBags, List<string> completedRequestIdKeys, string connectionTypeIdKey = null )
         {
-            ConnectionTypeCache connectionType = GetConnectionTypeCacheFromPageParameters();
+            ConnectionTypeCache connectionType = GetConnectionTypeCacheFromPageParameters( connectionTypeIdKey );
             if ( connectionType == null )
             {
                 return ActionBadRequest( $"{Rock.Model.ConnectionType.FriendlyTypeName} not found." );
@@ -4585,19 +4588,65 @@ WHERE 1 = 1" );
         /// <param name="connectionTypeIdKey">An optional Connection Type IdKey used to resolve the Connection Type, in addition to the standard page parameter resolution.</param>
         /// <returns>A Block Action Result containing a list of <see cref="ConnectionListGridUpdateBag"/> objects to refresh the state and follow-up date columns in the grid. Returns a bad request result if the Connection Type cannot be resolved, the user lacks edit permissions, a required follow-up date is missing, a required placement group is not assigned, or placement group assignment fails.</returns>
         [BlockAction]
-        public BlockActionResult UpdateRequestStates( UpdateConnectionRequestStatesBag bag, string connectionTypeIdKey = null )
+        public BlockActionResult UpdateRequestStates( UpdateConnectionRequestStatesBag bag )
         {
-            ConnectionTypeCache connectionType = GetConnectionTypeCacheFromPageParameters( connectionTypeIdKey );
-            if ( connectionType == null )
+            // Decode every supplied Connection Request IdKey up front so a single bad key
+            // short-circuits before any DB work.
+            var decodedRequestIds = bag.ConnectionRequestIdKeys
+                .Select( key => Rock.Utility.IdHasher.Instance.GetId( key ) )
+                .ToList();
+
+            if ( decodedRequestIds.Any( id => !id.HasValue ) )
             {
-                return ActionBadRequest( $"{Rock.Model.ConnectionType.FriendlyTypeName} not found." );
+                return ActionBadRequest( $"{ConnectionRequest.FriendlyTypeName} not found." );
             }
 
-            var canEditRequest = CanEditSpecifiedConnectionRequests( connectionType, bag.ConnectionRequestIdKeys, out var connectionRequests, out var actionError );
+            var requestIds = decodedRequestIds.Select( id => id.Value ).Distinct().ToList();
 
-            if ( !canEditRequest )
+            // Resolve and validate every Connection Type the caller claims to be operating on.
+            // In standard (single-type) mode the bag does not supply ConnectionTypeIdKeys; the
+            // type is derived from page parameters. In multi-type mode (e.g. cross-type bulk
+            // actions from the My Connections view) the bag supplies one IdKey per type. The
+            // resulting set is used to scope the request query so a request from outside the
+            // caller's selection cannot be smuggled into the batch.
+            var allowedConnectionTypeIds = new HashSet<int>();
+            var connectionTypeIdKeys = bag.ConnectionTypeIdKeys?.Count > 0
+                ? bag.ConnectionTypeIdKeys
+                : new List<string> { null };
+
+            foreach ( var connectionTypeIdKey in connectionTypeIdKeys )
             {
-                return actionError;
+                var connectionType = GetConnectionTypeCacheFromPageParameters( connectionTypeIdKey );
+                if ( connectionType == null )
+                {
+                    return ActionBadRequest( $"{Rock.Model.ConnectionType.FriendlyTypeName} not found." );
+                }
+                allowedConnectionTypeIds.Add( connectionType.Id );
+            }
+
+            // Load all requests in one query, scoped to the allowed types.
+            // ConnectionOpportunity.ConnectionType is eager-loaded because the per-type auth
+            // check below reads EnableRequestSecurity off the nav property, and the placement
+            // logic later in this action reads RequiresPlacementGroupToConnect off it as well.
+            var connectionRequests = new ConnectionRequestService( RockContext ).GetByIds( requestIds )
+                .Where( c => allowedConnectionTypeIds.Contains( c.ConnectionTypeId ) )
+                .Include( r => r.ConnectionOpportunity.ConnectionType )
+                .ToList();
+
+            if ( connectionRequests.Count != requestIds.Count )
+            {
+                return ActionBadRequest( $"{ConnectionRequest.FriendlyTypeName} not found." );
+            }
+
+            // EnableRequestSecurity is a per-Connection-Type flag, so the auth check must be
+            // run per type. The inner overload assumes a single-type batch and resolves the
+            // security model off the first request's type.
+            foreach ( var requestsForType in connectionRequests.GroupBy( r => r.ConnectionTypeId ) )
+            {
+                if ( !CanEditSpecifiedConnectionRequests( requestsForType.ToList(), out var actionError ) )
+                {
+                    return actionError;
+                }
             }
 
             if ( bag.ConnectionState == ConnectionState.FutureFollowUp && !bag.FollowUpDate.HasValue )

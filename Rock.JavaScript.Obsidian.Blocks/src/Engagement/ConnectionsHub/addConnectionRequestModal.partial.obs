@@ -48,6 +48,7 @@
                         <div class="col-md-6">
                             <RadioButtonList v-model="connectionState"
                                              :items="availableConnectionStates"
+                                             rules="required"
                                              label="State" />
                         </div>
                     </div>
@@ -205,6 +206,11 @@
 
         options: {
             type: Object as PropType<ConnectionsHubOptionsBag | null | undefined>,
+            required: true
+        },
+
+        connectionStateItems: {
+            type: Array as PropType<ListItemBag[]>,
             required: true
         },
 
@@ -397,7 +403,11 @@
     });
 
     const availableConnectionStates = computed<ListItemBag[]>(() => {
-        return (props.options?.connectionStates ?? []).filter(s => parseInt(s.value ?? "") !== ConnectionState.Connected);
+        let filteredConnectionStates = props.connectionStateItems;
+        if (!currentConnectionTypeOptions.value?.isFutureFollowUpEnabled) {
+            filteredConnectionStates = filteredConnectionStates.filter(s => parseInt(s.value ?? "") !== ConnectionState.FutureFollowUp);
+        }
+        return filteredConnectionStates.filter(s => parseInt(s.value ?? "") !== ConnectionState.Connected);
     });
 
     const connectionStatusItems = computed<ListItemBag[]>(() => {

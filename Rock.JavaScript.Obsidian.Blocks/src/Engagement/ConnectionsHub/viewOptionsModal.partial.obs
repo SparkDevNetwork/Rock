@@ -36,7 +36,8 @@
                     <CheckBoxList v-model="stateFilter"
                                   :items="props.connectionStates"
                                   label="State" />
-                    <CheckBoxList v-model="statusFilter"
+                    <CheckBoxList v-if="!isMyConnectionsView"
+                                  v-model="statusFilter"
                                   :items="connectionStatusItems"
                                   label="Status" />
                     <CheckBoxList v-model="dueFilter"
@@ -44,7 +45,7 @@
                                   label="Due" />
                 </ContentStack>
             </ContentSection>
-            <ContentSection v-if="hasAttributeFilters"
+            <ContentSection v-if="hasAttributeFilters && !isMyConnectionsView"
                             title="Attribute Filters"
                             icon="ti ti-binary-tree-2"
                             disableCollapse>
@@ -121,6 +122,10 @@
         attributeFilters: {
             type: Array as PropType<PublicAttributeBag[]>,
             default: () => []
+        },
+        isMyConnectionsView: {
+            type: Boolean as PropType<boolean>,
+            required: true
         }
     });
 

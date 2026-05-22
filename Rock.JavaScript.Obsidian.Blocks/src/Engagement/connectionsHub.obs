@@ -65,11 +65,11 @@
                     <Badge class="font-weight-semibold bg-info-strong">{{ allSelectedKeys.length }}</Badge>
                 </div>
                 <div class="d-flex align-items-center gap-spacing-xs">
-                    <RockButton class="activity-btn" @click="showAssignRequestModal" :disabled="!canEditConnectionRequests">
+                    <RockButton class="activity-btn" @click="showAssignRequestModal" :disabled="!canEditConnectionRequests || disableConnectionTypeSpecificBulkActions">
                         <i class="ti ti-user-circle"></i>
                         <span class="activity-btn-label">Assign</span>
                     </RockButton>
-                    <RockButton @click="showChangeStatusModal()" class="activity-btn" :disabled="!canEditConnectionRequests">
+                    <RockButton @click="showChangeStatusModal()" class="activity-btn" :disabled="!canEditConnectionRequests || disableConnectionTypeSpecificBulkActions">
                         <template v-if="currentConnectionTypeOptions.isSequentialStatusMode">
                             <i class="ti ti-arrow-right"></i>
                             <span class="activity-btn-label">Advance to Next Status</span>
@@ -79,7 +79,7 @@
                             <span class="activity-btn-label">Change Status</span>
                         </template>
                     </RockButton>
-                    <RockButton @click="showLaunchWorkflowModal()" class="activity-btn">
+                    <RockButton @click="showLaunchWorkflowModal()" class="activity-btn" :disabled="disableConnectionTypeSpecificBulkActions">
                         <i class="ti ti-settings-cog"></i>
                         <span class="activity-btn-label">Launch Workflow</span>
                     </RockButton>
@@ -105,7 +105,7 @@
                                  @click="showChangeStateModal(ConnectionState.Inactive)">
                                 <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
                             </div>
-                            <div v-if="currentConnectionTypeOptions.isFutureFollowUpEnabled"
+                            <div v-if="currentConnectionTypeOptions.isFutureFollowUpEnabled && !disableConnectionTypeSpecificBulkActions"
                                  class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
                                  @click="showChangeStateModal(ConnectionState.FutureFollowUp)">
                                 <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
@@ -120,21 +120,21 @@
             </div>
             <div class="right-actions d-flex align-items-center gap-spacing-md">
                 <div class="pl-spacing-md d-flex align-items-center gap-spacing-xs">
-                    <RockButton @click="showSMSModal()" class="activity-btn">
+                    <RockButton @click="showSMSModal()" class="activity-btn" :disabled="disableConnectionTypeSpecificBulkActions">
                         <i class="ti ti-message-circle-plus"></i>
                         <span class="activity-btn-label">SMS</span>
                     </RockButton>
-                    <RockButton @click="showEmailModal()" class="activity-btn">
+                    <RockButton @click="showEmailModal()" class="activity-btn" :disabled="disableConnectionTypeSpecificBulkActions">
                         <i class="ti ti-mail-plus"></i>
                         <span class="activity-btn-label">Email</span>
                     </RockButton>
                 </div>
                 <div class="border-left-divider pl-spacing-md d-flex align-items-center gap-spacing-md">
-                    <RockButton class="activity-btn" @click="showAddActivityModal()" :disabled="!canEditConnectionRequests">
+                    <RockButton class="activity-btn" @click="showAddActivityModal()" :disabled="!canEditConnectionRequests || disableConnectionTypeSpecificBulkActions">
                         <i class="ti ti-activity"></i>
                         <span class="activity-btn-label">Add Activity</span>
                     </RockButton>
-                    <RockButton class="activity-btn" @click="showBulkTransferModal()" :disabled="!canEditConnectionRequests">
+                    <RockButton class="activity-btn" @click="showBulkTransferModal()" :disabled="!canEditConnectionRequests || disableConnectionTypeSpecificBulkActions">
                         <i class="ti ti-switch-3"></i>
                         <span class="activity-btn-label">Transfer</span>
                     </RockButton>
@@ -698,6 +698,7 @@
     <AddConnectionRequestModal :modelValue="newConnectionRequest"
                                v-model:visible="isAddConnectionRequestModalVisible"
                                :options="box.options"
+                               :connectionStateItems="connectionStateItems"
                                :connectionTypeOptionsByIdKey="connectionTypeOptionsByIdKey"
                                :selectedConnectionTypeOptions="selectedConnectionTypeOptions"
                                :connectionOpportunityDetails="connectionOpportunityDetails"
@@ -823,9 +824,10 @@
                       @update:modelValue="onViewOptionsUpdate"
                       v-model:visible="isViewOptionsModalVisible"
                       :gridDataToShowItems="filteredGridDataToShowItems"
-                      :connectionStates="box.options?.connectionStates ?? []"
+                      :connectionStates="connectionStateItems"
                       :connectionStatuses="staticConnectionTypeOptions?.connectionStatuses ?? []"
-                      :attributeFilters="visibleAttributeFilters" />
+                      :attributeFilters="visibleAttributeFilters"
+                      :isMyConnectionsView="isMyConnectionsView" />
 
     <ModalAlert v-model="isModalAlertVisible">
         <p>{{ modalAlertText }}</p>
@@ -1158,6 +1160,7 @@ i.disabled {
     import { vTooltip } from "@Obsidian/Directives/tooltip";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
 
     const box = useConfigurationValues<ListBlockBox<ConnectionsHubOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -1244,6 +1247,14 @@ i.disabled {
     // Flat list of per-Connection-Type options. Use with `.some()` / `.every()` / `.filter()`
     // when you need to check or aggregate a property across all loaded Connection Types.
     const allConnectionTypeOptions = computed<ConnectionTypeOptionsBag[]>(() => Object.values(connectionTypeOptionsByIdKey.value));
+
+    const connectionStateItems = computed<ListItemBag[]>(() => {
+        if (allConnectionTypeOptions.value.some(t => t.isFutureFollowUpEnabled)) {
+            return enumToListItemBag(ConnectionStateDescription);
+        }
+
+        return enumToListItemBag(ConnectionStateDescription).filter(s => parseInt(s.value ?? "") !== ConnectionState.FutureFollowUp);
+    });
 
     // In Standard mode the server populates the dictionary with a single entry — the
     // Connection Type this page is anchored to. This computed surfaces that type so
@@ -1380,6 +1391,10 @@ i.disabled {
 
     // Used to keep track of the specific connection type options for a selected Connection Request.
     const currentConnectionTypeOptions = ref<ConnectionTypeOptionsBag>({} as ConnectionTypeOptionsBag);
+    // Keeps track of the distinct connection type id keys for the selected connection requests.
+    const distinctSelectedConnectionTypeIdKeys = ref<string[]>([]);
+    // Disables specific bulk actions when more than 1 connection type are selected via connection requests. Only needed for My Connections mode.
+    const disableConnectionTypeSpecificBulkActions = ref<boolean>(false);
 
     const selectedView = ref<string>((() => {
         const preferenceValue = preferences.getValue(getConnectionFilterKey(PreferenceKey.SelectedViewConnectionTypeIdKey));
@@ -1681,12 +1696,10 @@ i.disabled {
             return [];
         }
 
-        const selectedKeySet = new Set(allSelectedKeys.value);
-
         return gridData.value.rows.map(row => {
             const idKey = row["idKey"] as string | null | undefined;
 
-            if (!idKey || !selectedKeySet.has(idKey)) {
+            if (!idKey || !allSelectedKeySet.value.has(idKey)) {
                 return null;
             }
 
@@ -1735,10 +1748,12 @@ i.disabled {
         if (isDockedPanelVisible.value && dockedPanelDetailsBox.value?.options?.connectionStatuses) {
             statuses = dockedPanelDetailsBox.value.options.connectionStatuses;
         }
-        else if (!isMyConnectionsView.value) {
+        else if (isMyConnectionsView.value) {
+            statuses = currentConnectionTypeOptions.value.connectionStatuses;
+        }
+        else {
             statuses = staticConnectionTypeOptions.value?.connectionStatuses;
         }
-        // TODO - Handle my connections mode
 
         return (
             statuses?.slice() // avoid mutating source
@@ -1969,17 +1984,20 @@ i.disabled {
             }
         }
 
-        // Requests Assigned to Me
-        if (areOnlyMyRequestsVisible.value === "true") {
+        // Connector filter
+        if (areOnlyMyRequestsVisible.value !== "false") {
             const connectorValue = row["connectorDetails"] as ListItemBag | undefined;
 
             if (!connectorValue || typeof connectorValue !== "object") {
                 return false;
             }
 
-            if (currentPerson.value?.idKey !== connectorValue.value) {
-                return false;
+            if (areOnlyMyRequestsVisible.value === "true" && currentPerson.value?.idKey === connectorValue?.value) {
+                return true;
             }
+
+            // Check against the selected connector defined when the block was loaded.
+            return connectorValue?.value === box.options?.selectedConnectorIdKey;
         }
 
         // Campus Filter
@@ -2369,11 +2387,11 @@ i.disabled {
         if (isMyConnectionsView.value) {
             return preferenceKey.replace("{0}", "my-connections");
         }
-        if (!box.options?.connectionTypeIdKey) {
+        else if (!staticConnectionTypeOptions.value?.idKey) {
             return "";
         }
 
-        return preferenceKey.replace("{0}", box.options.connectionTypeIdKey);
+        return preferenceKey.replace("{0}", staticConnectionTypeOptions.value.idKey);
     }
 
     /** Adds the tooltip behavior to the element. */
@@ -2444,6 +2462,7 @@ i.disabled {
         if (!key) {
             return;
         }
+
         selectedKeys.value[key] = [...state.selectedKeys];
     }
 
@@ -2574,10 +2593,9 @@ i.disabled {
         let rows = visibleRowsFilteredByGrid.value;
 
         if (hasAnySelectedKeys.value) {
-            const selectedKeySet = new Set(allSelectedKeys.value);
             rows = rows.filter(row => {
                 const idKey = row["idKey"] as string | null | undefined;
-                return !!idKey && selectedKeySet.has(idKey);
+                return !!idKey && allSelectedKeySet.value.has(idKey);
             });
         }
 
@@ -3195,8 +3213,9 @@ i.disabled {
     }
 
     async function refreshUserEditPermissions(): Promise<void> {
+        // TODO - This needs to be fixed
         const result = await invokeBlockAction<boolean>("RefreshUserEditPermissions", {
-            connectionTypeIdKey: box.options?.connectionTypeIdKey
+            connectionTypeIdKey: currentConnectionTypeOptions.value.idKey
         });
 
         if (result.isSuccess) {
@@ -3207,6 +3226,8 @@ i.disabled {
     async function updateStateFromModal(bag: UpdateConnectionRequestStatesBag): Promise<void> {
         try {
             isModalSaving.value = true;
+            console.log("setting bag: ", distinctSelectedConnectionTypeIdKeys.value);
+            bag.connectionTypeIdKeys = distinctSelectedConnectionTypeIdKeys.value;
             const errorMessage = await updateRequestStates(bag);
 
             if (!errorMessage) {
@@ -3401,7 +3422,7 @@ i.disabled {
         }
         else {
             selectedKeys = allSelectedKeys.value;
-            connectionTypeIdKey = box.options?.connectionTypeIdKey;
+            connectionTypeIdKey = currentConnectionTypeOptions.value.idKey; // TODO - TEST THIS
         }
 
         const result = await getSmsConfiguration(selectedKeys, connectionTypeIdKey);
@@ -3431,7 +3452,7 @@ i.disabled {
         }
         else {
             selectedKeys = allSelectedKeys.value;
-            connectionTypeIdKey = box.options?.connectionTypeIdKey;
+            connectionTypeIdKey = currentConnectionTypeOptions.value.idKey; // TODO - TEST THIS
         }
 
         const result = await getEmailConfiguration(selectedKeys, connectionTypeIdKey);
@@ -3514,6 +3535,7 @@ i.disabled {
         const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("UpdateRequestStatuses", {
             statusUpdateBags: statusUpdateBags,
             completedRequestIdKeys: completedRequestIdKeys,
+            connectionTypeIdKey: currentConnectionTypeOptions.value.idKey
         });
 
         if (result.isSuccess && result.data) {
@@ -3680,7 +3702,7 @@ i.disabled {
         // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
         let connectionTypeIdKey: string | null | undefined;
         if (isDockedPanelVisible.value) {
-            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            bag.connectionTypeIdKeys = [dockedPanelDetailsBox.value?.options?.connectionTypeIdKey ?? ""];
         }
 
         const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("UpdateRequestStates", {
@@ -3750,6 +3772,9 @@ i.disabled {
             let connectionTypeIdKey: string | null | undefined;
             if (isDockedPanelVisible.value) {
                 connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
+            else {
+                connectionTypeIdKey = currentConnectionTypeOptions.value.idKey;
             }
 
             const result = await invokeBlockAction<LaunchWorkflowResultBag>("LaunchWorkflowForRequests", {
@@ -4174,6 +4199,9 @@ i.disabled {
         if (isDockedPanelVisible.value) {
             connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
         }
+        else {
+            connectionTypeIdKey = currentConnectionTypeOptions.value.idKey;
+        }
 
         const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("ReassignConnector", {
             connectionRequestIdKeys: connectionRequestIdKeys,
@@ -4355,8 +4383,6 @@ i.disabled {
             return;
         }
 
-        console.log("setting: ", areOnlyMyRequestsVisible.value);
-
         preferences.setValue(PreferenceKey.AreOnlyMyRequestsVisible, areOnlyMyRequestsVisible.value);
 
         const connectorIndex = requestToggleItems.value.findIndex(i => i.value !== "true" && i.value !== "false");
@@ -4443,10 +4469,10 @@ i.disabled {
 
         // If there is no connection type query string parameter present, we need to add it
         // because we've just removed the Connection Opportunity query string parameter.
-        if (box.options?.connectionTypeIdKey) {
+        if (staticConnectionTypeOptions.value?.idKey) {
             const url = new URL(window.location.href);
             if (!url.searchParams.has("ConnectionType")) {
-                url.searchParams.set("ConnectionType", box.options.connectionTypeIdKey);
+                url.searchParams.set("ConnectionType", staticConnectionTypeOptions.value.idKey); // TODO - Determine if this is right
                 history.replaceState(null, "", url.toString());
             }
         }
@@ -4548,6 +4574,36 @@ i.disabled {
     watch(rawQuickFilter, debounce(() => {
         debouncedQuickFilter.value = rawQuickFilter.value;
     }, 150));
+
+    watch(allSelectedKeys, () => {
+        if (!hasAnySelectedKeys) {
+            return;
+        }
+
+        if (!isMyConnectionsView.value && staticConnectionTypeOptions.value) {
+            disableConnectionTypeSpecificBulkActions.value = false;
+            currentConnectionTypeOptions.value = staticConnectionTypeOptions.value;
+            return;
+        }
+
+        distinctSelectedConnectionTypeIdKeys.value = [...new Set(
+            visibleRowsFilteredByGrid.value
+                .filter(row => {
+                    const idKey = row["idKey"] as string | null | undefined;
+                    return !!idKey && allSelectedKeySet.value.has(idKey);
+                })
+                .map(row => row["connectionTypeIdKey"] as string | null | undefined)
+                .filter((key): key is string => !!key)
+        )];
+
+        if (distinctSelectedConnectionTypeIdKeys.value.length === 1) {
+            disableConnectionTypeSpecificBulkActions.value = false;
+            currentConnectionTypeOptions.value = connectionTypeOptionsByIdKey.value[distinctSelectedConnectionTypeIdKeys.value[0]];
+        }
+        else {
+            disableConnectionTypeSpecificBulkActions.value = true;
+        }
+    });
 
     loadContextValues();
     loadGridData();

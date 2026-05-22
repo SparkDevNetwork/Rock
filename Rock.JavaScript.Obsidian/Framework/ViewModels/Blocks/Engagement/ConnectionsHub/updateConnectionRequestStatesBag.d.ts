@@ -32,6 +32,9 @@ export type UpdateConnectionRequestStatesBag = {
     /** Gets or sets the connection state (e.g., Active, Inactive, Future Follow-up) to apply to all specified requests. */
     connectionState: ConnectionState;
 
+    /** Gets or sets a list of connection type id keys associated with the selected requests. */
+    connectionTypeIdKeys?: string[] | null;
+
     /** Gets or sets the follow-up date to assign when transitioning requests to the Future Follow-up state. */
     followUpDate?: string | null;
 
