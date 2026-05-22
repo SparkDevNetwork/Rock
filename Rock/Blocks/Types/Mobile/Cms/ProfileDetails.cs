@@ -346,11 +346,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// Updates a user profile based off the MobilePerson passed in.
         /// </summary>
         /// <param name="profile">The profile to use to update the user.</param>
-        /// <param name="user">The user to update.</param>
+        /// <param name="personId">The Identifier of the person to edit.</param>
         /// <returns></returns>
-        private MobilePerson UpdateUserProfile( MobilePerson profile, UserLogin user )
+        private MobilePerson UpdateUserProfile( MobilePerson profile, int personId )
         {
-            var personId = user.PersonId.Value;
             var rockContext = new Data.RockContext();
 
             var personService = new PersonService( rockContext );
@@ -388,30 +387,20 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 int phoneNumberTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
 
                 var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberTypeId );
-                var cleanedNumber = PhoneNumber.CleanNumber( profile.MobilePhone );
-
-                if ( string.IsNullOrWhiteSpace( cleanedNumber ) )
+                if ( phoneNumber == null )
                 {
-                    // Only remove/delete a phone number record if one previously existed.
-                    // Creating a new entity just to immediately delete it leaves EF in an
-                    // inconsistent tracking state and causes SaveChanges to throw.
-                    if ( phoneNumber != null )
-                    {
-                        person.PhoneNumbers.Remove( phoneNumber );
-                        phoneNumberService.Delete( phoneNumber );
-                    }
+                    phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
+                    person.PhoneNumbers.Add( phoneNumber );
                 }
-                else
-                {
-                    if ( phoneNumber == null )
-                    {
-                        phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
-                        person.PhoneNumbers.Add( phoneNumber );
-                    }
 
-                    // TODO: What to do with country code?
-                    phoneNumber.CountryCode = PhoneNumber.CleanNumber( "+1" );
-                    phoneNumber.Number = cleanedNumber;
+                // TODO: What to do with country code?
+                phoneNumber.CountryCode = PhoneNumber.CleanNumber( "+1" );
+                phoneNumber.Number = PhoneNumber.CleanNumber( profile.MobilePhone );
+
+                if ( string.IsNullOrWhiteSpace( phoneNumber.Number ) )
+                {
+                    person.PhoneNumbers.Remove( phoneNumber );
+                    phoneNumberService.Delete( phoneNumber );
                 }
             }
 
@@ -513,7 +502,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 person = new PersonService( rockContext2 ).Get( person.Id );
 
                 var mobilePerson = MobileHelper.GetMobilePerson( person, MobileHelper.GetCurrentApplicationSite() );
-                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName );
 
                 return mobilePerson;
             }
@@ -534,7 +522,14 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
             }
 
-            return ActionOk( UpdateUserProfile( profile, user ) );
+            var updatedPerson = UpdateUserProfile( profile, user.PersonId.Value );
+
+            if ( user != null )
+            {
+                updatedPerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName );
+            }
+
+            return ActionOk( updatedPerson );
         }
 
         /// <summary>
@@ -548,15 +543,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
         {
             using ( var rockContext = new RockContext() )
             {
-                var user = new UserLoginService( rockContext )
-                    .Queryable()
-                    .FirstOrDefault( x => x.Person != null && x.Person.Guid == personGuid );
-
-                if ( user == null )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
-                }
-
                 var personToEdit = new PersonService( rockContext ).Get( personGuid );
                 if ( personToEdit == null )
                 {
@@ -568,7 +554,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
                 }
 
-                return ActionOk( UpdateUserProfile( profile, user ) );
+                return ActionOk( UpdateUserProfile( profile, personToEdit.Id ) );
             }
         }
 
