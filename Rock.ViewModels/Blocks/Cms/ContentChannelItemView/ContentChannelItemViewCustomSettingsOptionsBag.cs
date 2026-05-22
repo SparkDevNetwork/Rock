@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,7 +22,7 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Blocks.Cms.ContentChannelItemView
 {
     /// <summary>
-    /// The options used to populate the custom settings UI for the <see cref="Rock.Blocks.Cms.ContentChannelItemView"/> block.
+    /// The options used to populate the custom settings UI for the Content Channel Item View block.
     /// </summary>
     public class ContentChannelItemViewCustomSettingsOptionsBag
     {
