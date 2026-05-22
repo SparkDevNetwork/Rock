@@ -33,6 +33,14 @@
                     @click.prevent.stop="props.onPanelSettingsClick">
                 <i class="ti ti-adjustments-horizontal"></i>
             </button>
+            <button v-if="props.onSnapshotClick"
+                    type="button"
+                    class="btn btn-panel-action"
+                    :class="{ active: isSnapshotVisible }"
+                    title="Toggle Snapshot"
+                    @click.prevent.stop="props.onSnapshotClick">
+                <i class="ti ti-chart-bar-popular"></i>
+            </button>
             <button v-if="props.onAddItem"
                     type="button"
                     class="btn btn-add btn-panel-action"
@@ -43,21 +51,28 @@
             </button>
         </template>
         <template #preBody>
-            <transition name="action-toolbar-slide">
-                <div v-if="isSelectedView" class="action-toolbar-slide">
-                    <div class="action-toolbar-slide-inner">
-                        <ActionToolbar v-model:groupingKey="groupingKey"
-                                       v-model:viewMode="internalViewMode"
-                                       :viewModeItems="viewModeItems"
-                                       :groupingFields="groupingFields"
-                                       :isSelectedView="isSelectedView">
-                            <template #selectedActionToolbar>
-                                <slot name="selectedActionToolbar" />
-                            </template>
-                        </ActionToolbar>
+            <div v-if="isSelectedView || isSnapshotVisible">
+                <transition name="slide">
+                    <div v-if="isSnapshotVisible">
+                        Snapshot data
                     </div>
-                </div>
-            </transition>
+                </transition>
+                <transition name="action-toolbar-slide">
+                    <div v-if="isSelectedView" class="action-toolbar-slide">
+                        <div class="action-toolbar-slide-inner">
+                            <ActionToolbar v-model:groupingKey="groupingKey"
+                                           v-model:viewMode="internalViewMode"
+                                           :viewModeItems="viewModeItems"
+                                           :groupingFields="groupingFields"
+                                           :isSelectedView="isSelectedView">
+                                <template #selectedActionToolbar>
+                                    <slot name="selectedActionToolbar" />
+                                </template>
+                            </ActionToolbar>
+                        </div>
+                    </div>
+                </transition>
+            </div>
         </template>
         <template v-if="rows.length > 0">
             <GroupedListView v-if="isListView"
@@ -285,6 +300,20 @@
         isCountMessageVisible: {
             type: [Boolean, Function] as PropType<boolean | ((group: GroupedGrid) => boolean)>,
             default: true
+        },
+
+        /**
+         * The function to call in response to the snapshot being clicked.
+         * Providing this function will automatically enable the snapshot button.
+         */
+        onSnapshotClick: {
+            type: Function as PropType<(() => void | Promise<void>)>,
+            required: false
+        },
+
+        isSnapshotVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 

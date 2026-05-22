@@ -2405,6 +2405,104 @@ namespace Rock.Blocks.Engagement
             return CanEditSpecifiedConnectionRequests( connectionRequests, out error );
         }
 
+        /// <summary>
+        /// Multi-type sibling to the <see cref="ConnectionTypeCache"/> overload.
+        /// Resolves and validates every Connection Type the caller claims to be operating
+        /// on, loads all requests in a single query scoped to those types, and runs the
+        /// per-type edit check (EnableRequestSecurity is a per-Connection-Type flag).
+        ///
+        /// In standard single-type mode the caller passes an empty/null list and the type
+        /// is resolved from page parameters. In multi-type mode (cross-type bulk actions
+        /// from the My Connections view) the caller passes one IdKey per type.
+        /// </summary>
+        /// <param name="connectionTypeIdKeys">Connection Type IdKeys to authorize against. Empty or null means single-type, resolved from page parameters.</param>
+        /// <param name="connectionRequestIdKeys">Connection Request IdKeys to load and validate.</param>
+        /// <param name="connectionRequests">Resolved Connection Requests on success; empty on failure.</param>
+        /// <param name="error">BlockActionResult error on failure; null on success.</param>
+        /// <param name="queryModifier">Optional EF query shaping (eager loading, additional filtering) applied before materialization.</param>
+        /// <returns>True if every request resolved and the current person has edit permission for every type represented in the batch.</returns>
+        private bool CanEditSpecifiedConnectionRequests( List<string> connectionTypeIdKeys, List<string> connectionRequestIdKeys, out List<ConnectionRequest> connectionRequests, out BlockActionResult error, Func<IQueryable<ConnectionRequest>, IQueryable<ConnectionRequest>> queryModifier = null )
+        {
+            error = null;
+            connectionRequests = new List<ConnectionRequest>();
+
+            // Decode every supplied Connection Request IdKey up front so a single bad key
+            // short-circuits before any DB work.
+            var decodedRequestIds = connectionRequestIdKeys
+                .Select( key => Rock.Utility.IdHasher.Instance.GetId( key ) )
+                .ToList();
+
+            if ( decodedRequestIds.Any( id => !id.HasValue ) )
+            {
+                error = ActionBadRequest( $"{ConnectionRequest.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            var requestIds = decodedRequestIds
+                .Select( id => id.Value )
+                .Distinct()
+                .ToList();
+
+            if ( !requestIds.Any() )
+            {
+                error = ActionBadRequest( $"{ConnectionRequest.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            // Resolve and validate every Connection Type the caller claims to be operating on.
+            // The resulting set scopes the request query so a request from outside the caller's
+            // selection cannot be smuggled into the batch.
+            var allowedConnectionTypeIds = new HashSet<int>();
+            var typeIdKeys = connectionTypeIdKeys?.Count > 0
+                ? connectionTypeIdKeys
+                : new List<string> { null };
+
+            foreach ( var connectionTypeIdKey in typeIdKeys )
+            {
+                var connectionType = GetConnectionTypeCacheFromPageParameters( connectionTypeIdKey );
+                if ( connectionType == null )
+                {
+                    error = ActionBadRequest( $"{Rock.Model.ConnectionType.FriendlyTypeName} not found." );
+                    return false;
+                }
+                allowedConnectionTypeIds.Add( connectionType.Id );
+            }
+
+            // ConnectionOpportunity.ConnectionType is eager-loaded because the per-type auth
+            // check below reads EnableRequestSecurity off the nav property. Callers that need
+            // additional includes layer them on via queryModifier.
+            var query = new ConnectionRequestService( RockContext ).GetByIds( requestIds )
+                .Where( c => allowedConnectionTypeIds.Contains( c.ConnectionTypeId ) )
+                .Include( r => r.ConnectionOpportunity.ConnectionType );
+
+            if ( queryModifier != null )
+            {
+                query = queryModifier( query );
+            }
+
+            connectionRequests = query.ToList();
+
+            if ( connectionRequests.Count != requestIds.Count )
+            {
+                error = ActionBadRequest( $"{ConnectionRequest.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            // EnableRequestSecurity is a per-Connection-Type flag, so the auth check must be
+            // run per type. The inner overload resolves the security model off the first
+            // request's type, so each group is a homogeneous batch by construction.
+            foreach ( var requestsForType in connectionRequests.GroupBy( r => r.ConnectionTypeId ) )
+            {
+                if ( !CanEditSpecifiedConnectionRequests( requestsForType.ToList(), out error ) )
+                {
+                    connectionRequests = new List<ConnectionRequest>();
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         #region UI Refresh Helpers
 
         /// <summary>
@@ -3659,7 +3757,7 @@ SELECT
     co.[IconCssClass]                               AS [ConnectionOpportunityIconCssClass],
     co.[Order]                                      AS [ConnectionOpportunityOrder],
     cts.[Name]                                      AS [ConnectionTypeSourceName],
-    cr.[CampusId]                                   AS [CampusId],
+    cam.[Id]                                        AS [CampusId],
     cam.[Name]                                      AS [CampusName],
     cam.[Guid]                                      AS [CampusGuid],
     cam.[Order]                                     AS [CampusOrder],
@@ -3726,6 +3824,7 @@ INNER JOIN [ConnectionStatus] cs
     AND cs.[IsActive] = 1
 LEFT JOIN [Campus] cam
     ON cam.[Id] = cr.[CampusId]
+    AND cam.[IsActive] = 1
 LEFT JOIN [ConnectionTypeSource] cts
     ON cts.[Id] = cr.[ConnectionTypeSourceId]
 LEFT JOIN [Group] ag
@@ -4590,63 +4689,12 @@ WHERE 1 = 1" );
         [BlockAction]
         public BlockActionResult UpdateRequestStates( UpdateConnectionRequestStatesBag bag )
         {
-            // Decode every supplied Connection Request IdKey up front so a single bad key
-            // short-circuits before any DB work.
-            var decodedRequestIds = bag.ConnectionRequestIdKeys
-                .Select( key => Rock.Utility.IdHasher.Instance.GetId( key ) )
-                .ToList();
-
-            if ( decodedRequestIds.Any( id => !id.HasValue ) )
+            // Resolve, load, and authorize requests across one or more Connection Types in a
+            // single pass. The helper eager-loads ConnectionOpportunity.ConnectionType, which
+            // the placement logic below reads RequiresPlacementGroupToConnect off of.
+            if ( !CanEditSpecifiedConnectionRequests( bag.ConnectionTypeIdKeys, bag.ConnectionRequestIdKeys, out var connectionRequests, out var actionError ) )
             {
-                return ActionBadRequest( $"{ConnectionRequest.FriendlyTypeName} not found." );
-            }
-
-            var requestIds = decodedRequestIds.Select( id => id.Value ).Distinct().ToList();
-
-            // Resolve and validate every Connection Type the caller claims to be operating on.
-            // In standard (single-type) mode the bag does not supply ConnectionTypeIdKeys; the
-            // type is derived from page parameters. In multi-type mode (e.g. cross-type bulk
-            // actions from the My Connections view) the bag supplies one IdKey per type. The
-            // resulting set is used to scope the request query so a request from outside the
-            // caller's selection cannot be smuggled into the batch.
-            var allowedConnectionTypeIds = new HashSet<int>();
-            var connectionTypeIdKeys = bag.ConnectionTypeIdKeys?.Count > 0
-                ? bag.ConnectionTypeIdKeys
-                : new List<string> { null };
-
-            foreach ( var connectionTypeIdKey in connectionTypeIdKeys )
-            {
-                var connectionType = GetConnectionTypeCacheFromPageParameters( connectionTypeIdKey );
-                if ( connectionType == null )
-                {
-                    return ActionBadRequest( $"{Rock.Model.ConnectionType.FriendlyTypeName} not found." );
-                }
-                allowedConnectionTypeIds.Add( connectionType.Id );
-            }
-
-            // Load all requests in one query, scoped to the allowed types.
-            // ConnectionOpportunity.ConnectionType is eager-loaded because the per-type auth
-            // check below reads EnableRequestSecurity off the nav property, and the placement
-            // logic later in this action reads RequiresPlacementGroupToConnect off it as well.
-            var connectionRequests = new ConnectionRequestService( RockContext ).GetByIds( requestIds )
-                .Where( c => allowedConnectionTypeIds.Contains( c.ConnectionTypeId ) )
-                .Include( r => r.ConnectionOpportunity.ConnectionType )
-                .ToList();
-
-            if ( connectionRequests.Count != requestIds.Count )
-            {
-                return ActionBadRequest( $"{ConnectionRequest.FriendlyTypeName} not found." );
-            }
-
-            // EnableRequestSecurity is a per-Connection-Type flag, so the auth check must be
-            // run per type. The inner overload assumes a single-type batch and resolves the
-            // security model off the first request's type.
-            foreach ( var requestsForType in connectionRequests.GroupBy( r => r.ConnectionTypeId ) )
-            {
-                if ( !CanEditSpecifiedConnectionRequests( requestsForType.ToList(), out var actionError ) )
-                {
-                    return actionError;
-                }
+                return actionError;
             }
 
             if ( bag.ConnectionState == ConnectionState.FutureFollowUp && !bag.FollowUpDate.HasValue )
@@ -4701,20 +4749,15 @@ WHERE 1 = 1" );
         /// Activities are deleted alongside each request within a wrapped transaction.
         /// </summary>
         /// <param name="connectionRequestIdKeys">The list of IdKeys of the Connection Requests to delete.</param>
-        /// <param name="connectionTypeIdKey">An optional Connection Type IdKey used to resolve the Connection Type, in addition to the standard page parameter resolution.</param>
-        /// <returns>A Block Action Result indicating success if all requests were deleted. Returns a bad request result if the Connection Type cannot be resolved, the user lacks edit permissions, or any request cannot be deleted.</returns>
+        /// <param name="connectionTypeIdKeys">The list of Connection Type IdKeys the caller is operating against. Empty or null in standard single-type mode, where the type is derived from page parameters; one IdKey per type in multi-type mode (e.g. cross-type bulk actions from the My Connections view).</param>
+        /// <returns>A Block Action Result indicating success if all requests were deleted. Returns a bad request result if any Connection Type cannot be resolved, the user lacks edit permissions, or any request cannot be deleted.</returns>
         [BlockAction]
-        public BlockActionResult DeleteRequests( List<string> connectionRequestIdKeys, string connectionTypeIdKey = null )
+        public BlockActionResult DeleteRequests( List<string> connectionRequestIdKeys, List<string> connectionTypeIdKeys )
         {
-            ConnectionTypeCache connectionType = GetConnectionTypeCacheFromPageParameters( connectionTypeIdKey );
-            if ( connectionType == null )
-            {
-                return ActionBadRequest( $"{Rock.Model.ConnectionType.FriendlyTypeName} not found." );
-            }
-
-            var canEditRequest = CanEditSpecifiedConnectionRequests( connectionType, connectionRequestIdKeys, out var connectionRequests, out var actionError );
-
-            if ( !canEditRequest )
+            // Resolve, load, and authorize requests across one or more Connection Types in a
+            // single pass. In standard (single-type) mode connectionTypeIdKeys is empty/null
+            // and the type is derived from page parameters.
+            if ( !CanEditSpecifiedConnectionRequests( connectionTypeIdKeys, connectionRequestIdKeys, out var connectionRequests, out var actionError ) )
             {
                 return actionError;
             }
