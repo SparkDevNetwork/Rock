@@ -1,12 +1,14 @@
 ---
 title: Group Types
-last_updated: 2026-05-01
+last_updated: 2026-05-26
 related_files:
   - Rock/Model/Group/GroupType/GroupType.cs
   - Rock/Model/Group/GroupType/GroupType.Logic.cs
   - Rock/Model/Group/GroupType/GroupType.SaveHook.cs
   - Rock/Model/Group/GroupType/GroupTypeService.cs
   - Rock/Model/Group/GroupType/CheckinAreaPath.cs
+  - Rock/Web/Cache/Entities/GroupTypeCache.cs
+  - Rock/Model/Group/Group/Group.Logic.cs
   - Rock.Blocks/Group/GroupTypeDetail.cs
 ---
 
@@ -35,7 +37,7 @@ flowchart TD
     VBS --> EL
 ```
 
-There is also a separate, simpler "single inheritance" mechanism via `InheritedGroupTypeId`. A child GroupType can pick up its parent's requirements and member workflow triggers without copying them. This is shallow on purpose: one level deep, no transitive inheritance.
+There is also a separate inheritance mechanism via `InheritedGroupTypeId`. A child GroupType chains to a parent (and that parent can chain to its own parent) so attribute definitions flow up through the chain. Roles, requirements, and member workflow triggers do NOT inherit; they are scoped per-GroupType only.
 
 ## What You Need to Know
 
@@ -43,13 +45,13 @@ There is also a separate, simpler "single inheritance" mechanism via `InheritedG
 
 **The hierarchy is a graph, not a tree.** `ChildGroupTypes` and `ParentGroupTypes` are many-to-many. Any walk through the hierarchy must be cycle-aware. The application code does this; the database does not enforce it. If you write custom traversal logic, copy the visited-id-set pattern from `GroupTypeService.GetCheckinAreaDescendants`. Naive recursion will infinite-loop on a misconfigured hierarchy.
 
-**`InheritedGroupTypeId` is one level deep.** A child GroupType picks up requirements and member workflow triggers from its inherited parent, full stop. Do not assume transitive inheritance. If you need shared configuration across many GroupTypes, either point them all at the same parent or attach the requirement type to each directly.
+**`InheritedGroupTypeId` carries attribute definitions, not behavior.** `GroupTypeCache.GetInheritedGroupTypeIds()` walks the full chain with a cycle guard, so a leaf GroupType inherits its ancestors' Group attribute values (via `Group.LoadAttributes`) and GroupMember attribute definitions (surfaced in the read-only "Inherited" grids in `GroupTypeDetail` / `GroupDetail`). NOTHING else inherits: roles, GroupRequirements, GroupMemberWorkflowTriggers, capacity rules, schedule rules, chat settings, and every other GroupType flag are read off the immediate `GroupTypeCache` only. If you need shared roles or requirements across many GroupTypes, attach them to each directly.
 
 **`AdditionalSettingsJson` is an extensible escape hatch.** When plugin authors need to attach configuration without a schema migration, they put it here. There is no schema, no validation. Read defensively, write to your own well-known sub-key, and never assume what is or is not in the bag.
 
 **Editing a GroupType propagates to every Group of that type.** Changing terminology, scheduling policy, or attendance rules takes effect immediately for every Group through `GroupTypeCache`. There is no "draft" or "staging" state. Test on a non-production GroupType first if a change might affect a large population.
 
-**Requirements and workflow triggers can be inherited or attached directly.** A Group's requirement set is the union of its direct GroupRequirements and the requirements on its GroupType (and the inherited GroupType, if set). When debugging "why is this requirement firing", check all three layers.
+**A Group's requirement set is direct + immediate GroupType, not ancestors.** `Group.GetGroupRequirements()` ([Group.Logic.cs:558](../../Rock/Model/Group/Group/Group.Logic.cs)) joins on `(GroupId == this.Id) OR (GroupTypeId == this.GroupTypeId)`. Ancestor GroupType requirements do NOT apply at runtime, even though the GroupDetail "Inherited Group Requirements" grid lists them. The grid is informational; the runtime evaluator ignores ancestor requirements. When debugging "why is this requirement firing", check (a) the Group's own `GroupRequirements`, then (b) the immediate GroupType's. That's the complete set.
 
 **Family Groups are a GroupType, but they're treated as special in places.** The `Group.SaveHook` runs name-sanitization logic only for family GroupType rows. If you write code that distinguishes families from other groups, check the GroupType against the canonical Family GroupType Guid; do not invent your own marker.
 
@@ -67,17 +69,17 @@ A tree would force check-in templates to duplicate shared classroom GroupTypes u
 
 Walking a many-to-many graph in a stable display order is non-obvious. `CheckinAreaPath` builds a padded path string per node so a simple lexicographic sort produces depth-first traversal order. This is the implementation detail that makes check-in admin UIs render predictably.
 
-### Single-level `InheritedGroupTypeId`
+### Inheritance limited to attribute definitions
 
-Multi-level inheritance was rejected as too hard to reason about. The supported contract is one level: requirements and triggers from your direct inherited parent, nothing else.
+The `InheritedGroupTypeId` chain walks the full hierarchy at the cache layer (with a cycle guard), but only attribute definitions flow through. Behavior (roles, requirements, workflow triggers, all flags) is per-GroupType only. This keeps configuration predictable: "what does this Group do" is answered by the immediate GroupType plus the Group's own overrides, not by walking ancestors looking for surprises.
 
 ## Considered but Rejected
 
 ### Tree-shaped GroupType hierarchy
 Rejected. A tree would force duplication of shared classroom GroupTypes under each program. The directed graph keeps configuration DRY at the cost of cycle protection.
 
-### Transitive `InheritedGroupTypeId`
-Rejected. Multi-level inheritance made it impossible for an administrator to predict where a requirement or trigger would actually fire. One level is the supported contract.
+### Behavior inheritance through `InheritedGroupTypeId`
+Rejected. Letting roles, requirements, or workflow triggers flow up the chain would have made "why does this Group behave this way?" depend on chain depth and force every consumer to walk ancestors. Attribute inheritance is the only supported mechanism; behavior stays per-GroupType.
 
 ### Hard delete cascading through Groups
 Rejected. A GroupType with Groups attached refuses to delete by default. Forcing the user to archive or move the Groups first prevents cascading destruction across history, attendance, and peer-network references.
@@ -90,7 +92,7 @@ Rejected. A GroupType with Groups attached refuses to delete by default. Forcing
 
 - **Identity and display.** `IsSystem`, `Name`, `Description`, `Order`, `IconCssClass`, `GroupTypeColor`, `GroupTerm` (default `"Group"`), `GroupMemberTerm` (default `"Member"`), `AdministratorTerm`, `ShowInGroupList`, `ShowInNavigation`.
 - **Capabilities.** `AllowMultipleLocations`, `AllowAnyChildGroupType`, `AllowSpecificGroupMemberAttributes`, `EnableSpecificGroupRequirements`, `AllowGroupSync`, `AllowSpecificGroupMemberWorkflows`, `EnableGroupHistory`, `EnableGroupTag`, `IsIndexEnabled`, `EnableRSVP`, `IsCapacityRequired`, `IsConcurrentCheckInPrevented`.
-- **Hierarchy.** `InheritedGroupTypeId`, `DefaultGroupRoleId`. The InheritedGroupType lets a child type pick up requirements and member workflows.
+- **Hierarchy.** `InheritedGroupTypeId`, `DefaultGroupRoleId`. The `InheritedGroupType` chains a child GroupType to a parent for ATTRIBUTE inheritance only (see "Inheritance Chain Walking" below). Roles, requirements, and workflow triggers do NOT inherit.
 - **Attendance.** `TakesAttendance`, `AttendanceCountsAsWeekendService`, `SendAttendanceReminder`, `AttendanceRule`, `AlreadyEnrolledMatchingLogic`, `GroupCapacityRule`, `AttendancePrintTo`, `GroupAttendanceRequiresLocation`, `GroupAttendanceRequiresSchedule`.
 - **Location.** `LocationSelectionMode` (Location | Address | Point | Polygon | GroupMember), `EnableLocationSchedules`, plus the `LocationTypes` collection (`GroupTypeLocationType` rows).
 - **Scheduling.** `IsSchedulingEnabled`, `ScheduleConfirmationSystemCommunicationId`, `ScheduleReminderSystemCommunicationId`, `RSVPReminderSystemCommunicationId`, `RSVPReminderOffsetDays`, `ScheduleConfirmationEmailOffsetDays` (default 4), `ScheduleReminderEmailOffsetDays` (default 2), `ScheduleConfirmationLogic`, `ScheduleCancellationWorkflowTypeId`, `RequiresReasonIfDeclineSchedule`, `AllowedScheduleTypes`.
@@ -121,6 +123,32 @@ GroupType edits do not have the heavy member-cascade logic that `Group.SaveHook`
 - `Delete(GroupType)` ([line 251](../../Rock/Model/Group/GroupType/GroupTypeService.cs)). Calls `CanDelete` first; refuses when Groups exist.
 - `BulkDeleteGroupHistory(groupTypeId)` ([line 266](../../Rock/Model/Group/GroupType/GroupTypeService.cs)). Bulk delete `GroupHistorical` and `GroupMemberHistorical`.
 
+### Inheritance Chain Walking
+
+`GroupTypeCache.GetInheritedGroupTypeIds()` ([GroupTypeCache.cs:1070](../../Rock/Web/Cache/Entities/GroupTypeCache.cs)) walks the `InheritedGroupTypeId` chain from leaf to root and returns the list of GroupType IDs along the way. The cycle guard (`!groupTypeIds.Contains(groupType.Id)` at line 1077) prevents infinite loops on misconfigured data.
+
+The cache-based attribute walker `GetInheritedAttributesForQualifier` ([GroupTypeCache.cs:1013](../../Rock/Web/Cache/Entities/GroupTypeCache.cs)) builds on top of it for any consumer that needs the full inherited attribute set for a given EntityType + qualifier column. Obsidian blocks (`GroupTypeDetail`, `GroupDetail`) use the same shape via a local `WalkGroupTypeInheritancePath` helper with a `HashSet<int>` cycle guard ([Rock.Blocks/Group/GroupDetail.cs:2794](../../Rock.Blocks/Group/GroupDetail.cs)).
+
+**What walks the chain:**
+
+| Concern | Mechanism | Notes |
+|---|---|---|
+| Group attribute values + definitions | `Group.LoadAttributes()` via `GroupTypeCache.GetInheritedAttributesForQualifier()` | Resolves the full chain transparently; consumers don't think about it. |
+| GroupMember attribute definitions (inherited grid) | `BuildInheritedMemberAttributes` in `GroupTypeDetail` / `GroupDetail` blocks | Display only. Drives the read-only "Inherited" grid and reserved-key collision detection. |
+| GroupRequirement definitions (inherited grid) | `BuildInheritedGroupRequirements` in `GroupDetail` block | **Display only.** See runtime gap below. |
+| Date-typed Group attribute definitions | `BuildGroupDateAttributeOptions` in `GroupDetail` block | Feeds the requirement modal's "Due Date Group Attribute" dropdown. |
+
+**What does NOT walk the chain:**
+
+| Concern | Why | Source |
+|---|---|---|
+| `GroupTypeCache.Roles` | Queries `Where(r => r.GroupTypeId == Id)` | [GroupTypeCache.cs:668](../../Rock/Web/Cache/Entities/GroupTypeCache.cs) |
+| `Group.GetGroupRequirements()` | Joins on `(GroupId == this.Id) OR (GroupTypeId == this.GroupTypeId)` | [Group.Logic.cs:558](../../Rock/Model/Group/Group/Group.Logic.cs) |
+| `Group.GetGroupMemberWorkflowTriggers()` | Unions Group's own triggers with `this.GroupType.GroupMemberWorkflowTriggers` (immediate GroupType only) | [Group.Logic.cs:534](../../Rock/Model/Group/Group/Group.Logic.cs) |
+| Behavior flags (`AllowedScheduleTypes`, `EnableRSVP`, chat settings, capacity rules, attendance rules, etc.) | Read off the immediate `GroupTypeCache` | [GroupTypeCache.cs](../../Rock/Web/Cache/Entities/GroupTypeCache.cs) |
+
+**The runtime gap that bites people:** the GroupDetail block's "Inherited Group Requirements" grid lists requirements from ancestor GroupTypes for display, but `Group.GetGroupRequirements()` does NOT include them. To make an ancestor's requirement actually evaluate against a Group, attach it at the Group level (`GroupRequirement.GroupId = this.Group.Id`) or duplicate it onto the immediate GroupType. The inherited grid is a hint about the configuration, not a runtime enforcement surface.
+
 ### Affected Blocks and UI Surfaces
 
 - **Group Type List** ([Rock.Blocks/Group/GroupTypeList.cs](../../Rock.Blocks/Group/GroupTypeList.cs), [Obsidian](../../Rock.JavaScript.Obsidian.Blocks/src/Group/groupTypeList.obs)).
@@ -131,7 +159,7 @@ GroupType edits do not have the heavy member-cascade logic that `Group.SaveHook`
 
 - **`AdditionalSettingsJson`** ([line 880 of GroupType.cs](../../Rock/Model/Group/GroupType/GroupType.cs)). Extensible bag for plugin authors. No validation; consumers parse what they put in.
 - **Custom DefinedValue purposes.** `GroupTypePurposeValueId` references the `GROUPTYPE_PURPOSE` defined type. Custom purpose values can filter GroupTypes from custom blocks.
-- **Inherited group types.** Pointing several GroupTypes at a single inherited parent shares requirements and workflow triggers across them.
+- **Inherited group types.** Pointing several GroupTypes at a single inherited parent shares attribute definitions (Group and GroupMember) across them. Requirements and workflow triggers do not inherit; attach those directly to each GroupType that needs them.
 
 ### File Index
 
