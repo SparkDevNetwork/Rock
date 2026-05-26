@@ -525,6 +525,24 @@ namespace Rock.Web.Cache
         public int? RSVPReminderOffsetDays { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether the inactive reason field is shown when inactivating a group of this type.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the inactive reason field is shown; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableInactiveReason { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the inactive reason field is required when inactivating a group of this type.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the inactive reason field is required; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresInactiveReason { get; private set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether scheduling is enabled for groups of this type
         /// </summary>
         /// <value>
@@ -1243,6 +1261,8 @@ namespace Rock.Web.Cache
             EnableRSVP = groupType.EnableRSVP;
             RSVPReminderSystemCommunicationId = groupType.RSVPReminderSystemCommunicationId;
             RSVPReminderOffsetDays = groupType.RSVPReminderOffsetDays;
+            EnableInactiveReason = groupType.EnableInactiveReason;
+            RequiresInactiveReason = groupType.RequiresInactiveReason;
             IsSchedulingEnabled = groupType.IsSchedulingEnabled;
             ScheduleConfirmationSystemCommunicationId = groupType.ScheduleConfirmationSystemCommunicationId;
             ScheduleReminderSystemCommunicationId = groupType.ScheduleReminderSystemCommunicationId;

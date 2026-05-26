@@ -1,0 +1,394 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSection v-if="isSectionVisible"
+                    title="Group Sync Settings"
+                    icon="ti ti-refresh">
+        <ContentStack title="Configure Sync Rules" description="Define the rules used to sync group members from data views into this group." headerLocation="top">
+            <Grid :data="gridData"
+                  keyField="guid"
+                  itemTerm="Group Sync Rule"
+                  liveUpdates
+                  light
+                  @addItem="onAdd">
+                <TextColumn name="role" field="role" title="Role Name" />
+                <TextColumn name="dataView" field="dataView" title="Data View" />
+                <TextColumn name="interval" field="interval" title="Sync Interval" />
+                <DateTimeColumn name="lastSync" field="lastSync" title="Last Sync" />
+                <EditColumn @click="onEdit" />
+                <DeleteColumn @click="onDelete" />
+            </Grid>
+        </ContentStack>
+    </ContentSection>
+
+    <Modal v-model="isModalVisible"
+           title="Group Sync Settings"
+           saveText="Save"
+           cancelText="Cancel"
+           :onSave="onSave">
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <DataViewPicker label="Data View"
+                        v-model="theGroupSync.syncDataView"
+                        :entityTypeGuid="EntityType.Person"
+                        rules="required"
+                        help="The data view that determines who should be synced into this group." />
+
+        <DropDownList label="Assigned Role"
+                      v-model="groupTypeRoleValue"
+                      :items="availableRoleItems"
+                      rules="required"
+                      help="The role assigned to members added by this sync." />
+
+        <IntervalPicker label="Sync Frequency"
+                        v-model="syncIntervalValue"
+                        unitPlacement="above"
+                        help="How often this group sync runs. It cannot run more often than the Group Sync job." />
+
+        <InlineCheckBox label="Create Login During Sync"
+                        v-model="theGroupSync.addUserAccountsDuringSync"
+                        help="Creates a login for synced people who do not already have one." />
+
+        <DropDownList label="Welcome Communication"
+                      v-model="welcomeCommunicationValue"
+                      :items="systemCommunicationOptions ?? []"
+                      showBlankItem
+                      help="The communication sent when a person is added by sync." />
+
+        <DropDownList label="Exit Communication"
+                      v-model="exitCommunicationValue"
+                      :items="systemCommunicationOptions ?? []"
+                      showBlankItem
+                      help="The communication sent when a person is removed by sync." />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { formatScheduleInterval, intervalBagToMinutes, minutesToIntervalBag, useInvokeGroupDetailBlockAction } from "./utils.partial";
+    import Grid, { TextColumn, DateTimeColumn, EditColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { GroupSyncBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupSyncBag";
+    import { TimeIntervalBag } from "@Obsidian/ViewModels/Utility/timeIntervalBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { EntityKey } from "./types.partial";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { computed, PropType, ref } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import IntervalPicker from "@Obsidian/Controls/intervalPicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const props = defineProps({
+        /**
+         * The sync rules configured for this group.
+         */
+        groupSyncs: {
+            type: Array as PropType<GroupSyncBag[] | null>,
+            required: true
+        },
+
+        /**
+         * Group role dropdown options for the Assigned Role picker.
+         */
+        groupRoleOptions: {
+            type: Array as PropType<ListItemBag[] | null>,
+            default: () => [] as ListItemBag[]
+        },
+
+        /**
+         * Whether the current user has ADMINISTRATE auth on the group.
+         */
+        canAdministrate: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * Whether the active group type permits group sync rules.
+         */
+        allowGroupSync: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:groupSyncs", value: GroupSyncBag[]): void
+    }>();
+
+    // #region Values
+
+    const blockAction = useInvokeGroupDetailBlockAction();
+
+    const theGroupSync = ref<GroupSyncBag>(createNewGroupSync());
+    const isModalVisible = ref(false);
+    const errorMessage = ref<string | null>(null);
+
+    /**
+     * Lazily fetched on first modal open. Avoids a full SystemCommunication
+     * table scan on every initial edit-bag emit / GroupTypeId change.
+     */
+    const systemCommunicationOptions = ref<ListItemBag[] | null>(null);
+    let isLoadingSystemCommunicationOptions = false;
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Two-way proxy for the parent's `groupSyncs` v-model.
+     */
+    const syncs = computed({
+        get(): GroupSyncBag[] {
+            return props.groupSyncs ?? [];
+        },
+        set(value: GroupSyncBag[]) {
+            emit("update:groupSyncs", value);
+        }
+    });
+
+    /**
+     * Whether the entire section renders. Requires ADMINISTRATE on the
+     * group; visible when the group type allows sync or any existing
+     * syncs are present (legacy entries remain editable).
+     */
+    const isSectionVisible = computed<boolean>(() => {
+        return props.canAdministrate
+            && (props.allowGroupSync || syncs.value.length > 0);
+    });
+
+    /**
+     * Row data for the group sync rules grid.
+     */
+    const gridData = computed(() => {
+        return {
+            rows: syncs.value.map(s => ({
+                guid: s.guid,
+                role: s.groupTypeRole?.text ?? "",
+                dataView: s.syncDataView?.text ?? "",
+                interval: formatScheduleInterval(s.scheduleIntervalMinutes),
+                lastSync: s.lastRefreshDateTime
+            }))
+        };
+    });
+
+    /**
+     * Group role dropdown options for the Assigned Role picker, with any
+     * roles already mapped by another sync rule filtered out (the
+     * currently-editing rule's role is kept so it can stay selected).
+     */
+    const availableRoleItems = computed((): ListItemBag[] => {
+        const roleOptions = props.groupRoleOptions ?? [];
+        const editingGuid = theGroupSync.value.guid;
+        const usedRoleGuids = new Set(
+            syncs.value
+                .filter(s => s.guid !== editingGuid)
+                .map(s => s.groupTypeRole?.value)
+                .filter((v): v is string => !!v));
+
+        return roleOptions.filter(r => !r.value || !usedRoleGuids.has(r.value));
+    });
+
+    /**
+     * String proxy of `theGroupSync.groupTypeRole` for the Assigned Role dropdown.
+     */
+    const groupTypeRoleValue = computed({
+        get(): string {
+            return theGroupSync.value.groupTypeRole?.value ?? "";
+        },
+        set(value: string) {
+            const selected = (props.groupRoleOptions ?? []).find(o => o.value === value);
+            theGroupSync.value.groupTypeRole = selected ? selected : null;
+        }
+    });
+
+    /**
+     * `TimeIntervalBag` proxy of `theGroupSync.scheduleIntervalMinutes`
+     * for the IntervalPicker.
+     */
+    const syncIntervalValue = computed<TimeIntervalBag>({
+        get(): TimeIntervalBag {
+            return minutesToIntervalBag(theGroupSync.value.scheduleIntervalMinutes ?? 720);
+        },
+        set(value: TimeIntervalBag) {
+            theGroupSync.value.scheduleIntervalMinutes = intervalBagToMinutes(value);
+        }
+    });
+
+    /**
+     * String proxy of `theGroupSync.welcomeSystemCommunication` for the
+     * Welcome Communication dropdown.
+     */
+    const welcomeCommunicationValue = computed({
+        get(): string {
+            return theGroupSync.value.welcomeSystemCommunication?.value ?? "";
+        },
+        set(value: string) {
+            const selected = (systemCommunicationOptions.value ?? []).find(o => o.value === value);
+            theGroupSync.value.welcomeSystemCommunication = selected ? selected : null;
+        }
+    });
+
+    /**
+     * String proxy of `theGroupSync.exitSystemCommunication` for the
+     * Exit Communication dropdown.
+     */
+    const exitCommunicationValue = computed({
+        get(): string {
+            return theGroupSync.value.exitSystemCommunication?.value ?? "";
+        },
+        set(value: string) {
+            const selected = (systemCommunicationOptions.value ?? []).find(o => o.value === value);
+            theGroupSync.value.exitSystemCommunication = selected ? selected : null;
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Returns a fresh group sync bag with the modal's default values.
+     * Default interval of 720 minutes (12 hours) matches the Group Sync
+     * job's standard cadence.
+     */
+    function createNewGroupSync(): GroupSyncBag {
+        return {
+            guid: "",
+            groupTypeRole: null,
+            syncDataView: null,
+            welcomeSystemCommunication: null,
+            exitSystemCommunication: null,
+            addUserAccountsDuringSync: false,
+            scheduleIntervalMinutes: 720,
+            lastRefreshDateTime: null
+        };
+    }
+
+    /**
+     * Fetches the SystemCommunication dropdown options on first call and
+     * caches them for the rest of the page lifecycle. No-op after a
+     * successful load or while a fetch is already in flight.
+     */
+    async function ensureSystemCommunicationOptionsLoaded(): Promise<void> {
+        if (systemCommunicationOptions.value !== null || isLoadingSystemCommunicationOptions) {
+            return;
+        }
+
+        isLoadingSystemCommunicationOptions = true;
+        try {
+            const result = await blockAction.getGroupSyncOptions();
+            if (result.isSuccess && result.data) {
+                systemCommunicationOptions.value = result.data;
+            }
+            else {
+                systemCommunicationOptions.value = [];
+                errorMessage.value = result.errorMessage || "Unable to load system communication options.";
+            }
+        }
+        finally {
+            isLoadingSystemCommunicationOptions = false;
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Add button on the grid. Loads the modal's dropdown sources lazily and
+     * opens the modal with a blank sync rule.
+     */
+    async function onAdd(): Promise<void> {
+        errorMessage.value = null;
+        theGroupSync.value = createNewGroupSync();
+        await ensureSystemCommunicationOptionsLoaded();
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Edit button on a grid row. Loads the modal's dropdown sources lazily
+     * and opens the modal with a copy of the selected sync rule.
+     *
+     * @param guid The unique identifier of the sync to edit.
+     */
+    async function onEdit(guid: string): Promise<void> {
+        const selected = syncs.value.find(s => s.guid === guid);
+        if (!selected) {
+            return;
+        }
+        errorMessage.value = null;
+        theGroupSync.value = { ...selected };
+        await ensureSystemCommunicationOptionsLoaded();
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Delete button on a grid row. Checks server-side delete eligibility
+     * before removing the sync from the local list.
+     *
+     * @param guid The unique identifier of the sync to delete.
+     */
+    async function onDelete(guid: string): Promise<void> {
+        const result = await blockAction.canDeleteEntity({
+            entityKey: EntityKey.GroupSync,
+            entityGuid: guid
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage || "Unable to delete this group sync.";
+            return;
+        }
+
+        if (!result.data.canDelete) {
+            errorMessage.value = result.data.errorMessage || "This group sync cannot be deleted.";
+            return;
+        }
+
+        syncs.value = syncs.value.filter(s => s.guid !== guid);
+        errorMessage.value = null;
+    }
+
+    /**
+     * Save button on the sync modal. Blocks duplicates (same Assigned Role
+     * as another rule) and either updates or appends.
+     */
+    function onSave(): void {
+        const current = syncs.value;
+        const idx = current.findIndex(s => s.guid === theGroupSync.value.guid);
+
+        const newRoleGuid = theGroupSync.value.groupTypeRole?.value;
+        if (newRoleGuid) {
+            const duplicate = current.find(s =>
+                s.guid !== theGroupSync.value.guid
+                && s.groupTypeRole?.value === newRoleGuid);
+
+            if (duplicate) {
+                const roleName = theGroupSync.value.groupTypeRole?.text ?? "the selected role";
+                errorMessage.value = `A sync rule already exists for ${roleName}. Please choose a different role.`;
+                return;
+            }
+        }
+
+        if (idx !== -1) {
+            const updated = [...current];
+            updated.splice(idx, 1, theGroupSync.value);
+            syncs.value = updated;
+        }
+        else {
+            theGroupSync.value.guid = newGuid();
+            syncs.value = [...current, theGroupSync.value];
+        }
+
+        errorMessage.value = null;
+        isModalVisible.value = false;
+    }
+
+    // #endregion
+</script>
