@@ -117,6 +117,7 @@ export const ConfigurationComponent = defineComponent({
         const allowHtml = ref(false);
         const maxCharacters = ref<number | null>(null);
         const showCountdown = ref(false);
+        const firstNameField = ref(false);
 
         /**
          * Update the modelValue property if any value of the dictionary has
@@ -136,13 +137,15 @@ export const ConfigurationComponent = defineComponent({
             newValue[ConfigurationKey.AllowHtml] = asTrueFalseOrNull(allowHtml.value) ?? "False";
             newValue[ConfigurationKey.MaxCharacters] = maxCharacters.value?.toString() ?? "";
             newValue[ConfigurationKey.ShowCountDown] = asTrueFalseOrNull(showCountdown.value) ?? "False";
+            newValue[ConfigurationKey.IsFirstName] = asTrueFalseOrNull(firstNameField.value) ?? "False";
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationKey.IsPassword] !== (props.modelValue[ConfigurationKey.IsPassword] ?? "False")
                 || newValue[ConfigurationKey.NumberOfRows] !== (props.modelValue[ConfigurationKey.NumberOfRows] ?? "")
                 || newValue[ConfigurationKey.AllowHtml] !== (props.modelValue[ConfigurationKey.AllowHtml] ?? "False")
                 || newValue[ConfigurationKey.MaxCharacters] !== (props.modelValue[ConfigurationKey.MaxCharacters] ?? "")
-                || newValue[ConfigurationKey.ShowCountDown] !== (props.modelValue[ConfigurationKey.ShowCountDown] ?? "False");
+                || newValue[ConfigurationKey.ShowCountDown] !== (props.modelValue[ConfigurationKey.ShowCountDown] ?? "False")
+                || newValue[ConfigurationKey.IsFirstName] !== (props.modelValue[ConfigurationKey.IsFirstName] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -174,6 +177,7 @@ export const ConfigurationComponent = defineComponent({
             allowHtml.value = asBoolean(props.modelValue[ConfigurationKey.AllowHtml]);
             maxCharacters.value = toNumberOrNull(props.modelValue[ConfigurationKey.MaxCharacters]);
             showCountdown.value = asBoolean(props.modelValue[ConfigurationKey.ShowCountDown]);
+            firstNameField.value = asBoolean(props.modelValue[ConfigurationKey.IsFirstName]);
         }, {
             immediate: true
         });
@@ -184,23 +188,26 @@ export const ConfigurationComponent = defineComponent({
         watch(allowHtml, val => maybeUpdateConfiguration(ConfigurationKey.AllowHtml, asTrueFalseOrNull(val) ?? "False"));
         watch(maxCharacters, val => maybeUpdateConfiguration(ConfigurationKey.MaxCharacters, val?.toString() ?? ""));
         watch(showCountdown, val => maybeUpdateConfiguration(ConfigurationKey.ShowCountDown, asTrueFalseOrNull(val) ?? "False"));
+        watch(firstNameField, val => maybeUpdateConfiguration(ConfigurationKey.IsFirstName, asTrueFalseOrNull(val) ?? "False"));
 
         return {
             passwordField,
             numberOfRows,
             maxCharacters,
+            firstNameField,
             allowHtml,
-            showCountdown
+            showCountdown,
         };
     },
 
     template: `
 <div>
     <CheckBox v-model="passwordField" label="Password Field" help="When set, edit field will be masked." />
-    <NumberBox v-model="numberOfRows" label="Rows" help="The number of rows to display (note selecting a value greater than 1 will override the Password Field setting)." />
+    <NumberBox v-model="maxCharacters" label="Max Characters" help="The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text." />
+    <CheckBox v-model="showCountdown" label="Show Character Limit Countdown" help="When set, displays a countdown showing how many characters remain (for the Max Characters setting)." />
+    <CheckBox v-model="firstNameField" label="FirstName Field" help="When set, edit field will be validated as a first name." />
     <CheckBox v-model="allowHtml" label="Allow HTML" help="Controls whether server should prevent HTML from being entered in this field or not" />
-    <NumberBox v-model="maxCharacters" label="Max Characters" help="The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text" />
-    <CheckBox v-model="showCountdown" label="Show Character Limit Countdown" help="When set, displays a countdown showing how many characters remain (for the Max Characters setting)" />
+    <NumberBox v-model="numberOfRows" label="Rows" help="The number of rows to display (note selecting a value greater than 1 will override the Password Field setting)." />
 </div>
 `
 });
