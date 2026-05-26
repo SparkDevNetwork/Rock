@@ -1084,7 +1084,6 @@ namespace Rock.Blocks.Group
                 var bag = new GroupTypeGroupMemberWorkflowTriggerBag
                 {
                     Guid = t.Guid,
-                    Order = t.Order,
                     Name = t.Name,
                     IsActive = t.IsActive,
                     WorkflowType = t.WorkflowType?.ToListItemBag(),
@@ -1241,7 +1240,6 @@ namespace Rock.Blocks.Group
 
                 if ( existing.Name != bag.Name ||
                      existing.IsActive != bag.IsActive ||
-                     existing.Order != bag.Order ||
                      existing.WorkflowTypeId != ( bag.WorkflowType?.GetEntityId<WorkflowType>( RockContext ) ?? 0 ) ||
                      existing.TriggerType != bag.TriggerType ||
                      existing.TypeQualifier != BuildGroupMemberWorkflowTriggerTypeQualifier( bag ) )
@@ -1671,7 +1669,6 @@ namespace Rock.Blocks.Group
                                 trigger.GroupType = entity;
                                 trigger.Name = bag.Name;
                                 trigger.IsActive = bag.IsActive;
-                                trigger.Order = bag.Order;
                                 trigger.WorkflowTypeId = bag.WorkflowType?.GetEntityId<WorkflowType>( RockContext ) ?? 0;
                                 trigger.TriggerType = bag.TriggerType;
                                 trigger.TypeQualifier = BuildGroupMemberWorkflowTriggerTypeQualifier( bag );
