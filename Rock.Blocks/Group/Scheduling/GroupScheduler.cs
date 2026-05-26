@@ -278,7 +278,8 @@ namespace Rock.Blocks.Group.Scheduling
             List<int> groupIds;
             if ( HasPageParameter( PageParameterKey.GroupId ) || HasPageParameter( PageParameterKey.GroupIds ) )
             {
-                var groupId = this.PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+                var groupId = new GroupService( rockContext )
+                    .GetSelect( this.PageParameter( PageParameterKey.GroupId ), g => ( int? ) g.Id, !PageCache.Layout.Site.DisablePredictableIds );
                 groupIds = ( this.PageParameter( PageParameterKey.GroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
 
                 if ( groupId.HasValue && !groupIds.Contains( groupId.Value ) )

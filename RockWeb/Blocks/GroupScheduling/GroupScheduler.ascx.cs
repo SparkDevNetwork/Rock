@@ -453,7 +453,9 @@ btnCopyToClipboard.ClientID );
             if ( this.PageParameter( PageParameterKey.GroupIds ).IsNotNullOrWhiteSpace() || this.PageParameter( PageParameterKey.GroupId ).IsNotNullOrWhiteSpace() )
             {
                 var pageParameterGroupIds = ( this.PageParameter( PageParameterKey.GroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
-                var pageParameterGroupId = this.PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+
+                var pageParameterGroupId = new GroupService( new RockContext() )
+                    .GetSelect( this.PageParameter( PageParameterKey.GroupId ), g => ( int? ) g.Id, !PageCache.Layout.Site.DisablePredictableIds );
                 if ( pageParameterGroupId.HasValue )
                 {
                     // Disable the group picker if there is a singular group ID value in the query string AND

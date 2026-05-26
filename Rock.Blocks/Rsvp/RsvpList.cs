@@ -248,7 +248,7 @@ namespace Rock.Blocks.Rsvp
         protected override IQueryable<RsvpListBag> GetListQueryable( RockContext rockContext )
         {
             var groupId = PageParameter( PageParameterKey.GroupId );
-            var group = new GroupService( rockContext ).Get( groupId );
+            var group = new GroupService( rockContext ).Get( groupId, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( group == null )
             {
@@ -532,7 +532,7 @@ namespace Rock.Blocks.Rsvp
             var locationId = bag.LocationId;
             var scheduleId = bag.ScheduleId;
 
-            var group = new GroupService( RockContext ).Get( groupId );
+            var group = new GroupService( RockContext ).Get( groupId, !PageCache.Layout.Site.DisablePredictableIds );
 
             if(group == null )
             {

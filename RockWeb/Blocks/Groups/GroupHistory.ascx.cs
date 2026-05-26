@@ -72,7 +72,8 @@ namespace RockWeb.Blocks.Groups
         {
             if ( !Page.IsPostBack )
             {
-                int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull();
+                int? groupId = new GroupService( new RockContext() )
+                    .GetSelect( this.PageParameter( "GroupId" ), g => ( int? ) g.Id, !PageCache.Layout.Site.DisablePredictableIds );
                 if ( groupId.HasValue )
                 {
                     ShowDetail( groupId.Value );
