@@ -34,5 +34,11 @@ namespace Rock.Model.Connection.ConnectionType.Options
         /// If this is not set then the metrics will not be filtered by connection opportunity.
         /// </summary>
         public Guid? ConnectionOpportunityGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the connector to filter the metrics by.
+        /// If this is not set then the metrics will not be filtered by connection opportunity.
+        /// </summary>
+        public Guid? ConnectorPersonAliasGuid { get; set; }
     }
 }

@@ -496,6 +496,7 @@ namespace Rock.Model
             var rangeEnd = endDate.Date.AddDays( 1 );
             var campusGuid = options?.CampusGuid;
             var connectionOpportunityGuid = options?.ConnectionOpportunityGuid;
+            var connectorGuid = options?.ConnectorPersonAliasGuid;
 
             var query =
                 from cr in connectionTypeQuery
@@ -506,6 +507,9 @@ namespace Rock.Model
                                 || co.Guid == connectionOpportunityGuid.Value
                             )
                             .SelectMany( co => co.ConnectionRequests )
+                            .Where( cr =>
+                                !connectorGuid.HasValue
+                                || cr.ConnectorPersonAlias.Guid == connectorGuid.Value)
                     )
                 where cr.ModifiedDateTime.HasValue
                     && cr.ModifiedDateTime >= rangeStart

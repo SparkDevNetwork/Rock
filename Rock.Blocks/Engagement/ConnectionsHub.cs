@@ -30,6 +30,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Rock.AI.Classes.ChatCompletions;
 using static Rock.Model.ConnectionType.ConnectionTypeAdditionalSettings;
+using Rock.Model.Connection.ConnectionType.Options;
+using Rock.ViewModels.Blocks.Engagement.ConnectionOperationalSnapshot;
 
 namespace Rock.Blocks.Engagement
 {
@@ -179,6 +181,10 @@ namespace Rock.Blocks.Engagement
 
         protected Guid? SelectedConnector => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.SelectedConnector )
+            .AsGuidOrNull();
+
+        protected Guid? FilterConnectionType => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterConnectionType )
             .AsGuidOrNull();
 
         public PersonPreferenceCollection PersonPreferences
@@ -1213,6 +1219,45 @@ namespace Rock.Blocks.Engagement
             return value.IsNullOrWhiteSpace()
                 ? null
                 : Regex.Replace( value, @"\s*\[\d+\]\s*$", "" );
+        }
+
+        private CompletionMetricsBag GetCompletionMetrics()
+        {
+            var lastNDays = 28;
+            var preferences = GetBlockPersonPreferences();
+            var connectionOpportunityGuid = preferences.GetValue( string.Format( PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey, "my-connections" ) ).AsGuidOrNull();
+
+            var connectionTypeService = new ConnectionTypeService( RockContext );
+            var connectionTypeQry = connectionTypeService.Queryable().Where( ct => !FilterConnectionType.HasValue || ct.Guid == FilterConnectionType.Value );
+
+            var completionMetricsComparison = connectionTypeService
+                .GetConnectionRequestCompletionMetricsComparison(
+                    connectionTypeQry,
+                    RockDateTime.Today.AddDays( -lastNDays ),
+                    RockDateTime.Today,
+                    new ConnectionRequestCompletionMetricsQueryOptions
+                    {
+                        CampusGuid = RequestContext.GetContextEntity<Campus>()?.Guid,
+                        ConnectionOpportunityGuid = connectionOpportunityGuid,
+                        ConnectorPersonAliasGuid = SelectedConnector
+                    } )
+                .Select( c => new CompletionMetricsBag
+                {
+                    AverageCompletionDays = c.Current.AverageCompletionDays,
+                    AverageCompletionDaysDelta = c.AverageCompletionDaysDelta,
+
+                    RequestsCompletedCount = c.Current.RequestsCompletedCount,
+                    RequestsCompletedCountDelta = c.RequestsCompletedCountDelta,
+
+                    AverageResponsivenessDays = c.Current.AverageResponsivenessDays,
+                    AverageResponsivenessDaysDelta = c.AverageResponsivenessDaysDelta,
+
+                    TimelinessPercent = c.Current.TimelinessPercent,
+                    TimelinessPercentDelta = c.TimelinessPercentDelta
+                } )
+                .FirstOrDefault();
+
+            return completionMetricsComparison;
         }
 
         #endregion Helper Methods
@@ -3706,9 +3751,8 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
             ConnectionType connectionType;
             if ( IsMyConnectionsMode )
             {
-                var selectedConnectionType = this.PersonPreferences.GetValue( PreferenceKey.FilterConnectionType );
-                connectionType = selectedConnectionType.IsNotNullOrWhiteSpace()
-                    ? new ConnectionTypeService( RockContext ).Get( selectedConnectionType, !PageCache.Layout.Site.DisablePredictableIds )
+                connectionType = FilterConnectionType.HasValue
+                    ? new ConnectionTypeService( RockContext ).Get( FilterConnectionType.Value )
                     : null;
             }
             else
@@ -6390,6 +6434,14 @@ WHERE 1 = 1" );
         }
 
         #endregion Grid View Block Actions
+
+        [BlockAction]
+        public BlockActionResult GetSnapshotMetrics()
+        {
+            var completionMetrics = GetCompletionMetrics();
+
+            return ActionOk( completionMetrics );
+        }
 
         #region Communication Block Actions
 

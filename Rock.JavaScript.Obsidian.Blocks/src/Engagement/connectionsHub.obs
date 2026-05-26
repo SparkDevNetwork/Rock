@@ -2481,6 +2481,9 @@ i.disabled {
     function onSnapshotClick(): void {
         isSnapshotVisible.value = !isSnapshotVisible.value;
         // Fetch snapshot data on true.
+        if (isSnapshotVisible.value === true) {
+            getSnapshotMetrics();
+        }
     }
 
     /**
@@ -3342,6 +3345,14 @@ i.disabled {
     async function updateStateFromFlyout(bag: UpdateConnectionRequestStatesBag): Promise<void> {
         try {
             isFlyoutSaving.value = true;
+
+            if (isBulkAction.value) {
+                bag.connectionTypeIdKeys = distinctSelectedConnectionTypeIdKeys.value;
+            }
+            else {
+                bag.connectionTypeIdKeys = [activeRowConnectionTypeIdKey.value ?? ""];
+            }
+
             const errorMessage = await updateRequestStates(bag);
 
             if (!errorMessage) {
@@ -4477,6 +4488,17 @@ i.disabled {
         }
         else {
             console.error(result.errorMessage ?? "An error occurred while reordering the Connection Request.");
+        }
+    }
+
+    async function getSnapshotMetrics(): Promise<void> {
+        const result = await invokeBlockAction<number>("GetSnapshotMetrics");
+
+        if (result.isSuccess && result.data) {
+            console.log("got the data: ", result.data);
+        }
+        else {
+            console.error(result.errorMessage ?? "An unknown error occurred while fetching the snapshot metrics.");
         }
     }
 
