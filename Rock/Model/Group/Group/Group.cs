@@ -181,6 +181,15 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.BinaryFile"/> that contains the photo of the Group.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.BinaryFile"/> containing the photo of the Group.
+        /// </value>
+        [DataMember]
+        public int? PhotoId { get; set; }
+
+        /// <summary>
         /// Indicates this Group is a Security Role even though it isn't a SecurityRole Group Type.
         /// Note: Don't use this alone to determine if a Group is a security role group. Use <see cref="IsSecurityRoleOrSecurityGroupType()"/> to see if a Group is for a Security Role.
         /// </summary>
@@ -884,6 +893,15 @@ namespace Rock.Model
         public virtual BinaryFile ChatChannelAvatarBinaryFile { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that contains the photo of the Group.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.BinaryFile"/> containing the photo of the Group.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile Photo { get; set; }
+
+        /// <summary>
         /// Gets or sets the default Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source
         /// of <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/> (or if
         /// <see cref="GroupType.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value of
@@ -939,6 +957,7 @@ namespace Rock.Model
             this.HasOptional( p => p.InactiveReasonValue ).WithMany().HasForeignKey( p => p.InactiveReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RSVPReminderSystemCommunication ).WithMany().HasForeignKey( p => p.RSVPReminderSystemCommunicationId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ChatChannelAvatarBinaryFile ).WithMany().HasForeignKey( p => p.ChatChannelAvatarBinaryFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.GroupMemberRecordSourceValue ).WithMany().HasForeignKey( p => p.GroupMemberRecordSourceValueId ).WillCascadeOnDelete( false );
 
             // Tell EF that we never want archived groups. 
