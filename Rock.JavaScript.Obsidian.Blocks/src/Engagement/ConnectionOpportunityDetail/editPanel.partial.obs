@@ -88,7 +88,7 @@
         <ContentSection title="Connector Groups" icon="ti ti-users-group" :order="5">
             <ConnectorGroups v-model:connectorGroups="connectorGroups"
                              v-model:defaultConnectorsForCampus="defaultConnectorsForCampus"
-                             :campuses="campuses" />
+                             :campuses="connectorGroupCampuses" />
         </ContentSection>
 
         <ContentSection v-if="store.state.trailblazerMode" title="Workflows" icon="ti ti-settings-cog" :order="6">
@@ -222,6 +222,16 @@
 
     const hasAttributes = computed((): boolean => {
         return Object.keys(attributes.value).length > 0;
+    });
+
+    /**
+     * The campuses the Connector Groups partial should render Default Connector pickers for.
+     * Falls back to all active campuses if the user has no campuses selected on the opportunity.
+     */
+    const connectorGroupCampuses = computed(() => {
+        return campuses.value.length > 0
+            ? campuses.value
+            : (props.options.allActiveCampuses ?? []);
     });
 
     // Combined object for PlacementGroups partial (configs + groups)
