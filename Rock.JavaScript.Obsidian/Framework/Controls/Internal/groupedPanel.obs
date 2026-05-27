@@ -54,7 +54,7 @@
             <div v-if="isSelectedView || isSnapshotVisible">
                 <transition name="slide">
                     <div v-if="isSnapshotVisible">
-                        Snapshot data
+                        <slot name="snapshot" />
                     </div>
                 </transition>
                 <transition name="action-toolbar-slide">

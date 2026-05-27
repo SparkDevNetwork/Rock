@@ -1,0 +1,272 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="completion-metrics-grid">
+        <div v-for="tile in tiles"
+             :key="tile.label"
+             class="kpi-tile">
+            <div class="kpi-tile-header" v-ellipsis-tooltip>
+                {{ tile.label }}
+            </div>
+
+            <div class="kpi-tile-value" v-ellipsis-tooltip>
+                {{ tile.value }}
+            </div>
+
+            <div class="kpi-tile-footer" v-ellipsis-tooltip>
+                <span :style="{ color: tile.color }">{{ tile.difference || '-' }}</span> {{ footerSuffix }}
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.completion-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-medium);
+}
+
+@media (max-width: 1000px) {
+    .completion-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 500px) {
+    .completion-metrics-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+}
+
+.kpi-tile {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-large);
+
+    background: var(--color-interface-softest);
+    border-radius: var(--rounded-medium);
+}
+
+.kpi-tile-header {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-strong);
+    margin-bottom: var(--spacing-medium);
+}
+
+.kpi-tile-value {
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-xsmall);
+}
+
+.kpi-tile-footer {
+    font-size: var(--font-size-xsmall);
+    color: var(--color-interface-medium);
+}
+</style>
+
+<script setup lang="ts">
+    /**
+     * completionMetricsPanel.partial.obs - Renders the four connection completion metric tiles
+     * (Timeliness, Responsiveness, Requests Completed, Average Time to Complete) for the
+     * Connections Hub snapshot, each showing a current value and a color-coded delta versus
+     * the comparison period.
+     *
+     * Self-contained: the trend coloring, delta formatting, and ellipsis tooltip behavior are
+     * defined locally so this partial has no dependency on any other block's partials. This
+     * intentionally duplicates the equivalent display logic in the ConnectionOperationalSnapshot
+     * block rather than sharing a component.
+     */
+    import { computed, Directive, PropType } from "vue";
+    import { destroyTooltip, tooltip } from "@Obsidian/Utility/tooltip";
+    import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/completionMetricsBag";
+
+    const props = defineProps({
+        /**
+         * The completion metrics payload. When null or undefined the tiles render
+         * placeholder dashes.
+         */
+        metrics: {
+            type: Object as PropType<CompletionMetricsBag | null | undefined>,
+            default: null
+        },
+
+        /**
+         * Suffix text appended after each tile's signed delta (e.g. " vs. Previous 28 Days").
+         * Pass an empty string to suppress the comparative context.
+         */
+        footerSuffix: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    // Color tokens for the delta indicator. Strings are CSS variable references so they follow the theme.
+    const positiveColor = "var(--color-success-strong)";
+    const negativeColor = "var(--color-danger-strong)";
+    const neutralColor = "var(--color-interface-medium)";
+
+    type CompletionTile = {
+        label: string;
+        value: string;
+        difference: string;
+        color: string;
+    };
+
+    /** Formats a percentage delta for the tile footer. */
+    function formatDeltaPercent(deltaPercent: number): string {
+        if (deltaPercent > 0) {
+            return `+${deltaPercent.toLocaleString(undefined, { style: "percent" })}`;
+        }
+        else if (deltaPercent < 0) {
+            return deltaPercent.toLocaleString(undefined, { style: "percent" });
+        }
+        else {
+            return "No change";
+        }
+    }
+
+    /** Formats a decimal delta for the tile footer. */
+    function formatDeltaDecimal(deltaDecimal: number): string {
+        if (deltaDecimal > 0) {
+            return `+${deltaDecimal.toLocaleString(undefined, { style: "decimal", maximumFractionDigits: 1 })}`;
+        }
+        else if (deltaDecimal < 0) {
+            return deltaDecimal.toLocaleString(undefined, { style: "decimal", maximumFractionDigits: 1 });
+        }
+        else {
+            return "No change";
+        }
+    }
+
+    /** Returns the trend color for a metric where an increase is good. */
+    function getTrendColor(delta: number): string {
+        if (delta === 0) {
+            return neutralColor;
+        }
+        else if (delta > 0) {
+            return positiveColor;
+        }
+        else {
+            return negativeColor;
+        }
+    }
+
+    /** Returns the trend color for a metric where an increase is bad. */
+    function getTrendColorInverted(delta: number): string {
+        if (delta === 0) {
+            return neutralColor;
+        }
+        else if (delta > 0) {
+            return negativeColor;
+        }
+        else {
+            return positiveColor;
+        }
+    }
+
+    /** Formats a day count as "1 Day" or "N Days" (max 1 fraction digit). */
+    function formatDays(days: number): string {
+        return days === 1
+            ? "1 Day"
+            : `${days.toLocaleString(undefined, { style: "decimal", maximumFractionDigits: 1 })} Days`;
+    }
+
+    const tiles = computed<CompletionTile[]>(() => {
+        const metrics = props.metrics;
+
+        if (!metrics) {
+            return [
+                { label: "Timeliness", value: "-", difference: "", color: neutralColor },
+                { label: "Responsiveness (Rsp)", value: "-", difference: "", color: neutralColor },
+                { label: "Requests Completed", value: "-", difference: "", color: neutralColor },
+                { label: "Average Time to Complete", value: "-", difference: "", color: neutralColor }
+            ];
+        }
+
+        return [
+            {
+                label: "Timeliness",
+                value: metrics.timelinessPercent.toLocaleString(undefined, { style: "percent" }),
+                difference: formatDeltaPercent(metrics.timelinessPercentDelta),
+                color: getTrendColor(metrics.timelinessPercentDelta)
+            },
+            {
+                label: "Responsiveness (Rsp)",
+                value: formatDays(metrics.averageResponsivenessDays),
+                difference: formatDeltaDecimal(metrics.averageResponsivenessDaysDelta),
+                // For responsiveness, an increase is a negative trend.
+                color: getTrendColorInverted(metrics.averageResponsivenessDaysDelta)
+            },
+            {
+                label: "Requests Completed",
+                value: metrics.requestsCompletedCount.toLocaleString(),
+                difference: formatDeltaDecimal(metrics.requestsCompletedCountDelta),
+                color: getTrendColor(metrics.requestsCompletedCountDelta)
+            },
+            {
+                label: "Average Time to Complete",
+                value: formatDays(metrics.averageCompletionDays),
+                difference: formatDeltaDecimal(metrics.averageCompletionDaysDelta),
+                // For average time to complete, an increase is a negative trend.
+                color: getTrendColorInverted(metrics.averageCompletionDaysDelta)
+            }
+        ];
+    });
+
+    // Adds a tooltip to an element only when its content is truncated with an ellipsis.
+    function updateEllipsisTooltip(el: HTMLElement): void {
+        if (!el.style.whiteSpace) {
+            el.style.whiteSpace = "nowrap";
+        }
+
+        if (!el.style.overflow) {
+            el.style.overflow = "hidden";
+        }
+
+        if (!el.style.textOverflow) {
+            el.style.textOverflow = "ellipsis";
+        }
+
+        const isOverflowing = el.scrollWidth > el.clientWidth;
+        const text = el.textContent ?? "";
+        const currentTitle = el.getAttribute("data-original-title") ?? "";
+        const hasTooltip = currentTitle.length > 0;
+
+        if (isOverflowing) {
+            if (!hasTooltip || currentTitle !== text) {
+                el.setAttribute("data-original-title", text);
+                tooltip(el);
+            }
+        }
+        else if (hasTooltip) {
+            el.removeAttribute("data-original-title");
+            destroyTooltip(el);
+        }
+    }
+
+    const vEllipsisTooltip: Directive = {
+        mounted(el) {
+            updateEllipsisTooltip(el);
+
+            const resizeObserver = new ResizeObserver(() => updateEllipsisTooltip(el));
+            resizeObserver.observe(el);
+
+            const mutationObserver = new MutationObserver(() => updateEllipsisTooltip(el));
+            mutationObserver.observe(el, { characterData: true, childList: true, subtree: true });
+
+            el._ellipsisResizeObserver = resizeObserver;
+            el._ellipsisMutationObserver = mutationObserver;
+        },
+
+        updated(el) {
+            updateEllipsisTooltip(el);
+        },
+
+        unmounted(el) {
+            el._ellipsisResizeObserver?.disconnect();
+            el._ellipsisMutationObserver?.disconnect();
+        }
+    };
+</script>

@@ -60,6 +60,9 @@
                   :onSnapshotClick="isMyConnectionsView ? onSnapshotClick : false"
                   :isSnapshotVisible="isSnapshotVisible"
                   @cardMoved="onCardMoved">
+        <template #snapshot>
+            <Snapshot :metrics="snapshotMetrics" />
+        </template>
         <template #selectedActionToolbar>
             <div class="left-actions d-flex align-items-center gap-spacing-md">
                 <div class="d-flex align-items-center gap-spacing-tiny">
@@ -1083,6 +1086,8 @@ i.disabled {
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import GroupedPanel from "@Obsidian/Controls/Internal/groupedPanel.obs";
     import { GroupedGrid } from "@Obsidian/Controls/Internal/GroupedPanel/types.partial";
+    import Snapshot from "./ConnectionsHub/snapshot.partial.obs";
+    import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/completionMetricsBag";
     import { isNullOrWhiteSpace, pluralize, safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { tooltip } from "@Obsidian/Utility/tooltip";
@@ -1320,6 +1325,7 @@ i.disabled {
     const requestListErrorMessage = ref<string>("");
     const areRequestsLoading = ref<boolean>(true);
     const isSnapshotVisible = ref<boolean>(false);
+    const snapshotMetrics = ref<CompletionMetricsBag | null>(null);
 
     // Modal Configuration
     const modalErrorMessage = ref<string>("");
@@ -4492,10 +4498,10 @@ i.disabled {
     }
 
     async function getSnapshotMetrics(): Promise<void> {
-        const result = await invokeBlockAction<number>("GetSnapshotMetrics");
+        const result = await invokeBlockAction<CompletionMetricsBag>("GetSnapshotMetrics");
 
         if (result.isSuccess && result.data) {
-            console.log("got the data: ", result.data);
+            snapshotMetrics.value = result.data;
         }
         else {
             console.error(result.errorMessage ?? "An unknown error occurred while fetching the snapshot metrics.");
