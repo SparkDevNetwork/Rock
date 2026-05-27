@@ -42,9 +42,9 @@ using System.Reflection;
 // The AssemblyVersion number should change only when we are
 // making a breaking change and need the runtime binding to fail if it does not
 // match the correct version exactly.
-[assembly: AssemblyVersion( "18.3.2" )]
+[assembly: AssemblyVersion( "18.3.3" )]
 
-[assembly: AssemblyFileVersion( "18.3.2" )]
+[assembly: AssemblyFileVersion( "18.3.3" )]
 
 // This is the "official" product name that will be shown to people. 
 // It's shown in the SystemInfo details and perhaps the RockUpdate page.
