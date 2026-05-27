@@ -66,7 +66,21 @@ namespace Rock.Model
                     {
                         var rules = field.GetValidationRules( attributeCache.ConfigurationValues );
 
-                        StringValueValidator.Validate( Entity.Value, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+                        try
+                        {
+                            StringValueValidator.Validate( Entity.Value, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+                        }
+                        catch ( PropertyValidationException ex )
+                        {
+                            if ( DbContext.EnableStringValidation )
+                            {
+                                throw;
+                            }
+                            else
+                            {
+                                ExceptionLogService.LogException( new Exception( "Attribute value validation failed.", ex ) );
+                            }
+                        }
                     }
 
                     if ( field != null && (
