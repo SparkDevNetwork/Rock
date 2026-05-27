@@ -22,6 +22,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Security;
@@ -485,7 +486,7 @@ namespace Rock.Extension
         private void UpdateAttributes()
         {
             var type = this.GetType();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 Rock.Attribute.Helper.UpdateAttributes( type, EntityTypeCache.GetId( type.FullName ), rockContext );
                 this.LoadAttributes( rockContext );
