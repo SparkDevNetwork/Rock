@@ -1229,8 +1229,11 @@ namespace Rock.Blocks.Engagement
             var connectionTypeService = new ConnectionTypeService( RockContext );
             var connectionTypeQry = connectionTypeService.Queryable().Where( ct => !FilterConnectionType.HasValue || ct.Guid == FilterConnectionType.Value );
 
+            // Use the aggregate variant so that when FilterConnectionType is null and the queryable
+            // spans multiple ConnectionTypes, we get a single row that combines all of them rather
+            // than one arbitrary per-type row from .FirstOrDefault().
             var completionMetricsComparison = connectionTypeService
-                .GetConnectionRequestCompletionMetricsComparison(
+                .GetConnectionRequestCompletionMetricsAggregateComparison(
                     connectionTypeQry,
                     RockDateTime.Today.AddDays( -lastNDays ),
                     RockDateTime.Today,
