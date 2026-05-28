@@ -31,7 +31,6 @@ using System.Threading.Tasks;
 using Rock.AI.Classes.ChatCompletions;
 using static Rock.Model.ConnectionType.ConnectionTypeAdditionalSettings;
 using Rock.Model.Connection.ConnectionType.Options;
-using Rock.ViewModels.Blocks.Engagement.ConnectionOperationalSnapshot;
 
 namespace Rock.Blocks.Engagement
 {
@@ -1256,6 +1255,17 @@ namespace Rock.Blocks.Engagement
                     TimelinessPercentDelta = c.TimelinessPercentDelta
                 } )
                 .FirstOrDefault();
+
+            string dashboardTitle = "Connection Dashboard";
+
+            if ( SelectedConnector.HasValue )
+            {
+                var connectorPersonAlias = new PersonAliasService( RockContext ).GetInclude( SelectedConnector.Value, pa => pa.Person );
+                dashboardTitle = RequestContext.CurrentPerson.Id == connectorPersonAlias.PersonId ? "Your Connection Dashboard" : $"{connectorPersonAlias.Person.FullName.ToPossessive()} Connection Dashboard";
+            }
+
+            completionMetricsComparison ??= new CompletionMetricsBag();
+            completionMetricsComparison.DashboardTitle = dashboardTitle;
 
             return completionMetricsComparison;
         }

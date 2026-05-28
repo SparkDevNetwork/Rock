@@ -1087,7 +1087,7 @@ i.disabled {
     import GroupedPanel from "@Obsidian/Controls/Internal/groupedPanel.obs";
     import { GroupedGrid } from "@Obsidian/Controls/Internal/GroupedPanel/types.partial";
     import Snapshot from "./ConnectionsHub/snapshot.partial.obs";
-    import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/completionMetricsBag";
+    import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/completionMetricsBag";
     import { isNullOrWhiteSpace, pluralize, safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { tooltip } from "@Obsidian/Utility/tooltip";
@@ -3715,6 +3715,9 @@ i.disabled {
             let connectionTypeIdKey: string | null | undefined;
             if (isDockedPanelVisible.value) {
                 connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
+            }
+            else {
+                connectionTypeIdKey = activeRowConnectionTypeIdKey.value;
             }
 
             const result = await invokeBlockAction<ConnectionListGridUpdateBag>("ChangeRequestStatus", {

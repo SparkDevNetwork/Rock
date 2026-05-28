@@ -51,12 +51,12 @@
             </button>
         </template>
         <template #preBody>
-            <div v-if="isSelectedView || isSnapshotVisible">
-                <transition name="slide">
-                    <div v-if="isSnapshotVisible">
+            <div>
+                <TransitionVerticalCollapse>
+                    <div v-show="isSnapshotVisible">
                         <slot name="snapshot" />
                     </div>
-                </transition>
+                </TransitionVerticalCollapse>
                 <transition name="action-toolbar-slide">
                     <div v-if="isSelectedView" class="action-toolbar-slide">
                         <div class="action-toolbar-slide-inner">
@@ -170,6 +170,7 @@
     import ButtonDropDownList from "../buttonDropDownList.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { GroupedGrid } from "./GroupedPanel/types.partial";
+    import TransitionVerticalCollapse from "../transitionVerticalCollapse.obs";
 
     /** Items used by the view-mode toggle in the action toolbar. */
     type ViewModeItem = {

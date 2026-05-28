@@ -6,6 +6,7 @@
              class="kpi-tile">
             <div class="kpi-tile-header" v-ellipsis-tooltip>
                 {{ tile.label }}
+                <i class="ti ti-info-circle kpi-tile-help" v-tooltip="tile.help"></i>
             </div>
 
             <div class="kpi-tile-value" v-ellipsis-tooltip>
@@ -54,6 +55,11 @@
     margin-bottom: var(--spacing-medium);
 }
 
+.kpi-tile-help {
+    color: var(--color-interface-medium);
+    cursor: pointer;
+}
+
 .kpi-tile-value {
     font-size: var(--font-size-h3);
     font-weight: var(--font-weight-bold);
@@ -80,7 +86,8 @@
      */
     import { computed, Directive, PropType } from "vue";
     import { destroyTooltip, tooltip } from "@Obsidian/Utility/tooltip";
-    import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/completionMetricsBag";
+    import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/completionMetricsBag";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
 
     const props = defineProps({
         /**
@@ -110,6 +117,7 @@
     type CompletionTile = {
         label: string;
         value: string;
+        help: string;
         difference: string;
         color: string;
     };
@@ -178,10 +186,10 @@
 
         if (!metrics) {
             return [
-                { label: "Timeliness", value: "-", difference: "", color: neutralColor },
-                { label: "Responsiveness (Rsp)", value: "-", difference: "", color: neutralColor },
-                { label: "Requests Completed", value: "-", difference: "", color: neutralColor },
-                { label: "Average Time to Complete", value: "-", difference: "", color: neutralColor }
+                { label: "Timeliness", value: "-", help: "The percentage of completed requests that were finished on or before their due date during this period.", difference: "", color: neutralColor },
+                { label: "Responsiveness (Rsp)", value: "-", help: "The average number of days between when a request was submitted and when a connector first acted on it during this period.", difference: "", color: neutralColor },
+                { label: "Requests Completed", value: "-", help: "The total number of requests marked as completed during this period.", difference: "", color: neutralColor },
+                { label: "Average Time to Complete", value: "-", help: "The average number of days from request submission to completion, across all requests closed in this period.", difference: "", color: neutralColor }
             ];
         }
 
@@ -189,12 +197,14 @@
             {
                 label: "Timeliness",
                 value: metrics.timelinessPercent.toLocaleString(undefined, { style: "percent" }),
+                help: "The percentage of completed requests that were finished on or before their due date during this period.",
                 difference: formatDeltaPercent(metrics.timelinessPercentDelta),
                 color: getTrendColor(metrics.timelinessPercentDelta)
             },
             {
                 label: "Responsiveness (Rsp)",
                 value: formatDays(metrics.averageResponsivenessDays),
+                help: "The average number of days between when a request was submitted and when a connector first acted on it during this period.",
                 difference: formatDeltaDecimal(metrics.averageResponsivenessDaysDelta),
                 // For responsiveness, an increase is a negative trend.
                 color: getTrendColorInverted(metrics.averageResponsivenessDaysDelta)
@@ -202,12 +212,14 @@
             {
                 label: "Requests Completed",
                 value: metrics.requestsCompletedCount.toLocaleString(),
+                help: "The total number of requests marked as completed during this period.",
                 difference: formatDeltaDecimal(metrics.requestsCompletedCountDelta),
                 color: getTrendColor(metrics.requestsCompletedCountDelta)
             },
             {
                 label: "Average Time to Complete",
                 value: formatDays(metrics.averageCompletionDays),
+                help: "The average number of days from request submission to completion, across all requests closed in this period.",
                 difference: formatDeltaDecimal(metrics.averageCompletionDaysDelta),
                 // For average time to complete, an increase is a negative trend.
                 color: getTrendColorInverted(metrics.averageCompletionDaysDelta)

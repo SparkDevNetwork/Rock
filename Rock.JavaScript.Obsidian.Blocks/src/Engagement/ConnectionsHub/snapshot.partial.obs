@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="snapshot-container">
-        <div class="header">Your Connection Dashboard • <span class="subtext">Last 28 Days</span></div>
+        <div class="header">{{ metrics?.dashboardTitle }} • <span class="subtext">Last 28 Days</span></div>
         <CompletionMetricsPanel :metrics="metrics"
                                 footerSuffix=" vs. Previous 28 Days" />
     </div>
@@ -39,7 +39,7 @@
      * block rather than sharing a component.
      */
     import { PropType } from "vue";
-    import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOperationalSnapshot/completionMetricsBag";
+    import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/completionMetricsBag";
     import CompletionMetricsPanel from "./completionMetricsPanel.partial.obs";
 
     const props = defineProps({
