@@ -489,8 +489,9 @@ namespace RockWeb
                 return false;
             }
 
-            // SVGs are text can't be resized.
-            if ( mimeType == "image/svg+xml" )
+            // SVGs are text and can't be resized. WebP isn't supported by GDI+/ImageResizer
+            // on .NET Framework, so neither should be resized; stream the original bytes.
+            if ( mimeType == "image/svg+xml" || mimeType == "image/webp" )
             {
                 return false;
             }
