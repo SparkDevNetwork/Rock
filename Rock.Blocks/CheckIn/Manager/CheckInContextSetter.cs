@@ -103,7 +103,9 @@ namespace Rock.Blocks.CheckIn.Manager
 
         private static class PageParameterKey
         {
+            public const string CampusId = "CampusId";
             public const string LocationId = "LocationId";
+            public const string ScheduleId = "ScheduleId";
         }
 
         #endregion
@@ -199,12 +201,23 @@ namespace Rock.Blocks.CheckIn.Manager
                 IsRedirectRequired = PageCache.Guid != new Guid( "ba04bf01-5244-4637-b12d-7a962d2a9e77" ),
             };
 
-            InitializeCampusOptions( options );
+            var context = GetContextEntities();
 
-            var location = GetContextLocation();
-            options.SelectedLocation = location?.ToListItemBag();
-            options.SelectedSchedule = RequestContext.GetContextEntity<Schedule>()?.ToListItemBag();
-            options.Schedules = location != null ? GetScheduleBagsByLocation( location.Guid ) : new List<ListItemBag>();
+            if ( context.Redirected )
+            {
+                // If the context entities had to be updated based on the query
+                // string, then we need to return early since a redirect has been
+                // triggered and the options will be reloaded on the next request.
+                _options = options;
+
+                return options;
+            }
+
+            InitializeCampusOptions( options, context.Campus );
+
+            options.SelectedLocation = context.Location?.ToListItemBag();
+            options.SelectedSchedule = context.Schedule?.ToListItemBag();
+            options.Schedules = context.Location != null ? GetScheduleBagsByLocation( context.Location.Guid ) : new List<ListItemBag>();
 
             _options = options;
 
@@ -215,7 +228,8 @@ namespace Rock.Blocks.CheckIn.Manager
         /// Initializes the campus selections in <paramref name="options"/>.
         /// </summary>
         /// <param name="options">The options to be updated.</param>
-        private void InitializeCampusOptions( CheckInContextSetterOptionsBag options )
+        /// <param name="currentCampus">The current campus context.</param>
+        private void InitializeCampusOptions( CheckInContextSetterOptionsBag options, Campus currentCampus )
         {
             var includeInactive = GetAttributeValue( AttributeKey.IncludeInactiveCampuses ).AsBoolean();
             var defaultCampusGuid = GetAttributeValue( AttributeKey.DefaultCampus ).AsGuidOrNull();
@@ -235,8 +249,6 @@ namespace Rock.Blocks.CheckIn.Manager
                 .Where( id => id.HasValue )
                 .Select( id => id.Value )
                 .ToList();
-
-            var currentCampus = RequestContext.GetContextEntity<Campus>();
 
             var campusList = CampusCache.All( includeInactive )
                 .Where( c => !campusTypeIds.Any() || ( c.CampusTypeValueId.HasValue && campusTypeIds.Contains( c.CampusTypeValueId.Value ) ) )
@@ -290,7 +302,7 @@ namespace Rock.Blocks.CheckIn.Manager
         {
             if ( campus != null )
             {
-                RequestContext.SetContextEntity( campus );
+                RequestContext.SetContextEntity( campus, pageSpecific: false );
             }
             else
             {
@@ -320,11 +332,87 @@ namespace Rock.Blocks.CheckIn.Manager
         }
 
         /// <summary>
+        /// Gets the context entities based on the current query string
+        /// parameters, and updates the context accordingly. If any of the
+        /// query string parameters are not in sync with the current context,
+        /// then the context will be updated and a redirect will be triggered
+        /// to remove the out-of-sync parameters.
+        /// </summary>
+        /// <returns>A tuple containing the current context entities and a flag indicating if a redirect was triggered.</returns>
+        private (Campus Campus, Location Location, Schedule Schedule, bool Redirected) GetContextEntities()
+        {
+            var redirectRequired = false;
+
+            var campus = GetContextCampus( ref redirectRequired );
+            var location = GetContextLocation( ref redirectRequired );
+            var schedule = GetContextSchedule( ref redirectRequired );
+
+            if ( redirectRequired )
+            {
+                // We also need to redirect back to the current page without
+                // the any of the query parameters so that everything on the
+                // page is in sync with the new context values. This prevents
+                // block actions from picking up stale query string values
+                // that might override what was set in the dropdowns.
+                var queryParams = RequestContext.QueryString.ToSimpleQueryStringDictionary();
+
+                queryParams.Remove( PageParameterKey.CampusId );
+                queryParams.Remove( PageParameterKey.LocationId );
+                queryParams.Remove( PageParameterKey.ScheduleId );
+
+                RequestContext.Response.RedirectToUrl( this.GetCurrentPageUrl( queryParams, skipExistingParameters: true ) );
+            }
+
+            return (campus, location, schedule, redirectRequired);
+        }
+
+        /// <summary>
+        /// Get the context campus, taking into account that the query string
+        /// might have provided a custom campus that should be used instead.
+        /// </summary>
+        /// <param name="redirectRequired">This will be set to <c>true</c> if a redirect is required to fix the query string.</param>
+        /// <returns>An instance of <see cref="Campus"/> or <c>null</c>.</returns>
+        private Campus GetContextCampus( ref bool redirectRequired )
+        {
+            var campus = RequestContext.GetContextEntity<Campus>();
+            var campusIdParameter = RequestContext.GetPageParameter( PageParameterKey.CampusId );
+
+            if ( campusIdParameter.IsNullOrWhiteSpace() )
+            {
+                return campus;
+            }
+
+            int? campusId = IdHasher.Instance.GetId( campusIdParameter );
+
+            if ( !campusId.HasValue && !PageCache.Layout.Site.DisablePredictableIds )
+            {
+                campusId = campusIdParameter.AsIntegerOrNull();
+            }
+
+            if ( !campusId.HasValue )
+            {
+                return campus;
+            }
+
+            campus = new CampusService( RockContext ).Get( campusId.Value );
+
+            if ( campus != null )
+            {
+                RequestContext.SetContextEntity( campus, pageSpecific: false );
+            }
+
+            redirectRequired = true;
+
+            return campus;
+        }
+
+        /// <summary>
         /// Get the context location, taking into account that the query string
         /// might have provided a custom location that should be used instead.
         /// </summary>
+        /// <param name="redirectRequired">This will be set to <c>true</c> if a redirect is required to fix the query string.</param>
         /// <returns>An instance of <see cref="Location"/> or <c>null</c>.</returns>
-        private Location GetContextLocation()
+        private Location GetContextLocation( ref bool redirectRequired )
         {
             var location = RequestContext.GetContextEntity<Location>();
             var locationIdParameter = RequestContext.GetPageParameter( PageParameterKey.LocationId );
@@ -353,15 +441,49 @@ namespace Rock.Blocks.CheckIn.Manager
                 RequestContext.SetContextEntity( location, pageSpecific: false );
             }
 
-            // We also need to redirect back to the current page without
-            // the LocationId query parameter so that everything on the
-            // page is in sync with the new location context.
-            var queryParams = RequestContext.QueryString.ToSimpleQueryStringDictionary();
-            queryParams.Remove( PageParameterKey.LocationId );
-
-            RequestContext.Response.RedirectToUrl( this.GetCurrentPageUrl( queryParams, skipExistingParameters: true ) );
+            redirectRequired = true;
 
             return location;
+        }
+
+        /// <summary>
+        /// Get the context schedule, taking into account that the query string
+        /// might have provided a custom schedule that should be used instead.
+        /// </summary>
+        /// <param name="redirectRequired">This will be set to <c>true</c> if a redirect is required to fix the query string.</param>
+        /// <returns>An instance of <see cref="Schedule"/> or <c>null</c>.</returns>
+        private Schedule GetContextSchedule( ref bool redirectRequired )
+        {
+            var schedule = RequestContext.GetContextEntity<Schedule>();
+            var scheduleIdParameter = RequestContext.GetPageParameter( PageParameterKey.ScheduleId );
+
+            if ( scheduleIdParameter.IsNullOrWhiteSpace() )
+            {
+                return schedule;
+            }
+
+            int? scheduleId = IdHasher.Instance.GetId( scheduleIdParameter );
+
+            if ( !scheduleId.HasValue && !PageCache.Layout.Site.DisablePredictableIds )
+            {
+                scheduleId = scheduleIdParameter.AsIntegerOrNull();
+            }
+
+            if ( !scheduleId.HasValue )
+            {
+                return schedule;
+            }
+
+            schedule = new ScheduleService( RockContext ).Get( scheduleId.Value );
+
+            if ( schedule != null )
+            {
+                RequestContext.SetContextEntity( schedule, pageSpecific: false );
+            }
+
+            redirectRequired = true;
+
+            return schedule;
         }
 
         #endregion
