@@ -41,10 +41,10 @@ namespace Rock.Configuration
         public DatabasePlatform Platform { get; private set; }
 
         /// <inheritdoc/>
-        public bool IsReadCommittedSnapshotEnabled { get; private set; }
+        public bool IsReadCommittedSnapshotEnabled => GetSnapshotSettings().IsReadCommittedSnapshotEnabled;
 
         /// <inheritdoc/>
-        public bool IsSnapshotIsolationAllowed { get; private set; }
+        public bool IsSnapshotIsolationAllowed => GetSnapshotSettings().IsSnapshotIsolationAllowed;
 
         /// <inheritdoc/>
         public string VersionNumber { get; private set; }
@@ -53,13 +53,13 @@ namespace Rock.Configuration
         public string Version { get; private set; }
 
         /// <inheritdoc/>
-        public string Edition { get; private set; }
+        public string Edition => GetServiceObjectiveInfo().Edition;
 
         /// <inheritdoc/>
-        public string RecoveryModel { get; private set; }
+        public string RecoveryModel => GetRecoveryModel();
 
         /// <inheritdoc/>
-        public string ServiceObjective { get; private set; }
+        public string ServiceObjective => GetServiceObjectiveInfo().ServiceObjective;
 
         /// <inheritdoc/>
         public string DatabaseServerOperatingSystem { get; private set; }
@@ -71,7 +71,7 @@ namespace Rock.Configuration
         public string DatabaseName { get; private set; }
 
         /// <inheritdoc/>
-        public int CompatibilityLevel { get; private set; }
+        public int CompatibilityLevel => GetCompatibilityLevel();
 
         #endregion
 
@@ -99,10 +99,6 @@ namespace Rock.Configuration
             }
 
             PopulatePlatformAndVersionInfo();
-            PopulateSnapshotSettings();
-            PopulateCompatibilityLevel();
-            PopulateServiceObjectiveInfo();
-            PopulateRecoveryModel();
         }
 
         #endregion
@@ -222,7 +218,7 @@ SELECT SERVERPROPERTY('productversion'), @@Version;
         /// <summary>
         /// Populates the snapshot settings from the database.
         /// </summary>
-        private void PopulateSnapshotSettings()
+        private (bool IsSnapshotIsolationAllowed, bool IsReadCommittedSnapshotEnabled) GetSnapshotSettings()
         {
             // Get database snapshot isolation details.
             try
@@ -236,27 +232,23 @@ FROM   sys.databases WHERE [name] = '{0}'
 
                 var reader = GetDataReader( sql, CommandType.Text, null );
 
-                if ( reader != null )
+                if ( reader != null && reader.Read() )
                 {
-                    while ( reader.Read() )
-                    {
-                        IsSnapshotIsolationAllowed = reader[0].ToStringSafe().AsBoolean();
-                        IsReadCommittedSnapshotEnabled = reader[1].ToStringSafe().AsBoolean();
-                    }
+                    return (reader[0].ToStringSafe().AsBoolean(), reader[1].ToStringSafe().AsBoolean());
                 }
+
+                return (false, false);
             }
             catch
             {
-                IsSnapshotIsolationAllowed = false;
-                IsReadCommittedSnapshotEnabled = false;
+                return (false, false);
             }
-
         }
 
         /// <summary>
         /// Populates the compatibility level property.
         /// </summary>
-        private void PopulateCompatibilityLevel()
+        private int GetCompatibilityLevel()
         {
             try
             {
@@ -268,24 +260,24 @@ WHERE  name = DB_NAME()
 
                 var reader = GetDataReader( sql, CommandType.Text, null );
 
-                if ( reader != null )
+                if ( reader != null && reader.Read() )
                 {
-                    reader.Read();
-
-                    CompatibilityLevel = reader.GetValue( 0 ).ToString().AsInteger();
+                    return reader.GetValue( 0 ).ToString().AsInteger();
                 }
+
+                return 0;
             }
             catch
             {
                 // Ignore errors and continue.
-                CompatibilityLevel = 0;
+                return 0;
             }
         }
 
         /// <summary>
         /// Populates the service objective property.
         /// </summary>
-        private void PopulateServiceObjectiveInfo()
+        private (string Edition, string ServiceObjective) GetServiceObjectiveInfo()
         {
             try
             {
@@ -295,11 +287,9 @@ WHERE  name = DB_NAME()
 
                     var reader = GetDataReader( sql, CommandType.Text, null );
 
-                    if ( reader != null )
+                    if ( reader != null && reader.Read() )
                     {
-                        reader.Read();
-
-                        Edition = reader.GetValue( 0 ).ToString();
+                        return (reader.GetValue( 0 ).ToString(), null);
                     }
                 }
                 else if ( Platform == DatabasePlatform.AzureSql )
@@ -316,28 +306,22 @@ WHERE d.name = '<db_name>';
 
                     var reader = GetDataReader( sql, CommandType.Text, null );
 
-                    if ( reader != null )
+                    if ( reader != null && reader.Read() )
                     {
-                        reader.Read();
-
-                        Edition = reader.GetValue( 0 ).ToString();
-                        ServiceObjective = reader.GetValue( 1 ).ToString();
-
+                        return (reader.GetValue( 0 ).ToString(), reader.GetValue( 1 ).ToString());
                     }
                 }
-                else
-                {
-                    Edition = "(unknown)";
-                }
+
+                return ("(unknown)", null);
             }
             catch
             {
                 // Ignore errors and continue.
-                Edition = "#ERROR#";
+                return ("#ERROR#", null);
             }
         }
 
-        private void PopulateRecoveryModel()
+        private string GetRecoveryModel()
         {
             try
             {
@@ -349,17 +333,17 @@ WHERE  name = DB_NAME()
 
                 var reader = GetDataReader( sql, CommandType.Text, null );
 
-                if ( reader != null )
+                if ( reader != null && reader.Read() )
                 {
-                    reader.Read();
-
-                    RecoveryModel = reader.GetValue( 0 ).ToString();
+                    return reader.GetValue( 0 ).ToString();
                 }
+
+                return "#ERROR#";
             }
             catch
             {
                 // Ignore errors and continue.
-                RecoveryModel = "#ERROR#";
+                return "#ERROR#";
             }
         }
 
