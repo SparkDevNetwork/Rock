@@ -37,9 +37,28 @@ export const EditComponent = defineComponent({
         // The selected content channel configuration value.
         const contentChannelGuid = computed(() => props.configurationValues[ConfigurationKey.ContentChannel]);
 
+        /**
+         * Safely parses the model value into a ListItemBag. The value is normally
+         * a serialized ListItemBag, but it can be a plain string (e.g. a legacy
+         * value or a view-formatted title that isn't valid JSON), in which case
+         * it is treated as no selection rather than throwing.
+         */
+        function parseModelValue(): ListItemBag | null {
+            if (!props.modelValue) {
+                return null;
+            }
+
+            try {
+                return JSON.parse(props.modelValue) as ListItemBag;
+            }
+            catch {
+                return null;
+            }
+        }
+
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {
-            updateRefValue(internalValue, props.modelValue ? JSON.parse(props.modelValue) : null);
+            updateRefValue(internalValue, parseModelValue());
         }, {
             immediate: true
         });
