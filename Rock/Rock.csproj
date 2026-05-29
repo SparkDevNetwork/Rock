@@ -1914,6 +1914,7 @@
     <Compile Include="Reporting\GetQueryableOptions.cs" />
     <Compile Include="Reporting\IDataViewDefinition.cs" />
     <Compile Include="Reporting\IDataViewFilterDefinition.cs" />
+    <Compile Include="Security\AttributeValueValidationException.cs" />
     <Compile Include="Security\Authentication\Credential\CredentialAuthenticationOptions.cs" />
     <Compile Include="Security\Authentication\ExternalRedirect\ExternalRedirectAuthenticationResult.cs" />
     <Compile Include="Security\Authentication\ExternalRedirect\ExternalRedirectAuthenticationOptions.cs" />

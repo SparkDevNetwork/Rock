@@ -74,11 +74,15 @@ namespace Rock.Model
                         {
                             if ( DbContext.EnableStringValidation )
                             {
-                                throw;
+                                throw new AttributeValueValidationException( attributeCache, Entity.EntityId ?? 0, ex.Reason, null );
                             }
                             else
                             {
-                                ExceptionLogService.LogException( new Exception( "Attribute value validation failed.", ex ) );
+                                // captures the full current call stack, all callers included
+                                var stack = new System.Diagnostics.StackTrace( true ).ToString();
+                                var ex2 = new AttributeValueValidationException( attributeCache, Entity.EntityId ?? 0, ex.Reason, stack );
+
+                                ExceptionLogService.LogException( ex2 );
                             }
                         }
                     }
