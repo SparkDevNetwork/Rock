@@ -737,9 +737,10 @@ namespace Rock.Model
         /// <summary>
         /// Sends the schedule confirmation communication.
         /// <para>
-        /// The caller of this method is responsible for calling SaveChanges() on the RockContext in order
-        /// to save the Attendance.ScheduleConfirmationSent values in the database, for those records having
-        /// a successfully-sent confirmation communication.
+        /// As of Rock 19.1, this overload persists <see cref="Attendance.ScheduleConfirmationSent"/> per
+        /// successful send (rather than waiting for the caller's terminal SaveChanges) by delegating to
+        /// the IProgress-aware overload with a null progress callback. Calling SaveChanges again after
+        /// this method returns is harmless but no longer required for confirmation-sent tracking.
         /// </para>
         /// </summary>
         /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
@@ -751,6 +752,33 @@ namespace Rock.Model
         /// <returns>An object detailing the outcome of the send attempt.</returns>
         [RockInternal( "1.16.1" )]
         public SendMessageResult SendScheduleConfirmationCommunication( IQueryable<Attendance> sendConfirmationAttendancesQuery, bool includePeopleMissingContactInfo )
+        {
+            return SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery, includePeopleMissingContactInfo, null );
+        }
+
+        /// <summary>
+        /// Sends the schedule confirmation communication and optionally reports per-individual progress through
+        /// the supplied <see cref="Rock.Utility.TaskActivityProgress"/> reporter.
+        /// <para>
+        /// This overload persists <see cref="Attendance.ScheduleConfirmationSent"/> per successful send so a mid-loop
+        /// crash (or proxy timeout that disconnects the originating client) cannot cause duplicate sends on a retry.
+        /// </para>
+        /// </summary>
+        /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
+        /// <param name="includePeopleMissingContactInfo">
+        /// Whether to include people who are missing contact info in this send attempt. Include these people if you
+        /// want this method to return specific warnings about which people are missing the email address or phone
+        /// number needed to send their confirmation, according to the specified communication preferences.
+        /// </param>
+        /// <param name="progress">
+        /// Optional progress reporter. Each successful send calls <see cref="Rock.Utility.TaskActivityProgress.ReportProgressUpdate(long, long, string)"/>
+        /// with the running count and the individual's name, and each new error string calls
+        /// <see cref="Rock.Utility.TaskActivityProgress.LogMessage(string)"/>. Pass null to skip reporting (e.g. for the legacy
+        /// synchronous block action).
+        /// </param>
+        /// <returns>An object detailing the outcome of the send attempt.</returns>
+        [RockInternal( "19.1" )]
+        public SendMessageResult SendScheduleConfirmationCommunication( IQueryable<Attendance> sendConfirmationAttendancesQuery, bool includePeopleMissingContactInfo, Rock.Utility.TaskActivityProgress progress )
         {
             sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery
                 .Where( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId.HasValue );
@@ -839,7 +867,7 @@ namespace Rock.Model
                     Attendances = s.ToList()
                 } );
 
-            var sendMessageResults = SendSystemCommunications( sendConfirmationIndividuals, ( attendance ) => attendance.ScheduleConfirmationSent = true );
+            var sendMessageResults = SendSystemCommunications( sendConfirmationIndividuals, ( attendance ) => attendance.ScheduleConfirmationSent = true, saveAfterEachIndividual: true, progress: progress );
 
             // group messages that are exactly the same and put a count of those in the message
             sendMessageResults.Errors = sendMessageResults.Errors.GroupBy( a => a ).Select( s => s.Count() > 1 ? $"{s.Key}  ({s.Count()})" : s.Key ).ToList();
@@ -954,13 +982,19 @@ namespace Rock.Model
             return sendMessageResults;
         }
 
-        private SendMessageResult SendSystemCommunications( IEnumerable<SendSystemCommunicationIndividual> sendSystemCommunicationIndividuals, Action<Attendance> updateAttendanceRecord )
+        private SendMessageResult SendSystemCommunications( IEnumerable<SendSystemCommunicationIndividual> sendSystemCommunicationIndividuals, Action<Attendance> updateAttendanceRecord, bool saveAfterEachIndividual = false, Rock.Utility.TaskActivityProgress progress = null )
         {
             var communicationMap = new Dictionary<int, SystemCommunication>();
             var rockContext = this.Context as RockContext;
             var sendMessageResults = new SendMessageResult();
 
-            foreach ( var individualNotification in sendSystemCommunicationIndividuals )
+            // Materialize the list so we can report a meaningful TotalCount without
+            // re-enumerating an upstream query.
+            var individuals = sendSystemCommunicationIndividuals.ToList();
+            var totalCount = individuals.Count;
+            var processedCount = 0;
+
+            foreach ( var individualNotification in individuals )
             {
                 SystemCommunication communicationMessage = null;
                 if ( !communicationMap.TryGetValue( individualNotification.SystemCommunicationId, out communicationMessage ) )
@@ -1011,6 +1045,9 @@ namespace Rock.Model
                                    forceCommunicationType,
                                    individualNotification.GroupCommunicationPreference,
                                    individualNotification.Individual.CommunicationPreference );
+                var errorCountBeforeIteration = sendMessageResults.Errors.Count;
+                var sentDuringThisIteration = false;
+
                 try
                 {
                     var sendIndividualMessageResult = CommunicationHelper.SendMessage( individualNotification.Individual, mediumType, communicationMessage, mergeFields );
@@ -1021,6 +1058,7 @@ namespace Rock.Model
                     if ( sendIndividualMessageResult.MessagesSent > 0 )
                     {
                         sendMessageResults.MessagesSent += sendIndividualMessageResult.MessagesSent;
+                        sentDuringThisIteration = true;
                         foreach ( var attendance in attendances )
                         {
                             updateAttendanceRecord( attendance );
@@ -1032,6 +1070,36 @@ namespace Rock.Model
                     var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to {individualNotification.Individual}", ex );
                     sendMessageResults.Errors.Add( emailException.Message );
                     sendMessageResults.Exceptions.Add( emailException );
+                }
+
+                // Persist the flags (ScheduleConfirmationSent, ScheduleReminderSent, etc.) for this individual's
+                // attendances immediately so a mid-loop crash, App Pool recycle, or proxy timeout that
+                // disconnects the caller cannot result in duplicate sends on a retry.
+                if ( saveAfterEachIndividual && sentDuringThisIteration && rockContext != null )
+                {
+                    try
+                    {
+                        rockContext.SaveChanges();
+                    }
+                    catch ( Exception ex )
+                    {
+                        var saveException = new Exception( $"Exception occurred while saving the Schedule Confirmation Sent flag for {individualNotification.Individual}", ex );
+                        sendMessageResults.Errors.Add( saveException.Message );
+                        sendMessageResults.Exceptions.Add( saveException );
+                    }
+                }
+
+                processedCount++;
+
+                if ( progress != null )
+                {
+                    progress.ReportProgressUpdate( processedCount, totalCount, individualNotification.Individual?.FullName );
+
+                    // Push each new error onto the live log so the client's progress UI can show them as they happen.
+                    for ( int errIdx = errorCountBeforeIteration; errIdx < sendMessageResults.Errors.Count; errIdx++ )
+                    {
+                        progress.LogMessage( sendMessageResults.Errors[errIdx] );
+                    }
                 }
             }
 
