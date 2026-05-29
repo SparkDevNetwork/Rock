@@ -1,0 +1,466 @@
+<template>
+    <GalleryAndResult :value="{ selectedNodeKey, nodes }"
+                      hasMultipleValues
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      :scriptSetupCode="scriptSetupCode">
+        <SortableTree v-model:selectedNodeKey="selectedNodeKey"
+                      :nodes="nodes"
+                      :selectedNodeQueryParameterKey="queryParameterKey"
+                      :groupBy="useGroupBy ? groupByNodeType : undefined"
+                      :iconCssClass="iconForNode"
+                      :handleCssClass="useCustomHandleColors ? handleClassForNode : ''"
+                      :actions="useActions ? treeActions : []"
+                      :autoCollapse="autoCollapse"
+                      :beforeSelect="useBeforeSelect ? onBeforeSelect : undefined"
+                      :isNodeDraggable="useIsNodeDraggable ? isNodeDraggable : undefined"
+                      @select="onSelect"
+                      @reorder="onReorder">
+            <template v-if="useTitleSlot" #title="{ node }">
+                <div>
+                    <strong>{{ node.name }}</strong>
+                    <span class="label label-default ml-2">{{ getNodeType(node) }}</span>
+                </div>
+            </template>
+            <template v-if="useTrailingSlot" #trailing>
+                <i class="arrow ti ti-arrow-narrow-right"></i>
+            </template>
+        </SortableTree>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox v-model="autoCollapse"
+                              label="Auto Collapse"
+                              help="When true, selecting a node collapses every node not on its ancestor chain. When false, selection only adds expansions and leaves any manually-expanded branches alone." />
+                </div>
+                <div class="col-md-6">
+                    <TextBox v-model="queryParameterKey"
+                             label="Selected Node Query Parameter Key"
+                             help="The URL query-string parameter that mirrors selectedNodeKey. The control seeds itself from this on mount and keeps it in sync. Pass an empty string to disable URL syncing entirely." />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <CheckBoxList v-model="simulateValues"
+                                  label="Simulate"
+                                  :items="simulateOptions"
+                                  :itemsHelpText="simulateOptionsHelp"
+                                  horizontal
+                                  :repeatColumns="5" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<style scoped>
+:deep(.sortable-tree-row-handle.demo-handle-group) {
+    background-color: var(--color-info-soft);
+    color: var(--color-info-strong);
+}
+
+:deep(.sortable-tree-row:has(.sortable-tree-row-handle.demo-handle-group).selected .sortable-tree-row-body) {
+    background-color: var(--color-interface-softer);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { ComponentUsage, getSfcControlImportPath } from "./common/utils.partial";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import SortableTree from "@Obsidian/Controls/sortableTree.obs";
+    import { ISortableTreeAction, ISortableTreeNode, ISortableTreeReorderEvent } from "@Obsidian/Controls/Internal/SortableTree/types.partial";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    /**
+     * Demo shape modeled after the check-in areas-and-groups tree, with a
+     * domain-specific node type alongside the required
+     * idKey/name/isActive/children fields.
+     */
+    type AreaOrGroupNode = ISortableTreeNode & {
+        nodeType: "area" | "group";
+    };
+
+    /**
+     * Builds an areas-and-groups style sample tree that exercises the
+     * control's behaviors.
+     */
+    function buildSampleTree(): AreaOrGroupNode[] {
+        const node = (
+            idKey: string,
+            name: string,
+            nodeType: "area" | "group",
+            children: AreaOrGroupNode[] = [],
+            isActive = true
+        ): AreaOrGroupNode => ({ idKey, name, nodeType, isActive, children });
+
+        return [
+            node("elementary", "Elementary", "area", [
+                node("k-1", "K-1st Grade", "area", [
+                    node("lions", "Lions", "group", [
+                        node("lion-cubs", "Lion Cubs", "group")
+                    ]),
+                    node("bears", "Bears", "group")
+                ]),
+                node("2-3", "2nd-3rd Grade", "area", [
+                    node("tigers", "Tigers", "group"),
+                    node("panthers", "Panthers", "group", [], false)
+                ]),
+                node("floating-class", "Floating Class", "group")
+            ]),
+            node("middle-school", "Middle School", "area", [
+                node("wolves", "Wolves", "group")
+            ]),
+            node("special-needs", "Special Needs", "area"),
+            node("volunteer-team", "Volunteer Team", "group"),
+            node("high-school", "High School", "area", [], false)
+        ];
+    }
+
+    // #region Values
+
+    const nodes = ref<AreaOrGroupNode[]>(buildSampleTree());
+    const selectedNodeKey = ref<string>("");
+    const autoCollapse = ref<boolean>(true);
+    const queryParameterKey = ref<string>("SelectedNode");
+    const simulateValues = ref<string[]>(["groupBy", "actions", "handleCssClass"]);
+
+    const simulateOptions: ListItemBag[] = [
+        { value: "groupBy", text: "Group By" },
+        { value: "actions", text: "Actions" },
+        { value: "handleCssClass", text: "Drag Handle CSS Class" },
+        { value: "titleSlot", text: "Title Slot" },
+        { value: "trailingSlot", text: "Trailing Slot" },
+        { value: "beforeSelect", text: "Before Select" },
+        { value: "isNodeDraggable", text: "Is Node Draggable" }
+    ];
+
+    const simulateOptionsHelp: Record<string, string> = {
+        groupBy: "Returns a group key for the node. Children with different keys reorder independently. Only same-key siblings can be drag-reordered against each other.",
+        actions: "Buttons rendered in each row's trailing actions area.",
+        handleCssClass: "Extra class applied to each row's handle. Pair with .sortable-tree-row-handle.<class> selectors so the consumer's styling outranks the control's default.",
+        titleSlot: "Replaces the row's title region. The default renders the node's name; the slot exposes the node so the consumer can render anything.",
+        trailingSlot: "Replaces the row's trailing region. The default is a right-pointing chevron arrow.",
+        beforeSelect: "Async guard called before a row-click selection commits. Returning false (or a Promise that resolves to false) cancels the selection. Useful for prompting about unsaved edits before navigating away. The demo prompts via confirm() on every row click.",
+        isNodeDraggable: "Per-node predicate that vetoes drag-reorder. Returns false to make a node undraggable regardless of its sibling count. The demo disables drag on inactive nodes (Panthers, High School)."
+    };
+
+    const importCode = getSfcControlImportPath("sortableTree");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Whether to pass a `:groupBy` resolver, splitting children into per-type buckets. */
+    const useGroupBy = computed((): boolean => simulateValues.value.includes("groupBy"));
+
+    /** Whether to pass an `:actions` array, rendering hover-action buttons in each row. */
+    const useActions = computed((): boolean => simulateValues.value.includes("actions"));
+
+    /** Whether to pass a `:handleCssClass` resolver, painting per-node classes onto handles. */
+    const useCustomHandleColors = computed((): boolean => simulateValues.value.includes("handleCssClass"));
+
+    /** Whether to override the row title via the `title` scoped slot. */
+    const useTitleSlot = computed((): boolean => simulateValues.value.includes("titleSlot"));
+
+    /** Whether to override the row's trailing region via the `trailing` slot. */
+    const useTrailingSlot = computed((): boolean => simulateValues.value.includes("trailingSlot"));
+
+    /** Whether to pass a `:beforeSelect` guard that prompts before selection commits. */
+    const useBeforeSelect = computed((): boolean => simulateValues.value.includes("beforeSelect"));
+
+    /** Whether to pass an `:isNodeDraggable` predicate that vetoes drag on inactive nodes. */
+    const useIsNodeDraggable = computed((): boolean => simulateValues.value.includes("isNodeDraggable"));
+
+    /** Action buttons rendered in each row's trailing actions area. */
+    const treeActions = computed((): ISortableTreeAction[] => [
+        {
+            iconCssClass: "ti-stack-2",
+            label: "Add Area",
+            handler: onAddAreaUnder,
+            isVisible: (n) => groupByNodeType(n) === "area"
+        },
+        {
+            iconCssClass: "ti-users-group",
+            label: "Add Group",
+            handler: onAddGroupUnder
+        }
+    ]);
+
+    /** Live template snippet reflecting the current settings. */
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("SortableTree");
+        usage.addAttribute("v-model:selectedNodeKey", "selectedNodeKey");
+        usage.addAttribute(":nodes", "nodes");
+        if (queryParameterKey.value !== "SelectedNode") {
+            const literal = queryParameterKey.value
+                ? `'${queryParameterKey.value}'`
+                : "''";
+            usage.addAttribute(":selectedNodeQueryParameterKey", literal);
+        }
+        if (useGroupBy.value) {
+            usage.addAttribute(":groupBy", "groupByNodeType");
+        }
+        usage.addAttribute(":iconCssClass", "iconForNode");
+        if (useCustomHandleColors.value) {
+            usage.addAttribute(":handleCssClass", "handleClassForNode");
+        }
+        if (useActions.value) {
+            usage.addAttribute(":actions", "treeActions");
+        }
+        if (!autoCollapse.value) {
+            usage.addAttribute(":autoCollapse", "false");
+        }
+        if (useBeforeSelect.value) {
+            usage.addAttribute(":beforeSelect", "onBeforeSelect");
+        }
+        if (useIsNodeDraggable.value) {
+            usage.addAttribute(":isNodeDraggable", "isNodeDraggable");
+        }
+        usage.addAttribute("@select", "onSelect");
+        usage.addAttribute("@reorder", "onReorder");
+
+        if (useTitleSlot.value) {
+            usage.addBody(
+                `<template #title="{ node }">\n` +
+                `    <div>\n` +
+                `        <strong>{{ node.name }}</strong>\n` +
+                `        <span class="label label-default ml-2">{{ getNodeType(node) }}</span>\n` +
+                `    </div>\n` +
+                `</template>`
+            );
+        }
+
+        if (useTrailingSlot.value) {
+            usage.addBody(
+                `<template #trailing>\n` +
+                `    <i class="arrow ti ti-arrow-narrow-right"></i>\n` +
+                `</template>`
+            );
+        }
+
+        return usage.toString();
+    });
+
+    /**
+     * Live `<script setup>` block that pairs with the template snippet above.
+     * Sections appear or disappear based on which props are currently in use,
+     * so a consumer can copy exactly the surface area they need.
+     */
+    const scriptSetupCode = computed(() => {
+        const sections: string[] = [];
+
+        const typeImports = ["ISortableTreeNode", "ISortableTreeReorderEvent"];
+        if (useActions.value) {
+            typeImports.unshift("ISortableTreeAction");
+        }
+        sections.push(
+            `import { ref } from "vue";\n` +
+            `import SortableTree from "@Obsidian/Controls/sortableTree.obs";\n` +
+            `import { ${typeImports.join(", ")} } from "@Obsidian/Controls/Internal/SortableTree/types.partial";`
+        );
+
+        sections.push(
+            `/**\n` +
+            ` * Demo shape modeled after the check-in areas-and-groups tree, with a\n` +
+            ` * domain-specific node type alongside the required\n` +
+            ` * idKey/name/isActive/children fields.\n` +
+            ` */\n` +
+            `type AreaOrGroupNode = ISortableTreeNode & {\n` +
+            `    nodeType: "area" | "group";\n` +
+            `};`
+        );
+
+        sections.push(`const selectedNodeKey = ref<string>("");`);
+
+        sections.push(
+            `/**\n` +
+            ` * Builds an areas-and-groups style sample tree that exercises the\n` +
+            ` * control's behaviors.\n` +
+            ` */\n` +
+            `const nodes = ref<AreaOrGroupNode[]>([\n` +
+            `    {\n` +
+            `        idKey: "elementary",\n` +
+            `        name: "Elementary",\n` +
+            `        isActive: true,\n` +
+            `        nodeType: "area",\n` +
+            `        children: [\n` +
+            `            { idKey: "lions", name: "Lions", isActive: true, nodeType: "group", children: [] }\n` +
+            `        ]\n` +
+            `    }\n` +
+            `]);`
+        );
+
+        if (useGroupBy.value) {
+            sections.push(
+                `function groupByNodeType(node: ISortableTreeNode): string | null {\n` +
+                `    return (node as AreaOrGroupNode).nodeType;\n` +
+                `}`
+            );
+        }
+
+        sections.push(
+            `function iconForNode(node: ISortableTreeNode): string {\n` +
+            `    return (node as AreaOrGroupNode).nodeType === "area"\n` +
+            `        ? "ti-stack-2"\n` +
+            `        : "ti-users-group";\n` +
+            `}`
+        );
+
+        if (useTitleSlot.value) {
+            sections.push(
+                `function getNodeType(node: ISortableTreeNode): string {\n` +
+                `    return (node as AreaOrGroupNode).nodeType;\n` +
+                `}`
+            );
+        }
+
+        if (useCustomHandleColors.value) {
+            sections.push(
+                `// Pair this resolver with CSS rules to override default styles:\n` +
+                `// .sortable-tree-row-handle.demo-handle-group {\n` +
+                `//     background-color: var(--color-info-soft);\n` +
+                `//     color: var(--color-info-strong);\n` +
+                `// }\n` +
+                `// .sortable-tree-row:has(.sortable-tree-row-handle.demo-handle-group).selected .sortable-tree-row-body {\n` +
+                `//     background-color: var(--color-interface-softer);\n` +
+                `// }\n` +
+                `function handleClassForNode(node: ISortableTreeNode): string {\n` +
+                `    return (node as AreaOrGroupNode).nodeType === "area" ? "" : "demo-handle-group";\n` +
+                `}`
+            );
+        }
+
+        if (useActions.value) {
+            sections.push(
+                `const treeActions: ISortableTreeAction[] = [\n` +
+                `    {\n` +
+                `        iconCssClass: "ti-stack-2",\n` +
+                `        label: "Add Area",\n` +
+                `        handler: (node) => onAddAreaUnder(node),\n` +
+                `        isVisible: (node) => (node as AreaOrGroupNode).nodeType === "area"\n` +
+                `    },\n` +
+                `    {\n` +
+                `        iconCssClass: "ti-users-group",\n` +
+                `        label: "Add Group",\n` +
+                `        handler: (node) => onAddGroupUnder(node)\n` +
+                `    }\n` +
+                `];`
+            );
+        }
+
+        if (useBeforeSelect.value) {
+            sections.push(
+                `import { confirm } from "@Obsidian/Utility/dialogs";\n\n` +
+                `/**\n` +
+                ` * Async guard called before a row-click selection commits.\n` +
+                ` * Resolving to false cancels the selection. Typical use: prompt\n` +
+                ` * about unsaved edits before navigating away.\n` +
+                ` */\n` +
+                `async function onBeforeSelect(node: ISortableTreeNode): Promise<boolean> {\n` +
+                `    return await confirm(\`Switch the selection to "\${node.name}"?\`);\n` +
+                `}`
+            );
+        }
+
+        if (useIsNodeDraggable.value) {
+            sections.push(
+                `/**\n` +
+                ` * Per-node predicate that vetoes drag-reorder. Returning false\n` +
+                ` * makes a node undraggable regardless of its sibling count. Typical\n` +
+                ` * use: disable drag on unsaved placeholder rows whose sentinel idKey\n` +
+                ` * the server's reorder action can't resolve.\n` +
+                ` */\n` +
+                `function isNodeDraggable(node: ISortableTreeNode): boolean {\n` +
+                `    return node.isActive !== false;\n` +
+                `}`
+            );
+        }
+
+        const handlerLines: string[] = [
+            `function onSelect(node: ISortableTreeNode): void { /* ... */ }`,
+            `function onReorder(payload: ISortableTreeReorderEvent): void { /* ... */ }`
+        ];
+        if (useActions.value) {
+            handlerLines.push(`function onAddAreaUnder(node: ISortableTreeNode): void { /* ... */ }`);
+            handlerLines.push(`function onAddGroupUnder(node: ISortableTreeNode): void { /* ... */ }`);
+        }
+        sections.push(handlerLines.join("\n"));
+
+        return sections.join("\n\n");
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Splits children into per-type buckets so each reorders independently. */
+    function groupByNodeType(node: ISortableTreeNode): string | null {
+        return (node as AreaOrGroupNode).nodeType;
+    }
+
+    /** Resolves the row's leading icon based on the node type. */
+    function iconForNode(node: ISortableTreeNode): string {
+        return (node as AreaOrGroupNode).nodeType === "area" ? "ti-stack-2" : "ti-users-group";
+    }
+
+    /** Returns the node type as a plain string for the title-slot demo. */
+    function getNodeType(node: ISortableTreeNode): string {
+        return (node as AreaOrGroupNode).nodeType;
+    }
+
+    /**
+     * Returns the extra class painted onto the handle for color overrides.
+     * Empty string means "no extra class, use default."
+     */
+    function handleClassForNode(node: ISortableTreeNode): string {
+        return (node as AreaOrGroupNode).nodeType === "area" ? "" : "demo-handle-group";
+    }
+
+    /**
+     * Demo `beforeSelect` guard: prompts the individual via `confirm()` before
+     * the selection commits. Returning false (or a resolved-false Promise)
+     * cancels the selection, leaving the previous one intact.
+     */
+    async function onBeforeSelect(node: ISortableTreeNode): Promise<boolean> {
+        return await confirm(`Switch the selection to "${node.name}"?`);
+    }
+
+    /**
+     * Demo `isNodeDraggable` predicate: vetoes drag on inactive nodes. In a
+     * real block this typically excludes placeholder rows (unsaved entities
+     * with a sentinel idKey the server can't resolve).
+     */
+    function isNodeDraggable(node: ISortableTreeNode): boolean {
+        return node.isActive !== false;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onSelect(node: ISortableTreeNode): void {
+        // eslint-disable-next-line no-console
+        console.log("select", node);
+    }
+
+    function onAddAreaUnder(_parent: ISortableTreeNode): void {
+        alert("'Add Area' clicked!");
+    }
+
+    function onAddGroupUnder(_parent: ISortableTreeNode): void {
+        alert("'Add Group' clicked!");
+    }
+
+    function onReorder(payload: ISortableTreeReorderEvent): void {
+        // eslint-disable-next-line no-console
+        console.log("reorder", payload);
+    }
+
+    // #endregion Event Handlers
+</script>
