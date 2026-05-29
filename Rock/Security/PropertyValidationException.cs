@@ -35,16 +35,22 @@ namespace Rock.Security
         public Type ReflectedType { get; }
 
         /// <summary>
+        /// The reason why the property value is invalid.
+        /// </summary>
+        public string Reason { get; }
+
+        /// <summary>
         /// Creates a new instance of <see cref="PropertyValidationException"/>.
         /// </summary>
         /// <param name="reflectedType">The reflected type that contained the invalid value. Cannot be null.</param>
         /// <param name="propertyName">The name of the property with the invalid value. Cannot be null.</param>
         /// <param name="reason">The reason why the property value is invalid. Should not end with punctuation and should follow a format like "may not contain script tags".</param>
         internal PropertyValidationException( Type reflectedType, string propertyName, string reason )
-            : base( $"The value of the {propertyName.SplitCase()} property on {GetRealType( reflectedType ).Name} {reason}." )
+            : base( $"The value of the '{propertyName.SplitCase()}' property on {GetRealType( reflectedType ).Name} {reason}." )
         {
             ReflectedType = reflectedType ?? throw new ArgumentNullException( nameof( reflectedType ) );
             PropertyName = propertyName ?? throw new ArgumentNullException( nameof( propertyName ) );
+            Reason = reason;
         }
 
         /// <summary>
