@@ -41,5 +41,14 @@ namespace Rock.Attribute
         {
             FieldConfigurationValues.Add( Rock.Field.Types.GroupAndRoleFieldType.CONFIG_GROUP_AND_ROLE_PICKER_LABEL, new Field.ConfigurationValue( groupAndRolePickerLabel ) );
         }
+
+        /// <summary>
+        /// The label for the group/role picker label.
+        /// </summary>
+        public string GroupAndRolePickerLabel
+        {
+            get => FieldConfigurationValues.GetValueOrNull( "groupAndRolePickerLabel" );
+            set => FieldConfigurationValues.AddOrReplace( "groupAndRolePickerLabel", new Field.ConfigurationValue( value ) );
+        }
     }
 }

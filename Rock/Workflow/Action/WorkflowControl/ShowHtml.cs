@@ -44,7 +44,10 @@ namespace Rock.Workflow.Action
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Html,
         IsRequired = true,
         Order = 0 )]
-    [BooleanField( "Hide Status Message", "Whether or not to hide the built-in status message.", false, "", 1 )]
+    [BooleanField( "Hide Status Message",
+        Description = "Whether or not to hide the built-in status message.",
+        DefaultBooleanValue = false,
+        Order = 1 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "FDDAE78D-B7B3-4DA2-9A92-CC129AAF15DE")]
     public class ShowHtml : ActionComponent, IInteractiveAction

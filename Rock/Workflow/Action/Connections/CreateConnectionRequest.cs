@@ -35,19 +35,40 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Connection Request Create" )]
 
-    [WorkflowAttribute( "Person Attribute", "The Person attribute that contains the person that connection request should be created for.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowAttribute( "Connection Opportunity Attribute", "The attribute that contains the type of connection opportunity to create.", true, "", "", 1, null,
-        new string[] { "Rock.Field.Types.ConnectionOpportunityFieldType" } )]
-    [WorkflowAttribute( "Connection Status Attribute", "The attribute that contains the connection status to use for the new request.", false, "", "", 2, null,
-        new string[] { "Rock.Field.Types.ConnectionStatusFieldType" } )]
-    [ConnectionStatusField( "Connection Status", "The connection status to use for the new request (when Connection Status Attribute is not specified or invalid). If neither this setting or the Connection Status Attribute setting are set, the default status will be used.", false, "", "", 3 )]
-    [WorkflowAttribute( "Campus Attribute", "An optional attribute that contains the campus to use for the request.  If not provided the primary campus id of the person would be used if available.", false, "", "", 4, null,
-        new string[] { "Rock.Field.Types.CampusFieldType" } )]
-    [WorkflowAttribute( "Connection Comment Attribute", "An optional attribute that contains the comment to use for the request.", false, "", "", 5, null,
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
-    [WorkflowAttribute( "Connection Request Attribute", "An optional connection request attribute to store the request that is created.", false, "", "", 6, null,
-        new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
+    [WorkflowAttribute( "Person Attribute",
+        Description = "The Person attribute that contains the person that connection request should be created for.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Connection Opportunity Attribute",
+        Description = "The attribute that contains the type of connection opportunity to create.",
+        IsRequired = true,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ConnectionOpportunityFieldType" } )]
+    [WorkflowAttribute( "Connection Status Attribute",
+        Description = "The attribute that contains the connection status to use for the new request.",
+        IsRequired = false,
+        Order = 2,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ConnectionStatusFieldType" } )]
+    [ConnectionStatusField( "Connection Status",
+        Description = "The connection status to use for the new request (when Connection Status Attribute is not specified or invalid). If neither this setting or the Connection Status Attribute setting are set, the default status will be used.",
+        IsRequired = false,
+        Order = 3 )]
+    [WorkflowAttribute( "Campus Attribute",
+        Description = "An optional attribute that contains the campus to use for the request.  If not provided the primary campus id of the person would be used if available.",
+        IsRequired = false,
+        Order = 4,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.CampusFieldType" } )]
+    [WorkflowAttribute( "Connection Comment Attribute",
+        Description = "An optional attribute that contains the comment to use for the request.",
+        IsRequired = false,
+        Order = 5,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
+    [WorkflowAttribute( "Connection Request Attribute",
+        Description = "An optional connection request attribute to store the request that is created.",
+        IsRequired = false,
+        Order = 6,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
 
     [Rock.SystemGuid.EntityTypeGuid( "F95C376A-714E-41FE-B27A-683F9E9078ED" )]
     public class CreateConnectionRequest : ActionComponent

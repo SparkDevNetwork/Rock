@@ -36,9 +36,19 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Attribute Set from Entity" )]
 
-    [WorkflowAttribute( "Attribute", "The attribute to set the value of.", true, "", "", 1 )]
-    [BooleanField( "Entity Is Required", "Should an error be returned if the entity is missing or not a valid entity type?", true, "", 2 )]
-    [BooleanField( "Use Id instead of Guid", "Most entity attribute field types expect the Guid of the entity (which is used by default). Select this option if the entity's Id should be used instead (should be rare).", false, "", 3, "UseId" )]
+    [WorkflowAttribute( "Attribute",
+        Description = "The attribute to set the value of.",
+        IsRequired = true,
+        Order = 1 )]
+    [BooleanField( "Entity Is Required",
+        Description = "Should an error be returned if the entity is missing or not a valid entity type?",
+        DefaultBooleanValue = true,
+        Order = 2 )]
+    [BooleanField( "Use Id instead of Guid",
+        Description = "Most entity attribute field types expect the Guid of the entity (which is used by default). Select this option if the entity's Id should be used instead (should be rare).",
+        DefaultBooleanValue = false,
+        Order = 3,
+        Key = "UseId" )]
     [CodeEditorField( "Lava Template",
         Description = "By default this action will set the attribute value equal to the guid (or id) of the entity that was passed in for processing. If you include a lava template here, the action will instead set the attribute value to the output of this template. The mergefield to use for the entity is 'Entity.' For example, use {{ Entity.Name }} if the entity has a Name property. <span class='tip tip-lava'></span>",
         EditorMode = Web.UI.Controls.CodeEditorMode.Lava,

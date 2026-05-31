@@ -41,8 +41,14 @@ namespace Rock.Workflow.Action
         IsRequired = true,
         Order = 0,
         Key = "Value" )]
-    [WorkflowAttribute( "Attribute", "The attribute to store the result in.", false, "", "", 1 )]
-    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this action.", false, order: 2 )]
+    [WorkflowAttribute( "Attribute",
+        Description = "The attribute to store the result in.",
+        IsRequired = false,
+        Order = 1 )]
+    [LavaCommandsField( "Enabled Lava Commands",
+        Description = "The Lava commands that should be enabled for this action.",
+        IsRequired = false,
+        Order = 2 )]
     [Rock.SystemGuid.EntityTypeGuid( "BC21E57A-1477-44B3-A7C2-61A806118945")]
     public class RunLava : ActionComponent
     {

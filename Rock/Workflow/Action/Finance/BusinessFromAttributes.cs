@@ -74,7 +74,6 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute(
         "Address",
-        "Attribute Value",
         Description = "",
         IsRequired = false,
         Order = 4,
@@ -83,7 +82,6 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute(
         "Campus",
-        "Attribute Value",
         Description = "",
         IsRequired = false,
         Order = 5,
@@ -92,7 +90,6 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute(
         "Contact",
-        "Attribute Value",
         Description = "A optional person to connect to the business.",
         IsRequired = false,
         Order = 5,
@@ -101,7 +98,6 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute(
         "Business",
-        "Attribute Value",
         Description = "The resulting business that was either matched or created. This will return as a person attribute since businesses are people in the database.",
         IsRequired = false,
         Order = 6,

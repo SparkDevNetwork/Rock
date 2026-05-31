@@ -35,12 +35,23 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Group Attribute Set" )]
 
-    [WorkflowAttribute( "Group", "The attribute containing the group whose attribute will be set.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.GroupFieldType" } )]
+    [WorkflowAttribute( "Group",
+        Description = "The attribute containing the group whose attribute will be set.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupFieldType" } )]
 
-    [TextField( "Group Attribute Key", "The attribute key to use for the group attribute.", true, "", "", 2 )]
+    [TextField( "Group Attribute Key",
+        Description = "The attribute key to use for the group attribute.",
+        IsRequired = true,
+        Order = 2 )]
 
-    [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The text or attribute to set the value from. <span class='tip tip-lava'></span>", false, "", "", 4, "AttributeValue" )]
+    [WorkflowTextOrAttribute( "Text Value",
+        "Attribute Value",
+        Description = "The text or attribute to set the value from. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 4,
+        Key = "AttributeValue" )]
     [Rock.SystemGuid.EntityTypeGuid( "F4F59DF6-2F6A-40A0-9BFD-8427F7DD3D87")]
     public class SetGroupAttribute : ActionComponent
     {

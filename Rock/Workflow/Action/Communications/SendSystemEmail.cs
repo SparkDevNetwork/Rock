@@ -36,10 +36,21 @@ namespace Rock.Workflow.Action
     [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Email Send (System Email)" )]
 
-    [SystemCommunicationField( "System Email", "A system email to send.", true, "", "", 0 )]
-    [WorkflowTextOrAttribute( "Send To Email Addresses", "Attribute Value", "The email addresses or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "Recipient",
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
-    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 2 )]
+    [SystemCommunicationField( "System Email",
+        Description = "A system email to send.",
+        IsRequired = true,
+        Order = 0 )]
+    [WorkflowTextOrAttribute( "Send To Email Addresses",
+        "Attribute Value",
+        Description = "The email addresses or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 1,
+        Key = "Recipient",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
+    [BooleanField( "Save Communication History",
+        Description = "Should a record of this communication be saved to the recipient's profile",
+        DefaultBooleanValue = false,
+        Order = 2 )]
     [Rock.SystemGuid.EntityTypeGuid( "4487702A-BEAF-4E5A-92AD-71A1AD48DFCE")]
     public class SendSystemEmail : ActionComponent
     {
