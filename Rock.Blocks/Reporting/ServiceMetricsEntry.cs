@@ -80,7 +80,11 @@ namespace Rock.Blocks.Reporting
         IsRequired = true,
         Order = 4 )]
 
-    [CampusesField( "Campuses", "Select the campuses you want to limit this block to.", false, "", "", 5, AttributeKey.Campuses )]
+    [CampusesField( "Campuses",
+        Description = "Select the campuses you want to limit this block to.",
+        IsRequired = false,
+        Order = 5,
+        Key = AttributeKey.Campuses )]
 
     [BooleanField(
         "Insert 0 for Blank Items",

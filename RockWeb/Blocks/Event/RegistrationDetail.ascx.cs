@@ -46,14 +46,42 @@ namespace RockWeb.Blocks.Event
     [Description( "Displays the details of a given registration." )]
     [SecurityAction( SecurityActionKey.EditPaymentPlan, "The roles and/or users that can edit the payment plan for the selected persons." )]
 
-    [LinkedPage( "Registrant Page", "The page for viewing details about a registrant", true, "", "", 0 )]
-    [LinkedPage( "Transaction Page", "The page for viewing transaction details", true, "", "", 1 )]
-    [LinkedPage( "Group Detail Page", "The page for viewing details about a group", true, "", "", 2 )]
-    [LinkedPage( "Group Member Page", "The page for viewing details about a group member", true, "", "", 3 )]
-    [LinkedPage( "Transaction Detail Page", "The page for viewing details about a payment", true, "", "", 4 )]
-    [LinkedPage( "Audit Page", "Page used to display the history of changes to a registration.", true, "", "", 5 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION, "", 6 )]
-    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 7 )]
+    [LinkedPage( "Registrant Page",
+        Description = "The page for viewing details about a registrant",
+        IsRequired = true,
+        Order = 0 )]
+    [LinkedPage( "Transaction Page",
+        Description = "The page for viewing transaction details",
+        IsRequired = true,
+        Order = 1 )]
+    [LinkedPage( "Group Detail Page",
+        Description = "The page for viewing details about a group",
+        IsRequired = true,
+        Order = 2 )]
+    [LinkedPage( "Group Member Page",
+        Description = "The page for viewing details about a group member",
+        IsRequired = true,
+        Order = 3 )]
+    [LinkedPage( "Transaction Detail Page",
+        Description = "The page for viewing details about a payment",
+        IsRequired = true,
+        Order = 4 )]
+    [LinkedPage( "Audit Page",
+        Description = "Page used to display the history of changes to a registration.",
+        IsRequired = true,
+        Order = 5 )]
+    [DefinedValueField( "Source",
+        Description = "The Financial Source Type to use when creating transactions",
+        IsRequired = false,
+        AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
+        DefaultValue = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION,
+        Order = 6 )]
+    [TextField( "Batch Name Prefix",
+        Description = "The batch prefix name to use when creating a new batch",
+        IsRequired = false,
+        DefaultValue = "Event Registration",
+        Order = 7 )]
     [Rock.SystemGuid.BlockTypeGuid( "A1C967B2-EEDA-416F-A53C-7BE46D6DA4E1" )]
     public partial class RegistrationDetail : RockBlock
     {

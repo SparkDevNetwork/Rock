@@ -74,11 +74,11 @@ namespace Rock.Blocks.Engagement
         Order = 1 )]
 
     [LinkedPage(
-        name: "Bulk Entry Page",
-        description: "The page to use for bulk entry of steps data",
-        required: false,
-        order: 2,
-        key: AttributeKey.BulkEntryPage )]
+        "Bulk Entry Page",
+        Description = "The page to use for bulk entry of steps data",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.BulkEntryPage )]
 
     [CodeEditorField(
         "Key Performance Indicator Lava",

@@ -44,5 +44,16 @@ namespace Rock.Attribute
             
             FieldConfigurationValues.Add( "entityControlHelpTextFormat", new Field.ConfigurationValue( entityControlHelpTextFormat ) );
         }
+
+        /// <summary>
+        /// The entity control help text format.
+        /// Include a {0} in places where you want the EntityType name (Campus, Group, etc) to be included.
+        /// and/or a {1} in places where you want the pluralized EntityType name (Campuses, Groups, etc) to be included.
+        /// </summary>
+        public string EntityControlHelpTextFormat
+        {
+            get => FieldConfigurationValues.GetValueOrNull( "entityControlHelpTextFormat" );
+            set => FieldConfigurationValues.AddOrReplace( "entityControlHelpTextFormat", new Field.ConfigurationValue( value ) );
+        }
     }
 }

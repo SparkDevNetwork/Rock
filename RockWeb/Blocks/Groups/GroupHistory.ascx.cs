@@ -43,8 +43,14 @@ namespace RockWeb.Blocks.Groups
         DefaultValue = @"{% include '~~/Assets/Lava/GroupHistoryTimeline.lava' %}",
         Order = 1 )]
 
-    [LinkedPage( "Group History Grid Page", defaultValue: Rock.SystemGuid.Page.GROUP_HISTORY_GRID, required: true, order: 2 )]
-    [LinkedPage( "Group Member History Page", defaultValue: Rock.SystemGuid.Page.GROUP_MEMBER_HISTORY, required: true, order: 3 )]
+    [LinkedPage( "Group History Grid Page",
+        DefaultValue = Rock.SystemGuid.Page.GROUP_HISTORY_GRID,
+        IsRequired = true,
+        Order = 2 )]
+    [LinkedPage( "Group Member History Page",
+        DefaultValue = Rock.SystemGuid.Page.GROUP_MEMBER_HISTORY,
+        IsRequired = true,
+        Order = 3 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "E916D65E-5D30-4086-9A11-8E891CCD930E" )]
     public partial class GroupHistory : RockBlock, ICustomGridColumns

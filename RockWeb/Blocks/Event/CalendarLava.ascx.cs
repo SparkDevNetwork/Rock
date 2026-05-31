@@ -39,26 +39,84 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Renders a particular calendar using Lava." )]
 
-    [EventCalendarField( "Event Calendar", "The event calendar to be displayed", true, "8A444668-19AF-4417-9C74-09F842572974", order: 0 )]
-    [CustomDropdownListField( "Default View Option", "Determines the default view option", "Day,Week,Month,Year,All", true, "Week", order: 1 )]
-    [LinkedPage( "Details Page", "Detail page for events", order: 2 )]
-    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 3 )]
+    [EventCalendarField( "Event Calendar",
+        Description = "The event calendar to be displayed",
+        IsRequired = true,
+        DefaultValue = "8A444668-19AF-4417-9C74-09F842572974",
+        Order = 0 )]
+    [CustomDropdownListField( "Default View Option",
+        Description = "Determines the default view option",
+        ListSource = "Day,Week,Month,Year,All",
+        IsRequired = true,
+        DefaultValue = "Week",
+        Order = 1 )]
+    [LinkedPage( "Details Page",
+        Description = "Detail page for events",
+        Order = 2 )]
+    [LavaCommandsField( "Enabled Lava Commands",
+        Description = "The Lava commands that should be enabled for this HTML block.",
+        IsRequired = false,
+        Order = 3 )]
 
-    [CampusesField( name: "Campuses", description: "Select campuses to display calendar events for. No selection will show all.", required: false, defaultCampusGuids: "", category: "", order: 4, key: "Campuses" )]
-    [CustomRadioListField( "Campus Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", order: 5 )]
+    [CampusesField( "Campuses",
+        Description = "Select campuses to display calendar events for. No selection will show all.",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 4,
+        Key = "Campuses" )]
+    [CustomRadioListField( "Campus Filter Display Mode",
+        ListSource = "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed",
+        IsRequired = true,
+        DefaultValue = "1",
+        Order = 5 )]
 
-    [CustomRadioListField( "Audience Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", key: "CategoryFilterDisplayMode", order: 6 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Filter Audiences", "Determines which audiences should be displayed in the filter.", false, true, key: "FilterCategories", order: 7 )]
-    [BooleanField( "Show Date Range Filter", "Determines whether the date range filters are shown", false, order: 8 )]
+    [CustomRadioListField( "Audience Filter Display Mode",
+        ListSource = "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed",
+        IsRequired = true,
+        DefaultValue = "1",
+        Key = "CategoryFilterDisplayMode",
+        Order = 6 )]
+    [DefinedValueField( "Filter Audiences",
+        Description = "Determines which audiences should be displayed in the filter.",
+        IsRequired = false,
+        AllowMultiple = true,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE,
+        Key = "FilterCategories",
+        Order = 7 )]
+    [BooleanField( "Show Date Range Filter",
+        Description = "Determines whether the date range filters are shown",
+        DefaultBooleanValue = false,
+        Order = 8 )]
 
-    [BooleanField( "Show Small Calendar", "Determines whether the calendar widget is shown", true, order: 9 )]
-    [BooleanField( "Show Day View", "Determines whether the day view option is shown", false, order: 10 )]
-    [BooleanField( "Show Week View", "Determines whether the week view option is shown", true, order: 11 )]
-    [BooleanField( "Show Month View", "Determines whether the month view option is shown", true, order: 12 )]
-    [BooleanField( "Show Year View", "Determines whether the year view option is shown", false, order: 13 )]
-    [BooleanField( "Show All View", "Determines whether the all view option is shown (Limited to 2 years)", false, order: 14 )]
+    [BooleanField( "Show Small Calendar",
+        Description = "Determines whether the calendar widget is shown",
+        DefaultBooleanValue = true,
+        Order = 9 )]
+    [BooleanField( "Show Day View",
+        Description = "Determines whether the day view option is shown",
+        DefaultBooleanValue = false,
+        Order = 10 )]
+    [BooleanField( "Show Week View",
+        Description = "Determines whether the week view option is shown",
+        DefaultBooleanValue = true,
+        Order = 11 )]
+    [BooleanField( "Show Month View",
+        Description = "Determines whether the month view option is shown",
+        DefaultBooleanValue = true,
+        Order = 12 )]
+    [BooleanField( "Show Year View",
+        Description = "Determines whether the year view option is shown",
+        DefaultBooleanValue = false,
+        Order = 13 )]
+    [BooleanField( "Show All View",
+        Description = "Determines whether the all view option is shown (Limited to 2 years)",
+        DefaultBooleanValue = false,
+        Order = 14 )]
 
-    [BooleanField( "Enable Campus Context", "If the page has a campus context its value will be used as a filter", order: 15 )]
+    [BooleanField( "Enable Campus Context",
+        Description = "If the page has a campus context its value will be used as a filter",
+        DefaultBooleanValue = false,
+        Order = 15 )]
 
     [CodeEditorField( "Lava Template",
         Description = "Lava template to use to display the list of events.",
@@ -68,17 +126,45 @@ namespace RockWeb.Blocks.Event
         DefaultValue = @"{% include '~~/Assets/Lava/Calendar.lava' %}",
         Order = 16 )]
 
-    [DayOfWeekField( "Start of Week Day", "Determines what day is the start of a week.", true, DayOfWeek.Sunday, order: 17 )]
+    [DayOfWeekField( "Start of Week Day",
+        Description = "Determines what day is the start of a week.",
+        IsRequired = true,
+        DefaultValue = "0", // DayOfWeek.Sunday
+        Order = 17 )]
 
-    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false, order: 18 )]
+    [BooleanField( "Set Page Title",
+        Description = "Determines if the block should set the page title with the calendar name.",
+        DefaultBooleanValue = false,
+        Order = 18 )]
 
-    [TextField( "Campus Parameter Name", "The page parameter name that contains the id of the campus entity.", false, "CampusId", order: 19 )]
-    [TextField( "Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "CategoryId", order: 20 )]
-    [TextField( "Date Parameter Name", "The page parameter name that contains the selected date.", false, "Date", order: 21 )]
+    [TextField( "Campus Parameter Name",
+        Description = "The page parameter name that contains the id of the campus entity.",
+        IsRequired = false,
+        DefaultValue = "CampusId",
+        Order = 19 )]
+    [TextField( "Category Parameter Name",
+        Description = "The page parameter name that contains the id of the category entity.",
+        IsRequired = false,
+        DefaultValue = "CategoryId",
+        Order = 20 )]
+    [TextField( "Date Parameter Name",
+        Description = "The page parameter name that contains the selected date.",
+        IsRequired = false,
+        DefaultValue = "Date",
+        Order = 21 )]
 
-    [CustomRadioListField( "Approval Status Filter", "Allows filtering events by their approval status.", "1^Approved, 2^Unapproved, 3^All", true, "1", key: "ApprovalStatusFilter", order: 22 )]
+    [CustomRadioListField( "Approval Status Filter",
+        Description = "Allows filtering events by their approval status.",
+        ListSource = "1^Approved, 2^Unapproved, 3^All",
+        IsRequired = true,
+        DefaultValue = "1",
+        Key = "ApprovalStatusFilter",
+        Order = 22 )]
 
-    [BooleanField( "Show Only Events With Registrations", "Determines whether the events shown must have registrations.", false, order: 23 )]
+    [BooleanField( "Show Only Events With Registrations",
+        Description = "Determines whether the events shown must have registrations.",
+        DefaultBooleanValue = false,
+        Order = 23 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "8760D668-8ADF-48C8-9D90-09461FB75B88" )]
     public partial class CalendarLava : Rock.Web.UI.RockBlock

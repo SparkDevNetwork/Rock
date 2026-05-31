@@ -48,33 +48,70 @@ namespace RockWeb.Blocks.Finance
     [Description( "Edit an existing scheduled transaction." )]
 
     [BooleanField(
-        name: "Impersonation",
-        trueText: "Allow (only use on an internal page used by staff)",
-        falseText: "Don't Allow",
-        description: "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users",
-        defaultValue: false,
-        key: AttributeKey.Impersonation )]
+        "Impersonation",
+        TrueText = "Allow (only use on an internal page used by staff)",
+        FalseText = "Don't Allow",
+        Description = "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.Impersonation )]
 
     [BooleanField(
-        name: "Impersonator can see saved accounts",
-        trueText: "Allow (only use on an internal page used by staff)",
-        falseText: "Don't Allow",
-        description: "Should the current user be able to view other people's saved accounts?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users",
-        defaultValue: false,
-        key: AttributeKey.ImpersonatorCanSeeSavedAccounts )]
+        "Impersonator can see saved accounts",
+        TrueText = "Allow (only use on an internal page used by staff)",
+        FalseText = "Don't Allow",
+        Description = "Should the current user be able to view other people's saved accounts?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.ImpersonatorCanSeeSavedAccounts )]
 
-    [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 1 )]
-    [BooleanField( "Additional Accounts", "Display option for selecting additional accounts", "Don't display option",
-        "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 2 )]
-    [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 3 )]
+    [AccountsField( "Accounts",
+        Description = "The accounts to display.  By default all active accounts with a Public Name will be displayed",
+        IsRequired = false,
+        Order = 1 )]
+    [BooleanField( "Additional Accounts",
+        TrueText = "Display option for selecting additional accounts",
+        FalseText = "Don't display option",
+        Description = "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available",
+        DefaultBooleanValue = true,
+        Order = 2 )]
+    [CustomDropdownListField( "Layout Style",
+        Description = "How the sections of this page should be displayed",
+        ListSource = "Vertical,Fluid",
+        IsRequired = false,
+        DefaultValue = "Vertical",
+        Order = 3 )]
 
     // Text Options
 
-    [TextField( "Panel Title", "The text to display in panel heading", false, "Scheduled Transaction", "Text Options", 4 )]
-    [TextField( "Contribution Info Title", "The text to display as heading of section for selecting account and amount.", false, "Contribution Information", "Text Options", 5 )]
-    [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "Text Options", 6 )]
-    [TextField( "Payment Info Title", "The text to display as heading of section for entering credit card or bank account information.", false, "Payment Information", "Text Options", 7 )]
-    [TextField( "Confirmation Title", "The text to display as heading of section for confirming information entered.", false, "Confirm Information", "Text Options", 8 )]
+    [TextField( "Panel Title",
+        Description = "The text to display in panel heading",
+        IsRequired = false,
+        DefaultValue = "Scheduled Transaction",
+        Category = "Text Options",
+        Order = 4 )]
+    [TextField( "Contribution Info Title",
+        Description = "The text to display as heading of section for selecting account and amount.",
+        IsRequired = false,
+        DefaultValue = "Contribution Information",
+        Category = "Text Options",
+        Order = 5 )]
+    [TextField( "Add Account Text",
+        Description = "The button text to display for adding an additional account",
+        IsRequired = false,
+        DefaultValue = "Add Another Account",
+        Category = "Text Options",
+        Order = 6 )]
+    [TextField( "Payment Info Title",
+        Description = "The text to display as heading of section for entering credit card or bank account information.",
+        IsRequired = false,
+        DefaultValue = "Payment Information",
+        Category = "Text Options",
+        Order = 7 )]
+    [TextField( "Confirmation Title",
+        Description = "The text to display as heading of section for confirming information entered.",
+        IsRequired = false,
+        DefaultValue = "Confirm Information",
+        Category = "Text Options",
+        Order = 8 )]
 
     [CodeEditorField( "Confirmation Header",
         Description = "The text (HTML) to display at the top of the confirmation section.",
@@ -126,12 +163,12 @@ achieve our mission.  We are so grateful for your commitment.
         Order = 12 )]
 
     [WorkflowTypeField(
-        name: "Workflow Trigger",
-        description: "Workflow types to trigger when an edit is submitted for a schedule.",
-        allowMultiple: true,
-        required: false,
-        order: 13,
-        key: AttributeKey.WorkflowType )]
+        "Workflow Trigger",
+        Description = "Workflow types to trigger when an edit is submitted for a schedule.",
+        AllowMultiple = true,
+        IsRequired = false,
+        Order = 13,
+        Key = AttributeKey.WorkflowType )]
 
     [BooleanField(
         "Enable End Date",

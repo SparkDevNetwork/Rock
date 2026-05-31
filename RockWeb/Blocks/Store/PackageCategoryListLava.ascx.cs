@@ -46,7 +46,10 @@ namespace RockWeb.Blocks.Store
         DefaultValue = @"{% include '~/Assets/Lava/Store/PackageCategoryListSidebar.lava' %}",
         Order = 2 )]
 
-    [LinkedPage( "Detail Page", "Page reference to use for the detail page.", false, "", "", 4 )]
+    [LinkedPage( "Detail Page",
+        Description = "Page reference to use for the detail page.",
+        IsRequired = false,
+        Order = 4 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "470C6EFF-091C-4593-848C-49547D0EBEEE" )]
     public partial class PackageCategoryListLava : Rock.Web.UI.RockBlock

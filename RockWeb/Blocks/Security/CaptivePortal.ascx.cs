@@ -40,84 +40,84 @@ namespace RockWeb.Blocks.Security
 
     #region Block Settings
     [TextField(
-        name: "MAC Address Parameter",
-        description: "The query string parameter used for the MAC Address",
-        defaultValue: "client_mac",
-        order: 0,
-        key: "MacAddressParam" )]
+        "MAC Address Parameter",
+        Description = "The query string parameter used for the MAC Address",
+        DefaultValue = "client_mac",
+        Order = 0,
+        Key = "MacAddressParam" )]
     [TextField(
-        name: "Release Link",
-        description: "The full URL to redirect users to after registration.",
-        order: 1,
-        key: "ReleaseLink" )]
+        "Release Link",
+        Description = "The full URL to redirect users to after registration.",
+        Order = 1,
+        Key = "ReleaseLink" )]
     [BooleanField(
-        name: "Show Name",
-        description: "Show or hide the Name fields. If it is visible then it will be required.",
-        defaultValue: true,
-        order: 2,
-        key: "ShowName",
+        "Show Name",
+        Description = "Show or hide the Name fields. If it is visible then it will be required.",
+        DefaultBooleanValue = true,
+        Order = 2,
+        Key = "ShowName",
         IsRequired = true )]
     [BooleanField(
-        name: "Show Mobile Phone",
-        description: "Show or hide the Mobile Phone Number field. If it is visible then it will be required.",
-        defaultValue: true,
-        order: 3,
-        key: "ShowMobilePhone",
+        "Show Mobile Phone",
+        Description = "Show or hide the Mobile Phone Number field. If it is visible then it will be required.",
+        DefaultBooleanValue = true,
+        Order = 3,
+        Key = "ShowMobilePhone",
         IsRequired = true )]
     [BooleanField(
-        name: "Show Email",
-        description: "Show or hide the Email field. If it is visible then it will be required.",
-        defaultValue: true,
-        order: 4,
-        key: "ShowEmail",
+        "Show Email",
+        Description = "Show or hide the Email field. If it is visible then it will be required.",
+        DefaultBooleanValue = true,
+        Order = 4,
+        Key = "ShowEmail",
         IsRequired = true )]
     [BooleanField(
-        name: "Show Acceptance Checkbox",
-        description: "Show or hide the \"I Accept\" checkbox. If it is visible then it will be required. This should be visible if the \"Terms And Conditions\" are also visible.",
-        defaultValue: false,
-        order: 5,
-        key: "ShowAccept",
+        "Show Acceptance Checkbox",
+        Description = "Show or hide the \"I Accept\" checkbox. If it is visible then it will be required. This should be visible if the \"Terms And Conditions\" are also visible.",
+        DefaultBooleanValue = false,
+        Order = 5,
+        Key = "ShowAccept",
         IsRequired = true )]
     [TextField(
-        name: "Acceptance Checkbox Label",
-        description: "Text used to signify user agreement with the Terms and Conditions",
-        defaultValue: "I Accept",
-        order: 6,
-        key: "AcceptanceLabel" )]
+        "Acceptance Checkbox Label",
+        Description = "Text used to signify user agreement with the Terms and Conditions",
+        DefaultValue = "I Accept",
+        Order = 6,
+        Key = "AcceptanceLabel" )]
     [TextField(
-        name: "Button Text",
-        description: "Text to display on the button",
-        defaultValue: "Accept and Connect",
-        order: 7,
-        key: "ButtonText" )]
+        "Button Text",
+        Description = "Text to display on the button",
+        DefaultValue = "Accept and Connect",
+        Order = 7,
+        Key = "ButtonText" )]
     [BooleanField(
-        name: "Show Legal Note",
-        description: "Show or hide the Terms and Conditions. This should be always be visible unless users are being automatically connected without any agreement needed.",
-        defaultValue: true,
-        order: 8,
-        key: "ShowLegalNote",
+        "Show Legal Note",
+        Description = "Show or hide the Terms and Conditions. This should be always be visible unless users are being automatically connected without any agreement needed.",
+        DefaultBooleanValue = true,
+        Order = 8,
+        Key = "ShowLegalNote",
         IsRequired = true )]
     [DefinedValueField(
-        definedTypeGuid: Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON,
-        name: "New Person Record Type",
-        description: "The person type to assign to new persons created by Captive Portal.",
-        defaultValue: Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON,
-        order: 9,
-        key: "NewPersonRecordType")]
+        "New Person Record Type",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON,
+        Description = "The person type to assign to new persons created by Captive Portal.",
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON,
+        Order = 9,
+        Key = "NewPersonRecordType")]
     [DefinedValueField(
-        definedTypeGuid: Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
-        name: "New Person Record Status",
-        description: "The record status to assign to new persons created by Captive Portal.",
-        defaultValue: Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE,
-        order: 10,
-        key: "NewPersonRecordStatus")]
+        "New Person Record Status",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
+        Description = "The record status to assign to new persons created by Captive Portal.",
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE,
+        Order = 10,
+        Key = "NewPersonRecordStatus")]
     [DefinedValueField(
-        definedTypeGuid: Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
-        name: "New Person Connection Status",
-        description: "The connection status to assign to new persons created by Captive Portal",
-        defaultValue: Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR,
-        order: 11,
-        key: "NewPersonConnectionStatus")]
+        "New Person Connection Status",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        Description = "The connection status to assign to new persons created by Captive Portal",
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR,
+        Order = 11,
+        Key = "NewPersonConnectionStatus")]
     [CodeEditorField( "Legal Note",
         Description = "A legal note outlining the Terms and Conditions for using Wi-Fi.",
         EditorMode = CodeEditorMode.Html,

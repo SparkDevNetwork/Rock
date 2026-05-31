@@ -49,21 +49,21 @@ namespace Rock.Blocks.Event
         Order = 1 )]
 
     [LinkedPage( "Group Detail Page",
-        "The page for viewing details about a group",
+        Description = "The page for viewing details about a group",
         Key = AttributeKey.GroupDetailPage,
         DefaultValue = Rock.SystemGuid.Page.GROUP_VIEWER,
         IsRequired = false,
         Order = 2 )]
 
     [LinkedPage( "Calendar Item Page",
-        "The page to view calendar item details",
+        Description = "The page to view calendar item details",
         Key = AttributeKey.CalendarItemDetailPage,
         DefaultValue = Rock.SystemGuid.Page.EVENT_DETAIL,
         IsRequired = false,
         Order = 3 )]
 
     [LinkedPage( "Content Item Page",
-        "The page for viewing details about a content channel item",
+        Description = "The page for viewing details about a content channel item",
         Key = AttributeKey.ContentItemDetailPage,
         DefaultValue = Rock.SystemGuid.Page.CONTENT_DETAIL,
         IsRequired = false,

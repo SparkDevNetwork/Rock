@@ -51,7 +51,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     #region Block Attributes
 
     [LinkedPage( "Live Experience Page",
-        "The page that will provide the live experience preview.",
+        Description = "The page that will provide the live experience preview.",
         IsRequired = false,
         Key = AttributeKey.LiveExperiencePage,
         Order = 0 )]

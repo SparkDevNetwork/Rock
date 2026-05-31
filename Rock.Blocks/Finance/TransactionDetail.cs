@@ -78,9 +78,9 @@ namespace Rock.Blocks.Finance
         Order = 4,
         Key = AttributeKey.AppendSuffixToBatchName )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE,
-        "Location Types",
+    [DefinedValueField( "Location Types",
         Description = "The type of location type to display for person (if none are selected all addresses will be included ).",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE,
         IsRequired = false,
         AllowMultiple = true,
         Order = 5,

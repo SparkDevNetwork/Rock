@@ -93,7 +93,7 @@ namespace Rock.Blocks.Connection
         Order = 6,
         Key = AttributeKey.RecordSource )]
 
-    [ConnectionOpportunityField( Name = "Connection Opportunity",
+    [ConnectionOpportunityField( "Connection Opportunity",
         Description = "If a Connection Opportunity is set, only details for it will be displayed (regardless of the querystring parameters).",
         IsRequired = false,
         DefaultValue = "",

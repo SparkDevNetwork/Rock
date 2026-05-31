@@ -73,7 +73,7 @@ namespace Rock.Blocks.Communication
         Order = 2 )]
 
     [ComponentsField( "Rock.Communication.MediumContainer, Rock",
-        Name = "Mediums",
+        "Mediums",
         Key = AttributeKey.Mediums,
         Description = "The Mediums that should be available to user to send through (If none are selected, all active mediums will be available).",
         IsRequired = false,

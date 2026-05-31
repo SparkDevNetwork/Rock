@@ -128,8 +128,8 @@ namespace Rock.Blocks.Workflow
         Order = 8 )]
 
     [CustomDropdownListField( "Completion Action",
-        description: "What action to perform when there is nothing left for the user to do.",
-        listSource: "0^Show Message from Workflow,1^Show Completion Xaml,2^Redirect to Page",
+        Description = "What action to perform when there is nothing left for the user to do.",
+        ListSource = "0^Show Message from Workflow,1^Show Completion Xaml,2^Redirect to Page",
         IsRequired = true,
         DefaultValue = "0",
         SiteTypes = SiteTypeFlags.Mobile,
@@ -160,8 +160,8 @@ namespace Rock.Blocks.Workflow
         Order = 12 )]
 
     [CustomDropdownListField( "Scan Mode",
-        description: "",
-        listSource: "0^Off,1^Automatic",
+        Description = "",
+        ListSource = "0^Off,1^Automatic",
         IsRequired = false,
         DefaultValue = "0",
         SiteTypes = SiteTypeFlags.Mobile,

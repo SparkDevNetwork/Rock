@@ -48,10 +48,25 @@ namespace RockWeb.Blocks.Utility
         DefaultValue = "Staff Updates <small>({{ Item.StartDateTime | Date:'sd' }})</small>",
         Order = 0 )]
 
-    [TextField( "Block Title Icon CSS Class", "The icon CSS class for use in the block title.", false, "ti ti-news", order: 1, key: "BlockTitleIconCssClass" )]
-    [ContentChannelField( "Content Channel", "The content channel to display with the template. The contant channel must be of type 'Internal Communication Template'.", true, "", order: 2 )]
-    [MetricCategoriesField( "Metrics", "Select the metrics you would like to display on the page.", false, "", order: 3 )]
-    [IntegerField( "Metric Value Count", "The number of metric values to return per metric. You will always get the lastest value, but if you would like to return additional values (i.e. to create a chart) you can specify that here.", false, 0, order: 4 )]
+    [TextField( "Block Title Icon CSS Class",
+        Description = "The icon CSS class for use in the block title.",
+        IsRequired = false,
+        DefaultValue = "ti ti-news",
+        Order = 1,
+        Key = "BlockTitleIconCssClass" )]
+    [ContentChannelField( "Content Channel",
+        Description = "The content channel to display with the template. The contant channel must be of type 'Internal Communication Template'.",
+        IsRequired = true,
+        Order = 2 )]
+    [MetricCategoriesField( "Metrics",
+        Description = "Select the metrics you would like to display on the page.",
+        IsRequired = false,
+        Order = 3 )]
+    [IntegerField( "Metric Value Count",
+        Description = "The number of metric values to return per metric. You will always get the lastest value, but if you would like to return additional values (i.e. to create a chart) you can specify that here.",
+        IsRequired = false,
+        DefaultIntegerValue = 0,
+        Order = 4 )]
 
     [CodeEditorField( "Body Template",
         Description = "The Lava template for rendering the body of the block.",
@@ -61,9 +76,21 @@ namespace RockWeb.Blocks.Utility
         DefaultValue = "d",
         Order = 5 )]
 
-    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be made available to the block.", false, order: 6 )]
-    [IntegerField( "Cache Duration", "The time, in seconds, to cache the data for this block. The Lava template will still be run to enable personalization. Only the data for the block will be cached.", false, 3600, order: 7 )]
-    [CustomCheckboxListField( "Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", CACHE_TAG_LIST, false, key: "CacheTags", order: 10 )]
+    [LavaCommandsField( "Enabled Lava Commands",
+        Description = "The Lava commands that should be made available to the block.",
+        IsRequired = false,
+        Order = 6 )]
+    [IntegerField( "Cache Duration",
+        Description = "The time, in seconds, to cache the data for this block. The Lava template will still be run to enable personalization. Only the data for the block will be cached.",
+        IsRequired = false,
+        DefaultIntegerValue = 3600,
+        Order = 7 )]
+    [CustomCheckboxListField( "Cache Tags",
+        Description = "Cached tags are used to link cached content so that it can be expired as a group",
+        ListSource = CACHE_TAG_LIST,
+        IsRequired = false,
+        Key = "CacheTags",
+        Order = 10 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "D526F4A5-19B9-410F-A663-400D93C61D3C" )]
     public partial class InternalCommunicationView : Rock.Web.UI.RockBlock
