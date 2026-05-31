@@ -248,8 +248,8 @@ namespace Rock.Attribute
                 // Check to see if the existing attribute record needs to be updated
                 if ( attributeCache.Name != property.Name ||
                     attributeCache.AbbreviatedName != abbreviatedName ||
-                    attributeCache.DefaultValue != property.DefaultValue ||
-                    attributeCache.Description != property.Description ||
+                    attributeCache.DefaultValue != ( property.DefaultValue ?? string.Empty ) ||
+                    attributeCache.Description != ( property.Description ?? string.Empty ) ||
                     attributeCache.Order != property.Order ||
                     attributeCache.FieldType.Assembly != property.FieldTypeAssembly ||
                     attributeCache.FieldType.Class != property.FieldTypeClass ||
@@ -259,8 +259,8 @@ namespace Rock.Attribute
                 }
 
                 // Check category
-                else if ( attributeCache.Categories.Select( c => c.Name ).Except( propertyCategories ).Any() ||
-                    propertyCategories.Except( attributeCache.Categories.Select( c => c.Name ) ).Any() )
+                else if ( attributeCache.Categories.Select( c => c.Name ).Except( propertyCategories, StringComparer.OrdinalIgnoreCase ).Any() ||
+                    propertyCategories.Except( attributeCache.Categories.Select( c => c.Name ), StringComparer.OrdinalIgnoreCase ).Any() )
                 {
                     updated = true;
                 }
@@ -321,8 +321,8 @@ namespace Rock.Attribute
             // Update the attribute
             attribute.Name = property.Name;
             attribute.AbbreviatedName = abbreviatedName;
-            attribute.Description = property.Description;
-            attribute.DefaultValue = property.DefaultValue;
+            attribute.Description = property.Description ?? string.Empty;
+            attribute.DefaultValue = property.DefaultValue ?? string.Empty;
             attribute.Order = property.Order;
             attribute.IsRequired = property.IsRequired;
 
