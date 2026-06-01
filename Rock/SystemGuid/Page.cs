@@ -620,6 +620,12 @@ namespace Rock.SystemGuid
         public const string CONNECTIONS_HUB = "8B5F2875-0D36-4625-8EE4-B738AE8E12F5";
 
         /// <summary>
+        /// Gets the My Connections page guid.
+        /// ParentPage: Connections
+        /// </summary>
+        public const string MY_CONNECTIONS = "3E55BE64-C8E8-487B-9BD4-E94C7F99BE1B";
+
+        /// <summary>
         /// Gets the Connections List page guid.
         /// ParentPage: Connections
         /// </summary>

@@ -28,7 +28,8 @@
         <template #rightContent v-if="!isMyConnectionsView">
             <RockButton isSquare
                         title="My Connections"
-                        :btnSize="BtnSize.Small">
+                        :btnSize="BtnSize.Small"
+                        @click="onMyConnectionsClick">
                 <i class="ti ti-user-circle"></i>
             </RockButton>
         </template>
@@ -1110,7 +1111,7 @@ i.disabled {
     import { GetSmsConfigurationResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/getSmsConfigurationResponseBag";
     import { PlacementGroupDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/placementGroupDetailsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-    import { PreferenceKey, ViewOptions } from "./ConnectionsHub/types.partial";
+    import { NavigationUrlKey, PreferenceKey, ViewOptions } from "./ConnectionsHub/types.partial";
     import { IGridState } from "@Obsidian/Types/Controls/grid";
     import { HttpResult } from "@Obsidian/Types/Utility/http";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
@@ -1246,6 +1247,14 @@ i.disabled {
     }
 
     const isMyConnectionsView = ref<boolean>(box.options?.isMyConnectionsView ?? false);
+
+    const myConnectionsPageUrl = ref(box.navigationUrls?.[NavigationUrlKey.MyConnectionsPage]);
+
+    function onMyConnectionsClick(): void {
+        if (myConnectionsPageUrl.value) {
+            window.location.href = myConnectionsPageUrl.value;
+        }
+    }
 
     // Always-defined view of the per-Connection-Type options dictionary, so consumers can
     // index into it without repeating the null and optional-chain dance on every access.
@@ -3522,7 +3531,7 @@ i.disabled {
         if (index !== -1) {
             // Check if this row meets server side filters
             if (!isRowVisibleWithServerFilters(gridRow)) {
-                gridData.value.rows.splice(index);
+                gridData.value.rows.splice(index, 1);
                 return;
             }
 
@@ -3933,11 +3942,6 @@ i.disabled {
 
     async function deleteRequests(connectionRequestIdKeys: string[]): Promise<string | null> {
         // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-        let connectionTypeIdKey: string | null | undefined;
-        if (isDockedPanelVisible.value) {
-            connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
-        }
-
         let connectionTypeIdKeys;
         if (isBulkAction.value) {
             connectionTypeIdKeys = distinctSelectedConnectionTypeIdKeys.value;

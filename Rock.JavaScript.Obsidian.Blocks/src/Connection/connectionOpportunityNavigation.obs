@@ -12,6 +12,14 @@
             <DropDownList v-model="opportunityVisibility"
                           :items="config.opportunityVisibilityItems ?? []"
                           :showBlankItem="false" />
+            <template #rightContent>
+                <RockButton isSquare
+                            title="My Connections"
+                            :btnSize="BtnSize.Small"
+                            @click="onMyConnectionsClick">
+                    <i class="ti ti-user-circle"></i>
+                </RockButton>
+            </template>
         </ContextSlicer>
 
         <Panel :title="connectionTypeName"
@@ -240,6 +248,7 @@
     import { BarSeries, LinearGaugeSeries, TooltipContext } from "@Obsidian/Core/Controls/chart";
     import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
@@ -302,6 +311,9 @@
     const opportunityConnectionsHubListViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubListViewPage]);
     const opportunityConnectionsHubBoardViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubBoardViewPage]);
     const opportunityConnectionsHubGridViewPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.OpportunityConnectionsHubGridViewPage]);
+
+    // My Connections-level URLs.
+    const myConnectionsPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.MyConnectionsPage]);
 
     syncRefsWithQueryParams([
         { param: "ConnectionType", ref: connectionTypeIdKey, type: "string" }
@@ -622,6 +634,13 @@
     function onOperationalSnapshotClick(): void {
         if (typeOperationalSnapshotPageUrl.value) {
             window.location.href = typeOperationalSnapshotPageUrl.value;
+        }
+    }
+
+    /** Navigates to the My Connections page for the current person. */
+    function onMyConnectionsClick(): void {
+        if (myConnectionsPageUrl.value) {
+            window.location.href = myConnectionsPageUrl.value;
         }
     }
 

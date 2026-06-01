@@ -39,6 +39,7 @@ export const enum PreferenceKey {
 export const enum NavigationUrlKey {
     PersonProfilePage = "PersonProfilePage",
     GroupDetailPage = "GroupDetailPage",
+    MyConnectionsPage = "MyConnectionsPage",
 }
 
 export type ViewOptions = {

@@ -76,12 +76,20 @@ namespace Rock.Blocks.Engagement
         Order = 3,
         DefaultValue = Rock.SystemGuid.Page.WORKFLOW_ENTRY )]
 
+    [LinkedPage(
+        "My Connections Page",
+        Key = AttributeKey.MyConnectionsPage,
+        Description = "Page used to display the current person's assigned Connection Requests across every Connection Type. The current person will be passed as the Connector page parameter.",
+        Order = 4,
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Page.MY_CONNECTIONS )]
+
     [BadgesField(
         "Badges",
         Key = AttributeKey.Badges,
         Description = "The badges to display in this block.",
         IsRequired = false,
-        Order = 4 )]
+        Order = 5 )]
 
     [CodeEditorField(
         "Lava Heading Template",
@@ -89,7 +97,7 @@ namespace Rock.Blocks.Engagement
         Description = "The HTML Content to render above the person’s name. Includes merge fields ConnectionRequest and Person. <span class='tip tip-lava'></span>",
         IsRequired = false,
         EditorMode = CodeEditorMode.Lava,
-        Order = 5 )]
+        Order = 6 )]
 
     [CodeEditorField(
         "Lava Badge Bar",
@@ -97,7 +105,8 @@ namespace Rock.Blocks.Engagement
         Description = "The HTML Content intended to be used as a kind of custom badge bar for the connection request. Includes merge fields ConnectionRequest and Person. <span class='tip tip-lava'></span>",
         IsRequired = false,
         EditorMode = CodeEditorMode.Lava,
-        Order = 6 )]
+        Order = 7 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "CEE15B88-3B23-4378-9CB1-E59A97A94D1B" )]
@@ -112,6 +121,7 @@ namespace Rock.Blocks.Engagement
             public const string GroupDetailPage = "GroupDetailPage";
             public const string WorkflowDetailPage = "WorkflowDetailPage";
             public const string WorkflowEntryPage = "WorkflowEntryPage";
+            public const string MyConnectionsPage = "MyConnectionsPage";
             public const string Badges = "Badges";
             public const string LavaHeadingTemplate = "LavaHeadingTemplate";
             public const string LavaBadgeBar = "LavaBadgeBar";
@@ -121,6 +131,7 @@ namespace Rock.Blocks.Engagement
         {
             public const string PersonProfilePage = "PersonProfilePage";
             public const string GroupDetailPage = "GroupDetailPage";
+            public const string MyConnectionsPage = "MyConnectionsPage";
         }
 
         private static class PageParameterKey
@@ -130,6 +141,7 @@ namespace Rock.Blocks.Engagement
             public const string ConnectionOpportunity = "ConnectionOpportunity";
             public const string Request = "Request";
             public const string SelectedView = "SelectedView";
+            public const string IsMyConnectionsView = "IsMyConnectionsView";
         }
 
         private static class PreferenceKey
@@ -174,9 +186,8 @@ namespace Rock.Blocks.Engagement
         /// Opportunity, so the grid spans every active type the connector has access to.
         /// </summary>
         protected bool IsMyConnectionsMode =>
-            PageParameter( PageParameterKey.Connector ).IsNotNullOrWhiteSpace()
-            && PageParameter( PageParameterKey.ConnectionType ).IsNullOrWhiteSpace()
-            && PageParameter( PageParameterKey.ConnectionOpportunity ).IsNullOrWhiteSpace();
+            PageParameter( PageParameterKey.IsMyConnectionsView ).AsBoolean() == true
+            && PageParameter( PageParameterKey.Connector ).IsNotNullOrWhiteSpace();
 
         protected Guid? SelectedConnector => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.SelectedConnector )
@@ -247,7 +258,15 @@ namespace Rock.Blocks.Engagement
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.PersonProfilePage] = this.GetLinkedPageUrl( AttributeKey.PersonProfilePage, "PersonId", "((Key))" ),
-                [NavigationUrlKey.GroupDetailPage] = this.GetLinkedPageUrl( AttributeKey.GroupDetailPage, "GroupId", "((Key))" )
+                [NavigationUrlKey.GroupDetailPage] = this.GetLinkedPageUrl( AttributeKey.GroupDetailPage, "GroupId", "((Key))" ),
+                [NavigationUrlKey.MyConnectionsPage] = this.GetLinkedPageUrl(
+                    AttributeKey.MyConnectionsPage,
+                    new Dictionary<string, string>
+                    {
+                        [PageParameterKey.IsMyConnectionsView] = "true",
+                        [PageParameterKey.Connector] = GetCurrentPerson()?.IdKey ?? string.Empty
+                    }
+                )
             };
         }
 
@@ -472,10 +491,14 @@ namespace Rock.Blocks.Engagement
                 .ToList();
 
             // Connector groupings — all connectors from connector groups plus the current person.
+            // Exclude inactive and archived connector groups. A global query filter sets the
+            // ConnectorGroup navigation to null for archived groups, so guard against null as well.
+            // Also exclude inactive/archived group members so they do not appear as connectors.
             var connectorGroupings = connectionType.ConnectionOpportunities
                 .Where( o => o.IsActive )
                 .SelectMany( o => o.ConnectionOpportunityConnectorGroups )
-                .SelectMany( g => g.ConnectorGroup.Members )
+                .Where( g => g.ConnectorGroup != null && g.ConnectorGroup.IsActive && !g.ConnectorGroup.IsArchived )
+                .SelectMany( g => g.ConnectorGroup.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived ) )
                 .Where( m => m.Person.PrimaryAlias != null )
                 .DistinctBy( m => m.Person.PrimaryAlias.Id )
                 .Select( m => GetGroupingFieldBag( m.Person.PrimaryAlias.Id, "person", m.Person.FullName, null, null, m.Person.PhotoUrl ) )
