@@ -1288,7 +1288,29 @@ namespace RockWeb.Blocks.Groups
                 if ( !allowedGroupTypeIds.Contains( group.GroupTypeId ) )
                 {
                     var groupType = CurrentGroupTypeCache;
-                    nbInvalidParentGroup.Text = string.Format( "The '{0}' group does not allow child groups with a '{1}' group type.", group.ParentGroup.Name, groupType != null ? groupType.Name : string.Empty );
+                    var groupTypeName = groupType != null ? groupType.Name : string.Empty;
+
+                    /*
+                        06/01/2026 - MSE
+
+                        GetAllowedGroupTypes() applies two independent restrictions: this block's "Group Types
+                        Include"/"Group Types Exclude" settings and the parent group's allowed child group types.
+                        Previously the failure message always blamed the parent group, which was misleading when
+                        the block settings were the actual cause. Re-evaluate the block settings on their own
+                        (passing a null parent group type) so we can report the correct reason.
+
+                        Reason: https://github.com/SparkDevNetwork/Rock/issues/6851
+                    */
+                    var blockAllowedGroupTypeIds = GetAllowedGroupTypes( null, rockContext ).Select( t => t.Id ).ToList();
+                    if ( !blockAllowedGroupTypeIds.Contains( group.GroupTypeId ) )
+                    {
+                        nbInvalidParentGroup.Text = string.Format( "Groups with a '{0}' group type cannot be saved here because of this block's group type settings (e.g. 'Group Types Include' / 'Group Types Exclude').", groupTypeName );
+                    }
+                    else
+                    {
+                        nbInvalidParentGroup.Text = string.Format( "The '{0}' group does not allow child groups with a '{1}' group type.", group.ParentGroup.Name, groupTypeName );
+                    }
+
                     nbInvalidParentGroup.Visible = true;
                     return;
                 }
