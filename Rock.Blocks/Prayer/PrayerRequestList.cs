@@ -24,12 +24,14 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.AI;
+using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Prayer.PrayerRequestList;
+using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -77,6 +79,7 @@ namespace Rock.Blocks.Prayer
             public const string FilterUrgent = "filter-urgent";
             public const string FilterCommenting = "filter-commenting";
             public const string FilterShowExpiredRequests = "filter-show-expired-requests";
+            public const string FilterDateRange = "filter-date-range";
         }
 
         #region Properties
@@ -98,6 +101,10 @@ namespace Rock.Blocks.Prayer
         private bool FilterShowExpiredRequests => BlockPersonPreferences
             .GetValue( PreferenceKey.FilterShowExpiredRequests )
             .AsBoolean();
+
+        private SlidingDateRangeBag FilterDateRange => BlockPersonPreferences
+            .GetValue( PreferenceKey.FilterDateRange )
+            .ToSlidingDateRangeBagOrNull();
 
         #endregion Properties
 
@@ -237,6 +244,28 @@ namespace Rock.Blocks.Prayer
                 {
                     qry = qry.Where( p => p.AllowComments == false );
                 }
+            }
+
+            // Filter by the entered date range. This is always applied and defaults to the
+            // last 3 months so the grid never materializes an unbounded number of rows (which
+            // is what enabling 'Show Expired Requests' would otherwise do, since requests
+            // accumulate over time). The individual can widen the range as needed.
+            var defaultDateRange = new SlidingDateRangeBag
+            {
+                RangeType = SlidingDateRangeType.Last,
+                TimeUnit = TimeUnitType.Month,
+                TimeValue = 3
+            };
+
+            var dateRange = FilterDateRange.Validate( defaultDateRange ).ActualDateRange;
+            if ( dateRange.Start.HasValue )
+            {
+                qry = qry.Where( p => p.EnteredDateTime >= dateRange.Start.Value );
+            }
+
+            if ( dateRange.End.HasValue )
+            {
+                qry = qry.Where( p => p.EnteredDateTime < dateRange.End.Value );
             }
 
             // If 'Show Expired Requests' is false, filter them out... they're included by default.
