@@ -1154,9 +1154,26 @@ namespace Rock.Blocks.Group
             if ( !allowedGroupTypeIds.Contains( group.GroupTypeId ) )
             {
                 var groupType = GroupTypeCache.Get( group.GroupTypeId );
-                errorMessage = parentGroup != null
-                    ? $"The '{System.Net.WebUtility.HtmlEncode( parentGroup.Name )}' group does not allow child groups with a '{System.Net.WebUtility.HtmlEncode( groupType?.Name ?? string.Empty )}' group type."
-                    : $"This block does not allow the '{System.Net.WebUtility.HtmlEncode( groupType?.Name ?? string.Empty )}' group type.";
+                var groupTypeName = System.Net.WebUtility.HtmlEncode( groupType?.Name ?? string.Empty );
+
+                /*
+                    06/01/2026 - MSE
+
+                    GetAllowedGroupTypes() applies two independent restrictions: this block's group type
+                    settings (the include/exclude, navigation, and security-role filters) and the parent
+                    group's allowed child group types. Blaming the parent group is misleading when the
+                    block settings are what actually excluded the type, so re-check the block settings on
+                    their own (null parent) to report the correct reason.
+
+                    Reason: https://github.com/SparkDevNetwork/Rock/issues/6851
+                */
+                var blockAllowedGroupTypeIds = GetAllowedGroupTypes( null, RockContext )
+                    .Select( gt => gt.Id )
+                    .ToList();
+
+                errorMessage = !blockAllowedGroupTypeIds.Contains( group.GroupTypeId )
+                    ? $"Groups with a '{groupTypeName}' group type cannot be saved here because of this block's group type settings (e.g. 'Group Types: Include' / 'Group Types: Exclude')."
+                    : $"The '{System.Net.WebUtility.HtmlEncode( parentGroup.Name )}' group does not allow child groups with a '{groupTypeName}' group type.";
                 return false;
             }
 
