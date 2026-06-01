@@ -37,8 +37,14 @@ namespace Rock.Jobs
     [DisplayName( "Send Following Suggestion Notification" )]
     [Description( "Calculates and sends any following suggestions to those people that are eligible for following." )]
 
-    [SystemCommunicationField( "Following Suggestion Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
-    [SecurityRoleField( "Eligible Followers", "The group that contains individuals who should receive following suggestions", true, order: 1 )]
+    [SystemCommunicationField( "Following Suggestion Notification Email Template",
+        IsRequired = true,
+        Order = 0,
+        Key = "EmailTemplate" )]
+    [SecurityRoleField( "Eligible Followers",
+        Description = "The group that contains individuals who should receive following suggestions",
+        IsRequired = true,
+        Order = 1 )]
     public class SendFollowingSuggestions : RockJob
     {
         /// <summary> 

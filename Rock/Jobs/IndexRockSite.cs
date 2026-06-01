@@ -31,10 +31,21 @@ namespace Rock.Jobs
     [DisplayName( "Index Rock Site" )]
     [Description( "This job indexes the specified site." )]
 
-
-    [SiteField( "Site", "The site that will be indexed", true, order: 0 )]
-    [TextField( "Login Id", "The login to impersonate when navigating to secured pages. Leave blank if secured pages should not be indexed.", false, "", "", 1, "LoginId" )]
-    [TextField( "Password", "The password associated with the Login Id.", false, "", "", 2, "Password", true )]
+    [SiteField( "Site",
+        Description = "The site that will be indexed",
+        IsRequired = true,
+        Order = 0 )]
+    [TextField( "Login Id",
+        Description = "The login to impersonate when navigating to secured pages. Leave blank if secured pages should not be indexed.",
+        IsRequired = false,
+        Order = 1,
+        Key = "LoginId" )]
+    [TextField( "Password",
+        Description = "The password associated with the Login Id.",
+        IsRequired = false,
+        Order = 2,
+        Key = "Password",
+        IsPassword = true )]
 
     public class IndexRockSite : RockJob
     {

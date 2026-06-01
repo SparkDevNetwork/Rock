@@ -38,7 +38,13 @@ namespace Rock.Jobs
         Category = "General",
         Order = 0,
         Key = "SQLQuery" )]
-    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the SQL default (30 seconds).", false, 180, "General", 1, "CommandTimeout")]
+    [IntegerField( "Command Timeout",
+        Description = "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the SQL default (30 seconds).",
+        IsRequired = false,
+        DefaultIntegerValue = 180,
+        Category = "General",
+        Order = 1,
+        Key = "CommandTimeout" )]
     public class RunSQL : RockJob
     {
         /// <summary> 

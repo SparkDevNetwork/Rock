@@ -40,25 +40,24 @@ namespace Rock.Jobs
     #region Job Attributes
 
     [SystemCommunicationField( "System Communication",
-        "The system communication template to be used for the notifications.",
-        required: true,
+        Description = "The system communication template to be used for the notifications.",
         Order = 0,
         IsRequired = true,
         Key = AttributeKey.SystemEmail,
         DefaultSystemCommunicationGuid = SystemGuid.SystemCommunication.PRAYER_REQUEST_COMMENTS_NOTIFICATION )]
     [CategoryField( "Prayer Categories",
-        "A category filter for the Prayer Requests to include. If not specified, all categories will be included.",
+        Description = "A category filter for the Prayer Requests to include. If not specified, all categories will be included.",
         EntityType = typeof( Rock.Model.PrayerRequest ),
         Order = 1,
         IsRequired = false,
         AllowMultiple = true,
         Key = AttributeKey.PrayerCategories )]
     [BooleanField( "Include Child Categories",
-        "Should Prayer Requests in child categories of the selected filter categories be included.",
+        Description = "Should Prayer Requests in child categories of the selected filter categories be included.",
         Order = 2,
         Key = AttributeKey.IncludeChildCategories )]
     [BooleanField( "Save Communications",
-        "Should the notifications be recorded as Communication entries?",
+        Description = "Should the notifications be recorded as Communication entries?",
         Order = 3,
         Key = AttributeKey.SaveCommunications )]
 

@@ -30,7 +30,10 @@ namespace Rock.Jobs
     [DisplayName( "Spark Link" )]
     [Description( "This job fetches Rock notifications from the Spark Development Network." )]
 
-    [GroupField( "Notification Group", "The group that should receive incoming notifications", true, Rock.SystemGuid.Group.GROUP_ADMINISTRATORS )]
+    [GroupField( "Notification Group",
+        Description = "The group that should receive incoming notifications",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Group.GROUP_ADMINISTRATORS )]
     public class SparkLink : RockJob
     {
         /// <summary>
