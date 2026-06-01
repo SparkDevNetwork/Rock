@@ -92,7 +92,9 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 
-    <GridSettingsModal v-model="gridSettings" v-model:visible="isGridSettingsVisible" />
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :defaultSlidingDateRange="defaultSlidingDateRange" />
 </template>
 
 <script setup lang="ts">
@@ -112,6 +114,7 @@
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
 
     const config = useConfigurationValues<ListBlockBox<PrayerRequestListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -128,12 +131,21 @@
     let gridDataCopy: GridDataBag | undefined;
     const isGridSettingsVisible = ref(false);
 
+    // Default the entered date range to the last 3 months so the grid never loads an
+    // unbounded number of rows (especially when expired requests are shown).
+    const defaultSlidingDateRange: SlidingDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Month,
+        timeValue: 3
+    };
+
     const gridSettings = ref<GridSettingsOptions>({
         publicOrPrivate: preferences.getValue(PreferenceKey.FilterPublicOrPrivate),
         active: preferences.getValue(PreferenceKey.FilterActive),
         urgent: preferences.getValue(PreferenceKey.FilterUrgent),
         commenting: preferences.getValue(PreferenceKey.FilterCommenting),
-        showExpiredRequests: asBooleanOrNull(preferences.getValue(PreferenceKey.FilterShowExpiredRequests)) ?? false
+        showExpiredRequests: asBooleanOrNull(preferences.getValue(PreferenceKey.FilterShowExpiredRequests)) ?? false,
+        dateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterDateRange)) ?? defaultSlidingDateRange
     });
 
     // #endregion Values
@@ -148,7 +160,8 @@
             || !!gridSettings.value.active
             || !!gridSettings.value.urgent
             || !!gridSettings.value.commenting
-            || !!gridSettings.value.showExpiredRequests;
+            || !!gridSettings.value.showExpiredRequests
+            || !!gridSettings.value.dateRange;
     });
 
     // #endregion Computed Values
@@ -317,6 +330,9 @@
         preferences.setValue(PreferenceKey.FilterUrgent, gridSettings.value.urgent ?? "");
         preferences.setValue(PreferenceKey.FilterCommenting, gridSettings.value.commenting ?? "");
         preferences.setValue(PreferenceKey.FilterShowExpiredRequests, asTrueOrFalseString(gridSettings.value.showExpiredRequests));
+        preferences.setValue(PreferenceKey.FilterDateRange, gridSettings.value.dateRange
+            ? slidingDateRangeToString(gridSettings.value.dateRange)
+            : slidingDateRangeToString(defaultSlidingDateRange));
 
         await preferences.save();
 
