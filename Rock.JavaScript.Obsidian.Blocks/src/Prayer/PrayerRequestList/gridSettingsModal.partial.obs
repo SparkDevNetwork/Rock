@@ -7,6 +7,12 @@
         <SectionHeader title="Filters" />
 
         <div class="row">
+            <div class="col-md-12">
+                <SlidingDateRangePicker v-model="dateRange" label="Date Range" />
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col-md-4">
                 <DropDownList v-model="publicOrPrivate" label="Public / Private" :items="publicOrPrivateItems" />
             </div>
@@ -35,15 +41,22 @@
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import { ref, PropType, watch } from "vue";
     import { GridSettingsOptions } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
 
     const props = defineProps({
         modelValue: {
             type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        defaultSlidingDateRange: {
+            type: Object as PropType<SlidingDateRange>,
             required: true
         },
 
@@ -64,6 +77,7 @@
     const urgent = ref(props.modelValue.urgent ?? "");
     const commenting = ref(props.modelValue.commenting ?? "");
     const showExpiredRequests = ref(props.modelValue.showExpiredRequests);
+    const dateRange = ref<SlidingDateRange | null>(props.modelValue.dateRange ?? props.defaultSlidingDateRange);
 
     const isVisible = useVModelPassthrough(props, "visible", emit);
 
@@ -133,7 +147,8 @@
             active: active.value,
             urgent: urgent.value,
             commenting: commenting.value,
-            showExpiredRequests: showExpiredRequests.value
+            showExpiredRequests: showExpiredRequests.value,
+            dateRange: dateRange.value
         };
 
         if (!deepEqual(value, props.modelValue, true)) {
@@ -149,6 +164,7 @@
         urgent.value = props.modelValue.urgent ?? "";
         commenting.value = props.modelValue.commenting ?? "";
         showExpiredRequests.value = props.modelValue.showExpiredRequests;
+        dateRange.value = props.modelValue.dateRange ?? props.defaultSlidingDateRange;
     });
 
     watch(isVisible, () => {
