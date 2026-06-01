@@ -1,0 +1,99 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="form-group bulk-item" :class="[bulkItemClasses, { 'is-inactive': !internalValue }]">
+        <label class="bulk-item-label" @click="internalValue = !internalValue">
+            <i class="bulk-item-icon" :class="internalValue ? 'ti ti-circle-check-filled text-primary' : 'ti ti-circle'"
+               aria-hidden="true"></i>
+
+            <span>{{ label }}
+                <slot name="label" />
+            </span>
+
+            <HelpBlock v-if="help" :text="help" />
+        </label>
+
+        <div class="bulk-item-control">
+            <slot></slot>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.bulk-item-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    cursor: pointer;
+    user-select: none;
+    font-size: var(--font-size-small);
+    line-height: 18px;
+    font-weight: 600;
+    margin-bottom: var(--spacing-tiny);
+}
+
+.bulk-item-icon {
+    font-size: 0.9em;
+    line-height: 1;
+    flex-shrink: 0;
+    color: var(--color-interface-medium);
+}
+
+.bulk-item-label:hover .bulk-item-icon {
+    color: var(--color-primary);
+}
+
+.bulk-item {
+    transition: opacity 0.15s ease;
+}
+
+.bulk-item.is-inactive .bulk-item-control {
+    pointer-events: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+
+    const props = defineProps({
+        /**
+         * The v-model binding: indicates whether this item is "checked" (active/enabled).
+         */
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /**
+         * The text to display next to the toggle icon.
+         */
+        label: {
+            type: String as PropType<string>,
+            required: false,
+            default: ""
+        },
+
+        /**
+         * Help text to display next to the label.
+         */
+        help: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * Internal classes to add to the wrapper.
+         */
+        bulkItemClasses: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+</script>
