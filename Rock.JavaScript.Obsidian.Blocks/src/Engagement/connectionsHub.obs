@@ -3161,7 +3161,7 @@
         if (index !== -1) {
             // Check if this row meets server side filters
             if (!isRowVisibleWithServerFilters(gridRow)) {
-                gridData.value.rows.splice(index);
+                gridData.value.rows.splice(index, 1);
                 return;
             }
 
