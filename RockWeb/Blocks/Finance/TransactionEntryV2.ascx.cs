@@ -77,15 +77,6 @@ namespace RockWeb.Blocks.Finance
         Category = AttributeCategory.None,
         Order = 3 )]
 
-    [DefinedValueField(
-        "Source",
-        Key = AttributeKey.FinancialSourceType,
-        Description = "The Financial Source Type to use when creating transactions.",
-        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
-        DefaultValue = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE,
-        Category = AttributeCategory.None,
-        Order = 4 )]
-
     [AccountsField(
         "Accounts",
         Key = AttributeKey.AccountsToDisplay,
