@@ -519,7 +519,7 @@ namespace Rock.Blocks.Workflow
                 {
                     Type = InteractiveMessageType.Warning,
                     Title = "Sorry",
-                    Content = "You are not authorized to view this typ eof workflow."
+                    Content = "You are not authorized to view this type of workflow."
                 };
 
                 return null;
