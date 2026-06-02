@@ -78,7 +78,7 @@ namespace Rock.Blocks.Connection
 
     [LinkedPage( "My Connections Page",
         Key = AttributeKey.MyConnectionsPage,
-        Description = "Select the page that the My Connections button should open. The current person will be passed as the Connector page parameter.",
+        Description = "Select the page that the My Connections button should open to view a personal Connections workspace.",
         DefaultValue = Rock.SystemGuid.Page.MY_CONNECTIONS,
         Order = 4,
         IsRequired = true )]

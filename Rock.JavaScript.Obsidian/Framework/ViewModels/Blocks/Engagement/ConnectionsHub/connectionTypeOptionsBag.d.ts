@@ -62,9 +62,6 @@ export type ConnectionTypeOptionsBag = {
     /** Gets or sets a value indicating whether the future follow-up feature is enabled for this Connection Type. */
     isFutureFollowUpEnabled: boolean;
 
-    /** Gets or sets a value indicating whether per-request security is enabled, allowing individual requests to have their own security settings. */
-    isRequestSecurityEnabled: boolean;
-
     /** Gets or sets a value indicating whether connection statuses must be progressed sequentially rather than freely. */
     isSequentialStatusMode: boolean;
 

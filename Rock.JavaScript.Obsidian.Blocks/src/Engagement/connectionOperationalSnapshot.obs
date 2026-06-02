@@ -84,7 +84,7 @@
                             <div class="row row-grid gutter-4" :class="{ [`${breakpointHelper?.breakpoint}-actual`]: true, [`${breakpointHelper?.breakpoints}`]: true, 'stacked': breakpointHelper?.isXsOrSmaller || breakpointHelper?.isMd }">
                                 <div class="col-lg-6 col-md-12 col-sm-6">
                                     <KpiTile label="Timeliness"
-                                             help="The percentage of requests which were completed on time."
+                                             help="The percentage of completed requests that were finished on or before their due date during this period."
                                              :value="completionMetricsKpis.timeliness.value">
                                         <template #footer>
                                             <span :style="{ color: completionMetricsKpis.timeliness.color }">{{ completionMetricsKpis.timeliness.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
@@ -94,7 +94,7 @@
 
                                 <div class="col-lg-6 col-md-12 col-sm-6">
                                     <KpiTile label="Responsiveness (Rsp)"
-                                             help=""
+                                             help="The average number of days between when a request was submitted and when a connector first acted on it during this period."
                                              :value="completionMetricsKpis.responsiveness.value">
                                         <template #footer>
                                             <span :style="{ color: completionMetricsKpis.responsiveness.color }">{{ completionMetricsKpis.responsiveness.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
@@ -104,6 +104,7 @@
 
                                 <div class="col-lg-6 col-md-12 col-sm-6">
                                     <KpiTile label="Requests Completed"
+                                             help="The total number of requests marked as completed during this period."
                                              :value="completionMetricsKpis.requestsCompleted.value">
                                         <template #footer>
                                             <span :style="{ color: completionMetricsKpis.requestsCompleted.color }">{{ completionMetricsKpis.requestsCompleted.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}
@@ -113,6 +114,7 @@
 
                                 <div class="col-lg-6 col-md-12 col-sm-6">
                                     <KpiTile label="Average Time to Complete"
+                                             help="The average number of days from request submission to completion, across all requests closed in this period."
                                              :value="completionMetricsKpis.averageTimeToComplete.value">
                                         <template #footer>
                                             <span :style="{ color: completionMetricsKpis.averageTimeToComplete.color }">{{ completionMetricsKpis.averageTimeToComplete.difference || '-' }}</span> {{ completionMetricsKpiFooterSuffix }}

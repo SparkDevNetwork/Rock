@@ -5,7 +5,7 @@
                    showCampus>
         <template #default>
             <div class="slicer-slot-content">
-                <ButtonGroup v-if="enabledViews.length > 1"
+                <ButtonGroup v-show="enabledViews.length > 1"
                              v-model="selectedView"
                              :items="enabledViews"
                              :btnSize="BtnSize.ExtraSmall" />
@@ -424,7 +424,7 @@
                                     <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
                                 </div>
                                 <template v-if="canEditConnectionRequests">
-                                    <div v-if="box.options?.connectionTypeOptionsByIdKey && box.options.connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.isRequestSecurityEnabled"
+                                    <div v-if="!row.isRequestSecurityDisabled"
                                          class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
                                          @click.stop="showSecurityModal(row.idKey)">
                                         <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
@@ -673,17 +673,17 @@
                         :sortValue="getStatusFilterValue">
                     <template #format="{ row }">
                         <HighlightLabel labelType="custom"
-                                        v-tooltip.overflow="row.connectionStatus.name"
                                         :style="`background-color: ${row.connectionStatus.highlightColor};`">
-                            {{ row.connectionStatus.name }}
+                            <div class="text-truncate" v-tooltip.overflow="row.connectionStatus.name">
+                                {{ row.connectionStatus.name }}
+                            </div>
                         </HighlightLabel>
                     </template>
                 </Column>
 
                 <AttributeColumns :attributes="attributesToShow" />
 
-                <!-- TODO - Need to check row level if the user can edit connection requests. -->
-                <SecurityColumn v-if="canEditConnectionRequests" :itemTitle="() => 'Item'" />
+                <SecurityColumn v-if="canEditConnectionRequests" disabledField="isRequestSecurityDisabled" :itemTitle="() => 'Item'" />
             </Grid>
         </template>
     </GroupedPanel>
@@ -1425,7 +1425,7 @@ i.disabled {
 
     const selectedView = ref<string>((() => {
         const preferenceValue = preferences.getValue(getConnectionFilterKey(PreferenceKey.SelectedViewConnectionTypeIdKey));
-        return isNullOrWhiteSpace(preferenceValue) ? enabledViews[0].value : preferenceValue;
+        return isNullOrWhiteSpace(preferenceValue) ? enabledViews[0]?.value : preferenceValue;
     })());
 
     const selectedGrouping = ref<string>((() => {
@@ -1433,7 +1433,7 @@ i.disabled {
             return "statusGrouping";
         }
 
-        const defaultGrouping = isMyConnectionsView.value ? "typeGrouping" : "connectorGrouping";
+        const defaultGrouping = isMyConnectionsView.value ? "dueStatusGrouping" : "connectorGrouping";
 
         return isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedGroupByMode)) ? defaultGrouping : preferences.getValue(PreferenceKey.SelectedGroupByMode);
     })());
@@ -1795,8 +1795,7 @@ i.disabled {
 
     const connectionActivityItems = computed<ConnectionActivityTypeBag[] | null | undefined>(() => {
         const activities = dockedPanelDetailsBox.value?.options?.connectionActivities
-            ?? staticConnectionTypeOptions.value?.connectionActivities;
-        // TODO - Handle my connections mode
+            ?? activeActionConnectionTypeOptions.value?.connectionActivities;
 
         return activities;
     });
@@ -3196,7 +3195,6 @@ i.disabled {
         const statusUpdateBags: ConnectionRequestUpdateBag[] = [];
         const completedRequests: string[] = [];
 
-        // TODO need to handle multiple types.
         if (activeActionConnectionTypeOptions.value?.isSequentialStatusMode) {
             const statusIndexByGuid = new Map(
                 connectionStatusItems.value.map((s, i) => [s.value, i])
@@ -3318,7 +3316,6 @@ i.disabled {
     }
 
     async function refreshUserEditPermissions(): Promise<void> {
-        // TODO - I don't know if this is correct yet.
         // Refresh permissions for whichever Connection Type the user has filtered to.
         // In Standard mode this is the page's static type; in My Connections it follows
         // the type dropdown (and falls back to the single loaded type when only one exists).
@@ -3989,6 +3986,9 @@ i.disabled {
             if (isDockedPanelVisible.value) {
                 connectionTypeIdKey = dockedPanelDetailsBox.value?.options?.connectionTypeIdKey;
             }
+            else {
+                connectionTypeIdKey = activeActionConnectionTypeOptions.value?.idKey;
+            }
 
             // If we have an activity Id Key then we are in update mode.
             if (bag.activityIdKey) {
@@ -4567,30 +4567,10 @@ i.disabled {
 
         await preferences.save();
 
-        // TODO - Likely do something similar for type
-
-        // newConnectionRequest.value.bag = {
-        //     connectionOpportunityGuid: selectedType.value
-        // };
-        // if (!isNullOrWhiteSpace(selectedType.value)) {
-        //     await fetchConnectionOpportunityDetails(selectedType.value);
-        // }
-        // else {
-        //     connectionOpportunityDetails.value = {};
-        // }
-
-        // Remove the Connection Opportunity query param and ensure ConnectionType is present.
-        // removeCurrentUrlQueryParams("ConnectionOpportunity");
-
-        // If there is no connection type query string parameter present, we need to add it
-        // because we've just removed the Connection Opportunity query string parameter.
-        // if (box.options?.connectionTypeIdKey) {
-        //     const url = new URL(window.location.href);
-        //     if (!url.searchParams.has("ConnectionType")) {
-        //         url.searchParams.set("ConnectionType", box.options.connectionTypeIdKey);
-        //         history.replaceState(null, "", url.toString());
-        //     }
-        // }
+        // Once the individual changes or clears the type filter, the FilterConnectionType
+        // preference is the source of truth. Clear the ConnectionType query string param (used
+        // only to seed the filter on arrival) so a page reload doesn't re-apply the seeded type.
+        removeCurrentUrlQueryParams("ConnectionType");
 
         if (!isNullOrWhiteSpace(selectedType.value)) {
             await refreshUserEditPermissions();
@@ -4625,7 +4605,7 @@ i.disabled {
         if (staticConnectionTypeOptions.value?.idKey) {
             const url = new URL(window.location.href);
             if (!url.searchParams.has("ConnectionType")) {
-                url.searchParams.set("ConnectionType", staticConnectionTypeOptions.value.idKey); // TODO - Determine if this is right
+                url.searchParams.set("ConnectionType", staticConnectionTypeOptions.value.idKey);
                 history.replaceState(null, "", url.toString());
             }
         }
@@ -4729,7 +4709,14 @@ i.disabled {
     }, 150));
 
     loadContextValues();
-    loadGridData();
+
+    if (isNullOrWhiteSpace(box.options?.errorMessage)) {
+        loadGridData();
+    }
+    else {
+        requestListErrorMessage.value = box.options?.errorMessage ?? "An error occurred while loading the Block.";
+        areRequestsLoading.value = false;
+    }
 
     if (!isNullOrWhiteSpace(box.options?.connectionRequestIdKey)) {
         onSelectItem(box.options!.connectionRequestIdKey!);

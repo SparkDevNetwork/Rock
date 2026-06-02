@@ -55,11 +55,6 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public bool IsFutureFollowUpEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether per-request security is enabled, allowing individual requests to have their own security settings.
-        /// </summary>
-        public bool IsRequestSecurityEnabled { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether reminders are enabled for connection requests.
         /// </summary>
         public bool AreRemindersEnabled { get; set; }

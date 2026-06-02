@@ -40,6 +40,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public string IconCssClass { get; set; }
 
         /// <summary>
+        /// Gets or sets the error message if one were to occur when populating Connections Hub options.
+        /// </summary>
+        public string ErrorMessage { get; set; }
+
+        /// <summary>
         /// Gets or sets the encrypted identifier key of the Connection Request being viewed or edited.
         /// </summary>
         public string ConnectionRequestIdKey { get; set; }

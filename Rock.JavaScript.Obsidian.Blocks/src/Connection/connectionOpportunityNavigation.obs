@@ -637,11 +637,25 @@
         }
     }
 
-    /** Navigates to the My Connections page for the current person. */
+    /** Navigates to the My Connections page for the current person, pre-filtered to the current connection type. */
     function onMyConnectionsClick(): void {
-        if (myConnectionsPageUrl.value) {
-            window.location.href = myConnectionsPageUrl.value;
+        if (!myConnectionsPageUrl.value) {
+            return;
         }
+
+        // The server-built URL encodes the connection type the page loaded with. Changing the type
+        // dropdown only updates the query string (not the server URLs), so override the ConnectionType
+        // with the live selection before navigating.
+        const url = new URL(myConnectionsPageUrl.value, window.location.origin);
+
+        if (connectionTypeIdKey.value) {
+            url.searchParams.set("ConnectionType", connectionTypeIdKey.value);
+        }
+        else {
+            url.searchParams.delete("ConnectionType");
+        }
+
+        window.location.href = url.toString();
     }
 
     /**

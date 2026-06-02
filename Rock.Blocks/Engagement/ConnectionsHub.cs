@@ -79,7 +79,7 @@ namespace Rock.Blocks.Engagement
     [LinkedPage(
         "My Connections Page",
         Key = AttributeKey.MyConnectionsPage,
-        Description = "Page used to display the current person's assigned Connection Requests across every Connection Type. The current person will be passed as the Connector page parameter.",
+        Description = "Select the page that the My Connections button should open to view a personal Connections workspace.",
         Order = 4,
         IsRequired = true,
         DefaultValue = Rock.SystemGuid.Page.MY_CONNECTIONS )]
@@ -186,8 +186,7 @@ namespace Rock.Blocks.Engagement
         /// Opportunity, so the grid spans every active type the connector has access to.
         /// </summary>
         protected bool IsMyConnectionsMode =>
-            PageParameter( PageParameterKey.IsMyConnectionsView ).AsBoolean() == true
-            && PageParameter( PageParameterKey.Connector ).IsNotNullOrWhiteSpace();
+            PageParameter( PageParameterKey.IsMyConnectionsView ).AsBoolean() == true;
 
         protected Guid? SelectedConnector => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.SelectedConnector )
@@ -244,7 +243,19 @@ namespace Rock.Blocks.Engagement
 
             if ( !hasValue )
             {
-                this.PersonPreferences.SetValue( stateFilterKey, new List<string> { ConnectionState.Active.ToString( "D" ) }.ToJson() );
+                // My Connections mode defaults to a broader set of states (Active, Future Follow-Up,
+                // and Completed) so the connector sees their full slate of work, whereas a single
+                // Connection Type defaults to Active only.
+                var defaultStates = IsMyConnectionsMode
+                    ? new List<string>
+                    {
+                        ConnectionState.Active.ToString( "D" ),
+                        ConnectionState.FutureFollowUp.ToString( "D" ),
+                        ConnectionState.Connected.ToString( "D" )
+                    }
+                    : new List<string> { ConnectionState.Active.ToString( "D" ) };
+
+                this.PersonPreferences.SetValue( stateFilterKey, defaultStates.ToJson() );
                 this.PersonPreferences.Save();
             }
         }
@@ -294,20 +305,39 @@ namespace Rock.Blocks.Engagement
             string preferenceKey;
             options.GridDataToShowItems = new List<GridDataToShowItemBag>();
 
-            if ( connectionType == null && PageParameter( PageParameterKey.Connector ).IsNotNullOrWhiteSpace() )
+            // My Connections mode takes precedence even when a Connection Type is supplied,
+            // because the type is treated as a slicer filter (seeded below) rather than as a
+            // request to enter single-Connection-Type mode.
+            if ( IsMyConnectionsMode )
             {
                 preferenceKey = "my-connections";
+
+                // When a Connection Type is supplied via page parameter (e.g. coming from the
+                // Connection Opportunity Navigation block), seed the FilterConnectionType preference
+                // so the My Connections slicer opens pre-filtered to that type. The user can still
+                // change or clear it; GetGridData reads only from the preference.
+                if ( connectionType != null )
+                {
+                    this.PersonPreferences.SetValue( PreferenceKey.FilterConnectionType, connectionType.Guid.ToString() );
+                    this.PersonPreferences.Save();
+                }
+
                 SetMyConnectionsModeOptions( options );
             }
             else
             {
-                preferenceKey = connectionType.IdKey;
+                preferenceKey = connectionType?.IdKey;
                 SetSingleConnectionTypeHubOptions( connectionType, connectionOpportunity, options );
             }
 
             if ( PageParameter( PageParameterKey.Request ).IsNotNullOrWhiteSpace() )
             {
                 options.ConnectionRequestIdKey = new ConnectionRequestService( RockContext ).Get( PageParameter( PageParameterKey.Request ), !PageCache.Layout.Site.DisablePredictableIds )?.IdKey ?? string.Empty;
+            }
+
+            if ( options.ErrorMessage.IsNotNullOrWhiteSpace() )
+            {
+                return options;
             }
 
             // If a Connection Opportunity was provided as a page parameter, seed the person preference
@@ -432,7 +462,7 @@ namespace Rock.Blocks.Engagement
         {
             if ( connectionType == null )
             {
-                // TODO - set some sort of Not Found message.
+                options.ErrorMessage = $"{Rock.Model.ConnectionType.FriendlyTypeName} not found.";
                 return;
             }
 
@@ -623,7 +653,7 @@ namespace Rock.Blocks.Engagement
 
             if ( connectorPerson == null )
             {
-                // TODO - Probably should set a not found message on the options bag
+                options.ErrorMessage = "Connector not found.";
                 return;
             }
 
@@ -734,7 +764,6 @@ namespace Rock.Blocks.Engagement
             } ).ToList();
             options.RequestSourceItems = connectionType.ConnectionTypeSources.ToListItemBagList();
             options.IsFutureFollowUpEnabled = connectionType.EnableFutureFollowup;
-            options.IsRequestSecurityEnabled = connectionType.EnableRequestSecurity;
             options.AreCelebrationsEnabled = connectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.Celebration );
             options.AreRemindersEnabled = connectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.Reminder );
             options.AreGroupPlacementsEnabled = connectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.GroupPlacement );
@@ -2732,6 +2761,7 @@ namespace Rock.Blocks.Engagement
                 ConnectionTypeGuid = connectionType.Guid,
                 ConnectionTypeName = connectionType.Name,
                 ConnectionTypeSource = connectionRequest.ConnectionTypeSource?.Name,
+                IsRequestSecurityDisabled = !connectionType.EnableRequestSecurity,
                 Campus = connectionRequest.Campus?.Name,
                 CampusGuid = connectionRequest.Campus?.Guid,
                 Group = connectionRequest.AssignedGroup?.Name,
@@ -3834,6 +3864,7 @@ SELECT
     ct.[Name]                                       AS [ConnectionTypeName],
     ct.[Guid]                                       AS [ConnectionTypeGuid],
     ct.[IconCssClass]                               AS [ConnectionTypeIconCssClass],
+    ct.[EnableRequestSecurity]                      AS [IsRequestSecurityEnabled],
     co.[IconCssClass]                               AS [ConnectionOpportunityIconCssClass],
     co.[Order]                                      AS [ConnectionOpportunityOrder],
     cts.[Name]                                      AS [ConnectionTypeSourceName],
@@ -4055,6 +4086,7 @@ WHERE 1 = 1" );
                     ConnectionTypeName = row.ConnectionTypeName,
                     ConnectionTypeIconCssClass = row.ConnectionTypeIconCssClass,
                     ConnectionTypeSource = row.ConnectionTypeSourceName ?? string.Empty,
+                    IsRequestSecurityDisabled = !row.IsRequestSecurityEnabled,
                     CampusId = row.CampusId,
                     Campus = row.CampusName ?? string.Empty,
                     CampusGuid = row.CampusGuid,
@@ -6922,6 +6954,7 @@ WHERE 1 = 1" );
                 .AddField( "connectionTypeName", a => a.ConnectionTypeName )
                 .AddField( "connectionTypeIdKey", a => a.ConnectionTypeId.AsIdKey() )
                 .AddField( "connectionTypeIconCssClass", a => a.ConnectionTypeIconCssClass )
+                .AddField( "isRequestSecurityDisabled", a => a.IsRequestSecurityDisabled )
                 .AddField( "connectionTypeGuid", a => a.ConnectionTypeGuid ) // TODO - Do we need to keep this?
                 .AddTextField( "connectionTypeSource", a => a.ConnectionTypeSource )
                 .AddTextField( "campus", a => a.Campus )
@@ -7038,6 +7071,8 @@ WHERE 1 = 1" );
 
             public string ConnectionTypeIconCssClass { get; set; }
 
+            public bool IsRequestSecurityDisabled { get; set; }
+
             public int ConnectionOpportunityId { get; set; }
 
             public Guid ConnectionOpportunityGuid { get; set; }
@@ -7147,6 +7182,9 @@ WHERE 1 = 1" );
 
             /// <summary> The CSS class used to display the icon for the connection type.</summary>
             public string ConnectionTypeIconCssClass { get; set; }
+
+            /// <summary> The boolean value indicating whether request security is enabled on the connection type. </summary>
+            public bool IsRequestSecurityEnabled { get; set; }
 
             /// <summary>Gets or sets the sort order of the ConnectionOpportunity.</summary>
             public int ConnectionOpportunityOrder { get; set; }

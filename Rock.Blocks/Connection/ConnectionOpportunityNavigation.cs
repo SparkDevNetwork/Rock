@@ -62,7 +62,7 @@ namespace Rock.Blocks.Connection
 
     [LinkedPage( "My Connections Page",
         Key = AttributeKey.MyConnectionsPage,
-        Description = "Select the page that the My Connections button should open. The current person will be passed as the Connector page parameter.",
+        Description = "Select the page that the My Connections button should open to view a personal Connections workspace.",
         DefaultValue = Rock.SystemGuid.Page.MY_CONNECTIONS,
         Order = 2,
         IsRequired = true )]
@@ -641,7 +641,8 @@ namespace Rock.Blocks.Connection
                     new Dictionary<string, string>
                     {
                         [PageParameterKey.IsMyConnectionsView] = "true",
-                        [PageParameterKey.Connector] = GetCurrentPerson()?.IdKey ?? string.Empty
+                        [PageParameterKey.Connector] = GetCurrentPerson()?.IdKey ?? string.Empty,
+                        [PageParameterKey.ConnectionType] = connectionTypeKey
                     }
                 )
             };

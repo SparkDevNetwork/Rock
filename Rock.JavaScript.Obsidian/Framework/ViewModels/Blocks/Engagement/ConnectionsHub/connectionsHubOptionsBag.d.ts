@@ -81,6 +81,9 @@ export type ConnectionsHubOptionsBag = {
     /** Gets or sets the enabled views for this connection type. */
     enabledViews: EnabledViewFlags;
 
+    /** Gets or sets the error message if one were to occur when populating Connections Hub options. */
+    errorMessage?: string | null;
+
     /** Gets or sets the list of column options that control which data fields are displayed in the request grid. */
     gridDataToShowItems?: GridDataToShowItemBag[] | null;
 
