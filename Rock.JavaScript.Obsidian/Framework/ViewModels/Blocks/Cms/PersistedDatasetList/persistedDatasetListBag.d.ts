@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { PersistedDatasetStatus } from "@Obsidian/Enums/Cms/persistedDatasetStatus";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Class PersistedDatasetListBag. */
@@ -102,6 +103,9 @@ export type PersistedDatasetListBag = {
 
     /** Gets or sets the size of the result data in bytes. */
     resultSize?: number | null;
+
+    /** Gets or sets the outcome of the last attempt to persist the dataset. */
+    status: PersistedDatasetStatus;
 
     /**  Gets or sets the time to build in milliseconds */
     timeToBuildMS?: number | null;

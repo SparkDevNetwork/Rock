@@ -15,6 +15,22 @@
 // </copyright>
 //
 
+
+import { PersistedDatasetStatus } from "@Obsidian/Enums/Cms/persistedDatasetStatus";
+
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
+
+export type Row = {
+    idKey: string;
+    name?: string | null;
+    lastRefreshDateTime?: string | null;
+    accessKey?: string | null;
+    timeToBuildMS?: number | null;
+    allowManualRefresh: boolean;
+    resultSize?: number | null;
+    isSystem: boolean;
+    isActive: boolean;
+    status: PersistedDatasetStatus;
+};

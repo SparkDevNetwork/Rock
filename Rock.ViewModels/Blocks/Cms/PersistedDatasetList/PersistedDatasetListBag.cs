@@ -17,6 +17,8 @@
 
 using System;
 using System.Collections.Generic;
+
+using Rock.Enums.Cms;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.PersistedDatasetList
@@ -155,5 +157,10 @@ namespace Rock.ViewModels.Blocks.Cms.PersistedDatasetList
         /// Gets or sets the size of the result data in bytes.
         /// </summary>
         public double? ResultSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the outcome of the last attempt to persist the dataset.
+        /// </summary>
+        public PersistedDatasetStatus Status { get; set; }
     }
 }
