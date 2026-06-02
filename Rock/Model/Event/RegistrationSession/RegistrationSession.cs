@@ -21,6 +21,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -80,6 +82,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 45 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ClientIpAddress { get; set; }
 
         /// <summary>
@@ -89,6 +92,7 @@ namespace Rock.Model
         /// The registration data.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string RegistrationData { get; set; }
 
         /// <summary>
@@ -99,6 +103,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 36 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PaymentGatewayReference { get; set; }
 
         /// <summary>

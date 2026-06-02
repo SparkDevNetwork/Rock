@@ -120,7 +120,10 @@
                     <div v-if="modelValue?.refundDetails">
                         <label>Refund Details</label>
 
-                        <p>Yes (<a :href='getTransactionLink(modelValue?.refundDetails.originalTransactionIdKey ?? "")'>Original Transaction</a>)</p>
+                        <p v-if="modelValue.refundDetails.originalTransactionIdKey">
+                            Yes (<a :href="getTransactionLink(modelValue.refundDetails.originalTransactionIdKey)">Original Transaction</a>)
+                        </p>
+                        <p v-else>Yes</p>
 
                         <label>Refund Reason</label>
                         <p>{{ modelValue?.refundDetails.refundReason?.text }}</p>
@@ -316,7 +319,7 @@ strong {
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import DisplayCard from "@Obsidian/Controls/displayCard.obs";
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
-    import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import Grid, { Column } from "@Obsidian/Controls/grid";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 
@@ -366,7 +369,7 @@ strong {
     const refundsGridData = computed(() => {
         const rows = (props.modelValue?.refunds ?? []).map(refund => ({
             idKey: refund.idKey,
-            dateTime: RockDateTime.parseISO(refund.date ?? "")?.toLocaleString(DateTimeFormat.DateTimeShortWithSeconds) ?? "",
+            dateTime: RockDateTime.parseISO(refund.date ?? "")?.toASPString("g") ?? "",
             transactionReference: refund.transactionCode,
             reason: refund.reason,
             amount: `${toCurrencyOrNull(refund.amount)}`
@@ -379,7 +382,7 @@ strong {
     const relatedTransactionsGridData = computed(() => {
         const rows = (props.modelValue?.relatedTransactions ?? []).map(transaction => ({
             idKey: transaction.idKey,
-            dateTime: RockDateTime.parseISO(transaction.transactionDateTime ?? "")?.toLocaleString(DateTimeFormat.DateTimeShortWithSeconds) ?? "",
+            dateTime: RockDateTime.parseISO(transaction.transactionDateTime ?? "")?.toASPString("G") ?? "",
             transactionReference: transaction.transactionReference,
             amount: toCurrencyOrNull(transaction.amount)
         }));
@@ -387,24 +390,21 @@ strong {
         return { rows };
     });
 
-    const formattedDate = ref("");
-
-    if (props.modelValue?.transactionDateTime) {
-        formattedDate.value = RockDateTime
-            .parseISO(props.modelValue.transactionDateTime)
-            ?.toLocaleString(DateTimeFormat.DateTimeShort) ?? "";
-    }
-    // #region Values
-
-    const attributes = ref(props.modelValue?.attributes ?? {});
-    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
-
-    const paymentDetailAttributes = ref(props.modelValue?.paymentDetail?.attributes ?? {});
-    const paymentDetailAttributeValues = ref(props.modelValue?.paymentDetail?.attributeValues ?? {});
-
-    // #endregion Values
-
     // #region Computed Values
+
+    /** Formats the transaction date/time using Rock's standard short date/time format. Reacts to modelValue changes. */
+    const formattedDate = computed((): string => {
+        if (!props.modelValue?.transactionDateTime) {
+            return "";
+        }
+        return RockDateTime.parseISO(props.modelValue.transactionDateTime)?.toASPString("g") ?? "";
+    });
+
+    const attributes = computed(() => props.modelValue?.attributes ?? {});
+    const attributeValues = computed(() => props.modelValue?.attributeValues ?? {});
+
+    const paymentDetailAttributes = computed(() => props.modelValue?.paymentDetail?.attributes ?? {});
+    const paymentDetailAttributeValues = computed(() => props.modelValue?.paymentDetail?.attributeValues ?? {});
 
     /** True when the payment detail entity has at least one public attribute defined. */
     const hasPaymentDetailAttributes = computed(() => Object.keys(paymentDetailAttributes.value).length > 0);

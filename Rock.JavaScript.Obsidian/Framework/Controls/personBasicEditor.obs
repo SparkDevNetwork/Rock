@@ -7,8 +7,11 @@
             <TextBox v-model="lastName" :label="fullPrefix + 'Last Name'" rules="required" formGroupClasses="field-firstname" />
             <DefinedValuePicker v-if="!hideSuffix" v-model="personSuffix" :definedTypeGuid="DefinedType.PersonSuffix" :label="fullPrefix + 'Suffix'" class="input-width-md" formGroupClasses="field-suffix" showBlankItem />
             <EmailBox v-if="showEmail" v-model="email" :label="fullPrefix + 'Email'" formGroupClasses="field-email" :rules="requireEmail ? 'required' : ''" />
-            <PhoneNumberBox v-if="showMobilePhone" v-model="mobilePhoneNumber" v-model:countryCode="mobilePhoneCountryCode" :label="fullPrefix + 'Mobile Phone'" formGroupClasses="field-mobilephone" :rules="requireMobilePhone ? 'required' : ''" />
-            <CheckBox v-if="showSmsOptIn" v-model="isMessagingEnabled" validationLabel="Opt Into SMS" label="" text="Give your consent to receive SMS messages by simply checking the box." />
+            <PhoneNumberBoxWithSms v-if="showMobilePhone"
+                                   v-model="mobilePhone"
+                                   :label="fullPrefix + 'Mobile Phone'"
+                                   formGroupClasses="field-mobilephone"
+                                   :rules="requireMobilePhone ? 'required' : ''" />
         </div>
         <div :class="{ 'col-sm-4': !showInOneColumn }">
             <DefinedValuePicker v-if="!hideConnectionStatus" v-model="personConnectionStatus" :definedTypeGuid="DefinedType.PersonConnectionStatus" :label="fullPrefix + 'Connection Status'" formGroupClasses="field-connectionstatus" showBlankItem rules="required" />
@@ -33,15 +36,15 @@
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
-    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import PhoneNumberBoxWithSms from "@Obsidian/Controls/phoneNumberBoxWithSms.obs";
     import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
     import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import GradePicker from "@Obsidian/Controls/gradePicker.obs";
     import RacePicker from "@Obsidian/Controls/racePicker.obs";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { PhoneNumberBoxWithSmsControlBag } from "@Obsidian/ViewModels/Controls/phoneNumberBoxWithSmsControlBag";
 
     const props = defineProps({
         /**
@@ -155,14 +158,17 @@
      * Separate each Bag property into a separate writeable computed so they can be
      * transformed to match the exact types that each form control expects.
      */
+    console.log(props.modelValue);
     const personTitle = ref(props.modelValue.personTitle);
     const firstName = ref(props.modelValue.firstName ?? "");
     const lastName = ref(props.modelValue.lastName ?? "");
     const personSuffix = ref(props.modelValue.personSuffix);
     const email = ref(props.modelValue.email ?? "");
-    const mobilePhoneNumber = ref(props.modelValue.mobilePhoneNumber ?? "");
-    const mobilePhoneCountryCode = ref(props.modelValue.mobilePhoneCountryCode ?? "");
-    const isMessagingEnabled = ref(props.modelValue.isMessagingEnabled ?? false);
+    const mobilePhone = ref<PhoneNumberBoxWithSmsControlBag | undefined>(props.modelValue.mobilePhoneNumber ? {
+        number: props.modelValue.mobilePhoneNumber,
+        countryCode: props.modelValue.mobilePhoneCountryCode,
+        isMessagingEnabled: props.modelValue.isMessagingEnabled ?? false
+    } : undefined);
     const personConnectionStatus = ref(props.modelValue.personConnectionStatus);
     const personGroupRole = ref(props.modelValue.personGroupRole ?? null);
     const personGender = ref(props.modelValue.personGender?.toString() ?? undefined);
@@ -241,9 +247,9 @@
             lastName: lastName.value,
             personSuffix: personSuffix.value,
             email: email.value,
-            mobilePhoneNumber: mobilePhoneNumber.value,
-            mobilePhoneCountryCode: mobilePhoneCountryCode.value,
-            isMessagingEnabled: isMessagingEnabled.value,
+            mobilePhoneNumber: mobilePhone.value?.number,
+            mobilePhoneCountryCode: mobilePhone.value?.countryCode,
+            isMessagingEnabled: mobilePhone.value?.isMessagingEnabled,
             personConnectionStatus: personConnectionStatus.value,
             personGroupRole: personGroupRole.value,
             personGender: parseInt(personGender.value ?? "", 10) as Gender ?? null,

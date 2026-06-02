@@ -34,20 +34,53 @@ namespace Rock.Workflow.Action
     [Description( "Adds a benevolence request." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Benevolence Request Add" )]
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to add to the group.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowTextOrAttribute( "Request Description", "Request Description Attribute", "Text or workflow attribute that contains the benevolence request description. <span class='tip tip-lava'></span>", false, "", "", 1, "RequestDescription",
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" }, 3 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS, "Request Status", "The request status to use.", true, false, Rock.SystemGuid.DefinedValue.BENEVOLENCE_PENDING, "", 2 )]
-    [BenevolenceTypeField( "Benevolence Type", "The benevolence type to use.", true, SystemGuid.BenevolenceType.BENEVOLENCE, "", 3 )]
-    [WorkflowAttribute( "Case Worker", "Workflow attribute that contains the person who should be assigned as the case worker.", false, "", "", 4, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [CampusField("Campus", "The campus for the request. If blank the person's campus will be used.", false, "", "", 5)]
-    [WorkflowTextOrAttribute( "Government Id", "Government Id Attribute", "Text or workflow attribute that contains the government. <span class='tip tip-lava'></span>", false, "", "", 6, "GovernmentId",
-        new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowAttribute( "Person",
+        Description = "Workflow attribute that contains the person to add to the group.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowTextOrAttribute( "Request Description",
+        "Request Description Attribute",
+        Description = "Text or workflow attribute that contains the benevolence request description. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 1,
+        Key = "RequestDescription",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" },
+        Rows = 3 )]
+    [DefinedValueField( "Request Status",
+        Description = "The request status to use.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS,
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.BENEVOLENCE_PENDING,
+        Order = 2 )]
+    [BenevolenceTypeField( "Benevolence Type",
+        Description = "The benevolence type to use.",
+        IsRequired = true,
+        DefaultValue = SystemGuid.BenevolenceType.BENEVOLENCE,
+        Order = 3 )]
+    [WorkflowAttribute( "Case Worker",
+        Description = "Workflow attribute that contains the person who should be assigned as the case worker.",
+        IsRequired = false,
+        Order = 4,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [CampusField("Campus",
+        Description = "The campus for the request. If blank the person's campus will be used.",
+        IsRequired = false,
+        Order = 5)]
+    [WorkflowTextOrAttribute( "Government Id",
+        "Government Id Attribute",
+        Description = "Text or workflow attribute that contains the government. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 6,
+        Key = "GovernmentId",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
 
-    [WorkflowAttribute( "Benevolence Request", "Workflow attribute to set the returned benevolence request to.", false, "", "", 7, null,
-        new string[] { "Rock.Field.Types.BenevolenceRequestFieldType" } )]
+    [WorkflowAttribute( "Benevolence Request",
+        Description = "Workflow attribute to set the returned benevolence request to.",
+        IsRequired = false,
+        Order = 7,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.BenevolenceRequestFieldType" } )]
     [Rock.SystemGuid.EntityTypeGuid( "22B3C308-2333-4A11-8AEC-1AA7A201B5BB")]
     public class BenevolenceRequestAdd : ActionComponent
     {

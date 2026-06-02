@@ -36,13 +36,24 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Set Status" )]
 
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to update in the group.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Person",
+        Description = "Workflow attribute that contains the person to update in the group.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
 
-    [WorkflowAttribute( "Group", "Workflow Attribute that contains the group the person is in.", true, "", "", 1, null,
-        new string[] { "Rock.Field.Types.GroupFieldType" } )]
+    [WorkflowAttribute( "Group",
+        Description = "Workflow Attribute that contains the group the person is in.",
+        IsRequired = true,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupFieldType" } )]
 
-    [EnumField("New Group Member Status", "The new status to set the user to in the group.", typeof( GroupMemberStatus ), true, "Active", order: 2 )]
+    [EnumField("New Group Member Status",
+        Description = "The new status to set the user to in the group.",
+        EnumSourceType = typeof( GroupMemberStatus ),
+        IsRequired = true,
+        DefaultValue = "Active",
+        Order = 2 )]
     [Rock.SystemGuid.EntityTypeGuid( "F09E2C90-5FB1-4236-B146-848B983CC3A8")]
     public class UpdateGroupMemberStatus : ActionComponent
     {

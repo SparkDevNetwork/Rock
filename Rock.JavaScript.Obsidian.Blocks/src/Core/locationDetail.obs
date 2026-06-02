@@ -130,7 +130,6 @@
 
         if (locationViewBag.value?.locationTypeValue?.text) {
             labels.push({
-                iconCssClass: "",
                 title: locationViewBag.value?.locationTypeValue?.text ?? "",
                 type: "default"
             });

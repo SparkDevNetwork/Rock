@@ -1,6 +1,6 @@
 ---
 title: Group Sync
-last_updated: 2026-05-01
+last_updated: 2026-05-26
 related_files:
   - Rock/Model/Group/GroupSync/GroupSync.cs
   - Rock/Model/Group/GroupSync/GroupSyncService.cs
@@ -131,7 +131,7 @@ Throughput per [GroupSync.cs:55](../../Rock/Model/Group/GroupSync/GroupSync.cs):
 
 ### Affected Blocks and UI Surfaces
 
-- **Group Detail "Group Sync" tab** (still WebForms in some shipped versions). Lists, creates, edits `GroupSync` records.
+- **Group Detail "Group Sync" tab** ([Rock.Blocks/Group/GroupDetail.cs](../../Rock.Blocks/Group/GroupDetail.cs), [Obsidian](../../Rock.JavaScript.Obsidian.Blocks/src/Group/GroupDetail/groupSync.partial.obs)). Lists, creates, edits `GroupSync` records.
 - The job runs headless via the Rock job scheduler.
 
 ### Extension Points

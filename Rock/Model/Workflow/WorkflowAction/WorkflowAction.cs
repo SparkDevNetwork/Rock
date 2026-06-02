@@ -15,7 +15,9 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -81,6 +83,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string FormAction { get; set; }
 
         #endregion Entity Properties

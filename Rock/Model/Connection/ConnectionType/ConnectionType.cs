@@ -26,8 +26,9 @@ using System.Runtime.Serialization;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Connection;
+using Rock.Enums.Security;
 using Rock.Lava;
-using Rock.Utility;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -53,6 +54,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -62,6 +64,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -72,6 +75,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -177,6 +181,7 @@ namespace Rock.Model
         /// The request header lava.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string RequestHeaderLava { get; set; }
 
         /// <summary>
@@ -186,6 +191,7 @@ namespace Rock.Model
         /// The request badge lava.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string RequestBadgeLava { get; set; }
 
         /// <summary>
@@ -243,6 +249,7 @@ namespace Rock.Model
         /// Additional configuration settings stored as JSON.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion

@@ -55,8 +55,8 @@ namespace Rock.Jobs
 
     [CustomDropdownListField(
         "Date Range",
-        "The Monday-Sunday date range that should be used when reporting attendance status.",
-        "1^Current Week,2^Previous Week",
+        Description = "The Monday-Sunday date range that should be used when reporting attendance status.",
+        ListSource = "1^Current Week,2^Previous Week",
         Key = AttributeKey.DateRange,
         IsRequired = true,
         DefaultValue = "1",

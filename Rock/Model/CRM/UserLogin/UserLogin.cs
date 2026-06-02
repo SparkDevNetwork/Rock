@@ -23,6 +23,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -58,6 +59,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 255 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string UserName { get; set; }
         
         /// <summary>
@@ -68,6 +70,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 128 )]
         [HideFromReporting]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Password { get; set; }
         
         /// <summary>
@@ -183,6 +186,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [HideFromReporting]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ApiKey { get; set; }
         
         /// <summary>
@@ -228,6 +232,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         #endregion

@@ -21,6 +21,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -63,6 +65,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string GivingId { get; set; }
 
         /// <summary>
@@ -162,6 +165,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 2500 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReasonsKey { get; set; }
 
         /// <summary>

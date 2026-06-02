@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 
@@ -51,23 +52,11 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
     #region Block Attributes
 
-    [LinkedPage( "Submissions Page",
-        Description = "The page that contains the Submissions block to view submissions existing submissions for this form.",
-        IsRequired = true,
-        Key = AttributeKey.SubmissionsPage,
-        Order = 0 )]
-
-    [LinkedPage( "Analytics Page",
-        Description = "The page that contains the Analytics block to view statistics on existing submissions for this form.",
-        IsRequired = true,
-        Key = AttributeKey.AnalyticsPage,
-        Order = 1 )]
-
     [LinkedPage( "Default Preview Page",
-        Description = "The default page to use when previewing this form in the builder. The page must include a Workflow Entry block with 'Enable for Form Sharing' enabled. If not set, the first eligible page will be used.",
+        Description = "The page used to preview this form in the builder. Must include a Workflow Entry block with 'Enable for Form Sharing' enabled. Defaults to the first eligible page if left blank.",
         IsRequired = false,
         Key = AttributeKey.DefaultPreviewPage,
-        Order = 2 )]
+        Order = 0 )]
 
     #endregion
 
@@ -82,10 +71,6 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
         private static class AttributeKey
         {
-            public const string SubmissionsPage = "SubmissionsPage";
-
-            public const string AnalyticsPage = "AnalyticsPage";
-
             public const string DefaultPreviewPage = "DefaultPreviewPage";
         }
 
@@ -99,8 +84,6 @@ namespace Rock.Blocks.Workflow.FormBuilder
             // Build the basic view model information required to edit a form.
             var viewModel = new FormBuilderDetailViewModel
             {
-                SubmissionsPageUrl = this.GetLinkedPageUrl( AttributeKey.SubmissionsPage, RequestContext.GetPageParameters() ),
-                AnalyticsPageUrl = this.GetLinkedPageUrl( AttributeKey.AnalyticsPage, RequestContext.GetPageParameters() ),
                 Sources = GetOptionSources( RockContext, workflowTypeId )
             };
 
@@ -151,6 +134,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
                         viewModel.FormGuid = workflowType.Guid;
                         viewModel.Form = GetFormSettingsViewModel( actionForm.WorkflowForm, workflowType, RockContext );
                         viewModel.OtherAttributes = GetOtherAttributes( workflowType.Id, RockContext );
+                        viewModel.HasSubmissions = new WorkflowService( RockContext ).Queryable()
+                            .Any( w => w.WorkflowTypeId == workflowType.Id );
                     }
                 }
             }
@@ -230,6 +215,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             settings.ConfirmationEmail = formSettings.ConfirmationEmail.FromViewModel( rockContext );
             settings.NotificationEmail = formSettings.NotificationEmail.FromViewModel( rockContext );
             settings.CampusSetFrom = formSettings.CampusSetFrom?.FromViewModel();
+            settings.ConnectionRequests = formSettings.ConnectionRequests.FromViewModel();
 
             workflowType.FormBuilderSettingsJson = settings.ToJson();
         }
@@ -486,7 +472,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 ConfirmationEmail = settings?.ConfirmationEmail.ToViewModel( rockContext ),
                 NotificationEmail = settings?.NotificationEmail.ToViewModel( rockContext ),
                 Completion = settings?.CompletionAction.ToViewModel(),
-                CampusSetFrom = settings?.CampusSetFrom?.ToViewModel()
+                CampusSetFrom = settings?.CampusSetFrom?.ToViewModel(),
+                ConnectionRequests = settings?.ConnectionRequests.ToViewModel()
             };
 
             // Build the person entry settings.
@@ -684,11 +671,31 @@ namespace Rock.Blocks.Workflow.FormBuilder
         {
             var definedValueClientService = new DefinedValueClientService( rockContext, RequestContext.CurrentPerson );
 
+            /*
+                5/19/26 - JMH
+
+                Topic DefinedValues without a matching CampusTopic.Email are
+                useless to Notification Email's Send To = Campus Topic Address
+                picker because the runtime resolves the recipient via the
+                campus+topic pairing's Email column. Surface only Topics that
+                actually have at least one address configured somewhere.
+
+                Reason: previously every Topic showed up in the picker, even
+                ones that would silently route to no one.
+            */
+            var topicTypeGuidsWithEmail = new HashSet<Guid>(
+                new CampusTopicService( rockContext ).Queryable()
+                    .Where( ct => !string.IsNullOrEmpty( ct.Email ) )
+                    .Select( ct => ct.TopicTypeValue.Guid )
+                    .Distinct() );
+
             return new FormValueSourcesViewModel
             {
                 FieldTypes = GetAvailableFieldTypes(),
                 CampusStatusOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.CAMPUS_STATUS.AsGuid() ),
-                CampusTopicOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.TOPIC_TYPE.AsGuid() ),
+                CampusTopicOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.TOPIC_TYPE.AsGuid() )
+                    .Where( opt => Guid.TryParse( opt.Value, out var g ) && topicTypeGuidsWithEmail.Contains( g ) )
+                    .ToList(),
                 CampusTypeOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.CAMPUS_TYPE.AsGuid() ),
                 AddressTypeOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ),
                 ConnectionStatusOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ),
@@ -713,7 +720,18 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 // Default section type is the "No Style" value.
                 DefaultSectionType = "85CA07EE-6888-43FD-B8BF-24E4DD35C725".AsGuid(),
 
-                LinkToFormOptions = workflowTypeId.HasValue ? GetLinkToFormOptions( rockContext, WorkflowTypeCache.Get( workflowTypeId.Value )?.Slug ) : null
+                LinkToFormOptions = workflowTypeId.HasValue ? GetLinkToFormOptions( rockContext, WorkflowTypeCache.Get( workflowTypeId.Value )?.Slug ) : null,
+
+                ConnectionTypeOptions = new ConnectionTypeService( rockContext ).Queryable()
+                    .AsNoTracking()
+                    .Where( ct => ct.IsActive )
+                    .OrderBy( ct => ct.Name )
+                    .Select( ct => new ListItemBag
+                    {
+                        Value = ct.Guid.ToString(),
+                        Text = ct.Name
+                    } )
+                    .ToList()
             };
         }
 
@@ -988,7 +1006,116 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
             return ActionOk( uniqueSlug );
         }
-        
+
+        /// <summary>
+        /// Gets the active Connection Opportunities for a Connection Type so the
+        /// Automations tab's Connection Requests editor can populate its
+        /// Opportunity dropdown when the user picks a type.
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult GetConnectionOpportunities( Guid connectionTypeGuid )
+        {
+            var options = new ConnectionOpportunityService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( o => o.IsActive && o.ConnectionType.Guid == connectionTypeGuid )
+                .OrderBy( o => o.Name )
+                .Select( o => new ListItemBag
+                {
+                    Value = o.Guid.ToString(),
+                    Text = o.Name
+                } )
+                .ToList();
+
+            return ActionOk( options );
+        }
+
+        /// <summary>
+        /// Gets the active Connection Statuses for a Connection Type so the
+        /// Automations tab's Connection Requests editor can populate its Status
+        /// dropdown when the user picks a type.
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult GetConnectionStatuses( Guid connectionTypeGuid )
+        {
+            var options = new ConnectionStatusService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( s => s.IsActive && s.ConnectionType.Guid == connectionTypeGuid )
+                .OrderBy( s => s.Order )
+                .ThenBy( s => s.Name )
+                .Select( s => new ListItemBag
+                {
+                    Value = s.Guid.ToString(),
+                    Text = s.Name
+                } )
+                .ToList();
+
+            return ActionOk( options );
+        }
+
+        /// <summary>
+        /// Gets the active Connection Sources for a Connection Type so the
+        /// Automations tab's Connection Requests editor can populate its
+        /// Source dropdown when the user picks a type.
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult GetConnectionSources( Guid connectionTypeGuid )
+        {
+            var options = new ConnectionTypeSourceService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( s => s.ConnectionType.Guid == connectionTypeGuid )
+                .OrderBy( s => s.Name )
+                .Select( s => new ListItemBag
+                {
+                    Value = s.Guid.ToString(),
+                    Text = s.Name
+                } )
+                .ToList();
+
+            return ActionOk( options );
+        }
+
+        /// <summary>
+        /// Gets the attributes available on a Connection Opportunity along with
+        /// their field-type so the editor can filter the Attribute Matching
+        /// dropdowns to attributes whose field type matches the form field or
+        /// to the Text field type (which accepts any value via ToString).
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult GetOpportunityAttributes( Guid opportunityGuid )
+        {
+            var opportunity = new ConnectionOpportunityService( RockContext ).Get( opportunityGuid );
+            if ( opportunity == null )
+            {
+                return ActionBadRequest( "Opportunity not found." );
+            }
+
+            // Attributes on a ConnectionRequest can be keyed by either the
+            // ConnectionTypeId or ConnectionOpportunityId qualifier.
+            // Pull both and dedupe by Guid so the editor matches the runtime.
+            var requestEntityTypeId = EntityTypeCache.GetId<Rock.Model.ConnectionRequest>();
+            var attributeService = new AttributeService( RockContext );
+
+            var attributeQuery = attributeService.Queryable().AsNoTracking()
+                .Where( a => a.EntityTypeId == requestEntityTypeId )
+                .Where( a =>
+                    ( a.EntityTypeQualifierColumn == "ConnectionTypeId" && a.EntityTypeQualifierValue == opportunity.ConnectionTypeId.ToString() )
+                    || ( a.EntityTypeQualifierColumn == "ConnectionOpportunityId" && a.EntityTypeQualifierValue == opportunity.Id.ToString() ) );
+
+            var results = attributeQuery
+                .ToList()
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .Select( a => new
+                {
+                    AttributeGuid = a.Guid.ToString(),
+                    Name = a.Name,
+                    FieldTypeGuid = FieldTypeCache.Get( a.FieldTypeId )?.Guid.ToString() ?? string.Empty
+                } )
+                .OrderBy( a => a.Name )
+                .ToList();
+
+            return ActionOk( results );
+        }
+
         #endregion
     }
 }

@@ -1,84 +1,65 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="errorMessage" alertType="danger" class="mb-spacing-md">
-        {{ errorMessage }}
-    </NotificationBox>
+    <Panel title="Create New Form">
+        <NotificationBox v-if="errorMessage" alertType="danger" class="mb-spacing-md">
+            {{ errorMessage }}
+        </NotificationBox>
 
-    <div class="d-flex justify-content-between align-items-end w-100 border-bottom pb-spacing-lg mb-spacing-lg">
-        <div class="heading-text d-flex flex-column align-items-start">
-            <h4 class="form-title m-0">Create New Form</h4>
-            <span class="form-description">Complete the fields below to setup your new form. Upon completion
-                you'll be
-                taken to the form designer.</span>
-        </div>
-    </div>
+        <p class="text-muted mb-spacing-lg">
+            Complete the fields below to setup your new form. Upon completion you'll be taken to the form builder.
+        </p>
 
-    <div class="row">
-        <div class="col-md-6">
-            <TextBox v-model="name" label="Name" rules="required"
-                     help="The internal name of the form you are creating. This name will not be displayed when the form is not being shown." />
-        </div>
-    </div>
+        <RockForm :id="formId" @submit="onStartBuilding">
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="name" label="Name" rules="required"
+                             help="The internal name of the form you are creating. This name will not be displayed when the form is not being shown." />
+                </div>
+                <div class="col-md-6">
+                    <TextBox v-model="slug" label="Slug" rules="required" @update:modelValue="onSlugManualInput" @blur="onSlugBlur"
+                             help="The slug is used to identify this form in the URL. It must be unique." />
+                </div>
+            </div>
 
-    <div class="row">
-        <div class="col-md-6">
-            <TextBox v-model="description" label="Description" textMode="multiline"
-                     help="An internal description of what the form will be used for." />
-        </div>
-    </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <TextBox v-model="description" label="Description" textMode="multiline"
+                             help="An internal description of what the form will be used for." />
+                </div>
+            </div>
 
-    <div class="row">
-        <div class="col-md-6">
-            <DropDownList label="Template" v-model="template" :items="templateOptions" :showBlankItem="true"
-                          help="An optional template to use that provides pre-configured settings." />
-        </div>
-    </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <CategoryPicker label="Category" v-model="category" :entityTypeGuid="EntityType.WorkflowType"
+                                    rules="required" />
+                </div>
+            </div>
 
-    <div class="row">
-        <div class="col-md-6">
-            <TextBox v-model="slug" label="Slug" rules="required" @update:modelValue="onSlugManualInput" @blur="onSlugBlur"
-                     help="The slug is used to identify this form in the URL. It must be unique." />
-        </div>
-    </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <DropDownList label="Template" v-model="template" :items="templateOptions" :showBlankItem="true"
+                                  help="An optional template to use that provides pre-configured settings." />
+                </div>
+            </div>
+        </RockForm>
 
-    <div class="row">
-        <div class="col-md-6">
-            <CategoryPicker label="Category" v-model="category" :entityTypeGuid="EntityType.WorkflowType"
-                            rules="required" />
-        </div>
-    </div>
-
-    <div class="form-actions">
-        <RockButton btnType="primary" @click="onStartBuilding">Start Building</RockButton>
-        <RockButton btnType="link" @click="onCancel">Cancel</RockButton>
-    </div>
+        <template #footerActions>
+            <RockButton btnType="primary" type="submit" :form="formId" :isLoading="isSaving" :disabled="isSaving">Start Building</RockButton>
+            <RockButton btnType="link" :disabled="isSaving" @click="onCancel">Cancel</RockButton>
+        </template>
+    </Panel>
 </template>
-
-<style scoped>
-.heading-text {
-    gap: var(--spacing-tiny);
-}
-
-.form-title {
-    line-height: 105.469%;
-}
-
-.form-description {
-    color: var(--color-interface-medium);
-    font-size: var(--font-size-Small);
-    font-weight: var(--font-weight-regular);
-    line-height: 110%;
-}
-</style>
 
 <script setup lang="ts">
     import { ref, watch, onMounted, PropType } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
@@ -101,6 +82,7 @@
     const invokeBlockAction = useInvokeBlockAction();
     const config = useConfigurationValues<FormListBag>();
 
+    const formId = newGuid();
     const name = ref("");
     const description = ref("");
     const template = ref("");
@@ -108,6 +90,7 @@
     const category = ref<ListItemBag | null | undefined>(props.selectedCategory);
     const errorMessage = ref<string | null>("");
     const slugWasManuallyEdited = ref(false);
+    const isSaving = ref(false);
 
     const templateOptions = ref<ListItemBag[]>([]);
 
@@ -127,7 +110,12 @@
      * Creates a new form and redirects the user to the form builder.
      */
     async function onStartBuilding(): Promise<void> {
+        if (isSaving.value) {
+            return;
+        }
+
         errorMessage.value = "";
+        isSaving.value = true;
 
         const result = await invokeBlockAction<string>("CreateForm", {
             name: name.value,
@@ -139,21 +127,24 @@
 
         if (!result.isSuccess) {
             errorMessage.value = result.errorMessage || "Unable to create the form.";
+            isSaving.value = false;
             return;
         }
 
         if (!result.data) {
             errorMessage.value = "Unable to create the form.";
+            isSaving.value = false;
             return;
         }
 
         if (config.navigationUrls?.[NavigationUrlKey.FormBuilderPage]) {
             const url = config.navigationUrls[NavigationUrlKey.FormBuilderPage] + `?WorkflowTypeId=${result.data}`;
             emit("save", { url });
+            // Keep isSaving = true; the parent will navigate to the Form Builder page.
         }
         else {
-            // Form was created successfully, but we can't redirect anywhere.
             emit("save", { url: "", errorMessage: "The Form Builder Page URL is not configured." });
+            isSaving.value = false;
         }
     }
 

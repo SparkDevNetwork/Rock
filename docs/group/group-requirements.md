@@ -1,6 +1,6 @@
 ---
 title: Group Requirements
-last_updated: 2026-05-01
+last_updated: 2026-05-26
 related_files:
   - Rock/Model/Group/GroupRequirement/GroupRequirement.cs
   - Rock/Model/Group/GroupRequirement/GroupRequirement.Logic.cs
@@ -174,6 +174,7 @@ Manual requirements are skipped entirely. Their state changes only when a UI act
 
 - **Group Requirement Type Detail / List** ([Rock.Blocks/Group/GroupRequirementTypeDetail.cs](../../Rock.Blocks/Group/GroupRequirementTypeDetail.cs), [Rock.Blocks/Group/GroupRequirementTypeList.cs](../../Rock.Blocks/Group/GroupRequirementTypeList.cs), [Obsidian](../../Rock.JavaScript.Obsidian.Blocks/src/Group/groupRequirementTypeDetail.obs)). Manage the global library of requirement types.
 - **Group Type Detail "Group Requirements" tab** ([Rock.JavaScript.Obsidian.Blocks/src/Group/GroupTypeDetail/groupRequirements.partial.obs](../../Rock.JavaScript.Obsidian.Blocks/src/Group/GroupTypeDetail/groupRequirements.partial.obs)). Attaches requirement types to a GroupType.
+- **Group Detail "Group Requirements" tab** ([Rock.JavaScript.Obsidian.Blocks/src/Group/GroupDetail/groupRequirements.partial.obs](../../Rock.JavaScript.Obsidian.Blocks/src/Group/GroupDetail/groupRequirements.partial.obs)). Attaches requirement types to a specific Group, optionally role-scoped, with leader-override and "must-meet-to-add" toggles. Gated server-side on `ADMINISTRATE` on the group.
 - **Group Member Detail block.** Per-member requirement cards, manual completion, leader override.
 - **Group Scheduler** ([Rock.Blocks/Group/Scheduling/GroupScheduler.cs](../../Rock.Blocks/Group/Scheduling/GroupScheduler.cs)). Honors requirements when picking eligible volunteers (Warning state allowed).
 

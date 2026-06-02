@@ -1,0 +1,189 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockForm @submit="onSave">
+        <Panel title="Calendar Dimension Settings">
+            <template #default>
+                <NotificationBox :alertType="AlertType.Info">This will populate the AnalyticsSourceDate table (and associated Views). It will first empty the AnalyticsSourceDate table if there is already data in it.</NotificationBox>
+                <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">{{ errorMessage }}</NotificationBox>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DatePicker v-model="startDate"
+                                    label="Start Date"
+                                    rules="required" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <DatePicker v-model="endDate"
+                                    label="End Date"
+                                    rules="required" />
+                    </div>
+                </div>
+
+                <DropDownList v-model="fiscalStartMonth"
+                              :items="monthItems"
+                              inputClasses="input-width-md"
+                              label="Fiscal Start Month"
+                              rules="required"
+                              :showBlankItem="false" />
+
+
+                <CheckBox v-model="isGivingMonthUseSundayDate" label="Use Sunday Date for Giving Month" help="This and Fiscal Start Month are used to determine the GivingMonth of a particular date. If 'Use Sunday Date for Giving Month' is enabled, it will be whatever the SundayDate of the Date is, but not if it crosses the Fiscal Year. For example, if their Fiscal year starts on April 1st, it won't use the SundayDate for any of the last days of March if it ends up being in April." />
+            </template>
+            <template #footerActions>
+                <div class="d-flex gap-3">
+                    <RockButton type="submit" class="btn btn-primary" :disabled="isGenerating">
+                        <i v-if="isGenerating" class="ti ti-rotate-clockwise-2 ti-spin"></i>
+                        {{ isGenerating ? "Generating..." : "Generate Dimension" }}
+                    </RockButton>
+                    <Transition name="fade">
+                        <div v-if="saveSuccess" class="d-flex gap-1 align-items-center text-success">
+                            <span>Dimension Generated</span>
+                            <i class="ti ti-circle-check"></i>
+                        </div>
+                    </Transition>
+                </div>
+            </template>
+        </Panel>
+    </RockForm>
+</template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.4s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { ref, watch } from "vue";
+    import { CalendarDimensionSettingsBag } from "@Obsidian/ViewModels/Blocks/Reporting/CalendarDimensionSettings/calendarDimensionSettingsBag";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+
+    const config = useConfigurationValues<CalendarDimensionSettingsBag>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const errorMessage = ref("");
+    const isGenerating = ref(false);
+    const startDate = ref(config.startDate ?? "");
+    const endDate = ref(config.endDate ?? "");
+    const fiscalStartMonth = ref(config.fiscalStartMonth?.toString() ?? "1");
+    const isGivingMonthUseSundayDate = ref(config.isGivingMonthUseSundayDate ?? false);
+    const saveSuccess = ref(false);
+
+    const monthItems = [
+        { value: "1", text: "January" },
+        { value: "2", text: "February" },
+        { value: "3", text: "March" },
+        { value: "4", text: "April" },
+        { value: "5", text: "May" },
+        { value: "6", text: "June" },
+        { value: "7", text: "July" },
+        { value: "8", text: "August" },
+        { value: "9", text: "September" },
+        { value: "10", text: "October" },
+        { value: "11", text: "November" },
+        { value: "12", text: "December" }
+    ] as ListItemBag[];
+    // #endregion
+
+    // #region Watchers
+
+    watch([startDate, endDate], ([newStart, newEnd]) => {
+        errorMessage.value = "";
+
+        if (!newStart) {
+            return;
+        }
+
+        const start = RockDateTime.parseISO(newStart);
+        const maximumStartDate = RockDateTime.now().addYears(-120);
+
+        if (start === null) {
+            errorMessage.value = "Start Date is not a valid date.";
+            return;
+        }
+
+        if (start > maximumStartDate) {
+            errorMessage.value = `Start Date must be earlier than ${maximumStartDate.month}/${maximumStartDate.day}/${maximumStartDate.year}.`;
+            return;
+        }
+
+        if (!newEnd) {
+            return;
+        }
+
+        const end = RockDateTime.parseISO(newEnd);
+
+        if (end === null) {
+            errorMessage.value = "End Date is not a valid date.";
+            return;
+        }
+
+        if (end <= start) {
+            errorMessage.value = "End Date must be after Start Date.";
+            return;
+        }
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onSave(): Promise<void> {
+        if (errorMessage.value) {
+            return;
+        }
+
+        const bag: CalendarDimensionSettingsBag = {
+            startDate: startDate.value,
+            endDate: endDate.value,
+            fiscalStartMonth: parseInt(fiscalStartMonth.value),
+            isGivingMonthUseSundayDate: isGivingMonthUseSundayDate.value
+        };
+
+        isGenerating.value = true;
+
+        try {
+            const result = await invokeBlockAction("GenerateDimension", { bag });
+
+            if (!result.isSuccess) {
+                errorMessage.value = result.errorMessage ?? "An unknown error occurred while generating the dimension.";
+                return;
+            }
+        }
+        catch {
+            errorMessage.value = "An unexpected error occurred. Please try again.";
+            return;
+        }
+        finally {
+            isGenerating.value = false;
+        }
+
+        saveSuccess.value = true;
+        setTimeout(() => {
+            saveSuccess.value = false;
+        }, 3000);
+    }
+
+    // #endregion
+</script>

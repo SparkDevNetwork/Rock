@@ -20,7 +20,8 @@
             <div class="col-md-6">
                 <CurrencyBox v-model="amount"
                              label="Amount"
-                             rules="required" />
+                             rules="required"
+                             help="Enter the amount assigned to this account." />
             </div>
         </div>
 

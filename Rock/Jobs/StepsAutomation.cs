@@ -39,11 +39,11 @@ namespace Rock.Jobs
 
     [IntegerField(
         "Duplicate Prevention Day Range",
-        description: "This setting will keep additional step records from being added if a step was already added within the number of days provided.",
-        required: false,
-        defaultValue: 7,
-        order: 1,
-        key: AttributeKey.DuplicatePreventionDayRange )]
+        Description = "This setting will keep additional step records from being added if a step was already added within the number of days provided.",
+        IsRequired = false,
+        DefaultIntegerValue = 7,
+        Order = 1,
+        Key = AttributeKey.DuplicatePreventionDayRange )]
 
     [IntegerField(
         "Command Timeout",

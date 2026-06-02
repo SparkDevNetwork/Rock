@@ -23,7 +23,9 @@ using System.Web.Routing;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -74,6 +76,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Route { get; set; }
 
         /// <summary>

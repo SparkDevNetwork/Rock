@@ -48,13 +48,11 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute( "From Email Address",
         "From Attribute",
-        "The email address or an attribute that contains the person or email address that email should be sent from (will default to organization email). <span class='tip tip-lava'></span>",
-        false,
-        "",
-        "",
-        1,
-        AttributeKey.From,
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType" } )]
+        Description = "The email address or an attribute that contains the person or email address that email should be sent from (will default to organization email). <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 1,
+        Key = AttributeKey.From,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType" } )]
 
     [WorkflowTextOrAttribute( "Reply To Address",
         "Reply To Attribute",
@@ -66,13 +64,11 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute( "Send To Email Addresses",
         "To Attribute",
-        "The email addresses or an attribute that contains the person, email address, group or security role that the email should be sent to. <span class='tip tip-lava'></span>",
-        true,
-        "",
-        "",
-        3,
-        AttributeKey.To,
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
+        Description = "The email addresses or an attribute that contains the person, email address, group or security role that the email should be sent to. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 3,
+        Key = AttributeKey.To,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
 
     [WorkflowAttribute( "Send to Group Role",
         Key = AttributeKey.GroupRole,
@@ -97,23 +93,19 @@ namespace Rock.Workflow.Action
 
     [WorkflowTextOrAttribute( "CC Email Addresses",
         "CC Attribute",
-        "The email addresses or an attribute that contains the person, email address, group or security role that the email should be CC'd (carbon copied) to. Any address in this field will be copied on the email sent to every recipient. <span class='tip tip-lava'></span>",
-        false,
-        "",
-        "",
-        7,
-        AttributeKey.Cc,
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
+        Description = "The email addresses or an attribute that contains the person, email address, group or security role that the email should be CC'd (carbon copied) to. Any address in this field will be copied on the email sent to every recipient. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 7,
+        Key = AttributeKey.Cc,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
 
     [WorkflowTextOrAttribute( "BCC Email Addresses",
         "BCC Attribute",
-        "The email addresses or an attribute that contains the person, email address, group or security role that the email should be BCC'd (blind carbon copied) to. Any address in this field will be copied on the email sent to every recipient. <span class='tip tip-lava'></span>",
-        false,
-        "",
-        "",
-        8,
-        AttributeKey.Bcc,
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
+        Description = "The email addresses or an attribute that contains the person, email address, group or security role that the email should be BCC'd (blind carbon copied) to. Any address in this field will be copied on the email sent to every recipient. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 8,
+        Key = AttributeKey.Bcc,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
 
     [WorkflowAttribute( "Attachment One",
         Key = AttributeKey.AttachmentOne,
@@ -142,8 +134,8 @@ namespace Rock.Workflow.Action
         DefaultBooleanValue = false,
         Order = 12 )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_TOPIC,
-        "Communication Topic",
+    [DefinedValueField( "Communication Topic",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_TOPIC,
         Key = AttributeKey.CommunicationTopic,
         Description = "The topic to assign to the communication record when 'Save Communication History' is enabled.",
         IsRequired = false,

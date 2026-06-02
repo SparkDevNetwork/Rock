@@ -22,6 +22,8 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.Engagement;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -68,6 +70,7 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         [MaxLength( 1000 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string SystemNote { get; set; }
 
         /// <summary>
@@ -81,6 +84,7 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         [MaxLength( 500 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Note { get; set; }
 
         #endregion

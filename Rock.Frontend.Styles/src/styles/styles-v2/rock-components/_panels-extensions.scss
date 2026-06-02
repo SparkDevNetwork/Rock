@@ -454,7 +454,7 @@
   & > .panel-body {
     padding: 0;
 
-    .actions:last-of-type {
+    & > .actions:last-of-type {
         margin: inherit;
     }
   }

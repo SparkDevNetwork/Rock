@@ -1,0 +1,321 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentStack v-if="isStackVisible"
+                  title="Group Location Schedules"
+                  description="Provide the location-specific schedules used for this group."
+                  headerLocation="top">
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
+            {{ errorMessage }}
+        </NotificationBox>
+        <Grid :data="gridData"
+              keyField="guid"
+              itemTerm="Group Location"
+              liveUpdates
+              light
+              :onAddItem="canAdd ? onAdd : undefined">
+            <TextColumn name="location" field="location" title="Location" />
+            <TextColumn name="type" field="type" title="Type" />
+            <TextColumn v-if="enableLocationSchedules" name="schedules" field="schedules" title="Schedule(s)" />
+            <EditColumn @click="onEdit" />
+            <DeleteColumn @click="onDelete" />
+        </Grid>
+    </ContentStack>
+
+    <LocationModal v-model:isVisible="isModalVisible"
+                   :isEditing="isEditing"
+                   :groupLocation="theGroupLocation"
+                   :familyMemberLocationOptions="familyMemberLocationOptions ?? []"
+                   :locationSelectionMode="locationSelectionMode"
+                   :locationTypeOptions="locationTypeOptions"
+                   :enableLocationSchedules="enableLocationSchedules"
+                   :isSchedulingEnabled="isSchedulingEnabled"
+                   :mapStyleValueGuid="mapStyleValueGuid"
+                   :existingLocations="groupLocations"
+                   @save="onSave" />
+</template>
+
+<script setup lang="ts">
+    import { FamilyMemberLocationBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/familyMemberLocationBag";
+    import { GroupLocationStateBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupLocationStateBag";
+    import { GroupLocationPickerMode } from "@Obsidian/Enums/Group/groupLocationPickerMode";
+    import Grid, { TextColumn, EditColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useInvokeGroupDetailBlockAction } from "./utils.partial";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityKey } from "./types.partial";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { computed, PropType, ref } from "vue";
+    import { Guid } from "@Obsidian/Types";
+    import LocationModal from "./locationModal.partial.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const props = defineProps({
+        /**
+         * The group locations configured for this group.
+         */
+        groupLocations: {
+            type: Array as PropType<GroupLocationStateBag[] | null>,
+            required: true
+        },
+
+        /**
+         * The group's IdKey, used to scope lazy-loaded family-member options.
+         */
+        groupKey: {
+            type: String,
+            default: ""
+        },
+
+        /**
+         * Bitmask of GroupLocationPickerMode flags allowed by the group type.
+         */
+        locationSelectionMode: {
+            type: Number as PropType<GroupLocationPickerMode>,
+            default: GroupLocationPickerMode.None
+        },
+
+        /**
+         * Location Type DefinedValue dropdown options scoped to the group type.
+         */
+        locationTypeOptions: {
+            type: Array as PropType<ListItemBag[] | null>,
+            default: () => [] as ListItemBag[]
+        },
+
+        /**
+         * Whether per-location schedule configuration is enabled.
+         */
+        enableLocationSchedules: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * Whether member scheduling is enabled (drives the capacity matrix in the modal).
+         */
+        isSchedulingEnabled: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * Whether more than one GroupLocation may be added to groups of this type.
+         */
+        allowMultipleLocations: {
+            type: Boolean,
+            default: true
+        },
+
+        /**
+         * The DefinedValue Guid of the configured map style.
+         */
+        mapStyleValueGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:groupLocations", value: GroupLocationStateBag[]): void
+    }>();
+
+    // #region Values
+
+    const blockAction = useInvokeGroupDetailBlockAction();
+
+    const theGroupLocation = ref<GroupLocationStateBag>(createNewGroupLocation());
+    const isModalVisible = ref(false);
+    const isEditing = ref(false);
+    const errorMessage = ref<string | null>(null);
+
+    /**
+     * Family-member location options. Lazily fetched the first time the
+     * Add / Edit Location modal opens so we don't ship every member's
+     * home address in the initial edit-bag payload.
+     */
+    const familyMemberLocationOptions = ref<FamilyMemberLocationBag[] | null>(null);
+    let isLoadingFamilyMemberLocationOptions = false;
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Two-way proxy for the parent's `groupLocations` v-model.
+     */
+    const groupLocations = computed({
+        get(): GroupLocationStateBag[] {
+            return props.groupLocations ?? [];
+        },
+        set(value: GroupLocationStateBag[]) {
+            emit("update:groupLocations", value);
+        }
+    });
+
+    /**
+     * Whether the entire stack renders. Hidden when the group type's
+     * `LocationSelectionMode` is None.
+     */
+    const isStackVisible = computed<boolean>(() => {
+        return props.locationSelectionMode !== GroupLocationPickerMode.None;
+    });
+
+    /**
+     * Whether the Add button is enabled. Shown when the group type allows
+     * multiple locations or when no location has been added yet.
+     */
+    const canAdd = computed<boolean>(() => {
+        return props.allowMultipleLocations || groupLocations.value.length === 0;
+    });
+
+    /**
+     * Row data for the locations grid.
+     */
+    const gridData = computed(() => {
+        return {
+            rows: groupLocations.value.map(l => ({
+                guid: l.guid,
+                location: l.locationName ?? "",
+                type: l.groupLocationTypeValueName ?? "",
+                schedules: (l.schedules ?? []).map(s => s.text ?? "").join(", ")
+            }))
+        };
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Returns a fresh group location bag with the modal's default values.
+     */
+    function createNewGroupLocation(): GroupLocationStateBag {
+        return {
+            guid: "",
+            locationName: "",
+            selectedLocationMode: GroupLocationPickerMode.None,
+            selectedLocation: null,
+            groupLocationTypeValueGuid: null,
+            groupLocationTypeValueName: null,
+            schedules: [],
+            groupMemberPersonAliasGuid: null,
+            scheduleConfigs: []
+        };
+    }
+
+    /**
+     * Fetches the family-member location options on first call and caches
+     * them. New (unsaved) groups have no members and short-circuit to an
+     * empty list without a server round-trip.
+     */
+    async function ensureFamilyMemberLocationOptionsLoaded(): Promise<void> {
+        if (familyMemberLocationOptions.value !== null || isLoadingFamilyMemberLocationOptions) {
+            return;
+        }
+        if (!props.groupKey) {
+            familyMemberLocationOptions.value = [];
+            return;
+        }
+
+        isLoadingFamilyMemberLocationOptions = true;
+        try {
+            const result = await blockAction.getFamilyMemberLocationOptions(props.groupKey);
+            if (result.isSuccess && result.data) {
+                familyMemberLocationOptions.value = result.data;
+            }
+            else {
+                familyMemberLocationOptions.value = [];
+                errorMessage.value = result.errorMessage || "Unable to load family member location options.";
+            }
+        }
+        finally {
+            isLoadingFamilyMemberLocationOptions = false;
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Add button on the grid. Loads the family-member options lazily and
+     * opens the modal with a blank location.
+     */
+    async function onAdd(): Promise<void> {
+        await ensureFamilyMemberLocationOptionsLoaded();
+        isEditing.value = false;
+        theGroupLocation.value = createNewGroupLocation();
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Edit button on a grid row. Loads the family-member options lazily and
+     * opens the modal with a deep-clone of the selected location so
+     * in-progress edits don't mutate the row until Save.
+     *
+     * @param guid The unique identifier of the location to edit.
+     */
+    async function onEdit(guid: string): Promise<void> {
+        const selected = groupLocations.value.find(l => l.guid === guid);
+        if (!selected) {
+            return;
+        }
+        await ensureFamilyMemberLocationOptionsLoaded();
+        theGroupLocation.value = {
+            ...selected,
+            schedules: [...(selected.schedules ?? [])],
+            scheduleConfigs: (selected.scheduleConfigs ?? []).map(c => ({ ...c }))
+        };
+        isEditing.value = true;
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Delete button on a grid row. Checks server-side delete eligibility
+     * before removing the location from the local list.
+     *
+     * @param guid The unique identifier of the location to delete.
+     */
+    async function onDelete(guid: string): Promise<void> {
+        const result = await blockAction.canDeleteEntity({
+            entityKey: EntityKey.GroupLocation,
+            entityGuid: guid
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage || "Unable to delete this group location.";
+            return;
+        }
+
+        if (!result.data.canDelete) {
+            errorMessage.value = result.data.errorMessage || "This group location cannot be deleted.";
+            return;
+        }
+
+        groupLocations.value = groupLocations.value.filter(l => l.guid !== guid);
+        errorMessage.value = null;
+    }
+
+    /**
+     * Save callback emitted by the LocationModal. Updates the existing
+     * entry when the Guid matches; otherwise assigns a fresh Guid and
+     * appends.
+     */
+    function onSave(value: GroupLocationStateBag): void {
+        const current = groupLocations.value;
+        const idx = current.findIndex(l => l.guid === value.guid);
+        if (idx !== -1) {
+            const updated = [...current];
+            updated.splice(idx, 1, value);
+            groupLocations.value = updated;
+        }
+        else {
+            value.guid = newGuid();
+            groupLocations.value = [...current, value];
+        }
+        isModalVisible.value = false;
+    }
+
+    // #endregion
+</script>

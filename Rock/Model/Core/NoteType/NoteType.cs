@@ -25,6 +25,8 @@ using Rock.AI.Classes.ChatCompletions;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Core;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -72,6 +74,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
@@ -83,6 +86,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
@@ -94,6 +98,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -113,6 +118,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -167,6 +173,7 @@ namespace Rock.Model
         /// <value>The base color to use when calculating the color pair.</value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Color { get; set; }
 
         /// <summary>
@@ -179,6 +186,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [Obsolete( "This property is no longer used and will be removed in the future." )]
         [RockObsolete( "1.16" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string BackgroundColor { get; set; }
 
         /// <summary>
@@ -191,6 +199,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [Obsolete( "This property is no longer used and will be removed in the future." )]
         [RockObsolete( "1.16" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string FontColor { get; set; }
 
         /// <summary>
@@ -203,6 +212,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [Obsolete( "This property is no longer used and will be removed in the future." )]
         [RockObsolete( "1.16" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string BorderColor { get; set; }
 
         /// <summary>
@@ -235,6 +245,7 @@ namespace Rock.Model
         [DataMember]
         [Obsolete( "This property is no longer used and will be removed in the future." )]
         [RockObsolete( "1.16" )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ApprovalUrlTemplate { get; set; }
 
         /// <summary>
@@ -277,6 +288,7 @@ namespace Rock.Model
         /// The additional settings json.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion

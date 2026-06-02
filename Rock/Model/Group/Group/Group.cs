@@ -27,6 +27,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
+using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Security;
 using Rock.UniversalSearch;
@@ -165,6 +166,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         [Previewable]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -175,7 +177,17 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Previewable]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.BinaryFile"/> that contains the photo of the Group.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.BinaryFile"/> containing the photo of the Group.
+        /// </value>
+        [DataMember]
+        public int? PhotoId { get; set; }
 
         /// <summary>
         /// Indicates this Group is a Security Role even though it isn't a SecurityRole Group Type.
@@ -389,6 +401,7 @@ namespace Rock.Model
         /// The inactive reason note.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string InactiveReasonNote { get; set; }
 
         /// <summary>
@@ -436,6 +449,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 250 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string GroupSalutation { get; set; }
 
         /// <summary>
@@ -447,6 +461,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 250 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string GroupSalutationFull { get; set; }
 
         /// <summary>
@@ -456,6 +471,7 @@ namespace Rock.Model
         /// The confirmation additional details.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml )]
         public string ConfirmationAdditionalDetails { get; set; }
 
         /// <summary>
@@ -484,6 +500,7 @@ namespace Rock.Model
         /// The reminder additional details.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml )]
         public string ReminderAdditionalDetails { get; set; }
 
         /// <summary>
@@ -638,6 +655,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ChatChannelKey { get; set; }
 
         /// <summary>
@@ -875,6 +893,15 @@ namespace Rock.Model
         public virtual BinaryFile ChatChannelAvatarBinaryFile { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that contains the photo of the Group.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.BinaryFile"/> containing the photo of the Group.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile Photo { get; set; }
+
+        /// <summary>
         /// Gets or sets the default Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source
         /// of <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/> (or if
         /// <see cref="GroupType.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value of
@@ -930,6 +957,7 @@ namespace Rock.Model
             this.HasOptional( p => p.InactiveReasonValue ).WithMany().HasForeignKey( p => p.InactiveReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RSVPReminderSystemCommunication ).WithMany().HasForeignKey( p => p.RSVPReminderSystemCommunicationId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ChatChannelAvatarBinaryFile ).WithMany().HasForeignKey( p => p.ChatChannelAvatarBinaryFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.GroupMemberRecordSourceValue ).WithMany().HasForeignKey( p => p.GroupMemberRecordSourceValueId ).WillCascadeOnDelete( false );
 
             // Tell EF that we never want archived groups. 

@@ -35,13 +35,38 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Process Payment" )]
 
-    [FinancialGatewayField( "Financial Gateway", "Workflow attribute that indicates the automated financial gateway to use.", true, "", "", 0, null )]
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person making the payment.", true, "", "", 1, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowAttribute( "Amount", "Workflow attribute that contains the amount to charge.", true, "", "", 2, null, new string[] { "Rock.Field.Types.CurrencyFieldType" } )]
-    [WorkflowAttribute( "Account", "Workflow attribute that contains the target account.", true, "", "", 3, null, new string[] { "Rock.Field.Types.AccountFieldType" } )]
-    [BooleanField( "Enable Duplicate Checking", "Should the processor try to prevent repeat charges?", true, "", 4 )]
-    [BooleanField( "Continue On Error", "Should processing continue even if processing errors occur?", false, "", 5 )]
-    [WorkflowAttribute( "Result Attribute", "An optional attribute to set to the result transaction ID.", false, "", "", 6, null, new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+    [FinancialGatewayField( "Financial Gateway",
+        Description = "Workflow attribute that indicates the automated financial gateway to use.",
+        IsRequired = true,
+        Order = 0 )]
+    [WorkflowAttribute( "Person",
+        Description = "Workflow attribute that contains the person making the payment.",
+        IsRequired = true,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Amount",
+        Description = "Workflow attribute that contains the amount to charge.",
+        IsRequired = true,
+        Order = 2,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.CurrencyFieldType" } )]
+    [WorkflowAttribute( "Account",
+        Description = "Workflow attribute that contains the target account.",
+        IsRequired = true,
+        Order = 3,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.AccountFieldType" } )]
+    [BooleanField( "Enable Duplicate Checking",
+        Description = "Should the processor try to prevent repeat charges?",
+        DefaultBooleanValue = true,
+        Order = 4 )]
+    [BooleanField( "Continue On Error",
+        Description = "Should processing continue even if processing errors occur?",
+        IsRequired = false,
+        Order = 5 )]
+    [WorkflowAttribute( "Result Attribute",
+        Description = "An optional attribute to set to the result transaction ID.",
+        IsRequired = false,
+        Order = 6,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.IntegerFieldType" } )]
 
     [Rock.SystemGuid.EntityTypeGuid( "F1C91339-54E1-4CA8-A067-6727954DC6A9")]
     public class ProcessPayment : ActionComponent

@@ -24,6 +24,8 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.Core;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility.Enums;
 
 namespace Rock.Model
@@ -49,6 +51,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>

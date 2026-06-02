@@ -174,13 +174,13 @@
     const isGridSettingsVisible = ref(false);
 
     const gridSettings = ref<GridSettingsOptions>({
-        filterProcessed: safeParseJson(preferences.getValue(PreferenceKey.FilterProcessed)) ?? Processed.ManualUpdateRequiredOrNotProcessed.toString(),
+        filterProcessed: preferences.getValue(PreferenceKey.FilterProcessed) || Processed.ManualUpdateRequiredOrNotProcessed.toString(),
         filterMoveDate: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterMoveDate)) ?? null,
         filterNcoaProcessedDate: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterNcoaProcessedDate)) ?? null,
         filterMoveType: preferences.getValue(PreferenceKey.FilterMoveType),
         filterAddressStatus: preferences.getValue(PreferenceKey.FilterAddressStatus),
         filterInvalidReason: preferences.getValue(PreferenceKey.FilterInvalidReason),
-        filterMoveDistance: Number.parseInt(preferences.getValue(PreferenceKey.FilterMoveDistance)) || null,
+        filterMoveDistance: Number.parseFloat(preferences.getValue(PreferenceKey.FilterMoveDistance)) || null,
         filterLastName: preferences.getValue(PreferenceKey.FilterLastName),
         filterCampus: safeParseJson(preferences.getValue(PreferenceKey.FilterCampus))
     });
@@ -227,7 +227,7 @@
     loadNcoaResults();
     watch(
         gridSettings, async (value) => {
-            preferences.setValue(PreferenceKey.FilterProcessed, value.filterProcessed);
+            preferences.setValue(PreferenceKey.FilterProcessed, value.filterProcessed || Processed.All.toString());
             preferences.setValue(PreferenceKey.FilterMoveDate, value.filterMoveDate ? slidingDateRangeToString(value.filterMoveDate) : "");
             preferences.setValue(PreferenceKey.FilterNcoaProcessedDate, value.filterNcoaProcessedDate ? slidingDateRangeToString(value.filterNcoaProcessedDate) : "");
             preferences.setValue(PreferenceKey.FilterMoveType, value.filterMoveType);
@@ -248,7 +248,7 @@
     const processNcoaUrl = computed((): string => config.navigationUrls?.["NcoaProcessPage"] ?? "");
 
     const hasSettingsFilters = computed((): boolean => {
-        return (!!gridSettings.value.filterProcessed.length && gridSettings.value.filterProcessed !== Processed.ManualUpdateRequiredOrNotProcessed.toString())
+        return (!!gridSettings.value.filterProcessed.length && gridSettings.value.filterProcessed !== Processed.All.toString())
             || !!gridSettings.value.filterMoveDate
             || !!gridSettings.value.filterNcoaProcessedDate
             || !!gridSettings.value.filterMoveType.length

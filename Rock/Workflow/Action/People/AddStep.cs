@@ -39,77 +39,77 @@ namespace Rock.Workflow.Action
     #region Attributes
 
     [WorkflowAttribute(
-        name: "Person",
-        description: "Workflow attribute that contains the person that is taking the step.",
-        required: true,
-        order: 0,
-        key: AttributeKey.Person,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.PersonFieldType" } )]
+        "Person",
+        Description = "Workflow attribute that contains the person that is taking the step.",
+        IsRequired = true,
+        Order = 0,
+        Key = AttributeKey.Person,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
 
     [WorkflowTextOrAttribute(
-        textLabel: "Step Type Id",
-        attributeLabel: "Attribute Value",
-        description: "The step type id in which the step will be created.",
-        required: true,
-        order: 1,
-        key: AttributeKey.StepProgramStepType,
-        fieldTypeClassNames: new string[] {
+        "Step Type Id",
+        "Attribute Value",
+        Description = "The step type id in which the step will be created.",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKey.StepProgramStepType,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.StepProgramStepTypeFieldType",
             "Rock.Field.Types.TextFieldType"
         } )]
 
     [WorkflowTextOrAttribute(
-        textLabel: "Step Status Id",
-        attributeLabel: "Attribute Value",
-        description: "The step status id in which the step will be created.",
-        required: true,
-        order: 2,
-        key: AttributeKey.StepProgramStepStatus,
-        fieldTypeClassNames: new string[] {
+        "Step Status Id",
+        "Attribute Value",
+        Description = "The step status id in which the step will be created.",
+        IsRequired = true,
+        Order = 2,
+        Key = AttributeKey.StepProgramStepStatus,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.StepProgramStepStatusFieldType",
             "Rock.Field.Types.TextFieldType"
         } )]
 
     [WorkflowTextOrAttribute(
-        textLabel: "Start Date",
-        attributeLabel: "Attribute Value",
-        description: "The date that the step was started.",
-        required: false,
-        order: 3,
-        key: AttributeKey.StartDate,
-        fieldTypeClassNames: new string[] {
+        "Start Date",
+        "Attribute Value",
+        Description = "The date that the step was started.",
+        IsRequired = false,
+        Order = 3,
+        Key = AttributeKey.StartDate,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.DateFieldType",
             "Rock.Field.Types.TextFieldType"
         } )]
 
     [WorkflowTextOrAttribute(
-        textLabel: "End Date",
-        attributeLabel: "Attribute Value",
-        description: "The date that the step was ended. This will also be set as the step 'completed' date.",
-        required: false,
-        order: 4,
-        key: AttributeKey.EndDate,
-        fieldTypeClassNames: new string[] {
+        "End Date",
+        "Attribute Value",
+        Description = "The date that the step was ended. This will also be set as the step 'completed' date.",
+        IsRequired = false,
+        Order = 4,
+        Key = AttributeKey.EndDate,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.DateFieldType",
             "Rock.Field.Types.TextFieldType"
         } )]
 
     [WorkflowAttribute(
-        name: "Step Attribute",
-        description: "An optional step attribute to store the item that is created.",
-        required: false,
-        order: 5,
-        key: AttributeKey.StepAttribute,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.StepFieldType" } )]
+        "Step Attribute",
+        Description = "An optional step attribute to store the item that is created.",
+        IsRequired = false,
+        Order = 5,
+        Key = AttributeKey.StepAttribute,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.StepFieldType" } )]
 
     [WorkflowTextOrAttribute(
-        textLabel: "Campus",
-        attributeLabel: "Attribute Value",
-        description: "The campus where the step was completed.",
-        required: false,
-        order: 6,
-        key: AttributeKey.Campus,
-        fieldTypeClassNames: new string[] {
+        "Campus",
+        "Attribute Value",
+        Description = "The campus where the step was completed.",
+        IsRequired = false,
+        Order = 6,
+        Key = AttributeKey.Campus,
+        FieldTypeClassNames = new string[] {
             "Rock.Field.Types.CampusFieldType",
             "Rock.Field.Types.TextFieldType" } )]
 

@@ -35,10 +35,19 @@ namespace Rock.Workflow.Action.WorkflowAttributes
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Attribute Set File from Lava" )]
 
-    [WorkflowAttribute( "Result Attribute", "The attribute to put the resulting file into.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.FileFieldType" } )]
-    [TextField( "File Name", "The file name to use for the file.", true, "file.txt" )]
-    [TextField( "Mimetype", "The mimetype of the file", true, "text/plain" )]
+    [WorkflowAttribute( "Result Attribute",
+        Description = "The attribute to put the resulting file into.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType" } )]
+    [TextField( "File Name",
+        Description = "The file name to use for the file.",
+        IsRequired = true,
+        DefaultValue = "file.txt" )]
+    [TextField( "Mimetype",
+        Description = "The mimetype of the file",
+        IsRequired = true,
+        DefaultValue = "text/plain" )]
     [CodeEditorField( "Lava Template",
         Description = "The Lava template to use to create the text file. <span class='tip tip-lava'></span>",
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,

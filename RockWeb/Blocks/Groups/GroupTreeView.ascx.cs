@@ -349,11 +349,10 @@ namespace RockWeb.Blocks.Groups
                 Group selectedGroup = RockPage.GetSharedItem( key ) as Group;
                 if ( selectedGroup == null )
                 {
-                    int id = _groupId.AsInteger();
                     selectedGroup = new GroupService( rockContext )
-                        .Queryable( "GroupType" )
+                        .GetQueryableByKey( _groupId, !PageCache.Layout.Site.DisablePredictableIds )
+                        .Include( "GroupType" )
                         .AsNoTracking()
-                        .Where( g => g.Id == id )
                         .FirstOrDefault();
                     RockPage.SaveSharedItem( key, selectedGroup );
                 }

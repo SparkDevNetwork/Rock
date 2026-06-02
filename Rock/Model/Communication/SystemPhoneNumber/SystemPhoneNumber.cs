@@ -21,6 +21,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -46,6 +48,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -55,6 +58,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -67,6 +71,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [MaxLength( 20 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Number { get; set; }
 
         /// <summary>
@@ -149,6 +154,7 @@ namespace Rock.Model
         /// </value>
         [DataMember()]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ProviderIdentifier { get; set; }
 
         /// <summary>

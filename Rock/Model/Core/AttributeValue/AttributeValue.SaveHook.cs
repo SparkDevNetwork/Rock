@@ -19,6 +19,7 @@ using System;
 using System.Linq;
 using Rock.Cms.StructuredContent;
 using Rock.Data;
+using Rock.Security;
 using Rock.Tasks;
 using Rock.Web.Cache;
 
@@ -47,6 +48,10 @@ namespace Rock.Model
                     Entity.Value = string.Empty;
                 }
 
+                // Check if we are newly added or updated and the Value property modified.
+                var valueWasModified = Entry.State == EntityContextState.Added
+                    || ( Entry.State == EntityContextState.Modified && Entity.Value != ( string ) Entry.OriginalValues[nameof( Entity.Value )] );
+
                 if ( attributeCache != null )
                 {
                     // Check to see if this attribute value if for a File, Image, or BackgroundCheck field type.
@@ -56,6 +61,32 @@ namespace Rock.Model
                     // The Label field type is a list of existing labels so should not be included, but the image field type uploads a new file so we do want it included.
                     // Don't use BinaryFileFieldType as that type of attribute's file can be used by more than one attribute
                     var field = attributeCache.FieldType.Field;
+
+                    if ( valueWasModified && field != null && field.GetType().Assembly.FullName.StartsWith( "Rock" ) )
+                    {
+                        var rules = field.GetValidationRules( attributeCache.ConfigurationValues );
+
+                        try
+                        {
+                            StringValueValidator.Validate( Entity.Value, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+                        }
+                        catch ( PropertyValidationException ex )
+                        {
+                            if ( DbContext.EnableStringValidation )
+                            {
+                                throw new AttributeValueValidationException( attributeCache, Entity.EntityId ?? 0, ex.Reason, null );
+                            }
+                            else
+                            {
+                                // captures the full current call stack, all callers included
+                                var stack = new System.Diagnostics.StackTrace( true ).ToString();
+                                var ex2 = new AttributeValueValidationException( attributeCache, Entity.EntityId ?? 0, ex.Reason, stack );
+
+                                ExceptionLogService.LogException( ex2 );
+                            }
+                        }
+                    }
+
                     if ( field != null && (
                         field is Field.Types.FileFieldType ||
                         field is Field.Types.ImageFieldType ||
@@ -77,10 +108,6 @@ namespace Rock.Model
                         SaveToHistoryTable( rockContext, attributeCache, true );
                     }
                 }
-
-                // Check if we are newly added or updated and the Value property modified.
-                var valueWasModified = Entry.State == EntityContextState.Added
-                    || ( Entry.State == EntityContextState.Modified && Entity.Value != ( string ) Entry.OriginalValues[nameof( Entity.Value )] );
 
                 if ( valueWasModified )
                 {

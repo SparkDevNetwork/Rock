@@ -93,11 +93,17 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         private HttpResponseMessage ResizeAndSendImage( int? width, int? height, string fullPath )
         {
-            if ( Path.GetExtension( fullPath ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) )
+            var extension = Path.GetExtension( fullPath );
+
+            // SVG and WebP cannot be resized by GDI+/ImageResizer on .NET Framework, so
+            // stream the original file through unmodified as its own thumbnail.
+            if ( extension.Equals( ".svg", StringComparison.OrdinalIgnoreCase ) ||
+                extension.Equals( ".webp", StringComparison.OrdinalIgnoreCase ) )
             {
+                var contentType = extension.Equals( ".webp", StringComparison.OrdinalIgnoreCase ) ? "image/webp" : "image/svg+xml";
                 HttpResponseMessage result = new HttpResponseMessage( HttpStatusCode.OK );
                 result.Content = new StreamContent( new FileStream( fullPath, FileMode.Open, FileAccess.Read ) );
-                result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( "image/svg+xml" );
+                result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( contentType );
                 return result;
             }
             else

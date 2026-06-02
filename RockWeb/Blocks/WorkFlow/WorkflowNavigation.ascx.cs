@@ -37,10 +37,24 @@ namespace RockWeb.Blocks.WorkFlow
     [Category( "WorkFlow" )]
     [Description( "Block for navigating workflow types and launching and/or managing workflows." )]
 
-    [CategoryField( "Categories", "The categories to display", true, "Rock.Model.WorkflowType", "", "", false, "", "", 0 )]
-    [BooleanField( "Include Child Categories", "Should descendent categories of the selected Categories be included?", true, "", 1 )]
-    [LinkedPage( "Entry Page", "Page used to launch a new workflow of the selected type.", true, "", "", 2 )]
-    [LinkedPage( "Manage Page", "Page used to manage workflows of the selected type.", true, "", "", 3 )]
+    [CategoryField( "Categories",
+        Description = "The categories to display",
+        AllowMultiple = true,
+        EntityTypeName = "Rock.Model.WorkflowType",
+        IsRequired = false,
+        Order = 0 )]
+    [BooleanField( "Include Child Categories",
+        Description = "Should descendent categories of the selected Categories be included?",
+        DefaultBooleanValue = true,
+        Order = 1 )]
+    [LinkedPage( "Entry Page",
+        Description = "Page used to launch a new workflow of the selected type.",
+        IsRequired = true,
+        Order = 2 )]
+    [LinkedPage( "Manage Page",
+        Description = "Page used to manage workflows of the selected type.",
+        IsRequired = true,
+        Order = 3 )]
     [Rock.SystemGuid.BlockTypeGuid( "DDC6B004-9ED1-470F-ABF5-041250082168" )]
     public partial class WorkflowNavigation : Rock.Web.UI.RockBlock
     {

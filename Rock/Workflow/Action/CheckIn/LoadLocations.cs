@@ -34,7 +34,8 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Adds the locations for each members group types" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Load Locations" )]
-    [BooleanField( "Load All", "By default locations are only loaded for the selected person and group type.  Select this option to load locations for all the loaded people and group types." )]
+    [BooleanField( "Load All",
+        Description = "By default locations are only loaded for the selected person and group type.  Select this option to load locations for all the loaded people and group types." )]
     [Rock.SystemGuid.EntityTypeGuid( "4492E36A-77C8-4DC7-8128-570FAA161ADB")]
     public class LoadLocations : CheckInActionComponent
     {

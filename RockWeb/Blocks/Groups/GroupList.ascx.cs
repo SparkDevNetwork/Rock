@@ -41,8 +41,13 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Lists all groups for the configured group types or all groups for the specified person context. Query string parameters: <ul><li>GroupTypeId - Filters to a specific group type.</li></ui>" )]
 
-    [LinkedPage( "Detail Page", "", true, "", "", 0 )]
-    [GroupTypesField( "Include Group Types", "The group types to display in the list.  If none are selected, all group types will be included.", false, "", "", 1 )]
+    [LinkedPage( "Detail Page",
+        IsRequired = true,
+        Order = 0 )]
+    [GroupTypesField( "Include Group Types",
+        Description = "The group types to display in the list.  If none are selected, all group types will be included.",
+        IsRequired = false,
+        Order = 1 )]
 
     [BooleanField(
         "Limit to Security Role Groups",
@@ -51,22 +56,64 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = false,
         Order = 2 )]
 
-    [GroupTypesField( "Exclude Group Types", "The group types to exclude from the list (only valid if including all groups).", false, "", "", 3 )]
-    [BooleanField( "Display Group Path", "Should the Group path be displayed?", false, "", 4 )]
-    [BooleanField( "Display Group Type Column", "Should the Group Type column be displayed?", true, "", 5 )]
-    [BooleanField( "Display Description Column", "Should the Description column be displayed?", true, "", 6 )]
-    [BooleanField( "Display Active Status Column", "Should the Active Status column be displayed?", false, "", 7 )]
-    [BooleanField( "Display Member Count Column", "Should the Member Count column be displayed? Does not affect lists with a person context.", true, "", 8 )]
-    [BooleanField( "Display System Column", "Should the System column be displayed?", true, "", 9 )]
-    [BooleanField( "Display Security Column", "Should the Security column be displayed?", false, "", 10 )]
-    [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 11 )]
-    [CustomDropdownListField( "Limit to Active Status", "Select which groups (and groupmembers) to show, based on active status. Select [All] to filter by any status. Selecting Active will not show inactive/archived groups/groupmembers.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 12, Key = AttributeKey.LimittoActiveStatus )]
-    [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.", required: false, order: 13 )]
-    [TextField( "Set Panel Icon", "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.", required: false, order: 14 )]
-    [BooleanField( "Allow Add", "Should block support adding new group?", true, "", 15 )]
+    [GroupTypesField( "Exclude Group Types",
+        Description = "The group types to exclude from the list (only valid if including all groups).",
+        IsRequired = false,
+        Order = 3 )]
+    [BooleanField( "Display Group Path",
+        Description = "Should the Group path be displayed?",
+        DefaultBooleanValue = false,
+        Order = 4 )]
+    [BooleanField( "Display Group Type Column",
+        Description = "Should the Group Type column be displayed?",
+        DefaultBooleanValue = true,
+        Order = 5 )]
+    [BooleanField( "Display Description Column",
+        Description = "Should the Description column be displayed?",
+        DefaultBooleanValue = true,
+        Order = 6 )]
+    [BooleanField( "Display Active Status Column",
+        Description = "Should the Active Status column be displayed?",
+        DefaultBooleanValue = false,
+        Order = 7 )]
+    [BooleanField( "Display Member Count Column",
+        Description = "Should the Member Count column be displayed? Does not affect lists with a person context.",
+        DefaultBooleanValue = true,
+        Order = 8 )]
+    [BooleanField( "Display System Column",
+        Description = "Should the System column be displayed?",
+        DefaultBooleanValue = true,
+        Order = 9 )]
+    [BooleanField( "Display Security Column",
+        Description = "Should the Security column be displayed?",
+        DefaultBooleanValue = false,
+        Order = 10 )]
+    [BooleanField( "Display Filter",
+        Description = "Should filter be displayed to allow filtering by group type?",
+        DefaultBooleanValue = false,
+        Order = 11 )]
+    [CustomDropdownListField( "Limit to Active Status",
+        Description = "Select which groups (and groupmembers) to show, based on active status. Select [All] to filter by any status. Selecting Active will not show inactive/archived groups/groupmembers.",
+        ListSource = "all^[All], active^Active, inactive^Inactive",
+        IsRequired = false,
+        DefaultValue = "all",
+        Order = 12,
+        Key = AttributeKey.LimittoActiveStatus )]
+    [TextField( "Set Panel Title",
+        Description = "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.",
+        IsRequired = false,
+        Order = 13 )]
+    [TextField( "Set Panel Icon",
+        Description = "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.",
+        IsRequired = false,
+        Order = 14 )]
+    [BooleanField( "Allow Add",
+        Description = "Should block support adding new group?",
+        DefaultBooleanValue = true,
+        Order = 15 )]
     [CustomDropdownListField( "Group Picker Type",
-        description: "Used to control which kind of picker is used when adding a person to a group.",
-        listSource: "GroupPicker^Group Picker, Dropdown^Drop-down",
+        Description = "Used to control which kind of picker is used when adding a person to a group.",
+        ListSource = "GroupPicker^Group Picker, Dropdown^Drop-down",
         IsRequired = false,
         DefaultValue = "Dropdown",
         Category = "Add Group",

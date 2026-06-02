@@ -15,7 +15,9 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -64,6 +66,7 @@ namespace Rock.Model
         /// The workflow identifier.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public virtual string WorkflowId { get; set; }
 
         /// <summary>
@@ -75,6 +78,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -84,6 +88,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the description or summary about this Workflow instance.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -95,6 +100,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Status { get; set; }
 
         /// <summary>

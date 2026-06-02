@@ -36,8 +36,13 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Adds a person to a group based on inputs from the URL query string." )]
 
-    [GroupField("Default Group", "The default group to use if one is not passed through the query string (optional).", false)]
-    [GroupRoleField("", "Default Group Member Role", "The default role to use if one is not passed through the query string (optional).", false)]
+    [GroupField( "Default Group",
+        Description = "The default group to use if one is not passed through the query string (optional).",
+        IsRequired = false )]
+    [GroupRoleField( "",
+        "Default Group Member Role",
+        Description = "The default role to use if one is not passed through the query string (optional).",
+        IsRequired = false )]
 
     [CodeEditorField( "Success Message",
         Description = "Lava template to display when person has been added to the group.",
@@ -57,9 +62,17 @@ namespace RockWeb.Blocks.Groups
     {{ Person.NickName }} is already in the group '{{ Group.Name }}' with the role of {{ Role.Name }}.
 </div>" )]
 
-    [EnumField("Group Member Status", "The status to use when adding a person to the group.", typeof(GroupMemberStatus), true, "Active")]
-    [GroupTypesField( "Limit Group Type", "To ensure that people cannot modify the URL and try adding themselves to standard Rock security groups with known Id numbers you can limit which Group Type that are considered valid during add.", false )]
-    [BooleanField( "Enable Passing Group Id", "If enabled, allows the ability to pass in a group's Id (GroupId=) instead of the Guid.", true, "" )]
+    [EnumField( "Group Member Status",
+        Description = "The status to use when adding a person to the group.",
+        EnumSourceType = typeof( GroupMemberStatus ),
+        IsRequired = true,
+        DefaultValue = "Active" )]
+    [GroupTypesField( "Limit Group Type",
+        Description = "To ensure that people cannot modify the URL and try adding themselves to standard Rock security groups with known Id numbers you can limit which Group Type that are considered valid during add.",
+        IsRequired = false )]
+    [BooleanField( "Enable Passing Group Id",
+        Description = "If enabled, allows the ability to pass in a group's Id (GroupId=) instead of the Guid.",
+        DefaultBooleanValue = true )]
 
     [Rock.SystemGuid.BlockTypeGuid( "42CF3822-A70C-4E07-9394-21607EED7018" )]
     public partial class GroupMemberAddFromUrl : Rock.Web.UI.RockBlock

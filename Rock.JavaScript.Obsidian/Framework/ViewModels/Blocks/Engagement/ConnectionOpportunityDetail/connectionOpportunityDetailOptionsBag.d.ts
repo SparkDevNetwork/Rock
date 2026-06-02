@@ -22,9 +22,17 @@
 //
 
 import { DueDateCalculationMode } from "@Obsidian/Enums/Connection/dueDateCalculationMode";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Connection Opportunity Detail block. */
 export type ConnectionOpportunityDetailOptionsBag = {
+    /**
+     * Gets or sets the list of all active campuses in the system. This is used as a fallback
+     * for the Default Connectors section when the opportunity itself has no campuses selected,
+     * so that a Default Connector can be configured per active campus.
+     */
+    allActiveCampuses?: ListItemBag[] | null;
+
     /** Gets or sets the Due Date Calculation Mode that is set on the associated Connection Type. */
     dueDateCalculationMode?: DueDateCalculationMode | null;
 

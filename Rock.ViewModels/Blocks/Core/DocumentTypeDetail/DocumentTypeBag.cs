@@ -81,5 +81,10 @@ namespace Rock.ViewModels.Blocks.Core.DocumentTypeDetail
         /// Gets or sets a value indicating whether the type is user selectable.
         /// </summary>
         public bool UserSelectable { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the type is publicly viewable.
+        /// </summary>
+        public bool IsPublicViewable { get; set; }
     }
 }

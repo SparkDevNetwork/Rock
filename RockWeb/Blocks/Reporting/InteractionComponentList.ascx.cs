@@ -37,8 +37,14 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "List all the Interaction Component" )]
 
-    [LinkedPage( "Component Detail Page", "Page reference to the component detail page. This will be included as a variable in the Lava.", false, order: 0 )]
-    [LinkedPage( "Interaction Detail Page", "Page reference to the interaction detail page. This will be included as a variable in the Lava.", false, order: 1 )]
+    [LinkedPage( "Component Detail Page",
+        Description = "Page reference to the component detail page. This will be included as a variable in the Lava.",
+        IsRequired = false,
+        Order = 0 )]
+    [LinkedPage( "Interaction Detail Page",
+        Description = "Page reference to the interaction detail page. This will be included as a variable in the Lava.",
+        IsRequired = false,
+        Order = 1 )]
 
     [CodeEditorField( "Default Template",
         Description = "The Lava template to use as default.",
@@ -83,7 +89,11 @@ namespace RockWeb.Blocks.Reporting
 		</div>
 	</div>" )]
 
-    [IntegerField( "Page Size", "The number of components to show per page.", true, 20, "", 3 )]
+    [IntegerField( "Page Size",
+        Description = "The number of components to show per page.",
+        IsRequired = true,
+        DefaultIntegerValue = 20,
+        Order = 3 )]
 
     [ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.BlockTypeGuid( "00FF58B1-A433-43AA-82C9-45F8F58FBE9F" )]

@@ -42,16 +42,49 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Lists all the members of the given group." )]
 
-    [TextField( "Block Title", "The text used in the title/header bar for this block.", true, "Group Members", "", 0 )]
-    [LinkedPage( "Detail Page", order: 1 )]
-    [GroupField( "Group", "Either pick a specific group or choose &lt;none&gt; to have group be determined by the groupId page parameter", false, order: 2 )]
-    [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 3, "PersonProfilePage" )]
-    [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 4 )]
-    [LinkedPage( "Data View Detail Page", "Page used to view data views that are used with the group member sync.", false, order: 5 )]
-    [BooleanField( "Show Campus Filter", "Setting to show/hide campus filter.", true, order: 6 )]
-    [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 7, SHOW_FIRST_LAST_ATTENDANCE_KEY )]
-    [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 8, SHOW_DATE_ADDED_KEY )]
-    [BooleanField( "Show Note Column", "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?", false, "", 9 )]
+    [TextField( "Block Title",
+        Description = "The text used in the title/header bar for this block.",
+        IsRequired = true,
+        DefaultValue = "Group Members",
+        Order = 0 )]
+    [LinkedPage( "Detail Page",
+        IsRequired = true,
+        Order = 1 )]
+    [GroupField( "Group",
+        Description = "Either pick a specific group or choose &lt;none&gt; to have group be determined by the groupId page parameter",
+        IsRequired = false,
+        Order = 2 )]
+    [LinkedPage( "Person Profile Page",
+        Description = "Page used for viewing a person's profile. If set a view profile button will show for each group member.",
+        IsRequired = false,
+        Order = 3,
+        Key = "PersonProfilePage" )]
+    [LinkedPage( "Registration Page",
+        Description = "Page used for viewing the registration(s) associated with a particular group member",
+        IsRequired = false,
+        Order = 4 )]
+    [LinkedPage( "Data View Detail Page",
+        Description = "Page used to view data views that are used with the group member sync.",
+        IsRequired = false,
+        Order = 5 )]
+    [BooleanField( "Show Campus Filter",
+        Description = "Setting to show/hide campus filter.",
+        DefaultBooleanValue = true,
+        Order = 6 )]
+    [BooleanField( "Show First/Last Attendance",
+        Description = "If the group allows attendance, should the first and last attendance date be displayed for each group member?",
+        DefaultBooleanValue = false,
+        Order = 7,
+        Key = SHOW_FIRST_LAST_ATTENDANCE_KEY )]
+    [BooleanField( "Show Date Added",
+        Description = "Should the date that person was added to the group be displayed for each group member?",
+        DefaultBooleanValue = false,
+        Order = 8,
+        Key = SHOW_DATE_ADDED_KEY )]
+    [BooleanField( "Show Note Column",
+        Description = "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?",
+        DefaultBooleanValue = false,
+        Order = 9 )]
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_LIST )]

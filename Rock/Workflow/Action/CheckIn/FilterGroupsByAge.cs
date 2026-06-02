@@ -34,11 +34,24 @@ namespace Rock.Workflow.Action.CheckIn
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Age" )]
 
-    [BooleanField( "Remove", "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.", true, "", 0 )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Age Range Attribute", "Select the attribute used to define the age range of the group", true, false,
-        Rock.SystemGuid.Attribute.GROUP_AGE_RANGE, order: 2 )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Birthdate Range Attribute", "Select the attribute used to define the birthdate range of the group", true, false,
-        Rock.SystemGuid.Attribute.GROUP_BIRTHDATE_RANGE, order: 3 )]
+    [BooleanField( "Remove",
+        Description = "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.",
+        DefaultBooleanValue = true,
+        Order = 0 )]
+    [AttributeField( "Group Age Range Attribute",
+        Description = "Select the attribute used to define the age range of the group",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.Attribute.GROUP_AGE_RANGE,
+        EntityTypeGuid = Rock.SystemGuid.EntityType.GROUP,
+        Order = 2 )]
+    [AttributeField( "Group Birthdate Range Attribute",
+        Description = "Select the attribute used to define the birthdate range of the group",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.Attribute.GROUP_BIRTHDATE_RANGE,
+        EntityTypeGuid = Rock.SystemGuid.EntityType.GROUP,
+        Order = 3 )]
     [Rock.SystemGuid.EntityTypeGuid( "23F1E3FD-48AE-451F-9911-A5C7523A74B6")]
     public class FilterGroupsByAge : CheckInActionComponent
     {

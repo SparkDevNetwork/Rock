@@ -1,6 +1,6 @@
 ---
 title: Group Scheduling
-last_updated: 2026-05-01
+last_updated: 2026-05-26
 related_files:
   - Rock.Blocks/Group/Scheduling/GroupScheduler.cs
   - Rock.Blocks/Group/Scheduling/GroupScheduleToolbox.cs
@@ -16,6 +16,7 @@ related_files:
   - Rock/Model/Group/PersonScheduleExclusion/PersonScheduleExclusion.cs
   - Rock/Model/Group/GroupLocation/GroupLocationScheduleConfig.cs
   - Rock/Jobs/SendSignUpReminders.cs
+  - Rock.Blocks/Group/GroupDetail.cs
 ---
 
 # Group Scheduling
@@ -66,6 +67,8 @@ Exclusions are two-tier. **Group-level exclusions** are GroupType-scoped blackou
 **Multi-Group multi-week scheduler views can be slow.** The performance fix in commit `49530db1e1` reduced redundant queries, but the scheduler still scales with `(groups × weeks × volunteers)`. Narrow the date range or Group set when possible.
 
 **The "Disallow Group Selection If Specified" block setting locks the Group picker only when one or more Groups are passed in the URL.** The setting was previously ignored when more than one Group was passed; commit `60924b0e17` fixed it.
+
+**A Group can hold its own inline Schedule via `Group.ScheduleId`.** This is separate from the `Schedule` rows attached to `GroupLocation`s. The inline schedule is the Group's "primary" schedule and comes in three flavors: **Custom** (free-form iCalendar), **Weekly** (day-of-week + time-of-day), or **Named** (a reference to a shared `Schedule` row). Editing happens in the Group Detail block's Schedule section. See "Inline Schedule Lifecycle" in Technical Reference for the create / reuse / cleanup rules — the most important one is that flipping between Custom and Weekly reuses the existing inline `Schedule` row so `ScheduleId` stays stable, but flipping to or from Named never overwrites the named schedule (corruption guard).
 
 ## Common Scenarios
 
@@ -122,6 +125,30 @@ Rejected. Volunteers should be able to browse openings without committing, and t
 
 Compound logical key: `(GroupMemberId, LocationId, ScheduleId)`.
 
+### Inline Schedule Lifecycle
+
+`Group.ScheduleId` holds the Group's "primary" schedule, distinct from the schedules attached to `GroupLocation`s. The Group Detail block edits this via a tri-mode picker (Custom / Weekly / Named, plus a virtual "None") in the Schedule section. The lifecycle rules below live in `ApplyInlineSchedule` at [Rock.Blocks/Group/GroupDetail.cs:2543](../../Rock.Blocks/Group/GroupDetail.cs); the WebForms predecessor at [GroupDetail.ascx.cs:1185](../../RockWeb/Blocks/Groups/GroupDetail.ascx.cs) had the same shape.
+
+**Silent downgrade rules.** The block does not surface validation errors for these; it silently falls back to `None`:
+
+| Trigger | What's wrong | Result |
+|---|---|---|
+| Custom with invalid iCalendar | `InetCalendarHelper.CreateCalendarEvent(iCal)` returns null OR `calEvent.DtStart` is null | Schedule type becomes `None`; no inline Schedule is written. |
+| Weekly missing day-of-week | `bag.WeeklyDayOfWeek` is null | Schedule type becomes `None`. |
+| Weekly missing time-of-day | `ParseTimeSpanOrNull(bag.WeeklyTimeOfDay)` returns null | Schedule type becomes `None`. |
+
+**Reuse-existing-inline rule.** When switching between Custom and Weekly on a Group that already has an inline Schedule attached, `ApplyInlineSchedule` REUSES the existing `Schedule` row (mutating its `iCalendarContent` / `WeeklyDayOfWeek` / `WeeklyTimeOfDay`) so `Schedule.Id` stays stable. A NEW inline Schedule is created only when the Group has no Schedule attached OR is currently attached to a Named schedule. The empty-`Name` field on a Schedule is the inline-Schedule marker.
+
+**The CRITICAL named-schedule guard.** When the user is switching FROM a Named schedule, the code intentionally allocates a brand-new inline Schedule rather than reusing the named one. Mutating a named Schedule's iCalendar or Weekly fields would corrupt every other Group that references it. See the engineering note at [GroupDetail.cs:2545-2560](../../Rock.Blocks/Group/GroupDetail.cs).
+
+**Named schedule attachment.** When the user picks a Named schedule, the code sets `entity.ScheduleId = namedScheduleId` AND nulls `entity.Schedule`. The null-nav step forces EF to honor the explicit FK rather than overriding it with the previously tracked Schedule's Id.
+
+**Cleanup on Delete.** When a Group is deleted (`Delete` block action), if `Group.ScheduleId` points to an inline Schedule (`ScheduleType != Named`) AND no other Group references it, that Schedule row is also deleted. The check verifies no other `Group.ScheduleId` references it, but does NOT check other entity types (`Attendance.ScheduleId`, etc.). See [GroupDetail.cs:1492-1505](../../Rock.Blocks/Group/GroupDetail.cs).
+
+**Cleanup on Save.** When the user swaps from one inline mode to another or to Named, the old inline Schedule is replaced (Custom↔Weekly) or detached (Named). When the user picks None on a Group that had an inline Schedule, the old inline Schedule is deleted post-save by `DeleteInlineSchedule` if it qualifies as orphaned.
+
+
+
 `GroupMemberScheduleTemplate` ([Rock/Model/Group/GroupMemberScheduleTemplate/GroupMemberScheduleTemplate.cs](../../Rock/Model/Group/GroupMemberScheduleTemplate/GroupMemberScheduleTemplate.cs)). Reusable recurring availability. Optionally GroupType-scoped via `GroupTypeId` ([line 50](../../Rock/Model/Group/GroupMemberScheduleTemplate/GroupMemberScheduleTemplate.cs)). Binds a `Schedule` whose recurrence drives the pattern.
 
 `GroupMember` carries `ScheduleTemplateId`, `ScheduleStartDate`, optional `ScheduleReminderEmailOffsetDays` per-member override.
@@ -161,6 +188,7 @@ The Scheduler honors `GroupLocationScheduleConfig` capacities as a soft hierarch
 - **Group Schedule Toolbox** ([Rock.Blocks/Group/Scheduling/GroupScheduleToolbox.cs](../../Rock.Blocks/Group/Scheduling/GroupScheduleToolbox.cs), [Obsidian](../../Rock.JavaScript.Obsidian.Blocks/src/Group/Scheduling/groupScheduleToolbox.obs)). Volunteer-facing self-service.
 - **Schedule Toolbox sign-up partial** ([signUpOccurrence.partial.obs](../../Rock.JavaScript.Obsidian.Blocks/src/Group/Scheduling/GroupScheduleToolbox/signUpOccurrence.partial.obs)). The explicit-Save commit surface.
 - **Group Member Schedule Template Detail and List** ([Rock.Blocks/Group/Scheduling/GroupMemberScheduleTemplateList.cs](../../Rock.Blocks/Group/Scheduling/GroupMemberScheduleTemplateList.cs), [Rock.Blocks/Group/GroupMemberScheduleTemplateDetail.cs](../../Rock.Blocks/Group/GroupMemberScheduleTemplateDetail.cs)).
+- **Group Detail "Schedule" and "Scheduling" sections** ([editPanel.partial.obs](../../Rock.JavaScript.Obsidian.Blocks/src/Group/GroupDetail/editPanel.partial.obs)). Per-Group inline schedule (Custom / Weekly / Named), schedule coordinator, schedule confirmation logic, attendance-record-required toggle, plus scheduling-disabled toggles. See "A Group's inline Schedule" below.
 
 ### Extension Points
 

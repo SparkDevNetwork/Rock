@@ -37,11 +37,22 @@ namespace RockWeb.Blocks.Utility
     [Category( "Utility" )]
     [Description( "Used for managing the values of a defined type as a checklist." )]
 
-    [DefinedTypeField( "Defined Type", "The Defined Type to display values for." )]
-    [TextField( "Attribute Key", "The attribute key on the Defined Type that is used to store whether item has been completed (should be a boolean field type)." )]
-    [BooleanField( "Hide Checked Items", "Hide items that are already checked.", false )]
-    [BooleanField( "Hide Block When Empty", "Hides entire block if no checklist items are available.", false )]
-    [TextField( "Checklist Title", "Title for your checklist.", false, "", "Description", 1 )]
+    [DefinedTypeField( "Defined Type",
+        Description = "The Defined Type to display values for." )]
+    [TextField( "Attribute Key",
+        Description = "The attribute key on the Defined Type that is used to store whether item has been completed (should be a boolean field type)." )]
+    [BooleanField( "Hide Checked Items",
+        Description = "Hide items that are already checked.",
+        DefaultBooleanValue = false )]
+    [BooleanField( "Hide Block When Empty",
+        Description = "Hides entire block if no checklist items are available.",
+        DefaultBooleanValue = false )]
+    [TextField( "Checklist Title",
+        Description = "Title for your checklist.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "Description",
+        Order = 1 )]
 
     [CodeEditorField( "Checklist Description",
         Description = "Description for your checklist. Leave this blank and nothing will be displayed.",

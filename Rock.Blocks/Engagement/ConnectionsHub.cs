@@ -6933,6 +6933,23 @@ WHERE 1 = 1" );
         /// <returns>The grid builder for the communication list grid.</returns>
         private GridBuilder<ConnectionRow> GetGridBuilder()
         {
+            // The grid keys attribute columns by Key (attr_{Key}). A Connection Type can have
+            // multiple Opportunities that each define a request attribute with the same Key, so
+            // collapse to one column per Key here to avoid a duplicate field in the grid
+            // definition. Only the column definition is de-duplicated; the attribute loader
+            // still receives the full list from GetGridAttributes(), so every request loads its
+            // own Opportunity's value and that value is read back by Key into this single column.
+            //
+            // The grid applies a Boolean-only checkmark transform based on the column-defining
+            // attribute's field type, so prefer a non-Boolean instance when one exists. That way
+            // the transform only runs when every instance for the Key is Boolean, avoiding a
+            // non-Boolean value being blanked under a mixed-field-type configuration.
+            var booleanFieldTypeGuid = SystemGuid.FieldType.BOOLEAN.AsGuid();
+            var gridColumnAttributes = GetGridAttributes()
+                .GroupBy( a => a.Key )
+                .Select( group => group.FirstOrDefault( a => a.FieldType?.Guid != booleanFieldTypeGuid ) ?? group.First() )
+                .ToList();
+
             return new GridBuilder<ConnectionRow>()
                 .WithBlock( this )
                 .AddField( "id", a => a.ConnectionRequestId )
@@ -6977,7 +6994,7 @@ WHERE 1 = 1" );
                 .AddField( "hasRequiredGroupRequirements", a => a.HasRequiredGroupRequirements )
                 .AddField( "order", a => a.Order )
                 .AddField( "isPlacementGroupInactiveOrArchived", a => a.IsPlacementGroupInactiveOrArchived )
-                .AddAttributeFieldsFrom( a => a.ConnectionRequest, GetGridAttributes() );
+                .AddAttributeFieldsFrom( a => a.ConnectionRequest, gridColumnAttributes );
         }
 
         /// <summary>

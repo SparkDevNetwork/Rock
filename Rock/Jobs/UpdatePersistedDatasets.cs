@@ -25,6 +25,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -139,7 +140,7 @@ namespace Rock.Jobs
                         {
                             this.UpdateLastStatusMessage( FormatStatusMessage( "Update", name, "success" ) );
                             updatedDatasetCount++;
-                            
+
                             /*
                                 2/10/2026 - NA
                                 We are calling the SaveChanges( true ) overload that disables pre/post processing hooks
@@ -148,9 +149,17 @@ namespace Rock.Jobs
                                 run, which is not what we want here.
 
                                 Reason: See Asana task "Persisted Datasets Don't Have CreatedBy/ModifiedBy Values"
-                                https://app.asana.com/1/20866866924293/task/1213202694111290
+                                https://app.asana.com/1/20866866924293/task/1213144793175484
                             */
                             rockContext.SaveChanges( true );
+
+                            // Because the SaveChanges( true ) skipped the UpdateCache hook, the in-memory caches
+                            // still holds the previous ResultData. Invalidate it now.
+#if NET472_OR_GREATER
+                            PersistedDatasetCache.UpdateCachedEntity( persistedDatasetToUpdate.Id, System.Data.Entity.EntityState.Modified );
+#else
+                            PersistedDatasetCache.UpdateCachedEntity( persistedDatasetToUpdate.Id, Microsoft.EntityFrameworkCore.EntityState.Modified );
+#endif
                         }
                         else
                         {

@@ -46,7 +46,9 @@ namespace RockWeb.Blocks.Store
         DefaultValue = @"{% include '~/Assets/Lava/Store/PackageDetail.lava' %}",
         Order = 2 )]
 
-    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the package name.", false )]
+    [BooleanField( "Set Page Title",
+        Description = "Determines if the block should set the page title with the package name.",
+        DefaultBooleanValue = false )]
 
     [Rock.SystemGuid.BlockTypeGuid( "9EC29D0F-7EE7-434B-A30F-6C36A81B0DEB" )]
     public partial class PackageDetailLava : Rock.Web.UI.RockBlock

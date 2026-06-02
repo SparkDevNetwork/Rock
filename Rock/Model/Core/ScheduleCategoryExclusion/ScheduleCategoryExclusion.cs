@@ -21,7 +21,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -57,6 +59,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember(IsRequired =true)]
+        [StringValidation( StringValidationProfile.Name )]
         public string Title { get; set; }
 
         /// <summary>

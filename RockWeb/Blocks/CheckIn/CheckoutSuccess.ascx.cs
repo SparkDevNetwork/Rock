@@ -43,9 +43,18 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Displays the details of a successful check out." )]
 
-    [TextField( "Title", "Title to display.", false, "Checked Out", "Text", 5 )]
-    [TextField( "Detail Message", "The message to display indicating person has been checked out. Use {0} for person, {1} for group, {2} for location, and {3} for schedule.", false,
-        "{0} was checked out of {1} in {2} at {3}.", "Text", 6 )]
+    [TextField( "Title",
+        Description = "Title to display.",
+        IsRequired = false,
+        DefaultValue = "Checked Out",
+        Category = "Text",
+        Order = 5 )]
+    [TextField( "Detail Message",
+        Description = "The message to display indicating person has been checked out. Use {0} for person, {1} for group, {2} for location, and {3} for schedule.",
+        IsRequired = false,
+        DefaultValue = "{0} was checked out of {1} in {2} at {3}.",
+        Category = "Text",
+        Order = 6 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "F499C4A9-9A60-404B-9383-B950EE6D7821" )]
     public partial class CheckoutSuccess : CheckInBlock

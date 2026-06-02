@@ -37,7 +37,10 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "List all the Interaction" )]
 
-    [LinkedPage( "Interaction Detail Page", "Page reference to the interaction detail page. This will be included as a variable in the Lava.", false, order: 1 )]
+    [LinkedPage( "Interaction Detail Page",
+        Description = "Page reference to the interaction detail page. This will be included as a variable in the Lava.",
+        IsRequired = false,
+        Order = 1 )]
     [CodeEditorField( "Default Template",
         Description = "The Lava template to use as default.",
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
@@ -91,7 +94,11 @@ namespace RockWeb.Blocks.Reporting
     {% endif %}
 {% endfor %}
 	      " )]
-    [IntegerField( "Page Size", "The number of interactions to show per page.", true, 20, "", 3 )]
+    [IntegerField( "Page Size",
+        Description = "The number of interactions to show per page.",
+        IsRequired = true,
+        DefaultIntegerValue = 20,
+        Order = 3 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "468119E3-41AB-4EC4-B631-77F326632B35" )]
     public partial class InteractionList : Rock.Web.UI.RockBlock

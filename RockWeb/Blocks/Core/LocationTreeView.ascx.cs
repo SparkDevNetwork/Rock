@@ -70,6 +70,15 @@ namespace RockWeb.Blocks.Core
 
             _LocationId = PageParameter( "LocationId" );
 
+            // The Location Detail block passes the selected location as an IdKey (the standard
+            // Obsidian pattern), but this tree selects and expands nodes by the numeric Id. Decode
+            // an IdKey back to its numeric Id so the saved location is matched and selected.
+            if ( _LocationId.IsNotNullOrWhiteSpace() )
+            {
+                var locationId = _LocationId.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( _LocationId );
+                _LocationId = locationId?.ToString() ?? string.Empty;
+            }
+
             hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
 
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );

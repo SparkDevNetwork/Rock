@@ -15,14 +15,6 @@
 // </copyright>
 //
 
-using Rock.Data;
-using Rock.Enums.Core;
-using Rock.Enums.Crm;
-using Rock.Enums.Engagement;
-using Rock.Lava;
-using Rock.UniversalSearch;
-using Rock.Utility.Enums;
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -31,6 +23,16 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
+using Rock.Data;
+using Rock.Enums.Core;
+using Rock.Enums.Crm;
+using Rock.Enums.Engagement;
+using Rock.Enums.Security;
+using Rock.Lava;
+using Rock.Security;
+using Rock.UniversalSearch;
+using Rock.Utility.Enums;
 
 namespace Rock.Model
 {
@@ -179,6 +181,7 @@ namespace Rock.Model
         [DataMember]
         [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 2 )]
         [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 3 )]
+        [StringValidation( StringValidationProfile.Name )]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -193,6 +196,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
+        [StringValidation( StringValidationProfile.Name )]
         public string NickName { get; set; }
 
         /// <summary>
@@ -203,6 +207,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string MiddleName { get; set; }
 
         /// <summary>
@@ -216,6 +221,7 @@ namespace Rock.Model
         [Previewable]
         [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 3 )]
         [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 2 )]
+        [StringValidation( StringValidationProfile.Name )]
         public string LastName { get; set; }
 
         /// <summary>
@@ -396,6 +402,7 @@ namespace Rock.Model
         // DV See also: Rock.Communication.EmailAddressFieldValidator _emailAddressRegex, make sure the two stay in sync. #4829, #4867
         [RegularExpression( @"\s*(?:[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[A-Za-z0-9-]*[A-Za-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])\s*", ErrorMessage = "The Email address is invalid" )]
         [Index( "IX_Email" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Email { get; set; }
 
         /// <summary>
@@ -423,6 +430,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml )]
         public string EmailNote { get; set; }
 
         /// <summary>
@@ -451,6 +459,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ReviewReasonNote { get; set; }
 
         /// <summary>
@@ -461,6 +470,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string InactiveReasonNote { get; set; }
 
         /// <summary>
@@ -471,6 +481,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string SystemNote { get; set; }
 
         /// <summary>
@@ -491,6 +502,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string TopSignalColor { get; set; }
 
         /// <summary>
@@ -502,6 +514,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string TopSignalIconCssClass { get; set; }
 
         /// <summary>
@@ -658,6 +671,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string FirstNamePronunciationOverride { get; set; }
 
         /// <summary>
@@ -668,6 +682,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string NickNamePronunciationOverride { get; set; }
 
         /// <summary>
@@ -678,6 +693,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string LastNamePronunciationOverride { get; set; }
 
         /// <summary>
@@ -688,6 +704,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PronunciationNote { get; set; }
 
 

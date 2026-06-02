@@ -37,11 +37,24 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Group Get Child Group for Campus" )]
 
-    [WorkflowAttribute( "Group", "The attribute to set the matching child group to.", true, "", "", 0, "Group",
-        new string[] { "Rock.Field.Types.GroupFieldType" } )]
-    [Rock.Attribute.GroupTypeGroupFieldAttribute( "Parent Group", "The parent group to search to find a matching child group that belongs to the selected Campus.", "Parent Group", true, "", "", 1, key:"ParentGroup" )]
-    [WorkflowAttribute( "Campus", "The attribute to use to determine which campus to match.", true, "", "", 2, "Campus",
-        new string[] { "Rock.Field.Types.CampusFieldType" } )]
+    [WorkflowAttribute( "Group",
+        Description = "The attribute to set the matching child group to.",
+        IsRequired = true,
+        Order = 0,
+        Key = "Group",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupFieldType" } )]
+    [Rock.Attribute.GroupTypeGroupFieldAttribute( "Parent Group",
+        Description = "The parent group to search to find a matching child group that belongs to the selected Campus.",
+        GroupPickerLabel = "Parent Group",
+        IsRequired = true,
+        Order = 1,
+        Key = "ParentGroup" )]
+    [WorkflowAttribute( "Campus",
+        Description = "The attribute to use to determine which campus to match.",
+        IsRequired = true,
+        Order = 2,
+        Key = "Campus",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.CampusFieldType" } )]
     [Rock.SystemGuid.EntityTypeGuid( "17B99656-BB9E-4B08-A7B1-CC66258AC08B")]
     public class GroupGetChildGroupForCampus : ActionComponent
     {

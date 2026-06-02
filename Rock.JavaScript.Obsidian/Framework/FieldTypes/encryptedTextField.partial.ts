@@ -25,7 +25,8 @@ export const enum ConfigurationKey {
     NumberOfRows = "numberofrows",
     AllowHtml = "allowhtml",
     MaxCharacters = "maxcharacters",
-    ShowCountDown = "showcountdown"
+    ShowCountDown = "showcountdown",
+    IsFirstName = "isfirstname",
 }
 
 // The edit component can be quite large, so load it only as needed.

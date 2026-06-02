@@ -36,7 +36,9 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes (or excludes) the groups for each selected family member that are not specific to the first character of their last name. This filter looks for two 'Text' type Group attributes with keys 'LastNameBeginLetterRange' and 'LastNameEndLetterRange' to determine a match. (These attributes are typically placed on the 'Check in by Age' Group Type.)" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By LastName" )]
-    [BooleanField( "Remove", "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.", true )]
+    [BooleanField( "Remove",
+        Description = "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.",
+        DefaultBooleanValue = true )]
     [Rock.SystemGuid.EntityTypeGuid( "7B935062-4D3E-40CC-8923-B6C34A52C913")]
     public class FilterGroupsByLastName : CheckInActionComponent
     {

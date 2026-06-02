@@ -21,6 +21,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -46,6 +48,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 250 )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -55,6 +58,7 @@ namespace Rock.Model
         /// The channel data.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ChannelData { get; set; }
 
         /// <summary>
@@ -176,6 +180,7 @@ namespace Rock.Model
         /// The channel list template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ChannelListTemplate { get; set; }
 
         /// <summary>
@@ -185,6 +190,7 @@ namespace Rock.Model
         /// The channel detail template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ChannelDetailTemplate { get; set; }
 
         /// <summary>
@@ -194,6 +200,7 @@ namespace Rock.Model
         /// The component list template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ComponentListTemplate { get; set; }
 
         /// <summary>
@@ -203,6 +210,7 @@ namespace Rock.Model
         /// The component detail template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ComponentDetailTemplate { get; set; }
 
         /// <summary>
@@ -212,6 +220,7 @@ namespace Rock.Model
         /// The session list template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SessionListTemplate { get; set; }
 
         /// <summary>
@@ -221,6 +230,7 @@ namespace Rock.Model
         /// The session detail template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SessionDetailTemplate { get; set; }
 
         /// <summary>
@@ -230,6 +240,7 @@ namespace Rock.Model
         /// The interaction list template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string InteractionListTemplate { get; set; }
 
         /// <summary>
@@ -239,6 +250,7 @@ namespace Rock.Model
         /// The interaction detail template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string InteractionDetailTemplate { get; set; }
 
         /// <summary>
@@ -271,6 +283,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string InteractionCustom1Label { get; set; }
 
         /// <summary>
@@ -281,6 +294,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string InteractionCustom2Label { get; set; }
 
         /// <summary>
@@ -291,6 +305,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string InteractionCustomIndexed1Label { get; set; }
 
         /// <summary>
@@ -301,6 +316,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ComponentCustom1Label { get; set; }
 
         /// <summary>
@@ -311,6 +327,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ComponentCustom2Label { get; set; }
 
         /// <summary>
@@ -321,6 +338,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ComponentCustomIndexed1Label { get; set; }
 
         #endregion

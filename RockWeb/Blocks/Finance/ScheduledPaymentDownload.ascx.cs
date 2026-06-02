@@ -32,11 +32,28 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block used to download any scheduled payment transactions that were processed by payment gateway during a specified date range." )]
 
-    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 0 )]
-    [LinkedPage( "Batch Detail Page", "The page used to display details of a batch.", false, "", "", 1)]
-    [SystemCommunicationField( "Receipt Email", "The system email to use to send the receipts.", false, "", "", 2 )]
-    [SystemCommunicationField( "Failed Payment Email", "The system email to use to send a notice about a scheduled payment that failed.", false, "", "", 3 )]
-    [WorkflowTypeField( "Failed Payment Workflow", "An optional workflow to start whenever a scheduled payment has failed.", false, false, "", "", 4 )]
+    [TextField( "Batch Name Prefix",
+        Description = "The batch prefix name to use when creating a new batch",
+        IsRequired = false,
+        DefaultValue = "Online Giving",
+        Order = 0 )]
+    [LinkedPage( "Batch Detail Page",
+        Description = "The page used to display details of a batch.",
+        IsRequired = false,
+        Order = 1)]
+    [SystemCommunicationField( "Receipt Email",
+        Description = "The system email to use to send the receipts.",
+        IsRequired = false,
+        Order = 2 )]
+    [SystemCommunicationField( "Failed Payment Email",
+        Description = "The system email to use to send a notice about a scheduled payment that failed.",
+        IsRequired = false,
+        Order = 3 )]
+    [WorkflowTypeField( "Failed Payment Workflow",
+        Description = "An optional workflow to start whenever a scheduled payment has failed.",
+        AllowMultiple = false,
+        IsRequired = false,
+        Order = 4 )]
     [Rock.SystemGuid.BlockTypeGuid( "71FF09C3-3E50-4E97-9329-3CD57AACCA53" )]
     public partial class ScheduledPaymentDownload : Rock.Web.UI.RockBlock
     {

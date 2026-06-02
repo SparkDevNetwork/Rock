@@ -175,3 +175,6 @@ using System.Runtime.CompilerServices;
 
 // The following type forwardings were setup in Rock 20.0.3
 [assembly: TypeForwardedTo( typeof( Rock.Model.AddressStatus ) )]
+
+// The following type forwardings were setup in Rock 20.0.4
+[assembly: TypeForwardedTo( typeof( Rock.Utility.Enums.ElevatedSecurityLevel ) )]

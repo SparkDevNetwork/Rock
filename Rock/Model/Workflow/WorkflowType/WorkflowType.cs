@@ -15,6 +15,8 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
@@ -88,6 +90,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string WorkflowIdPrefix { get; set; }
 
         /// <summary>
@@ -100,6 +103,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         [IncludeForReporting]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -109,6 +113,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing a description/summary of the WorkflowType.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -142,6 +147,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string WorkTerm { get; set; }
 
         /// <summary>
@@ -171,6 +177,7 @@ namespace Rock.Model
         /// The summary view text.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SummaryViewText { get; set; }
 
         /// <summary>
@@ -180,6 +187,7 @@ namespace Rock.Model
         /// The summary view text.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string NoActionMessage { get; set; }
 
         /// <summary>
@@ -222,6 +230,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -258,6 +267,7 @@ namespace Rock.Model
         /// The form builder settings json.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string FormBuilderSettingsJson { get; set; }
 
         /// <summary>
@@ -304,6 +314,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 400 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Slug { get; set; }
 
         #endregion Entity Properties

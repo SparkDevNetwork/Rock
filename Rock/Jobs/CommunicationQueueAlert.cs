@@ -36,9 +36,20 @@ namespace Rock.Jobs
     [DisplayName( "Communication Queue Alert" )]
     [Description( "Sends an email to a list of recipients when there are communications that have been queued to send for longer than a specified time period." )]
 
-    [IntegerField( "Alert Period", "The number of minutes to allow for communications to be sent before sending an alert.", false, 120, "", 0 )]
-    [SystemCommunicationField( "Alert Email", "The system email to use for sending an alert", true, "2fc7d3e3-d85b-4265-8983-970345215dea", "", 1 )]
-    [TextField( "Alert Recipients", "A comma-delimited list of recipients that should receive the alert", true, "", "", 2 )]
+    [IntegerField( "Alert Period",
+        Description = "The number of minutes to allow for communications to be sent before sending an alert.",
+        IsRequired = false,
+        DefaultIntegerValue = 120,
+        Order = 0 )]
+    [SystemCommunicationField( "Alert Email",
+        Description = "The system email to use for sending an alert",
+        IsRequired = true,
+        DefaultSystemCommunicationGuid = "2fc7d3e3-d85b-4265-8983-970345215dea",
+        Order = 1 )]
+    [TextField( "Alert Recipients",
+        Description = "A comma-delimited list of recipients that should receive the alert",
+        IsRequired = true,
+        Order = 2 )]
     public class CommunicationQueueAlert : RockJob
     {
         /// <summary>

@@ -737,7 +737,8 @@ namespace RockWeb.Blocks.Groups
 
         private void Map()
         {
-            int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
+            int? groupId = new GroupService( new RockContext() )
+                .GetSelect( PageParameter( "GroupId" ), g => ( int? ) g.Id, !PageCache.Layout.Site.DisablePredictableIds );
             if ( !groupId.HasValue )
             {
                 pnlMap.Visible = false;

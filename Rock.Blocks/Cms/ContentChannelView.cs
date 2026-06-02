@@ -1306,7 +1306,7 @@ namespace Rock.Blocks.Cms
 
                 if ( isTagListEnabled )
                 {
-                    var tagQuery = new TaggedItemService( RockContext )
+                    var tagQuery = new TaggedItemService( contentRockContext )
                         .Queryable()
                         .AsNoTracking()
                         .Include( ti => ti.Tag );
@@ -1380,10 +1380,10 @@ namespace Rock.Blocks.Cms
                     }
                     else
                     {
-                        var allPersonalizedSegmentEntityIdsQry = GetPersonalizedEntityIdsQry( RockContext, PersonalizationType.Segment );
-                        var matchedSegmentEntityIdsQry = GetPersonalizedEntityIdsQry( RockContext, PersonalizationType.Segment, personalizationSegmentIds );
-                        var allPersonalizedRequestFilterEntityIdsQry = GetPersonalizedEntityIdsQry( RockContext, PersonalizationType.RequestFilter );
-                        var matchedRequestFilterEntityIdsQry = GetPersonalizedEntityIdsQry( RockContext, PersonalizationType.RequestFilter, requestFilterIds );
+                        var allPersonalizedSegmentEntityIdsQry = GetPersonalizedEntityIdsQry( contentRockContext, PersonalizationType.Segment );
+                        var matchedSegmentEntityIdsQry = GetPersonalizedEntityIdsQry( contentRockContext, PersonalizationType.Segment, personalizationSegmentIds );
+                        var allPersonalizedRequestFilterEntityIdsQry = GetPersonalizedEntityIdsQry( contentRockContext, PersonalizationType.RequestFilter );
+                        var matchedRequestFilterEntityIdsQry = GetPersonalizedEntityIdsQry( contentRockContext, PersonalizationType.RequestFilter, requestFilterIds );
 
                         if ( personalizationFilterType == PersonalizationFilterType.Filter )
                         {

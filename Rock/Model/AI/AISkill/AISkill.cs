@@ -21,6 +21,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -47,6 +49,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -54,6 +57,7 @@ namespace Rock.Model
         /// information about its intended purpose and functionality.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -67,6 +71,7 @@ namespace Rock.Model
 
         /// <inheritdoc/>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion

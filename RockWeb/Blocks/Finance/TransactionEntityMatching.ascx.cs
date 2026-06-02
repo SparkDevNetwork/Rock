@@ -43,16 +43,38 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Used to assign an Entity to a Transaction Detail record" )]
 
-    [EntityTypeField( "EntityTypeGuid", category: "CustomSetting" )]
-    [TextField( "EntityTypeQualifierColumn", category: "CustomSetting" )]
-    [TextField( "EntityTypeQualifierValue", category: "CustomSetting" )]
-    [TextField( "LimitToActiveGroups", category: "CustomSetting" )]
-    [TextField( "Panel Title", "Set a specific title, or leave blank to have it based on the EntityType selection", required: false, order: 0 )]
-    [TextField( "Entity Column Heading", "Set a column heading, or leave blank to have it based on the EntityType selection", required: false, order: 1 )]
-    [BooleanField( "Show Dataview Filter", "Show a DataView filter that lists Dataviews that are based on Rock.Model.FinancialTransactionDetail.", false, key: "ShowDataviewFilter", order: 2 )]
-    [BooleanField( "Show Batch Filter", "", true, key: "ShowBatchFilter", order: 3 )]
-    [IntegerField( "Max Number of Results", "", false, 1000, order: 4 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "TransactionTypeGuid", category: "CustomSetting" )]
+    [EntityTypeField( "EntityTypeGuid",
+        Category = "CustomSetting" )]
+    [TextField( "EntityTypeQualifierColumn",
+        Category = "CustomSetting" )]
+    [TextField( "EntityTypeQualifierValue",
+        Category = "CustomSetting" )]
+    [TextField( "LimitToActiveGroups",
+        Category = "CustomSetting" )]
+    [TextField( "Panel Title",
+        Description = "Set a specific title, or leave blank to have it based on the EntityType selection",
+        IsRequired = false,
+        Order = 0 )]
+    [TextField( "Entity Column Heading",
+        Description = "Set a column heading, or leave blank to have it based on the EntityType selection",
+        IsRequired = false,
+        Order = 1 )]
+    [BooleanField( "Show Dataview Filter",
+        Description = "Show a DataView filter that lists Dataviews that are based on Rock.Model.FinancialTransactionDetail.",
+        DefaultBooleanValue = false,
+        Key = "ShowDataviewFilter",
+        Order = 2 )]
+    [BooleanField( "Show Batch Filter",
+        DefaultBooleanValue = true,
+        Key = "ShowBatchFilter",
+        Order = 3 )]
+    [IntegerField( "Max Number of Results",
+        IsRequired = false,
+        DefaultIntegerValue = 1000,
+        Order = 4 )]
+    [DefinedValueField( "TransactionTypeGuid",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE,
+        Category = "CustomSetting" )]
     [Rock.SystemGuid.BlockTypeGuid( "A58BCB1E-01D9-4F60-B925-D831A9537051" )]
     public partial class TransactionEntityMatching : RockBlockCustomSettings, ICustomGridColumns
     {

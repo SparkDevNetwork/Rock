@@ -194,6 +194,21 @@ namespace Rock.Security
         public const string EDIT_GRADES = "EditGrades";
 
         /// <summary>
+        /// Authorization to edit the connection status of a person.
+        /// </summary>
+        public const string EDIT_CONNECTION_STATUS = "EditConnectionStatus";
+
+        /// <summary>
+        /// Authorization to edit the record status of a person.
+        /// </summary>
+        public const string EDIT_RECORD_STATUS = "EditRecordStatus";
+
+        /// <summary>
+        /// Authorization to edit the record source of a person.
+        /// </summary>
+        public const string EDIT_RECORD_SOURCE = "EditRecordSource";
+
+        /// <summary>
         /// Authorization to execute the item.
         /// </summary>
         public const string EXECUTE = "Execute";

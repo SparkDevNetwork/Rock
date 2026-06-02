@@ -36,10 +36,23 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Attribute Set" )]
 
-    [WorkflowAttribute("Person", "Workflow attribute that contains the person to update.", true, "", "", 0, null, 
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [AttributeField( "72657ED8-D16E-492E-AC12-144C5E7567E7", "Person Attribute", "The person attribute that should be updated with the provided value.", true, false, "", "", 1 )]
-    [WorkflowTextOrAttribute( "Value", "Attribute Value", "The value or attribute value to set the person attribute to. <span class='tip tip-lava'></span>", false, "", "", 2, "Value" )]
+    [WorkflowAttribute("Person",
+        Description = "Workflow attribute that contains the person to update.",
+        IsRequired = true,
+        Order = 0, 
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [AttributeField( "Person Attribute",
+        Description = "The person attribute that should be updated with the provided value.",
+        EntityTypeGuid = "72657ED8-D16E-492E-AC12-144C5E7567E7",
+        IsRequired = true,
+        AllowMultiple = false,
+        Order = 1 )]
+    [WorkflowTextOrAttribute( "Value",
+        "Attribute Value",
+        Description = "The value or attribute value to set the person attribute to. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 2,
+        Key = "Value" )]
     
     [Rock.SystemGuid.EntityTypeGuid( "320622DA-52E0-41AE-AF90-2BF78B488552")]
     public class SetPersonAttribute : ActionComponent

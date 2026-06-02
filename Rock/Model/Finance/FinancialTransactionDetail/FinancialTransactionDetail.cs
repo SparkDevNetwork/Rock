@@ -21,8 +21,10 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Financial;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -79,6 +81,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Summary { get; set; }
 
         /// <summary>
