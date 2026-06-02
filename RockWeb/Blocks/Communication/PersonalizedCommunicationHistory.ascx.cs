@@ -1090,7 +1090,7 @@ namespace RockWeb.Blocks.Communication
             mergeValues.Add( "Communication", item );
 
             // Add Page Links.
-            AddMergeFieldForPageLink( mergeValues, "DetailUrl", LinkedPageUrl( AttributeKey.CommunicationDetailPage ), $"CommunicationId={item.Id}" );
+            AddMergeFieldForPageLink( mergeValues, "DetailUrl", LinkedPageUrl( AttributeKey.CommunicationDetailPage ), $"CommunicationId={Rock.Utility.IdHasher.Instance.GetHash( item.Id )}" );
             AddMergeFieldForPageLink( mergeValues, "ListSegmentDetailUrlTemplate", LinkedPageUrl( AttributeKey.CommunicationSegmentDetailPage ), "DataViewId=@segmentId" );
 
             if ( includeDetailInfo )
