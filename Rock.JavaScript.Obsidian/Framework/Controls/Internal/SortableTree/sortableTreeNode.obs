@@ -314,25 +314,31 @@
                 if (!children) {
                     return;
                 }
-                // Source/target indices are within this group's slice; translate by the offset
-                // of the first child whose group key matches.
-                const offset = children.findIndex(c => (props.groupBy?.(c) ?? null) === key);
-                if (offset < 0) {
+                // A bucket's members can be non-contiguous in `children` when
+                // siblings of a different group key interleave. Reorder only
+                // within the slots this bucket occupies and leave foreign-key
+                // nodes pinned, so the buckets' own display order never shifts.
+                const positions: number[] = [];
+                for (let i = 0; i < children.length; i++) {
+                    if ((props.groupBy?.(children[i]) ?? null) === key) {
+                        positions.push(i);
+                    }
+                }
+                if (op.sourceIndex < 0 || op.sourceIndex >= positions.length
+                    || op.targetIndex < 0 || op.targetIndex >= positions.length) {
                     return;
                 }
-                const fullSrc = offset + op.sourceIndex;
-                const fullTgt = offset + op.targetIndex;
-                const item = children[fullSrc];
-                if (!item || (props.groupBy?.(item) ?? null) !== key) {
-                    return;
-                }
-                children.splice(fullSrc, 1);
-                children.splice(fullTgt, 0, item);
+                const items = positions.map(p => children[p]);
+                const [moved] = items.splice(op.sourceIndex, 1);
+                items.splice(op.targetIndex, 0, moved);
+                positions.forEach((p, j) => {
+                    children[p] = items[j];
+                });
                 emit("reorder", {
-                    node: item,
+                    node: moved,
                     parent: props.node,
-                    oldIndex: fullSrc,
-                    newIndex: fullTgt
+                    oldIndex: positions[op.sourceIndex],
+                    newIndex: positions[op.targetIndex]
                 });
             }
         };

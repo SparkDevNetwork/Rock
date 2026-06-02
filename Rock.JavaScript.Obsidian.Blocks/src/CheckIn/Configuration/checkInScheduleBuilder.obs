@@ -3,13 +3,13 @@
     <ContextSlicer title="Filters"
                    class="connection-opportunity-navigation-slicer"
                    showCampus>
-        <DropDownList v-model="area"
+        <DropDownList v-model="selectedArea"
                       :items="areaItems ?? []"
                       :showBlankItem="true"
                       blankValue="All Areas" />
     </ContextSlicer>
 
-    <Panel title="Schedule Builder"
+    <Panel :title="panelTitle"
            :headerSecondaryActions="secondaryActions"
            v-model:quickFilterValue="quickFilterValue"
            hasNoBodyPadding>
@@ -32,7 +32,7 @@
                 <div class="col-md-4">
                     <LocationItemPicker v-model="parentLocation"
                                         label="Parent Location"
-                                        :rootLocationGuid="parentLocationRootGuid"
+                                        :rootLocationGuid="campusRootLocationGuid"
                                         inputClasses="input-width-xl" />
                 </div>
 
@@ -47,7 +47,10 @@
             <NotificationBox v-if="showNoGroupLocationsWarning"
                              :alertType="AlertType.Warning"
                              heading="Warning: ">
-                No group locations found. Consider <a class="alert-link" href="/admin/checkin/configuration">adding a group location</a> or changing your filters.
+                No group locations found. Consider
+                <a v-if="areasAndGroupsUrl" class="alert-link" :href="areasAndGroupsUrl">adding a group location</a>
+                <span v-else>adding a group location</span>
+                or changing your filters.
             </NotificationBox>
             <NotificationBox v-else-if="showNoSchedulesWarning"
                              :alertType="AlertType.Warning"
@@ -56,8 +59,9 @@
             </NotificationBox>
         </template>
 
-        <template v-if="showGrid" #default>
-            <div class="check-in-schedule-builer-grid">
+        <template #default>
+            <LoadingIndicator v-if="isLoading && !showGrid" :delay="500" class="my-4" />
+            <div v-else-if="showGrid" class="check-in-schedule-builer-grid">
                 <CheckInScheduleBuilderGrid :groupLocations="filteredGroupLocations"
                                             :schedules="schedules"
                                             :disabled="isDisabled" />
@@ -116,6 +120,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -132,9 +137,11 @@
     import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { areEqual } from "@Obsidian/Utility/guid";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { debounceAsync } from "@Obsidian/Utility/util";
     import { CheckInScheduleBuilderDataBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInScheduleBuilder/checkInScheduleBuilderDataBag";
     import { CheckInScheduleBuilderOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInScheduleBuilder/checkInScheduleBuilderOptionsBag";
     import { CloneScheduleBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInScheduleBuilder/cloneScheduleBag";
@@ -142,7 +149,8 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<CheckInScheduleBuilderOptionsBag>();
-    const preferences = usePersonPreferences().blockPreferences;
+    const personPreferences = usePersonPreferences();
+    const blockPreferences = personPreferences.blockPreferences;
     const browserBus = useBlockBrowserBus();
     const contextEntities = useContextEntities();
     const invokeBlockAction = useInvokeBlockAction();
@@ -151,8 +159,8 @@
 
     browserBus.subscribe(PageMessages.ContextEntityChanged, async (message: Message<ContextEntityChangedData>) => {
         if (areEqual(message.data.entityTypeGuid, EntityType.Campus)) {
-            await updateParentLocationRootGuid();
-            await loadScheduleBuilderData();
+            await updateCampusRootLocationGuid();
+            loadScheduleBuilderData();
         }
     });
 
@@ -170,13 +178,18 @@
 
     // Filter Data
     const quickFilterValue = ref<string>("");
-    const parentLocationRootGuid = ref<string | null>(null);
+    const campusRootLocationGuid = ref<string | null>(null);
     const areaItems = ref<ListItemBag[]>(config.areas ?? []);
     const groupTypeItems = ref<Guid[]>(config.groupTypes ?? []);
-    const groupType = ref<ListItemBag>(preferences.getValue(PreferenceKey.SelectedGroupType) ? JSON.parse(preferences.getValue(PreferenceKey.SelectedGroupType)) : {});
-    const parentLocation = ref<ListItemBag>(preferences.getValue(PreferenceKey.SelectedParentLocation) ? JSON.parse(preferences.getValue(PreferenceKey.SelectedParentLocation)) : {});
-    const area = ref<string>(preferences.getValue(PreferenceKey.SelectedArea));
-    const scheduleCategory = ref<ListItemBag>(preferences.getValue(PreferenceKey.SelectedCategory) ? JSON.parse(preferences.getValue(PreferenceKey.SelectedCategory)) : (config.defaultScheduleCategory ?? {}));
+    const groupType = ref<ListItemBag>(blockPreferences.getValue(PreferenceKey.SelectedGroupType) ? JSON.parse(blockPreferences.getValue(PreferenceKey.SelectedGroupType)) : {});
+    const parentLocation = ref<ListItemBag>(blockPreferences.getValue(PreferenceKey.SelectedParentLocation) ? JSON.parse(blockPreferences.getValue(PreferenceKey.SelectedParentLocation)) : {});
+    const scheduleCategory = ref<ListItemBag>(blockPreferences.getValue(PreferenceKey.SelectedCategory) ? JSON.parse(blockPreferences.getValue(PreferenceKey.SelectedCategory)) : (config.defaultScheduleCategory ?? {}));
+
+    // Seeded from the box (resolved server-side) so the slicer renders correctly
+    // on block initialization without an async preference read. The selection
+    // persists to a configuration-scoped preference shared with other check-in
+    // configuration blocks.
+    const selectedArea = ref<string>(config.selectedAreaGuid ?? "");
 
     // Modal Data
     const showCloneScheduleModal = ref<boolean>(false);
@@ -187,6 +200,14 @@
     // #endregion Values
 
     // #region Computed Values
+
+    /** Gets the panel title. */
+    const panelTitle = computed((): string => {
+        const name = config.configurationName || groupType.value?.text;
+        return name
+            ? `${name} Schedule`
+            : "Check-in Schedule";
+    });
 
     /** Gets the label text for the count of schedule locations. */
     const getCountLabelText = computed((): string => {
@@ -241,6 +262,11 @@
         return hasCompletedInitialLoad.value && !isLoading.value && !anyGroupLocations.value;
     });
 
+    /** The Areas and Groups page URL, present only when a configuration is in scope. */
+    const areasAndGroupsUrl = computed((): string | null => {
+        return config.navigationUrls?.[NavigationUrlKey.AreasAndGroupsPage] ?? null;
+    });
+
     /** Determines if the no schedules warning should be shown. */
     const showNoSchedulesWarning = computed((): boolean => {
         return hasCompletedInitialLoad.value && !isLoading.value && !anySchedules.value;
@@ -263,30 +289,45 @@
     // #region Functions
 
     /**
-     * Resolves the current campus context and updates parentLocationRootGuid
+     * Resolves the current campus context and updates campusRootLocationGuid
      * to scope the Parent Location picker to that campus's location tree.
      */
-    async function updateParentLocationRootGuid(): Promise<void> {
+    async function updateCampusRootLocationGuid(): Promise<void> {
         const campusBag = await contextEntities.get(EntityType.Campus);
         const campusGuid = campusBag?.value ?? null;
-        parentLocationRootGuid.value = (campusGuid && config.campusRootLocations?.[campusGuid]) || null;
+        campusRootLocationGuid.value = (campusGuid && config.campusRootLocations?.[campusGuid]) || null;
     }
 
     /**
-     * Loads the schedule builder data.
+     * Loads the schedule builder data. Debounced so that an overlapping
+     * sequence of triggers (e.g. onMounted + a filter watcher fired by a
+     * picker emit on mount) collapses into a single network call with the
+     * latest filter state.
      */
-    async function loadScheduleBuilderData(): Promise<void> {
+    const loadScheduleBuilderData = debounceAsync(async (cancellationToken: ICancellationToken): Promise<void> => {
         isLoading.value = true;
-        const response = await invokeBlockAction<CheckInScheduleBuilderDataBag>("LoadGroupScheduleLocationData");
+        try {
+            const response = await invokeBlockAction<CheckInScheduleBuilderDataBag>("LoadGroupScheduleLocationData");
 
-        if (response.isSuccess && response.data) {
-            groupLocations.value = response.data?.groupLocations ?? [];
-            schedules.value = response.data?.schedules ?? [];
-            isLoading.value = false;
+            // If a newer load was kicked off while this one was on the wire;
+            // bail so a stale result can't briefly flip on an intermediate
+            // empty response.
+            if (cancellationToken.isCancellationRequested) {
+                return;
+            }
+
+            if (response.isSuccess && response.data) {
+                groupLocations.value = response.data?.groupLocations ?? [];
+                schedules.value = response.data?.schedules ?? [];
+            }
         }
-
-        hasCompletedInitialLoad.value = true;
-    }
+        finally {
+            if (!cancellationToken.isCancellationRequested) {
+                isLoading.value = false;
+                hasCompletedInitialLoad.value = true;
+            }
+        }
+    });
 
     /**
      * Saves the current group's location schedule settings.
@@ -310,14 +351,9 @@
 
         isSaving.value = false;
         showSaveNotification.value = true;
-        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-            window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
-        }
-        else {
-            setTimeout(() => {
-                showSaveNotification.value = false;
-            }, 3000);
-        }
+        setTimeout(() => {
+            showSaveNotification.value = false;
+        }, 3000);
     }
 
     /**
@@ -359,14 +395,38 @@
 
     // #region Watchers
 
-    watch([groupType, parentLocation, area, scheduleCategory], async () => {
-        preferences.setValue(PreferenceKey.SelectedGroupType, JSON.stringify(groupType.value));
-        preferences.setValue(PreferenceKey.SelectedParentLocation, JSON.stringify(parentLocation.value));
-        preferences.setValue(PreferenceKey.SelectedArea, area.value);
-        preferences.setValue(PreferenceKey.SelectedCategory, JSON.stringify(scheduleCategory.value));
+    watch([groupType, parentLocation, scheduleCategory], async () => {
+        blockPreferences.setValue(PreferenceKey.SelectedGroupType, JSON.stringify(groupType.value));
+        blockPreferences.setValue(PreferenceKey.SelectedParentLocation, JSON.stringify(parentLocation.value));
+        blockPreferences.setValue(PreferenceKey.SelectedCategory, JSON.stringify(scheduleCategory.value));
 
-        await preferences.save();
-        await loadScheduleBuilderData();
+        await blockPreferences.save();
+        loadScheduleBuilderData();
+    });
+
+    watch(selectedArea, async () => {
+        if (config.configurationIdKey) {
+            // Persist to the configuration-scoped preference shared with other
+            // check-in configuration blocks.
+            const configPreferences = await personPreferences
+                .getEntityPreferences(
+                    EntityType.GroupType,
+                    config.configurationIdKey
+                );
+
+            configPreferences.setValue(PreferenceKey.SelectedArea, selectedArea.value);
+
+            await configPreferences.save();
+        }
+        else {
+            // No check-in configuration in scope: fall back to the block
+            // preference since there's nothing to share with.
+            blockPreferences.setValue(PreferenceKey.SelectedArea, selectedArea.value);
+
+            await blockPreferences.save();
+        }
+
+        loadScheduleBuilderData();
     });
 
     // #endregion Watchers
@@ -374,8 +434,8 @@
     // #region Lifecycle Hooks
 
     onMounted(async () => {
-        await updateParentLocationRootGuid();
-        await loadScheduleBuilderData();
+        await updateCampusRootLocationGuid();
+        loadScheduleBuilderData();
     });
 
     // #endregion Lifecycle Hooks

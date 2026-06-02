@@ -1,0 +1,304 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentStack>
+        <div class="area-group-locations-grid">
+            <RockLabel class="section-title">Main</RockLabel>
+
+            <Grid light
+                  liveUpdates
+                  keyField="key"
+                  itemTerm="Location"
+                  :data="mainGridData"
+                  @addItem="onAddMainClick">
+                <ReorderColumn @orderChanged="onMainOrderChanged" />
+                <TextColumn name="name" field="name" title="Name" />
+                <DeleteColumn :onClick="onDeleteMainClick" />
+            </Grid>
+        </div>
+
+        <div class="area-group-locations-grid">
+            <div class="section-header">
+                <RockLabel class="section-title">Overflow</RockLabel>
+                <HelpBlock text="Overflow locations will be used if all non-overflow locations are at capacity. This is only supported on next-gen check-in." />
+            </div>
+
+            <Grid light
+                  liveUpdates
+                  keyField="key"
+                  itemTerm="Overflow Location"
+                  :data="overflowGridData"
+                  @addItem="onAddOverflowClick">
+                <ReorderColumn @orderChanged="onOverflowOrderChanged" />
+                <TextColumn name="name" field="name" title="Name" />
+                <DeleteColumn :onClick="onDeleteOverflowClick" />
+            </Grid>
+        </div>
+
+        <Modal v-model="isPickerVisible"
+               title="Select Location"
+               saveText="Add"
+               cancelText="Cancel"
+               isNarrow
+               :isSaveButtonDisabled="!pickerValue"
+               :onSave="onPickerSave">
+            <NotificationBox v-if="pickerError"
+                             :alertType="AlertType.Warning"
+                             :dismissible="true"
+                             @dismiss="pickerError = ''">
+                {{ pickerError }}
+            </NotificationBox>
+
+            <LocationItemPicker v-model="pickerValue"
+                                label="Location"
+                                :rootLocationGuid="campusRootLocationGuid" />
+        </Modal>
+    </ContentStack>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import { useCampusRootLocationGuid, useSelectedCampus } from "./utils.partial";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import Grid, { DeleteColumn, ReorderColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+    import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { NamedLocationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/namedLocationBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    /**
+     * The campus the slicer is set to, provided by the block. Filters the
+     * displayed grids to that campus's locations; null shows all locations
+     * ("All Campuses"). The full lists still carry every campus's locations so
+     * edits survive slicer changes and the save reconciles the complete set.
+     */
+    const selectedCampus = useSelectedCampus();
+
+    /**
+     * The selected campus's root named-location Guid, provided by the block.
+     * Scopes the picker to that campus's location tree; null shows the full
+     * tree ("All Campuses").
+     */
+    const campusRootLocationGuid = useCampusRootLocationGuid();
+
+    const props = defineProps({
+        /**
+         * The main (non-overflow) named locations attached to the group, in
+         * display order. Two-way bound so adds and removes mutate the parent's
+         * working copy directly.
+         */
+        locations: {
+            type: Array as PropType<NamedLocationBag[]>,
+            required: true
+        },
+
+        /**
+         * The overflow named locations attached to the group, in display order.
+         * Two-way bound mirror of `locations` for the overflow grid.
+         */
+        overflowLocations: {
+            type: Array as PropType<NamedLocationBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:locations", value: NamedLocationBag[]): void;
+        (e: "update:overflowLocations", value: NamedLocationBag[]): void;
+    }>();
+
+    // #region Values
+
+    const isPickerVisible = ref<boolean>(false);
+    const pickerValue = ref<ListItemBag | null>(null);
+    const pickerTarget = ref<"main" | "overflow">("main");
+    const pickerError = ref<string>("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Main locations visible under the selected campus slicer, adapted into the
+     * GridDataBag shape. The grid shows this filtered view; the full
+     * props.locations list (every campus) remains the source for adds, deletes,
+     * reorders, and the save.
+     */
+    const mainGridData = computed((): GridDataBag => ({
+        rows: filterBySelectedCampus(props.locations ?? []).map(l => ({
+            key: l.idKey ?? "",
+            name: l.name ?? ""
+        }))
+    }));
+
+    /** Overflow locations visible under the selected campus slicer, adapted into the GridDataBag shape. */
+    const overflowGridData = computed((): GridDataBag => ({
+        rows: filterBySelectedCampus(props.overflowLocations ?? []).map(l => ({
+            key: l.idKey ?? "",
+            name: l.name ?? ""
+        }))
+    }));
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Narrows a location list to the selected campus. Null selected campus
+     * ("All Campuses") shows everything; otherwise only locations tagged with
+     * the selected campus are shown, so a location under no campus root appears
+     * under "All Campuses" only.
+     */
+    function filterBySelectedCampus(source: NamedLocationBag[]): NamedLocationBag[] {
+        if (!selectedCampus.value) {
+            return source;
+        }
+        return source.filter(l => l.campusGuid && areEqual(l.campusGuid, selectedCampus.value));
+    }
+
+    /** Opens the picker, scoping subsequent Add to the requested list. */
+    function openPicker(target: "main" | "overflow"): void {
+        pickerTarget.value = target;
+        pickerValue.value = null;
+        pickerError.value = "";
+        isPickerVisible.value = true;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /** Opens the picker scoped to the main (non-overflow) list. */
+    function onAddMainClick(): void {
+        openPicker("main");
+    }
+
+    /** Opens the picker scoped to the overflow list. */
+    function onAddOverflowClick(): void {
+        openPicker("overflow");
+    }
+
+    /**
+     * Resolves the picker's selection to a NamedLocationBag via the block's
+     * ResolveNamedLocation action (which enforces the active campus filter)
+     * and appends it to the appropriate list.
+     */
+    async function onPickerSave(): Promise<void> {
+        pickerError.value = "";
+
+        const guid = pickerValue.value?.value;
+        if (!guid) {
+            return;
+        }
+
+        const result = await invokeBlockAction<NamedLocationBag>("ResolveNamedLocation", { locationGuid: guid });
+        if (!result.isSuccess || !result.data) {
+            pickerError.value = result.errorMessage || "Unable to add the selected location.";
+            return;
+        }
+
+        const resolved = result.data;
+        const alreadyAttached =
+            (props.locations ?? []).some(l => l.idKey === resolved.idKey)
+            || (props.overflowLocations ?? []).some(l => l.idKey === resolved.idKey);
+
+        if (alreadyAttached) {
+            pickerError.value = `"${resolved.name}" is already attached to this group.`;
+            return;
+        }
+
+        if (pickerTarget.value === "main") {
+            emit("update:locations", [...(props.locations ?? []), resolved]);
+        }
+        else {
+            emit("update:overflowLocations", [...(props.overflowLocations ?? []), resolved]);
+        }
+
+        isPickerVisible.value = false;
+    }
+
+    /** Removes the location identified by `key` from the main list. */
+    function onDeleteMainClick(key: string): void {
+        emit("update:locations", (props.locations ?? []).filter(l => l.idKey !== key));
+    }
+
+    /** Removes the location identified by `key` from the overflow list. */
+    function onDeleteOverflowClick(key: string): void {
+        emit("update:overflowLocations", (props.overflowLocations ?? []).filter(l => l.idKey !== key));
+    }
+
+    /**
+     * Reorders a row inside the main list; SaveGroup persists the new order
+     * via bag position.
+     */
+    async function onMainOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const reordered = reorderByKey(props.locations ?? [], item, beforeItem);
+        if (!reordered) {
+            return false;
+        }
+
+        emit("update:locations", reordered);
+        return true;
+    }
+
+    /**
+     * Reorders a row inside the overflow list; SaveGroup persists the new order
+     * via bag position.
+     */
+    async function onOverflowOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const reordered = reorderByKey(props.overflowLocations ?? [], item, beforeItem);
+        if (!reordered) {
+            return false;
+        }
+
+        emit("update:overflowLocations", reordered);
+        return true;
+    }
+
+    /**
+     * Splices `item` to land before `beforeItem` (or to the end when
+     * `beforeItem` is null) inside a copy of `source`. Returns null when
+     * `item` is not in the source list, so the caller can decline the reorder.
+     */
+    function reorderByKey(
+        source: NamedLocationBag[],
+        item: Record<string, unknown>,
+        beforeItem: Record<string, unknown> | null
+    ): NamedLocationBag[] | null {
+        const itemKey = item["key"] as string;
+        const beforeKey = beforeItem?.["key"] as string | null;
+
+        const next = [...source];
+        const idx = next.findIndex(l => l.idKey === itemKey);
+        if (idx < 0) {
+            return null;
+        }
+
+        const moved = next.splice(idx, 1)[0];
+
+        if (beforeKey) {
+            const beforeIdx = next.findIndex(l => l.idKey === beforeKey);
+            if (beforeIdx < 0) {
+                next.push(moved);
+            }
+            else {
+                next.splice(beforeIdx, 0, moved);
+            }
+        }
+        else {
+            next.push(moved);
+        }
+
+        return next;
+    }
+
+    // #endregion Event Handlers
+</script>

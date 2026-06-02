@@ -1,0 +1,199 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="area-group-label-grid">
+        <div class="section-header">
+            <RockLabel>{{ title }}</RockLabel>
+            <a v-if="createLabelUrl"
+               class="create-link text-primary"
+               :href="createLabelUrl"
+               target="_blank"
+               rel="noopener">
+                {{ createLabelText }}
+                <i class="ti ti-external-link"></i>
+            </a>
+        </div>
+
+        <Grid light
+              liveUpdates
+              keyField="key"
+              :itemTerm="itemTerm"
+              :data="gridData"
+              @addItem="onAddClick">
+            <TextColumn name="name" field="name" title="Name" />
+            <DeleteColumn :onClick="onDeleteClick" />
+        </Grid>
+
+        <Modal v-model="isPickerVisible"
+               :title="selectLabelText"
+               saveText="Add"
+               cancelText="Cancel"
+               isNarrow
+               :isSaveButtonDisabled="!selectedPickerValue"
+               :onSave="onPickerSave">
+            <DropDownList v-if="hasAvailableLabels"
+                          v-model="selectedPickerValue"
+                          :label="selectLabelText"
+                          :items="availableLabels"
+                          :showBlankItem="true" />
+
+            <NotificationBox v-else :alertType="AlertType.Info">
+                No labels are available to add.
+            </NotificationBox>
+        </Modal>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Grid, { DeleteColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        /**
+         * The attached labels, in display order. Bound through v-model so adds
+         * and removes mutate the parent's working copy. Each item's `value` is
+         * the underlying identifier (IdKey for next-gen labels, BinaryFile Guid
+         * for classic), and `text` is the display name.
+         */
+        modelValue: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        /** Section heading rendered above the grid. */
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /**
+         * Singular noun the grid's footer "+ Add {term}" affordance uses (e.g.
+         * "Label" or "Classic Label").
+         */
+        itemTerm: {
+            type: String as PropType<string>,
+            default: "Label"
+        },
+
+        /** Text for the create-label link in the section header. */
+        createLabelText: {
+            type: String as PropType<string>,
+            default: "Create Label"
+        },
+
+        /** The URL the create-label link opens in a new tab. */
+        createLabelUrl: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * The name of the block action that returns labels eligible to attach
+         * to the current area. The action must return a `ListItemBag[]` with
+         * `value` set to the identifier the grid should round-trip.
+         */
+        pickerActionName: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /**
+         * Extra fields sent to the picker action (e.g. `{ areaIdKey }`). Merged
+         * with the request body verbatim.
+         */
+        pickerRequestPayload: {
+            type: Object as PropType<Record<string, unknown>>,
+            default: () => ({})
+        },
+
+        /** Title shown on the add-label picker modal. */
+        selectLabelText: {
+            type: String as PropType<string>,
+            default: "Select Label"
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag[]): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const isPickerVisible = ref<boolean>(false);
+    const availableLabels = ref<ListItemBag[]>([]);
+    const selectedPickerValue = ref<string>("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The attached labels surfaced through the v-model contract. */
+    const attachedLabels = computed((): ListItemBag[] =>
+        props.modelValue ?? []
+    );
+
+    /** Adapts the attached labels into the GridDataBag shape Rock's Grid expects. */
+    const gridData = computed((): GridDataBag => ({
+        rows: attachedLabels.value.map(l => ({
+            key: l.value,
+            name: l.text
+        }))
+    }));
+
+    /** True when the picker has at least one label to offer. */
+    const hasAvailableLabels = computed((): boolean =>
+        availableLabels.value.length > 0
+    );
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** Fetches available labels and opens the picker modal. */
+    async function onAddClick(): Promise<void> {
+        selectedPickerValue.value = "";
+
+        const result = await invokeBlockAction<ListItemBag[]>(
+            props.pickerActionName,
+            props.pickerRequestPayload
+        );
+
+        // Drop server-side eligible labels the individual has already attached locally;
+        // the server only knows about persisted attachments, so unsaved additions
+        // need a client-side filter to keep the picker honest.
+        const locallyAttachedKeys = new Set(attachedLabels.value.map(l => l.value));
+        availableLabels.value = (result.isSuccess && result.data)
+            ? result.data.filter(item => !locallyAttachedKeys.has(item.value))
+            : [];
+
+        isPickerVisible.value = true;
+    }
+
+    /** Appends the picked label to the attached list and closes the modal. */
+    function onPickerSave(): void {
+        const picked = availableLabels.value.find(l => l.value === selectedPickerValue.value);
+        if (!picked) {
+            isPickerVisible.value = false;
+            return;
+        }
+
+        emit("update:modelValue", [...attachedLabels.value, picked]);
+        isPickerVisible.value = false;
+    }
+
+    /** Removes the label identified by `key` from the attached list. */
+    function onDeleteClick(key: string): void {
+        emit("update:modelValue", attachedLabels.value.filter(l => l.value !== key));
+    }
+
+    // #endregion Event Handlers
+</script>

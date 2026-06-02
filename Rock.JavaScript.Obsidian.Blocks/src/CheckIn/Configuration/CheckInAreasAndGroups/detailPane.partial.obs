@@ -1,0 +1,459 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="area-group-detail-pane">
+        <div v-if="!selectedNode" class="area-group-empty-state">
+            <i class="empty-icon ti ti-info-circle ti-2x"></i>
+            <div class="empty-title">Nothing To Show</div>
+            <div class="empty-subtitle">Select an Area or Group to View or Configure</div>
+        </div>
+
+        <div v-else-if="isLoadingDetail" class="area-group-detail-loading">
+            <LoadingIndicator :delay="250" />
+        </div>
+
+        <template v-else>
+            <AreaEditor v-if="isAreaSelected"
+                        :area="loadedArea"
+                        :inheritedGroupTypeOptions="inheritedGroupTypeOptions"
+                        :inheritedAttributesByGuid="inheritedAttributesByGuid"
+                        :isClassicCheckInLabelsEnabled="isClassicCheckInLabelsEnabled"
+                        :isSaving="isSaving"
+                        :errorMessage="editorErrorMessage"
+                        :saveSuccessMessage="saveSuccessMessage"
+                        @save="onAreaSave"
+                        @delete="onAreaDelete" />
+
+            <GroupEditor v-else-if="isGroupSelected"
+                         :group="loadedGroup"
+                         :isSaving="isSaving"
+                         :errorMessage="editorErrorMessage"
+                         :saveSuccessMessage="saveSuccessMessage"
+                         @save="onGroupSave"
+                         @delete="onGroupDelete" />
+        </template>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AreaEditor from "./areaEditor.partial.obs";
+    import GroupEditor from "./groupEditor.partial.obs";
+    import { isPlaceholderKey } from "./utils.partial";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import { CheckInTreeNodeType } from "@Obsidian/Enums/CheckIn/checkInTreeNodeType";
+    import { Guid } from "@Obsidian/Types";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { AreaDetailBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/areaDetailBag";
+    import { CheckInTreeNodeBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/checkInTreeNodeBag";
+    import { GroupDetailBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/groupDetailBag";
+    import { PlaceholderGroupSchemaBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/placeholderGroupSchemaBag";
+    import { SaveAreaRequestBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/saveAreaRequestBag";
+    import { SaveGroupRequestBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/saveGroupRequestBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const props = defineProps({
+        /** The currently-selected node, or null when nothing is selected. */
+        selectedNode: {
+            type: Object as PropType<CheckInTreeNodeBag | null>,
+            default: null
+        },
+
+        /**
+         * The parent of the currently-selected node, or null when at the top
+         * level.
+         */
+        selectedNodeParent: {
+            type: Object as PropType<CheckInTreeNodeBag | null>,
+            default: null
+        },
+
+        /**
+         * The check-in setup types selectable in the editor's "Inherit Check-in
+         * Setup Type From" dropdown.
+         */
+        inheritedGroupTypeOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        },
+
+        /**
+         * Public attribute schemas keyed by inherit-from setup type Guid.
+         * Forwarded to the editor's AVC.
+         */
+        inheritedAttributesByGuid: {
+            type: Object as PropType<Record<Guid, Record<string, PublicAttributeBag>>>,
+            default: () => ({})
+        },
+
+        /**
+         * Whether the Classic Check-in Labels section should be shown on the
+         * Area editor.
+         */
+        isClassicCheckInLabelsEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "areaCreated", payload: { placeholderIdKey: string; saved: AreaDetailBag }): void;
+        (e: "areaUpdated", saved: AreaDetailBag): void;
+        (e: "areaDeleted", idKey: string): void;
+        (e: "groupCreated", payload: { placeholderIdKey: string; saved: GroupDetailBag }): void;
+        (e: "groupUpdated", saved: GroupDetailBag): void;
+        (e: "groupDeleted", idKey: string): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    /**
+     * The area detail loaded from the server, or seeded locally for a
+     * placeholder.
+     */
+    const loadedArea = ref<AreaDetailBag | null>(null);
+
+    /**
+     * The group detail loaded from the server, or seeded locally for a
+     * placeholder.
+     */
+    const loadedGroup = ref<GroupDetailBag | null>(null);
+
+    /** True while a save or delete round-trip is in flight. */
+    const isSaving = ref<boolean>(false);
+
+    /**
+     * True while a Get*Detail (or placeholder schema) round-trip is in flight.
+     * Gates the editor render so a partially-seeded or stale form never flashes
+     * before the server data lands.
+     */
+    const isLoadingDetail = ref<boolean>(false);
+
+    /** Editor-local error message for save/delete failures. */
+    const editorErrorMessage = ref<string>("");
+
+    /** Confirmation shown at the top of the editor after a successful save. */
+    const saveSuccessMessage = ref<string>("");
+
+    /**
+     * IdKey of the entity that was just persisted by a `Save*` action. When the
+     * parent re-points `selectedNodeKey` to this key (e.g. after a successful
+     * create swaps the placeholder for the real id), the idKey watcher skips
+     * the redundant `Get*Detail` round-trip because we already have the data
+     * sitting in `loadedArea` / `loadedGroup` from the save response.
+     */
+    const lastSavedIdKey = ref<string>("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** True when the selected node is an Area; gates the Area editor. */
+    const isAreaSelected = computed((): boolean =>
+        props.selectedNode?.nodeType === CheckInTreeNodeType.Area
+    );
+
+    /** True when the selected node is a Group; gates the Group editor. */
+    const isGroupSelected = computed((): boolean =>
+        props.selectedNode?.nodeType === CheckInTreeNodeType.Group
+    );
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Loads the detail for the currently-selected area, or seeds defaults for
+     * a placeholder.
+     */
+    async function loadAreaDetail(): Promise<void> {
+        const node = props.selectedNode;
+        if (!node || node.nodeType !== CheckInTreeNodeType.Area) {
+            loadedArea.value = null;
+            return;
+        }
+
+        editorErrorMessage.value = "";
+        saveSuccessMessage.value = "";
+
+        if (isPlaceholderKey(node.idKey)) {
+            loadedArea.value = {
+                idKey: "",
+                name: node.name ?? "",
+                isConcurrentCheckInPrevented: false,
+                inheritedGroupTypeGuid: "",
+                attendanceRule: 0,
+                alreadyEnrolledMatchingLogic: 0,
+                attendancePrintTo: 0,
+                attributeValues: {},
+                checkInLabels: [],
+                classicCheckInLabels: []
+            } as AreaDetailBag;
+            isLoadingDetail.value = false;
+            return;
+        }
+
+        isLoadingDetail.value = true;
+        try {
+            const result = await invokeBlockAction<AreaDetailBag>("GetAreaDetail", { idKey: node.idKey });
+            if (result.isSuccess && result.data) {
+                loadedArea.value = result.data;
+            }
+            else {
+                loadedArea.value = null;
+                editorErrorMessage.value = result.errorMessage || "Unable to load area detail.";
+            }
+        }
+        finally {
+            isLoadingDetail.value = false;
+        }
+    }
+
+    /**
+     * Loads the detail for the currently-selected group, or seeds defaults for
+     * a placeholder.
+     */
+    async function loadGroupDetail(): Promise<void> {
+        const node = props.selectedNode;
+        if (!node || node.nodeType !== CheckInTreeNodeType.Group) {
+            loadedGroup.value = null;
+            return;
+        }
+
+        editorErrorMessage.value = "";
+        saveSuccessMessage.value = "";
+
+        if (isPlaceholderKey(node.idKey)) {
+            // Placeholder breadcrumb falls back to the immediate parent's name;
+            // the server-projected ParentAreaName replaces it on first save and
+            // is always correct from then on.
+            loadedGroup.value = {
+                idKey: "",
+                name: node.name ?? "",
+                isActive: true,
+                isSpecialNeeds: false,
+                parentAreaName: props.selectedNodeParent?.name ?? ""
+            } as GroupDetailBag;
+
+            // Pre-load the inherit-chain schema so the Check-in Filters section
+            // renders immediately. The server resolves the parent (area or
+            // group) the same way SaveGroup does and walks the chain via a
+            // phantom Group + LoadAttributes, so what we receive here matches
+            // what the server will persist against on first save.
+            const placeholderIdKey = node.idKey;
+            const parentIdKey = props.selectedNodeParent?.idKey ?? "";
+            const parentNodeType = props.selectedNodeParent?.nodeType ?? CheckInTreeNodeType.Area;
+            if (!parentIdKey) {
+                isLoadingDetail.value = false;
+                return;
+            }
+
+            isLoadingDetail.value = true;
+            try {
+                const schemaResult = await invokeBlockAction<PlaceholderGroupSchemaBag>(
+                    "GetPlaceholderGroupSchema",
+                    { parentIdKey, parentNodeType }
+                );
+
+                // Only patch if placeholder is still selected and still unsaved.
+                const isStillOnPlaceholder = props.selectedNode?.idKey === placeholderIdKey
+                    && !loadedGroup.value?.idKey;
+                if (schemaResult.isSuccess && schemaResult.data && isStillOnPlaceholder) {
+                    loadedGroup.value = {
+                        ...(loadedGroup.value as GroupDetailBag),
+                        attributes: schemaResult.data.attributes,
+                        groupAttributes: schemaResult.data.groupAttributes,
+                        inheritedGroupTypeName: schemaResult.data.inheritedGroupTypeName,
+                        attributeValues: {}
+                    };
+                }
+            }
+            finally {
+                isLoadingDetail.value = false;
+            }
+            return;
+        }
+
+        isLoadingDetail.value = true;
+        try {
+            const result = await invokeBlockAction<GroupDetailBag>("GetGroupDetail", { idKey: node.idKey });
+            if (result.isSuccess && result.data) {
+                loadedGroup.value = result.data;
+            }
+            else {
+                loadedGroup.value = null;
+                editorErrorMessage.value = result.errorMessage || "Unable to load group detail.";
+            }
+        }
+        finally {
+            isLoadingDetail.value = false;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /** Persists the working copy and emits `areaCreated` or `areaUpdated`. */
+    async function onAreaSave(bag: AreaDetailBag): Promise<void> {
+        if (!props.selectedNode) {
+            return;
+        }
+
+        const placeholderIdKey = props.selectedNode.idKey ?? "";
+        const isCreate = !bag.idKey;
+
+        const requestBag: SaveAreaRequestBag = {
+            area: bag,
+            parentAreaIdKey: isCreate ? (props.selectedNodeParent?.idKey ?? "") : null
+        };
+
+        isSaving.value = true;
+        editorErrorMessage.value = "";
+        saveSuccessMessage.value = "";
+
+        const result = await invokeBlockAction<AreaDetailBag>("SaveArea", { bag: requestBag });
+
+        isSaving.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            editorErrorMessage.value = result.errorMessage || "Unable to save the area. Please try again.";
+            return;
+        }
+
+        loadedArea.value = result.data;
+        saveSuccessMessage.value = "Changes have been saved.";
+
+        if (isCreate) {
+            // The parent will swap the placeholder's idKey for the saved key,
+            // which re-fires our idKey watcher. Record the saved key here so
+            // the watcher skips the redundant GetAreaDetail round-trip.
+            lastSavedIdKey.value = result.data.idKey ?? "";
+            emit("areaCreated", { placeholderIdKey, saved: result.data });
+        }
+        else {
+            emit("areaUpdated", result.data);
+        }
+    }
+
+    /** Persists a delete and emits `areaDeleted`. Unsaved placeholders skip the server call. */
+    async function onAreaDelete(): Promise<void> {
+        const node = props.selectedNode;
+        if (!node?.idKey) {
+            return;
+        }
+
+        if (isPlaceholderKey(node.idKey)) {
+            emit("areaDeleted", node.idKey);
+            return;
+        }
+
+        isSaving.value = true;
+        editorErrorMessage.value = "";
+
+        const result = await invokeBlockAction("DeleteArea", { idKey: node.idKey });
+
+        isSaving.value = false;
+
+        if (!result.isSuccess) {
+            editorErrorMessage.value = result.errorMessage || "Unable to delete the area.";
+            return;
+        }
+
+        emit("areaDeleted", node.idKey);
+    }
+
+    /** Persists the working copy and emits `groupCreated` or `groupUpdated`. */
+    async function onGroupSave(bag: GroupDetailBag): Promise<void> {
+        if (!props.selectedNode) {
+            return;
+        }
+
+        const placeholderIdKey = props.selectedNode.idKey ?? "";
+        const isCreate = !bag.idKey;
+
+        const requestBag: SaveGroupRequestBag = {
+            group: bag,
+            parentIdKey: isCreate ? (props.selectedNodeParent?.idKey ?? "") : null,
+            parentNodeType: isCreate
+                ? (props.selectedNodeParent?.nodeType ?? CheckInTreeNodeType.Area)
+                : CheckInTreeNodeType.Area
+        };
+
+        isSaving.value = true;
+        editorErrorMessage.value = "";
+        saveSuccessMessage.value = "";
+
+        const result = await invokeBlockAction<GroupDetailBag>("SaveGroup", { bag: requestBag });
+
+        isSaving.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            editorErrorMessage.value = result.errorMessage || "Unable to save the group. Please try again.";
+            return;
+        }
+
+        loadedGroup.value = result.data;
+        saveSuccessMessage.value = "Changes have been saved.";
+
+        if (isCreate) {
+            // The parent will swap the placeholder's idKey for the saved key,
+            // which re-fires our idKey watcher. Record the saved key here so
+            // the watcher skips the redundant GetGroupDetail round-trip.
+            lastSavedIdKey.value = result.data.idKey ?? "";
+            emit("groupCreated", { placeholderIdKey, saved: result.data });
+        }
+        else {
+            emit("groupUpdated", result.data);
+        }
+    }
+
+    /** Persists a delete and emits `groupDeleted`. Unsaved placeholders skip the server call. */
+    async function onGroupDelete(): Promise<void> {
+        const node = props.selectedNode;
+        if (!node?.idKey) {
+            return;
+        }
+
+        if (isPlaceholderKey(node.idKey)) {
+            emit("groupDeleted", node.idKey);
+            return;
+        }
+
+        isSaving.value = true;
+        editorErrorMessage.value = "";
+
+        const result = await invokeBlockAction("DeleteGroup", { idKey: node.idKey });
+
+        isSaving.value = false;
+
+        if (!result.isSuccess) {
+            editorErrorMessage.value = result.errorMessage || "Unable to delete the group.";
+            return;
+        }
+
+        emit("groupDeleted", node.idKey);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Watch IdKey (not the whole node) so an in-place save doesn't trigger a redundant reload.
+    watch(() => props.selectedNode?.idKey, (newIdKey) => {
+        // Skip the load when this watcher fires because our own Save just
+        // emitted a created/updated payload; `loadedArea` / `loadedGroup`
+        // already hold the saved bag, and re-fetching would be a wasted
+        // round trip that produces the same data.
+        if (newIdKey && newIdKey === lastSavedIdKey.value) {
+            lastSavedIdKey.value = "";
+            return;
+        }
+        loadAreaDetail();
+        loadGroupDetail();
+    }, { immediate: true });
+
+    // #endregion Watchers
+</script>

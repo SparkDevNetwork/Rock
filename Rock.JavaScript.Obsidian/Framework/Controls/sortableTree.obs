@@ -372,8 +372,8 @@
 
     /**
      * Builds drag options for a single top-level bucket. Source/target indices
-     * arrive relative to the bucket; we translate them back into the full
-     * `nodes` array using the offset of the first node whose group key matches.
+     * arrive relative to the bucket and are mapped to real positions in the
+     * full `nodes` array, so interleaved sibling buckets reorder correctly.
      */
     function makeDragOptions(key: string | null): IDragSourceOptions {
         return {
@@ -399,23 +399,31 @@
                 if (op.targetIndex === undefined || op.sourceIndex === op.targetIndex) {
                     return;
                 }
-                const offset = props.nodes.findIndex(n => (props.groupBy?.(n) ?? null) === key);
-                if (offset < 0) {
+                // A bucket's members can be non-contiguous in `nodes` when
+                // siblings of a different group key interleave. Reorder only
+                // within the slots this bucket occupies and leave foreign-key
+                // nodes pinned, so the buckets' own display order never shifts.
+                const positions: number[] = [];
+                for (let i = 0; i < props.nodes.length; i++) {
+                    if ((props.groupBy?.(props.nodes[i]) ?? null) === key) {
+                        positions.push(i);
+                    }
+                }
+                if (op.sourceIndex < 0 || op.sourceIndex >= positions.length
+                    || op.targetIndex < 0 || op.targetIndex >= positions.length) {
                     return;
                 }
-                const fullSrc = offset + op.sourceIndex;
-                const fullTgt = offset + op.targetIndex;
-                const item = props.nodes[fullSrc];
-                if (!item || (props.groupBy?.(item) ?? null) !== key) {
-                    return;
-                }
-                props.nodes.splice(fullSrc, 1);
-                props.nodes.splice(fullTgt, 0, item);
+                const items = positions.map(p => props.nodes[p]);
+                const [moved] = items.splice(op.sourceIndex, 1);
+                items.splice(op.targetIndex, 0, moved);
+                positions.forEach((p, j) => {
+                    props.nodes[p] = items[j];
+                });
                 emit("reorder", {
-                    node: item,
+                    node: moved,
                     parent: null,
-                    oldIndex: fullSrc,
-                    newIndex: fullTgt
+                    oldIndex: positions[op.sourceIndex],
+                    newIndex: positions[op.targetIndex]
                 });
             }
         };

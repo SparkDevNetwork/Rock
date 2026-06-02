@@ -24,15 +24,29 @@ export const enum NavigationUrlKey {
     // Related settings URLs:
     NamedLocationsPage = "NamedLocationsPage",
     SchedulesPage = "SchedulesPage",
+
     DevicesPage = "DevicesPage",
     LabelsPage = "LabelsPage",
     ClassicLabelsPage = "ClassicLabelsPage",
     CloudPrintPage = "CloudPrintPage",
+
+    ClassicLabelMergeFields = "ClassicLabelMergeFields",
+    AbilityLevels = "AbilityLevels",
+    SearchType = "SearchType",
+
+    // Public-Facing Docs URLs:
+    CheckInManual = "CheckInManual",
 }
 
 export const enum PreferenceKey {
     SortBy = "sort-by"
 }
+
+export type SortItem = {
+    value: string;
+    text: string;
+    iconCssClass: string;
+};
 
 export type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl" | "unknown";
 
