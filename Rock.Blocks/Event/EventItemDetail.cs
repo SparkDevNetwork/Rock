@@ -129,6 +129,110 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Resolves the calendar that the block is operating within, mirroring the legacy
+        /// Web Forms "_calendarId" logic. This is the calendar indicated by the page parameter,
+        /// or - when no page parameter is supplied - the first calendar (ordered by name) that
+        /// the current person is authorized to edit.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The resolved calendar identifier, or <c>null</c> if none could be determined.</returns>
+        private int? GetEditContextCalendarId( RockContext rockContext )
+        {
+            var idParam = PageParameter( PageParameterKey.EventCalendarId );
+            var calendarId = IdHasher.Instance.GetId( idParam ) ?? idParam.AsIntegerOrNull();
+
+            if ( calendarId.HasValue )
+            {
+                return calendarId;
+            }
+
+            // No calendar was specified on the page, so fall back to the first calendar (by name)
+            // that the current person is authorized to edit.
+            var currentPerson = RequestContext.CurrentPerson;
+            foreach ( var calendar in new EventCalendarService( rockContext )
+                .Queryable().AsNoTracking()
+                .OrderBy( c => c.Name ) )
+            {
+                if ( calendar.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                {
+                    return calendar.Id;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Determines whether the current person is authorized to add, edit, or delete the event
+        /// item. This mirrors the legacy Web Forms block exactly: edit rights are granted by either
+        /// block-level Edit security or Edit security on the calendar the block is operating within
+        /// (see <see cref="GetEditContextCalendarId"/>). In addition, an existing item may only be
+        /// edited from a calendar it actually belongs to. Event items are not
+        /// secured individually; they inherit their edit authorization from their calendars.
+        /// </summary>
+        /// <param name="entity">The event item being added, edited, or deleted.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the current person is authorized to edit the event item; otherwise <c>false</c>.</returns>
+        private bool IsAuthorizedToEdit( EventItem entity, RockContext rockContext )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+            var contextCalendarId = GetEditContextCalendarId( rockContext );
+
+            // Edit rights come from block-level Edit security or Edit security on the context calendar.
+            var canEdit = BlockCache.IsAuthorized( Authorization.EDIT, currentPerson );
+
+            if ( !canEdit && contextCalendarId.HasValue )
+            {
+                var contextCalendar = new EventCalendarService( rockContext ).Get( contextCalendarId.Value );
+                canEdit = contextCalendar != null && contextCalendar.IsAuthorized( Authorization.EDIT, currentPerson );
+            }
+
+            if ( !canEdit )
+            {
+                return false;
+            }
+
+            // An existing item may only be edited from a calendar it belongs to.
+            if ( entity.Id != 0 && !entity.EventCalendarItems.Any( i => i.EventCalendarId == ( contextCalendarId ?? 0 ) ) )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines whether the current person is authorized to approve (or unapprove) the event
+        /// item. This mirrors the legacy Web Forms "_canApprove": block-level Administrate rights, or
+        /// Approve/Administrate rights on the calendar the block is operating within. Edit rights alone
+        /// do not grant approval.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the current person is authorized to approve the event item; otherwise <c>false</c>.</returns>
+        private bool IsAuthorizedToApprove( RockContext rockContext )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            // Block-level Administrate rights always allow approving.
+            if ( BlockCache.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) )
+            {
+                return true;
+            }
+
+            // Otherwise approving requires Approve or Administrate rights on the context calendar.
+            var contextCalendarId = GetEditContextCalendarId( rockContext );
+            if ( !contextCalendarId.HasValue )
+            {
+                return false;
+            }
+
+            var contextCalendar = new EventCalendarService( rockContext ).Get( contextCalendarId.Value );
+            return contextCalendar != null
+                && ( contextCalendar.IsAuthorized( Authorization.APPROVE, currentPerson )
+                    || contextCalendar.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) );
+        }
+
+        /// <summary>
         /// Sets the initial entity state of the box. Populates the Entity or
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
@@ -144,8 +248,10 @@ namespace Rock.Blocks.Event
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            // The legacy Web Forms block applied no entity-level View check: it rendered the event item
+            // read-only to anyone who could see the block.
+            var isViewable = true;
+            box.IsEditable = IsAuthorizedToEdit( entity, rockContext );
 
             entity.LoadAttributes( rockContext );
 
@@ -485,9 +591,9 @@ namespace Rock.Blocks.Event
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !IsAuthorizedToEdit( entity, rockContext ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${EventItem.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {EventItem.FriendlyTypeName}." );
                 return false;
             }
 
@@ -692,6 +798,14 @@ namespace Rock.Blocks.Event
         /// <param name="entity">The entity.</param>
         private void SaveApprovalDetails( DetailBlockBox<EventItemBag, EventItemDetailOptionsBag> box, EventItem entity )
         {
+            // Only a user authorized to approve ( block-level Administrate, or Approve/Administrate on
+            // the context calendar ) may change the approval state. This mirrors the legacy "_canApprove"
+            // gating and prevents Edit-only users from approving or unapproving an event item.
+            if ( !IsAuthorizedToApprove( RockContext ) )
+            {
+                return;
+            }
+
             if ( !entity.IsApproved && box.Entity.IsApproved )
             {
                 entity.ApprovedByPersonAliasId = GetCurrentPerson().PrimaryAliasId;
