@@ -444,8 +444,12 @@ namespace Rock.Blocks.Engagement
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+
+            // Match the WebForms behavior: editing is allowed by block-level Edit rights or View
+            // rights on the connection opportunity itself.
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                || entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
 
             if ( entity.Id != 0 )
             {
@@ -868,7 +872,10 @@ namespace Rock.Blocks.Engagement
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            // Match the WebForms behavior: editing is allowed by block-level Edit rights or View
+            // rights on the connection opportunity itself.
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                && !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {ConnectionOpportunity.FriendlyTypeName}." );
                 return false;
