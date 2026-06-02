@@ -73,8 +73,9 @@ namespace Rock.Blocks.Engagement
             var box = new ListBlockBox<ConnectionTypeListOptionsBag>();
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            var isAddDeleteEnabled = GetIsAddDeleteEnabled();
+            box.IsAddEnabled = isAddDeleteEnabled;
+            box.IsDeleteEnabled = isAddDeleteEnabled;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -89,20 +90,24 @@ namespace Rock.Blocks.Engagement
         /// <returns>The options that provide additional details to the block.</returns>
         private ConnectionTypeListOptionsBag GetBoxOptions()
         {
-            var options = new ConnectionTypeListOptionsBag();
+            var options = new ConnectionTypeListOptionsBag
+            {
+                // The reorder column requires block-level Administrate rights ( matches the legacy block,
+                // which hid the reorder column from everyone else ).
+                IsReOrderColumnVisible = GetIsAddDeleteEnabled()
+            };
 
             return options;
         }
 
         /// <summary>
-        /// Determines if the add button should be enabled in the grid.
-        /// <summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
+        /// Determines if the add and delete actions should be enabled in the grid, which requires block-level Administrate rights.
+        /// </summary>
+        /// <returns>A boolean value that indicates if the add and delete actions should be enabled.</returns>
+        private bool GetIsAddDeleteEnabled()
         {
-            var entity = new ConnectionType();
-
-            return entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+            // Match the WebForms behavior: add and delete are gated on block-level Administrate rights, not entity-level security.
+            return BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -121,6 +126,17 @@ namespace Rock.Blocks.Engagement
         protected override IQueryable<ConnectionType> GetListQueryable( RockContext rockContext )
         {
             return base.GetListQueryable( rockContext );
+        }
+
+        /// <inheritdoc/>
+        protected override List<ConnectionType> GetListItems( IQueryable<ConnectionType> queryable, RockContext rockContext )
+        {
+            // Match the WebForms behavior: only list connection types the person can view, unless they
+            // have block-level Edit rights ( which exposes every type ).
+            var canEditBlock = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var items = queryable.ToList();
+
+            return items.Where( ct => canEditBlock || ct.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ).ToList();
         }
 
         /// <inheritdoc/>
@@ -150,6 +166,13 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
+            // Mirror the legacy block: reordering required block-level Administrate rights ( the reorder
+            // column was hidden from everyone else ).
+            if ( !GetIsAddDeleteEnabled() )
+            {
+                return ActionBadRequest( $"Not authorized to reorder {ConnectionType.FriendlyTypeName}." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 // Get the queryable and make sure it is ordered correctly.
@@ -188,6 +211,13 @@ namespace Rock.Blocks.Engagement
                     return ActionBadRequest( $"{ConnectionType.FriendlyTypeName} not found." );
                 }
 
+                // Match the WebForms behavior: verify entity-level Administrate rights before deleting the
+                // connection type or any of its child opportunities and request activities.
+                if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( $"Not authorized to delete {ConnectionType.FriendlyTypeName}." );
+                }
+
                 // var connectionOppotunityies = new Service<ConnectionOpportunity>( rockContext ).Queryable().All( a => a.ConnectionTypeId == connectionType.Id );
                 var connectionOpportunities = entity.ConnectionOpportunities.ToList();
                 ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
@@ -208,12 +238,6 @@ namespace Rock.Blocks.Engagement
                     }
 
                     connectionOpportunityService.Delete( connectionOpportunity );
-                }
-
-
-                if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete {ConnectionType.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

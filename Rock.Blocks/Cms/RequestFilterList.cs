@@ -73,8 +73,9 @@ namespace Rock.Blocks.Cms
             var box = new ListBlockBox<RequestFilterListOptionsBag>();
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isAddDeleteEnabled = GetIsAddDeleteEnabled();
+            box.IsAddEnabled = isAddDeleteEnabled;
+            box.IsDeleteEnabled = isAddDeleteEnabled;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -95,14 +96,12 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Determines if the add button should be enabled in the grid.
+        /// Determines if the add and delete actions should be enabled in the grid, which requires block-level Edit rights.
         /// </summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
+        /// <returns>A boolean value that indicates if the add and delete actions should be enabled.</returns>
+        private bool GetIsAddDeleteEnabled()
         {
-            var entity = new RequestFilter();
-
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -166,7 +165,7 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( $"{RequestFilter.FriendlyTypeName} not found." );
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !GetIsAddDeleteEnabled() )
             {
                 return ActionBadRequest( $"Not authorized to delete {RequestFilter.FriendlyTypeName}." );
             }

@@ -101,7 +101,7 @@ namespace Rock.Blocks.Cms
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            box.IsDeleteEnabled = IsBlockEditAuthorized();
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -130,15 +130,25 @@ namespace Rock.Blocks.Cms
 
         /// <summary>
         /// Determines if the add button should be enabled in the grid.
-        /// <summary>
+        /// </summary>
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            var entity = new MediaFolder();
             var mediaAccountComponent = GetMediaAccountComponent();
 
-            bool canAddEditDelete = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-            return canAddEditDelete && mediaAccountComponent != null && mediaAccountComponent.AllowsManualEntry;
+            // Match the WebForms behavior: adding requires block-level Edit rights and a
+            // component that allows manual entry.
+            return IsBlockEditAuthorized() && mediaAccountComponent != null && mediaAccountComponent.AllowsManualEntry;
+        }
+
+        /// <summary>
+        /// Determines whether the current person has block-level Edit rights, which gates the
+        /// add and delete actions ( matching the original WebForms block behavior ).
+        /// </summary>
+        /// <returns><c>true</c> if the current person is authorized to edit at the block level; otherwise, <c>false</c>.</returns>
+        private bool IsBlockEditAuthorized()
+        {
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -309,7 +319,7 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( $"{MediaFolder.FriendlyTypeName} not found." );
                 }
 
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                if ( !IsBlockEditAuthorized() )
                 {
                     return ActionBadRequest( $"Not authorized to delete {MediaFolder.FriendlyTypeName}." );
                 }

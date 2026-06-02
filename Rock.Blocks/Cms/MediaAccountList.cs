@@ -104,8 +104,9 @@ namespace Rock.Blocks.Cms
             var box = new ListBlockBox<MediaAccountListOptionsBag>();
             var builder = GetGridBuilder();
 
-            box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            var isAddDeleteEnabled = GetIsAddDeleteEnabled();
+            box.IsAddEnabled = isAddDeleteEnabled;
+            box.IsDeleteEnabled = isAddDeleteEnabled;
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -126,14 +127,13 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Determines if the add button should be enabled in the grid.
-        /// <summary>
-        /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddEnabled()
+        /// Determines if the add and delete actions should be enabled in the grid, which requires block-level Edit rights.
+        /// </summary>
+        /// <returns>A boolean value that indicates if the add and delete actions should be enabled.</returns>
+        private bool GetIsAddDeleteEnabled()
         {
-            var entity = new MediaAccount();
-
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            // Match the WebForms behavior: add and delete are gated on block-level Edit rights, not entity-level security.
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -248,7 +248,7 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( $"{MediaAccount.FriendlyTypeName} not found." );
                 }
 
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                if ( !GetIsAddDeleteEnabled() )
                 {
                     return ActionBadRequest( $"Not authorized to delete {MediaAccount.FriendlyTypeName}." );
                 }
