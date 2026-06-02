@@ -345,8 +345,9 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    // Only allow the CommunicationId to contain an ID, but return it as a string so it can be used as an entity key.
-                    return PageParameter( PageParameterKey.CommunicationId ).AsIntegerOrNull()?.ToString();
+                    // CommunicationId can support Id, Guid, or IdKey values in order to maintain backward compatibility
+                    // with existing links, but return it as a string so it can be used as an entity key.
+                    return PageParameter( PageParameterKey.CommunicationId );
                 }
             }
         }
