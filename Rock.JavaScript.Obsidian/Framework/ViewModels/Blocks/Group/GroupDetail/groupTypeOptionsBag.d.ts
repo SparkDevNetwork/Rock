@@ -35,8 +35,11 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * panel needs to reshape itself.
  */
 export type GroupTypeOptionsBag = {
-    /** Gets or sets the localized term for the group administrator (default: "Administrator"). */
-    administratorTerm?: string | null;
+    /**
+     * Gets or sets the administrator field label, composed from the group type's
+     * group term and administrator term (e.g. "Group Administrator", "Group Director").
+     */
+    administratorLabel?: string | null;
 
     /** Gets or sets the bitmask of ScheduleType values the group type permits. */
     allowedScheduleTypes: ScheduleType;

@@ -31,6 +31,13 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  */
 export type GroupDetailOptionsBag = {
     /**
+     * Gets or sets the URL the panel navigates to when the user cancels out of Add mode.
+     * Computed server-side so route-aware URL building and returnUrl validation can use the
+     * page context. An empty value means no destination is configured and the panel stays put.
+     */
+    addModeCancelUrl?: string | null;
+
+    /**
      * Gets or sets the list of GroupTypes the user is allowed to pick on the Add panel's
      * Group Type dropdown.
      */

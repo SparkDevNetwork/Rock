@@ -162,9 +162,10 @@ namespace Rock.ViewModels.Blocks.Group.GroupDetail
         #region Localization
 
         /// <summary>
-        /// Gets or sets the localized term for the group administrator (default: "Administrator").
+        /// Gets or sets the administrator field label, composed from the group type's
+        /// group term and administrator term (e.g. "Group Administrator", "Group Director").
         /// </summary>
-        public string AdministratorTerm { get; set; }
+        public string AdministratorLabel { get; set; }
 
         #endregion
 

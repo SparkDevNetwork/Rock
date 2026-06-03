@@ -42,8 +42,7 @@ export const enum NavigationUrlKey {
     FundraisingProgressPage = "FundraisingProgressPage",
     RegistrationInstancePage = "RegistrationInstancePage",
     EventItemOccurrencePage = "EventItemOccurrencePage",
-    ContentItemPage = "ContentItemPage",
-    GroupListPage = "GroupListPage"
+    ContentItemPage = "ContentItemPage"
 }
 
 /**

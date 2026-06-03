@@ -50,6 +50,12 @@ export type GroupBag = {
     administrator?: GroupAdministratorBag | null;
 
     /**
+     * Gets or sets the administrator field label, composed from the group type's
+     * group term and administrator term (e.g. "Group Administrator", "Group Director").
+     */
+    administratorLabel?: string | null;
+
+    /**
      * Gets or sets the attendance-record-required-for-check-in
      * behavior.
      */

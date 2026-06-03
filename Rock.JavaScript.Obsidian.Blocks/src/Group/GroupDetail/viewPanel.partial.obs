@@ -13,8 +13,8 @@
             <div :class="isRightRailVisible ? 'col-md-7' : 'col-md-12'">
                 <ContentSection title="Overview" icon="ti ti-list-details" :disableCollapse="true">
                     <img v-if="modelValue?.photoUrl"
-                         class="w-100 rounded"
-                         :src="modelValue.photoUrl"
+                         class="img-fluid rounded mb-3"
+                         :src="`${modelValue.photoUrl}&maxwidth=300&maxheight=300`"
                          :alt="modelValue.name ?? ''" />
 
                     <div>
@@ -28,7 +28,7 @@
                         <div class="row">
                             <div v-if="modelValue?.administrator" class="col-md-6">
                                 <div class="form-group static-control">
-                                    <label class="control-label">Group Administrator</label>
+                                    <label class="control-label">{{ modelValue.administratorLabel || "Group Administrator" }}</label>
                                     <div class="control-wrapper">
                                         <div class="form-control-static">
                                             <a v-if="modelValue.administrator.url" :href="modelValue.administrator.url" target="_blank" rel="noopener">{{ modelValue.administrator.text }}</a>

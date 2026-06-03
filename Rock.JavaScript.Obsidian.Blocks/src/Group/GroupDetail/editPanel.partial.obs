@@ -17,7 +17,7 @@
                     </div>
                 </div>
 
-                <ConditionalWell v-if="!isActive">
+                <ConditionalWell v-if="!isActive && (groupTypeOptions.isInactiveReasonVisible || hasActiveDescendants)">
                     <template v-if="groupTypeOptions.isInactiveReasonVisible">
                         <DropDownList v-model="inactiveReasonValueIdValue"
                                       label="Inactive Reason"
@@ -32,9 +32,8 @@
                                  :rows="3" />
                     </template>
 
-                    <div class="form-group">
-                        <InlineCheckBox v-if="hasActiveDescendants"
-                                        v-model="inactivateChildGroups"
+                    <div v-if="hasActiveDescendants" class="form-group">
+                        <InlineCheckBox v-model="inactivateChildGroups"
                                         label="Also Inactivate Child Groups"
                                         help="Applies the inactive status to child groups." />
                     </div>
@@ -99,6 +98,7 @@
                         <CampusPicker v-model="campus"
                                       label="Campus"
                                       help="The campus associated with this group."
+                                      showBlankItem
                                       :includeInactive="!preventSelectingInactiveCampus"
                                       :rules="groupTypeOptions.requiresCampus ? 'required' : ''" />
                     </div>
@@ -113,11 +113,13 @@
                 </div>
             </ContentStack>
 
-            <ContentStack title="Administration &amp; Security" description="Administrative, capacity, and security settings that control how this group is managed.">
+            <ContentStack v-if="isAdministrationSectionVisible"
+                          title="Administration &amp; Security"
+                          description="Administrative, capacity, and security settings that control how this group is managed.">
                 <div v-if="groupTypeOptions.isAdministratorVisible" class="row">
                     <div class="col-md-6">
                         <PersonPicker v-model="groupAdministrator"
-                                      :label="groupTypeOptions.administratorTerm || 'Group Administrator'"
+                                      :label="groupTypeOptions.administratorLabel || 'Group Administrator'"
                                       help="The person responsible for managing this group."
                                       :trailblazerField="true" />
                     </div>
@@ -789,6 +791,25 @@
         set(newValue: string) {
             groupTypeId.value = nullableInt(newValue);
         }
+    });
+
+    /**
+     * Whether the Administration & Security stack has any visible control.
+     * Each control can independently not render (group-type visibility flags,
+     * Trailblazer-only fields hidden in Essentials mode, group-admin-only
+     * fields), so the whole stack is hidden when none would show. Mirrors the
+     * per-control conditions in the template; trailblazerField controls only
+     * render in Trailblazer (advanced) mode.
+     */
+    const isAdministrationSectionVisible = computed((): boolean => {
+        const isTrailblazerMode = store.state.trailblazerMode;
+        const options = props.groupTypeOptions;
+
+        return (options.isAdministratorVisible === true && isTrailblazerMode)              // Administrator
+            || options.isGroupCapacityVisible === true                                     // Group Capacity
+            || isTrailblazerMode                                                           // Require Signed Document (trailblazerField)
+            || (options.isGroupSpecificRecordSourceVisible === true && isTrailblazerMode)  // Member Record Source
+            || props.isCurrentPersonGroupAdministrator === true;                           // Enable as Security Role
     });
 
     /**

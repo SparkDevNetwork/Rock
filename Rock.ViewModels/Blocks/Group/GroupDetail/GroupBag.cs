@@ -164,6 +164,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupDetail
         public GroupAdministratorBag Administrator { get; set; }
 
         /// <summary>
+        /// Gets or sets the administrator field label, composed from the group type's
+        /// group term and administrator term (e.g. "Group Administrator", "Group Director").
+        /// </summary>
+        public string AdministratorLabel { get; set; }
+
+        /// <summary>
         /// Gets or sets the group's capacity, or null when not configured.
         /// </summary>
         public int? GroupCapacity { get; set; }

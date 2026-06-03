@@ -140,6 +140,13 @@ namespace Rock.ViewModels.Blocks.Group.GroupDetail
         /// </summary>
         public Guid? MapStyleValueGuid { get; set; }
 
+        /// <summary>
+        /// Gets or sets the URL the panel navigates to when the user cancels out of Add mode.
+        /// Computed server-side so route-aware URL building and returnUrl validation can use the
+        /// page context. An empty value means no destination is configured and the panel stays put.
+        /// </summary>
+        public string AddModeCancelUrl { get; set; }
+
         #endregion
     }
 }

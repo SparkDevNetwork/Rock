@@ -252,7 +252,6 @@ namespace Rock.Blocks.Group
             public const string RegistrationInstancePage = "RegistrationInstancePage";
             public const string EventItemOccurrencePage = "EventItemOccurrencePage";
             public const string ContentItemPage = "ContentItemPage";
-            public const string GroupListPage = "GroupListPage";
         }
 
         private static class AttributeKey
@@ -483,7 +482,8 @@ namespace Rock.Blocks.Group
                 IsCurrentPersonGroupAdministrator = IsCurrentPersonGroupAdministrator(),
                 AllowedGroupTypes = BuildAllowedGroupTypeListItems( entity?.ParentGroup ),
                 SignatureDocumentTemplates = BuildSignatureDocumentTemplateListItems( entity ),
-                RsvpSystemCommunicationOptions = BuildRsvpSystemCommunicationOptions()
+                RsvpSystemCommunicationOptions = BuildRsvpSystemCommunicationOptions(),
+                AddModeCancelUrl = GetAddModeCancelUrl()
             };
 
             var groupType = GetGroupTypeCache( entity );
@@ -573,7 +573,6 @@ namespace Rock.Blocks.Group
                 [NavigationUrlKey.RegistrationInstancePage] = this.GetLinkedPageUrl( AttributeKey.RegistrationInstancePage, groupIdParam ),
                 [NavigationUrlKey.EventItemOccurrencePage]  = this.GetLinkedPageUrl( AttributeKey.EventItemOccurrencePage, groupIdParam ),
                 [NavigationUrlKey.ContentItemPage]          = this.GetLinkedPageUrl( AttributeKey.ContentItemPage, groupIdParam ),
-                [NavigationUrlKey.GroupListPage]            = this.GetLinkedPageUrl( AttributeKey.GroupListPage, groupIdParam ),
                 [NavigationUrlKey.GroupPlacementPage]       = this.GetLinkedPageUrl( AttributeKey.GroupPlacementPage, new Dictionary<string, string>
                 {
                     ["SourceGroup"] = "((Key))",
@@ -671,6 +670,7 @@ namespace Rock.Blocks.Group
                 PhotoUrl = entity.PhotoUrl,
                 Description = entity.Description,
                 Administrator = BuildAdministratorRef( entity.GroupAdministratorPersonAlias, groupType ),
+                AdministratorLabel = BuildAdministratorLabel( groupType ),
                 ParentGroup = BuildParentGroupRef( entity.ParentGroup ),
                 ScheduleFriendlyText = entity.Schedule?.FriendlyScheduleText,
                 GroupCapacity = entity.GroupCapacity
@@ -2239,6 +2239,21 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Builds the administrator field label for the Overview card by
+        /// combining the group type's group term and administrator term
+        /// (e.g. "Group Administrator", "Group Director"). Mirrors the edit
+        /// panel's label composition so view and edit modes stay consistent.
+        /// Each term falls back to its default when blank.
+        /// </summary>
+        private static string BuildAdministratorLabel( GroupTypeCache groupType )
+        {
+            var groupTerm = groupType?.GroupTerm.IsNotNullOrWhiteSpace() == true ? groupType.GroupTerm : "Group";
+            var administratorTerm = groupType?.AdministratorTerm.IsNotNullOrWhiteSpace() == true ? groupType.AdministratorTerm : "Administrator";
+
+            return $"{groupTerm} {administratorTerm}";
+        }
+
+        /// <summary>
         /// Builds the parent group reference for the Overview card, or
         /// null when the group has no parent. The URL honors any
         /// customer-customized Group <c>LinkUrlLavaTemplate</c>.
@@ -2435,6 +2450,59 @@ namespace Rock.Blocks.Group
             }
 
             return this.GetCurrentPageUrl( qryParams );
+        }
+
+        /// <summary>
+        /// Computes the URL used when the user cancels out of Add mode, mirroring
+        /// the legacy WebForms btnCancel_Click behavior: honor a same-origin
+        /// <c>returnUrl</c> first; otherwise, when arriving from the tree view
+        /// (<c>ParentGroupId</c> present), return to the parent group preserving
+        /// <c>ExpandedIds</c>; otherwise fall back to <c>GroupListPage</c> or a
+        /// cleared current page. Computed server-side because both route-aware
+        /// URL building and returnUrl validation require page context the Vue
+        /// layer does not have.
+        /// </summary>
+        /// <returns>The cancel destination URL, or an empty string when none applies.</returns>
+        private string GetAddModeCancelUrl()
+        {
+            var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+            if ( returnUrl.IsNotNullOrWhiteSpace() && IsSafeReturnUrl( returnUrl ) )
+            {
+                return returnUrl;
+            }
+
+            // A present ParentGroupId means the user arrived from the tree view,
+            // so return them to the parent group (preserving the expanded tree
+            // state) rather than the list page. A root-level add (ParentGroupId 0)
+            // clears the selection instead of selecting a group.
+            var parentGroupId = PageParameter( PageParameterKey.ParentGroupId ).AsIntegerOrNull();
+            if ( parentGroupId.HasValue )
+            {
+                var qryParams = new Dictionary<string, string>();
+                if ( parentGroupId.Value > 0 )
+                {
+                    qryParams[PageParameterKey.GroupId] = Rock.Utility.IdHasher.Instance.GetHash( parentGroupId.Value );
+                }
+
+                var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
+                if ( expandedIds.IsNotNullOrWhiteSpace() )
+                {
+                    qryParams[PageParameterKey.ExpandedIds] = expandedIds;
+                }
+
+                // skipExistingParameters drops the stale GroupId=0 from the Add
+                // URL so the cancel doesn't reload straight back into Add mode.
+                return this.GetCurrentPageUrl( qryParams, skipExistingParameters: true );
+            }
+
+            // No tree context: prefer the configured Group List page, otherwise
+            // reload the current page with no group selected.
+            if ( GetAttributeValue( AttributeKey.GroupListPage ).AsGuid() != Guid.Empty )
+            {
+                return this.GetLinkedPageUrl( AttributeKey.GroupListPage );
+            }
+
+            return this.GetCurrentPageUrl( new Dictionary<string, string>(), skipExistingParameters: true );
         }
 
         #endregion Generic Utilities
@@ -3056,7 +3124,7 @@ namespace Rock.Blocks.Group
                 .ToListItemBagList();
 
             // Localization.
-            bag.AdministratorTerm = groupType.AdministratorTerm.IsNotNullOrWhiteSpace() ? groupType.AdministratorTerm : "Administrator";
+            bag.AdministratorLabel = BuildAdministratorLabel( groupType );
 
             // Peer network defaults / placeholders.
             bag.RelationshipStrengthDefault = ( RelationshipStrength ) groupType.RelationshipStrength;
@@ -3097,7 +3165,12 @@ namespace Rock.Blocks.Group
             {
                 bag.InactiveReasons = new GroupTypeService( RockContext )
                     .GetInactiveReasonsForGroupType( groupType.Id )
-                    .ToListItemBagList();
+                    .Select( dv => new ListItemBag
+                    {
+                        Value = dv.Id.ToString(),
+                        Text = dv.Value
+                    } )
+                    .ToList();
             }
 
             // Inherited group-member attributes for the read-only grid.

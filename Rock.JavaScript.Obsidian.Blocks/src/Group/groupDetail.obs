@@ -11,7 +11,7 @@
                  :labels="blockLabels"
                  :headerLabels="headerLabels"
                  :entityKey="entityKey"
-                 :entityTypeName="groupViewBag?.name ?? ''"
+                 :entityTypeName="'Group'"
                  :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="panelMode !== DetailPanelMode.Add"
                  :isDeleteVisible="isDeleteVisible"
@@ -78,7 +78,7 @@
     import { GroupTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupTypeOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { GroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupBag";
-    import { ArchivePromptResult, NavigationUrlKey } from "./GroupDetail/types.partial";
+    import { ArchivePromptResult } from "./GroupDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { scrollNotificationIntoView, useInvokeGroupDetailBlockAction } from "./GroupDetail/utils.partial";
@@ -141,7 +141,7 @@
     const isCurrentPersonGroupAdministrator = computed((): boolean => config.options?.isCurrentPersonGroupAdministrator ?? false);
 
     const panelName = computed((): string => {
-        return panelMode.value === DetailPanelMode.Add ? "Add Group" : groupViewBag.value?.name ?? "";
+        return groupViewBag.value?.name ?? "";
     });
 
     const panelTitleIconCssClass = computed((): string => {
@@ -335,40 +335,23 @@
     // #region Event Handlers
 
     /**
-     * Cancel from edit mode. ?returnUrl= takes precedence; otherwise an
-     * existing group returns to view mode, and Add mode redirects to
-     * GroupListPage when configured.
+     * Cancel from edit mode. An existing group returns to view mode; Add mode
+     * navigates to the server-computed `addModeCancelUrl`.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        const params = new URLSearchParams(window.location.search);
-        const returnUrl = params.get("returnUrl");
-        if (returnUrl) {
-            return returnUrl;
+        // Canceling an edit of an existing group returns to read-only view.
+        if (groupEditBag.value.bag?.idKey) {
+            return true;
         }
 
-        if (!groupEditBag.value.bag?.idKey) {
-            const parentGroupId = params.get("ParentGroupId");
-            if (parentGroupId) {
-                const expandedIds = params.get("ExpandedIds") ?? "";
-                const url = new URL(window.location.href);
-                url.search = "";
-                if (parentGroupId !== "0") {
-                    url.searchParams.set("GroupId", parentGroupId);
-                }
-                if (expandedIds) {
-                    url.searchParams.set("ExpandedIds", expandedIds);
-                }
-                return url.pathname + (url.search ? url.search : "");
-            }
-
-            if (config.navigationUrls?.[NavigationUrlKey.GroupListPage]) {
-                return config.navigationUrls[NavigationUrlKey.GroupListPage];
-            }
-
-            return false;
-        }
-
-        return true;
+        // Canceling an Add uses the server-computed destination, which mirrors
+        // the legacy tree-view cancel: a safe returnUrl, otherwise the parent
+        // group (preserving the expanded tree state), otherwise the Group List
+        // page or a cleared page. The server owns this because building the
+        // route-aware URL and validating the returnUrl both require page
+        // context the Vue layer doesn't have. An empty value means there is no
+        // configured destination, so stay put.
+        return options.value.addModeCancelUrl || false;
     }
 
     /**
