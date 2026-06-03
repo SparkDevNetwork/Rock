@@ -203,7 +203,8 @@ namespace RockWeb.Blocks.Groups
 
             if ( groupGuid == Guid.Empty )
             {
-                groupId = PageParameter( "GroupId" ).AsInteger();
+                groupId = new GroupService( new RockContext() )
+                    .GetSelect( PageParameter( "GroupId" ), g => ( int? ) g.Id, !PageCache.Layout.Site.DisablePredictableIds ) ?? 0;
 
                 /*
                  * 1/15/2020 - JPH
