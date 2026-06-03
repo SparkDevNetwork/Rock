@@ -12,6 +12,38 @@ Both configs extend `eslint:recommended` and `plugin:@typescript-eslint/recommen
 
 ---
 
+## SFC Structure
+
+House style, not lint-enforced. See `displayCard.obs` and `dropDownMenu.obs` for reference.
+
+**Top-level block order.** An `.obs` single-file component orders its top-level blocks:
+
+1. `<template>`
+2. `<style>` / `<style scoped>`
+3. `<script setup lang="ts">`
+
+**Script regions.** Inside `<script setup>`, group the code into regions in this fixed order, including only the regions that apply:
+
+1. `// #region Types`
+2. `// #region Values`
+3. `// #region Computed Values`
+4. `// #region Event Handlers`
+5. `// #region Functions`
+6. `// #region Watchers`
+7. `// #region Lifecycle Hooks`
+
+Imports come first. Local `type` and `enum` declarations always go in the `// #region Types` region immediately after the imports, at the top of the script. The `defineProps` / `defineEmits` declarations follow the `Types` region (above `Values`). Every region is closed with a labeled `#endregion` that repeats the region name, so the open and close wrap the region as a matched pair:
+
+```ts
+// #region Values
+
+const isExpanded = ref(false);
+
+// #endregion Values
+```
+
+---
+
 ## Whitespace and Punctuation
 
 - 4-space indentation by convention. Lint enforces only `no-tabs`; indentation width is not lint-checked, so respect the existing files when adding code.
