@@ -26,7 +26,7 @@ import { Guid } from "@Obsidian/Types";
 import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** The settings used by the Rock.Blocks.Cms.ContentChannelItemView block. */
+/** The settings used by the ContentChannelItemView block. */
 export type ContentChannelItemViewCustomSettingsBag = {
     /** Gets or sets the cache tags applied to cached content for this block. */
     cacheTags?: string[] | null;

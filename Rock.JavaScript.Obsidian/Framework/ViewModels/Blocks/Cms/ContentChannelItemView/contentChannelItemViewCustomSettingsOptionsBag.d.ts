@@ -23,7 +23,7 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** The options used to populate the custom settings UI for the Rock.Blocks.Cms.ContentChannelItemView block. */
+/** The options used to populate the custom settings UI for the Content Channel Item View block. */
 export type ContentChannelItemViewCustomSettingsOptionsBag = {
     /** Gets or sets the list of available cache tags. */
     cacheTags?: ListItemBag[] | null;

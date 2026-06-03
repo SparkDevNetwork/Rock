@@ -1,0 +1,90 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Filter Options"
+           saveText="Apply"
+           @save="onSave">
+
+        <SectionHeader title="Filters" />
+
+        <DropDownList v-model="activeStatus"
+                      label="Active Status"
+                      :items="activeStatusItems"
+                      :showBlankItem="false" />
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { ActiveStatus, GridSettingsOptions } from "./types.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const activeStatus = ref(props.modelValue.activeStatus);
+
+    const activeStatusItems: ListItemBag[] = [
+        { value: ActiveStatus.All, text: "All" },
+        { value: ActiveStatus.Active, text: "Active" },
+        { value: ActiveStatus.Inactive, text: "Inactive" }
+    ];
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the save button is clicked.
+     */
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            activeStatus: activeStatus.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        activeStatus.value = props.modelValue.activeStatus;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+</script>
