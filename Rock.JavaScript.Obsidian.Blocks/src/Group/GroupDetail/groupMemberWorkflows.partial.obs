@@ -20,7 +20,7 @@
     </ContentSection>
 
     <Modal v-model="isModalVisible"
-           :title="`${isEditing ? 'Edit' : 'Add'} Group Member Workflow`"
+           title="Configure Group Member Workflow"
            saveText="Save"
            cancelText="Cancel"
            :onSave="onSave">
@@ -53,33 +53,33 @@
         <ConditionalWell>
             <div v-if="theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberAddedToGroup
                 || theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberRemovedFromGroup">
-                <DropDownList label="With Status"
+                <DropDownList label="Status"
                               v-model="toStatusValue"
                               :items="enumToListItemBag(GroupMemberStatusDescription)"
                               showBlankItem />
-                <DropDownList label="With Role"
+                <DropDownList label="Role"
                               v-model="toRoleGuidValue"
                               :items="groupRoleItems"
                               showBlankItem />
             </div>
 
             <div v-if="theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberStatusChanged">
-                <DropDownList label="From Status"
+                <DropDownList label="From"
                               v-model="fromStatusValue"
                               :items="enumToListItemBag(GroupMemberStatusDescription)"
                               showBlankItem />
-                <DropDownList label="To Status"
+                <DropDownList label="To"
                               v-model="toStatusValue"
                               :items="enumToListItemBag(GroupMemberStatusDescription)"
                               showBlankItem />
             </div>
 
             <div v-if="theWorkflowTrigger.triggerType === GroupMemberWorkflowTriggerType.MemberRoleChanged">
-                <DropDownList label="From Role"
+                <DropDownList label="From"
                               v-model="fromRoleGuidValue"
                               :items="groupRoleItems"
                               showBlankItem />
-                <DropDownList label="To Role"
+                <DropDownList label="To"
                               v-model="toRoleGuidValue"
                               :items="groupRoleItems"
                               showBlankItem />
@@ -171,7 +171,6 @@
     const theWorkflowTrigger = ref<GroupMemberWorkflowTriggerBag>(createNewWorkflowTrigger());
 
     const isModalVisible = ref(false);
-    const isEditing = ref(false);
     const errorMessage = ref<string | null>(null);
 
     // #endregion
@@ -414,7 +413,6 @@
      * Add button on the grid. Opens the modal with a blank trigger.
      */
     function onAdd(): void {
-        isEditing.value = false;
         errorMessage.value = null;
         theWorkflowTrigger.value = createNewWorkflowTrigger();
         isModalVisible.value = true;
@@ -431,7 +429,6 @@
             return;
         }
         theWorkflowTrigger.value = { ...selected };
-        isEditing.value = true;
         errorMessage.value = null;
         isModalVisible.value = true;
     }
