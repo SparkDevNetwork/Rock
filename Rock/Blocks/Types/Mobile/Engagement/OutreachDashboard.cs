@@ -325,7 +325,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             person = personService.Get( person.Id );
             person.OutreachTouchpointSchedule = ( DaysOfWeekFlags ) ( ( int ) savePreferenceBag.DayOfWeek );
             person.OutreachEnableDailyNotification = savePreferenceBag.DailyNotificationsEnabled;
-            person.OutreachNotificationTimeOfDay = savePreferenceBag.DailyNotificationsEnabled ? ( OutreachNotificationTimeOfDay? ) savePreferenceBag.TimeOfDay : null; // Clear out time of day if daily notifications are disabled
+            person.OutreachNotificationTimeOfDay = savePreferenceBag.TimeOfDay?.ToNative();
             person.OutreachEnableSpecialEventsNotification = savePreferenceBag.SpecialEventNotificationsEnabled;
 
             RockContext.SaveChanges();
