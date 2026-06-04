@@ -5,8 +5,8 @@ summary: >-
   Add a new "Create Connection Request" SMS pipeline action that creates a
   Connection Request when an inbound SMS matches a configured keyword or
   filter, modeled directly on the existing "Launch Workflow" SMS action.
-  Includes a separate estimate for converting the related SMS Pipeline Detail
-  block from WebForms to Obsidian.
+  Also captures the conversion context for moving the related SMS Pipeline
+  Detail block from WebForms to Obsidian.
 contributors: []
 ---
 
@@ -14,7 +14,7 @@ contributors: []
 
 ## Summary
 
-Add a new `SmsActionCreateConnectionRequest` component to Rock's SMS pipeline so an inbound text message can create a Connection Request without needing a workflow as an intermediary. The action mirrors `SmsActionLaunchWorkflow` in shape: it filters by phone number and message body, resolves the inbound person (with nameless-person handling), and writes a `ConnectionRequest` row to the configured Connection Opportunity. Configuration lives on the `SmsAction` entity through the standard component attribute pattern, so no new admin UI is required for the feature itself. A separate effort to convert `SmsPipelineDetail.ascx` to Obsidian is estimated below.
+Add a new `SmsActionCreateConnectionRequest` component to Rock's SMS pipeline so an inbound text message can create a Connection Request without needing a workflow as an intermediary. The action mirrors `SmsActionLaunchWorkflow` in shape: it filters by phone number and message body, resolves the inbound person (with nameless-person handling), and writes a `ConnectionRequest` row to the configured Connection Opportunity. Configuration lives on the `SmsAction` entity through the standard component attribute pattern, so no new admin UI is required for the feature itself. A separate effort to convert `SmsPipelineDetail.ascx` to Obsidian is captured at the bottom of this spec.
 
 ## Motivation
 
@@ -82,7 +82,7 @@ public class SmsActionCreateConnectionRequest : SmsActionComponent
 }
 ```
 
-Registration is automatic. `SmsActionContainer.Refresh()` (`Rock\Communication\SmsActions\SmsActionContainer.cs:53`) picks up new MEF components on app start and creates the per-action `Attribute` records. The existing `SmsPipelineDetail.ascx` admin UI lists "Create Connection Request" in the action-type dropdown without code changes.
+Registration is automatic. `SmsActionContainer.Refresh()` (`Rock\Communication\SmsActions\SmsActionContainer.cs:53`) picks up new MEF components on app start and creates the per-action `Attribute` records. The SMS Pipeline Detail block lists "Create Connection Request" in the Action Type dropdown without code changes.
 
 ### Pipeline flow
 
@@ -151,9 +151,9 @@ A new field type, `ConnectionTypeSettingsFieldType`, is the heart of the configu
 
 **Editor.** A new `connectionTypeSettingsPicker.obs` Vue control composes one Type picker and three child pickers (Opportunity, Status, Source) and owns the cascade with `v-if="connectionTypeGuid"` plus a `watch` on the Type picker that clears all three children when the Type changes. The shape mirrors `stepProgramStepTypePicker.obs:3-26, 85-103`, extended from one child to three siblings. The Type picker reflects the persisted Type slot directly rather than being derived.
 
-**Platform support.** `[RockPlatformSupport( WebForms, Obsidian )]` to match the parent precedent. The WebForms editor uses Rock's existing `ConnectionTypePicker`, `ConnectionOpportunityPicker`, and similar controls, wiring up a postback-driven cascade in code-behind the same way `StepProgramStepStatusFieldType`'s WebForms `EditControl` does. Cost is real but bounded; precedent removes design risk.
+**Platform support.** Shipped `[RockPlatformSupport( Obsidian )]` (Obsidian-only). An earlier draft planned WebForms support to match the parent precedent, but the SMS Pipeline Detail block was converted to Obsidian in the same effort, so the field type renders only in the Obsidian editor and no WebForms `EditControl` was built.
 
-**Why a composite, not three separate field types with reactive qualifiers.** Rock's generic attribute editor does not support runtime cross-attribute qualifier filtering (verified by inspecting `Rock\Attribute\` for any `DependsOn`-style mechanism; no such pattern exists). The composite approach moves the cascade *inside one field type*, which makes it work in any host: the existing WebForms `SmsPipelineDetail.ascx`, the future Obsidian conversion, workflow actions, block attributes, and so on. No host-block changes required.
+**Why a composite, not three separate field types with reactive qualifiers.** Rock's generic attribute editor does not support runtime cross-attribute qualifier filtering (verified by inspecting `Rock\Attribute\` for any `DependsOn`-style mechanism; no such pattern exists). The composite approach moves the cascade *inside one field type*, which makes it work in any host that renders the field's Obsidian editor: the converted Obsidian SMS Pipeline Detail block, workflow actions, block attributes, and so on. No host-block changes required.
 
 **Why Type IS persisted (despite being derivable).** Storing Type explicitly turns the persisted value into a self-validating record. Each child slot is checked against the persisted Type on load; any mismatch is surfaced as a drift warning instead of silently following the child's current Type. This trades a small amount of denormalization for visibility into integrity issues, useful in a system where migrations and admin edits regularly reshape Connection metadata.
 
@@ -226,7 +226,7 @@ Rejected. A "DependsOn another attribute" capability in the generic attribute ed
 
 ### Build the cascade as a feature of the Obsidian SMS Pipeline Detail block
 
-Rejected. The composite field type is a strictly better answer: it works in any host (existing WebForms editor, future Obsidian editor, workflow actions, anywhere else the field type is used), follows the established `StepProgramStep*` precedent, and decouples the SMS action's ship date from the block conversion.
+Rejected. The composite field type is a strictly better answer: it works in any host that renders its editor (the Obsidian SMS Pipeline Detail block, workflow actions, anywhere else the field type is used), follows the established `StepProgramStep*` precedent, and decouples the SMS action's ship date from the block conversion.
 
 ### Use three separate field types (`ConnectionOpportunityField`, `ConnectionStatusField`, new `ConnectionTypeSourceField`) as separate attributes
 
@@ -241,54 +241,41 @@ Rejected. `RockWeb\Webhooks\TwilioSms.ashx:125` already calls `PersonService.Get
 - Schema changes to `ConnectionRequest` or `ConnectionTypeSource`. The existing model is sufficient.
 - Auto-creating a `ConnectionRequestActivity` row on creation.
 - A new Lava filter for resolving phone numbers to persons (already covered by `PersonService.GetPersonFromMobilePhoneNumber`).
-- The SMS Pipeline Detail block conversion to Obsidian (estimated below, not part of this feature spec).
+- The SMS Pipeline Detail block conversion to Obsidian (scoped at the bottom of this spec, not part of this feature spec).
 - Wiring `ConnectionTypeSettings` into the existing `Rock.Workflow.Action.Connections.CreateConnectionRequest` workflow action. That action also leaves the source column null today; bringing parity is a separate, low-risk change once the field type lands.
 - Building a generic runtime cross-attribute qualifier system in `Rock\Attribute\`. The composite field type sidesteps the need; if the gap matters elsewhere it warrants its own spec.
 
 ---
 
-## Obsidian Conversion Estimate: SMS Pipeline Detail Block
+## Obsidian Conversion: SMS Pipeline Detail Block
 
-The PO asked for a separate estimate to convert the related admin block to Obsidian and polish the UI.
+The related admin block was converted from WebForms to Obsidian alongside this SMS action work. This section records the conversion as built.
 
-### What needs converting
+### What was converted
 
-`RockWeb\Blocks\Communication\SmsPipelineDetail.ascx` plus `.ascx.cs` (BlockTypeGuid `44C32EB7-4DA3-4577-AC41-E3517442E269`).
+`RockWeb\Blocks\Communication\SmsPipelineDetail.ascx` plus `.ascx.cs` (BlockTypeGuid `44C32EB7-4DA3-4577-AC41-E3517442E269`), now replaced by `Rock.Blocks\Communication\SmsPipelineDetail.cs` and its Obsidian SFC. The WebForms files were removed; the block GUID carried over, and `StagePossibleMigrateWebFormsToObsidianBlock` swaps each block instance to the entity-based BlockType at startup (no block-swap migration required).
 
-The list counterpart `Rock.Blocks\Communication\SmsPipelineList.cs` is already on Obsidian.
+The list counterpart `Rock.Blocks\Communication\SmsPipelineList.cs` was already on Obsidian.
 
 ### Block classification
 
-This is a **Custom** block, not a clean Detail block. It shows the pipeline's own fields (Detail-shaped) but also embeds:
+A **Custom** block, not a clean Detail block. It uses the standard `DetailBlock` template for the pipeline header (name, status label, audit) and also embeds:
 
-- An ordered, drag-to-reorder list of configured `SmsAction` rows.
-- An inline edit panel for the selected action that renders the action's per-instance attribute values (the dynamic attribute editor; the same shape as Workflow Action edit, where the attribute set varies by chosen `SmsActionComponent`).
-- Add, remove, and reorder action behavior.
+- An ordered, drag-to-reorder list of configured `SmsAction` rows, rendered as `DisplayCard`s with a per-row Edit/Delete kebab menu.
+- A modal "Action Settings" editor that renders the selected action's per-instance attribute values (the dynamic attribute editor; the attribute set varies by the chosen `SmsActionComponent`). Adding an action opens the modal with an Action Type dropdown; the action is created on save.
+- Add, remove, and reorder behavior, each persisted immediately (piecemeal save, matching WebForms semantics).
 
-### Effort estimate
+### As built
 
-Rough estimate, in days, assuming the developer is fluent in Rock's Obsidian conversion patterns:
+- C# block plus bags: `Rock.Blocks\Communication\SmsPipelineDetail.cs` with the pipeline and action bags, plus block actions for add / edit / save / delete / reorder of actions and pipeline header save / delete, each gated on `Authorization.EDIT` (testing on `ADMINISTRATE`).
+- Vue SFC plus partials: main `.obs` on the `DetailBlock` template, an action-list partial (`DisplayCard` list, drag-reorder, and the editor modal), plus view / edit / test partials.
+- Dynamic attribute editor: renders the per-instance attribute set for the selected component via `RockField` (not `AttributeValuesContainer`), split into a Filters section and the remaining attributes grouped by category, with the system `Order` and `Active` attributes excluded.
+- Drag-to-reorder uses the existing `IOrdered` reorder pattern (`useDragReorder` plus before-key `ReorderEntity`).
+- WebForms chop: `.ascx` and `.ascx.cs` removed.
+- Review pass via `/review-conversion` against the WebForms ground truth: PASS, full functional parity.
+- Test coverage: Playwright suite in the Granite repo at `tests/communication/sms-pipeline/sms-pipeline-detail/`.
 
-| Phase | Work | Estimate |
-|---|---|---|
-| Research / spec | Read WebForms block end to end, capture every UI control and behavior, classify as Custom, draft conversion-spec stub via `/convert-block`. | 0.5 day |
-| C# block plus bags | New `Rock.Blocks\Communication\SmsPipelineDetail.cs`, request/response bags, viewmodels for both pipeline shape and inline action editor. | 1.0 day |
-| Vue SFC plus partials | Main `.obs`, action-list partial (drag and drop reorder), action-edit partial (dynamic attribute renderer). | 2.0 days |
-| Dynamic attribute editor parity | The hardest part: rendering the per-instance attribute set for the selected component, including category grouping (Filters, Workflow, Connection, Response). Likely reuses the existing `AttributeValuesContainer` Obsidian component. | 1.0 day |
-| WebForms chop | Remove `.ascx` and `.ascx.cs`, add the standard "obsoleted by" engineering note, plugin migration to swap the block instance to the new entity-based BlockType. | 0.5 day |
-| UI polish | Replace any inline styles with Rock utilities, light layout cleanup, consistent spacing, empty-state and loading-state coverage (per `css-cleanup` skill rules). | 0.5 day |
-| Review pass via `/review-conversion` | Catch spec gaps against the WebForms ground truth, fix findings. | 0.5 day |
-| QA / smoke / regression | Configure all four existing actions (Reply, Launch Workflow, Conversations, Give) plus the new Create Connection Request action through the converted block; verify save, reorder, delete. | 0.5 day |
-| **Total** | | **~6.5 dev-days (≈1.5 weeks)** |
-
-Risk factors that could push the upper end:
-
-- The dynamic attribute editor is the riskiest piece. If the existing `AttributeValuesContainer` Obsidian component does not already handle component-driven per-instance attribute editing (i.e. attribute set varies by which `EntityTypeId` the user picks in the same form), a small enhancement to that component will be needed. Add about 1 day if so.
-- Drag-to-reorder with `IOrdered` persistence has been done in Rock before; reuse the existing reorder pattern from a comparable block (e.g. CheckIn or Connection settings) rather than reinventing.
-
-Realistic range: **6 to 9 dev-days** (1.5 to 2 weeks of focused work, including review and polish).
-
-The cascading-picker UX is **not** part of this conversion estimate. It lives inside the new `ConnectionTypeSettingsFieldType` and ships with the SMS action feature itself, working in both the existing WebForms editor and the future Obsidian editor.
+The cascading-picker UX is **not** part of this conversion. It lives inside the `ConnectionTypeSettingsFieldType` and ships with the SMS action feature itself, rendering in the Obsidian action editor.
 
 ## Related
 
@@ -300,7 +287,7 @@ The cascading-picker UX is **not** part of this conversion estimate. It lives in
 - SMS pipeline entry point: `RockWeb\Webhooks\TwilioSms.ashx:125`
 - SMS action service: `Rock\Communication\SmsActions\SmsActionService.cs`
 - SMS action base: `Rock\Communication\SmsActions\SmsActionComponent.cs`
-- SMS pipeline detail block (WebForms, conversion target): `RockWeb\Blocks\Communication\SmsPipelineDetail.ascx`
+- SMS pipeline detail block (converted to Obsidian): `Rock.Blocks\Communication\SmsPipelineDetail.cs`
 - Source entity: `Rock\Model\Connection\ConnectionTypeSource\ConnectionTypeSource.cs`
 - Source FK on connection request: `Rock\Model\Connection\ConnectionRequest\ConnectionRequest.cs:208`
 - Asana task: Product: Add Connection Request Features to SMS Pipeline

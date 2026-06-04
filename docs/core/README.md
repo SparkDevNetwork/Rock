@@ -7,6 +7,8 @@ This folder covers cross-cutting Rock concepts that recur across many domains an
 | Doc | Summary |
 |---|---|
 | [Cache Invalidation](cache-invalidation.md) | How `ItemCache` / `EntityCache` / `ModelCache` work, save-hook-driven eviction, web-farm propagation, and the cache-mirrors-model security rule. |
+| [Cascade Picker Pattern](cascade-picker-pattern.md) | Parent dropdown plus v-if-gated children with pre-shipped option maps; clear-on-parent-change semantics and the phantom-emit guard for wrapping field-type editors. |
+| [Composite Field Type Pattern](composite-field-type-pattern.md) | One attribute, several related values: pipe-delimited storage with a JSON edit shape, pre-shipped cascade data via `GetPublicConfigurationValues`, and `IEntityReferenceFieldType` for indexing. |
 | [Defined Type and Defined Value](defined-type-and-value.md) | Configurable lookup-list pattern, Guid-based references, the cache pair, and the `Info` suffix convention for custom defined types. |
 | [Entity Reference Resolution](entity-reference-resolution.md) | How Rock resolves entity references from raw int Id, Guid, or IdKey across blocks and services, and how the per-site Disable Predictable Ids setting governs which forms are accepted. |
 | [Lava Data Object](lava-data-object.md) | `LavaDataObject` vs `RockDynamic`, the three usage patterns (derive, proxy, dictionary), and the `Info` suffix convention. |

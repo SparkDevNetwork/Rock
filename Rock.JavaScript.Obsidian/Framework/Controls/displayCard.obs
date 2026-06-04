@@ -40,9 +40,11 @@
             <slot name="rightMiddleSection" />
         </div>
 
-        <div v-if="asideIconCssClass || aside" class="displaycard-aside">
-            <i v-if="asideIconCssClass" :class="`${asideIconCssClass}`"></i>
-            <small v-if="aside">{{ aside }}</small>
+        <div v-if="asideIconCssClass || aside || $slots.aside" class="displaycard-aside">
+            <slot name="aside">
+                <i v-if="asideIconCssClass" :class="`${asideIconCssClass}`"></i>
+                <small v-if="aside">{{ aside }}</small>
+            </slot>
         </div>
 
         <div v-if="primaryActions?.length || secondaryActions?.length || $slots.actions" class="displaycard-actions">
