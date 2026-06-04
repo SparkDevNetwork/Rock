@@ -58,6 +58,7 @@
                     <asp:CustomValidator ID="cvGroup" runat="server" Display="None" />
 
                     <div id="pnlEditDetails" runat="server">
+                        <Rock:NotificationBox ID="nbNoAllowedGroupTypes" runat="server" NotificationBoxType="Warning" Visible="false" />
                         <div class="row" style="display: flex; align-items: center;">
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
