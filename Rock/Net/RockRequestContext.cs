@@ -256,6 +256,21 @@ namespace Rock.Net
         /// </summary>
         internal Guid SessionGuid { get; set; } = Guid.NewGuid();
 
+        /// <summary>
+        /// <para>
+        /// Gets or sets the URL the client should navigate to once the current
+        /// request completes. This is set by the PageRedirect Lava filter when
+        /// it executes during a block action, because a server-side redirect of
+        /// a block action response cannot navigate the browser.
+        /// </para>
+        /// <para>
+        /// Blocks that resolve Lava templates inside a block action should check
+        /// this value after rendering and, when set, return it to the client so
+        /// the client can perform the navigation.
+        /// </para>
+        /// </summary>
+        internal string RedirectUrl { get; set; }
+
         #endregion
 
         #region Constructors
