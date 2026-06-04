@@ -2802,13 +2802,20 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Updates attendance record to indicate person is Scheduled To Attend (Confirmed)
+        /// Updates attendance record to indicate person is Scheduled To Attend (Confirmed).
         /// </summary>
         /// <param name="attendanceId">The attendance identifier.</param>
         public void ScheduledPersonConfirm( int attendanceId )
         {
-            var scheduledAttendance = this.Get( attendanceId );
+            ScheduledPersonConfirm( this.Get( attendanceId ) );
+        }
 
+        /// <summary>
+        /// Updates attendance record to indicate person is Scheduled To Attend (Confirmed).
+        /// </summary>
+        /// <param name="scheduledAttendance">The attendance record to confirm.</param>
+        public void ScheduledPersonConfirm( Attendance scheduledAttendance )
+        {
             if ( scheduledAttendance == null )
             {
                 return;
