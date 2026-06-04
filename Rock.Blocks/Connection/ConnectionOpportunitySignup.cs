@@ -592,6 +592,19 @@ namespace Rock.Blocks.Connection
 
                 var responseMessage = GetAttributeValue( AttributeKey.LavaTemplate ).ResolveMergeFields( mergeFields, currentPerson );
 
+                /*
+                    6/4/2026 - MSE
+
+                    If the template used the PageRedirect Lava filter, the filter
+                    records the URL on the request context instead of redirecting,
+                    because a server-side redirect cannot navigate the browser from
+                    a block action. Return the URL so the client can perform the
+                    redirect itself.
+
+                    Reason: Support the PageRedirect Lava filter in the Lava Template block setting. (Fixes #6856)
+                */
+                resultBag.RedirectUrl = RequestContext.RedirectUrl;
+
                 resultBag.ResultType = ConnectionOpportunitySignupResultType.Success;
                 resultBag.ResponseMessage = responseMessage;
                 return ActionOk( resultBag );

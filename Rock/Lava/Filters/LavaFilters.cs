@@ -2586,12 +2586,48 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string PageRedirect( string input )
         {
+            /*
+                6/4/2026 - MSE
+
+                During a block action the response belongs to an XHR call, not a
+                page navigation, so a server-side redirect cannot navigate the
+                browser and only corrupts the action's JSON response. Instead,
+                record the URL on the RockRequestContext so the block can return
+                it to the client for a client-side redirect.
+
+                Reason: PageRedirect cannot redirect server-side inside a block action. (Fixes #6856)
+            */
+            var rockRequestContext = RockRequestContextAccessor.Current;
+            var isBlockAction = rockRequestContext?.RequestUri?.AbsolutePath?.StartsWith( "/api/v2/BlockActions", StringComparison.OrdinalIgnoreCase ) == true;
+
+            if ( isBlockAction )
+            {
+                // Check for no redirect in the original page's query string,
+                // which the block action passes along as page parameters.
+                if ( rockRequestContext.GetPageParameter( "Redirect" ) == "false" )
+                {
+                    // HTML encode the URL since it may include user-provided
+                    // values by way of merge fields in the template.
+                    return string.Format( "<p class='alert alert-warning'>Without the redirect query string parameter you would be redirected to: <a href=\"{0}\">{0}</a>.</p>", input.EncodeHtml() );
+                }
+
+                if ( input != null )
+                {
+                    rockRequestContext.RedirectUrl = input;
+
+                    // Having captured the redirect, abort the rendering process for the current template.
+                    throw new LavaInterruptException( "Render aborted by PageRedirect filter." );
+                }
+
+                return string.Empty;
+            }
+
             // check for no redirect in query string
             string redirectValue = HttpContext.Current.Request.QueryString["Redirect"];
 
             if ( redirectValue != null && redirectValue == "false" )
             {
-                return string.Format( "<p class='alert alert-warning'>Without the redirect query string parameter you would be redirected to: <a href='{0}'>{0}</a>.</p>", input );
+                return string.Format( "<p class='alert alert-warning'>Without the redirect query string parameter you would be redirected to: <a href=\"{0}\">{0}</a>.</p>", input.EncodeHtml() );
             }
 
             if ( input != null )
