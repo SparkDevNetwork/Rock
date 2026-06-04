@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -13,12 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+//
+
+using Rock.Enums;
 
 namespace Rock.Utility.Enums
 {
     /// <summary>
-    /// This enum is used be the merge and duplicate prevention processes to determine if a person can be merged.
+    /// This enum is used by the merge and duplicate prevention processes to determine if a person can be merged.
     /// </summary>
+    [EnumDomain( "Security" )]
     public enum AccountProtectionProfile
     {
         /// <summary>

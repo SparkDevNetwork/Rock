@@ -1,0 +1,473 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="serverError" alertType="danger" style="white-space: pre-line" ref="errorMessageElement">{{ serverError }}</NotificationBox>
+
+    <Panel type="block" title="Security Settings">
+        <RockForm ref="rockForm" @submit="onSave">
+            <ContentSectionContainer :sidebar="false">
+                <ContentSection title="Rock Security Settings"
+                                icon="ti ti-shield-cog"
+                                :disableCollapse="true">
+                    <template #description>
+                        <span class="text-sm">The settings below allow you to adjust how security in Rock is configured in your instance. Be sure that you fully understand each setting to ensure proper configuration.</span>
+                    </template>
+
+                    <ContentStack
+                                  title="Account Protection Profile Levels"
+                                  description="Below is a listing of the criteria for the account protection profile levels."
+                                  headerLocation="top">
+
+                        <template #default>
+                            <div class="row d-flex flex-wrap">
+                                <div class="col-xs-6 col-md-3 mb-3 mb-md-0">
+                                    <div class="profile-card profile-card--low h-100 p-3">
+                                        <h4>Low</h4>
+                                        <ul>
+                                            <li>No risk items</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-xs-6 col-md-3 mb-3 mb-md-0">
+                                    <div class="profile-card profile-card--medium h-100 p-3">
+                                        <h4>Medium</h4>
+                                        <ul>
+                                            <li>Has login account</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-xs-6 col-md-3 mb-3 mb-md-0">
+                                    <div class="profile-card profile-card--high h-100 p-3">
+                                        <h4>High</h4>
+                                        <ul>
+                                            <li>Active Scheduled Financial Transaction</li>
+                                            <li>Saved Payment Account</li>
+                                            <li>In a Security Role Marked w/ High Elevated Security</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-xs-6 col-md-3 mb-3 mb-md-0">
+                                    <div class="profile-card profile-card--extreme h-100 p-3">
+                                        <h4>Extreme</h4>
+                                        <ul>
+                                            <li>In a Security Role Marked w/ Extreme Elevated Security</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr />
+                            <NotificationBox v-if="showDuplicateDetectionWarning" alertType="danger">
+                                We highly recommend that you prevent duplicate detection for individuals with an Account Protection Profile of High and Extreme
+                            </NotificationBox>
+                            <div class="row mt-3">
+                                <div class="col-md-6 col-sm-12 col-xs-12">
+                                    <CheckBoxList v-model="ignoredProfiles"
+                                                  :items="options.accountProtectionProfiles ?? []"
+                                                  label="Disable Duplicate Checking for the Following Protection Profiles"
+                                                  help="This disables duplication protection checks for individuals with the selected Account Protection Profiles. People with these checked values will always create duplicates (i.e., they will not match existing records.) We highly recommend enabling this for the High and the Extreme profile."
+                                                  horizontal />
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-md-3">
+                                    <CheckBox v-model="bag.disablePredictableIds"
+                                              label="Disable Predictable IDs"
+                                              help="When checked, the GetFile, GetImage and GetAvatar endpoints will use IdKeys and GUID values instead of predictable IDs. Note: Enabling this may cause plugins that are not yet compatible with this feature to stop working correctly." />
+                                </div>
+                                <div class="col-md-3">
+                                    <CheckBox v-model="bag.enableServerModelValidation"
+                                              label="Enable Server Model Validation"
+                                              help="When checked, the server will enable additional validation checks when saving data to the database. Rock must be restarted for this change to take effect. This is a temporary option, in the future this will no longer be optional." />
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <DropDownList v-model="highRoleValue"
+                                                  help="Merging records with an Account Protection Profile of High will be limited to individuals in the security role configured."
+                                                  :items="options.roles ?? []"
+                                                  label="Allow Merges of Account Protection Profile - High"
+                                                  :enhanceForLongLists="true"
+                                                  :showBlankItem="false" />
+                                </div>
+                                <div class="col-md-6">
+                                    <DropDownList v-model="extremeRoleValue"
+                                                  help="Merging records with an Account Protection Profile of Extreme will be limited to individuals in the security role configured."
+                                                  :items="options.roles ?? []"
+                                                  label="Allow Merges of Account Protection Profile - Extreme"
+                                                  :enhanceForLongLists="true"
+                                                  :showBlankItem="false" />
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-md-6 col-12">
+                                    <CheckBoxList v-model="disableTokenProfiles"
+                                                  :items="options.accountProtectionProfiles ?? []"
+                                                  label="Disable Usage of Personal Tokens for the Following Protection Profiles"
+                                                  help="Any protection profiles selected here will not be allowed to use impersonation tokens or tokens to authenticate a person."
+                                                  horizontal />
+                                </div>
+                                <div class="col-md-6 col-12">
+                                    <CheckBoxList v-model="requireTwoFactorProfiles"
+                                                  :items="options.accountProtectionProfiles ?? []"
+                                                  :disabled="!options.isTwoFactorAuthenticationSupported"
+                                                  label="Require Two-Factor Authentication for the Following Protection Profiles"
+                                                  help="Any selected Protection Profiles will require Two-Factor Authentication (2FA) when logging in. If you enable 2FA for a protection profile, <b>do not also disable Passwordless Sign-In</b> for that same profile. Doing so could prevent individuals from being able to log in."
+                                                  horizontal />
+                                    <NotificationBox v-if="!options.isTwoFactorAuthenticationSupported" alertType="warning">
+                                        Please update your login pages to use the latest Login Block to enable Two-Factor Authentication.
+                                    </NotificationBox>
+                                </div>
+                            </div>
+                        </template>
+                    </ContentStack>
+                </ContentSection>
+
+                <ContentSection title="Authentication Settings"
+                                :isCollapsed="true"
+                                icon="ti ti-settings">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <NumberBox v-model="bag.passwordlessSignInDailyIpThrottle"
+                                       label="Passwordless Sign-In Daily IP Throttle"
+                                       help="The maximum number of passwordless attempts that are allowed from a single IP address in a single day."
+                                       rules="required"
+                                       :minimumValue="1" />
+                        </div>
+                        <div class="col-md-6">
+                            <NumberBox v-model="bag.passwordlessSignInSessionDuration"
+                                       label="Passwordless Session Duration"
+                                       help="The amount of time in minutes that a passwordless session is valid."
+                                       inputGroupClasses="input-width-md"
+                                       rules="required"
+                                       :minimumValue="1">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">minutes</span>
+                                </template>
+                            </NumberBox>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <CheckBoxList v-model="disablePasswordlessProfiles"
+                                          :items="options.accountProtectionProfiles ?? []"
+                                          label="Disable Passwordless Sign-In for the Following Protection Profiles"
+                                          help="Any selected Protection Profiles will not be able to use Passwordless Sign-In. If Two-Factor Authentication (2FA) is enabled for a profile, make sure Passwordless Sign-In is not disabled. Otherwise, someone could get locked out."
+                                          horizontal />
+                        </div>
+                        <div class="col-md-6">
+                            <TextBox v-model="messageForDisabledPasswordlessSignIn"
+                                     label="Message for Disabled Passwordless Sign-In"
+                                     help="The message shown when a passwordless sign-in fails due to the protection profile having passwordless sign-in disabled."
+                                     textMode="multiline"
+                                     :rows="3" />
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <DropDownList v-model="passwordlessTemplateValue"
+                                          :items="options.passwordlessCommunicationTemplates ?? []"
+                                          label="Passwordless Confirmation Communication Template"
+                                          :enhanceForLongLists="true"
+                                          help="The system communication template to use for passwordless confirmations."
+                                          :showBlankItem="false" />
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <DateTimePicker v-model="rejectAuthenticationCookiesIssuedBefore"
+                                            label="Reject Authentication Cookies Issued Before"
+                                            help="If a date and time are entered here, any authentication cookies issued before then will be rejected." />
+                        </div>
+                    </div>
+                </ContentSection>
+            </ContentSectionContainer>
+        </RockForm>
+
+        <template #footerActions>
+            <div class="d-flex gap-3">
+                <RockButton :btnType="BtnType.Primary"
+                            :isLoading="isSaving"
+                            accessKey="s"
+                            title="Alt+s"
+                            @click="rockForm?.submitForm()">
+                    Save
+                </RockButton>
+                <Transition name="fade">
+                    <div v-if="saveSuccess" class="d-flex gap-1 align-items-center text-success">
+                        <span>Saved</span>
+                        <i class="ti ti-circle-check"></i>
+                    </div>
+                </Transition>
+            </div>
+        </template>
+    </Panel>
+</template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.4s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+.profile-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 6px;
+}
+
+.profile-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4px;
+}
+
+.profile-card--low {
+    background-color: var(--color-info-soft);
+}
+
+.profile-card--low::before {
+    background-color: var(--color-info-strong);
+    ;
+}
+
+.profile-card--medium {
+    background-color: var(--color-warning-soft);
+}
+
+.profile-card--medium::before {
+    background-color: var(--color-warning-strong);
+}
+
+.profile-card--extreme {
+    background-color: var(--color-danger-soft);
+}
+
+.profile-card--extreme::before {
+    background-color: var(--color-danger-strong);
+}
+
+.profile-card--high {
+    background-color: var(--color-critical-soft);
+}
+
+.profile-card--high::before {
+    background-color: var(--color-critical-strong);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, ref, type ComponentPublicInstance } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { AccountProtectionProfile } from "@Obsidian/Enums/Security/accountProtectionProfile";
+    import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { RockSecuritySettingsBag } from "@Obsidian/ViewModels/Blocks/Security/RockSecuritySettings/rockSecuritySettingsBag";
+    import { RockSecuritySettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/RockSecuritySettings/rockSecuritySettingsOptionsBag";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+
+    const config = useConfigurationValues<CustomBlockBox<RockSecuritySettingsBag, RockSecuritySettingsOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const rockForm = ref<ComponentPublicInstance & { submitForm: () => Promise<void> } | null>(null);
+    const blockError = ref(config.errorMessage ?? "");
+    const saveSuccess = ref(false);
+
+    const bag = ref<RockSecuritySettingsBag>(config.bag ?? {
+        accountProtectionProfilesForDuplicateDetectionToIgnore: [],
+        disableTokensForAccountProtectionProfiles: [],
+        requireTwoFactorAuthenticationForAccountProtectionProfiles: [],
+        disablePasswordlessSignInForAccountProtectionProfiles: [],
+        disablePredictableIds: false,
+        enableServerModelValidation: false,
+        highRoleId: null,
+        extremeRoleId: null,
+        passwordlessSignInDailyIpThrottle: 0,
+        passwordlessSignInSessionDuration: 0,
+        passwordlessConfirmationCommunicationTemplateGuid: "00000000-0000-0000-0000-000000000000",
+        rejectAuthenticationCookiesIssuedBefore: null,
+        messageForDisabledPasswordlessSignIn: ""
+    });
+    const options = ref<RockSecuritySettingsOptionsBag>(config.options ?? {
+        accountProtectionProfiles: [],
+        roles: [],
+        passwordlessCommunicationTemplates: [],
+        isTwoFactorAuthenticationSupported: false
+    });
+
+    const serverError = ref("");
+    const isSaving = ref(false);
+
+    const errorMessageElement = ref<InstanceType<typeof NotificationBox> | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+    /*
+        The four protection-profile CheckBoxList controls store their selection as
+        AccountProtectionProfile[] (numeric enum) in the bag, but CheckBoxList itself
+        only understands string[]. Each computed below bridges that gap for one control.
+    */
+    const ignoredProfiles = computed<string[]>({
+        get() {
+            return (bag.value.accountProtectionProfilesForDuplicateDetectionToIgnore ?? []).map(n => n.toString());
+        },
+        set(val: string[]) {
+            bag.value.accountProtectionProfilesForDuplicateDetectionToIgnore = val.map(s => Number(s) as AccountProtectionProfile);
+        }
+    });
+
+    const disableTokenProfiles = computed<string[]>({
+        get() {
+            return (bag.value.disableTokensForAccountProtectionProfiles ?? []).map(n => n.toString());
+        },
+        set(val: string[]) {
+            bag.value.disableTokensForAccountProtectionProfiles = val.map(s => Number(s) as AccountProtectionProfile);
+        }
+    });
+
+    const requireTwoFactorProfiles = computed<string[]>({
+        get() {
+            return (bag.value.requireTwoFactorAuthenticationForAccountProtectionProfiles ?? []).map(n => n.toString());
+        },
+        set(val: string[]) {
+            bag.value.requireTwoFactorAuthenticationForAccountProtectionProfiles = val.map(s => Number(s) as AccountProtectionProfile);
+        }
+    });
+
+    const disablePasswordlessProfiles = computed<string[]>({
+        get() {
+            return (bag.value.disablePasswordlessSignInForAccountProtectionProfiles ?? []).map(n => n.toString());
+        },
+        set(val: string[]) {
+            bag.value.disablePasswordlessSignInForAccountProtectionProfiles = val.map(s => Number(s) as AccountProtectionProfile);
+        }
+    });
+
+    /** The High-role dropdown stores int? on the bag but DropDownList works with strings. */
+    const highRoleValue = computed<string>({
+        get() {
+            return bag.value.highRoleId != null ? bag.value.highRoleId.toString() : "";
+        },
+        set(val: string) {
+            const parsed = parseInt(val, 10);
+            bag.value.highRoleId = isNaN(parsed) ? null : parsed;
+        }
+    });
+
+    /** The Extreme-role dropdown mirrors highRoleValue for its corresponding int? field. */
+    const extremeRoleValue = computed<string>({
+        get() {
+            return bag.value.extremeRoleId != null ? bag.value.extremeRoleId.toString() : "";
+        },
+        set(val: string) {
+            const parsed = parseInt(val, 10);
+            bag.value.extremeRoleId = isNaN(parsed) ? null : parsed;
+        }
+    });
+
+    /** Bridges the passwordless template Guid bag property to the DropDownList string model. */
+    const passwordlessTemplateValue = computed<string>({
+        get() {
+            return bag.value.passwordlessConfirmationCommunicationTemplateGuid ?? "";
+        },
+        set(val: string) {
+            bag.value.passwordlessConfirmationCommunicationTemplateGuid = val ?? "";
+        }
+    });
+
+    /** Bridges the nullable DateTime cookie-cutoff to the DateTimePicker string model. */
+    const rejectAuthenticationCookiesIssuedBefore = computed<string>({
+        get() {
+            return bag.value.rejectAuthenticationCookiesIssuedBefore ?? "";
+        },
+        set(val: string) {
+            bag.value.rejectAuthenticationCookiesIssuedBefore = val ? val : null;
+        }
+    });
+
+    const messageForDisabledPasswordlessSignIn = computed<string>({
+        get() {
+            return bag.value.messageForDisabledPasswordlessSignIn ?? "";
+        },
+        set(val: string) {
+            bag.value.messageForDisabledPasswordlessSignIn = val;
+        }
+    });
+
+    const showDuplicateDetectionWarning = computed((): boolean => {
+        const selected = (bag.value.accountProtectionProfilesForDuplicateDetectionToIgnore ?? []);
+
+        return !selected.includes(AccountProtectionProfile.High) || !selected.includes(AccountProtectionProfile.Extreme);
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Posts the current bag to the Save block action.
+     * Called by RockForm only after all field-level rules have passed.
+     * On success, briefly shows a "Saved" indicator next to the save button.
+     * On failure, surfaces the server error above the Authentication Settings section.
+     */
+    async function onSave(): Promise<void> {
+        isSaving.value = true;
+        serverError.value = "";
+
+        try {
+            const result = await invokeBlockAction<string>("Save", { bag: bag.value });
+
+            if (!result.isSuccess) {
+                serverError.value = result.errorMessage ?? "An error occurred while saving the security settings.";
+
+                nextTick(() => {
+                    if (errorMessageElement.value?.$el) {
+                        errorMessageElement.value.$el.scrollIntoView({
+                            behavior: "smooth",
+                            block: "nearest",
+                        });
+                    }
+                });
+
+                return;
+            }
+
+            saveSuccess.value = true;
+            setTimeout(() => {
+                saveSuccess.value = false;
+            }, 3000);
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

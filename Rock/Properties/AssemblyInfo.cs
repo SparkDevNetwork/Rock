@@ -177,4 +177,5 @@ using System.Runtime.CompilerServices;
 [assembly: TypeForwardedTo( typeof( Rock.Model.AddressStatus ) )]
 
 // The following type forwardings were setup in Rock 20.0.4
-[assembly: TypeForwardedTo( typeof( Rock.Utility.Enums.ElevatedSecurityLevel ) )]
+[assembly: TypeForwardedTo( typeof( Rock.Utility.Enums.ElevatedSecurityLevel ) )] 
+[assembly: TypeForwardedTo( typeof( Rock.Utility.Enums.AccountProtectionProfile ) )]
