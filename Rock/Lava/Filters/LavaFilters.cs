@@ -4741,7 +4741,7 @@ namespace Rock.Lava
                     if ( dictionaryObject.ContainsKey( filterKey )
                              && ( ( dynamic ) dictionaryObject[filterKey] == ( dynamic ) filterValue && comparisonType == "equal"
                                     || ( ( dynamic ) dictionaryObject[filterKey] != ( dynamic ) filterValue && comparisonType == "notequal" )
-                                    || ( ( dynamic ) dictionaryObject[filterKey].ToString().Contains( filterValue?.ToString() ) == true && comparisonType == "contains" )
+                                    || ( dictionaryObject[filterKey]?.ToString().Contains( filterValue?.ToString() ) == true && comparisonType == "contains" )
                                     ) )
                     {
                         result.Add( dictionaryObject );
