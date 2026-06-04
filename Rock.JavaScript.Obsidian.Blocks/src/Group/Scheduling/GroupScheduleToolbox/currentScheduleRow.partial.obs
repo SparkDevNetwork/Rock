@@ -103,6 +103,10 @@
 .schedule-toolbox-card-context-menu {
     margin-left: 4px;
 }
+
+.card-schedule {
+    overflow: visible;
+}
 </style>
 
 <script setup lang="ts">
