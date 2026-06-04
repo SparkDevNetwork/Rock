@@ -145,8 +145,18 @@
                         <Columns>
                             <Rock:SelectField></Rock:SelectField>
                             <Rock:RockBoundField DataField="FullName" HeaderText="Invitees" ExcelExportBehavior="AlwaysInclude" />
-                            <Rock:BoolField DataField="Accept" HeaderText="Accept" ExcelExportBehavior="IncludeIfVisible" Visible="false" />
-                            <Rock:BoolField DataField="Decline" HeaderText="Decline" ExcelExportBehavior="IncludeIfVisible" Visible="false" />
+                            <%--
+                                6/4/26 - MSE
+
+                                The hidden export-only columns (Accept, Decline, and the Decline Reason literal below) must use
+                                ExcelExportBehavior="AlwaysInclude". With ExportSource="ColumnOutput", the grid snapshots its export
+                                columns before raising GridRebind, so toggling Visible during the export rebind (the block's previous
+                                approach) happened too late and these columns were silently dropped from the export.
+
+                                Reason: Excel export was missing the Accept, Decline, and Decline Reason columns. (Fixes #6858)
+                            --%>
+                            <Rock:BoolField DataField="Accept" HeaderText="Accept" ExcelExportBehavior="AlwaysInclude" Visible="false" />
+                            <Rock:BoolField DataField="Decline" HeaderText="Decline" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                             <Rock:RockTemplateField HeaderText="Accept" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-field" ExcelExportBehavior="NeverInclude">
                                 <ItemTemplate>
                                     <Rock:RockCheckBox ID="rcbAccept" runat="server" DisplayInline="true" Checked='<%# Eval("Accept") %>' Text="Accept" ToolTip='<%# (bool) Eval("Accept") ? "at " + Eval("RSVPDateTime") : ""  %>' CssClass="js-rsvp-paired-checkbox" />
@@ -157,7 +167,7 @@
                                     <Rock:RockCheckBox ID="rcbDecline" runat="server" DisplayInline="true" Checked='<%# Eval("Decline") %>' Text="Decline" ToolTip='<%# (bool) Eval("Decline") ? "at " + Eval("RSVPDateTime") : ""  %>' CssClass="js-rsvp-paired-checkbox" />
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
-                            <Rock:RockLiteralField ID="lDeclineReason" HeaderText="Decline Reason" Visible="false" ExcelExportBehavior="IncludeIfVisible" />
+                            <Rock:RockLiteralField ID="lDeclineReason" HeaderText="Decline Reason" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                             <Rock:RockTemplateField HeaderText="Decline Reason" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-field" ExcelExportBehavior="NeverInclude">
                                 <ItemTemplate>
                                     <Rock:DataDropDownList ID="rddlDeclineReason" runat="server" SourceTypeName="Rock.Model.DefinedValue" PropertyName="Value" DataTextField="Value" Label="" DataValueField="Id">
