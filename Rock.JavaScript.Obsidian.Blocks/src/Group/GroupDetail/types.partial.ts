@@ -16,6 +16,7 @@
 //
 
 import { HttpResult } from "@Obsidian/Types/Utility/http";
+import { AllowedGroupTypesBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/allowedGroupTypesBag";
 import { CanDeleteRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/canDeleteRequestBag";
 import { CanDeleteResponseBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/canDeleteResponseBag";
 import { CopyGroupRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/copyGroupRequestBag";
@@ -163,9 +164,10 @@ export type GroupDetailBlockActionInvoker = {
 
     /**
      * Re-filters the Add-mode Group Type dropdown to the GroupTypes that
-     * the picked parent group's GroupType permits as children.
+     * the picked parent group's GroupType permits as children, along with a
+     * warning to display when no group types are available to select.
      */
-    getAllowedChildGroupTypes(parentGroupKey: string): Promise<HttpResult<ListItemBag[]>>;
+    getAllowedChildGroupTypes(parentGroupKey: string): Promise<HttpResult<AllowedGroupTypesBag>>;
 
     /**
      * Lazily loads the Member-tab dropdown options (family addresses of

@@ -69,7 +69,11 @@
                                           rules="required"
                                           :showBlankItem="true" />
 
-                            <NotificationBox v-if="!isCurrentGroupTypeAllowed" ref="groupTypeWarningElement" alertType="warning">
+                            <NotificationBox v-if="allowedGroupTypeWarning" ref="emptyGroupTypeWarningElement" alertType="warning">
+                                {{ allowedGroupTypeWarning }}
+                            </NotificationBox>
+
+                            <NotificationBox v-if="!isCurrentGroupTypeAllowed && !allowedGroupTypeWarning" ref="groupTypeWarningElement" alertType="warning">
                                 The selected parent group does not allow this Group Type. Choose a different Group Type or parent group.
                             </NotificationBox>
                         </template>
@@ -620,6 +624,15 @@
         },
 
         /**
+         * Warning explaining why the Add-mode Group Type dropdown is empty, or
+         * an empty string when at least one group type is available to pick.
+         */
+        allowedGroupTypesWarning: {
+            type: String,
+            default: ""
+        },
+
+        /**
          * Signature document templates for the Required Signature Document dropdown.
          */
         signatureDocumentTemplates: {
@@ -680,7 +693,9 @@
 
     const parentGroupIsActive = ref<boolean>(props.modelValue.bag?.parentGroup?.isActive ?? true);
     const allowedGroupTypeItems = ref<ListItemBag[]>(props.allowedGroupTypes ?? []);
+    const allowedGroupTypeWarning = ref<string>(props.allowedGroupTypesWarning ?? "");
     const groupTypeWarningElement = ref<InstanceType<typeof NotificationBox> | null>(null);
+    const emptyGroupTypeWarningElement = ref<InstanceType<typeof NotificationBox> | null>(null);
     const showAdvancedRelationshipSettings = ref(hasCustomRelationshipMultipliers());
 
     const attributes = ref(props.modelValue.bag?.attributes ?? {});
@@ -1379,8 +1394,9 @@
             return;
         }
 
-        if (result.isSuccess && Array.isArray(result.data)) {
-            allowedGroupTypeItems.value = result.data;
+        if (result.isSuccess && result.data) {
+            allowedGroupTypeItems.value = result.data.items ?? [];
+            allowedGroupTypeWarning.value = result.data.warning ?? "";
         }
     });
 
@@ -1393,6 +1409,18 @@
     watch(isCurrentGroupTypeAllowed, (allowed) => {
         if (allowed === false) {
             scrollNotificationIntoView(groupTypeWarningElement);
+        }
+    });
+
+    /**
+     * Scrolls the empty-allowed-types warning into view when a parent-change
+     * refilter leaves no group types to choose from. Mirrors the invalid-selection
+     * scroll above so both Group Type warnings behave the same; change-only (no
+     * immediate) so the initial Add-mode load does not force a scroll.
+     */
+    watch(allowedGroupTypeWarning, (warning) => {
+        if (warning) {
+            scrollNotificationIntoView(emptyGroupTypeWarningElement);
         }
     });
 

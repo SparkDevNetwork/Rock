@@ -56,6 +56,13 @@ namespace Rock.ViewModels.Blocks.Group.GroupDetail
         public List<ListItemBag> AllowedGroupTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the warning shown when <see cref="AllowedGroupTypes"/> is empty on the
+        /// Add panel, explaining why no Group Type is available to select. Null when at least one
+        /// group type is available.
+        /// </summary>
+        public string AllowedGroupTypesWarning { get; set; }
+
+        /// <summary>
         /// Gets or sets the list of signature document templates available for the
         /// "Required Signature Document" dropdown.
         /// </summary>

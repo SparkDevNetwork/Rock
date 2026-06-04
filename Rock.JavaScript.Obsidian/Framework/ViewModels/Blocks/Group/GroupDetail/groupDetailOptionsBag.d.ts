@@ -43,6 +43,13 @@ export type GroupDetailOptionsBag = {
      */
     allowedGroupTypes?: ListItemBag[] | null;
 
+    /**
+     * Gets or sets the warning shown when Rock.ViewModels.Blocks.Group.GroupDetail.GroupDetailOptionsBag.AllowedGroupTypes is empty on the
+     * Add panel, explaining why no Group Type is available to select. Null when at least one
+     * group type is available.
+     */
+    allowedGroupTypesWarning?: string | null;
+
     /** Gets or sets a value indicating whether the Archive button is visible in place of Delete. */
     isArchiveVisible: boolean;
 

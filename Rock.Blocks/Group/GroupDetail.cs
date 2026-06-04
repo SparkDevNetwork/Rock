@@ -475,12 +475,15 @@ namespace Rock.Blocks.Group
         /// <returns>The options that provide additional details to the block.</returns>
         private GroupDetailOptionsBag GetBoxOptions( Model.Group entity, Dictionary<string, string> navigationUrls )
         {
+            var allowedGroupTypes = BuildAllowedGroupTypeListItems( entity?.ParentGroup );
+
             var options = new GroupDetailOptionsBag
             {
                 PreventSelectingInactiveCampus = GetAttributeValue( AttributeKey.PreventSelectingInactiveCampus ).AsBoolean(),
                 IsLimitedToSecurityRoleGroups = GetAttributeValue( AttributeKey.LimittoSecurityRoleGroups ).AsBoolean(),
                 IsCurrentPersonGroupAdministrator = IsCurrentPersonGroupAdministrator(),
-                AllowedGroupTypes = BuildAllowedGroupTypeListItems( entity?.ParentGroup ),
+                AllowedGroupTypes = allowedGroupTypes,
+                AllowedGroupTypesWarning = GetEmptyAllowedGroupTypesWarning( entity?.ParentGroup, allowedGroupTypes.Any() ),
                 SignatureDocumentTemplates = BuildSignatureDocumentTemplateListItems( entity ),
                 RsvpSystemCommunicationOptions = BuildRsvpSystemCommunicationOptions(),
                 AddModeCancelUrl = GetAddModeCancelUrl()
@@ -1924,7 +1927,13 @@ namespace Rock.Blocks.Group
                 }
             }
 
-            return ActionOk( BuildAllowedGroupTypeListItems( parentGroup ) );
+            var allowedGroupTypes = BuildAllowedGroupTypeListItems( parentGroup );
+
+            return ActionOk( new AllowedGroupTypesBag
+            {
+                Items = allowedGroupTypes,
+                Warning = GetEmptyAllowedGroupTypesWarning( parentGroup, allowedGroupTypes.Any() )
+            } );
         }
 
         /// <summary>
@@ -2765,6 +2774,53 @@ namespace Rock.Blocks.Group
                     Text = gt.Name
                 } )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Builds the warning shown when the Add-mode Group Type dropdown has no options to
+        /// choose from, identifying whether this block's group type settings or the parent
+        /// group's allowed child group types caused it. Returns <c>null</c> when at least one
+        /// group type is available.
+        /// </summary>
+        /// <param name="parentGroup">The currently selected parent group, or <c>null</c> when none is selected.</param>
+        /// <param name="hasAllowedGroupTypes">Whether the dropdown has at least one group type available for selection.</param>
+        private string GetEmptyAllowedGroupTypesWarning( Model.Group parentGroup, bool hasAllowedGroupTypes )
+        {
+            if ( hasAllowedGroupTypes )
+            {
+                return null;
+            }
+
+            /*
+                06/04/2026 - MSE
+
+                GetAllowedGroupTypes() applies two independent restrictions: this block's group type
+                settings (the include/exclude, navigation, and security-role filters) and the parent
+                group's allowed child group types. Either can leave nothing to choose from, which
+                rendered the required Group Type dropdown empty with no explanation. Re-check the block
+                settings on their own (null parent) to attribute the empty list to the correct cause.
+                The text is rendered through Vue interpolation, which escapes it, so no HTML encoding
+                is applied here.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6851
+            */
+            var isAnyGroupTypeAllowedByBlock = GetAllowedGroupTypes( null, RockContext ).Any();
+            if ( !isAnyGroupTypeAllowedByBlock )
+            {
+                return "There are no group types available to select because of this block's group type settings (e.g. 'Group Types: Include' / 'Group Types: Exclude').";
+            }
+
+            var parentGroupName = parentGroup?.Name ?? string.Empty;
+            var parentGroupType = parentGroup != null ? GroupTypeCache.Get( parentGroup.GroupTypeId ) : null;
+            var doesParentAllowAnyChildGroupTypes = parentGroupType == null
+                || parentGroupType.AllowAnyChildGroupType
+                || parentGroupType.ChildGroupTypes.Any();
+            if ( !doesParentAllowAnyChildGroupTypes )
+            {
+                return $"The '{parentGroupName}' group does not allow any child group types.";
+            }
+
+            return $"The child group types allowed by the '{parentGroupName}' group are excluded by this block's group type settings (e.g. 'Group Types: Include' / 'Group Types: Exclude').";
         }
 
         /// <summary>
