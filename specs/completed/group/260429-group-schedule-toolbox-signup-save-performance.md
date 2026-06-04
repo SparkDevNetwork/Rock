@@ -8,7 +8,8 @@ summary: >-
   twice, and re-queries the saved record to send the coordinator email. This
   spec proposes targeted fixes that preserve all current behavior (Save button,
   coordinator emails, validation rules) while making the action feel instant.
-contributors: []
+contributors:
+  - Jason Hendee
 related_docs:
   - docs/group/group-scheduling.md
 ---
@@ -57,7 +58,7 @@ For a single-occurrence save, only the matching `(GroupId, ScheduleId, Occurrenc
 
 [`GetSignUpOccurrences` at line 2185](../Rock.Blocks/Group/Scheduling/GroupScheduleToolbox.cs) iterates every (GroupLocation, Schedule) pair and inside the loop runs:
 
-- [`AttendanceService.IsScheduled(occurrenceDate, scheduleId, personId)` at line 2339](../Rock.Blocks/Group/Scheduling/GroupScheduleToolbox.cs) — once per candidate occurrence.
+- [`AttendanceService.IsScheduled(occurrenceDate, scheduleId, personId)` at line 2339](../Rock.Blocks/Group/Scheduling/GroupScheduleToolbox.cs), once per candidate occurrence.
 - A `Count()` query for RSVP=Yes attendances at the schedule level (no location filter) [at line 2371-2373](../Rock.Blocks/Group/Scheduling/GroupScheduleToolbox.cs).
 - A `Count()` query for RSVP=Yes attendances at the location level [at line 2394-2396](../Rock.Blocks/Group/Scheduling/GroupScheduleToolbox.cs).
 
@@ -74,7 +75,7 @@ Both writes touch the same row in the same logical operation. They could be a si
 
 ### 4. Full re-query of the attendance after save
 
-[Line 2710-2712](../Rock.Blocks/Group/Scheduling/GroupScheduleToolbox.cs) re-loads the attendance with `GetWithScheduledPersonResponseData()` to gather the joined data (`Group`, `Schedule`, `Location`, `PersonAlias.Person`, `Group.ScheduleCoordinatorPersonAlias.Person`) needed to render the coordinator email. The data is largely already known to the calling context — the block already loaded the Group via `GetCommonToolboxData`, the schedule and location IDs were just looked up in the dictionaries at line 2660-2672, and the person is the selected toolbox person. Only the `ScheduleCoordinatorPersonAlias.Person` and the freshly-attached `AttendanceOccurrence` reference need to be loaded.
+[Line 2710-2712](../Rock.Blocks/Group/Scheduling/GroupScheduleToolbox.cs) re-loads the attendance with `GetWithScheduledPersonResponseData()` to gather the joined data (`Group`, `Schedule`, `Location`, `PersonAlias.Person`, `Group.ScheduleCoordinatorPersonAlias.Person`) needed to render the coordinator email. The data is largely already known to the calling context: the block already loaded the Group via `GetCommonToolboxData`, the schedule and location IDs were just looked up in the dictionaries at line 2660-2672, and the person is the selected toolbox person. Only the `ScheduleCoordinatorPersonAlias.Person` and the freshly-attached `AttendanceOccurrence` reference need to be loaded.
 
 ## Affected Code Paths
 
@@ -83,7 +84,7 @@ Primary (where the fix lands):
   - `SaveSignUp` (line 2504)
   - `GetSignUps` (line 2099)
   - `GetSignUpOccurrences` (line 2185)
-  - `TrySendScheduledPersonResponseEmails` (line 1261) — read-only consumer of the attendance graph
+  - `TrySendScheduledPersonResponseEmails` (line 1261): read-only consumer of the attendance graph
 
 Secondary (callers / supporting services):
 - [Rock/Model/Attendance/AttendanceService.cs](../Rock/Model/Attendance/AttendanceService.cs)
@@ -93,7 +94,7 @@ Secondary (callers / supporting services):
   - `GetWithScheduledPersonResponseData`
 - [Rock/Model/Attendance/AttendanceOccurrenceService.cs](../Rock/Model/Attendance/AttendanceOccurrenceService.cs)
   - `GetOrAdd`
-- [Rock/Model/Group/Group/Group.cs](../Rock/Model/Group/Group/Group.cs) — read-only (`ScheduleCoordinatorPersonAlias` navigation property)
+- [Rock/Model/Group/Group/Group.cs](../Rock/Model/Group/Group/Group.cs): read-only (`ScheduleCoordinatorPersonAlias` navigation property)
 
 No client-side changes. The block action signature stays the same; the bag shape stays the same.
 
@@ -110,11 +111,13 @@ Both of those are configuration tradeoffs, not real fixes. Most installations ca
 
 Four changes, each independently shippable:
 
-### Fix 1: Targeted single-occurrence validation
+### Fix 1: Targeted single-occurrence validation (deferred)
+
+**Status: deferred (2026-06-04).** Fix 2 already resolved the reported slowness (warm load and save dropped from ~1.95s to ~0.51s), so the remaining upside here is only ~0.2-0.3s warm. It is also the highest-risk change in this spec: it must faithfully reproduce every availability check the grid enforces (capacity, exclusions, requirements, the existing-attendance collision, and whether the date is a real in-window occurrence), and to actually avoid rebuilding the grid it needs a client-side change so the `.obs` drops the saved row instead of receiving a refreshed list. It also cannot avoid the `GetCommonToolboxData` load a save inherently needs (the schedulable-groups query, ~150ms warm), which caps the achievable gain. The cost and risk are not worth it now. Revisit only if production telemetry on realistic attendance volume shows saves are still slow, and ideally as part of untangling `GetSignUps` into separate common-data, grid-building, and single-slot-validation responsibilities rather than as a bolt-on here.
 
 Replace the `GetSignUps` re-execution at [SaveSignUp line 2530](../Rock.Blocks/Group/Scheduling/GroupScheduleToolbox.cs) with a focused validation that only checks the specific occurrence the volunteer is committing to. The validation needs to confirm:
 
-- The selected Group is still in the volunteer's schedulable groups (cheap — already loaded by `GetCommonToolboxData`).
+- The selected Group is still in the volunteer's schedulable groups (cheap, already loaded by `GetCommonToolboxData`).
 - The selected `(Schedule, OccurrenceDate, Location)` combination is still valid for the Group, not at maximum capacity, not excluded by `PersonScheduleExclusion` or `GroupScheduleExclusion`, and not already taken by an existing attendance for the same person at a different location (the existing collision logic at line 2576-2583).
 - The `SchedulingMustMeetRequirements` group requirement check (line 2195-2204) still passes.
 
@@ -144,17 +147,25 @@ Refactor `ScheduledPersonAddPending` (or call it via a path that does not auto-s
 
 `ScheduledPersonAddPending` currently calls `Add` and `SaveChanges` internally; the cleanest path is a new internal overload `ScheduledPersonAddPending(personId, occurrenceId, scheduledByPersonAlias, autoSave: false)` (or similar) that defers the save. The existing public signature is preserved for plugin callers. After both pending + confirm are done in memory, the block's own single `SaveChanges()` commits.
 
-### Fix 4: Avoid the post-save re-query
+### Fix 4: Avoid the post-save re-query (evaluated and rejected)
 
-The data needed by `TrySendScheduledPersonResponseEmails` is:
+**Status: evaluated and rejected (2026-06-04).** The post-save `GetWithScheduledPersonResponseData()` re-query is load-bearing and is kept as-is.
 
-- `attendance.ScheduledByPersonAlias.Person` — already known (the current person).
-- `attendance.PersonAlias.Person` — already known (the selected toolbox person).
-- `attendance.Occurrence.Group` — already known (loaded by `GetCommonToolboxData`).
-- `attendance.Occurrence.Group.ScheduleCoordinatorPersonAlias.Person` — load this once at the top of `SaveSignUp` if not already eager-loaded.
-- `attendance.Occurrence.Schedule` and `attendance.Occurrence.Location` — IDs already in scope; load names with the existing `scheduleIdsByGuid` / `locationIdsByGuid` dictionaries or eagerly include them in the `GetOrAdd` call.
+`TrySendScheduledPersonResponseEmails` calls `AttendanceService.SendScheduledPersonResponseEmail`, which renders a configurable Lava email (the `SchedulingResponseEmail` system communication) with the whole `Group` entity and the whole `Attendance` (as `ScheduledItem`) passed in as merge objects. A customized template can walk any navigation property off either entity, so `GetWithScheduledPersonResponseData` deliberately eager-loads a known-good graph (`Occurrence.Group.GroupType`, `Occurrence.Group.ScheduleCoordinatorPersonAlias.Person`, `Occurrence.Location`, `Occurrence.Schedule`, `PersonAlias.Person`, `ScheduledByPersonAlias.Person`) in one PK-keyed query.
 
-Replace the `GetWithScheduledPersonResponseData()` re-query at [line 2710-2712](../Rock.Blocks/Group/Scheduling/GroupScheduleToolbox.cs) with explicit attachment of the in-memory navigation properties before calling `TrySendScheduledPersonResponseEmails`.
+Hand-attaching that graph onto the freshly-saved attendance would mean loading most of it from scratch anyway (GroupType, the coordinator person, the schedule, and the location are not in memory at that point), so the change would either re-introduce queries via lazy loading or rebuild the same includes. Net savings: one indexed query, a few milliseconds warm. The downside is blank fields in any customized coordinator email if a navigation the template uses is missed. The regression surface is not worth the gain.
+
+Original proposal, retained for the record:
+
+> The data needed by `TrySendScheduledPersonResponseEmails` is:
+>
+> - `attendance.ScheduledByPersonAlias.Person`: already known (the current person).
+> - `attendance.PersonAlias.Person`: already known (the selected toolbox person).
+> - `attendance.Occurrence.Group`: already known (loaded by `GetCommonToolboxData`).
+> - `attendance.Occurrence.Group.ScheduleCoordinatorPersonAlias.Person`: load this once at the top of `SaveSignUp` if not already eager-loaded.
+> - `attendance.Occurrence.Schedule` and `attendance.Occurrence.Location`: IDs already in scope; load names with the existing `scheduleIdsByGuid` / `locationIdsByGuid` dictionaries or eagerly include them in the `GetOrAdd` call.
+>
+> Replace the `GetWithScheduledPersonResponseData()` re-query with explicit attachment of the in-memory navigation properties before calling `TrySendScheduledPersonResponseEmails`.
 
 ### Combined target
 
@@ -163,7 +174,7 @@ After all four fixes, the save flow is:
 1. Validate the single occurrence (cheap, bounded query count).
 2. Get-or-add the `AttendanceOccurrence`.
 3. Add the pending attendance and confirm it (one `SaveChanges`).
-4. Send the coordinator email using in-memory data.
+4. Send the coordinator email (using the retained `GetWithScheduledPersonResponseData` re-query; see Fix 4, rejected).
 5. Asynchronously refresh the `SignUpsBag` for the response.
 
 Target server time: under 500ms on a representative Group (5 locations × 3 schedules × 6 weeks).
