@@ -3094,6 +3094,9 @@ mission. We are so grateful for your commitment.</p>
             SetPaymentComment( paymentInfo, commentTransactionAccountDetails, tbCommentEntry.Text );
 
             paymentInfo.Amount = commentTransactionAccountDetails.Sum( a => a.Amount );
+            paymentInfo.AccountAllocations = commentTransactionAccountDetails
+                .Select( a => new FinancialTransactionService.AccountAllocation( a.AccountId, a.Amount ) )
+                .ToList();
             var totalFeeCoverageAmounts = commentTransactionAccountDetails.Where( a => a.FeeCoverageAmount.HasValue ).Select( a => a.FeeCoverageAmount.Value );
             if ( totalFeeCoverageAmounts.Any() )
             {

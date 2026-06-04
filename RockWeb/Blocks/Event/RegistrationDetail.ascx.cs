@@ -2030,6 +2030,10 @@ namespace RockWeb.Blocks.Event
                 paymentInfo.UpdateAddressFieldsFromAddressControl( acBillingAddress );
 
                 paymentInfo.Amount = amount;
+                paymentInfo.AccountAllocations = new List<FinancialTransactionService.AccountAllocation>
+                {
+                    new FinancialTransactionService.AccountAllocation( registration.RegistrationInstance.AccountId.Value, amount )
+                };
                 paymentInfo.Email = registration.ConfirmationEmail;
 
                 paymentInfo.FirstName = registration.FirstName;

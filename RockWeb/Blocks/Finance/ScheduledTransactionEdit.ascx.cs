@@ -1418,6 +1418,9 @@ achieve our mission.  We are so grateful for your commitment.
             if ( paymentInfo != null )
             {
                 paymentInfo.Amount = SelectedAccounts.Sum( a => a.Amount );
+                paymentInfo.AccountAllocations = SelectedAccounts
+                    .Select( a => new FinancialTransactionService.AccountAllocation( a.Id, a.Amount ) )
+                    .ToList();
                 var authorizedPerson = scheduledTransaction.AuthorizedPersonAlias.Person;
                 paymentInfo.FirstName = authorizedPerson.FirstName;
                 paymentInfo.LastName = authorizedPerson.LastName;

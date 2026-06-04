@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -39,6 +40,34 @@ namespace Rock.Financial
         /// a <seealso cref="FeeCoverageAmount"/>, it already added to this amount.
         /// </summary>
         public decimal Amount { get; set; }
+
+        /*
+            06/03/2026 - NA
+
+            Every site that populates AccountAllocations today derives both Amount and AccountAllocations from
+            the same per-account source list (SelectedAccounts, AutomatedPaymentDetails,
+            commonTransactionAccountDetails, etc.), so the two values cannot drift. We intentionally do
+            NOT add a runtime check that Sum( AccountAllocations.Amount ) == Amount; the cost on a hot path
+            is not justified and a future contributor restructuring a population site is the only realistic
+            way to break the invariant. If that ever happens, consider a debug-only guard using
+            Rock.Configuration.IHostingSettings.IsDevelopmentEnvironment.
+
+            Reason: Document the Sum(AccountAllocations) == Amount invariant; no runtime check in v1.
+        */
+
+        /// <summary>
+        /// Gets or sets the per-account breakdown of <see cref="Amount"/>. When populated, the sum of
+        /// each entry's <see cref="FinancialTransactionService.AccountAllocation.Amount"/> equals
+        /// <see cref="Amount"/>. Gateways MUST tolerate this being null or empty and fall back to
+        /// <see cref="Amount"/> in that case. The contents are an in-flight mirror of the same data
+        /// that will be persisted as <see cref="Rock.Model.FinancialTransactionDetail"/> rows after the
+        /// gateway returns. The same AccountId may appear more than once (Rock supports two
+        /// FinancialTransactionDetail rows with the same AccountId on a single transaction), so this is
+        /// a list rather than a dictionary. Reuses the existing
+        /// <see cref="FinancialTransactionService.AccountAllocation"/> DTO that Rock already uses for
+        /// building transaction Account-Amount details.
+        /// </summary>
+        public List<FinancialTransactionService.AccountAllocation> AccountAllocations { get; set; }
 
         /// <summary>
         /// Gets or sets the amount that the user choose to cover the fee of the transaction.
