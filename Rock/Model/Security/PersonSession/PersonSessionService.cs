@@ -813,4 +813,160 @@ public partial class PersonSessionService
     }
 
     #endregion Cookie I/O
+
+    #region Legacy Cookie Upgrade
+
+    /// <summary>
+    /// Upgrades a legacy <c>FormsAuthenticationTicket</c> on the current
+    /// request to a new-format <see cref="PersonSession"/>. Called from
+    /// <c>Application_PostAuthenticateRequest</c> after
+    /// <c>FormsAuthenticationModule</c> has validated the legacy cookie and
+    /// populated <c>HttpContext.Current.User</c> as a <c>FormsIdentity</c>;
+    /// returns <c>null</c> when no legacy ticket is present (the common case
+    /// once the dual-reader window has been open for a while).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Bridge code introduced specifically to ferry legacy cookies forward
+    /// into the <see cref="PersonSession"/> model during the dual-reader
+    /// window. The method is <c>public</c> because <c>RockWeb</c>'s
+    /// <c>Global.asax.cs</c> calls it across the assembly boundary; it is
+    /// <c>[RockInternal]</c> (so plugins do not take a dependency on it)
+    /// and <c>[Obsolete]</c> from day one. Removal is targeted around
+    /// Rock v23 once the default forms-authentication cookie lifetime
+    /// (30 days) has elapsed since the last release that issued legacy
+    /// cookies.
+    /// </para>
+    /// <para>
+    /// The body is fully wrapped in <c>#if WEBFORMS</c>: .NET Core has no
+    /// <c>FormsAuthenticationTicket</c> to upgrade from, so the .NET Core
+    /// branch returns <c>null</c> unconditionally. System.Web types are
+    /// fully qualified inline to keep the rest of this file free of a
+    /// <c>using System.Web;</c> directive (per the spec's "no System.Web
+    /// in PersonSessionService" rule, of which this method is the one
+    /// accepted deviation).
+    /// </para>
+    /// </remarks>
+    /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
+    /// <returns>The upgraded <see cref="PersonSession"/>, or <c>null</c> when no legacy ticket was present or the ticket could not be upgraded.</returns>
+    [Obsolete( "Bridge code for the legacy FormsAuthenticationTicket cookie format. Will be removed once legacy cookie support is sunset (targeted around Rock v23)." )]
+    [RockObsolete( "20.0" )]
+    [RockInternal( "20.0", keepInternalForever: true )]
+    public PersonSession UpgradeLegacyCookieForRequest( RockRequestContext requestContext )
+    {
+        if ( requestContext == null )
+        {
+            throw new ArgumentNullException( nameof( requestContext ) );
+        }
+
+#if WEBFORMS
+        var formsIdentity = System.Web.HttpContext.Current?.User?.Identity as System.Web.Security.FormsIdentity;
+        if ( formsIdentity?.Ticket == null )
+        {
+            return null;
+        }
+
+        return UpgradeLegacyTicket( formsIdentity.Ticket, requestContext );
+#else
+        return null;
+#endif
+    }
+
+#if WEBFORMS
+
+    /// <summary>
+    /// Performs the legacy-cookie upgrade against a supplied
+    /// <see cref="System.Web.Security.FormsAuthenticationTicket"/>. Carries
+    /// the real upgrade logic so tests can synthesize a ticket directly
+    /// without booting <c>HttpContext</c>; the public
+    /// <see cref="UpgradeLegacyCookieForRequest"/> shim is a trivial
+    /// wrapper around this helper.
+    /// </summary>
+    /// <remarks>
+    /// Bridge code; removed alongside <see cref="UpgradeLegacyCookieForRequest"/>
+    /// when legacy cookie support is sunset (targeted around Rock v23).
+    /// The whole declaration is wrapped in <c>#if WEBFORMS</c> because the
+    /// <c>FormsAuthenticationTicket</c> parameter type can only exist on
+    /// the WebForms build.
+    /// </remarks>
+    /// <param name="ticket">The legacy <c>FormsAuthenticationTicket</c> to upgrade.</param>
+    /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
+    /// <returns>The upgraded <see cref="PersonSession"/>, or <c>null</c> when the ticket is impersonated, its <c>Name</c> does not resolve to a <see cref="UserLogin"/>, or upgrade is otherwise refused.</returns>
+    [Obsolete( "Bridge code for the legacy FormsAuthenticationTicket cookie format. Will be removed once legacy cookie support is sunset (targeted around Rock v23)." )]
+    [RockObsolete( "20.0" )]
+    internal PersonSession UpgradeLegacyTicket( System.Web.Security.FormsAuthenticationTicket ticket, RockRequestContext requestContext )
+    {
+        if ( ticket == null )
+        {
+            throw new ArgumentNullException( nameof( ticket ) );
+        }
+
+        if ( requestContext == null )
+        {
+            throw new ArgumentNullException( nameof( requestContext ) );
+        }
+
+        // Step 1: Refuse impersonation tickets. Silently upgrading them
+        // into long-lived PersonSession rows would extend impersonation
+        // past its intended ("let me impersonate Ted real quick") lifetime.
+        // The impersonator can simply re-impersonate after the rollout.
+        var userData = Authorization.GetUserData( ticket );
+        if ( userData?.IsImpersonated == true )
+        {
+            ExpireAuthCookie( requestContext );
+            return null;
+        }
+
+        // Step 2: Refuse non-persistent tickets. The user unchecked
+        // "remember me" at login, so the legacy cookie was a transient
+        // session cookie that would have died with the browser. Every
+        // PersonSession created by FindOrCreateLegacyUpgradeSession is
+        // stamped IsPersistent = true, so silently upgrading would
+        // promote a transient session to a long-lived one and contradict
+        // the user's original choice. Drop the cookie and let the user
+        // re-authenticate on the new format with whatever persistence
+        // they prefer at that point.
+        if ( !ticket.IsPersistent )
+        {
+            ExpireAuthCookie( requestContext );
+            return null;
+        }
+
+        // Step 3: Resolve UserLoginId from the ticket's Name. The Name
+        // field is the only identity carried on the wire by the legacy
+        // ticket. If the user has been deleted since the cookie was
+        // issued, refuse the upgrade and clear the stale cookie.
+        var rockContext = Context as RockContext;
+        var userLogin = new UserLoginService( rockContext ).GetByUserName( ticket.Name );
+        if ( userLogin == null )
+        {
+            ExpireAuthCookie( requestContext );
+            return null;
+        }
+
+        // Step 4: Find or create the Legacy PersonSession via the
+        // composite key (UserLoginId, IssuedDateTime = ticket.IssueDate,
+        // CreationSource = Legacy). Repeated presentations of the same
+        // legacy cookie (notably from clients that do not honor Set-Cookie)
+        // resolve to the same row across requests rather than spamming
+        // new rows. Using the ticket's own IssueDate as the session's
+        // IssuedDateTime also makes the RejectAuthenticationCookiesIssuedBefore
+        // kill switch correct for upgraded sessions for free.
+        var session = FindOrCreateLegacyUpgradeSession( requestContext, userLogin.Id, ticket.IssueDate );
+
+        // Step 5: Emit the new-format cookie unconditionally. The Phase 4
+        // reissue-trigger logic (half-life, key rotation, payload version)
+        // does not apply here because the source cookie is not new-format
+        // — there is nothing to compare against.
+        SetAuthCookie( session, requestContext );
+
+        // Step 6: Return the upgraded session so the caller can replace
+        // the FormsIdentity principal with one backed by the upgraded
+        // session.
+        return session;
+    }
+
+#endif
+
+    #endregion Legacy Cookie Upgrade
 }

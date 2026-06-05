@@ -285,10 +285,11 @@ Transparently upgrade legacy `FormsAuthenticationTicket` cookies to new-format `
   - **Fully qualify** every `System.Web` type inline (`System.Web.HttpContext.Current`, `System.Web.Security.FormsIdentity`). Do NOT add `using System.Web;` or `using System.Web.Security;` to the file — the System.Web exposure is intentionally contained to these two methods' bodies so the rest of the file stays clean. The Guardrails section calls this the one accepted deviation from "no System.Web in PersonSessionService."
 - **`PersonSessionService.UpgradeLegacyTicket( System.Web.Security.FormsAuthenticationTicket ticket, RockRequestContext context )`** — `internal` helper that owns the real upgrade logic. Marked `[Obsolete]` `[RockObsolete( "20.0" )]` alongside its caller. Also wrapped in `#if WEBFORMS` (because `FormsAuthenticationTicket` itself is a System.Web type and the parameter type can only exist on the WebForms build). Steps:
   1. Parse the ticket's `UserData` JSON. If `IsImpersonated == true`, expire the cookie via `RockRequestContext`, return null. Do NOT create a `PersonSession`. (Impersonation cookies were always short-lived; silently upgrading them would extend impersonation past its intended lifetime.)
-  2. Resolve `UserLoginId` from the ticket's `Name`. If the `UserLogin` no longer exists, expire the cookie and return null.
-  3. Call `FindOrCreateLegacyUpgradeSession( userLoginId, ticket.IssueDate )`. The composite key `(UserLoginId, IssuedDateTime, CreationSource = Legacy)` guarantees repeated legacy-cookie presentations resolve to the same row.
-  4. Call `SetAuthCookie( upgradedSession, context )` to emit the new-format cookie. (The legacy upgrade always emits a fresh cookie; the Phase 4 reissue trigger logic is bypassed because the source cookie is not new-format.)
-  5. Return the upgraded `PersonSession`.
+  2. If `ticket.IsPersistent == false`, expire the cookie via `RockRequestContext`, return null. Do NOT create a `PersonSession`. (The user unchecked "remember me" at login; the legacy cookie was a transient session cookie. Every `PersonSession` created here is stamped `IsPersistent = true`, so silently upgrading a transient ticket would promote it to a long-lived session and contradict the user's original choice. The recipient re-authenticates on the new format with whatever persistence they prefer at that point.)
+  3. Resolve `UserLoginId` from the ticket's `Name`. If the `UserLogin` no longer exists, expire the cookie and return null.
+  4. Call `FindOrCreateLegacyUpgradeSession( userLoginId, ticket.IssueDate )`. The composite key `(UserLoginId, IssuedDateTime, CreationSource = Legacy)` guarantees repeated legacy-cookie presentations resolve to the same row.
+  5. Call `SetAuthCookie( upgradedSession, context )` to emit the new-format cookie. (The legacy upgrade always emits a fresh cookie; the Phase 4 reissue trigger logic is bypassed because the source cookie is not new-format.)
+  6. Return the upgraded `PersonSession`.
 - **Why the helper split?** The `FormsAuthenticationTicket` constructor is a plain type — tests can synthesize a ticket directly without booting `HttpContext`. Keeping the System.Web read inside the public shim and the real logic inside the helper means the existing Phase 6 mocked-database tests stay valid and runnable; only the trivial shim is untested (same trade-off Phase 5 made).
 - **`Application_PostAuthenticateRequest` hook** in `Global.asax.cs` — thin shim:
   1. Resolve the current `RockRequestContext`.
@@ -300,9 +301,10 @@ Transparently upgrade legacy `FormsAuthenticationTicket` cookies to new-format `
 ### Tests
 All tests target `UpgradeLegacyTicket` directly (synthesize a `FormsAuthenticationTicket` in the test, no `HttpContext` needed). The public `UpgradeLegacyCookieForRequest` shim itself is untested for the same reason as Phase 5's BeginRequest shim. Each test in this section is `#if WEBFORMS`-only and skipped on .NET Core builds.
 
-- Mocked-database: legacy ticket with `IsImpersonated = false` upgrades to a new `PersonSession` (`CreationSource = Legacy`, `IssuedDateTime = ticket.IssueDate`).
+- Mocked-database: legacy ticket with `IsImpersonated = false` and `IsPersistent = true` upgrades to a new `PersonSession` (`CreationSource = Legacy`, `IssuedDateTime = ticket.IssueDate`).
 - Mocked-database: second call with the same legacy ticket resolves to the existing row (no duplicate).
 - Mocked-database: legacy ticket with `IsImpersonated = true` is dropped, no `PersonSession` is created, the cookie is expired via `RockRequestContext`, helper returns null.
+- Mocked-database: legacy ticket with `IsPersistent = false` is dropped, no `PersonSession` is created, the cookie is expired via `RockRequestContext`, helper returns null. (Preserves the user's "remember me" off intent rather than silently promoting a transient ticket to a long-lived session.)
 - Mocked-database: legacy ticket whose `Name` does not match any active `UserLogin` is dropped (cookie expired, helper returns null).
 - Mocked-database: upgraded session reports `Authenticated` strength (recency timestamps null after upgrade).
 - Mocked-database: kill-switch fires correctly on an upgraded session whose ticket `IssueDate` precedes the threshold.

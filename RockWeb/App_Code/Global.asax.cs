@@ -688,6 +688,73 @@ namespace RockWeb
         }
 
         /// <summary>
+        /// Handles the PostAuthenticateRequest event of the Application
+        /// control. By this point <c>FormsAuthenticationModule</c> has run;
+        /// if it decrypted a legacy <c>FormsAuthenticationTicket</c> and set
+        /// <c>Context.User</c> to a <c>FormsIdentity</c>, this hook upgrades
+        /// the ticket to a new-format <see cref="Rock.Model.PersonSession"/>
+        /// and reissues the <c>.ROCK</c> cookie in the new format.
+        /// </summary>
+        /// <remarks>
+        /// New-format cookies are not seen here — they were resolved in
+        /// <c>Application_BeginRequest</c>, and that path sets
+        /// <c>Context.User</c> to a <c>GenericPrincipal</c> rather than a
+        /// <c>FormsIdentity</c>, so the upgrade-helper's <c>FormsIdentity</c>
+        /// cast returns null and the upgrade is correctly skipped.
+        ///
+        /// Bridge code; sunsets alongside
+        /// <c>PersonSessionService.UpgradeLegacyCookieForRequest</c>
+        /// (currently targeted around Rock v23).
+        /// </remarks>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void Application_PostAuthenticateRequest( object sender, EventArgs e )
+        {
+            // The canonical lookup inside Rock.dll goes through
+            // IRockRequestContextAccessor, but that interface is internal
+            // and RockWeb's assembly name is generated at runtime so
+            // [InternalsVisibleTo] is not viable. Reading the context
+            // back out of HttpContext.Items (where AttachToCurrentRequest
+            // also stashed it) is the agreed escape hatch for bridge
+            // code in this file that sunsets alongside the legacy
+            // cookie reader.
+            var rockRequestContext = Context.Items[RockRequestContext.HttpContextItemsKey] as RockRequestContext;
+            if ( rockRequestContext == null )
+            {
+                return;
+            }
+
+            try
+            {
+                using ( var rockContext = new Rock.Data.RockContext() )
+                {
+#pragma warning disable CS0618 // UpgradeLegacyCookieForRequest is intentionally obsolete from day one
+                    var upgradedSession = new PersonSessionService( rockContext ).UpgradeLegacyCookieForRequest( rockRequestContext );
+#pragma warning restore CS0618
+
+                    if ( upgradedSession != null && upgradedSession.UserLogin != null )
+                    {
+                        var identity = new System.Security.Principal.GenericIdentity( upgradedSession.UserLogin.UserName );
+                        Context.User = new System.Security.Principal.GenericPrincipal( identity, null );
+                        rockRequestContext.SetCurrentUser( upgradedSession.UserLogin );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                // UpgradeLegacyCookieForRequest handles ticket-content
+                // failures (impersonation tickets, unknown UserLogin) by
+                // returning null, so anything that escapes here is an
+                // infrastructure-level failure. Swallow it so a single bad
+                // legacy cookie cannot 500 the whole request pipeline; the
+                // request proceeds with whatever principal
+                // FormsAuthenticationModule already set (i.e. legacy
+                // behavior).
+                Debug.WriteLine( ex.Message );
+            }
+        }
+
+        /// <summary>
         /// Handles the Error event of the Application control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>

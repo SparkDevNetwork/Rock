@@ -535,13 +535,25 @@ namespace Rock.Net
         /// <summary>
         /// The key under which the active <see cref="RockRequestContext"/>
         /// is stashed in <see cref="HttpContext.Items"/> by
-        /// <see cref="AttachToCurrentRequest(HttpContext)"/>. The accessor
-        /// (<see cref="IRockRequestContextAccessor"/>) is the canonical
-        /// source; this key exists only for late-pipeline scenarios (such
-        /// as <c>Application_EndRequest</c>) where the AsyncLocal flow may
-        /// have been lost.
+        /// <see cref="AttachToCurrentRequest(HttpContext)"/>.
         /// </summary>
-        private const string HttpContextItemsKey = "Rock.Net.RockRequestContext";
+        /// <remarks>
+        /// <para>
+        /// The accessor (<see cref="IRockRequestContextAccessor"/>) is the
+        /// canonical source within the <c>Rock</c> assembly; this key
+        /// exists for late-pipeline scenarios (such as
+        /// <c>Application_EndRequest</c>) where the AsyncLocal flow may
+        /// have been lost, AND for legacy WebForms call sites in
+        /// <c>RockWeb</c> that cannot see the internal accessor type
+        /// (RockWeb's assembly name is generated at runtime, so
+        /// <c>[InternalsVisibleTo]</c> is not viable). The "no
+        /// internal-type access from RockWeb" preference is relaxed for
+        /// bridge code in <c>Global.asax.cs</c> that sunsets alongside
+        /// the legacy cookie reader.
+        /// </para>
+        /// </remarks>
+        [RockInternal( "20.0", true )]
+        public const string HttpContextItemsKey = "Rock.Net.RockRequestContext";
 
         /// <summary>
         /// Builds a new <see cref="RockRequestContext"/> for the supplied
