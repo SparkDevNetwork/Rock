@@ -2332,7 +2332,7 @@ namespace RockWeb.Blocks.Groups
                 marker = DefinedValueCache.Get( markerDefinedValueId.Value ).Description;
             }
 
-            if (mapId != "DEFAULT_MAP_ID" )
+            if ( mapId.IsNotNullOrWhiteSpace() )
             {
                 var markerFormat = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"-10 -40 30 55\"><path d=\"{0}\"/></svg>";
                 marker = string.Format( markerFormat, marker ).Replace( "\"", "'" );
