@@ -22,6 +22,8 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -93,6 +95,12 @@ namespace Rock.Field.Types
             }
 
             return null;
+        }
+
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.LavaAndBasicHtml );
         }
 
         #endregion
