@@ -21,7 +21,7 @@
                          @click="emit('changeState', ConnectionState.Inactive, connectionRequest)">
                         <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
                     </div>
-                    <div v-if="options?.isFutureFollowUpEnabled"
+                    <div v-if="connectionTypeOptions?.isFutureFollowUpEnabled"
                          class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
                          @click="emit('changeState', ConnectionState.FutureFollowUp, connectionRequest)">
                         <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
@@ -36,7 +36,7 @@
                     <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
                 </div>
                 <template v-if="canEditConnectionRequests">
-                    <div v-if="options?.isRequestSecurityEnabled"
+                    <div v-if="!connectionRequestRow?.isRequestSecurityDisabled"
                          class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
                          @click="emit('showSecurity', connectionRequestRow.idKey)">
                         <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
@@ -216,6 +216,7 @@
     import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
     import { vTooltip } from "@Obsidian/Directives/tooltip";
     import { ViewOptions } from "./types.partial";
+    import { ConnectionTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionTypeOptionsBag";
 
     type ConnectionRequestCardRow = {
         idKey?: string | null;
@@ -249,6 +250,7 @@
         reminderCount?: number | null;
         hasPlacementGroup?: boolean | null;
         hasRequiredGroupRequirements?: boolean | null;
+        isRequestSecurityDisabled?: boolean | null;
     };
 
     /**
@@ -287,6 +289,7 @@
             reminderCount: row.reminderCount as number | null | undefined,
             hasPlacementGroup: row.hasPlacementGroup as boolean | null | undefined,
             hasRequiredGroupRequirements: row.hasRequiredGroupRequirements as boolean | null | undefined,
+            isRequestSecurityDisabled: row.isRequestSecurityDisabled as boolean | null | undefined
         };
     }
 
@@ -298,6 +301,11 @@
 
         options: {
             type: Object as PropType<ConnectionsHubOptionsBag | null | undefined>,
+            default: {}
+        },
+
+        connectionTypeOptions: {
+            type: Object as PropType<ConnectionTypeOptionsBag | null | undefined>,
             default: {}
         },
 

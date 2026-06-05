@@ -5426,24 +5426,21 @@ WHERE 1 = 1" );
         /// Gets the active Campaign Connection items available to the current user,
         /// partitioned by Connection Opportunity GUID. Only campaigns associated with
         /// opportunities where the current user is a connector group member are returned.
+        /// In standard mode the results are scoped to the Connection Type in context; in
+        /// My Connections mode the user works across every Connection Type, so campaigns
+        /// for all opportunities the user connects on are returned.
         /// </summary>
-        /// <returns>A Block Action Result containing a dictionary of Connection Opportunity GUIDs mapped to their list of <see cref="ConnectionCampaignBag"/> objects, each including the pending request count and default daily limit. Returns an empty OK result if the Connection Type cannot be resolved.</returns>
+        /// <param name="connectionTypeIdKey">An optional Connection Type IdKey used to resolve the Connection Type in standard mode, in addition to the standard page parameter resolution. Ignored in My Connections mode.</param>
+        /// <returns>A Block Action Result containing a dictionary of Connection Opportunity GUIDs mapped to their list of <see cref="ConnectionCampaignBag"/> objects, each including the pending request count and default daily limit. Returns an empty OK result if the Connection Type cannot be resolved in standard mode.</returns>
         [BlockAction]
-        public BlockActionResult FetchConnectionCampaigns()
+        public BlockActionResult FetchConnectionCampaigns( string connectionTypeIdKey = null )
         {
-            ConnectionTypeCache connectionType = GetConnectionTypeCacheFromPageParameters();
-            if ( connectionType == null )
-            {
-                return ActionOk();
-            }
-
             var campaignConnectionItems = SystemSettings.GetValue( CampaignConnectionKey.CAMPAIGN_CONNECTION_CONFIGURATION ).FromJsonOrNull<List<CampaignItem>>() ?? new List<CampaignItem>();
 
-            // Gets a filtered list of opportunity guids for the current Connection Type where the Current Person is an active Connector on the opportunity.
+            // Gets the opportunities where the Current Person is an active Connector on the opportunity.
             // Inactive/archived connector groups and inactive/archived group members should not qualify the person as a connector.
-            var opportunityGuids = new ConnectionOpportunityService( RockContext ).Queryable()
+            var opportunityQuery = new ConnectionOpportunityService( RockContext ).Queryable()
                 .Where( o =>
-                    o.ConnectionTypeId == connectionType.Id &&
                     o.ConnectionOpportunityConnectorGroups.Any( cg =>
                         cg.ConnectorGroup != null &&
                         cg.ConnectorGroup.IsActive &&
@@ -5452,10 +5449,24 @@ WHERE 1 = 1" );
                                                           && gm.GroupMemberStatus == GroupMemberStatus.Active
                                                           && !gm.IsArchived )
                     )
-                )
+                );
+
+            // My Connections mode spans every Connection Type, so it is not scoped to a single type.
+            // Standard mode scopes the results to the Connection Type in context.
+            if ( !IsMyConnectionsMode )
+            {
+                ConnectionTypeCache connectionType = GetConnectionTypeCacheFromPageParameters( connectionTypeIdKey );
+                if ( connectionType == null )
+                {
+                    return ActionOk();
+                }
+
+                opportunityQuery = opportunityQuery.Where( o => o.ConnectionTypeId == connectionType.Id );
+            }
+
+            var opportunityGuids = opportunityQuery
                 .Select( o => o.Guid )
                 .ToList();
-
 
             campaignConnectionItems = campaignConnectionItems
                 .Where( ci => opportunityGuids.Contains( ci.OpportunityGuid ) && ci.IsActive )

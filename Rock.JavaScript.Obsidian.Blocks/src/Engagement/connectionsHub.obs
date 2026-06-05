@@ -58,7 +58,7 @@
                   :canDropOnGroup="canDropOnGroup"
                   :isGroupDrag="isCardInGroupDrag"
                   :selectedCount="allSelectedKeys.length"
-                  :onSnapshotClick="isMyConnectionsView ? onSnapshotClick : false"
+                  :onSnapshotClick="isMyConnectionsView ? onSnapshotClick : undefined"
                   :isSnapshotVisible="isSnapshotVisible"
                   @cardMoved="onCardMoved">
         <template #snapshot>
@@ -484,6 +484,7 @@
         <template #boardCard="{ row }">
             <ConnectionRequestCard :connectionRequest="row"
                                    :options="box.options"
+                                   :connectionTypeOptions="staticConnectionTypeOptions"
                                    :canEditConnectionRequests="canEditConnectionRequests"
                                    :hideCampusLabel="selectedCampus !== null"
                                    :viewOptions="viewOptions"

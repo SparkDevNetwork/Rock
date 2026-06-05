@@ -121,7 +121,7 @@
 
         campaignRecordBags: {
             type: Object as PropType<Record<string, ConnectionCampaignBag[]> | undefined>,
-            default: {}
+            default: () => ({})
         },
 
         errorMessage: {
