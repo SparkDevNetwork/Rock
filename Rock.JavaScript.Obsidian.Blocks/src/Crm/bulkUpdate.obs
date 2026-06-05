@@ -16,7 +16,7 @@
                         <ContentSection light>
                             <div class="basic-fields">
                                 <PersonPicker v-model:isSearchModeOpen="isAddingPerson"
-                                              @update:modelValue="onPersonSelected" hideInput />
+                                              @update:modelValue="onPersonSelected" isInputHidden />
 
                                 <PillList v-model="updatePersons" label="Individuals" :rules="[validateIndividualsSelected]" canAdd canRemove @add="isAddingPerson = true" @remove="onRemovePerson">
                                     <template #item="{ item, canRemove, disabled, remove }">
