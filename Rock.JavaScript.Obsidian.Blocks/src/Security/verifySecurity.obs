@@ -77,9 +77,9 @@
                             field="sourceType"
                             title="Source Type" />
 
-                <NumberColumn name="sourceId"
-                              field="sourceId"
-                              title="Source Id" />
+                <TextColumn name="sourceId"
+                            field="sourceId"
+                            title="Source Id" />
 
                 <TextColumn name="sourceName"
                             field="sourceName"
@@ -98,6 +98,7 @@
                               iconClass="ti ti-lock-open"
                               tooltip="Add an explicit Allow rule for this person."
                               :visible="getIsRowUnlockable"
+                              :excludeFromExport="true"
                               @click="onUnlockClick" />
             </Grid>
         </div>
@@ -106,7 +107,7 @@
 
 <script setup lang="ts">
     import { computed, reactive, ref } from "vue";
-    import Grid, { ButtonColumn, LabelColumn, NumberColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Grid, { ButtonColumn, LabelColumn, TextColumn } from "@Obsidian/Controls/grid";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -129,7 +130,7 @@
     type Row = {
         action: string;
         sourceType?: string | null;
-        sourceId?: number | null;
+        sourceId?: string | null;
         sourceName?: string | null;
         role?: string | null;
         access?: string | null;
