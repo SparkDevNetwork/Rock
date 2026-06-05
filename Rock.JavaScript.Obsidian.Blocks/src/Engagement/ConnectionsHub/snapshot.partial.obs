@@ -42,7 +42,7 @@
     import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/completionMetricsBag";
     import CompletionMetricsPanel from "./completionMetricsPanel.partial.obs";
 
-    const props = defineProps({
+    defineProps({
         /**
          * The completion metrics payload. When null or undefined the tiles render
          * placeholder dashes.

@@ -4516,6 +4516,16 @@ i.disabled {
         }
     }
 
+    // Refetches the snapshot metrics when the snapshot is open so it reflects the current
+    // Connection Type, Opportunity, and Campus filters. The server reads the Type and
+    // Opportunity filters from person preferences, so callers must persist those preferences
+    // before invoking this; Campus is read from the request context entity.
+    function refreshSnapshotMetricsIfVisible(): void {
+        if (isSnapshotVisible.value) {
+            getSnapshotMetrics();
+        }
+    }
+
     // #endregion Block Actions
 
     // When any modal is open, disable close-on-outside-click for the docked panel so that
@@ -4557,6 +4567,8 @@ i.disabled {
             ...newConnectionRequest.value.bag,
             campusGuid: selectedCampus.value?.value ?? null
         };
+
+        refreshSnapshotMetricsIfVisible();
     });
 
     watch(selectedType, async () => {
@@ -4580,6 +4592,7 @@ i.disabled {
             canEditGlobalConnectionRequests.value = allConnectionTypeOptions.value.flatMap(t => t.canEditConnectionRequests).some(t => t === true);
         }
 
+        refreshSnapshotMetricsIfVisible();
         loadGridData();
     });
 
@@ -4587,6 +4600,8 @@ i.disabled {
         preferences.setValue(getConnectionFilterKey(PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey), selectedOpportunity.value);
 
         await preferences.save();
+
+        refreshSnapshotMetricsIfVisible();
 
         newConnectionRequest.value.bag = {
             connectionOpportunityGuid: selectedOpportunity.value
