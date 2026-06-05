@@ -239,7 +239,7 @@
                         title="Group"
                         field="group">
                     <template #format="{ row }">
-                        <template v-if="!!row.group && connectionTypeOptionsByIdKey[row.connectionTypeIdKey].areGroupPlacementsEnabled">
+                        <template v-if="!!row.group && connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.areGroupPlacementsEnabled">
                             <div v-if="row.isPendingMember" :class="{ 'text-muted': !!row.isPlacementGroupInactiveOrArchived }" v-tooltip="'Pending group member. The requester will be added once the request is completed.'">
                                 {{ row.group }}
                                 <i class="ti ti-user-share text-interface-medium"></i>
@@ -364,7 +364,7 @@
                     <template #format="{ row }">
                         <div class="w-100">
                             <template v-if="row.connectionState === ConnectionState.Active">
-                                <ConnectionStatusButton :isSequentialStatusMode="connectionTypeOptionsByIdKey[row.connectionTypeIdKey].isSequentialStatusMode"
+                                <ConnectionStatusButton :isSequentialStatusMode="connectionTypeOptionsByIdKey[row.connectionTypeIdKey]?.isSequentialStatusMode"
                                                         :highlightColor="row.connectionStatus.highlightColor"
                                                         :currentStatusName="row.connectionStatus.name"
                                                         :disabled="!canEditConnectionRequests"
@@ -1273,7 +1273,7 @@ i.disabled {
         return enumToListItemBag(ConnectionStateDescription).filter(s => parseInt(s.value ?? "") !== ConnectionState.FutureFollowUp);
     });
 
-    // In Standard mode the server populates the dictionary with a single entry — the
+    // In Standard mode the server populates the dictionary with a single entry: the
     // Connection Type this page is anchored to. This computed surfaces that type so
     // consumers can read its options without having to derive "first/only entry" inline.
     // Returns undefined in My Connections mode, where the active type is user-driven.
@@ -1763,13 +1763,6 @@ i.disabled {
     });
 
     const normalizedQuickFilter = computed(() => debouncedQuickFilter.value.toLowerCase());
-
-    // const isSequentialStatus = computed<boolean>(() => {
-    //     if (isDockedPanelVisible.value) {
-    //         return dockedPanelDetailsBox.value?.options?.isSequentialStatusMode ?? false;
-    //     }
-    //     return box.options?.isSequentialStatusMode ?? false;
-    // });
 
     const connectionStatusItems = computed<ListItemBag[]>(() => {
         let statuses: ConnectionStatusBag[] | null | undefined;
@@ -3308,7 +3301,6 @@ i.disabled {
 
         if (result.isSuccess && result.data) {
             gridData.value = reactive(result.data);
-            console.log("gridData: ", gridData.value);
         }
         else {
             requestListErrorMessage.value = result.errorMessage ?? "Error loading grid data.";
@@ -3830,14 +3822,12 @@ i.disabled {
 
     async function updateRequestStates(bag: UpdateConnectionRequestStatesBag): Promise<string | null> {
         // If the action comes from a docked panel than the Connection Type could be different than the Connection Type of the List View.
-        let connectionTypeIdKey: string | null | undefined;
         if (isDockedPanelVisible.value) {
             bag.connectionTypeIdKeys = [dockedPanelDetailsBox.value?.options?.connectionTypeIdKey ?? ""];
         }
 
         const result = await invokeBlockAction<ConnectionListGridUpdateBag[]>("UpdateRequestStates", {
-            bag: bag,
-            connectionTypeIdKey
+            bag: bag
         });
 
         if (result.isSuccess && result.data) {

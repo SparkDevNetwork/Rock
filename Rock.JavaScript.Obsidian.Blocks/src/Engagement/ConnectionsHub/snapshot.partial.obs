@@ -28,15 +28,8 @@
 
 <script setup lang="ts">
     /**
-     * completionMetricsPanel.partial.obs - Renders the four connection completion metric tiles
-     * (Timeliness, Responsiveness, Requests Completed, Average Time to Complete) for the
-     * Connections Hub snapshot, each showing a current value and a color-coded delta versus
-     * the comparison period.
-     *
-     * Self-contained: the trend coloring, delta formatting, and ellipsis tooltip behavior are
-     * defined locally so this partial has no dependency on any other block's partials. This
-     * intentionally duplicates the equivalent display logic in the ConnectionOperationalSnapshot
-     * block rather than sharing a component.
+     * snapshot.partial.obs - Renders the Connections Hub snapshot header (dashboard title and
+     * "Last 28 Days" label) above the completion metrics panel.
      */
     import { PropType } from "vue";
     import { CompletionMetricsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/completionMetricsBag";
@@ -50,18 +43,6 @@
         metrics: {
             type: Object as PropType<CompletionMetricsBag | null | undefined>,
             default: null
-        },
-
-        isConnectorCurrentPerson: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-
-        connectorName: {
-            type: String as PropType<string>,
-            default: ""
         }
     });
-
-
 </script>

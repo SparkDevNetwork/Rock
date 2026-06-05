@@ -402,15 +402,10 @@ namespace Rock.Blocks.Engagement
             campusGroupings.Insert( 0, GetGroupingFieldBag( null, "text", string.Empty, null, null, string.Empty ) );
             availableGroupings["campusGrouping"] = campusGroupings;
 
-            // State groupings — all connection states
+            // State groupings: all connection states
             var stateGroupings = new List<GroupingFieldBag>();
             foreach ( ConnectionState state in Enum.GetValues( typeof( ConnectionState ) ) )
             {
-                //if ( !connectionType.EnableFutureFollowup && state == ConnectionState.FutureFollowUp )
-                //{
-                //    continue;
-                //}
-
                 stateGroupings.Add( new GroupingFieldBag
                 {
                     Key = state.ToString(),
@@ -504,7 +499,7 @@ namespace Rock.Blocks.Engagement
             // any data rows (e.g., a status with no connection requests).
             var availableGroupings = new Dictionary<string, List<GroupingFieldBag>>();
 
-            // Status groupings — all active statuses for the connection type.
+            // Status groupings: all active statuses for the connection type.
             availableGroupings["statusGrouping"] = connectionType.ConnectionStatuses
                 .Where( s => s.IsActive )
                 .OrderBy( s => s.Order )
@@ -512,7 +507,7 @@ namespace Rock.Blocks.Engagement
                 .Select( s => GetGroupingFieldBag( s.Id, "text", s.Name, s.Order, "ti ti-circle-filled", null, null, $"color: {s.HighlightColor};" ) )
                 .ToList();
 
-            // Opportunity groupings — all active opportunities for the connection type.
+            // Opportunity groupings: all active opportunities for the connection type.
             availableGroupings["opportunityGrouping"] = connectionType.ConnectionOpportunities
                 .Where( o => o.IsActive )
                 .OrderBy( o => o.Order )
@@ -698,7 +693,7 @@ namespace Rock.Blocks.Engagement
             // any data rows (e.g., a status with no connection requests).
             var availableGroupings = new Dictionary<string, List<GroupingFieldBag>>();
 
-            // Status groupings — all active statuses for all connection types.
+            // Status groupings: all active statuses for all connection types.
             availableGroupings["statusGrouping"] = connectionTypes.SelectMany( ct => ct.ConnectionStatuses )
                 .Where( s => s.IsActive )
                 .OrderBy( s => s.Order )
@@ -706,7 +701,7 @@ namespace Rock.Blocks.Engagement
                 .Select( s => GetGroupingFieldBag( s.Id, "text", s.Name, s.Order, "ti ti-circle-filled", null, null, $"color: {s.HighlightColor};" ) )
                 .ToList();
 
-            // Connection Type groupings — all active opportunities for the connection type.
+            // Connection Type groupings: all active connection types.
             availableGroupings["typeGrouping"] = connectionTypes
                 .Where( ct => ct.IsActive )
                 .OrderBy( ct => ct.Order )
@@ -1316,7 +1311,13 @@ namespace Rock.Blocks.Engagement
             if ( SelectedConnector.HasValue )
             {
                 var connectorPersonAlias = new PersonAliasService( RockContext ).GetInclude( SelectedConnector.Value, pa => pa.Person );
-                dashboardTitle = RequestContext.CurrentPerson.Id == connectorPersonAlias.PersonId ? "Your Connection Dashboard" : $"{connectorPersonAlias.Person.FullName.ToPossessive()} Connection Dashboard";
+
+                // The connector alias may not resolve (e.g. a stale preference referencing a
+                // merged or deleted alias). Fall back to the generic title rather than throwing.
+                if ( connectorPersonAlias?.Person != null )
+                {
+                    dashboardTitle = RequestContext.CurrentPerson.Id == connectorPersonAlias.PersonId ? "Your Connection Dashboard" : $"{connectorPersonAlias.Person.FullName.ToPossessive()} Connection Dashboard";
+                }
             }
 
             completionMetricsComparison ??= new CompletionMetricsBag();
@@ -2758,7 +2759,6 @@ namespace Rock.Blocks.Engagement
                 ConnectionOpportunityGuid = connectionRequest.ConnectionOpportunity.Guid,
                 ConnectionTypeId = connectionRequest.ConnectionTypeId,
                 ConnectionTypeIconCssClass = connectionType.IconCssClass,
-                ConnectionTypeGuid = connectionType.Guid,
                 ConnectionTypeName = connectionType.Name,
                 ConnectionTypeSource = connectionRequest.ConnectionTypeSource?.Name,
                 IsRequestSecurityDisabled = !connectionType.EnableRequestSecurity,
@@ -3862,7 +3862,6 @@ SELECT
     co.[Name]                                       AS [ConnectionOpportunityName],
     ct.[Id]                                         AS [ConnectionTypeId],
     ct.[Name]                                       AS [ConnectionTypeName],
-    ct.[Guid]                                       AS [ConnectionTypeGuid],
     ct.[IconCssClass]                               AS [ConnectionTypeIconCssClass],
     ct.[EnableRequestSecurity]                      AS [IsRequestSecurityEnabled],
     co.[IconCssClass]                               AS [ConnectionOpportunityIconCssClass],
@@ -4082,7 +4081,6 @@ WHERE 1 = 1" );
                     ConnectionOpportunity = row.ConnectionOpportunityName,
                     ConnectionOpportunityIconCssClass = row.ConnectionOpportunityIconCssClass,
                     ConnectionTypeId = row.ConnectionTypeId,
-                    ConnectionTypeGuid = row.ConnectionTypeGuid,
                     ConnectionTypeName = row.ConnectionTypeName,
                     ConnectionTypeIconCssClass = row.ConnectionTypeIconCssClass,
                     ConnectionTypeSource = row.ConnectionTypeSourceName ?? string.Empty,
@@ -4239,7 +4237,7 @@ WHERE 1 = 1" );
             // each ComparisonType in raw SQL. Attribute filters are scoped to a
             // Connection Type, so this pass is skipped in My Connections mode when
             // no Type is selected.
-            if ( connectionTypeIdKey != null )
+            if ( !string.IsNullOrEmpty( connectionTypeIdKey ) )
             {
                 FilterByAttributeValues( connectionRequests, gridAttributes, connectionTypeIdKey );
             }
@@ -4671,6 +4669,10 @@ WHERE 1 = 1" );
         [BlockAction]
         public BlockActionResult UpdateRequestStatuses( List<ConnectionRequestUpdateBag> statusUpdateBags, List<string> completedRequestIdKeys, string connectionTypeIdKey = null )
         {
+            // Status changes remain single-type by design (unlike UpdateRequestStates and
+            // DeleteRequests, which accept a list of Connection Type IdKeys for cross-type
+            // bulk actions). The client disables the Change Status action for mixed-type
+            // selections, so this action only ever receives requests from one Connection Type.
             ConnectionTypeCache connectionType = GetConnectionTypeCacheFromPageParameters( connectionTypeIdKey );
             if ( connectionType == null )
             {
@@ -6983,7 +6985,6 @@ WHERE 1 = 1" );
                 .AddField( "connectionTypeIdKey", a => a.ConnectionTypeId.AsIdKey() )
                 .AddField( "connectionTypeIconCssClass", a => a.ConnectionTypeIconCssClass )
                 .AddField( "isRequestSecurityDisabled", a => a.IsRequestSecurityDisabled )
-                .AddField( "connectionTypeGuid", a => a.ConnectionTypeGuid ) // TODO - Do we need to keep this?
                 .AddTextField( "connectionTypeSource", a => a.ConnectionTypeSource )
                 .AddTextField( "campus", a => a.Campus )
                 .AddField( "campusGuid", a => a.CampusGuid )
@@ -7093,8 +7094,6 @@ WHERE 1 = 1" );
 
             public int ConnectionTypeId { get; set; }
 
-            public Guid ConnectionTypeGuid { get; set; }
-
             public string ConnectionTypeName { get; set; }
 
             public string ConnectionTypeIconCssClass { get; set; }
@@ -7201,9 +7200,6 @@ WHERE 1 = 1" );
 
             /// <summary> The unique identifier for the connection type.</summary>
             public int ConnectionTypeId { get; set; }
-
-            /// <summary> The globally unique identifier (GUID) for the connection type.</summary>
-            public Guid ConnectionTypeGuid { get; set; }
 
             /// <summary> The display name of the connection type.</summary>
             public string ConnectionTypeName { get; set; }
