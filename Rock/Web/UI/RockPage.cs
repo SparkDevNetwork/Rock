@@ -4609,11 +4609,25 @@ Sys.Application.add_load(function () {
         /// <inheritdoc/>
         public IAsyncResult BeginProcessRequest( HttpContext context, AsyncCallback cb, object extraData )
         {
-            RequestContext = new RockRequestContext( context.Request, new RockResponseContext( this ), CurrentUser );
+            var accessor = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>();
+            RequestContext = accessor.RockRequestContext
+                ?? throw new InvalidOperationException( "Request information was incomplete: no RockRequestContext was attached during Application_BeginRequest." );
 
-            if ( RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
+            // FormsAuthenticationModule has now resolved the principal, so
+            // refresh CurrentUser on the shared context. This stays in
+            // place during the transition period; once
+            // PersonSessionService.ResolveSessionForRequest in
+            // Application_BeginRequest is the authoritative resolver,
+            // CurrentUser will already be set when we get here.
+            RequestContext.CurrentUser = CurrentUser;
+
+            // Hand the page to the response context so any buffered
+            // page-coupled output (breadcrumbs, html elements, titles)
+            // is flushed to the page and subsequent calls go directly
+            // to the page rather than into the buffer.
+            if ( RequestContext.Response is HttpContextRockResponseContext httpContextResponse )
             {
-                internalAccessor.RockRequestContext = RequestContext;
+                httpContextResponse.SetRockPage( this );
             }
 
             if ( RequestContext.IsClientForbidden( _pageCache ) )
@@ -4632,14 +4646,6 @@ Sys.Application.add_load(function () {
         public void EndProcessRequest( IAsyncResult result )
         {
             AsyncPageEndProcessRequest( result );
-
-            if ( RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
-            {
-                if ( ReferenceEquals( internalAccessor.RockRequestContext, RequestContext ) )
-                {
-                    internalAccessor.RockRequestContext = null;
-                }
-            }
         }
 
         #endregion

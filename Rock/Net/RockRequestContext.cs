@@ -22,6 +22,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
@@ -64,6 +66,37 @@ namespace Rock.Net
         /// Whether the cookie values for this request have already been URL decoded.
         /// </summary>
         private readonly bool _cookieValuesAreUrlDecoded;
+
+        /// <summary>
+        /// Backing dictionary for <see cref="PageParameters"/>. Holds query
+        /// string values from construction time; route values are merged in
+        /// lazily by the property getter.
+        /// </summary>
+        private IDictionary<string, string> _pageParameters;
+
+        /// <summary>
+        /// The originating <see cref="HttpRequest"/> used to lazy-merge
+        /// route values into <see cref="PageParameters"/> on first access.
+        /// </summary>
+        /// <remarks>
+        /// Route values cannot be merged during
+        /// <c>Application_BeginRequest</c> because ASP.NET's
+        /// <c>UrlRoutingModule</c> resolves them later in the pipeline.
+        /// Storing the request lets the property getter merge them the
+        /// first time a caller reads <see cref="PageParameters"/> after
+        /// routing has resolved.
+        /// </remarks>
+        private readonly HttpRequest _httpRequestForRouteValues;
+
+        /// <summary>
+        /// Whether route values from <see cref="_httpRequestForRouteValues"/>
+        /// have been merged into <see cref="_pageParameters"/>. The merge
+        /// only "sticks" when the route data has actually resolved (i.e.,
+        /// has at least one value); a premature read sees the empty
+        /// route data and leaves this flag <c>false</c> so the next read
+        /// can try again.
+        /// </summary>
+        private bool _routeValuesMerged;
 
         #endregion
 
@@ -129,12 +162,56 @@ namespace Rock.Net
         public virtual ClientInformation ClientInformation { get; protected set; }
 
         /// <summary>
-        /// Gets or sets the page parameters.
+        /// Gets the page parameters: the union of query string values
+        /// (captured at construction time) and resolved route segment
+        /// values (merged in lazily on first read).
         /// </summary>
-        /// <value>
-        /// The page parameters.
-        /// </value>
-        internal protected virtual IDictionary<string, string> PageParameters { get; private set; }
+        /// <remarks>
+        /// <para>
+        /// The lazy merge exists because this context is built during
+        /// <c>Application_BeginRequest</c>, but ASP.NET routing does not
+        /// resolve until <c>PostResolveRequestCache</c>. The first read
+        /// after routing has resolved sees the populated route values
+        /// and folds them in.
+        /// </para>
+        /// <para>
+        /// <strong>Do not read this property before routing has resolved.</strong>
+        /// A pre-routing read returns query-string-only values. The
+        /// merge state self-heals on the next read (the empty
+        /// pre-routing merge attempt is not cached), but a caller that
+        /// keeps a reference to the dictionary returned by an early
+        /// read will hold a partial view. In practice the earliest
+        /// readers are the page handler and the REST handler, both of
+        /// which run after routing.
+        /// </para>
+        /// </remarks>
+        /// <value>The page parameters.</value>
+        internal protected virtual IDictionary<string, string> PageParameters
+        {
+            get
+            {
+                if ( !_routeValuesMerged && _httpRequestForRouteValues != null )
+                {
+                    var routeValues = _httpRequestForRouteValues.RequestContext?.RouteData?.Values;
+
+                    if ( routeValues != null && routeValues.Count > 0 )
+                    {
+                        foreach ( var kvp in routeValues )
+                        {
+                            _pageParameters.AddOrReplace( kvp.Key, kvp.Value.ToStringSafe() );
+                        }
+
+                        _routeValuesMerged = true;
+                    }
+                }
+
+                return _pageParameters;
+            }
+            private set
+            {
+                _pageParameters = value;
+            }
+        }
 
         /// <summary>
         /// The context entities that came from the site cookie.
@@ -322,16 +399,18 @@ namespace Rock.Net
 
             ClientInformation = new ClientInformation( request );
 
-            // Setup the page parameters.
+            // Setup the page parameters from the query string. Route
+            // values are NOT merged here because this constructor runs
+            // during Application_BeginRequest, before UrlRoutingModule
+            // has resolved the route. The request is stashed below so
+            // the PageParameters getter can lazy-merge route values on
+            // the first read after routing has resolved.
+            _httpRequestForRouteValues = request;
             QueryString = new NameValueCollection( request.QueryString );
             PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
             foreach ( var key in request.QueryString.AllKeys.Where( k => !k.IsNullOrWhiteSpace() ) )
             {
                 PageParameters.AddOrReplace( key, request.QueryString[key] );
-            }
-            foreach ( var kvp in request.RequestContext.RouteData.Values )
-            {
-                PageParameters.AddOrReplace( kvp.Key, kvp.Value.ToStringSafe() );
             }
 
             // Setup the headers.
@@ -358,6 +437,25 @@ namespace Rock.Net
             CurrentVisitorId = LoadCurrentVisitorId();
 
             SessionGuid = request.RequestContext.HttpContext.Session?["RockSessionId"].ToStringSafe().AsGuidOrNull() ?? Guid.NewGuid();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockRequestContext"/>
+        /// class from the specified HTTP context. The response context is
+        /// built internally as an <see cref="HttpContextRockResponseContext"/>
+        /// that writes through to <paramref name="context"/>'s response.
+        /// </summary>
+        /// <remarks>
+        /// This is the entry-point intended for use from
+        /// <c>Application_BeginRequest</c>, before any specific handler
+        /// (page or REST controller) has been selected. The principal has
+        /// not yet been resolved at that point; the resolved user is
+        /// assigned later via <see cref="CurrentUser"/>.
+        /// </remarks>
+        /// <param name="context">The HTTP context the request originates from.</param>
+        internal RockRequestContext( HttpContext context )
+            : this( context.Request, new HttpContextRockResponseContext( context ), currentUser: null )
+        {
         }
 
         /// <summary>
@@ -428,6 +526,73 @@ namespace Rock.Net
             AddContextEntitiesFromHeaders();
 
             CurrentVisitorId = LoadCurrentVisitorId();
+        }
+
+        #endregion
+
+        #region Request Lifecycle
+
+        /// <summary>
+        /// The key under which the active <see cref="RockRequestContext"/>
+        /// is stashed in <see cref="HttpContext.Items"/> by
+        /// <see cref="AttachToCurrentRequest(HttpContext)"/>. The accessor
+        /// (<see cref="IRockRequestContextAccessor"/>) is the canonical
+        /// source; this key exists only for late-pipeline scenarios (such
+        /// as <c>Application_EndRequest</c>) where the AsyncLocal flow may
+        /// have been lost.
+        /// </summary>
+        private const string HttpContextItemsKey = "Rock.Net.RockRequestContext";
+
+        /// <summary>
+        /// Builds a new <see cref="RockRequestContext"/> for the supplied
+        /// <see cref="HttpContext"/>, registers it on the
+        /// <see cref="IRockRequestContextAccessor"/>, and stashes it on
+        /// <see cref="HttpContext.Items"/> under
+        /// <see cref="HttpContextItemsKey"/>.
+        /// </summary>
+        /// <remarks>
+        /// Intended to be called once per request from
+        /// <c>Application_BeginRequest</c>. Downstream handlers (such as
+        /// <see cref="Rock.Web.UI.RockPage"/> or the REST
+        /// <c>ServiceScopeHandler</c>) read the context back from the
+        /// accessor rather than creating their own.
+        /// </remarks>
+        /// <param name="context">The HTTP context the request originates from.</param>
+        /// <returns>The newly created request context.</returns>
+        [RockInternal( "20.0", true )]
+        public static RockRequestContext AttachToCurrentRequest( HttpContext context )
+        {
+            var requestContext = new RockRequestContext( context );
+
+            var accessor = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>();
+            if ( accessor is RockRequestContextAccessor internalAccessor )
+            {
+                internalAccessor.RockRequestContext = requestContext;
+            }
+
+            context.Items[HttpContextItemsKey] = requestContext;
+
+            return requestContext;
+        }
+
+        /// <summary>
+        /// Clears the request context from the
+        /// <see cref="IRockRequestContextAccessor"/> and removes it from
+        /// <see cref="HttpContext.Items"/>. Should be called from
+        /// <c>Application_EndRequest</c> as the counterpart to
+        /// <see cref="AttachToCurrentRequest(HttpContext)"/>.
+        /// </summary>
+        /// <param name="context">The HTTP context whose request is ending.</param>
+        [RockInternal( "20.0", true )]
+        public static void DetachFromCurrentRequest( HttpContext context )
+        {
+            var accessor = RockApp.Current.GetRequiredService<IRockRequestContextAccessor>();
+            if ( accessor is RockRequestContextAccessor internalAccessor )
+            {
+                internalAccessor.RockRequestContext = null;
+            }
+
+            context?.Items?.Remove( HttpContextItemsKey );
         }
 
         #endregion

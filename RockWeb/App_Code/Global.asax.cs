@@ -37,6 +37,7 @@ using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net;
 using Rock.Observability;
 using Rock.Security;
 using Rock.Transactions;
@@ -482,6 +483,11 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Application_EndRequest( object sender, EventArgs e )
         {
+            // Release the RockRequestContext attached in
+            // Application_BeginRequest. Done before any early return so
+            // every request that opens a context also closes it.
+            RockRequestContext.DetachFromCurrentRequest( Context );
+
             /*
             4/28/2019 - JME
             The goal of the code below is to ensure that all cookies are set to be secured if
@@ -615,6 +621,15 @@ namespace RockWeb
             }
 
             WebRequestHelper.SetThreadCultureFromRequest( HttpContext.Current?.Request );
+
+            // Build the single RockRequestContext for this request and
+            // register it on the accessor so downstream handlers (RockPage,
+            // REST ServiceScopeHandler, etc.) consume the same instance
+            // instead of constructing their own. CurrentUser is left null
+            // here; PersonSessionService.ResolveSessionForRequest fills it
+            // in (or the legacy FormsAuthenticationModule does, with the
+            // page handler updating CurrentUser before block code runs).
+            RockRequestContext.AttachToCurrentRequest( Context );
         }
 
         /// <summary>

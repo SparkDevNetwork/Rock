@@ -58,15 +58,15 @@ namespace Rock.Rest.Handler
 
                 request.Properties["RockServiceProvider"] = scope.ServiceProvider;
 
-                var wrapper = new HttpRequestMessageWrapper( request );
-                var responseContext = new RockMessageResponseContext( wrapper );
-                var user = UserLoginService.GetCurrentUser( false, rockContext );
-                var rockRequestContext = new RockRequestContext( wrapper, responseContext, user );
+                // The RockRequestContext is created in Global.asax.cs
+                // Application_BeginRequest and attached to the accessor
+                // before any handler runs. Missing it here means the
+                // BeginRequest hook did not run for this request, which
+                // ASP.NET guarantees should not happen.
+                var rockRequestContext = accessor.RockRequestContext
+                    ?? throw new InvalidOperationException( "Request information was incomplete: no RockRequestContext was attached during Application_BeginRequest." );
 
-                if ( accessor is RockRequestContextAccessor internalAccessor )
-                {
-                    internalAccessor.RockRequestContext = rockRequestContext;
-                }
+                rockRequestContext.CurrentUser = UserLoginService.GetCurrentUser( false, rockContext );
 
                 if ( rockRequestContext.IsClientForbidden() )
                 {
@@ -92,8 +92,6 @@ namespace Rock.Rest.Handler
                     // No content? Dispose immediately.
                     scope.Dispose();
                 }
-
-                responseContext.Update( responseMessage );
 
                 return responseMessage;
             }
