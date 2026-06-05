@@ -595,6 +595,26 @@ namespace Rock.Net
             context?.Items?.Remove( HttpContextItemsKey );
         }
 
+        /// <summary>
+        /// Sets the resolved <see cref="CurrentUser"/> for this request.
+        /// </summary>
+        /// <remarks>
+        /// Exists so callers outside the <c>Rock</c> assembly (notably
+        /// <c>RockWeb</c>'s <c>Application_BeginRequest</c>, which cannot
+        /// be granted <c>InternalsVisibleTo</c> access because its
+        /// assembly name is generated at runtime) can update
+        /// <see cref="CurrentUser"/> once the authentication pipeline has
+        /// resolved the principal. In-assembly callers (<c>RockPage</c>,
+        /// <c>ServiceScopeHandler</c>) continue to assign the property
+        /// directly.
+        /// </remarks>
+        /// <param name="userLogin">The resolved <see cref="UserLogin"/>, or <c>null</c> for an anonymous request.</param>
+        [RockInternal( "20.0", true )]
+        public void SetCurrentUser( UserLogin userLogin )
+        {
+            CurrentUser = userLogin;
+        }
+
         #endregion
 
         #region Methods

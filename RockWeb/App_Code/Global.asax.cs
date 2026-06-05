@@ -586,6 +586,15 @@ namespace RockWeb
         {
             Context.AddOrReplaceItem( "Request_Start_Time", RockDateTime.Now );
 
+            // Legacy cookie kill-switch.
+            //
+            // Remove this block when legacy cookie support is sunset
+            // alongside FindOrCreateLegacyUpgradeSession (currently targeted
+            // around Rock v23). New-format cookies are kill-switched inside
+            // PersonSessionService.ResolveSessionForRequest below against
+            // PersonSession.IssuedDateTime; for those, the Decrypt call
+            // here is a harmless no-op (the new format is not a
+            // FormsAuthenticationTicket and the Decrypt result is dropped).
             try
             {
                 var cookie = Request.Cookies[System.Web.Security.FormsAuthentication.FormsCookieName];
@@ -596,7 +605,7 @@ namespace RockWeb
                         .SecuritySettings?
                         .RejectAuthenticationCookiesIssuedBefore;
 
-                    // Ensure the rejection date and time are not set in the future, 
+                    // Ensure the rejection date and time are not set in the future,
                     // as this will block all logins until the date is in the past.
                     if ( rejectAuthenticationCookiesIssuedBefore.HasValue
                          && rejectAuthenticationCookiesIssuedBefore.Value <= RockDateTime.Now )
@@ -629,7 +638,44 @@ namespace RockWeb
             // here; PersonSessionService.ResolveSessionForRequest fills it
             // in (or the legacy FormsAuthenticationModule does, with the
             // page handler updating CurrentUser before block code runs).
-            RockRequestContext.AttachToCurrentRequest( Context );
+            var rockRequestContext = RockRequestContext.AttachToCurrentRequest( Context );
+
+            // Resolve the new-format .ROCK cookie via the single read-side
+            // seam owned by PersonSessionService. The service handles
+            // decode, validation, kill-switch, and reissue internally; the
+            // shim here just sets the authenticated principal on success.
+            // The block above already removed any legacy cookie that fails
+            // the kill switch, so by this point the request either carries
+            // a new-format cookie, a valid legacy cookie (it will be upgraded
+            // later in the pipeline), or no cookie at all.
+            try
+            {
+                using ( var rockContext = new Rock.Data.RockContext() )
+                {
+                    var personSession = new PersonSessionService( rockContext ).ResolveSessionForRequest( rockRequestContext );
+
+                    // Only set the principal when the session has a
+                    // backing UserLogin. Sessions without one (future
+                    // Impersonation and UserToken flows) are not reachable
+                    // in this phase; later phases will define the principal
+                    // shape for those cases.
+                    if ( personSession != null && personSession.UserLogin != null )
+                    {
+                        var identity = new System.Security.Principal.GenericIdentity( personSession.UserLogin.UserName );
+                        Context.User = new System.Security.Principal.GenericPrincipal( identity, null );
+                        rockRequestContext.SetCurrentUser( personSession.UserLogin );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                // ResolveSessionForRequest handles tampered/invalid cookies
+                // internally by returning null, so anything that escapes
+                // here is an infrastructure-level failure. Swallow it so a
+                // single bad cookie cannot 500 the whole request pipeline;
+                // the request proceeds unauthenticated.
+                Debug.WriteLine( ex.Message );
+            }
         }
 
         /// <summary>

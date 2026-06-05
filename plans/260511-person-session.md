@@ -212,19 +212,36 @@ Implement the encrypt-then-MAC cookie value, the internal decoder, the write sea
 Authenticate requests carrying a new-format cookie. Legacy cookies still flow through `FormsAuthenticationModule` (Phase 6 upgrades them). Both formats work side by side at the end of this phase.
 
 ### Deliverables
-- **`Application_BeginRequest` hook** in `RockWeb/App_Code/Global.asax.cs` (replacing the existing `RejectAuthenticationCookiesIssuedBefore` check at `:582-604`, but see the legacy-fallback bullet below). The hook is a thin shim:
-  1. Resolve the current `RockRequestContext` for the request.
-  2. Call `personSessionService.ResolveSessionForRequest( rockRequestContext )`.
-  3. On a non-null return, set `HttpContext.User` to an authenticated principal backed by `session.PersonAlias`. `FormsAuthenticationModule.OnEnter` then short-circuits at its `Context.User != null && IsAuthenticated` guard. Return from the handler.
-  4. On null return, run the legacy kill-switch fallback (next bullet), then let the request fall through unchanged — legacy cookies will be picked up by `FormsAuthenticationModule` then the Phase 6 upgrade hook; no-cookie and otherwise-invalid requests proceed unauthenticated.
-- **Retain the existing `RejectAuthenticationCookiesIssuedBefore` block at `Global.asax.cs:582-604`** under the null-return branch. The block keeps its current behavior (compare the legacy `FormsAuthenticationTicket.IssueDate` against the threshold; expire the cookie on violation). It MUST be reached only when `ResolveSessionForRequest` returned null; do not run it for resolved new-format sessions (the new kill switch inside `ResolveSessionForRequest` already covered them, against `PersonSession.IssuedDateTime`). The block carries this comment:
+- **`Application_BeginRequest` hook** in `RockWeb/App_Code/Global.asax.cs`. The hook is a thin shim that is **strictly additive** to the pre-Phase-5 body: keep every existing call in its existing position, then append the new resolution path at the end. Final ordering:
+  1. **Existing:** `Context.AddOrReplaceItem( "Request_Start_Time", ... )`.
+  2. **Existing:** the `RejectAuthenticationCookiesIssuedBefore` block at `Global.asax.cs:582-604`, in place and unchanged. Runs unconditionally at the top so a bad legacy cookie is removed from `Request.Cookies` before any downstream code reads the request. For a new-format cookie its `FormsAuthentication.Decrypt` call is a harmless no-op (the new format is not a `FormsAuthenticationTicket` and the result is dropped). Add the sunset comment below to the existing block, but do NOT move it inside any conditional branch.
+  3. **Existing:** `WebRequestHelper.SetThreadCultureFromRequest( ... )`.
+  4. **Existing (already added in the prep commit):** `RockRequestContext.AttachToCurrentRequest( Context )`. The returned context is captured for the next step.
+  5. **New in Phase 5:** call `new PersonSessionService( rockContext ).ResolveSessionForRequest( rockRequestContext )` inside a `using RockContext` block.
+  6. **New in Phase 5:** on a non-null return AND `session.UserLogin != null`, set `HttpContext.User = new GenericPrincipal( new GenericIdentity( session.UserLogin.UserName ), null )` and call `rockRequestContext.SetCurrentUser( session.UserLogin )`. `FormsAuthenticationModule.OnEnter` then short-circuits at its `Context.User != null && IsAuthenticated` guard.
+  7. **New in Phase 5:** wrap step 5 + step 6 in a defensive `try/catch` that logs and swallows so an infrastructure-level failure cannot 500 the whole pipeline. `ResolveSessionForRequest` already handles tampered / invalid cookies internally by returning null, so the catch should be reached rarely in practice.
+
+  Sessions with `UserLogin == null` (future `Impersonation` and `UserToken` flows) are NOT reachable at the time Phase 5 lands and are intentionally left without a principal write by this shim; later phases define the principal shape for those cases.
+- **Retain the existing `RejectAuthenticationCookiesIssuedBefore` block at `Global.asax.cs:582-604`** in place at the top of the handler (NOT inside a null-return branch — see ordering above). The block keeps its current behavior (compare the legacy `FormsAuthenticationTicket.IssueDate` against the threshold; expire the cookie on violation). Add this comment to the block:
   ```csharp
-  // Legacy cookie kill-switch fallback.
+  // Legacy cookie kill-switch.
+  //
+  // Preserved at the top of the handler to match the original pre-Phase-5
+  // ordering: a bad legacy cookie is removed from Request.Cookies BEFORE
+  // any downstream code (thread culture, RockRequestContext snapshot,
+  // ResolveSessionForRequest) reads the request, so the rest of the
+  // pipeline sees a clean state.
   //
   // Remove this block when legacy cookie support is sunset alongside
   // FindOrCreateLegacyUpgradeSession (currently targeted around Rock v23).
+  // New-format cookies are kill-switched inside
+  // PersonSessionService.ResolveSessionForRequest below against
+  // PersonSession.IssuedDateTime; for those, the Decrypt call here is a
+  // harmless no-op (the new format is not a FormsAuthenticationTicket and
+  // the Decrypt result is dropped).
   ```
-- **All decode, validation, kill-switch, and reissue logic for new-format cookies lives in `ResolveSessionForRequest` (Phase 4).** The BeginRequest handler does NOT duplicate any of it, and the only direct cookie inspection it performs is the legacy fallback above. The setting source (`Rock/Security/SecuritySettings.cs:123`) is unchanged; both kill switches read the same value.
+- **All decode, validation, kill-switch, and reissue logic for new-format cookies lives in `ResolveSessionForRequest` (Phase 4).** The BeginRequest handler does NOT duplicate any of it. The setting source (`Rock/Security/SecuritySettings.cs:123`) is unchanged; both kill switches read the same value.
+- **`RockRequestContext.SetCurrentUser( UserLogin )`** — new `public` method, marked `[RockInternal( "20.0", true )]`, in the existing `Request Lifecycle` region next to `AttachToCurrentRequest` / `DetachFromCurrentRequest`. Exists because the `CurrentUser` setter is `internal` and `RockWeb`'s assembly name is generated at runtime, so `[InternalsVisibleTo( "RockWeb" )]` is not viable. In-assembly callers (`RockPage`, `ServiceScopeHandler`) keep assigning the property directly; only the BeginRequest shim needs this new entry point.
 
 ### Tests
 **No automated tests in this phase.** The `Application_BeginRequest` body is a thin shim (one `RockRequestContext` construction, one `ResolveSessionForRequest` call, one conditional principal write) and the WebForms request lifecycle cannot run inside the Rock.Tests harness — there is no `iisexpress.exe` test host pointed at a known-state database (see Guardrails). Coverage strategy:
@@ -754,7 +771,7 @@ For each file the implementation will modify, the phase that owns the change. Us
 | `Rock.Migrations/Migrations/*PersonSession*.cs` (new) | 1 |
 | `Rock/Model/Core/Interaction/InteractionSession.cs` | 1 (column), 9 (adoption) |
 | `Rock/Model/Core/Interaction/InteractionService.cs:583` (SQL upsert) | 9 |
-| `RockWeb/App_Code/Global.asax.cs:582-604` (BeginRequest shim → `ResolveSessionForRequest`; existing kill-switch block retained inside the null-return branch as legacy-cookie fallback, marked for sunset alongside `FindOrCreateLegacyUpgradeSession`) | 5 |
+| `RockWeb/App_Code/Global.asax.cs:582-604` (BeginRequest shim → `ResolveSessionForRequest`; existing kill-switch block retained in place at the top of the handler, with a sunset comment marking it for retirement alongside `FindOrCreateLegacyUpgradeSession`) | 5 |
 | `RockWeb/App_Code/Global.asax.cs` (PostAuthenticateRequest shim → `UpgradeLegacyCookieForRequest`) | 6 |
 | `RockWeb/App_Code/Global.asax.cs:203,547-568,782,834` (online flag removals) | 15 |
 | `Rock/Net/RockRequestContext.cs` (PersonSession + MeetsRequirement) | 7 |
