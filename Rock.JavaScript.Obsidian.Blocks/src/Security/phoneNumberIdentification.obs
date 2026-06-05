@@ -1,0 +1,189 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <h3 class="mt-0">{{ title }}</h3>
+        <fieldset>
+            <NotificationBox v-if="!isConfigured" alertType="danger">
+                This block is not yet configured for use.
+            </NotificationBox>
+
+            <NotificationBox v-if="errorMessage" alertType="danger">
+                {{ errorMessage }}
+            </NotificationBox>
+
+            <template v-if="isConfigured">
+                <PhoneNumberEntry v-if="screen === Screen.PhoneNumberEntry"
+                                  :instructions="initialInstructions"
+                                  :initialPhoneNumber="enteredPhoneNumber"
+                                  :initialCountryCode="enteredCountryCode"
+                                  :isProcessing="isProcessing"
+                                  @send="onSendCode" />
+
+                <VerificationCodeEntry v-else-if="screen === Screen.VerificationCodeEntry"
+                                       :instructions="verificationInstructions"
+                                       :isProcessing="isProcessing"
+                                       @verify="onVerifyCode"
+                                       @resend="onResend" />
+
+                <PersonSelection v-else-if="screen === Screen.PersonSelection"
+                                 :instructions="individualSelectionInstructions"
+                                 :people="people"
+                                 :isProcessing="isProcessing"
+                                 @select="onSelectPerson" />
+
+                <NotFound v-else-if="screen === Screen.NotFound"
+                          :message="phoneNumberNotFoundMessage" />
+            </template>
+        </fieldset>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PhoneNumberIdentificationBag } from "@Obsidian/ViewModels/Blocks/Security/PhoneNumberIdentification/phoneNumberIdentificationBag";
+    import { PhoneNumberIdentificationOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/PhoneNumberIdentification/phoneNumberIdentificationOptionsBag";
+    import { PhoneNumberIdentificationVerifyResponseBag } from "@Obsidian/ViewModels/Blocks/Security/PhoneNumberIdentification/phoneNumberIdentificationVerifyResponseBag";
+    import { Screen } from "./PhoneNumberIdentification/types.partial";
+    import PhoneNumberEntry from "./PhoneNumberIdentification/phoneNumberEntry.partial.obs";
+    import VerificationCodeEntry from "./PhoneNumberIdentification/verificationCodeEntry.partial.obs";
+    import PersonSelection from "./PhoneNumberIdentification/personSelection.partial.obs";
+    import NotFound from "./PhoneNumberIdentification/notFound.partial.obs";
+
+    const config = useConfigurationValues<CustomBlockBox<PhoneNumberIdentificationBag, PhoneNumberIdentificationOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const screen = ref<Screen>(Screen.PhoneNumberEntry);
+    const enteredPhoneNumber = ref<string>("");
+    const enteredCountryCode = ref<string>("");
+    const verificationToken = ref<string>("");
+    const code = ref<string>("");
+    const people = ref<ListItemBag[]>([]);
+    const errorMessage = ref<string>("");
+    const isProcessing = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isConfigured = computed((): boolean => config.bag?.isConfigured ?? false);
+    const title = computed((): string => config.bag?.title ?? "");
+    const initialInstructions = computed((): string => config.bag?.initialInstructions ?? "");
+    const verificationInstructions = computed((): string => config.bag?.verificationInstructions ?? "");
+    const individualSelectionInstructions = computed((): string => config.bag?.individualSelectionInstructions ?? "");
+    const phoneNumberNotFoundMessage = computed((): string => config.bag?.phoneNumberNotFoundMessage ?? "");
+
+    // #endregion
+
+    // #region Functions
+
+    /** Navigates the browser to the supplied URL after authentication. */
+    function redirect(url: string): void {
+        window.location.href = makeUrlRedirectSafe(url);
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Sends a verification code to the entered phone number and advances to the code entry screen. */
+    async function onSendCode(phoneNumber: string, countryCode: string): Promise<void> {
+        errorMessage.value = "";
+        // Remember the number and country code so the entry screen stays populated if the individual chooses to resend.
+        enteredPhoneNumber.value = phoneNumber;
+        enteredCountryCode.value = countryCode;
+        isProcessing.value = true;
+
+        try {
+            const result = await invokeBlockAction<string>("SendVerificationCode", {
+                bag: { phoneNumber, countryCode }
+            });
+
+            if (result.isSuccess && result.data) {
+                verificationToken.value = result.data;
+                code.value = "";
+                screen.value = Screen.VerificationCodeEntry;
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "Unable to send the verification code.";
+            }
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    /** Verifies the entered code and either authenticates, shows the person selection, or shows the not-found screen. */
+    async function onVerifyCode(enteredCode: string): Promise<void> {
+        errorMessage.value = "";
+        code.value = enteredCode;
+        isProcessing.value = true;
+
+        try {
+            const result = await invokeBlockAction<PhoneNumberIdentificationVerifyResponseBag>("VerifyCode", {
+                bag: { verificationToken: verificationToken.value, code: enteredCode }
+            });
+
+            if (result.isSuccess && result.data) {
+                if (result.data.redirectUrl) {
+                    redirect(result.data.redirectUrl);
+                }
+                else if (result.data.isPersonSelectionRequired) {
+                    people.value = result.data.people ?? [];
+                    screen.value = Screen.PersonSelection;
+                }
+                else if (result.data.isPhoneNumberNotFound) {
+                    screen.value = Screen.NotFound;
+                }
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "The verification code information entered is either incorrect or expired.";
+            }
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    /** Authenticates the person the individual selected from multiple matches. */
+    async function onSelectPerson(personValue: string): Promise<void> {
+        errorMessage.value = "";
+        isProcessing.value = true;
+
+        try {
+            const result = await invokeBlockAction<string>("AuthenticateSelectedPerson", {
+                bag: { verificationToken: verificationToken.value, code: code.value, personValue }
+            });
+
+            if (result.isSuccess && result.data) {
+                redirect(result.data);
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "We could not complete your request.";
+            }
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    /** Resets the flow back to the phone number entry screen. */
+    function onResend(): void {
+        errorMessage.value = "";
+        verificationToken.value = "";
+        code.value = "";
+        people.value = [];
+        // enteredPhoneNumber is intentionally retained so the entry screen is pre-filled for a quick resend.
+        screen.value = Screen.PhoneNumberEntry;
+    }
+
+    // #endregion
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

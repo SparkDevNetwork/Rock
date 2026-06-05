@@ -81,5 +81,11 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         /// displayed.
         /// </summary>
         public FormPersonEntryViewModel PersonEntry { get; set; }
+
+        /// <summary>
+        /// The settings that describe whether a Connection Request is opened
+        /// when the form is submitted, and how its fields are populated.
+        /// </summary>
+        public FormConnectionRequestsViewModel ConnectionRequests { get; set; }
     }
 }

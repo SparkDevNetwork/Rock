@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -245,6 +245,11 @@ namespace Rock.SystemGuid
         /// Connection Type field type
         /// </summary>
         public const string CONNECTION_TYPE = "50DA6F25-E81E-46E8-A773-4B479B4FB9E6";
+
+        /// <summary>
+        /// Connection Type Settings field type
+        /// </summary>
+        public const string CONNECTION_TYPE_SETTINGS = "7D2A3C9F-4E15-4B71-A8CE-9F1B4D2E7C03";
 
         /// <summary>
         /// Connection Types field type

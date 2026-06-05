@@ -27,7 +27,6 @@ namespace Rock.Attribute
         private const string ENTITY_TYPE_NAME_KEY = "entityTypeName";
         private const string QUALIFIER_COLUMN_KEY = "qualifierColumn";
         private const string QUALIFIER_VALUE_KEY = "qualifierValue";
-        private const string ALLOW_MULTIPLE_KEY = "allowMultiple";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoryFieldAttribute" /> class.
@@ -64,13 +63,11 @@ namespace Rock.Attribute
         {
             get
             {
-                return FieldConfigurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBoolean();
+                return FieldTypeClass == typeof( CategoriesFieldType ).FullName;
             }
 
             set
             {
-                FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
-
                 FieldTypeClass = value ? typeof( CategoriesFieldType ).FullName : typeof( CategoryFieldType ).FullName;
             }
         }

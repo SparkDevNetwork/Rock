@@ -264,7 +264,6 @@
 
     const config = useConfigurationValues<ConnectionOpportunityNavigationInitializationBox>();
     const preferences = usePersonPreferences().blockPreferences;
-    const breakpointHelper = ref<BreakpointHelper>();
     const contextEntities = useContextEntities();
     const browserBus = useBlockBrowserBus();
     const invokeBlockAction = useInvokeBlockAction();
@@ -282,6 +281,8 @@
     });
 
     // #region Values
+
+    const breakpointHelper = ref<BreakpointHelper>();
 
     const selectedCampus = ref<ListItemBag | null>(null);
     const connectionTypeIdKey = ref("");

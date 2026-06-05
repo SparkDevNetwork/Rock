@@ -635,12 +635,10 @@ namespace Rock.Blocks.Core
         /// Saves the entity contained in the box.
         /// </summary>
         /// <param name="box">The box that contains all the information required to save.</param>
-        /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
+        /// <returns>The URL to redirect to after saving so the host page (and its location tree) reloads with the saved location selected.</returns>
         [BlockAction]
         public BlockActionResult Save( ValidPropertiesBox<LocationBag> box )
         {
-            var entityService = new LocationService( RockContext );
-
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
                 return actionError;
@@ -678,12 +676,9 @@ namespace Rock.Blocks.Core
                 } ) );
             }
 
-            // Ensure navigation properties will work now.
-            entity = entityService.Get( entity.Id );
-            entity.LoadAttributes( RockContext );
-
             var personId = PageParameter( PageParameterKey.PersonId );
 
+            // When launched from a person's profile, return to that person's page after saving.
             if ( personId.IsNotNullOrWhiteSpace() )
             {
                 return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
@@ -692,15 +687,20 @@ namespace Rock.Blocks.Core
                 } ) );
             }
 
-            else
+            // Redirect to the current page so the WebForms location tree reloads with the saved
+            // location selected. The tree won't reflect a rename without a full page load.
+            var redirectParams = new Dictionary<string, string>
             {
-                var bag = GetEntityBagForView( entity );
-                return ActionOk( new ValidPropertiesBox<LocationBag>
-                {
-                    Bag = bag,
-                    ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
-                } );
+                [PageParameterKey.LocationId] = entity.IdKey
+            };
+
+            var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
+            if ( expandedIds.IsNotNullOrWhiteSpace() )
+            {
+                redirectParams.Add( PageParameterKey.ExpandedIds, expandedIds );
             }
+
+            return ActionOk( this.GetCurrentPageUrl( redirectParams ) );
         }
 
         /// <summary>

@@ -36,7 +36,10 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Removes a person from a group based on inputs from the URL query string (GroupId, PersonGuid)." )]
 
-    [GroupField("Default Group", "The default group to use if one is not passed through the query string (optional).", false, order:0)]
+    [GroupField("Default Group",
+        Description = "The default group to use if one is not passed through the query string (optional).",
+        IsRequired = false,
+        Order = 0)]
 
     [CodeEditorField("Success Message",
         Description = "Lava template to display when person has been added to the group.",
@@ -58,8 +61,15 @@ namespace RockWeb.Blocks.Groups
 </div>",
         Order = 2 )]
 
-    [BooleanField("Warn When Not In Group", "Determines if the 'Not In Group Message' should be shown if the person is not in the group. Otherwise the success message will be shown", true, order: 3)]
-    [BooleanField("Inactivate Instead of Remove", "Inactivates the person in the group instead of removing them.", false, key:"Inactivate", order: 4)]
+    [BooleanField( "Warn When Not In Group",
+        Description = "Determines if the 'Not In Group Message' should be shown if the person is not in the group. Otherwise the success message will be shown",
+        DefaultBooleanValue = true,
+        Order = 3 )]
+    [BooleanField( "Inactivate Instead of Remove",
+        Description = "Inactivates the person in the group instead of removing them.",
+        DefaultBooleanValue = false,
+        Key = "Inactivate",
+        Order = 4 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "0159CE20-7B41-4D53-985C-81877ED75767" )]
     public partial class GroupMemberRemoveFromUrl : Rock.Web.UI.RockBlock

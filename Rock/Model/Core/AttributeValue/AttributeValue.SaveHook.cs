@@ -66,7 +66,25 @@ namespace Rock.Model
                     {
                         var rules = field.GetValidationRules( attributeCache.ConfigurationValues );
 
-                        StringValueValidator.Validate( Entity.Value, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+                        try
+                        {
+                            StringValueValidator.Validate( Entity.Value, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+                        }
+                        catch ( PropertyValidationException ex )
+                        {
+                            if ( DbContext.EnableStringValidation )
+                            {
+                                throw new AttributeValueValidationException( attributeCache, Entity.EntityId ?? 0, ex.Reason, null );
+                            }
+                            else
+                            {
+                                // captures the full current call stack, all callers included
+                                var stack = new System.Diagnostics.StackTrace( true ).ToString();
+                                var ex2 = new AttributeValueValidationException( attributeCache, Entity.EntityId ?? 0, ex.Reason, stack );
+
+                                ExceptionLogService.LogException( ex2 );
+                            }
+                        }
                     }
 
                     if ( field != null && (

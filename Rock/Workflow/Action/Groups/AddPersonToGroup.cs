@@ -43,7 +43,12 @@ namespace Rock.Workflow.Action
         FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" },
         Order = 0 )]
 
-    [GroupAndRoleFieldAttribute( "Group and Role", "Group/Role to add the person to. Leave role blank to use the default role for that group.", "Group", true, "", "", 1, AttributeKey.GroupAndRole )]
+    [GroupAndRoleFieldAttribute( "Group and Role",
+        Description = "Group/Role to add the person to. Leave role blank to use the default role for that group.",
+        GroupAndRolePickerLabel = "Group",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKey.GroupAndRole )]
 
     [EnumField( "Group Member Status",
         Description = "The status to set the user to in the group.",

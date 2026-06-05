@@ -145,7 +145,6 @@
 
     const config = useConfigurationValues<ListBlockBox<ExceptionListOptionsBag>>();
     const preferences = usePersonPreferences().blockPreferences;
-    const breakpointHelper = ref<BreakpointHelper>();
     const invokeBlockAction = useInvokeBlockAction();
 
     onConfigurationValuesChanged(useReloadBlock());
@@ -160,6 +159,8 @@
     };
 
     // #region Values
+
+    const breakpointHelper = ref<BreakpointHelper>();
 
     const hasCompletedInitialLoad = ref(false);
 

@@ -35,10 +35,22 @@ namespace RockWeb.Blocks.Fundraising
     [Category( "Fundraising" )]
     [Description( "Block that starts out a Fundraising Donation by prompting for information prior to going to a TransactionEntry block" )]
 
-    [LinkedPage( "Transaction Entry Page", "The Transaction Entry page to navigate to after prompting for the Fundraising Specific inputs", required: true, order: 1 )]
-    [BooleanField( "Show First Name Only", "Only show the First Name of each participant instead of Full Name", defaultValue: false, order: 2 )]
-    [BooleanField( "Allow Automatic Selection", "If enabled and there is only one participant and registrations are not enabled then that participant will automatically be selected and this page will get bypassed.", defaultValue: false, order: 3 )]
-    [GroupField( "Root Group", "Select the group that will be used as the base of the list.", required: false, order: 4 )]
+    [LinkedPage( "Transaction Entry Page",
+        Description = "The Transaction Entry page to navigate to after prompting for the Fundraising Specific inputs",
+        IsRequired = true,
+        Order = 1 )]
+    [BooleanField( "Show First Name Only",
+        Description = "Only show the First Name of each participant instead of Full Name",
+        DefaultBooleanValue = false,
+        Order = 2 )]
+    [BooleanField( "Allow Automatic Selection",
+        Description = "If enabled and there is only one participant and registrations are not enabled then that participant will automatically be selected and this page will get bypassed.",
+        DefaultBooleanValue = false,
+        Order = 3 )]
+    [GroupField( "Root Group",
+        Description = "Select the group that will be used as the base of the list.",
+        IsRequired = false,
+        Order = 4 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "A24D68F2-C58B-4322-AED8-6556DBED1B76" )]
     public partial class FundraisingDonationEntry : RockBlock

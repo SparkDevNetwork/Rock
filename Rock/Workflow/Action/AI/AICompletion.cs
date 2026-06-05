@@ -41,33 +41,33 @@ namespace Rock.Workflow.Action
     [WorkflowTextOrAttribute(
         textLabel: "Prompt",
         attributeLabel: "Attribute Value",
-        description: "The text to send to the AI provider.",
-        required: false,
-        order: 0,
-        key: AttributeKey.Prompt,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
+        Description = "The text to send to the AI provider.",
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.Prompt,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
 
     [AIProviderField(
-        name: "Provider",
-        description: "The AI Provider to use for the completion. Leave blank to use the default provider.",
-        required: false,
-        order: 1,
-        key: AttributeKey.Provider )]
+        "Provider",
+        Description = "The AI Provider to use for the completion. Leave blank to use the default provider.",
+        IsRequired = false,
+        Order = 1,
+        Key = AttributeKey.Provider )]
 
     [DecimalField(
-        name: "Temperature",
-        description: "The level of randomness or creativity in the generated text. See documentation for your provider for valid values.",
-        required: false,
-        order: 2,
-        key: AttributeKey.Temperature )]
+        "Temperature",
+        Description = "The level of randomness or creativity in the generated text. See documentation for your provider for valid values.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.Temperature )]
 
     [WorkflowAttribute(
-        name: "Output Attribute",
-        description: "The attribute to save the prompt output to.",
-        required: true,
-        order: 3,
-        key: AttributeKey.OutputAttribute,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
+        "Output Attribute",
+        Description = "The attribute to save the prompt output to.",
+        IsRequired = true,
+        Order = 3,
+        Key = AttributeKey.OutputAttribute,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
 
     #endregion
 

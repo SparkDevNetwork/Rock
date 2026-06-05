@@ -2072,8 +2072,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the group member attributes and qualifiers from one group to another.
-        /// The qualifier value is set to the targetGroup.Id.
+        /// Copies the group member attributes and qualifiers that were created specifically on the
+        /// source group to the target group. The qualifier value is set to the targetGroup.Id.
         /// </summary>
         /// <param name="rockContext">The rockContext to use for the operation.</param>
         /// <param name="sourceGroup">The group from which to copy.</param>
@@ -2083,8 +2083,20 @@ namespace Rock.Model
         {
             var attributeService = new AttributeService( rockContext );
 
-            // Get the attributes for inherited and current group members.
-            var sourceGroupMemberAttributes = attributeService.GetGroupMemberAttributesCombined( sourceGroup.Id, sourceGroup.GroupTypeId );
+            /*
+                06/01/2026 - MSE
+
+                Only copy the group member attributes that were created specifically on the source group
+                (qualified by GroupId). Inherited group member attributes (qualified by GroupTypeId) must
+                not be copied: the target group has the same GroupTypeId and therefore already inherits
+                them. Cloning an inherited attribute and overwriting its EntityTypeQualifierValue with the
+                target GroupId would leave EntityTypeQualifierColumn as "GroupTypeId" while the value is a
+                GroupId, producing an orphaned attribute that never matches a real group type and degrades
+                Group Member List performance.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6853
+            */
+            var sourceGroupMemberAttributes = attributeService.GetByEntityTypeQualifier( new GroupMember().TypeId, "GroupId", sourceGroup.Id.ToString(), true );
 
             foreach ( var attribute in sourceGroupMemberAttributes )
             {

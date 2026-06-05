@@ -1,0 +1,37 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="attribute-value-controls">
+        <template v-for="item in internalAttributeItems" :key="item.attribute.attributeGuid">
+            <div class="form-group">
+                <OptionalControl v-model="item.isActive" :label="item.attribute.name!" :help="item.attribute.description ?? ''">
+                    <RockField :attribute="{ ...item.attribute, description: '' }" v-model="item.value" isEditMode :showLabel="false" />
+                </OptionalControl>
+            </div>
+        </template>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import OptionalControl from "./optionalControl.partial.obs";
+    import RockField from "@Obsidian/Controls/rockField.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { AttributeUpdateItem } from "./types.partial";
+
+    const props = defineProps({
+        /**
+         * The attribute items to render controls for.
+         */
+        modelValue: {
+            type: Array as PropType<AttributeUpdateItem[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AttributeUpdateItem[]): void;
+    }>();
+
+    const internalAttributeItems = useVModelPassthrough(props, "modelValue", emit);
+
+</script>

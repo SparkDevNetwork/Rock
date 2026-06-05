@@ -477,6 +477,12 @@ namespace Rock.SystemGuid
         public const string CHECKIN_CHECK_OUT_SUCCESS = "21A855BA-6D68-4504-97B4-D787452CEC29";
 
         /// <summary>
+        /// Gets the Check-in Areas and Groups page guid
+        /// ParentPage: Check-in
+        /// </summary>
+        public const string CHECK_IN_AREAS_AND_GROUPS = "BAF3E806-8555-41D4-825B-838673DAFEB5";
+
+        /// <summary>
         /// Gets the ChildPages page guid
         /// ParentPage: System Dialogs
         /// </summary>
@@ -613,7 +619,7 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CONNECTIONS_OPPORTUNITIES = "F8B0E0CE-76A3-4449-B4EB-28DD9A42D71F";
 
-		/// <summary>
+        /// <summary>
         /// Gets the Connections Hub page guid.
         /// ParentPage: Connections
         /// </summary>

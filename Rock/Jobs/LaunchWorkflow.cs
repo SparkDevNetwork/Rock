@@ -30,7 +30,8 @@ namespace Rock.Jobs
     [DisplayName( "Launch Workflow" )]
     [Description( "This job launches the specified workflow." )]
 
-    [WorkflowTypeField( "Workflow", "The workflow this job should activate." )]
+    [WorkflowTypeField( "Workflow",
+        Description = "The workflow this job should activate." )]
     public class LaunchWorkflow : RockJob
     {
         /// <summary> 

@@ -539,6 +539,93 @@ export class XYPointEnumerable extends Enumerable<XYPoint> {
             return this.prepend([startingPoint]);
         }
     }
+
+    /**
+     * Densifies a sparse, date-keyed series across a fixed [startDate, endDate]
+     * window by emitting one point per step. Source points whose date falls inside
+     * the window contribute their `y`; missing buckets get `options.fillWith` (0 by
+     * default). Source points outside the window are dropped.
+     *
+     * Use this when the chart needs a continuous x-axis (e.g. "last 30 days") and
+     * the server has only returned buckets with activity. Pair with `selectSquishedByDate`
+     * upstream if the source contains multiple points per bucket.
+     *
+     * @param startDate Inclusive start of the window. Time-of-day is dropped.
+     * @param endDate Inclusive end of the window. Time-of-day is dropped.
+     * @param unit Step size used to walk from start to end.
+     * @param options Fill behavior. `fillWith` is the value used for buckets with
+     * no source data; defaults to 0.
+     *
+     * @example
+     * const dense = XYPointEnumerable.fromData([
+     *     { x: "2026-01-01T00:00:00", y: 3 },
+     *     { x: "2026-01-03T00:00:00", y: 5 }
+     * ])
+     *     .selectFilledOverDateRange("2026-01-01", "2026-01-04", "day")
+     *     .toArray();
+     * // [
+     * //    { x: "2026-01-01T00:00:00", y: 3 },
+     * //    { x: "2026-01-02T00:00:00", y: 0 },
+     * //    { x: "2026-01-03T00:00:00", y: 5 },
+     * //    { x: "2026-01-04T00:00:00", y: 0 },
+     * // ]
+     */
+    selectFilledOverDateRange(
+        startDate: TimeInput,
+        endDate: TimeInput,
+        unit: "day" | "week" | "month",
+        options: { fillWith?: number | null } = {}
+    ): XYPointEnumerable {
+        const fillWith = options.fillWith === undefined ? 0 : options.fillWith;
+        const start = asRockDateTime(startDate).date;
+        const end = asRockDateTime(endDate).date;
+
+        // Use a calendar-date string ("YYYY-MM-DD") as the bucket key. Going
+        // through `toISOString()` is unsafe here because RockDateTime keeps
+        // the start-of-range's offset across the whole window (the iteration
+        // never re-applies DST), while the source point is parsed at the
+        // contextual offset of its own date. Those two never align across a
+        // DST boundary and every bucket falls back to `fillWith`.
+        function keyOf(rdt: RockDateTime): string {
+            return `${rdt.year.toString().padStart(4, "0")}-${rdt.month.toString().padStart(2, "0")}-${rdt.day.toString().padStart(2, "0")}`;
+        }
+
+        // Index source by date key so the window walk can look up each step in O(1).
+        // Later points for the same date win (matches how server-side group-bys work).
+        const sourceByKey = new Map<string, number | null>();
+        for (const point of this) {
+            const key = keyOf(asRockDateTime(point.x).date);
+            sourceByKey.set(key, point.y);
+        }
+
+        function advance(current: RockDateTime): RockDateTime {
+            switch (unit) {
+                case "day": return current.addDays(1);
+                case "week": return current.addDays(7);
+                case "month": return current.addMonths(1);
+            }
+        }
+
+        return XYPointEnumerable.fromData(function* () {
+            if (start.toMilliseconds() > end.toMilliseconds()) {
+                return;
+            }
+
+            let current = start;
+            const endMs = end.toMilliseconds();
+            while (current.toMilliseconds() <= endMs) {
+                const key = keyOf(current);
+                const y = sourceByKey.has(key) ? sourceByKey.get(key)! : fillWith;
+
+                yield {
+                    x: current.toISOString(),
+                    y
+                };
+
+                current = advance(current);
+            }
+        });
+    }
 }
 
 /**

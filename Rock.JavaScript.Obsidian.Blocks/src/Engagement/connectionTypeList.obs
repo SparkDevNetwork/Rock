@@ -12,7 +12,7 @@
           @selectItem="onSelectItem">
         <SelectColumn />
 
-        <ReorderColumn @orderChanged="onOrderChanged" />
+        <ReorderColumn v-if="config.options?.isReOrderColumnVisible" @orderChanged="onOrderChanged" />
 
         <TextColumn name="name"
                     title="Name"

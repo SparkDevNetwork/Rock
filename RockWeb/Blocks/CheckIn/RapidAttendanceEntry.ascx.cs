@@ -263,7 +263,7 @@ namespace RockWeb.Blocks.CheckIn
         Order = 4 )]
     [CategoryField(
         "Default Category",
-        entityTypeName: "Rock.Model.PrayerRequest",
+        EntityTypeName = "Rock.Model.PrayerRequest",
         Description = "The default category to use for all the new prayer requests.",
         Category = "Prayer",
         IsRequired = false,
@@ -314,8 +314,8 @@ namespace RockWeb.Blocks.CheckIn
     #region Notes Block Attribute Settings
     [NoteTypeField(
         "Note Types",
-        allowMultiple: true,
-        entityTypeName: "Rock.Model.Person",
+        AllowMultiple = true,
+        EntityTypeName = "Rock.Model.Person",
         Key = AttributeKey.NoteTypes,
         Description = "The type of notes available to select on the form.",
         Category = "Notes",

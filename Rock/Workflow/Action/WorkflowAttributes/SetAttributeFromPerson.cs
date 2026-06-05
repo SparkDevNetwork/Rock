@@ -34,9 +34,15 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Attribute Set from Person" )]
 
-    [WorkflowAttribute( "Attribute", "The person attribute to set the value of.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [PersonField( "Person", "The person to set attribute value to. Leave blank to set person to nobody.", false, "", "", 1 )]
+    [WorkflowAttribute( "Attribute",
+        Description = "The person attribute to set the value of.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [PersonField( "Person",
+        Description = "The person to set attribute value to. Leave blank to set person to nobody.",
+        IsRequired = false,
+        Order = 1 )]
     [Rock.SystemGuid.EntityTypeGuid( "17962C23-2E94-4E06-8461-0FB8B94E2FEA")]
     public class SetAttributeFromPerson : ActionComponent
     {

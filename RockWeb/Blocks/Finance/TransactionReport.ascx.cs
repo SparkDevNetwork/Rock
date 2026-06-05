@@ -34,13 +34,40 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Transaction Report" )]
     [Category( "Finance" )]
     [Description( "Block that reports transactions for the currently logged in user with filters." )]
-    [TextField( "Transaction Label", "The label to use to describe the transactions (e.g. 'Gifts', 'Donations', etc.)", true, "Gifts", "", 1 )]
-    [TextField( "Account Label", "The label to use to describe accounts.", true, "Accounts", "", 2 )]
-    [AccountsField( "Accounts", "List of accounts to allow the person to view", false, "", "", 3 )]
-    [BooleanField( "Show Transaction Code", "Show the transaction code column in the table.", true, "", 4, "ShowTransactionCode" )]
-    [BooleanField( "Show Foreign Key", "Show the transaction foreign key column in the table.", false, "", 4, "ShowForeignKey" )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transaction types to limit the list to (if none are selected all types will be included).", false, true, "", "", 5 )]
-    [BooleanField( "Use Person Context", "Determines if the person context should be used instead of the CurrentPerson.", false, order: 5 )]
+    [TextField( "Transaction Label",
+        Description = "The label to use to describe the transactions (e.g. 'Gifts', 'Donations', etc.)",
+        IsRequired = true,
+        DefaultValue = "Gifts",
+        Order = 1 )]
+    [TextField( "Account Label",
+        Description = "The label to use to describe accounts.",
+        IsRequired = true,
+        DefaultValue = "Accounts",
+        Order = 2 )]
+    [AccountsField( "Accounts",
+        Description = "List of accounts to allow the person to view",
+        IsRequired = false,
+        Order = 3 )]
+    [BooleanField( "Show Transaction Code",
+        Description = "Show the transaction code column in the table.",
+        DefaultBooleanValue = true,
+        Order = 4,
+        Key = "ShowTransactionCode" )]
+    [BooleanField( "Show Foreign Key",
+        Description = "Show the transaction foreign key column in the table.",
+        DefaultBooleanValue = false,
+        Order = 4,
+        Key = "ShowForeignKey" )]
+    [DefinedValueField( "Transaction Types",
+        Description = "Optional list of transaction types to limit the list to (if none are selected all types will be included).",
+        IsRequired = false,
+        AllowMultiple = true,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE,
+        Order = 5 )]
+    [BooleanField( "Use Person Context",
+        Description = "Determines if the person context should be used instead of the CurrentPerson.",
+        DefaultBooleanValue = false,
+        Order = 5 )]
 
     [ContextAware]
     [Rock.SystemGuid.BlockTypeGuid( "1FAEE5A2-5005-4BD8-A2BD-B7D9030A894D" )]

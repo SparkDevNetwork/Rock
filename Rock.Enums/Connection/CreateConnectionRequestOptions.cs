@@ -21,7 +21,7 @@ namespace Rock.Utility
     /// Controls whether campaign connection requests are created all at once
     /// or only as needed to meet the daily connection limit.
     /// </summary>
-    [Enums.EnumDomain( "Connection" )]
+    [Rock.Enums.EnumDomain( "Connection" )]
     public enum CreateConnectionRequestOptions
     {
         /// <summary>

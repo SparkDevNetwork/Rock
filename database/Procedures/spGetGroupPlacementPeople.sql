@@ -334,7 +334,7 @@ BEGIN
 			LEFT JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
 			CROSS APPLY (
 				SELECT CASE
-					WHEN @FilterAppliesTo = 0 AND g.GroupId = @SourceEntityId THEN 1 -- unplaced subset
+					WHEN @FilterAppliesTo = 0 AND gm.GroupId = @SourceEntityId THEN 1 -- unplaced subset
 					WHEN @FilterAppliesTo = 1 AND g.GroupId <> @SourceEntityId AND g.GroupId IS NOT NULL THEN 1 -- placed subset
 					WHEN @FilterAppliesTo = 2 THEN 1 -- all people
 					ELSE 0

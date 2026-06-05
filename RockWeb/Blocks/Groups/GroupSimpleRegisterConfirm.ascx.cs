@@ -31,8 +31,14 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Confirmation block that will update a group member's status to active. (Use with Group Simple Register block)." )]
 
-    [TextField("Success Message", "The text to display when a valid group member key is provided", false, "You have been registered.")]
-    [TextField("Error Message", "The text to display when a valid group member key is NOT provided", false, "Sorry, there was a problem confirming your registration.  Please try to register again.")]
+    [TextField( "Success Message",
+        Description = "The text to display when a valid group member key is provided",
+        IsRequired = false,
+        DefaultValue = "You have been registered." )]
+    [TextField( "Error Message",
+        Description = "The text to display when a valid group member key is NOT provided",
+        IsRequired = false,
+        DefaultValue = "Sorry, there was a problem confirming your registration.  Please try to register again." )]
     [Rock.SystemGuid.BlockTypeGuid( "B71FE9F2-0F90-497F-90FA-5A6148E8E116" )]
     public partial class GroupSimpleRegisterConfirm : Rock.Web.UI.RockBlock
     {

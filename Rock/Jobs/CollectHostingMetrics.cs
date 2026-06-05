@@ -42,7 +42,7 @@ namespace Rock.Jobs
 
     [IntegerField(
         "Command Timeout",
-        AttributeKey.CommandTimeout,
+        Key = AttributeKey.CommandTimeout,
         Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of transactions, this could take several minutes or more.",
         IsRequired = false,
         DefaultIntegerValue = 60 * 60 )]

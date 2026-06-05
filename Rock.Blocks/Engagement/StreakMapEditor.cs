@@ -21,9 +21,9 @@ namespace Rock.Blocks.Engagement
     #region Block Attributes
 
     [BooleanField(
-        name: "Show Streak Enrollment Exclusion Map",
-        description: "If this map editor is placed in the context of a streak enrollment, should it show the person exclusion map for that streak enrollment?",
-        defaultValue: false,
+        "Show Streak Enrollment Exclusion Map",
+        Description = "If this map editor is placed in the context of a streak enrollment, should it show the person exclusion map for that streak enrollment?",
+        DefaultBooleanValue = false,
         Key = AttributeKey.IsEngagementExclusion,
         Order = 0 )]
 

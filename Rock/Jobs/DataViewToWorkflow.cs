@@ -16,8 +16,6 @@
 //
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -36,8 +34,14 @@ namespace Rock.Jobs
 
     #region Job Attributes
 
-    [DataViewField( "Data View", "The data view to find entities from", required: true, key: AttributeKey.DataView )]
-    [WorkflowTypeField( "Workflow", "The workflow to be fired for each entity", required: true, key: AttributeKey.Workflow )]
+    [DataViewField( "Data View",
+        Description = "The data view to find entities from",
+        IsRequired = true,
+        Key = AttributeKey.DataView )]
+    [WorkflowTypeField( "Workflow",
+        Description = "The workflow to be fired for each entity",
+        IsRequired = true,
+        Key = AttributeKey.Workflow )]
 
     #endregion
 

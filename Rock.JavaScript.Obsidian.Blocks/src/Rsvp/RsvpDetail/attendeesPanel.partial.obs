@@ -11,7 +11,7 @@
           :entityTypeGuid="EntityType.Person"
           itemTerm="Invitee"
           title="Invitees"
-          titleIconCssClass="ti ti-door-enter"
+          :exportTitle="bag.groupName ? `${bag.groupName} - Invitees` : 'Invitees'"
           liveUpdates>
         <SelectColumn />
 
@@ -32,6 +32,7 @@
                 :filter="pickExistingValueFilter"
                 :sortValue="getStatusSortValue"
                 :quickFilterValue="getStatusSortValue"
+                :exportValue="getStatusSortValue"
                 width="18%">
             <template #format="{ row }">
                 <div class="flex-grow-1">
@@ -74,6 +75,7 @@
                 field="declineNote"
                 :sortValue="getDeclineNoteSortValue"
                 :quickFilterValue="getDeclineNoteSortValue"
+                :exportValue="getDeclineNoteSortValue"
                 width="37%">
             <template #format="{ row }">
                 <button v-if="row.status === AttendeeStatus.Decline"
@@ -208,12 +210,12 @@
         return declineReasonGuidToText.value[guid] ?? "";
     }
 
-    /** Sort + quick-filter key for the Status column so both match the dropdown's friendly text. */
+    /** Sort, quick-filter, and Excel-export key for the Status column so all three match the dropdown's friendly text. */
     function getStatusSortValue(row: Record<string, unknown>): string {
         return (row.status as string) ?? "";
     }
 
-    /** Sort + quick-filter key for the Decline Note column so both read the underlying note text. */
+    /** Sort, quick-filter, and Excel-export key for the Decline Note column so all three read the underlying note text (not the "Add note..." placeholder). */
     function getDeclineNoteSortValue(row: Record<string, unknown>): string {
         return (row.declineNote as string) ?? "";
     }

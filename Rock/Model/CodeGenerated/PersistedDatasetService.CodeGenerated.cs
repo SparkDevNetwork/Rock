@@ -149,6 +149,7 @@ namespace Rock.Model
             target.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
             target.ResultData = source.ResultData;
             target.ResultFormat = source.ResultFormat;
+            target.Status = source.Status;
             target.TimeToBuildMS = source.TimeToBuildMS;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

@@ -55,13 +55,7 @@ namespace Rock.Blocks.CheckIn.Configuration
 
         private static class PageParameterKey
         {
-            // "CheckInConfiguration" is the newer page parameter whereas "GroupTypeId" is the older one from the
-            // legacy block. Both parameters allow check-in configuration GroupType Id, Guid, or IdKey values. Since
-            // we still have legacy check-in configuration pages/routes that use the "GroupTypeId" page parameter, we
-            // will continue to support both parameters for now, but the "CheckInConfiguration" page parameter should
-            // be used for any new pages and routes.
             public const string CheckInConfiguration = "CheckInConfiguration";
-            public const string GroupTypeId = "GroupTypeId";
         }
 
         private static class PreferenceKey
@@ -72,9 +66,11 @@ namespace Rock.Blocks.CheckIn.Configuration
             public const string SelectedGroupType = "selected-group-type";
 
             /// <summary>
-            /// The selected area user preference key
+            /// Scoped to the check-in configuration GroupType entity (not the block) and shared with other check-in
+            /// configuration blocks, so the area slicer selection persists across all blocks for the same configuration.
+            /// Value is the area's Guid; empty means "All Areas".
             /// </summary>
-            public const string SelectedArea = "selected-area";
+            public const string SelectedArea = "checkin-config-selected-area";
 
             /// <summary>
             /// The selected category user preference key
@@ -90,16 +86,12 @@ namespace Rock.Blocks.CheckIn.Configuration
         private static class NavigationUrlKey
         {
             public const string ParentPage = "ParentPage";
+            public const string AreasAndGroupsPage = "AreasAndGroupsPage";
         }
 
         #endregion Keys
 
         #region Fields
-
-        /// <summary>
-        /// The backing field for the <see cref="GroupTypeKeyFromPageParameter"/> property.
-        /// </summary>
-        private string _groupTypeKeyFromPageParameter;
 
         /// <summary>
         /// The backing field for the <see cref="GroupTypeIdFromPageParameter"/> property.
@@ -113,28 +105,14 @@ namespace Rock.Blocks.CheckIn.Configuration
         #region Properties
 
         /// <summary>
-        /// Gets the check-in configuration <see cref="GroupType"/> entity key passed to the "CheckInConfiguration" or "GroupTypeId" page parameter.
+        /// Gets the check-in configuration <see cref="GroupType"/> entity key passed to the
+        /// <see cref="PageParameterKey.CheckInConfiguration"/> page parameter.
         /// </summary>
-        private string GroupTypeKeyFromPageParameter
-        {
-            get
-            {
-                if ( _groupTypeKeyFromPageParameter.IsNullOrWhiteSpace() )
-                {
-                    _groupTypeKeyFromPageParameter = PageParameter( PageParameterKey.CheckInConfiguration );
-
-                    if ( _groupTypeKeyFromPageParameter.IsNullOrWhiteSpace() )
-                    {
-                        _groupTypeKeyFromPageParameter = PageParameter( PageParameterKey.GroupTypeId );
-                    }
-                }
-
-                return _groupTypeKeyFromPageParameter;
-            }
-        }
+        private string GroupTypeKeyFromPageParameter => PageParameter( PageParameterKey.CheckInConfiguration );
 
         /// <summary>
-        /// Gets the check-in configuration <see cref="GroupType"/> Id passed to the "CheckInConfiguration" or "GroupTypeId" page parameter.
+        /// Gets the check-in configuration <see cref="GroupType"/> Id resolved from the
+        /// <see cref="PageParameterKey.CheckInConfiguration"/> page parameter.
         /// </summary>
         private int? GroupTypeIdFromPageParameter
         {
@@ -163,9 +141,32 @@ namespace Rock.Blocks.CheckIn.Configuration
             .FromJsonOrNull<ListItemBag>();
 
         /// <summary>
-        /// Gets the selected area unique identifier from person preferences.
+        /// Gets the person preferences scoped to the current check-in configuration GroupType, or <c>null</c> when
+        /// no configuration is resolved. Scoping to the configuration entity (rather than the block) is what allows
+        /// preferences to be shared with other check-in configuration blocks.
         /// </summary>
-        protected Guid? SelectedAreaGuid => GetBlockPersonPreferences()
+        private PersonPreferenceCollection ConfigurationPersonPreferences
+        {
+            get
+            {
+                if ( !GroupTypeIdFromPageParameter.HasValue )
+                {
+                    return null;
+                }
+
+                var configuration = GroupTypeCache.Get( GroupTypeIdFromPageParameter.Value );
+                return configuration != null ? GetScopedPersonPreferences( configuration ) : null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the unique identifier of the currently-selected area from person preferences, or null if none is
+        /// selected (i.e. the user has "All Areas" selected in the slicer). Reads from the configuration-scoped
+        /// preference shared with other check-in configuration blocks when a check-in configuration is in scope;
+        /// falls back to the block person preference when this block is rendered without one, since there's nothing
+        /// for the area selection to share with in that case.
+        /// </summary>
+        protected Guid? SelectedAreaGuid => ( ConfigurationPersonPreferences ?? GetBlockPersonPreferences() )
             .GetValue( PreferenceKey.SelectedArea )
             .AsGuidOrNull();
 
@@ -412,6 +413,10 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             bag.NavigationUrls = GetBoxNavigationUrls();
 
+            bag.ConfigurationIdKey = groupTypeId?.AsIdKey();
+            bag.ConfigurationName = groupTypeId.HasValue ? GroupTypeCache.Get( groupTypeId.Value )?.Name : null;
+            bag.SelectedAreaGuid = SelectedAreaGuid;
+
             bag.CampusRootLocations = CampusCache.All()
                 .Where( c => c.LocationId.HasValue )
                 .Select( c => new
@@ -431,13 +436,18 @@ namespace Rock.Blocks.CheckIn.Configuration
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            return new Dictionary<string, string>
+            var urls = new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
-                {
-                    ["CheckinTypeId"] = PageParameter( PageParameterKey.GroupTypeId )
-                } ),
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
             };
+
+            // The Areas and Groups page route requires a configuration, so only deep-link when one is in scope.
+            if ( GroupTypeIdFromPageParameter.HasValue )
+            {
+                urls[NavigationUrlKey.AreasAndGroupsPage] = $"/admin/checkin/configuration-areas-groups/{GroupTypeIdFromPageParameter.Value.AsIdKey()}";
+            }
+
+            return urls;
         }
 
         /// <summary>
@@ -457,17 +467,16 @@ namespace Rock.Blocks.CheckIn.Configuration
             // limit Schedules to ones that are Active and have a CheckInStartOffsetMinutes
             var scheduleQry = scheduleService.Queryable().Where( a => a.IsActive && a.CheckInStartOffsetMinutes != null );
 
-            // limit Schedules to the Category from the Filter
-            if ( SelectedCategory != null && Guid.TryParse( SelectedCategory.Value, out var categoryGuid ) )
-            {
-                var categoryId = CategoryCache.Get( categoryGuid ).Id;
-                scheduleQry = scheduleQry.Where( a => a.CategoryId == categoryId );
-            }
-            else
-            {
-                // NULL (or 0) means Shared, so specifically filter so to show only Schedules with CategoryId NULL
-                scheduleQry = scheduleQry.Where( a => a.CategoryId == null );
-            }
+            // Resolve the category used to filter Schedules. A missing preference means the individual
+            // hasn't chosen a category yet, so default to Service Times to match the slicer's seeded default.
+            // An explicit selection whose value isn't a category Guid means "Shared" (Schedules with no category).
+            var categoryGuid = SelectedCategory != null
+                ? SelectedCategory.Value.AsGuidOrNull()
+                : Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid();
+
+            var categoryId = categoryGuid.HasValue ? CategoryCache.GetId( categoryGuid.Value ) : null;
+
+            scheduleQry = scheduleQry.Where( a => a.CategoryId == categoryId );
 
             // clear out any existing schedule columns and add the ones that match the current filter setting
             var scheduleList = scheduleQry.OrderBy( a => a.Name ).ToList();

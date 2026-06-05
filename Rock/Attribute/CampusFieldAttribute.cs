@@ -65,6 +65,16 @@ namespace Rock.Attribute
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="CampusFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public CampusFieldAttribute( string name )
+            : base( name, fieldTypeClass: typeof( Rock.Field.Types.CampusFieldType ).FullName )
+        {
+            IncludeInactive = false;
+        }
+
+        /// <summary>
         /// Gets or sets the campus types filter.
         /// </summary>
         /// <value>
@@ -119,6 +129,15 @@ namespace Rock.Attribute
             {
                 FieldConfigurationValues.AddOrReplace( FORCE_VISIBLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
             }
+        }
+
+        /// <summary>
+        /// Determines if inactive campuses are included.
+        /// </summary>
+        public bool IncludeInactive
+        {
+            get => FieldConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBoolean();
+            set => FieldConfigurationValues.AddOrReplace( INCLUDE_INACTIVE_KEY, new Field.ConfigurationValue( value.ToString() ) );
         }
     }
 }

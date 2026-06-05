@@ -45,7 +45,7 @@ namespace Rock.ViewModels.Blocks.Reminders.ReminderLinks
 
         /// <summary>
         /// Gets or sets the person alias guid chosen in the Assign Reminder To
-        /// picker. This is the <see cref="Rock.Model.PersonAlias.Guid"/> of the
+        /// picker. This is the Rock.Model.PersonAlias.Guid of the
         /// person's primary alias (the value the Obsidian PersonPicker emits).
         /// Null / empty means the reminder should be assigned to the current person.
         /// </summary>

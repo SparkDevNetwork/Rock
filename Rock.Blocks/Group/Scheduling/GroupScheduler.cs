@@ -20,12 +20,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Blocks.Group.Scheduling;
 using Rock.Enums.Controls;
 using Rock.Model;
+using Rock.RealTime;
+using Rock.RealTime.Topics;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler;
@@ -278,7 +281,8 @@ namespace Rock.Blocks.Group.Scheduling
             List<int> groupIds;
             if ( HasPageParameter( PageParameterKey.GroupId ) || HasPageParameter( PageParameterKey.GroupIds ) )
             {
-                var groupId = this.PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+                var groupId = new GroupService( rockContext )
+                    .GetSelect( this.PageParameter( PageParameterKey.GroupId ), g => ( int? ) g.Id, !PageCache.Layout.Site.DisablePredictableIds );
                 groupIds = ( this.PageParameter( PageParameterKey.GroupIds ) ?? string.Empty ).Split( ',' ).AsIntegerList();
 
                 if ( groupId.HasValue && !groupIds.Contains( groupId.Value ) )
@@ -1805,14 +1809,20 @@ namespace Rock.Blocks.Group.Scheduling
         }
 
         /// <summary>
-        /// Validates the provided filters and sends confirmations to individuals scheduled for future occurrences specified within the filters.
+        /// Validates the provided filters, sends confirmations to individuals scheduled for future occurrences,
+        /// and reports per-individual progress through the supplied <see cref="TaskActivityProgress"/> reporter.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="filters">The filters containing the groups with individuals who should receive confirmations.</param>
+        /// <param name="progress">The progress reporter that pushes status, progress, and log events to the calling client. May be <c>null</c> for callers that don't need real-time updates.</param>
         /// <returns>An object containing the outcome of the send communications attempt.</returns>
-        private GroupSchedulerSendConfirmationsResponseBag SendConfirmations( RockContext rockContext, GroupSchedulerFiltersBag filters )
+        private GroupSchedulerSendConfirmationsResponseBag SendConfirmations( RockContext rockContext, GroupSchedulerFiltersBag filters, TaskActivityProgress progress )
         {
-            var response = new GroupSchedulerSendConfirmationsResponseBag();
+            var response = new GroupSchedulerSendConfirmationsResponseBag
+            {
+                Errors = new List<string>(),
+                Warnings = new List<string>()
+            };
 
             RefineFilters( rockContext, filters );
 
@@ -1823,52 +1833,68 @@ namespace Rock.Blocks.Group.Scheduling
                 )
                 .ToList();
 
-            if ( futureOccurrences?.Any() == true )
+            if ( futureOccurrences?.Any() != true )
             {
-                var attendanceOccurrenceIds = futureOccurrences
-                    .Select( s => s.AttendanceOccurrenceId.Value )
-                    .ToList();
+                return response;
+            }
 
-                if ( attendanceOccurrenceIds.Any() )
-                {
-                    var attendanceService = new AttendanceService( rockContext );
-                    var sendConfirmationAttendancesQuery = attendanceService.GetPendingAndAutoAcceptScheduledConfirmations()
-                        .Where( a => attendanceOccurrenceIds.Contains( a.OccurrenceId ) )
-                        .Where( a => a.ScheduleConfirmationSent != true );
+            var attendanceOccurrenceIds = futureOccurrences
+                .Select( s => s.AttendanceOccurrenceId.Value )
+                .ToList();
 
-                    // Make sure we save changes after calling the following method, to mark successful sends in the database
-                    // and prevent duplicate sends the next time this method is called.
-                    var sendMessageResult = attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery, true );
-                    rockContext.SaveChanges();
+            if ( !attendanceOccurrenceIds.Any() )
+            {
+                return response;
+            }
 
-                    response.Errors = sendMessageResult.Errors;
-                    response.Warnings = sendMessageResult.Warnings;
-                    response.CommunicationsSentCount = sendMessageResult.MessagesSent;
+            var attendanceService = new AttendanceService( rockContext );
+            var sendConfirmationAttendancesQuery = attendanceService.GetPendingAndAutoAcceptScheduledConfirmations()
+                .Where( a => attendanceOccurrenceIds.Contains( a.OccurrenceId ) )
+                .Where( a => a.ScheduleConfirmationSent != true );
 
-                    // Check to see if any group types are missing a system communication so we can alert the current person.
-                    var groupTypeNamesWithoutSystemCommunication = sendConfirmationAttendancesQuery
-                        .Where( a =>
-                            a.Occurrence.Group.GroupType != null
-                            && !a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId.HasValue
-                        )
-                        .Select( a => a.Occurrence.Group.GroupType.Name )
-                        .Distinct()
-                        .ToList();
+            // Snapshot the eligible recipient count up-front so the client can show "Sending 0 of N..." progress
+            // before the first iteration completes.
+            response.EligibleRecipientCount = sendConfirmationAttendancesQuery
+                .Select( a => a.PersonAliasId )
+                .Distinct()
+                .Count();
 
-                    if ( groupTypeNamesWithoutSystemCommunication.Any() )
-                    {
-                        response.Warnings.InsertRange( 0, groupTypeNamesWithoutSystemCommunication.Select( name =>
-                            $@"Group Type ""{name}"" does not have a ""Schedule Confirmation Communication"" specified."
-                        ) );
-                    }
+            if ( response.EligibleRecipientCount > 0 )
+            {
+                progress?.ReportProgressUpdate( 0, response.EligibleRecipientCount, $"Sending 0 of {response.EligibleRecipientCount} confirmations..." );
+            }
 
-                    if ( response.CommunicationsSentCount == 0
-                        && !response.Errors.Any()
-                        && !response.Warnings.Any() )
-                    {
-                        response.AnyCommunicationsToSend = sendConfirmationAttendancesQuery.Any();
-                    }
-                }
+            // AttendanceService now saves per-individual and reports its own per-individual progress through the
+            // same TaskActivityProgress reporter. A final SaveChanges is harmless but no longer required.
+            var sendMessageResult = attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery, true, progress );
+            rockContext.SaveChanges();
+
+            response.Errors = sendMessageResult.Errors;
+            response.Warnings = sendMessageResult.Warnings;
+            response.CommunicationsSentCount = sendMessageResult.MessagesSent;
+
+            // Check to see if any group types are missing a system communication so we can alert the current person.
+            var groupTypeNamesWithoutSystemCommunication = sendConfirmationAttendancesQuery
+                .Where( a =>
+                    a.Occurrence.Group.GroupType != null
+                    && !a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId.HasValue
+                )
+                .Select( a => a.Occurrence.Group.GroupType.Name )
+                .Distinct()
+                .ToList();
+
+            if ( groupTypeNamesWithoutSystemCommunication.Any() )
+            {
+                response.Warnings.InsertRange( 0, groupTypeNamesWithoutSystemCommunication.Select( name =>
+                    $@"Group Type ""{name}"" does not have a ""Schedule Confirmation Communication"" specified."
+                ) );
+            }
+
+            if ( response.CommunicationsSentCount == 0
+                && !response.Errors.Any()
+                && !response.Warnings.Any() )
+            {
+                response.AnyCommunicationsToSend = sendConfirmationAttendancesQuery.Any();
             }
 
             return response;
@@ -2211,19 +2237,148 @@ namespace Rock.Blocks.Group.Scheduling
         }
 
         /// <summary>
-        /// Sends confirmations to individuals scheduled for occurrences within the provided filters.
+        /// Subscribes the caller's real-time connection to the Send Confirmations progress channel for the given task.
+        /// <para>
+        /// The client must call this before invoking <see cref="StartSendConfirmations(GroupSchedulerFiltersBag, Guid)" />
+        /// so the background worker's progress events are delivered to the right connection.
+        /// </para>
         /// </summary>
-        /// <param name="bag">The filters containing the groups with individuals who should receive confirmations.</param>
-        /// <returns>An object containing the outcome of the send communications attempt.</returns>
+        /// <param name="connectionId">The SignalR connection identifier of the caller.</param>
+        /// <param name="taskGuid">The client-generated task identifier used as the channel key.</param>
+        /// <returns>200-OK response with no content.</returns>
         [BlockAction]
-        public BlockActionResult SendConfirmations( GroupSchedulerFiltersBag bag )
+        public async Task<BlockActionResult> SubscribeToRealTime( string connectionId, Guid taskGuid )
         {
+            if ( connectionId.IsNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( "Connection identifier is required." );
+            }
+
+            if ( taskGuid == Guid.Empty )
+            {
+                return ActionBadRequest( "Task identifier is required." );
+            }
+
+            if ( GetCurrentPerson() == null )
+            {
+                return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
+            }
+
+            var topicChannels = RealTimeHelper.GetTopicContext<ITaskActivityProgress>().Channels;
+            await topicChannels.AddToChannelAsync( connectionId, GetSendConfirmationsChannel( taskGuid ) );
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Starts the Send Confirmations work on a background <see cref="Task" /> and returns immediately.
+        /// Progress and the final response payload are pushed to the caller via the real-time channel keyed by
+        /// <paramref name="taskGuid" /> (the same channel the caller subscribed to via
+        /// <see cref="SubscribeToRealTime(string, Guid)" />).
+        /// </summary>
+        /// <param name="bag">The filters identifying the recipient set.</param>
+        /// <param name="taskGuid">The client-generated task identifier used as the channel key.</param>
+        /// <returns>200-OK with no content. Outcome is delivered via the real-time topic.</returns>
+        [BlockAction]
+        public BlockActionResult StartSendConfirmations( GroupSchedulerFiltersBag bag, Guid taskGuid )
+        {
+            if ( taskGuid == Guid.Empty )
+            {
+                return ActionBadRequest( "Task identifier is required." );
+            }
+
+            // Validate the filters synchronously while we still have request-scoped state available. The
+            // background task then operates on the validated bag using its own RockContext.
+            GroupSchedulerFiltersBag validatedFilters;
             using ( var rockContext = new RockContext() )
             {
-                var response = SendConfirmations( rockContext, ValidateClientFilters( rockContext, bag ) );
-
-                return ActionOk( response );
+                validatedFilters = ValidateClientFilters( rockContext, bag );
             }
+
+            ProcessSendConfirmationsAsync( validatedFilters, taskGuid );
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Returns the real-time channel name for a given Send Confirmations task. Matches the naming convention
+        /// used by <see cref="Rock.Blocks.Communication.CommunicationEntryWizard" /> (which uses "Communication:Send:{guid}").
+        /// </summary>
+        private static string GetSendConfirmationsChannel( Guid taskGuid )
+        {
+            return $"GroupScheduler:SendConfirmations:{taskGuid}";
+        }
+
+        /// <summary>
+        /// Kicks off the Send Confirmations work on a background <see cref="Task" />. The task uses its own
+        /// <see cref="RockContext" /> so it can outlive the originating HTTP request, and reports progress via the
+        /// real-time channel keyed by <paramref name="taskGuid" /> using the standard
+        /// <see cref="Rock.Utility.TaskActivityProgress" /> helper.
+        /// </summary>
+        /// <param name="filters">The validated filter set identifying the recipients.</param>
+        /// <param name="taskGuid">The task identifier used as the channel key (also reported back to the client as <c>TaskId</c>).</param>
+        private void ProcessSendConfirmationsAsync( GroupSchedulerFiltersBag filters, Guid taskGuid )
+        {
+            var channelName = GetSendConfirmationsChannel( taskGuid );
+            var progressReporter = RealTimeHelper.GetTopicContext<ITaskActivityProgress>().Clients.Channel( channelName );
+
+            var sendTask = new Task( () =>
+            {
+                using ( var progress = new TaskActivityProgress( progressReporter, "Send Confirmations", taskGuid.ToString() ) )
+                {
+                    try
+                    {
+                        progress.StartTask( "Preparing..." );
+
+                        GroupSchedulerSendConfirmationsResponseBag response;
+                        using ( var rockContext = new RockContext() )
+                        {
+                            response = SendConfirmations( rockContext, filters, progress );
+                        }
+
+                        progress.StopTask( BuildCompletionMessage( response ), response.Errors, response.Warnings, response );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( new Exception( "Group Scheduler Send Confirmations failed.", ex ) );
+                        progress.StopTask(
+                            "Send Confirmations failed. Check the Exception Log for details.",
+                            new[] { "Send Confirmations failed. Check the Exception Log for details." } );
+                    }
+                }
+            } );
+
+            // Fire-and-forget. The task will continue to run after the HTTP response returns and pushes its
+            // updates to the client over the SignalR hub via the TaskActivityProgress helper.
+            sendTask.Start();
+        }
+
+        /// <summary>
+        /// Builds the short summary message attached to the final TaskCompleted event, for display in the toast/banner.
+        /// </summary>
+        private static string BuildCompletionMessage( GroupSchedulerSendConfirmationsResponseBag response )
+        {
+            if ( response.CommunicationsSentCount == 0 && !response.AnyCommunicationsToSend && !( response.Warnings?.Any() == true ) && !( response.Errors?.Any() == true ) )
+            {
+                return "No confirmations were sent (no eligible recipients).";
+            }
+
+            var parts = new List<string>
+            {
+                $"Sent {response.CommunicationsSentCount} confirmation{( response.CommunicationsSentCount == 1 ? string.Empty : "s" )}."
+            };
+
+            if ( response.Warnings?.Any() == true )
+            {
+                parts.Add( $"{response.Warnings.Count} warning{( response.Warnings.Count == 1 ? string.Empty : "s" )}." );
+            }
+
+            if ( response.Errors?.Any() == true )
+            {
+                parts.Add( $"{response.Errors.Count} error{( response.Errors.Count == 1 ? string.Empty : "s" )}." );
+            }
+
+            return string.Join( " ", parts );
         }
 
         /// <summary>

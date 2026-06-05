@@ -289,14 +289,19 @@ namespace Rock.Blocks.Group
 
             var roleBags = GetGroupTypeRoleBags( entity.Id );
 
-            // If this is a new group type being created, we set the default role to
-            // the default "member" role that was seeded within GetGroupTypeRoleBags().
-            var defaultGroupRole = entity.DefaultGroupRole.ToListItemBag()
-                ?? new ListItemBag
+            // A new group type has no stored default role, so fall back to the seeded
+            // "Member" role from GetGroupTypeRoleBags(). An existing group type can have
+            // no roles at all, in which case there is no default to assign.
+            var defaultGroupRole = entity.DefaultGroupRole.ToListItemBag();
+
+            if ( defaultGroupRole == null && roleBags.Count > 0 )
+            {
+                defaultGroupRole = new ListItemBag
                 {
                     Value = roleBags[0].Guid.ToString(),
                     Text = roleBags[0].Name
                 };
+            }
 
             return new GroupTypeBag
             {
@@ -1084,7 +1089,6 @@ namespace Rock.Blocks.Group
                 var bag = new GroupTypeGroupMemberWorkflowTriggerBag
                 {
                     Guid = t.Guid,
-                    Order = t.Order,
                     Name = t.Name,
                     IsActive = t.IsActive,
                     WorkflowType = t.WorkflowType?.ToListItemBag(),
@@ -1241,7 +1245,6 @@ namespace Rock.Blocks.Group
 
                 if ( existing.Name != bag.Name ||
                      existing.IsActive != bag.IsActive ||
-                     existing.Order != bag.Order ||
                      existing.WorkflowTypeId != ( bag.WorkflowType?.GetEntityId<WorkflowType>( RockContext ) ?? 0 ) ||
                      existing.TriggerType != bag.TriggerType ||
                      existing.TypeQualifier != BuildGroupMemberWorkflowTriggerTypeQualifier( bag ) )
@@ -1671,7 +1674,6 @@ namespace Rock.Blocks.Group
                                 trigger.GroupType = entity;
                                 trigger.Name = bag.Name;
                                 trigger.IsActive = bag.IsActive;
-                                trigger.Order = bag.Order;
                                 trigger.WorkflowTypeId = bag.WorkflowType?.GetEntityId<WorkflowType>( RockContext ) ?? 0;
                                 trigger.TriggerType = bag.TriggerType;
                                 trigger.TypeQualifier = BuildGroupMemberWorkflowTriggerTypeQualifier( bag );

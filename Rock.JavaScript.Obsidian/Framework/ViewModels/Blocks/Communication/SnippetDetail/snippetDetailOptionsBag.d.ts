@@ -23,8 +23,11 @@
 
 /** Class SnippetDetailOptionsBag. */
 export type SnippetDetailOptionsBag = {
-    /** Gets or sets a value indicating whether this instance is authorized to edit. */
-    isAuthorizedToEdit: boolean;
+    /**
+     * Gets or sets a value indicating whether the current person can edit the snippet type,
+     * which determines whether they may make a snippet shared (public) rather than personal.
+     */
+    canEditSnippetType: boolean;
 
     /** Gets or sets a value indicating whether this instance is personal allowed. */
     isPersonalAllowed: boolean;

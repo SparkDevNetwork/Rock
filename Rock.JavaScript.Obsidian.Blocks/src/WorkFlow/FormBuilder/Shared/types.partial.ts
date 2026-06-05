@@ -62,6 +62,27 @@ export const enum FormEmailSourceType {
 }
 
 /**
+ * Identifies which member of the resolved primary person's family will
+ * receive a form confirmation e-mail.
+ */
+export const enum FormConfirmationEmailRecipientType {
+    /** Send only to the resolved primary person (today's default). */
+    Person = 0,
+
+    /**
+     * Send only to the primary person's spouse. The runtime skip-and-warns
+     * if no spouse is on the family record.
+     */
+    Spouse = 1,
+
+    /**
+     * Send to both the primary person and their spouse (one delivery each).
+     * Falls back to primary-only if no spouse is on the family record.
+     */
+    Both = 2
+}
+
+/**
  * The possible destination options for a form notification e-mail.
  */
 export const enum FormNotificationEmailDestination {
@@ -238,6 +259,14 @@ export type FormConfirmationEmail = {
      */
     recipientAttributeGuid?: string | null;
 
+    /**
+     * Identifies whether the resolved primary person, the primary person's
+     * spouse, or both receive the confirmation e-mail. Defaults to
+     * {@link FormConfirmationEmailRecipientType.Person} for backward
+     * compatibility.
+     */
+    recipient?: FormConfirmationEmailRecipientType;
+
     /** Determines how the content of the e-mail will be generated. */
     source?: FormEmailSource | null;
 };
@@ -269,6 +298,42 @@ export type FormEmailSource = {
      * prepended and appended to the custom body.
      */
     appendOrgHeaderAndFooter?: boolean;
+};
+
+/**
+ * Maps a single Form Builder form field onto a target attribute on the
+ * selected Connection Opportunity. A null `targetAttributeGuid` signals
+ * "append to the Connection Request's Comment field" (default).
+ */
+export type FormFieldAttributeMapping = {
+    /** The form attribute (workflow form field) being mapped. */
+    formAttributeGuid: Guid;
+
+    /** The target attribute on the Connection Opportunity, or null to comment-append. */
+    targetAttributeGuid?: Guid | null;
+};
+
+/**
+ * Editor settings for the Automations tab's Connection Requests section.
+ */
+export type FormConnectionRequests = {
+    /** Whether the Connection Requests section is enabled for this form. */
+    enabled?: boolean;
+
+    /** The selected Connection Type. */
+    connectionTypeGuid?: Guid | null;
+
+    /** The selected Connection Opportunity. Required at runtime when enabled. */
+    connectionOpportunityGuid?: Guid | null;
+
+    /** Optional explicit Connection Status; null falls back to the type's default. */
+    connectionStatusGuid?: Guid | null;
+
+    /** Optional Connection Source defined-value; null means no source. */
+    connectionSourceValueGuid?: Guid | null;
+
+    /** Per-form-field mappings. Order matches the form's attribute order. */
+    attributeMappings?: FormFieldAttributeMapping[];
 };
 
 /**
@@ -410,6 +475,12 @@ export type FormSettings = {
      * this form is submitted.
      */
     notificationEmail?: FormNotificationEmail | null;
+
+    /**
+     * The settings that describe whether a Connection Request is opened
+     * when this form is submitted, and how its fields are populated.
+     */
+    connectionRequests?: FormConnectionRequests | null;
 
     /** The action to perform after this form is submitted. */
     completion?: FormCompletionAction | null;

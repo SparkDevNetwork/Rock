@@ -21,10 +21,12 @@ export const enum NavigationUrlKey {
 }
 
 export const enum PreferenceKey {
-    FilterDateRange = "filter-date"
+    FilterDateRange = "filter-date",
+    FilterLocationId = "filter-location-id"
 }
 
 export type GridSettingsOptions = {
     filterDateRange: SlidingDateRange | null;
+    filterLocationId: string | null;
 };
 

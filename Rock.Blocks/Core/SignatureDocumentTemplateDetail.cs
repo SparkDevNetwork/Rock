@@ -59,7 +59,7 @@ namespace Rock.Blocks.Core
 
     [BooleanField(
         "Show Legacy Signature Providers",
-        "Enable this setting to see the configuration for legacy signature providers. Note that support for these providers will be fully removed in the next full release.",
+        Description = "Enable this setting to see the configuration for legacy signature providers. Note that support for these providers will be fully removed in the next full release.",
         Key = AttributeKey.ShowLegacyExternalProviders,
         DefaultBooleanValue = false,
         Order = 1 )]

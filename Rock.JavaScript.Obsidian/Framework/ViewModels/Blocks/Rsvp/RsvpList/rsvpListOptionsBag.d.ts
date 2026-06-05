@@ -21,6 +21,10 @@
 // </copyright>
 //
 
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
 /** The additional configuration options for the Rsvp List block. */
 export type RsvpListOptionsBag = {
+    /** Gets or sets the locations available for the location filter dropdown. */
+    locations?: ListItemBag[] | null;
 };

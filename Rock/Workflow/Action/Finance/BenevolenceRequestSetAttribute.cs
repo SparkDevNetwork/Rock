@@ -34,11 +34,28 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Benevolence Request Set Attribute" )]
 
-    [WorkflowAttribute( "Benevolence Request", "Workflow attribute to set the returned benevolence request to.", true, "", "", 0, "BenevolenceRequest",
-        new string[] { "Rock.Field.Types.BenevolenceRequestFieldType" } )]
-    [AttributeField( SystemGuid.EntityType.BENEVOLENCE_REQUEST, "Benevolence Request Attribute", "The benevolence request attribute that should be updated with the provided value.", true, false, "", "", 1 )]
-    [WorkflowTextOrAttribute( "Value", "Attribute Value", "The value or attribute value to set the benevolence request attribute to. <span class='tip tip-lava'></span>", true, "", "", 2, "Value" )]
-    [BooleanField("Use Blank Value", "If the provided value is an empty string should it be used to blank out the attribute value or should it be ignored? If true the empty value will be used to blank out the attribute.", true, order: 3)]
+    [WorkflowAttribute( "Benevolence Request",
+        Description = "Workflow attribute to set the returned benevolence request to.",
+        IsRequired = true,
+        Order = 0,
+        Key = "BenevolenceRequest",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.BenevolenceRequestFieldType" } )]
+    [AttributeField( "Benevolence Request Attribute",
+        Description = "The benevolence request attribute that should be updated with the provided value.",
+        IsRequired = true,
+        AllowMultiple = false,
+        EntityTypeGuid = SystemGuid.EntityType.BENEVOLENCE_REQUEST,
+        Order = 1 )]
+    [WorkflowTextOrAttribute( "Value",
+        "Attribute Value",
+        Description = "The value or attribute value to set the benevolence request attribute to. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 2,
+        Key = "Value" )]
+    [BooleanField("Use Blank Value",
+        Description = "If the provided value is an empty string should it be used to blank out the attribute value or should it be ignored? If true the empty value will be used to blank out the attribute.",
+        DefaultBooleanValue = true,
+        Order = 3)]
     [Rock.SystemGuid.EntityTypeGuid( "478FEDC6-2AD7-467C-9C02-A41E2EFC4271")]
     public class BenevolenceRequestSetAttribute : ActionComponent
     {

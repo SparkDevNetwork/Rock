@@ -1,0 +1,99 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Copy Group"
+           saveText="Copy"
+           saveAutoDisable
+           saveAutoLoading
+           @save="onSave">
+        <NotificationBox alertType="warning">
+            <p>The selected group will be copied. Group members will not be included. The following will be copied for each group:</p>
+            <ul>
+                <li>Group member attribute configuration</li>
+                <li>Group attribute configuration and their values</li>
+                <li>Schedules</li>
+                <li>Authorizations (to the group and to other entities based on group membership)</li>
+                <li>Locations (excluding group member addresses)</li>
+                <li>Group requirements</li>
+                <li>Group syncs</li>
+            </ul>
+        </NotificationBox>
+
+        <InlineCheckBox v-model="includeChildGroups" label="Include Child Groups" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { CopyGroupRequestBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/copyGroupRequestBag";
+    import { PropType, ref, watch } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean,
+            required: true
+        },
+
+        /**
+         * Async callback the parent supplies to perform the copy. Returning a
+         * promise keeps the Modal's Save button disabled and in its loading
+         * state for the full server round trip, which prevents double-submits
+         * of CopyGroup (non-idempotent — a second submit would orphan another
+         * clone).
+         */
+        saveCallback: {
+            type: Function as PropType<(bag: CopyGroupRequestBag) => Promise<void>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = ref(props.modelValue);
+    const includeChildGroups = ref(false);
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Calls the parent's saveCallback with the modal's current selections.
+     * `key` is filled in by the parent at the call site.
+     */
+    async function onSave(): Promise<void> {
+        await props.saveCallback({
+            key: "",
+            includeChildGroups: includeChildGroups.value
+        });
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    /**
+     * Sync local visibility with the parent's v-model and reset the
+     * Include Child Groups checkbox each time the modal opens.
+     */
+    watch(() => props.modelValue, value => {
+        isVisible.value = value;
+        if (value) {
+            includeChildGroups.value = false;
+        }
+    });
+
+    /**
+     * Emit visibility changes back up to the parent's v-model.
+     */
+    watch(isVisible, value => {
+        emit("update:modelValue", value);
+    });
+
+    // #endregion
+</script>

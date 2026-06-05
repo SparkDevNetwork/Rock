@@ -35,8 +35,15 @@ namespace Rock.Jobs
     [DisplayName( "Send Note Notifications" )]
     [Description( "Send note watch notifications." )]
 
-    [SystemCommunicationField( "Note Watch Notification Email", "", defaultSystemCommunicationGuid: Rock.SystemGuid.SystemCommunication.NOTE_WATCH_NOTIFICATION, required: false, order: 1 )]
-    [IntegerField( "Cutoff Days", "Just in case the Note Notification service hasn't run for a while, this is the max number of days between the note edited date and the notification.", required: true, defaultValue: 7, order: 3 )]
+    [SystemCommunicationField( "Note Watch Notification Email",
+        DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.NOTE_WATCH_NOTIFICATION,
+        IsRequired = false,
+        Order = 1 )]
+    [IntegerField( "Cutoff Days",
+        Description = "Just in case the Note Notification service hasn't run for a while, this is the max number of days between the note edited date and the notification.",
+        IsRequired = true,
+        DefaultIntegerValue = 7,
+        Order = 3 )]
     public class SendNoteNotifications : RockJob
     {
         /// <summary>

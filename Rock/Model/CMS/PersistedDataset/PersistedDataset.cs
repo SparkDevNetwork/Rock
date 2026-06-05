@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Enums.Security;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -228,6 +229,14 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? ExpireDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the outcome of the last attempt to persist the <see cref="ResultData"/>.
+        /// </summary>
+        /// <value>
+        /// The status of the persisted dataset.
+        /// </value>
+        public PersistedDatasetStatus Status { get; set; }
 
         #endregion Entity Properties
 

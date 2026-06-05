@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.CheckIn
         Key = AttributeKey.Location )]
     [GroupTypeField(
         "Check-in Configuration",
-        groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE,
+        GroupTypePurposeValueGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE,
         Description = "This will be the group type that we will use to determine where to check them in.",
         IsRequired = true,
         DefaultValue = Rock.SystemGuid.GroupType.GROUPTYPE_SERVICE_ATTENDANCE,
@@ -118,8 +118,8 @@ namespace RockWeb.Blocks.CheckIn
         Key = AttributeKey.OtherPersonMobilePhoneRequired )]
     [CustomEnhancedListField(
         "Known Relationship Types",
-        description: "A checkbox list of Known Relationship types that should be included in the Relation dropdown.",
-        listSource: @"
+        Description = "A checkbox list of Known Relationship types that should be included in the Relation dropdown.",
+        ListSource = @"
 SELECT 
 	R.[Guid] AS [Value],
 	R.[Name] AS [Text]

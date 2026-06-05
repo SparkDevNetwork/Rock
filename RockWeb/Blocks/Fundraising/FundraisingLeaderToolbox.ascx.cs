@@ -61,8 +61,14 @@ namespace RockWeb.Blocks.Fundraising
 ",
         Order = 1 )]
 
-    [LinkedPage( "Participant Page", "The participant page for a participant of this fundraising opportunity", required: false, order: 2 )]
-    [LinkedPage( "Main Page", "The main page for the fundraising opportunity", required: false, order: 3 )]
+    [LinkedPage( "Participant Page",
+        Description = "The participant page for a participant of this fundraising opportunity",
+        IsRequired = false,
+        Order = 2 )]
+    [LinkedPage( "Main Page",
+        Description = "The main page for the fundraising opportunity",
+        IsRequired = false,
+        Order = 3 )]
     [Rock.SystemGuid.BlockTypeGuid( "B90F730D-6319-4749-A3C0-BBFDD69D9BC3" )]
     public partial class FundraisingLeaderToolbox : RockBlock
     {

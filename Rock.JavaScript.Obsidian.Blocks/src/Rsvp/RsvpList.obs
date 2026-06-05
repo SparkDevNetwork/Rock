@@ -39,10 +39,11 @@
         <Column
                 name="progressBar"
                 columnType="custom"
+                itemClass="align-items-center"
                 visiblePriority="xs"
-                width="5%">
+                width="7%">
             <template #format="{ row }">
-                <div class="progress" style="width: 100%;">
+                <div class="progress w-100 mb-0">
                     <!-- Accepted -->
                     <div
                          class="progress-bar progress-bar-success"
@@ -95,7 +96,9 @@
                       visiblePriority="xs" />
 
     </Grid>
-    <GridSettingsModal v-model="gridSettings" v-model:visible="isGridSettingsVisible" />
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :locations="config.options?.locations ?? []" />
 </template>
 
 <script setup lang="ts">
@@ -137,22 +140,13 @@
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
         gridData = reactive(result.data);
-
-        if (!gridData.rows || gridData.rows.length === 0) {
-            if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-                window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
-            }
-            return {
-                ...gridData,
-                rows: []
-            };
-        }
         return gridData;
     }
 
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>({
         filterDateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterDateRange)) ?? null,
+        filterLocationId: preferences.getValue(PreferenceKey.FilterLocationId) || null,
     });
 
     // #endregion
@@ -177,7 +171,7 @@
         const selectedOccurrence = gridData?.rows.find(r => r.keyField === key);
         if (!selectedOccurrence) return;
 
-        // Of the occurence has not been created, get an id for it
+        // If the occurrence has not been created, get an id for it.
         if (selectedOccurrence.id === 0) {
             isSelectingItem.value = true;
             const result = await invokeBlockAction<string>("GetOccurrenceId", {
@@ -208,12 +202,12 @@
         }
     }
 
-
     // #endregion
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.filterDateRange;
-    });
 
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.filterDateRange
+            || !!gridSettings.value.filterLocationId;
+    });
 
     watch(gridSettings, async () => {
         const filterDateRangeString = gridSettings.value.filterDateRange
@@ -221,6 +215,7 @@
             : "";
 
         preferences.setValue(PreferenceKey.FilterDateRange, filterDateRangeString);
+        preferences.setValue(PreferenceKey.FilterLocationId, gridSettings.value.filterLocationId ?? "");
         await preferences.save();
 
         gridDataSource.value = loadGridData();

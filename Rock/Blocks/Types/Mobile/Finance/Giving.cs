@@ -855,6 +855,9 @@ namespace Rock.Blocks.Types.Mobile.Finance
             PopulateTransactionDetails( commonTransactionAccountDetails, bag );
 
             paymentInfo.Amount = commonTransactionAccountDetails.Sum( tad => tad.Amount );
+            paymentInfo.AccountAllocations = commonTransactionAccountDetails
+                .Select( tad => new FinancialTransactionService.AccountAllocation( tad.AccountId, tad.Amount ) )
+                .ToList();
 
             var totalFeeCoverageAmounts = commonTransactionAccountDetails.Where( a => a.FeeCoverageAmount.HasValue ).Select( a => a.FeeCoverageAmount.Value );
             if ( totalFeeCoverageAmounts.Any() )
@@ -1587,6 +1590,26 @@ namespace Rock.Blocks.Types.Mobile.Finance
             }
 
             referencePaymentInfo.Amount = options.AmountSelections.Sum( a => a.Amount );
+
+            /*
+                06/03/2026 - NA
+
+                We pass allowIntegerIdentifier: true (rather than the !DisablePredictableIds
+                pattern used elsewhere in this file) because AccountAllocations is internal
+                data flowing from the client through Rock to the gateway. The integer
+                AccountId is required by the gateway regardless of whether the site has
+                disabled predictable IDs in its user-facing surfaces, and a non-Vue caller
+                (REST, automation, integration test) might legitimately send an integer
+                here. Rejecting it would silently produce a bogus AccountId of 0 in the
+                allocation list.
+
+                Reason: Payment Gateways can use the FinancialAccount.Id.
+            */
+            referencePaymentInfo.AccountAllocations = options.AmountSelections
+                .Select( a => new FinancialTransactionService.AccountAllocation(
+                    FinancialAccountCache.Get( a.AccountId, allowIntegerIdentifier: true )?.Id ?? 0,
+                    a.Amount ) )
+                .ToList();
 
             // Update the transaction frequency with the new value.
             scheduledTransaction.TransactionFrequencyValueId = DefinedValueCache.Get( options.FrequencyValueId, !this.PageCache.Layout.Site.DisablePredictableIds )?.Id

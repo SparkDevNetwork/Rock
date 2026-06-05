@@ -22,7 +22,7 @@
                         <div class="col-md-6">
                             <DateTimePicker :modelValue="transactionDateTime"
                                             @update:modelValue="onTransactionDateTimeChanged"
-                                            label="Transaction Date"
+                                            label="Transaction Date/Time"
                                             :displayCurrentOption="false"
                                             :isCurrentDateOffset="false"
                                             :disableForceParse="false"
@@ -45,17 +45,20 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <div class="d-flex gap-3 flex-wrap w-100">
-                                <div v-for="(image, index) in imageListItems" :key="index" style="width: fit-content;">
+                            <div class="form-group">
+                                <RockLabel help="Upload images related to this transaction, such as a check image or deposit receipt.">Transaction Images</RockLabel>
+                                <div class="control-wrapper d-flex gap-3 flex-wrap w-100 mt-2">
+                                    <div v-for="(image, index) in imageListItems" :key="index" style="width: fit-content;">
+                                        <ImageUploader
+                                                       :modelValue="image"
+                                                       @imageRemoved="onImageRemove(image)" />
+                                    </div>
                                     <ImageUploader
-                                                   :modelValue="image"
-                                                   @imageRemoved="onImageRemove(image)" />
+                                                   :key="currentImageKey"
+                                                   v-model="currentImage"
+                                                   :uploadAsTemporary="true"
+                                                   uploadButtonText="Add Image" />
                                 </div>
-                                <ImageUploader
-                                               :key="currentImageKey"
-                                               v-model="currentImage"
-                                               :uploadAsTemporary="true"
-                                               uploadButtonText="Add Image" />
                             </div>
                         </div>
                     </div>
@@ -83,7 +86,7 @@
                             <template #format="{ row }">
                                 <strong v-if="row.isTotalRow">Total</strong>
                                 <template v-else>
-                                    {{ row.account.text }}
+                                    {{ row.account?.text }}
                                 </template>
                             </template>
                         </Column>
@@ -220,7 +223,7 @@
                                                         label="Credit Card Type"
                                                         :definedTypeGuid="options.creditCardTypesGuid ?? ''"
                                                         :showBlankItem="false"
-                                                        help="Choose why this transaction was refunded." />
+                                                        help="Choose the brand of card used for this payment." />
                                     <DefinedValuePicker
                                                         v-if="showNonCash"
                                                         v-model="nonCashAssetType"
@@ -246,6 +249,7 @@
                     <div class="row" v-if="!isAddingTransaction">
                         <div class="col-md-6">
                             <FinancialGatewayPicker label="Payment Gateway"
+                                                    help="Select the financial gateway used to submit this transaction."
                                                     v-model="financialGateway"
                                                     :showBlankItem="true"
                                                     :showAllGatewayComponents="true"
@@ -319,6 +323,7 @@ strong {
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";

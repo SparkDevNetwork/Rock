@@ -78,9 +78,9 @@ namespace Rock.Blocks.Finance
         Order = 4,
         Key = AttributeKey.AppendSuffixToBatchName )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE,
-        "Location Types",
+    [DefinedValueField( "Location Types",
         Description = "The type of location type to display for person (if none are selected all addresses will be included ).",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE,
         IsRequired = false,
         AllowMultiple = true,
         Order = 5,
@@ -459,7 +459,11 @@ namespace Rock.Blocks.Finance
                     .Select( b => b.Id )
                     .FirstOrDefault();
 
-                bag = new TransactionBag { BatchId = batchId };
+                bag = new TransactionBag
+                {
+                    BatchId = batchId,
+                    BatchIdKey = batchId > 0 ? IdHasher.Instance.GetHash( batchId ) : null
+                };
             }
             else
             {
@@ -843,18 +847,19 @@ namespace Rock.Blocks.Finance
                     allowedLocationTypeIds.Contains( gl.GroupLocationTypeValueId.Value ) );
             }
 
-            return query
+            var rawLocations = query
+                .Include( gl => gl.Location )
+                .Include( gl => gl.GroupLocationTypeValue )
                 .OrderByDescending( gl => gl.IsMailingLocation )
                 .ThenByDescending( gl => gl.IsMappedLocation )
                 .ThenByDescending( gl => gl.CreatedDateTime )
+                .ToList();
+
+            return rawLocations
                 .Select( gl => new AddressBag
                 {
-                    Type = gl.GroupLocationTypeValue.Value,
-                    FormattedAddress = gl.Location.Street1
-                        + ( gl.Location.Street2 != null ? " " + gl.Location.Street2 : "" )
-                        + ", " + gl.Location.City
-                        + ", " + gl.Location.State
-                        + " " + gl.Location.PostalCode,
+                    Type = gl.GroupLocationTypeValue?.Value ?? "",
+                    FormattedAddress = gl.Location.FormattedAddress,
                     IsPrimary = gl.IsMailingLocation
                 } )
                 .ToList();
@@ -1512,8 +1517,11 @@ namespace Rock.Blocks.Finance
                 } ) );
             }
 
-            // Ensure navigation properties will work now.
-            entity = entityService.Get( entity.Id );
+            entity = entityService.Queryable()
+                .Include( t => t.TransactionDetails )
+                .Include( t => t.TransactionDetails.Select( d => d.Account ) )
+                .Include( t => t.TransactionDetails.Select( d => d.EntityType ) )
+                .FirstOrDefault( t => t.Id == entity.Id );
 
             var bag = GetEntityBagForView( entity );
 
@@ -1605,7 +1613,7 @@ namespace Rock.Blocks.Finance
             }
 
             var transaction = new FinancialTransactionService( RockContext )
-                .GetQueryableByKey( key )
+                .GetQueryableByKey( key, !this.PageCache.Layout.Site.DisablePredictableIds )
                 .FirstOrDefault();
 
             if ( transaction == null )
@@ -1640,7 +1648,7 @@ namespace Rock.Blocks.Finance
 
             var transactionService = new FinancialTransactionService( RockContext );
 
-            var transactionQry = transactionService.GetQueryableByKey(key);
+            var transactionQry = transactionService.GetQueryableByKey( key, !this.PageCache.Layout.Site.DisablePredictableIds );
 
             var transaction = transactionQry
                 .Include( t => t.Batch )
@@ -1717,6 +1725,8 @@ namespace Rock.Blocks.Finance
                 .Include( t => t.AuthorizedPersonAlias.Person )
                 .Include( t => t.FinancialGateway )
                 .Include( t => t.TransactionDetails )
+                .Include( t => t.TransactionDetails.Select( d => d.Account ) )
+                .Include( t => t.TransactionDetails.Select( d => d.EntityType ) )
                 .FirstOrDefault( t => t.Id == transaction.Id );
 
 

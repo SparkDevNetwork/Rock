@@ -45,7 +45,10 @@ namespace RockWeb.Blocks.Finance
         IsRequired = true,
         DefaultValue = "{% include '~~/Assets/Lava/TransactionYearlySummary.lava' %}",
         Order = 1 )]
-    [AccountsField( "Accounts", "Limit the results to transactions that match the selected accounts.", false, "", "", 2 )]
+    [AccountsField( "Accounts",
+        Description = "Limit the results to transactions that match the selected accounts.",
+        IsRequired = false,
+        Order = 2 )]
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.BlockTypeGuid( "535307C8-77D1-44F8-AD4D-1577572B6D26" )]
     public partial class TransactionYearlySummaryLava : RockBlock, ISecondaryBlock

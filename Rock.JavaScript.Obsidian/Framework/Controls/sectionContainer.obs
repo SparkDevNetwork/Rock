@@ -3,7 +3,10 @@
     <div class="section-container well">
         <div class="section-header">
             <div class="section-header-content">
-                <SectionHeader :title="title" :description="description" :isSeparatorHidden="true">
+                <SectionHeader :title="title"
+                               :description="description"
+                               :iconCssClass="iconCssClass"
+                               :isSeparatorHidden="true">
                     <template #actions>
                         <slot name="actions" />
                     </template>
@@ -58,6 +61,15 @@
         },
 
         description: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * Optional icon CSS class (e.g. "ti ti-settings") rendered in a soft
+         * tinted square at the start of the section header.
+         */
+        iconCssClass: {
             type: String as PropType<string>,
             default: ""
         }

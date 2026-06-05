@@ -32,7 +32,8 @@ namespace Rock.Workflow.Action
     [Description( "Sets the workflow status" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Workflow Set Status" )]
-    [TextField( "Status", "The status to set workflow to. <span class='tip tip-lava'></span>" )]
+    [TextField( "Status",
+        Description = "The status to set workflow to. <span class='tip tip-lava'></span>" )]
     [Rock.SystemGuid.EntityTypeGuid( "96D371A7-A291-4F8F-8B38-B8F72CE5407E")]
     public class SetStatus : ActionComponent
     {

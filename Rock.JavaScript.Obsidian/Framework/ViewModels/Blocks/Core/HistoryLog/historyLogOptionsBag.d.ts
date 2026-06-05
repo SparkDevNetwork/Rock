@@ -23,21 +23,21 @@
 
 /** The additional configuration options for the History Log block. */
 export type HistoryLogOptionsBag = {
-    /** Gets or sets a value indicating whether a valid context entity is available. */
-    hasContextEntity: boolean;
-
-    /** Gets or sets the panel title displayed above the grid. */
-    panelTitle?: string | null;
-
-    /** Gets or sets the export file name for the grid.*/
-    exportFileName?: string | null;
-
     /** Gets or sets the created date text displayed in the panel header. */
     createdDateText?: string | null;
+
+    /** Gets or sets the export file name for the grid. */
+    exportFileName?: string | null;
+
+    /** Gets or sets a value indicating whether a valid context entity is available. */
+    hasContextEntity: boolean;
 
     /** Gets or sets a value indicating whether the Category column should be visible. */
     isCategoryColumnVisible: boolean;
 
     /** Gets or sets a value indicating whether the Category filter should be visible. */
     isCategoryFilterVisible: boolean;
+
+    /** Gets or sets the panel title displayed above the grid. */
+    panelTitle?: string | null;
 };

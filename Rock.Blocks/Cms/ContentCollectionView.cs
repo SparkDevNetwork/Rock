@@ -176,7 +176,7 @@ namespace Rock.Blocks.Cms
         Description = "The amount of boost to apply to matches on personalization request filters.",
         DefaultValue = null,
         Category = "CustomSetting",
-        Key = AttributeKey.SegmentBoostAmount )]
+        Key = AttributeKey.RequestFilterBoostAmount )]
 
     [BooleanField("Show Unapproved Items",
         Description = "Determines if unapproved items should be shown.",

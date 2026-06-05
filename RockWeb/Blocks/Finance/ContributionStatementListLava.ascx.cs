@@ -37,10 +37,19 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Contribution Statement List Lava" )]
     [Category( "Finance" )]
     [Description( "Block for displaying a listing of years where contribution statements are available." )]
-    [AccountsField("Accounts", "A selection of accounts to use for checking if transactions for the current user exist. If no accounts are provided then all tax-deductible accounts will be considered.", false, order: 0 )]
-    [IntegerField("Max Years To Display", "The maximum number of years to display (including the current year).", true, 3, order:1)]
-    [LinkedPage("Detail Page", "The statement detail page.", order: 2)]
-    [CodeEditorField("Lava Template",
+    [AccountsField( "Accounts",
+        Description = "A selection of accounts to use for checking if transactions for the current user exist. If no accounts are provided then all tax-deductible accounts will be considered.",
+        IsRequired = false,
+        Order = 0 )]
+    [IntegerField( "Max Years To Display",
+        Description = "The maximum number of years to display (including the current year).",
+        IsRequired = true,
+        DefaultValue = "3",
+        Order = 1 )]
+    [LinkedPage( "Detail Page",
+        Description = "The statement detail page.",
+        Order = 2 )]
+    [CodeEditorField( "Lava Template",
         Description = "The Lava template to use for the contribution statement.",
         EditorMode = CodeEditorMode.Lava,
         EditorHeight = 500,
@@ -59,7 +68,10 @@ namespace RockWeb.Blocks.Finance
 {% endfor %}
 </div>",
         Order = 3)]
-    [BooleanField("Use Person Context", "Determines if the person context should be used instead of the CurrentPerson.", false, order: 5)]
+    [BooleanField("Use Person Context",
+        Description = "Determines if the person context should be used instead of the CurrentPerson.",
+        DefaultBooleanValue = false,
+        Order = 5)]
 
     [ContextAware]
     [Rock.SystemGuid.BlockTypeGuid( "22BF5B51-6511-4D31-8A48-4978A454C386" )]

@@ -331,6 +331,27 @@ namespace Rock.Blocks.Reminders
             // Resolve entities and project to the wire format. Skip orphans whose
             // referenced entity has been deleted; clean them up once after the loop.
             var entities = reminderService.GetReminderEntities( reminderQuery );
+
+            // Batch-load the Person for each PersonAlias target in a single query.
+            // EF relationship fixup populates the alias .Person navigations, so the
+            // personAlias.Person accesses in BuildReminderBag don't lazy-load one
+            // query per reminder. PersonAliasService is used rather than
+            // PersonService because the latter excludes deceased and nameless
+            // records by default, and reminders can still target those.
+            var targetAliasIds = entities.Values
+                .OfType<PersonAlias>()
+                .Select( a => a.Id )
+                .ToList();
+
+            if ( targetAliasIds.Any() )
+            {
+                new PersonAliasService( RockContext )
+                    .Queryable()
+                    .Where( a => targetAliasIds.Contains( a.Id ) )
+                    .Select( a => a.Person )
+                    .ToList();
+            }
+
             var bags = new List<ReminderListBag>( reminders.Count );
             var orphanedReminders = new List<Reminder>();
 
@@ -579,12 +600,27 @@ namespace Rock.Blocks.Reminders
                 IsGroupReminder = entity.TypeId == groupEntityTypeId
             };
 
+            /*
+                6/4/26 - MSE
+
+                Person reminders attach to a PersonAlias, so resolve the underlying
+                Person once. It supplies the profile photo and IdKey below, and it is
+                also the entity merged into the link URL, because the Person entity
+                type's LinkUrlLavaTemplate (`~/Person/{{ Entity.Id }}`) expects a
+                Person.Id. Merging the PersonAlias routed users to the wrong person.
+
+                Reason: Person reminder links navigated to the wrong person record.
+            */
+            var person = bag.IsPersonReminder && entity is PersonAlias personAlias
+                ? personAlias.Person
+                : null;
+
             // Person reminders carry a profile photo + person IdKey for the avatar
             // hover popover.
-            if ( bag.IsPersonReminder && entity is PersonAlias personAlias && personAlias.Person != null )
+            if ( person != null )
             {
-                bag.ProfilePhotoUrl = Person.GetPersonPhotoUrl( personAlias.Person, 50, 50 );
-                bag.PersonIdKey = personAlias.Person.IdKey;
+                bag.ProfilePhotoUrl = Person.GetPersonPhotoUrl( person, 50, 50 );
+                bag.PersonIdKey = person.IdKey;
             }
 
             // Group reminders use the group type icon (no avatar).
@@ -605,7 +641,7 @@ namespace Rock.Blocks.Reminders
             {
                 var mergeFields = new Dictionary<string, object>
                 {
-                    ["Entity"] = entity
+                    ["Entity"] = ( IEntity ) person ?? entity
                 };
 
                 var url = entityType.LinkUrlLavaTemplate.ResolveMergeFields( mergeFields );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1058,6 +1058,11 @@ namespace Rock.SystemGuid
         /// The SMS Conversation Action
         /// </summary>
         public const string SMS_ACTION_CONVERSATION = "E808A9FD-06A7-4FB2-AD01-C826A53B0ABB";
+
+        /// <summary>
+        /// The SMS Create Connection Request Action
+        /// </summary>
+        public const string SMS_ACTION_CREATE_CONNECTION_REQUEST = "4E8B12C7-A93F-4D85-B621-6A7F398C2E1D";
 
         /// <summary>
         /// Rock.Model.Site EntityType guid

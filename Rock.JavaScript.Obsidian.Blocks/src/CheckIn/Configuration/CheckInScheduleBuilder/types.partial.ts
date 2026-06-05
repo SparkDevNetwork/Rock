@@ -19,13 +19,21 @@ import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configura
 
 export const enum PreferenceKey {
     SelectedGroupType = "selected-group-type",
-    SelectedArea = "selected-area",
     SelectedCategory = "selected-category",
-    SelectedParentLocation = "selected-parent-location"
+    SelectedParentLocation = "selected-parent-location",
+
+    /**
+     * The selected-area key. Scoped to the check-in configuration GroupType
+     * entity (via getEntityPreferences) and shared with other check-in config
+     * blocks; Falls back to block-scoped when this block is rendered without a
+     * check-in configuration in scope
+     */
+    SelectedArea = "checkin-config-selected-area"
 }
 
 export const enum NavigationUrlKey {
-    ParentPage = "ParentPage"
+    ParentPage = "ParentPage",
+    AreasAndGroupsPage = "AreasAndGroupsPage"
 }
 
 /** The grouped Group Locations Bag, grouped by area and group */

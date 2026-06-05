@@ -48,6 +48,24 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInScheduleBuilder
         public List<ListItemBag> Areas { get; set; }
 
         /// <summary>
+        /// Gets or sets the Guid of the currently-selected area (empty / <c>null</c> for "All Areas"), resolved
+        /// from the configuration-scoped person preference.
+        /// </summary>
+        public Guid? SelectedAreaGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the hashed identifier of the check-in configuration. The client scopes the shared
+        /// selected-area person preference to this configuration entity when persisting a new selection.
+        /// </summary>
+        public string ConfigurationIdKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display name of the check-in configuration or <c>null</c> when this block is rendered
+        /// without a configuration.
+        /// </summary>
+        public string ConfigurationName { get; set; }
+
+        /// <summary>
         /// The Default Schedule Category
         /// </summary>
         public ListItemBag DefaultScheduleCategory { get; set; }

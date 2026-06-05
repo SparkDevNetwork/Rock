@@ -95,7 +95,6 @@ import CustomSelectGallery from "./ControlGallery/customSelectGallery.partial.ob
 import TabbedModalGallery from "./ControlGallery/tabbedModalGallery.partial.obs";
 import CategoryTreeGallery from "./ControlGallery/categoryTreeGallery.partial.obs";
 import PageNavButtonsGallery from "./ControlGallery/pageNavButtonsGallery.partial.obs";
-import SearchFieldGallery from "./ControlGallery/searchFieldGallery.partial.obs";
 import AttributeValuesContainerGallery from "./ControlGallery/attributeValuesContainerGallery.partial.obs";
 import SocialSecurityNumberBoxGallery from "./ControlGallery/socialSecurityNumberBoxGallery.partial.obs";
 import FieldFilterEditorGallery from "./ControlGallery/fieldFilterEditorGallery.partial.obs";
@@ -267,6 +266,8 @@ import EventItemOccurrencePickerGalleryPartial from "./ControlGallery/eventItemO
 import LinearGaugeChartGallery from "./ControlGallery/linearGaugeChartGallery.partial.obs";
 import EventItemOccurrencePickerGallery from "./ControlGallery/eventItemOccurrencePickerGallery.partial.obs";
 import TooltipGallery from "./ControlGallery/tooltipGallery.partial.obs";
+import TreeListGallery from "./ControlGallery/treeListGallery.partial.obs";
+import SortableTreeGallery from "./ControlGallery/sortableTreeGallery.partial.obs";
 
 const controlGalleryComponents: Record<string, Component> = [
     NotificationBoxGallery,
@@ -453,7 +454,6 @@ const controlGalleryComponents: Record<string, Component> = [
     TabbedModalGallery,
     CategoryTreeGallery,
     PageNavButtonsGallery,
-    SearchFieldGallery,
     AdaptiveMessagePickerGallery,
     EmailEditorGallery,
     KpiGallery,
@@ -479,6 +479,8 @@ const controlGalleryComponents: Record<string, Component> = [
     LinearGaugeChartGallery,
     EventItemOccurrencePickerGallery,
     TooltipGallery,
+    TreeListGallery,
+    SortableTreeGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {

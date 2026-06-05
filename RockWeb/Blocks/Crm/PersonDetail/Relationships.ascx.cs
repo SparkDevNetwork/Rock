@@ -45,7 +45,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     //    IsRequired = false,
     //    Order = 0 )]
 
-    [GroupRoleField( null, "Group Type/Role Filter", "The Group Type and role to display other members from.", false, null, null, 0, AttributeKey.GroupTypeRoleFilter )]
+    [GroupRoleField( null,
+        "Group Type/Role Filter",
+        Description = "The Group Type and role to display other members from.",
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.GroupTypeRoleFilter )]
 
     [BooleanField(
         "Show Role",

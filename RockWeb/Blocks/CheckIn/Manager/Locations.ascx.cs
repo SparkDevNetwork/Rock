@@ -41,12 +41,32 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [Category( "Check-in > Manager" )]
     [Description( "Obsolete. Use Roster, LiveMetrics, and RoomSettings Blocks instead" )]
 
-    [CustomRadioListField( "Navigation Mode", "Navigation and attendance counts can be grouped and displayed either by 'Group Type > Group Type (etc) > Group > Location' or by 'location > location (etc).'  Select the navigation hierarchy that is most appropriate for your organization.", "T^Group Type,L^Location,", true, "T", "", 0, "Mode" )]
-    [GroupTypeField( "Check-in Type", "The Check-in Area to display.  This value can also be overridden through the URL query string key (e.g. when navigated to from the Check-in Type selection block).", false, "", "", 1, "GroupTypeTemplate", Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
-    [LinkedPage( "Person Page", "The page used to display a selected person's details.", order: 2 )]
-    [LinkedPage( "Area Select Page", "The page to redirect user to if area has not be configured or selected.", order: 3 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 4, defaultValue: Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
-    [BooleanField( "Search By Code", "A flag indicating if security codes should also be evaluated in the search box results.", order: 5 )]
+    [CustomRadioListField( "Navigation Mode",
+        Description = "Navigation and attendance counts can be grouped and displayed either by 'Group Type > Group Type (etc) > Group > Location' or by 'location > location (etc).'  Select the navigation hierarchy that is most appropriate for your organization.",
+        ListSource = "T^Group Type,L^Location,",
+        IsRequired = true,
+        DefaultValue = "T",
+        Order = 0,
+        Key = "Mode" )]
+    [GroupTypeField( "Check-in Type",
+        Description = "The Check-in Area to display.  This value can also be overridden through the URL query string key (e.g. when navigated to from the Check-in Type selection block).",
+        IsRequired = false,
+        Order = 1,
+        Key = "GroupTypeTemplate",
+        GroupTypePurposeValueGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
+    [LinkedPage( "Person Page",
+        Description = "The page used to display a selected person's details.",
+        Order = 2 )]
+    [LinkedPage( "Area Select Page",
+        Description = "The page to redirect user to if area has not be configured or selected.",
+        Order = 3 )]
+    [DefinedValueField( "Chart Style",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CHART_STYLES,
+        Order = 4,
+        DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
+    [BooleanField( "Search By Code",
+        Description = "A flag indicating if security codes should also be evaluated in the search box results.",
+        Order = 5 )]
     [Rock.SystemGuid.BlockTypeGuid( "00FC1DEA-FE34-41E3-BC0A-2EE9138091EC" )]
     public partial class Locations : Rock.Web.UI.RockBlock
     {

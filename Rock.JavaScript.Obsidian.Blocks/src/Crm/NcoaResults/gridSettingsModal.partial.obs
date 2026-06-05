@@ -14,8 +14,8 @@
         <div class="row">
             <div class="col-md-6">
                 <DropDownList v-model="gridSettingsForm.filterProcessed"
-                              :items="enumToListItemBag(ProcessedDescription)"
-                              :showBlankItem="false"
+                              :items="processedItems"
+                              :showBlankItem="true"
                               label="Processed" />
             </div>
 
@@ -29,13 +29,15 @@
         <div class="row">
             <div class="col-md-6">
                 <SlidingDateRangePicker v-model="gridSettingsForm.filterMoveDate"
-                                        label="Created Date Range"
+                                        label="Move Date"
+                                        :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
                                         :isRangeClearable="true" />
             </div>
 
             <div class="col-md-6">
                 <SlidingDateRangePicker v-model="gridSettingsForm.filterNcoaProcessedDate"
                                         label="NCOA Processed Date Range"
+                                        :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
                                         :isRangeClearable="true" />
             </div>
         </div>
@@ -56,7 +58,8 @@
         <div class="row">
             <div class="col-md-4">
                 <NumberBox v-model="gridSettingsForm.filterMoveDistance"
-                           label="Move Distance" />
+                           label="Move Distance"
+                           help="Maximum distance that a person or family moved" />
             </div>
 
             <div class="col-md-4">
@@ -80,7 +83,7 @@
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
-    import { ref, PropType, watch } from "vue";
+    import { computed, ref, PropType, watch } from "vue";
     import { GridSettingsOptions } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
@@ -90,10 +93,11 @@
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import { MoveTypeDescription } from "@Obsidian/Enums/Core/moveType";
-    import { ProcessedDescription } from "@Obsidian/Enums/Core/processed";
+    import { Processed, ProcessedDescription } from "@Obsidian/Enums/Core/processed";
     import { AddressStatusDescription } from "@Obsidian/Enums/Core/addressStatus";
     import { AddressInvalidReasonDescription } from "@Obsidian/Enums/Core/addressInvalidReason";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { RangeType } from "@Obsidian/Utility/slidingDateRange";
 
     const props = defineProps({
         modelValue: {
@@ -123,6 +127,10 @@
 
     const isVisible = useVModelPassthrough(props, "visible", emit);
 
+    const processedItems = computed((): ListItemBag[] =>
+        enumToListItemBag(ProcessedDescription).filter(item => item.value !== Processed.All.toString())
+    );
+
     function onSave(): void {
 
         if (!deepEqual(gridSettingsForm.value, props.modelValue, true)) {
@@ -131,37 +139,6 @@
 
         isVisible.value = false;
     }
-
-    // watch(() => props.modelValue, () => {
-    //     createdBy.value = props.modelValue.createdBy?.value ?? "Selected Person";
-    //     filterPerson.value = props.modelValue.filterPerson;
-    //     createdDateRange.value = props.modelValue.createdDateRange ?? defaultCreatedDateRange;
-    // });
-
-    // watch(filterPerson, () => {
-    //     if (!filterPerson.value) {
-    //         createdBy.value = "Not Specified";
-    //     }
-    // });
-
-    // watch(createdBy, () => {
-    //     if (createdBy.value === "Not Specified") {
-    //         filterPerson.value = undefined;
-    //     }
-    //     else if (createdBy.value === "Selected Person" && !filterPerson.value) {
-    //         filterPerson.value = props.currentPerson;
-    //     }
-    // });
-
-    // watch(createdDateRange, () => {
-    //     if (!isNullOrWhiteSpace(errorMessage.value)) {
-    //         const dates = calculateSlidingDateRange(createdDateRange.value);
-
-    //         if (dates.start && dates.end) {
-    //             errorMessage.value = "";
-    //         }
-    //     }
-    // });
 
     watch(isVisible, () => {
         errorMessage.value = "";

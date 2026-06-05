@@ -37,17 +37,35 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Attribute Set" )]
 
-    [WorkflowAttribute( "Group", "The attribute containing the group to get the leader for.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.GroupFieldType" })]
+    [WorkflowAttribute( "Group",
+        Description = "The attribute containing the group to get the leader for.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupFieldType" })]
 
-    [WorkflowAttribute( "Person", "The attribute to set to the person in the group.", true, "", "", 1, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" })]
+    [WorkflowAttribute( "Person",
+        Description = "The attribute to set to the person in the group.",
+        IsRequired = true,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" })]
 
-    [TextField( "Group Member Attribute Key", "The attribute key to use for the group member attribute.", true, "", "", 2)]
+    [TextField( "Group Member Attribute Key",
+        Description = "The attribute key to use for the group member attribute.",
+        IsRequired = true,
+        Order = 2)]
 
-    [GroupRoleField( "", "Group Role Filter", "Use to set the attribute if the person is a specific role. If no role filter is provided then the all roles will be used.", false, "", "", 3)]
+    [GroupRoleField( "",
+        "Group Role Filter",
+        Description = "Use to set the attribute if the person is a specific role. If no role filter is provided then the all roles will be used.",
+        IsRequired = false,
+        Order = 3)]
 
-    [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The text or attribute to set the value from. <span class='tip tip-lava'></span>", false, "", "", 4, "AttributeValue" )]
+    [WorkflowTextOrAttribute( "Text Value",
+        "Attribute Value",
+        Description = "The text or attribute to set the value from. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 4,
+        Key = "AttributeValue" )]
     
     [Rock.SystemGuid.EntityTypeGuid( "5A0885C7-2D6F-4F04-BBE1-78AE61108C51")]
     public class SetGroupMemberAttribute : ActionComponent

@@ -41,10 +41,6 @@ namespace Rock.Blocks.Core
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-    [LinkedPage( "Detail Page",
-        Description = "The page that will show the entity type details.",
-        Key = AttributeKey.DetailPage )]
-
     [Rock.SystemGuid.EntityTypeGuid( "712dd8aa-aafa-4e92-b804-d884b6848adf" )]
     // WAS [Rock.SystemGuid.BlockTypeGuid( "3136cb51-8b94-4116-9c34-59ba6425a1ca" )]
     [Rock.SystemGuid.BlockTypeGuid( "8098DF5D-4B87-4FAF-BA65-E017C5A93353" )]
@@ -52,16 +48,6 @@ namespace Rock.Blocks.Core
     public class EntityTypes : RockListBlockType<EntityTypesBag>
     {
         #region Keys
-
-        private static class AttributeKey
-        {
-            public const string DetailPage = "DetailPage";
-        }
-
-        private static class NavigationUrlKey
-        {
-            public const string DetailPage = "DetailPage";
-        }
 
         #endregion Keys
 
@@ -75,7 +61,6 @@ namespace Rock.Blocks.Core
 
             box.IsDeleteEnabled = false;
             box.ExpectedRowCount = null;
-            box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
 
             box.GridDefinition = builder.BuildDefinition();
@@ -92,18 +77,6 @@ namespace Rock.Blocks.Core
             var options = new EntityTypesOptionsBag();
             options.IsAuthorizedToEdit = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
             return options;
-        }
-
-        /// <summary>
-        /// Gets the box navigation URLs required for the page to operate.
-        /// </summary>
-        /// <returns>A dictionary of key names and URL values.</returns>
-        private Dictionary<string, string> GetBoxNavigationUrls()
-        {
-            return new Dictionary<string, string>
-            {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "EntityTypeId", "((Key))" )
-            };
         }
 
         /// <inheritdoc/>
