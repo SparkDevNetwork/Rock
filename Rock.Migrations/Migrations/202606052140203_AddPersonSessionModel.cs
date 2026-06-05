@@ -16,9 +16,6 @@
 //
 namespace Rock.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-
     /// <summary>
     /// Adds the PersonSession table, its indexes, and the InteractionSession.PersonSessionId
     /// column that links interaction activity back to the authenticated session.

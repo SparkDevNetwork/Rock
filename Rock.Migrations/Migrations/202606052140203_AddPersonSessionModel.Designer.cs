@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "202605211637075_AddPersonSessionModel"; }
+            get { return "202606052140203_AddPersonSessionModel"; }
         }
         
         string IMigrationMetadata.Source
