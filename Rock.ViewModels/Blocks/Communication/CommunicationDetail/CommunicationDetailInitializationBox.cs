@@ -30,6 +30,12 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationDetail
         public bool IsHidden { get; set; }
 
         /// <summary>
+        /// Gets or sets the URL to redirect to instead of rendering the block. Used when the block is hidden for a
+        /// legacy communication that must be handled on the legacy page.
+        /// </summary>
+        public string RedirectUrl { get; set; }
+
+        /// <summary>
         /// Gets or sets the detail of this communication.
         /// </summary>
         public CommunicationDetailBag CommunicationDetail { get; set; }

@@ -56,6 +56,12 @@ export type CommunicationDetailInitializationBox = {
     /** Gets or sets the recipient grid configuration options for this communication. */
     recipientGridOptions?: CommunicationRecipientGridOptionsBag | null;
 
+    /**
+     * Gets or sets the URL to redirect to instead of rendering the block. Used when the block is hidden for a
+     * legacy communication that must be handled on the legacy page.
+     */
+    redirectUrl?: string | null;
+
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
 };

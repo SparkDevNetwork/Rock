@@ -96,13 +96,17 @@ namespace Rock.Blocks.Communication
 
         private static class PageParameterKey
         {
-            // Both keys ("Communication" and "CommunicationId") accept Guid or IdKey for the Communication entity.
-            // "CommunicationId" remains the de-facto key because the page's routes and many longstanding links use
-            // "{CommunicationId}" tokens, so callers should prefer it for now. "Communication" is accepted for
-            // forward compatibility if the route tokens are ever renamed.
-            public const string Communication = "Communication";
-            public const string CommunicationId = "CommunicationId";
+            /*
+                3/6/2026 - JPH
 
+                There are some in the community that have concerns that people can see communications they should not
+                be able to see. To address this we are going to remove support for Ids.
+
+                Therefore, "CommunicationId" allows only Guid, or IdKey values.
+
+                Reason: Enforce No ID support for Loading Communications
+            */
+            public const string CommunicationId = "CommunicationId";
             public const string Edit = "Edit";
             public const string Tab = "tab";
         }
@@ -201,16 +205,6 @@ namespace Rock.Blocks.Communication
         #region Fields
 
         /// <summary>
-        /// The backing field for the <see cref="PageParameters"/> property.
-        /// </summary>
-        private IDictionary<string, string> _pageParameters;
-
-        /// <summary>
-        /// The backing field for the <see cref="CommunicationPageParameterKey"/> property.
-        /// </summary>
-        private string _communicationPageParameterKey;
-
-        /// <summary>
         /// The backing field for the <see cref="CommunicationAccessMode"/> property.
         /// </summary>
         private string _communicationAccessMode;
@@ -253,48 +247,6 @@ namespace Rock.Blocks.Communication
         #endregion Fields
 
         #region Properties
-
-        /// <summary>
-        /// Gets the page parameters for this request.
-        /// </summary>
-        private IDictionary<string, string> PageParameters
-        {
-            get
-            {
-                _pageParameters ??= this.RequestContext?.GetPageParameters() ?? new Dictionary<string, string>();
-
-                return _pageParameters;
-            }
-        }
-
-        /// <summary>
-        /// Gets the key of the page parameter - either "Communication" or "CommunicationId" - used to provide
-        /// the <see cref="Model.Communication" /> entity key.
-        /// </summary>
-        private string CommunicationPageParameterKey
-        {
-            get
-            {
-                if ( _communicationPageParameterKey.IsNullOrWhiteSpace() )
-                {
-                    if ( PageParameters.ContainsKey( PageParameterKey.Communication ) )
-                    {
-                        _communicationPageParameterKey = PageParameterKey.Communication;
-                    }
-                    else if ( PageParameters.ContainsKey( PageParameterKey.CommunicationId ) )
-                    {
-                        _communicationPageParameterKey = PageParameterKey.CommunicationId;
-                    }
-                    else
-                    {
-                        // Fall back to the preferred key.
-                        _communicationPageParameterKey = PageParameterKey.Communication;
-                    }
-                }
-
-                return _communicationPageParameterKey;
-            }
-        }
 
         /// <summary>
         /// The level of visibility filtering applied to the communication.
@@ -435,6 +387,18 @@ namespace Rock.Blocks.Communication
 
             if ( box.IsHidden )
             {
+                // If a hidden legacy communication has no legacy editor on this page to fall back to, send it to the
+                // legacy [wizard] page, which can render and edit it. The communication came from a projected query, so
+                // its CommunicationTemplate navigation is not loaded; the projected template version is used instead.
+                var shouldRedirectToLegacyWizardPage = communication != null
+                    && IsLegacyCommunication( communication.Segments, communicationInfo.CommunicationTemplateVersion )
+                    && IsLegacyWizardMissingFromCurrentPage();
+
+                if ( shouldRedirectToLegacyWizardPage )
+                {
+                    box.RedirectUrl = GetLegacyCommunicationUrl( GetPageParamsForReload( communication.Id ) );
+                }
+
                 // Return early if the block should be hidden.
                 return box;
             }
@@ -803,7 +767,7 @@ namespace Rock.Blocks.Communication
                 {
                     OutcomeMessage = outcomeMessage,
                     Permissions = permissions,
-                    RedirectUrl = this.GetCurrentPageUrl( pageParams )
+                    RedirectUrl = GetReloadRedirectUrl( communication, pageParams )
                 }
             );
         }
@@ -845,10 +809,11 @@ namespace Rock.Blocks.Communication
                 // Set the redirect URL to the current page with the Edit parameter.
                 // Next, we will check if we need to redirect to the Simple Communication Page instead.
                 redirectUrl = this.GetCurrentPageUrl( pageParams );
+                var hasEditorRedirect = false;
 
                 /*
                     1/6/2026 - JMH
-                
+
                     Approvers can land on either the wizard page or the simple communication page.
                     When editing a "pending approval" communication, the Edit action must send them
                     to a page that can actually render the communication in edit mode. That requires
@@ -888,7 +853,19 @@ namespace Rock.Blocks.Communication
                             }
 
                             redirectUrl = pageReference.BuildUrl();
+                            hasEditorRedirect = true;
                         }
+                    }
+                }
+
+                // If a hidden legacy communication has no legacy editor on this page to fall back to (if it was not
+                // already sent to a usable editor), send it to the legacy [wizard] page, which can render and edit it.
+                if ( !hasEditorRedirect && IsLegacyCommunication( communication ) && IsLegacyWizardMissingFromCurrentPage() )
+                {
+                    var legacyUrl = GetLegacyCommunicationUrl( pageParams );
+                    if ( legacyUrl.IsNotNullOrWhiteSpace() )
+                    {
+                        redirectUrl = legacyUrl;
                     }
                 }
             }
@@ -999,7 +976,7 @@ namespace Rock.Blocks.Communication
                 {
                     OutcomeMessage = outcomeMessage,
                     Permissions = permissions,
-                    RedirectUrl = this.GetCurrentPageUrl( pageParams )
+                    RedirectUrl = GetReloadRedirectUrl( communication, pageParams )
                 }
             );
         }
@@ -1204,9 +1181,26 @@ namespace Rock.Blocks.Communication
         /// <summary>
         /// Determines whether the specified communication is considered a legacy communication.
         /// </summary>
+        /// <param name="communication">
+        /// The communication to evaluate. Its <see cref="Rock.Model.Communication.CommunicationTemplate"/> must be loaded.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if the communication is identified as a legacy communication; otherwise, <see langword="false"/>.
+        /// </returns>
+        private bool IsLegacyCommunication( Rock.Model.Communication communication )
+        {
+            return communication != null
+                && IsLegacyCommunication( communication.Segments, communication.CommunicationTemplate?.Version );
+        }
+
+        /// <summary>
+        /// Determines whether the specified communication is considered a legacy communication.
+        /// </summary>
         /// <param name="communicationService">The service used to query communication data.</param>
-        /// <param name="communicationId">The unique identifier of the communication to evaluate.</param>
-        /// <returns><see langword="true"/> if the communication is identified as a legacy communication; otherwise, <see langword="false"/>.</returns>
+        /// <param name="communicationId">The identifier of the communication to evaluate.</param>
+        /// <returns>
+        /// <see langword="true"/> if the communication is identified as a legacy communication; otherwise, <see langword="false"/>.
+        /// </returns>
         private bool IsLegacyCommunication( CommunicationService communicationService, int communicationId )
         {
             var data = communicationService.Queryable()
@@ -1218,23 +1212,25 @@ namespace Rock.Blocks.Communication
                 } )
                 .FirstOrDefault();
 
-            if ( data != null )
-            {
-                if ( data.Segments.IsNotNullOrWhiteSpace() )
-                {
-                    // Only legacy communications use DataView-based segments.
-                    // Newer communications use Personalization Segments.
-                    return true;
-                }
+            return data != null
+                && IsLegacyCommunication( data.Segments, data.CommunicationTemplateVersion );
+        }
 
-                if ( data.CommunicationTemplateVersion == CommunicationTemplateVersion.Legacy )
-                {
-                    // Only legacy communications use legacy communication templates.
-                    return true;
-                }
-            }
-
-            return false;
+        /// <summary>
+        /// Determines whether a communication is legacy from its raw <see cref="Rock.Model.Communication.Segments"/>
+        /// and template version. Legacy communications use DataView-based segments or a legacy communication template.
+        /// </summary>
+        /// <param name="segments">The communication's <see cref="Rock.Model.Communication.Segments"/> value.</param>
+        /// <param name="communicationTemplateVersion">
+        /// The communication template's version, or <see langword="null"/> if there is no template.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if the communication is identified as a legacy communication; otherwise, <see langword="false"/>.
+        /// </returns>
+        private static bool IsLegacyCommunication( string segments, CommunicationTemplateVersion? communicationTemplateVersion )
+        {
+            return segments.IsNotNullOrWhiteSpace()
+                || communicationTemplateVersion == CommunicationTemplateVersion.Legacy;
         }
 
         /// <summary>
@@ -1257,6 +1253,39 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
+        /// Gets the URL to redirect to after a reload-style action. A hidden legacy communication is sent
+        /// to the legacy page, which can render and edit it; everything else reloads the current page.
+        /// </summary>
+        /// <param name="communication">The communication being redirected to.</param>
+        /// <param name="pageParams">The page parameters to include in the URL.</param>
+        /// <returns>The redirect URL.</returns>
+        private string GetReloadRedirectUrl( Rock.Model.Communication communication, IDictionary<string, string> pageParams )
+        {
+            if ( GetIsBlockHidden( communication ) && IsLegacyCommunication( communication ) && IsLegacyWizardMissingFromCurrentPage() )
+            {
+                var legacyUrl = GetLegacyCommunicationUrl( pageParams );
+                if ( legacyUrl.IsNotNullOrWhiteSpace() )
+                {
+                    return legacyUrl;
+                }
+            }
+
+            return this.GetCurrentPageUrl( pageParams );
+        }
+
+        /// <summary>
+        /// Determines whether the legacy Communication Entry Wizard is absent from the current page. A legacy
+        /// communication can only be edited by that block, so when it is absent a hidden legacy communication must be
+        /// redirected to the legacy [wizard] page. Checking this also prevents the legacy page - which hosts both
+        /// this block and the wizard - from redirecting to itself.
+        /// </summary>
+        /// <returns><see langword="true"/> if the legacy wizard is not on the current page; otherwise, <see langword="false"/>.</returns>
+        private bool IsLegacyWizardMissingFromCurrentPage()
+        {
+            return !this.PageCache.Blocks.Any( b => b.BlockType.Guid == SystemGuid.BlockType.COMMUNICATION_ENTRY_WIZARD.AsGuid() );
+        }
+
+        /// <summary>
         /// Gets an <see cref="IQueryable{Rock.Model.Communication}"/> based on the page parameter.
         /// </summary>
         /// <returns>An <see cref="IQueryable{Rock.Model.Communication}"/> based on the page parameter.</returns>
@@ -1266,7 +1295,7 @@ namespace Rock.Blocks.Communication
         private IQueryable<Rock.Model.Communication> GetCommunicationQueryFromPageParameter()
         {
             // Check page parameter for existing communication.
-            var communicationKey = PageParameter( CommunicationPageParameterKey );
+            var communicationKey = PageParameter( PageParameterKey.CommunicationId );
             if ( communicationKey.IsNullOrWhiteSpace() )
             {
                 return null;
@@ -1275,11 +1304,13 @@ namespace Rock.Blocks.Communication
             /*
                 3/6/2026 - JPH
 
-                There are some in the community that have concerns that people can see communications that they should
-                not be able to see. To address this we are going to remove support for Ids.
+                There are some in the community that have concerns that people can see communications they should not
+                be able to see. To address this we are going to remove support for Ids.
+
+                Therefore, "CommunicationId" allows only Guid, or IdKey values.
 
                 Reason: Enforce No ID support for Loading Communications
-             */
+            */
             var qry = new CommunicationService( RockContext )
                 .GetQueryableByKey( communicationKey, false )
                 .Include( c => c.CommunicationTemplate )
@@ -1333,6 +1364,8 @@ namespace Rock.Blocks.Communication
                 .Select( c => new
                 {
                     Communication = c,
+
+                    CommunicationTemplateVersion = ( CommunicationTemplateVersion? ) c.CommunicationTemplate.Version,
 
                     CommunicationFlowName = communicationFlowInstanceCommunicationQuery
                         .Where( f => f.CommunicationId == c.Id )
@@ -1421,6 +1454,7 @@ namespace Rock.Blocks.Communication
                     var communicationInfo = new CommunicationInfo
                     {
                         Communication = a.Communication,
+                        CommunicationTemplateVersion = a.CommunicationTemplateVersion,
                         SenderPersonNickName = a.SenderPersonNickName,
                         SenderPersonLastName = a.SenderPersonLastName,
                         SenderPersonSuffixValueId = a.SenderPersonSuffixValueId,
@@ -2763,8 +2797,7 @@ namespace Rock.Blocks.Communication
         {
             // Redirect back to the same page with the provided communication identifier.
             var pageParams = RequestContext.GetPageParameters();
-            pageParams.AddOrReplace( PageParameterKey.Communication, communicationId.AsIdKey() );
-            pageParams.Remove( PageParameterKey.CommunicationId );
+            pageParams.AddOrReplace( PageParameterKey.CommunicationId, communicationId.AsIdKey() );
             pageParams.Remove( "PageId" );
 
             return pageParams;
@@ -2798,6 +2831,12 @@ namespace Rock.Blocks.Communication
             /// Gets or sets the <see cref="Rock.Model.Communication"/>.
             /// </summary>
             public Rock.Model.Communication Communication { get; set; }
+
+            /// <summary>
+            /// Gets or sets the version of this communication's template, projected separately because the
+            /// <see cref="Rock.Model.Communication.CommunicationTemplate"/> navigation is not materialized.
+            /// </summary>
+            public CommunicationTemplateVersion? CommunicationTemplateVersion { get; set; }
 
             /// <summary>
             /// Gets or sets the nickname of the person who sent this communication.
