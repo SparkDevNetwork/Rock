@@ -5,6 +5,7 @@
             <div class="dropdown" :class="dropdownClass">
                 <div :class="{ open: isDropDownOpen }" ref="dropdownElement">
                     <RockButton class="dropdown-toggle" :btnType="btnType" :btnSize="btnSize" :aria-expanded="isDropDownOpen ? 'true' : 'false'" @click.prevent.stop="toggleOpen" :id="uniqueId" v-bind="field">
+                        <slot name="selectionPrepend" />
                         {{ selectionStyle === 'title' && internalValue ? selectedText : title }}
                         <span class="ti ti-caret-down-filled"></span>
                     </RockButton>

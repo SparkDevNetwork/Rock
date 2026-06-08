@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.Enums.Connection;
 using Rock.Model;
 using Rock.ViewModels.Utility;
 
