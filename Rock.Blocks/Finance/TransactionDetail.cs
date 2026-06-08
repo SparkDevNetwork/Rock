@@ -29,6 +29,7 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.TransactionDetail;
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -432,8 +433,8 @@ namespace Rock.Blocks.Finance
             if ( entity.FinancialPaymentDetail != null && bag.PaymentDetail != null )
             {
                 entity.FinancialPaymentDetail.LoadAttributes( RockContext );
-                bag.PaymentDetail.Attributes = entity.FinancialPaymentDetail.GetPublicAttributesForView( RequestContext.CurrentPerson, enforceSecurity: false );
-                bag.PaymentDetail.AttributeValues = entity.FinancialPaymentDetail.GetPublicAttributeValuesForView( RequestContext.CurrentPerson, enforceSecurity: false );
+                bag.PaymentDetail.Attributes = entity.FinancialPaymentDetail.GetPublicAttributesForView( RequestContext.CurrentPerson, enforceSecurity: true );
+                bag.PaymentDetail.AttributeValues = entity.FinancialPaymentDetail.GetPublicAttributeValuesForView( RequestContext.CurrentPerson, enforceSecurity: true );
             }
 
             return bag;
@@ -656,51 +657,134 @@ namespace Rock.Blocks.Finance
         /// <returns>A <see cref="TransactionDetailsBag"/> ready to be sent to the client.</returns>
         private TransactionDetailsBag GetTransactionLineItemBags( int transactionId, ICollection<FinancialTransactionDetail> transactionDetails )
         {
-            var tempFinancialTransactionDetail = new FinancialTransactionDetail
+            // Load attributes on a temp instance to discover which attributes exist for
+            // this entity type without needing a real saved record.
+            var tempDetail = new FinancialTransactionDetail
             {
                 TransactionId = transactionId
             };
+            tempDetail.LoadAttributes( RockContext );
 
-            var attributes = tempFinancialTransactionDetail.GetPublicAttributesForEdit( RequestContext.CurrentPerson );
-            var attributeValues = tempFinancialTransactionDetail.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson );
+            var attributeCaches = tempDetail.Attributes.Values.Where( a => a.IsGridColumn ).ToList();
+            var attributeFields = GetLineItemAttributeFields( attributeCaches );
 
-            var rows = ( transactionDetails ?? Enumerable.Empty<FinancialTransactionDetail>() )
+            var detailList = ( transactionDetails ?? Enumerable.Empty<FinancialTransactionDetail>() ).ToList();
+            detailList.LoadAttributes( RockContext );
+
+            var rows = detailList
                 .Select( d => new TransactionLineItemBag
-                {
-                    Guid = d.Guid,
-                    Id = d.Id,
-                    Account = d.Account == null ? null : new ListItemBag
                     {
-                        Text = d.Account.Name,
-                        Value = d.Account.Guid.ToString()
-                    },
-                    Amount = d.FeeCoverageAmount.HasValue
-                        ? d.Amount - d.FeeCoverageAmount.Value
-                        : d.Amount,
-                    FeeAmount = d.FeeAmount,
-                    FeeCoverageAmount = d.FeeCoverageAmount,
-                    ForeignCurrencyAmount = d.ForeignCurrencyAmount,
-                    Summary = d.Summary,
-                    TransactionId = d.TransactionId,
-                    EntityId = d.EntityId,
-                    EntityTypeId = d.EntityTypeId,
-                    EntityType = d.EntityType == null ? null : new ListItemBag
-                    {
-                        Text = d.EntityType.FriendlyName,
-                        Value = d.EntityType.Name
-                    },
-                    CanEdit = true,
-                    CanDelete = !d.EntityTypeId.HasValue,
-                    IsTotalRow = false
-                } )
+                        Guid = d.Guid,
+                        Id = d.Id,
+                        Account = d.Account == null ? null : new ListItemBag
+                        {
+                            Text = d.Account.Name,
+                            Value = d.Account.Guid.ToString()
+                        },
+                        Amount = d.FeeCoverageAmount.HasValue
+                            ? d.Amount - d.FeeCoverageAmount.Value
+                            : d.Amount,
+                        FeeAmount = d.FeeAmount,
+                        FeeCoverageAmount = d.FeeCoverageAmount,
+                        ForeignCurrencyAmount = d.ForeignCurrencyAmount,
+                        Summary = d.Summary,
+                        TransactionId = d.TransactionId,
+                        EntityId = d.EntityId,
+                        EntityTypeId = d.EntityTypeId,
+                        EntityType = d.EntityType == null ? null : new ListItemBag
+                        {
+                            Text = d.EntityType.FriendlyName,
+                            Value = d.EntityType.Name
+                        },
+                        CanEdit = true,
+                        CanDelete = !d.EntityTypeId.HasValue,
+                        IsTotalRow = false,
+                        AttributeValues = d.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: false ),
+                        AttributeDisplayValues = GetLineItemAttributeDisplayValues( d, attributeCaches )
+                    } )
                 .ToList();
 
             return new TransactionDetailsBag
             {
                 Rows = rows,
-                Attributes = attributes,
-                AttributeValues = attributeValues
+                AttributeFields = attributeFields
             };
+        }
+
+        /// <summary>
+        /// Builds the <see cref="AttributeFieldDefinitionBag"/> list that describes which attribute
+        /// columns the allocations grid should render. This is the column-definition counterpart to
+        /// <see cref="GetLineItemAttributeDisplayValues"/>.
+        /// </summary>
+        /// <param name="attributes">The attributes defined on <see cref="FinancialTransactionDetail"/>.</param>
+        /// <returns>
+        /// A list of <see cref="AttributeFieldDefinitionBag"/> items, one per attribute, using
+        /// the <c>attr_{key}</c> naming convention expected by the grid attribute column renderer.
+        /// </returns>
+        private static List<AttributeFieldDefinitionBag> GetLineItemAttributeFields( IEnumerable<AttributeCache> attributes )
+        {
+            var textFieldTypeGuid = SystemGuid.FieldType.TEXT.AsGuid();
+            var fields = new List<AttributeFieldDefinitionBag>();
+
+            foreach ( var attribute in attributes )
+            {
+                fields.Add( new AttributeFieldDefinitionBag
+                {
+                    Name = $"attr_{attribute.Key}",
+                    Title = attribute.Name,
+                    FieldTypeGuid = attribute.FieldType?.Guid ?? textFieldTypeGuid
+                } );
+            }
+
+            return fields;
+        }
+
+        /// <summary>
+        /// Builds a dictionary of condensed display values for a single line item's attributes,
+        /// replicating the per-row data format produced by
+        /// <see cref="Rock.Obsidian.UI.GridBuilderExtensions.AddAttributeFieldsFrom"/>.
+        /// </summary>
+        /// <param name="detail">
+        /// The line-item entity with attributes already loaded via <c>LoadAttributes</c>.
+        /// </param>
+        /// <param name="attributes">The attributes whose values should be included.</param>
+        /// <returns>
+        /// A dictionary keyed by <c>attr_{attributeKey}</c>. Each value is an object with
+        /// <c>Html</c> (condensed HTML, with booleans rendered as a check icon or empty string)
+        /// and <c>Text</c> (plain-text equivalent) properties.
+        /// </returns>
+        private static Dictionary<string, object> GetLineItemAttributeDisplayValues( FinancialTransactionDetail detail, IEnumerable<AttributeCache> attributes )
+        {
+            var booleanFieldTypeGuid = SystemGuid.FieldType.BOOLEAN.AsGuid();
+            var displayValues = new Dictionary<string, object>();
+
+            foreach ( var attribute in attributes )
+            {
+                var key = attribute.Key;
+                var field = attribute.FieldType?.Field;
+
+                // have to look at raw value becasue the build in "Get Condensed HTML" looks at the saved value in the cache. Since this is a nested list, these will not be saved until
+                // the entire transaction detail is saved.
+
+                var rawValue = detail.GetAttributeValue( key );
+                var textValue = field?.GetCondensedTextValue( rawValue, attribute.ConfigurationValues ) ?? string.Empty;
+                var htmlValue = field?.GetCondensedHtmlValue( rawValue, attribute.ConfigurationValues ) ?? string.Empty;
+
+                if ( attribute.FieldType?.Guid == booleanFieldTypeGuid )
+                {
+                    htmlValue = htmlValue == "Y"
+                        ? "<i class=\"ti ti-check\"></i>"
+                        : string.Empty;
+                }
+
+                displayValues[$"attr_{key}"] = new
+                {
+                    Html = htmlValue,
+                    Text = textValue
+                };
+            }
+
+            return displayValues;
         }
 
         /// <summary>
@@ -1596,6 +1680,37 @@ namespace Rock.Blocks.Finance
             bag.LoadAttributesAndValuesForPublicEdit( detailEntity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return ActionOk( bag );
+        }
+
+        /// <summary>
+        /// Returns condensed HTML and text display values for the attributes on a single line item,
+        /// keyed by <c>attr_{attributeKey}</c>. Called after the client saves a line-item edit so
+        /// the allocations grid can show up-to-date attribute values without a full page reload.
+        /// </summary>
+        /// <param name="attributeValues">
+        /// The public attribute values from the edited line item, keyed by attribute key.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Dictionary{TKey,TValue}"/> of <c>attr_{key}</c> to <c>{ Html, Text }</c> objects.
+        /// </returns>
+        [BlockAction]
+        public BlockActionResult GetLineItemAttributeDisplay( Dictionary<string, string> attributeValues )
+        {
+            if ( !BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden();
+            }
+
+            var tempDetail = new FinancialTransactionDetail();
+            tempDetail.LoadAttributes( RockContext );
+
+            if ( attributeValues?.Count > 0 )
+            {
+                tempDetail.SetPublicAttributeValues( attributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
+            }
+
+            var attributeCaches = tempDetail.Attributes.Values.Where( a => a.IsGridColumn ).ToList();
+            return ActionOk( GetLineItemAttributeDisplayValues( tempDetail, attributeCaches ) );
         }
 
         /// <summary>
