@@ -317,6 +317,11 @@ namespace Rock.Utility
         /// <param name="expirationDate">The expiration date.</param>
         public static void AddOrUpdateCookie( HttpContext context, string name, string value, DateTime? expirationDate )
         {
+            if ( context == null )
+            {
+                return;
+            }
+
             var httpContextBase = new HttpContextWrapper( context );
 
             AddOrUpdateCookie( httpContextBase, name, value, expirationDate );

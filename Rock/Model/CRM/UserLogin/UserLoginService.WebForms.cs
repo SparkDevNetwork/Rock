@@ -19,6 +19,7 @@ using System.Linq;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Net;
 using Rock.Security;
@@ -148,7 +149,7 @@ namespace Rock.Model
             UserLogin userLogin = null;
             bool impersonated = userName.StartsWith( "rckipid=" );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !impersonated )
                 {

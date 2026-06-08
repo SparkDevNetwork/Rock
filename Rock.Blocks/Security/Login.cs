@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Blocks.Security.Login;
 using Rock.Enums.Security;
@@ -709,13 +710,33 @@ namespace Rock.Blocks.Security
         #region Private Methods
 
         /// <summary>
-        /// Authenticates a Rock end-user.
+        /// Authenticates a Rock end-user by creating a new
+        /// <see cref="PersonSession"/> with <c>CreationSource = Component</c>
+        /// and writing the new-format auth cookie.
         /// </summary>
-        /// <param name="userLogin">The <see cref="UserLogin"> associated with the account to authenticate.</param>
+        /// <remarks>
+        /// <para>
+        /// Marked <c>internal</c> so the test project can drive the
+        /// post-credential-validation handoff (<c>StartComponentSession</c>
+        /// + save + <c>SetAuthCookie</c>) without booting a full block
+        /// host. Callers outside Rock.Blocks should NOT depend on this
+        /// signature.
+        /// </para>
+        /// <para>
+        /// <c>LastStepUpAuthenticationDateTime</c> is always stamped on
+        /// the new session. <c>LastMultiFactorAuthenticationDateTime</c>
+        /// is stamped when <paramref name="isTwoFactorAuthenticated"/> is
+        /// true; each caller computes that flag in a way that is correct
+        /// for its specific flow (external 2FA-configured provider,
+        /// credentials + MFA satisfied, passwordless, etc.).
+        /// </para>
+        /// </remarks>
+        /// <param name="userLogin">The <see cref="UserLogin"/> associated with the account to authenticate.</param>
+        /// <param name="authComponent">The <see cref="AuthenticationComponent"/> that handled the request. Used to stamp <see cref="PersonSession.AuthenticationComponentId"/>.</param>
         /// <param name="isPersisted">Whether the individual should be authenticated across browsing sessions.</param>
         /// <param name="isTwoFactorAuthenticated">Whether the individual is two-factor authenticated.</param>
-        /// <param name="expiresIn">The duration that the authentication is valid.</param>
-        private void Authenticate( UserLogin userLogin, bool isPersisted, bool isTwoFactorAuthenticated, TimeSpan? expiresIn = null )
+        /// <param name="expiresIn">The duration that the authentication is valid. When supplied, becomes the session's <see cref="PersonSession.ExpiresDateTime"/>.</param>
+        internal void Authenticate( UserLogin userLogin, AuthenticationComponent authComponent, bool isPersisted, bool isTwoFactorAuthenticated, TimeSpan? expiresIn = null )
         {
             UserLoginService.UpdateLastLogin(
                 new UpdateLastLoginArgs
@@ -725,13 +746,37 @@ namespace Rock.Blocks.Security
                 }
             );
 
-            if ( expiresIn.HasValue )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                Authorization.SetAuthCookie( userLogin.UserName, isPersisted, isImpersonated: false, isTwoFactorAuthenticated, expiresIn.Value );
-            }
-            else
-            {
-                Authorization.SetAuthCookie( userLogin.UserName, isPersisted, isImpersonated: false, isTwoFactorAuthenticated );
+                var personAliasId = userLogin.Person?.PrimaryAliasId
+                    ?? new UserLoginService( rockContext ).GetInclude( userLogin.Id, u => u.Person )?.Person?.PrimaryAliasId
+                    ?? throw new InvalidOperationException( $"UserLogin {userLogin.Id} has no associated PersonAlias; cannot start session." );
+
+                var mfaRecency = isTwoFactorAuthenticated ? ( DateTime? ) RockDateTime.Now : null;
+
+                var personSessionService = new PersonSessionService( rockContext );
+                var session = personSessionService.StartComponentSession(
+                    RequestContext,
+                    personAliasId,
+                    userLogin.Id,
+                    authComponent.TypeId,
+                    isPersisted,
+                    mfaRecency );
+
+                if ( expiresIn.HasValue )
+                {
+                    session.ExpiresDateTime = RockDateTime.Now.Add( expiresIn.Value );
+                }
+
+                personSessionService.Add( session );
+                rockContext.SaveChanges();
+
+                personSessionService.SetAuthCookie( session, RequestContext );
+
+                // Make the new session available to anything that reads
+                // PersonSession off the request context later in this
+                // same request (e.g. a redirect handler).
+                RequestContext.SetPersonSession( session );
             }
 
             CheckBrowserRecognition( userLogin.Person );
@@ -1434,6 +1479,7 @@ namespace Rock.Blocks.Security
                 // Authenticate the end-user in Rock and redirect.
                 Authenticate(
                     userLogin,
+                    authProvider,
                     isPersisted: true,
                     isTwoFactorAuthenticated );
 
@@ -1693,7 +1739,7 @@ namespace Rock.Blocks.Security
                 );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLoginService = new UserLoginService( rockContext );
                 var userLogin = userLoginService.GetByUserName( bag.Username );
@@ -1755,6 +1801,7 @@ namespace Rock.Blocks.Security
                     // Authenticate the user in Rock if credentials were valid and 2FA is not required.
                     Authenticate(
                         userLogin,
+                        authenticationComponent,
                         bag.RememberMe,
                         isTwoFactorAuthenticated: false );
                     return Response( ResponseHelper.CredentialLogin.Authenticated( GetRedirectUrlAfterLogin() ) );
@@ -1773,6 +1820,7 @@ namespace Rock.Blocks.Security
 
                         Authenticate(
                             userLogin,
+                            authenticationComponent,
                             bag.RememberMe,
                             isTwoFactorAuthenticated: true );
                         return Response( ResponseHelper.CredentialLogin.Authenticated( GetRedirectUrlAfterLogin() ) );
@@ -1825,6 +1873,7 @@ namespace Rock.Blocks.Security
                 {
                     Authenticate(
                         userLogin,
+                        authenticationComponent,
                         mfaTicket.AuthCookieSettings.IsPersisted,
                         isTwoFactorAuthenticated: true,
                         mfaTicket.AuthCookieSettings.ExpiresIn );
@@ -2113,6 +2162,7 @@ namespace Rock.Blocks.Security
                 // Authenticate the user in Rock.
                 Authenticate(
                     passwordlessAuthenticationResult.AuthenticatedUser,
+                    passwordlessAuthentication,
                     isPersisted: true,
                     isTwoFactorAuthenticated: false,
                     expiresIn: TimeSpan.FromMinutes( new SecuritySettingsService().SecuritySettings.PasswordlessSignInSessionDuration ) );
@@ -2169,6 +2219,7 @@ namespace Rock.Blocks.Security
             {
                 Authenticate(
                     passwordlessAuthenticationResult.AuthenticatedUser,
+                    passwordlessAuthentication,
                     mfaTicket.AuthCookieSettings.IsPersisted,
                     isTwoFactorAuthenticated: true,
                     mfaTicket.AuthCookieSettings.ExpiresIn );

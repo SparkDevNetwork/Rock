@@ -20,6 +20,7 @@ using System.Linq;
 using System.Reflection;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -60,7 +61,7 @@ namespace Rock.Model
 
             bool changesMade = false;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var fieldTypeService = new FieldTypeService( rockContext );
 

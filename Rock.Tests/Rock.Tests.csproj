@@ -20,6 +20,7 @@
     <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj" />
     <ProjectReference Include="..\Rock.Mailgun\Rock.Mailgun.csproj" />
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj" />
+    <ProjectReference Include="..\Rock.Blocks\Rock.Blocks.csproj" />
     <ProjectReference Include="..\Rock.Slingshot.Model\Rock.Slingshot.Model.csproj" />
     <ProjectReference Include="..\Rock.Slingshot\Rock.Slingshot.csproj" />
     <ProjectReference Include="..\Rock.Tests.Shared\Rock.Tests.Shared.csproj" />

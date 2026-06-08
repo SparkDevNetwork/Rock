@@ -654,6 +654,13 @@ namespace RockWeb
                 {
                     var personSession = new PersonSessionService( rockContext ).ResolveSessionForRequest( rockRequestContext );
 
+                    // Stash the resolved session on the request context so
+                    // downstream callers (blocks, MeetsRequirement checks,
+                    // SignalR hubs, etc.) read the same instance for the
+                    // duration of the request. Null is legitimate for
+                    // anonymous requests and is handled by consumers.
+                    rockRequestContext.SetPersonSession( personSession );
+
                     // Only set the principal when the session has a
                     // backing UserLogin. Sessions without one (future
                     // Impersonation and UserToken flows) are not reachable
@@ -734,6 +741,12 @@ namespace RockWeb
 
                     if ( upgradedSession != null && upgradedSession.UserLogin != null )
                     {
+                        // Stash the upgraded session on the request context
+                        // so downstream callers see the same instance for
+                        // the rest of the request (matches the BeginRequest
+                        // path's contract).
+                        rockRequestContext.SetPersonSession( upgradedSession );
+
                         var identity = new System.Security.Principal.GenericIdentity( upgradedSession.UserLogin.UserName );
                         Context.User = new System.Security.Principal.GenericPrincipal( identity, null );
                         rockRequestContext.SetCurrentUser( upgradedSession.UserLogin );

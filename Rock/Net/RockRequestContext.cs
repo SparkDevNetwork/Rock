@@ -27,6 +27,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Utility;
@@ -125,6 +126,24 @@ namespace Rock.Net
         /// The current person.
         /// </value>
         public virtual Person CurrentPerson => CurrentUser?.Person;
+
+        /// <summary>
+        /// Gets the <see cref="PersonSession"/> resolved for the current
+        /// request, or <c>null</c> when no valid session is present
+        /// (anonymous requests, API-key requests with no session, bearer
+        /// tokens, server-side jobs).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This property IS the per-request cache: the session is resolved
+        /// once at request entry (by the <c>Application_BeginRequest</c>
+        /// hook or the legacy upgrade path in
+        /// <c>Application_PostAuthenticateRequest</c>) and held here for
+        /// the duration of the request. Consumers MUST handle null;
+        /// anonymous requests are legitimate.
+        /// </para>
+        /// </remarks>
+        public virtual PersonSession PersonSession { get; internal set; }
 
         /// <summary>
         /// Gets the current visitor <see cref="PersonAlias"/> identifier. If
@@ -625,6 +644,25 @@ namespace Rock.Net
         public void SetCurrentUser( UserLogin userLogin )
         {
             CurrentUser = userLogin;
+        }
+
+        /// <summary>
+        /// Sets the resolved <see cref="PersonSession"/> for this request.
+        /// </summary>
+        /// <remarks>
+        /// Exists for the same cross-assembly reason as
+        /// <see cref="SetCurrentUser(UserLogin)"/>: <c>RockWeb</c>'s
+        /// <c>Application_BeginRequest</c> and
+        /// <c>Application_PostAuthenticateRequest</c> hooks need to write
+        /// the session resolved by <c>PersonSessionService</c> onto the
+        /// active context, and the internal setter is not reachable from
+        /// <c>RockWeb</c>'s runtime-generated assembly.
+        /// </remarks>
+        /// <param name="personSession">The resolved <see cref="PersonSession"/>, or <c>null</c> for an anonymous request.</param>
+        [RockInternal( "20.0", true )]
+        public void SetPersonSession( PersonSession personSession )
+        {
+            PersonSession = personSession;
         }
 
         #endregion
@@ -1430,6 +1468,48 @@ namespace Rock.Net
         public bool IsSiteType( SiteType siteType )
         {
             return GetSiteType() == siteType;
+        }
+
+        #endregion
+
+        #region Authentication
+
+        /// <summary>
+        /// Returns whether the current request meets the supplied
+        /// <see cref="AuthenticationRequirement"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Centralized so callers stop rolling bespoke recency checks
+        /// against <see cref="UserLogin"/> flags. The policy:
+        /// </para>
+        /// <list type="bullet">
+        /// <item><see cref="AuthenticationRequirement.Elevated"/> is satisfied by an <see cref="AuthenticationStrength.Elevated"/> OR <see cref="AuthenticationStrength.MultiFactor"/> session.</item>
+        /// <item><see cref="AuthenticationRequirement.MultiFactor"/> is satisfied only by a <see cref="AuthenticationStrength.MultiFactor"/> session.</item>
+        /// </list>
+        /// <para>
+        /// Both requirements return <c>false</c> for a null or inactive
+        /// <see cref="PersonSession"/>.
+        /// </para>
+        /// </remarks>
+        /// <param name="requirement">The requirement to check against.</param>
+        /// <returns><c>true</c> if the current session meets <paramref name="requirement"/>; otherwise, <c>false</c>.</returns>
+        public virtual bool MeetsRequirement( AuthenticationRequirement requirement )
+        {
+            var strength = PersonSession?.GetAuthenticationStrength() ?? AuthenticationStrength.NotAuthenticated;
+
+            switch ( requirement )
+            {
+                case AuthenticationRequirement.Elevated:
+                    return strength == AuthenticationStrength.Elevated
+                        || strength == AuthenticationStrength.MultiFactor;
+
+                case AuthenticationRequirement.MultiFactor:
+                    return strength == AuthenticationStrength.MultiFactor;
+
+                default:
+                    return false;
+            }
         }
 
         #endregion

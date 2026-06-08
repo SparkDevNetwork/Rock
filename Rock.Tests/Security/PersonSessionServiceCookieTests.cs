@@ -26,13 +26,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
 using Rock.Configuration;
-using Rock.Enums.Net;
 using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
 using Rock.Tests.Shared.TestFramework;
-using Rock.Web;
+using Rock.Tests.Shared.Utility;
 
 namespace Rock.Tests.Security;
 
@@ -567,26 +566,6 @@ public class PersonSessionServiceCookieTests
         requestMock.SetupGet( r => r.CookiesValuesAreUrlDecoded ).Returns( false );
 
         return new RockRequestContext( requestMock.Object, response, currentUser: null );
-    }
-
-    /// <summary>
-    /// Captures cookie writes and removals so tests can assert on what
-    /// <see cref="PersonSessionService"/> emitted via the response context.
-    /// </summary>
-    private class TrackingResponseContext : IRockResponseContext
-    {
-        public List<BrowserCookie> AddedCookies { get; } = [];
-        public List<BrowserCookie> RemovedCookies { get; } = [];
-
-        public void AddCookie( BrowserCookie cookie ) => AddedCookies.Add( cookie );
-        public void RemoveCookie( BrowserCookie cookie ) => RemovedCookies.Add( cookie );
-
-        public void AddBreadCrumb( IBreadCrumb breadcrumb ) { }
-        public void AddHtmlElement( string id, string name, string content, Dictionary<string, string> attributes, ResponseElementLocation location ) { }
-        public void RedirectToUrl( string url, bool permanent = false ) { }
-        public void SetHttpHeader( string name, string value ) { }
-        public void SetPageTitle( string title ) { }
-        public void SetBrowserTitle( string title ) { }
     }
 
     #endregion Test infrastructure
