@@ -74,7 +74,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the IP address of the computer/device that requested the page view.
         /// </value>
-        [MaxLength( 25 )]
+        [MaxLength( 45 )]
         [DataMember]
         [StringValidation( StringValidationProfile.PlainText )]
         public string IpAddress { get; set; }
