@@ -272,9 +272,7 @@ namespace Rock.Blocks.Communication
 
         private static class PageParameterKey
         {
-            // "Communication" allows Communication Id, Guid, or IdKey values,
-            // while the older "CommunicationId" only supports Id.
-            public const string Communication = "Communication";
+            // Allows Communication Id, Guid, or IdKey values.
             public const string CommunicationId = "CommunicationId";
 
             // "Person" allows Person Id, Guid, or IdKey values,
@@ -321,31 +319,14 @@ namespace Rock.Blocks.Communication
 
         private Guid PersonalizationSegmentCategoryGuid => GetAttributeValue( AttributeKey.PersonalizationSegmentCategory ).AsGuid();
 
-        private string SimpleCommunicationPageUrl => this.GetLinkedPageUrl( AttributeKey.SimpleCommunicationPage, PageParameterKey.Communication, "((Key))" );
+        private string SimpleCommunicationPageUrl => this.GetLinkedPageUrl( AttributeKey.SimpleCommunicationPage, PageParameterKey.CommunicationId, "((Key))" );
 
         private int MinimumShortLinkTokenLength => this.GetAttributeValue( AttributeKey.MinimumShortLinkTokenLength ).AsInteger();
 
         /// <summary>
-        /// Gets the Communication entity key passed to the "Communication" or "CommunicationId" page parameter.
+        /// Gets the Communication entity key passed to the "CommunicationId" page parameter.
         /// </summary>
-        private string CommunicationOrCommunicationIdPageParameter
-        {
-            get
-            {
-                var communicationPageParameter = PageParameter( PageParameterKey.Communication );
-
-                if ( communicationPageParameter.IsNotNullOrWhiteSpace() )
-                {
-                    return communicationPageParameter;
-                }
-                else
-                {
-                    // CommunicationId can support Id, Guid, or IdKey values in order to maintain backward compatibility
-                    // with existing links, but return it as a string so it can be used as an entity key.
-                    return PageParameter( PageParameterKey.CommunicationId );
-                }
-            }
-        }
+        private string CommunicationIdPageParameter => PageParameter( PageParameterKey.CommunicationId );
 
         /// <summary>
         /// Gets the CommunicationTemplate entity key passed to the "CommunicationTemplate" or "TemplateGuid" page parameter.
@@ -1471,7 +1452,7 @@ namespace Rock.Blocks.Communication
         private Model.Communication LoadCommunicationFromPageParameter( RockContext rockContext )
         {
             // Check page parameter for existing communication.
-            var communicationKey = this.CommunicationOrCommunicationIdPageParameter;
+            var communicationKey = this.CommunicationIdPageParameter;
 
             if ( communicationKey.IsNotNullOrWhiteSpace() )
             {
