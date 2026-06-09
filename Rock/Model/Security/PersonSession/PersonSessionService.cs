@@ -696,6 +696,277 @@ public partial class PersonSessionService
 
     #endregion Impersonation Query Helpers
 
+    #region Impersonation Token Processing
+
+    /// <summary>
+    /// <para>
+    /// Single Pattern B seam for every code path that inspects an <c>rckipid</c>
+    /// query parameter on an incoming request. Applies the user-token
+    /// impersonation matrix from the spec ("Test Plan / Impersonation:
+    /// <c>ProcessImpersonationToken</c> matrix"):
+    /// </para>
+    /// <list type="number">
+    ///     <item>Invalid, expired, revoked, over-<c>UsageLimit</c>, or out-of-page-scope token: mark any current session inactive, expire the cookie, return redirect-required.</item>
+    ///     <item>Current session is <see cref="PersonSessionCreationSource.UserToken"/> and references this same <c>PersonToken</c>: no session change, no <c>TimesUsed</c> increment, return redirect-required.</item>
+    ///     <item>Current session is <see cref="PersonSessionCreationSource.Component"/> for the token's target person: no session change, return redirect-required. <c>TimesUsed</c> still increments per the strict literal spec wording: Component sessions reference no token, so the incoming token "differs."</item>
+    ///     <item>All other cases (Anonymous, Impersonation, ApiKey, Legacy, mismatched Component, mismatched UserToken): mark any current session inactive, create a new <see cref="PersonSessionCreationSource.UserToken"/> session for the token's target, write the new cookie, return redirect-required.</item>
+    /// </list>
+    /// <para>
+    /// Redirect-required is always <c>true</c> on return: anywhere this helper
+    /// is called, the <c>rckipid</c> MUST come out of the URL so it does not
+    /// persist in browser history, get re-processed on the next page load, or
+    /// leak via referer.
+    /// </para>
+    /// </summary>
+    /// <param name="rckipidToken">The <c>rckipid</c> token value lifted from the request's query string.</param>
+    /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
+    /// <param name="currentPageId">The <c>Page.Id</c> the request is targeting, used to enforce a page-scoped token. Pass <c>null</c> when called from a non-page context (e.g. an API controller).</param>
+    /// <returns>An <see cref="ImpersonationProcessResult"/> capturing the resulting session and the redirect signal.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="requestContext"/> is null.</exception>
+    internal ImpersonationProcessResult ProcessImpersonationToken( string rckipidToken, RockRequestContext requestContext, int? currentPageId = null )
+    {
+        if ( requestContext == null )
+        {
+            throw new ArgumentNullException( nameof( requestContext ) );
+        }
+
+        var rockContext = Context as RockContext;
+        var personToken = new PersonTokenService( rockContext ).GetByImpersonationToken( rckipidToken );
+
+        // Token validity. The rules below collapse into matrix rule 1 ("token
+        // not usable"): mark any current session inactive, expire the cookie,
+        // and return the redirect signal so the caller can strip rckipid from
+        // the URL. We compare TimesUsed >= UsageLimit (not >) because TimesUsed
+        // is the post-use count; a UsageLimit=1 token has TimesUsed=1 after
+        // one valid use, and a re-click then hits this branch. A page-scoped
+        // token presented to a non-page context (currentPageId == null, e.g.
+        // an API request) is also rejected: the scope's intent is to confine
+        // the token to one page, so absence of a page identifier fails the
+        // check rather than passes it.
+        var now = RockDateTime.Now;
+        var isTokenInvalid =
+            personToken == null
+            || personToken.PersonAlias == null
+            || ( personToken.ExpireDateTime.HasValue && personToken.ExpireDateTime.Value < now )
+            || ( personToken.UsageLimit.HasValue && personToken.TimesUsed >= personToken.UsageLimit.Value )
+            || ( personToken.PageId.HasValue && personToken.PageId.Value != currentPageId );
+
+        if ( isTokenInvalid )
+        {
+            DeactivateCurrentSessionIfActive( requestContext );
+            ExpireAuthCookie( requestContext );
+
+            return new ImpersonationProcessResult
+            {
+                IsRedirectRequired = true,
+                Session = null,
+            };
+        }
+
+        var currentSession = requestContext.PersonSession;
+
+        // Rule 2: current session is a UserToken session AND references this
+        // same source PersonToken. No new session row, no TimesUsed
+        // increment, since the token has already done its work for this browser.
+        // Returning the unchanged session lets the caller redirect to the
+        // clean URL without disturbing the existing identity.
+        if ( currentSession != null
+            && currentSession.CreationSource == PersonSessionCreationSource.UserToken )
+        {
+            var currentSettings = currentSession.GetAdditionalSettingsOrNull<PersonSessionUserTokenSettings>();
+            if ( currentSettings != null && currentSettings.OriginatingPersonTokenGuid == personToken.Guid )
+            {
+                return new ImpersonationProcessResult
+                {
+                    IsRedirectRequired = true,
+                    Session = currentSession,
+                };
+            }
+        }
+
+        // Past this point the rckipid is treated as "different from the token
+        // referenced by the current session," so the spec calls for a
+        // TimesUsed increment. The persistence happens below alongside any
+        // session writes so a single SaveChanges covers both.
+        personToken.TimesUsed++;
+        personToken.LastUsedDateTime = now;
+
+        var personAliasService = new PersonAliasService( rockContext );
+        var tokenTargetPersonId = personToken.PersonAlias.PersonId;
+        var targetPersonAliasId = personToken.PersonAliasId;
+
+        // Rule 3 (matrix row "Component-for-X | Token for X"): the user is
+        // already logged in as the token's target person. Don't create a
+        // second session for the same identity, but DO increment TimesUsed
+        // (the current session references no PersonToken, so the incoming
+        // token "differs from the token referenced by the current session").
+        // PersonId comparison is on the underlying Person, not the alias,
+        // because the same person can have multiple aliases. The token
+        // could legitimately target a different alias than the one the
+        // current session was created against.
+        var currentSessionPersonId = ( currentSession != null )
+            ? personAliasService.Get( currentSession.PersonAliasId )?.PersonId
+            : null;
+
+        if ( currentSession != null
+            && currentSession.CreationSource == PersonSessionCreationSource.Component
+            && currentSessionPersonId == tokenTargetPersonId )
+        {
+            rockContext.SaveChanges();
+
+            return new ImpersonationProcessResult
+            {
+                IsRedirectRequired = true,
+                Session = currentSession,
+            };
+        }
+
+        // Rule 4 (every other current-session shape): abandon the current
+        // session (Impersonation, mismatched Component, mismatched UserToken,
+        // ApiKey, Legacy) and start a new UserToken session for the token's
+        // target person.
+        DeactivateCurrentSessionIfActive( requestContext );
+
+        var newSession = StartUserTokenSession( requestContext, targetPersonAliasId, personToken );
+        Add( newSession );
+        rockContext.SaveChanges();
+
+        SetAuthCookie( newSession, requestContext );
+        requestContext.SetPersonSession( newSession );
+
+        // Spec's InteractionSession sync table calls for a fresh
+        // InteractionSession on the auth transition. Regenerating the
+        // browser-session identifier here means the next interaction-tracking
+        // call creates a new InteractionSession row tied to the new
+        // UserToken PersonSession rather than continuing to write activity
+        // against the prior session's row.
+        requestContext.RegenerateBrowserSessionId();
+
+        return new ImpersonationProcessResult
+        {
+            IsRedirectRequired = true,
+            Session = newSession,
+        };
+    }
+
+    /// <summary>
+    /// Per-request page-scope re-validation hook for active
+    /// <see cref="PersonSessionCreationSource.UserToken"/> sessions. Re-reads
+    /// the source <c>PersonToken</c> on every request and applies the spec's
+    /// "fail closed" rules: revocation, expiration, and over-<c>UsageLimit</c>
+    /// mark the session inactive; a page-scoped token used outside its
+    /// configured page returns a not-authorized signal without deactivating
+    /// the session.
+    /// </summary>
+    /// <remarks>
+    /// Called from <see cref="Rock.Web.UI.RockPage"/> on every page load so
+    /// the page-scope check the legacy <c>ProcessImpersonation</c> performed
+    /// for <c>rckipid=</c>-in-identity requests continues to run under the
+    /// new model. The cookie no longer carries <c>rckipid</c>, so this hook
+    /// is how the check stays effective. No-op for non-UserToken sessions and
+    /// for anonymous requests.
+    /// </remarks>
+    /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
+    /// <param name="currentPageId">The <c>Page.Id</c> the request is targeting, or <c>null</c> when called from a non-page context.</param>
+    /// <returns>The revalidation outcome.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="requestContext"/> is null.</exception>
+    internal UserTokenRevalidationResult RevalidateUserTokenSession( RockRequestContext requestContext, int? currentPageId )
+    {
+        if ( requestContext == null )
+        {
+            throw new ArgumentNullException( nameof( requestContext ) );
+        }
+
+        var currentSession = requestContext.PersonSession;
+        if ( currentSession == null
+            || !currentSession.IsActive
+            || currentSession.CreationSource != PersonSessionCreationSource.UserToken )
+        {
+            return UserTokenRevalidationResult.Ok;
+        }
+
+        var settings = currentSession.GetAdditionalSettingsOrNull<PersonSessionUserTokenSettings>();
+        if ( settings == null || settings.OriginatingPersonTokenGuid == Guid.Empty )
+        {
+            // UserToken session with no token reference is structurally broken;
+            // treat as revoked rather than silently continuing.
+            DeactivateCurrentSessionIfActive( requestContext );
+            ExpireAuthCookie( requestContext );
+            return UserTokenRevalidationResult.SessionRevoked;
+        }
+
+        var rockContext = Context as RockContext;
+        var personToken = new PersonTokenService( rockContext ).Get( settings.OriginatingPersonTokenGuid );
+
+        // UsageLimit is intentionally NOT checked here: it governs whether
+        // a token can establish a NEW session (enforced in
+        // ProcessImpersonationToken), not whether an already-established
+        // session can continue. Per the spec deliverable, the per-request
+        // hook checks page-scope, expiration, and revocation. Token
+        // deletion is the "revocation" signal.
+        var now = RockDateTime.Now;
+        var isRevoked =
+            personToken == null
+            || ( personToken.ExpireDateTime.HasValue && personToken.ExpireDateTime.Value < now );
+
+        if ( isRevoked )
+        {
+            DeactivateCurrentSessionIfActive( requestContext );
+            ExpireAuthCookie( requestContext );
+            return UserTokenRevalidationResult.SessionRevoked;
+        }
+
+        // A null currentPageId means the caller is not in a page context
+        // (e.g., an API call made from JavaScript or an Obsidian block
+        // running inside the in-scope page). Those calls are legitimate
+        // and must NOT be blocked by the page-scope check: an in-scope
+        // page can need to fetch campuses, accounts, etc. via the REST
+        // API to render itself. The page-scope check exists to prevent
+        // a user from NAVIGATING away from the in-scope page, which is
+        // distinct: navigation goes through RockPage with a concrete
+        // PageId. Sister check in ProcessImpersonationToken treats null
+        // differently because that path decides whether to START a new
+        // session, not whether to permit a request under an existing one.
+        if ( personToken.PageId.HasValue
+            && currentPageId.HasValue
+            && personToken.PageId.Value != currentPageId.Value )
+        {
+            return UserTokenRevalidationResult.PageScopeMiss;
+        }
+
+        return UserTokenRevalidationResult.Ok;
+    }
+
+    /// <summary>
+    /// Marks any active <see cref="PersonSession"/> on
+    /// <paramref name="requestContext"/> inactive (refetched through this
+    /// service's context so the <c>SaveHook</c> can stamp
+    /// <see cref="PersonSession.InactiveDateTime"/> correctly). Used by
+    /// <see cref="ProcessImpersonationToken"/> and
+    /// <see cref="RevalidateUserTokenSession"/> when an auth event abandons
+    /// the existing session.
+    /// </summary>
+    /// <param name="requestContext">The current <see cref="RockRequestContext"/>.</param>
+    private void DeactivateCurrentSessionIfActive( RockRequestContext requestContext )
+    {
+        var existingGuid = requestContext?.PersonSession?.Guid;
+        if ( !existingGuid.HasValue || existingGuid.Value == Guid.Empty )
+        {
+            return;
+        }
+
+        var attached = Get( existingGuid.Value );
+        if ( attached == null || !attached.IsActive )
+        {
+            return;
+        }
+
+        attached.IsActive = false;
+        ( Context as RockContext ).SaveChanges();
+    }
+
+    #endregion Impersonation Token Processing
+
     #region Cookie I/O
 
     /// <summary>

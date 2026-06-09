@@ -98,20 +98,18 @@ namespace Rock.Model
                 return string.Empty;
             }
 
-            if ( currentPrincipal.Identity.Name.StartsWith( "rckipid=" ) )
-            {
-                var personToken = new PersonTokenService( new Rock.Data.RockContext() ).GetByImpersonationToken( currentPrincipal.Identity.Name.Substring( 8 ) );
-                if ( personToken?.PersonAlias?.Person != null )
-                {
-                    return personToken.PersonAlias.Person.GetImpersonatedUser()?.UserName ?? currentPrincipal.Identity.Name;
-                }
-
-                return currentPrincipal.Identity.Name;
-            }
-            else
-            {
-                return currentPrincipal.Identity.Name;
-            }
+            /*
+                The legacy `rckipid=` identity-name parsing branch is gone:
+                under the PersonSession model the `.ROCK` cookie no longer
+                carries `rckipid=` in the identity name. User-token email
+                flows are now established by
+                `PersonSessionService.ProcessImpersonationToken`, which
+                creates a UserToken `PersonSession` and emits a standard
+                new-format cookie; by the time this method runs, the
+                identity name is already the impersonated user's UserName
+                directly.
+            */
+            return currentPrincipal.Identity.Name;
         }
 
         #endregion

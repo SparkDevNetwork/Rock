@@ -2106,104 +2106,71 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Checks for and processes any impersonation parameters
-        /// Returns False if an invalid token was specified
+        /// Checks for and processes any <c>rckipid</c> impersonation token on
+        /// the current request. Delegates to
+        /// <see cref="PersonSessionService.ProcessImpersonationToken"/> when
+        /// the token arrives as a query parameter, and to
+        /// <see cref="PersonSessionService.RevalidateUserTokenSession"/> on
+        /// every other page load so an active <c>UserToken</c>
+        /// <see cref="PersonSession"/> stays within its source token's
+        /// page-scope, expiration, and revocation rules.
         /// </summary>
+        /// <remarks>
+        /// Under the new PersonSession model the <c>.ROCK</c> cookie no longer
+        /// carries <c>rckipid=</c> in the identity name, so the legacy
+        /// "rckipid is in the auth ticket" branch is gone. The page-scope
+        /// check that used to live there now runs on every request through
+        /// <c>RevalidateUserTokenSession</c>.
+        /// </remarks>
         /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>false</c> when the request has been redirected (the caller must stop further page processing); <c>true</c> when the request may continue.</returns>
         private bool ProcessImpersonation( RockContext rockContext )
         {
-            string impersonatedPersonKeyParam = PageParameter( "rckipid" );
-            string impersonatedPersonKeyIdentity = string.Empty;
-            if ( HttpContext.Current?.User?.Identity?.Name != null )
+            var personSessionService = new PersonSessionService( rockContext );
+            var impersonationToken = PageParameter( "rckipid" );
+
+            if ( !string.IsNullOrEmpty( impersonationToken ) )
             {
-                if ( HttpContext.Current.User.Identity.Name.StartsWith( "rckipid=" ) )
-                {
-                    // get the impersonatedPersonKey from the Auth ticket
-                    impersonatedPersonKeyIdentity = HttpContext.Current.User.Identity.Name.Substring( 8 );
-                }
+                // Pattern B entry point: rckipid arrived in the URL. The
+                // service applies the spec's 5-rule matrix and either creates
+                // a new UserToken session, leaves the current session
+                // unchanged, or marks an invalid token's current session
+                // inactive. In every case the rckipid must come out of the
+                // URL on the next request; browser history, referer leaks,
+                // and double-consumption all depend on the strip.
+                personSessionService.ProcessImpersonationToken( impersonationToken, RequestContext, this.PageId );
+
+                Response.Redirect( PageReference.BuildUrl( true ), false );
+                Context.ApplicationInstance.CompleteRequest();
+                return false;
             }
 
-            // if there is a impersonatedPersonKeyParam specified, and it isn't already associated with the current HttpContext.Current.User.Identity,
-            // then set the currentuser and ticket using the impersonatedPersonKeyParam
-            if ( !string.IsNullOrEmpty( impersonatedPersonKeyParam ) && impersonatedPersonKeyParam != impersonatedPersonKeyIdentity )
+            // No rckipid in the URL. Run the per-request revalidation hook
+            // for active UserToken sessions so a page-scoped token used
+            // outside its configured page surfaces a not-authorized response,
+            // and a token revoked between requests stops authenticating
+            // immediately rather than at next session expiry.
+            var revalidation = personSessionService.RevalidateUserTokenSession( RequestContext, this.PageId );
+            switch ( revalidation )
             {
-                Rock.Model.PersonService personService = new Model.PersonService( rockContext );
-
-                Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( impersonatedPersonKeyParam, true, this.PageId );
-                if ( impersonatedPerson != null )
-                {
-                    /*
-                        7/9/2025 - MSE
-
-                        Previously, if the PersonId matched the current individual, we would skip re-authentication even if the token in the URL
-                        differed from the current authentication ticket.
-                        This would cause the token in the authentication ticket and the URL to become out of sync,
-                        leading to runtime errors.
-
-                        Now, if the tokens differ (even for the same PersonId), we always force a sign-out and re-authenticate with the new token.
-
-                        Reason: Prevent session and token mismatches during impersonation
-
-                        Code Removed:
-                        if ( CurrentUser != null && impersonatedPerson.Id == CurrentUser.PersonId )
-                        {
-                            return true;
-                        }
-                    */
-
-                    Authorization.SignOut();
-
-                    /*
-                        10/19/2023 - JMH
-
-                        Bypass the two-factor authentication requirement when impersonating;
-                        otherwise, an administrator would be forced to provide username and password,
-                        as well as complete a passwordless login.
-
-                        Reason: Two-Factor Authentication
-                     */
-                    Rock.Security.Authorization.SetAuthCookie(
-                        "rckipid=" + impersonatedPersonKeyParam,
-                        isPersisted: false,
-                        isImpersonated: true,
-                        isTwoFactorAuthenticated: true );
-                    CurrentUser = impersonatedPerson.GetImpersonatedUser();
-                    UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = "rckipid=" + impersonatedPersonKeyParam } );
-
-
-                    // reload page as the impersonated user (we probably could remove the token from the URL, but some blocks might be looking for rckipid in the PageParameters, so just leave it)
-                    Response.Redirect( Request.RawUrl, false );
+                case UserTokenRevalidationResult.PageScopeMiss:
+                    // Spec: session stays active (the recipient can return
+                    // to the in-scope page), but the current page is
+                    // refused. Send through the standard not-authorized
+                    // redirect so the page's own auth flow handles the
+                    // refusal.
+                    Response.Redirect( RockPageHelper.GetLoginPageUrl( RequestContext ), false );
                     Context.ApplicationInstance.CompleteRequest();
-                }
-                else
-                {
-                    // Attempting to use an impersonation token that doesn't exist or is no longer valid, so log them out
-                    Authorization.SignOut();
-                    Session["InvalidPersonToken"] = true;
+                    return false;
+
+                case UserTokenRevalidationResult.SessionRevoked:
+                    // The source PersonToken was deleted or expired between
+                    // requests. The service has already marked the session
+                    // inactive and expired the cookie; reload the page so
+                    // the rest of OnInit sees a coherent anonymous state.
                     Response.Redirect( PageReference.BuildUrl( true ), false );
                     Context.ApplicationInstance.CompleteRequest();
                     return false;
-                }
-            }
-            else if ( !string.IsNullOrEmpty( impersonatedPersonKeyIdentity ) )
-            {
-                if ( !this.IsPostBack )
-                {
-                    var impersonationToken = impersonatedPersonKeyIdentity;
-                    var personToken = new PersonTokenService( rockContext ).GetByImpersonationToken( impersonationToken );
-                    if ( personToken != null )
-                    {
-                        // attempting to use a page specific impersonation token for a different page, so log them out
-                        if ( personToken.PageId.HasValue && personToken.PageId != this.PageId )
-                        {
-                            Authorization.SignOut();
-                            Session["InvalidPersonToken"] = true;
-                            Response.Redirect( Request.RawUrl, false );
-                            Context.ApplicationInstance.CompleteRequest();
-                            return false;
-                        }
-                    }
-                }
             }
 
             return true;

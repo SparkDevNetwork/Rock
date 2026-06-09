@@ -85,11 +85,26 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Gets the currently logged in Person
+        /// Gets the currently logged in Person.
         /// </summary>
+        /// <remarks>
+        /// Resolves the current person from the request's
+        /// <see cref="RockRequestContext"/>, which is the canonical authority
+        /// under the PersonSession model. The legacy `rckipid=`
+        /// identity-prefix branch is gone (under the new model the `.ROCK`
+        /// cookie no longer embeds the rckipid in the identity name; the
+        /// user-token flow is handled by
+        /// `PersonSessionService.ProcessImpersonationToken`, which converts
+        /// the token into a UserToken `PersonSession` and a standard
+        /// new-format cookie). A separate manual follow-up updates
+        /// `RockRequestContext.CurrentPerson` to source from the resolved
+        /// `PersonSession` rather than from `CurrentUser?.Person`, after
+        /// which this method works correctly for all session types including
+        /// UserToken sessions that have no concrete `UserLogin`.
+        /// </remarks>
         /// <param name="controller">The ApiController instance that is looking up the current person.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
+        /// <param name="rockContext">The rock context. Retained for signature compatibility; no longer used by this method.</param>
+        /// <returns>The current <see cref="Person"/>, or <c>null</c> when the request is anonymous.</returns>
         internal static Rock.Model.Person GetPerson( ApiController controller, RockContext rockContext )
         {
             if ( controller.Request.Properties.Keys.Contains( "Person" ) )
@@ -97,30 +112,11 @@ namespace Rock.Rest
                 return controller.Request.Properties["Person"] as Person;
             }
 
-            var principal = controller.ControllerContext.Request.GetUserPrincipal();
-            if ( principal != null && principal.Identity != null )
+            var person = ( controller as ApiControllerBase )?.RockRequestContext?.CurrentPerson;
+            if ( person != null )
             {
-                if ( principal.Identity.Name.StartsWith( "rckipid=" ) )
-                {
-                    var personService = new Model.PersonService( rockContext ?? new RockContext() );
-                    Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( principal.Identity.Name.Substring( 8 ), false, null );
-                    if ( impersonatedPerson != null )
-                    {
-                        return impersonatedPerson;
-                    }
-                }
-                else
-                {
-                    var userLoginService = new Rock.Model.UserLoginService( rockContext ?? new RockContext() );
-                    var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
-
-                    if ( userLogin != null )
-                    {
-                        var person = userLogin.Person;
-                        controller.Request.Properties.Add( "Person", person );
-                        return userLogin.Person;
-                    }
-                }
+                controller.Request.Properties.Add( "Person", person );
+                return person;
             }
 
             return null;

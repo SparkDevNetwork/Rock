@@ -754,6 +754,15 @@ This phase is for a human, not the implementation agent. After phases 1-16 land 
 - [ ] After kill-switch fires, fresh logins produce new `PersonSession` rows with `IssuedDateTime > threshold` that are not rejected.
 - [ ] Legacy-cookie kill-switch path: a user presenting a pre-deployment legacy `FormsAuthenticationTicket` whose `IssueDate` precedes the kill-switch threshold is rejected on the *current* request — the cookie is expired and the request is anonymous. (Verify by setting the threshold to a recent value, then making a request with a legacy cookie issued before it; the user should be forced to re-log in without ever briefly authenticating. This exercises the dual-reader bridge block in Phase 5's BeginRequest hook.)
 
+### Manual follow-ups
+
+Pre-merge developer sweeps, not user-facing scenarios. Perform these once the implementation phases have settled.
+
+- [ ] Determine if any mocked-db tests should be promoted to full integration. Some tests in `Rock.Tests/Security/PersonSessionServiceTests.cs` use a generic `try { ... } catch { }` around the create / save leg and treat any exception as "the find leg returned null" (e.g. the orphan-not-resurrected and expired-not-reused tests). Decide whether these should move to `Rock.Tests.Integration/Security/PersonSessionTests.cs` so the create / save leg actually runs and the assertion is positive rather than absence-of-the-wrong-result.
+- [ ] Verify file name and location of new test files. Confirm each Phase-introduced test file lives under the right project (mocked-db → `Rock.Tests/`, full-integration → `Rock.Tests.Integration/`), matches the `*Tests.cs` naming convention, and groups related tests under named `#region` blocks that align with the phase they cover.
+- [ ] **`RockRequestContext.CurrentPerson` should source from `PersonSession`.** Today `CurrentPerson` is computed as `CurrentUser?.Person` (where `CurrentUser` is the resolved `UserLogin`). Under the PersonSession model this returns null for `UserToken` and any other session type that has no concrete `UserLogin`, even though the session's `PersonAlias` clearly identifies a person. Update `CurrentPerson` to prefer `PersonSession?.PersonAlias?.Person` and fall back to `CurrentUser?.Person` only when no session is attached. Once that lands, `ApiControllerBase.GetPerson` (already simplified to read `RockRequestContext.CurrentPerson` in Phase 12) and any other read-side caller automatically pick up the correct person for `UserToken` sessions without further changes.
+- [ ] Look at combining the PersonSessionService...Tests.cs files into one. This is our pattern, but discuss if this is a bad idea (file size growth).
+
 ---
 
 ## Appendix A — Touch-point quick reference

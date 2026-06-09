@@ -516,10 +516,15 @@ namespace Rock.Web.HttpModules
             var clientInfo = new ClientInformation( context.Request );
             var username = context.User?.Identity?.Name ?? string.Empty;
 
-            if ( username.StartsWith( "rckipid" ) )
-            {
-                username = "<ImpersonationToken>";
-            }
+            /*
+                The legacy `rckipid=` identity-name sanitization branch is
+                gone: under the PersonSession model the `.ROCK` cookie no
+                longer carries `rckipid=` in the identity name, so this
+                branch only ever matched the legacy auth ticket. New-format
+                cookies surface the impersonated person's `UserLogin.UserName`
+                directly here, which is the same value the legacy branch was
+                substituting toward.
+            */
 
             var request = new RequestDetail
             {
