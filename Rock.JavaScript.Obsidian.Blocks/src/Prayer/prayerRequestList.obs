@@ -54,12 +54,19 @@
                       title="Prayer Count"
                       field="prayerCount"
                       :filter="numberValueFilter"
-                      width="145px"
+                      width="130px"
                       visiblePriority="sm" />
 
         <NumberColumn name="flagCount"
                       title="Flag Count"
                       field="flagCount"
+                      :filter="numberValueFilter"
+                      width="130px"
+                      visiblePriority="sm" />
+
+        <NumberColumn name="commentCount"
+                      title="Comments"
+                      field="commentCount"
                       :filter="numberValueFilter"
                       width="130px"
                       visiblePriority="sm" />

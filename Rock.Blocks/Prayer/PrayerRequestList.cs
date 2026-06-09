@@ -60,6 +60,17 @@ namespace Rock.Blocks.Prayer
     [CustomizedGrid]
     public class PrayerRequestList : RockEntityListBlockType<PrayerRequest>
     {
+        #region Fields
+
+        /// <summary>
+        /// The number of viewable prayer comments, keyed by prayer request Id.
+        /// Loaded once per grid build in <see cref="GetListItems"/> so the Comments
+        /// column can be populated without a per-row database lookup.
+        /// </summary>
+        private Dictionary<int, int> _prayerCommentCounts = new Dictionary<int, int>();
+
+        #endregion Fields
+
         #region Keys
 
         private static class AttributeKey
@@ -287,6 +298,52 @@ namespace Rock.Blocks.Prayer
         }
 
         /// <inheritdoc/>
+        protected override List<PrayerRequest> GetListItems( IQueryable<PrayerRequest> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            if ( items.Count == 0 )
+            {
+                return items;
+            }
+
+            /*
+                6/9/2026 - CLAUDE
+
+                The Comments column count is loaded here with a single grouped query
+                rather than per-row. The block was previously given a comment count
+                only by way of a customized-grid Lava column ({{ Row.Id | Notes:'2'
+                | Size }}), which issued a separate database lookup for every rendered
+                row. On instances with thousands of requests (e.g. when 'Show Expired
+                Requests' was enabled) that per-row Lava caused page timeouts.
+
+                Reason: Replace per-row Lava note lookups with one efficient aggregate query.
+            */
+            var prayerCommentNoteTypeId = NoteTypeCache.Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() )?.Id;
+
+            if ( !prayerCommentNoteTypeId.HasValue )
+            {
+                return items;
+            }
+
+            // Use the (unordered, still unexecuted) filtered queryable as a subquery basis for
+            // Contains so EF generates a single SQL statement instead of a large WHERE IN list.
+            // The ordered queryable is intentionally not reused here because an ORDER BY is not
+            // valid inside an IN subquery.
+            var prayerRequestIdQuery = GetListQueryable( rockContext ).Select( p => p.Id );
+            var currentPersonId = GetCurrentPerson()?.Id;
+
+            _prayerCommentCounts = new NoteService( rockContext )
+                .GetByNoteTypeId( prayerCommentNoteTypeId.Value )
+                .AreViewableBy( currentPersonId )
+                .Where( n => n.EntityId.HasValue && prayerRequestIdQuery.Contains( n.EntityId.Value ) )
+                .GroupBy( n => n.EntityId.Value )
+                .ToDictionary( g => g.Key, g => g.Count() );
+
+            return items;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<PrayerRequest> GetGridBuilder()
         {
             var builder = new GridBuilder<PrayerRequest>()
@@ -299,6 +356,7 @@ namespace Rock.Blocks.Prayer
                 .AddDateTimeField( "enteredDateTime", a => a.EnteredDateTime )
                 .AddField( "prayerCount", a => a.PrayerCount )
                 .AddField( "flagCount", a => a.FlagCount )
+                .AddField( "commentCount", a => _prayerCommentCounts.GetValueOrDefault( a.Id, 0 ) )
                 .AddTextField( "moderationFlags", a => GetModerationFlagsText( a.ModerationFlags ) )
                 .AddAttributeFields( GetGridAttributes() );
 
