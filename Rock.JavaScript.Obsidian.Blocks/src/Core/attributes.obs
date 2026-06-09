@@ -86,7 +86,8 @@
         <AttributeEditor v-model="editableAttribute"
                          :attributeEntityTypeGuid="entityTypeGuid"
                          :reservedKeyNames="usedKeyNames"
-                         :isShowInGridVisible="config?.options?.enableShowInGrid" />
+                         :isShowInGridVisible="config?.options?.enableShowInGrid"
+                         :isIndexingEnabledVisible="isIndexingEnabledVisible" />
     </Modal>
 
     <Modal v-model="showFilterModal" title="Filter Options" @save="applyFilters">
@@ -129,6 +130,7 @@
         validQualifierColumns?: string[] | null;
         isLegacyPlugin: boolean;
         entityTypeGuid?: Guid | null;
+        isIndexingEnabledVisible: boolean;
         attribute: PublicEditableAttributeBag;
     };
 
@@ -184,6 +186,12 @@
     /** The current attribute in an editable format. */
     const editableAttribute = ref<PublicEditableAttributeBag | null>(null);
 
+    /**
+     * True if the "Indexing Enabled" option should be shown for the current
+     * entity type.
+     */
+    const isIndexingEnabledVisible = ref(false);
+
     /** True if the edit attribute modal should be visible. */
     const showEditAttributeModal = ref<boolean>(false);
 
@@ -216,6 +224,7 @@
         entityTypeQualifierColumn.value = result.data.entityTypeQualifierColumn ?? "";
         entityTypeQualifierValue.value = result.data.entityTypeQualifierValue ?? "";
         editableAttribute.value = result.data.attribute;
+        isIndexingEnabledVisible.value = result.data.isIndexingEnabledVisible === true;
 
         entityTypeQualifierColumnItems.value = result.data
             .validQualifierColumns
@@ -305,6 +314,7 @@
         editableAttribute.value = result.data.attribute;
         editableAttribute.value.guid = null;
         editableAttribute.value.realFieldTypeGuid = null;
+        isIndexingEnabledVisible.value = result.data.isIndexingEnabledVisible === true;
 
         entityTypeQualifierColumnItems.value = result.data
             .validQualifierColumns
@@ -369,6 +379,8 @@
         };
 
         const result = await invokeBlockAction<EditAttribute>("NewAttribute", request);
+
+        isIndexingEnabledVisible.value = result.data?.isIndexingEnabledVisible === true;
 
         entityTypeQualifierColumnItems.value = result.data
             ?.validQualifierColumns

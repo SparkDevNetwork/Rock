@@ -453,7 +453,8 @@ namespace Rock.Blocks.Core
                 EntityTypeQualifierValue = attribute.EntityTypeQualifierValue,
                 ValidQualifierColumns = validQualifierProperties,
                 IsLegacyPlugin = isLegacyPlugin,
-                EntityTypeGuid = entityTypeCache?.Guid ?? Guid.Empty
+                EntityTypeGuid = entityTypeCache?.Guid ?? Guid.Empty,
+                IsIndexingEnabledVisible = entityTypeCache?.IsIndexingSupported == true && entityTypeCache.IsIndexingEnabled
             };
         }
 
@@ -741,6 +742,8 @@ namespace Rock.Blocks.Core
         public bool IsLegacyPlugin { get; set; }
 
         public Guid EntityTypeGuid { get; set; }
+
+        public bool IsIndexingEnabledVisible { get; set; }
 
         public PublicEditableAttributeBag Attribute { get; set; }
     }
