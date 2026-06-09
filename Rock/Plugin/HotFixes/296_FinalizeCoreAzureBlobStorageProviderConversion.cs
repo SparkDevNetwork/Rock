@@ -1,0 +1,346 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System;
+using System.IO;
+using System.Web.Hosting;
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Finalizes the migration from the legacy Azure Blob Storage provider
+    /// (rocks.pillars.AzureStorageProvider.AzureBlobStorage) to the core
+    /// Rock.Storage.Provider.AzureBlobStorage provider. Re-runs every step of
+    /// the v19 migration (UpdateExistingToCoreAzureBlobStorageProvider) to
+    /// catch installations where v19 was a no-op or partially completed, then
+    /// re-points any remaining BinaryFile rows to the core provider, rewrites
+    /// their StorageEntitySettings JSON keys, and marks the legacy provider
+    /// Inactive.
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 296, "20.0" )]
+    public class FinalizeCoreAzureBlobStorageProviderConversion : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            Sql( @"
+/*
+    Finalizes the migration from the legacy Azure Blob Storage provider
+    (rocks.pillars.AzureStorageProvider.AzureBlobStorage) to the Core
+    Rock.Storage.Provider.AzureBlobStorage provider.
+
+    Re-runs every step of v19 (UpdateExistingToCoreAzureBlobStorageProvider)
+    to catch installations where the legacy provider was used again,
+    PLUS three additional steps:
+
+        STEP 4: Re-point existing BinaryFile rows from the legacy provider to
+                the Core provider, renaming the per-BinaryFileType setting
+                keys inside the StorageEntitySettings JSON snapshot.
+
+        STEP 6: Mark the legacy provider Inactive (the 'STEP 5' v19 deferred).
+
+        STEP 7: Delete the legacy provider EntityType.
+
+    Each step uses UPSERT / WHERE NOT EXISTS guards, so a re-run after success
+    is a no-op.
+*/
+
+DECLARE @LegacyEntityTypeName    NVARCHAR(200)    = N'rocks.pillars.AzureStorageProvider.AzureBlobStorage';
+DECLARE @CoreProviderGuid        UNIQUEIDENTIFIER = '9925a20a-7262-4fc7-b86e-856f6d98be17';
+
+DECLARE @LegacyAzureBlobStorageEntityTypeId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = @LegacyEntityTypeName);
+DECLARE @CoreAzureBlobStorageEntityTypeId   INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = @CoreProviderGuid);
+
+IF @LegacyAzureBlobStorageEntityTypeId IS NOT NULL
+   AND @CoreAzureBlobStorageEntityTypeId IS NOT NULL
+BEGIN
+
+    -- Tag the legacy EntityType for the UI (idempotent).
+    UPDATE [EntityType]
+    SET [FriendlyName] = 'Azure Blob Storage (legacy)'
+    WHERE [Id] = @LegacyAzureBlobStorageEntityTypeId
+      AND ISNULL( [FriendlyName], '' ) <> 'Azure Blob Storage (legacy)';
+
+    -- 'Active' attribute key (defined by the Component base class) for each provider EntityType.
+    DECLARE @LegacyActiveAttrId INT = (SELECT TOP 1 a.[Id] FROM [Attribute] a WHERE a.[EntityTypeId] = @LegacyAzureBlobStorageEntityTypeId AND a.[Key] = N'Active');
+    DECLARE @CoreActiveAttrId   INT = (SELECT TOP 1 a.[Id] FROM [Attribute] a WHERE a.[EntityTypeId] = @CoreAzureBlobStorageEntityTypeId   AND a.[Key] = N'Active');
+
+    /* -----------------------------------------------------------------------
+        STEP 1: Copy component-level AttributeValues (EntityId = 0) from the
+        legacy provider to the Core provider, matched by Attribute.[Key].
+        Covers: Active, Order, AccountName, AccountKey, CustomDomain,
+        DefaultContainerName (and any other keys that happen to match).
+       ----------------------------------------------------------------------- */
+    UPDATE tgtAV
+    SET tgtAV.[Value]                  = srcAV.[Value]
+      , tgtAV.[ModifiedDateTime]       = GETDATE()
+      , tgtAV.[IsPersistedValueDirty]  = 1
+    FROM [AttributeValue] tgtAV
+    INNER JOIN [Attribute]      tgtA  ON tgtA.[Id] = tgtAV.[AttributeId]
+    INNER JOIN [Attribute]      srcA  ON srcA.[Key] = tgtA.[Key] AND srcA.[EntityTypeId] = @LegacyAzureBlobStorageEntityTypeId
+    INNER JOIN [AttributeValue] srcAV ON srcAV.[AttributeId] = srcA.[Id] AND srcAV.[EntityId] = 0
+    WHERE tgtA.[EntityTypeId] = @CoreAzureBlobStorageEntityTypeId
+      AND tgtAV.[EntityId] = 0
+      AND ISNULL( tgtAV.[Value], '' ) <> ISNULL( srcAV.[Value], '' );
+
+    INSERT INTO [AttributeValue]
+        ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [IsPersistedValueDirty] )
+    SELECT
+        0, tgtA.[Id], 0, srcAV.[Value], NEWID(), GETDATE(), GETDATE(), 1
+    FROM [Attribute] tgtA
+    INNER JOIN [Attribute]      srcA  ON srcA.[Key] = tgtA.[Key] AND srcA.[EntityTypeId] = @LegacyAzureBlobStorageEntityTypeId
+    INNER JOIN [AttributeValue] srcAV ON srcAV.[AttributeId] = srcA.[Id] AND srcAV.[EntityId] = 0
+    WHERE tgtA.[EntityTypeId] = @CoreAzureBlobStorageEntityTypeId
+      AND NOT EXISTS (
+          SELECT 1 FROM [AttributeValue] existing
+          WHERE existing.[AttributeId] = tgtA.[Id] AND existing.[EntityId] = 0
+      );
+
+    /* -----------------------------------------------------------------------
+        STEP 2: Re-point any BinaryFileType rows from Legacy to Core. v19
+        already did this; v20 catches any created against Legacy after v19.
+       ----------------------------------------------------------------------- */
+    UPDATE [BinaryFileType]
+    SET [StorageEntityTypeId] = @CoreAzureBlobStorageEntityTypeId
+    WHERE [StorageEntityTypeId] = @LegacyAzureBlobStorageEntityTypeId;
+
+    /* -----------------------------------------------------------------------
+        STEP 3: Copy per-BinaryFileType qualified AttributeValues from the
+        legacy provider's attributes to the Core provider's attributes.
+        Keys differ between providers, so we map them by Attribute.[Guid]:
+
+            Legacy 'ContainerName'        (5AA80B71-825C-4757-8B04-AA4C233DC862)
+              --> Core 'AzureBlobContainerName'       (5D921DDE-623A-4079-B987-25C74B4CDB7B)
+
+            Legacy 'ContainerFolderPath'  (6465A83B-7A1F-4B90-BA73-862726ED8B41)
+              --> Core 'AzureBlobContainerFolderPath' (BA7C28E6-B45E-4983-8A8D-96985E2C4EF4)
+
+        AttributeValue.EntityId = BinaryFileType.Id and is preserved.
+       ----------------------------------------------------------------------- */
+
+    DECLARE @LegacyContainerNameAttrId       INT = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '5AA80B71-825C-4757-8B04-AA4C233DC862');
+    DECLARE @LegacyContainerFolderPathAttrId INT = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '6465A83B-7A1F-4B90-BA73-862726ED8B41');
+    DECLARE @CoreContainerNameAttrId         INT = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '5D921DDE-623A-4079-B987-25C74B4CDB7B');
+    DECLARE @CoreContainerFolderPathAttrId   INT = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'BA7C28E6-B45E-4983-8A8D-96985E2C4EF4');
+
+    -- Copy ContainerName --> AzureBlobContainerName.
+    IF @LegacyContainerNameAttrId IS NOT NULL AND @CoreContainerNameAttrId IS NOT NULL
+    BEGIN
+        UPDATE tgtAV
+        SET tgtAV.[Value]                  = srcAV.[Value]
+          , tgtAV.[ModifiedDateTime]       = GETDATE()
+          , tgtAV.[IsPersistedValueDirty]  = 1
+        FROM [AttributeValue] tgtAV
+        INNER JOIN [AttributeValue] srcAV ON srcAV.[AttributeId] = @LegacyContainerNameAttrId
+                                         AND srcAV.[EntityId]    = tgtAV.[EntityId]
+        WHERE tgtAV.[AttributeId] = @CoreContainerNameAttrId
+          AND ISNULL( tgtAV.[Value], '' ) <> ISNULL( srcAV.[Value], '' );
+
+        INSERT INTO [AttributeValue]
+            ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [IsPersistedValueDirty] )
+        SELECT
+            0, @CoreContainerNameAttrId, srcAV.[EntityId], srcAV.[Value], NEWID(), GETDATE(), GETDATE(), 1
+        FROM [AttributeValue] srcAV
+        WHERE srcAV.[AttributeId] = @LegacyContainerNameAttrId
+          AND NOT EXISTS (
+              SELECT 1 FROM [AttributeValue] existing
+              WHERE existing.[AttributeId] = @CoreContainerNameAttrId
+                AND existing.[EntityId]    = srcAV.[EntityId]
+          );
+    END
+
+    -- Copy ContainerFolderPath --> AzureBlobContainerFolderPath.
+    IF @LegacyContainerFolderPathAttrId IS NOT NULL AND @CoreContainerFolderPathAttrId IS NOT NULL
+    BEGIN
+        UPDATE tgtAV
+        SET tgtAV.[Value]                  = srcAV.[Value]
+          , tgtAV.[ModifiedDateTime]       = GETDATE()
+          , tgtAV.[IsPersistedValueDirty]  = 1
+        FROM [AttributeValue] tgtAV
+        INNER JOIN [AttributeValue] srcAV ON srcAV.[AttributeId] = @LegacyContainerFolderPathAttrId
+                                         AND srcAV.[EntityId]    = tgtAV.[EntityId]
+        WHERE tgtAV.[AttributeId] = @CoreContainerFolderPathAttrId
+          AND ISNULL( tgtAV.[Value], '' ) <> ISNULL( srcAV.[Value], '' );
+
+        INSERT INTO [AttributeValue]
+            ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [IsPersistedValueDirty] )
+        SELECT
+            0, @CoreContainerFolderPathAttrId, srcAV.[EntityId], srcAV.[Value], NEWID(), GETDATE(), GETDATE(), 1
+        FROM [AttributeValue] srcAV
+        WHERE srcAV.[AttributeId] = @LegacyContainerFolderPathAttrId
+          AND NOT EXISTS (
+              SELECT 1 FROM [AttributeValue] existing
+              WHERE existing.[AttributeId] = @CoreContainerFolderPathAttrId
+                AND existing.[EntityId]    = srcAV.[EntityId]
+          );
+    END
+
+    /* -----------------------------------------------------------------------
+        STEP 4: Re-point existing BinaryFile rows from Legacy to Core, and
+        rewrite the per-BinaryFileType setting keys inside the
+        StorageEntitySettings JSON:
+
+            ""ContainerName""        --> ""AzureBlobContainerName""
+            ""ContainerFolderPath""  --> ""AzureBlobContainerFolderPath""
+
+       ----------------------------------------------------------------------- */
+    UPDATE [BinaryFile]
+    SET
+        [StorageEntityTypeId]    = @CoreAzureBlobStorageEntityTypeId,
+        [StorageEntitySettings]  = REPLACE(
+            REPLACE( [StorageEntitySettings], '""ContainerName""', '""AzureBlobContainerName""' ),
+            '""ContainerFolderPath""',
+            '""AzureBlobContainerFolderPath""'
+        )
+    WHERE [StorageEntityTypeId] = @LegacyAzureBlobStorageEntityTypeId;
+
+    /* -----------------------------------------------------------------------
+        STEP 5: Ensure the Core provider's Active = 'True'.
+       ----------------------------------------------------------------------- */
+    IF @CoreActiveAttrId IS NOT NULL
+    BEGIN
+        IF EXISTS ( SELECT 1 FROM [AttributeValue] WHERE [AttributeId] = @CoreActiveAttrId AND [EntityId] = 0 )
+        BEGIN
+            UPDATE [AttributeValue]
+            SET [Value]                  = N'True'
+              , [ModifiedDateTime]       = GETDATE()
+              , [IsPersistedValueDirty]  = 1
+            WHERE [AttributeId] = @CoreActiveAttrId
+              AND [EntityId] = 0
+              AND [Value] <> N'True';
+        END
+        ELSE
+        BEGIN
+            INSERT INTO [AttributeValue]
+                ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [IsPersistedValueDirty] )
+            VALUES
+                ( 0, @CoreActiveAttrId, 0, N'True', NEWID(), GETDATE(), GETDATE(), 1 );
+        END
+    END
+
+    /* -----------------------------------------------------------------------
+        STEP 6: Mark the legacy provider Inactive. Safe now because every
+        BinaryFile and BinaryFileType has been re-pointed to Core above.
+       ----------------------------------------------------------------------- */
+    IF @LegacyActiveAttrId IS NOT NULL
+    BEGIN
+        IF EXISTS ( SELECT 1 FROM [AttributeValue] WHERE [AttributeId] = @LegacyActiveAttrId AND [EntityId] = 0 )
+        BEGIN
+            UPDATE [AttributeValue]
+            SET [Value]                  = N'False'
+              , [ModifiedDateTime]       = GETDATE()
+              , [IsPersistedValueDirty]  = 1
+            WHERE [AttributeId] = @LegacyActiveAttrId
+              AND [EntityId] = 0
+              AND [Value] <> N'False';
+        END
+        ELSE
+        BEGIN
+            INSERT INTO [AttributeValue]
+                ( [IsSystem], [AttributeId], [EntityId], [Value], [Guid], [CreatedDateTime], [ModifiedDateTime], [IsPersistedValueDirty] )
+            VALUES
+                ( 0, @LegacyActiveAttrId, 0, N'False', NEWID(), GETDATE(), GETDATE(), 1 );
+        END
+    END
+
+    /* -----------------------------------------------------------------------
+        STEP 7: Delete the legacy EntityType row and its associated metadata
+        (component-level AttributeValues, per-BinaryFileType AttributeValues,
+        and the Attribute definitions themselves).
+
+        Safe at this point because:
+          - All BinaryFileType.StorageEntityTypeId rows were re-pointed in STEP 2.
+          - All BinaryFile.StorageEntityTypeId rows were re-pointed in STEP 4.
+          - The legacy plugin DLL is removed from ~/Bin in this same migration
+            (post-SQL, below), so no startup code can re-register the
+            EntityType by name.
+
+        Wrapped in TRY/CATCH so an unforeseen FK reference does not fail the
+        whole migration. The component is already Inactive after STEP 6, so
+        leaving the EntityType row in place is an acceptable fallback.
+       ----------------------------------------------------------------------- */
+    BEGIN TRY
+
+        -- Remove AttributeValues that belong to the legacy EntityType's Attributes.
+        DELETE av
+        FROM [AttributeValue] av
+        INNER JOIN [Attribute] a ON a.[Id] = av.[AttributeId]
+        WHERE a.[EntityTypeId] = @LegacyAzureBlobStorageEntityTypeId;
+
+        -- Remove the Attribute definitions for the legacy EntityType.
+        DELETE FROM [Attribute]
+        WHERE [EntityTypeId] = @LegacyAzureBlobStorageEntityTypeId;
+
+        -- Remove the EntityType row itself.
+        DELETE FROM [EntityType]
+        WHERE [Id] = @LegacyAzureBlobStorageEntityTypeId;
+
+    END TRY
+    BEGIN CATCH
+        -- Intentionally swallowed: an unexpected FK reference will leave the
+        -- legacy EntityType in place. STEP 6 already marked it Inactive, so
+        -- the system remains in a fully migrated state either way.
+    END CATCH
+
+END
+" );
+
+            /*
+                6/9/26 - NA
+
+                Delete the legacy AzureStorageProvider assembly files from /bin.
+                The Rock Update process should already have removed these via
+                its deletefile.lst manifest, so on a normal, Rock-Update-driven
+                upgrade this is a no-op. It exists as a fallback for systems
+                (or developer workstations) that bypass the Rock Update process
+                and may still have the old legacy DLL/PDB.
+                
+                Reason: Fallback cleanup of the legacy plugin assembly for
+                installs that do not use the standard Rock Update process.
+            */
+            try
+            {
+                var path = HostingEnvironment.MapPath( "~/Bin/rocks.pillars.AzureStorageProvider.dll" );
+                if ( File.Exists( path ) )
+                {
+                    File.Delete( path );
+                }
+
+                path = HostingEnvironment.MapPath( "~/Bin/rocks.pillars.AzureStorageProvider.pdb" );
+                if ( File.Exists( path ) )
+                {
+                    File.Delete( path );
+                }
+            }
+            catch ( Exception ex )
+            {
+                System.Diagnostics.Debug.WriteLine( $"Error during Legacy AzureStorageProvider cleanup: {ex.Message}" );
+            }
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            // Down migrations are not yet supported in plug-in migrations.
+        }
+    }
+}
