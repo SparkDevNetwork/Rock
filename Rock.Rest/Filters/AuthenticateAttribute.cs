@@ -160,8 +160,18 @@ namespace Rock.Rest.Filters
 
             if ( !string.IsNullOrWhiteSpace( authToken ) )
             {
-                var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
-                var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
+                // The RockContext below is intentionally NOT wrapped in a
+                // using. The resolved UserLogin (and the PersonSession
+                // attached to it on the apikey path) are handed off to the
+                // RockRequestContext and live for the remainder of the
+                // request. Disposing the context here would tear down its
+                // ObjectStateManager and break lazy loading of UserLogin's
+                // navigation properties for any downstream consumer.
+                var rockContext = new Rock.Data.RockContext();
+                var userLoginService = new UserLoginService( rockContext );
+                var userLogin = userLoginService.Queryable( "Person" )
+                    .Where( u => u.ApiKey == authToken )
+                    .FirstOrDefault();
                 if ( userLogin != null )
                 {
                     var identity = new GenericIdentity( userLogin.UserName );
@@ -169,15 +179,33 @@ namespace Rock.Rest.Filters
                     actionContext.Request.SetUserPrincipal( principal );
                     SetRequestContextUser( actionContext, userLogin );
 
-                    // Phase 8 activity hook for API-key requests. Today this
-                    // is a no-op because the PersonSession is not yet
-                    // populated on the request context for API-key auth;
-                    // Phase 10 of the PersonSession spec wires
-                    // FindOrCreateApiKeySession into this branch, at which
-                    // point this call begins reporting activity against the
-                    // ApiKey-source PersonSession. JWT and ASOS bearer paths
-                    // intentionally do NOT participate (see spec
-                    // "API key requests").
+                    // Phase 10 of the PersonSession spec: API-key requests
+                    // participate in PersonSession via a long-lived
+                    // ApiKey-source session. FindOrCreateApiKeySession
+                    // reuses an existing active session for this UserLogin
+                    // (the common case after the first request) or creates
+                    // one via the upsert-with-unique-key pattern (concurrent
+                    // first requests cannot race to create duplicates). The
+                    // resolved session is attached to the request so the
+                    // activity hook below stamps LastActivityDateTime
+                    // against the correct row. JWT and ASOS bearer paths
+                    // intentionally do NOT participate; see the comments on
+                    // those branches below.
+                    //
+                    // If the apikey does not match any UserLogin (the
+                    // current branch is skipped), or that UserLogin was
+                    // previously deleted, any orphaned PersonSession had its
+                    // FK SET NULL by the cascade configuration and is
+                    // unreachable through FindOrCreateApiKeySession (which
+                    // keys off UserLoginId). Orphans cannot be resurrected.
+                    var requestContext = TryGetRequestContext( actionContext );
+                    if ( requestContext != null && userLogin.PersonId.HasValue )
+                    {
+                        var session = new PersonSessionService( rockContext )
+                            .FindOrCreateApiKeySession( requestContext, userLogin );
+                        requestContext.SetPersonSession( session );
+                    }
+
                     FireUpdatePersonSessionLastActivityIfPresent( actionContext );
                     return;
                 }
@@ -244,35 +272,46 @@ namespace Rock.Rest.Filters
         /// <param name="user">The <see cref="UserLogin"/> of the authorized individual.</param>
         private void SetRequestContextUser( HttpActionContext actionContext, UserLogin user )
         {
-            if ( actionContext.Request.Properties.TryGetValue( "RockServiceProvider", out var objectProvider ) && objectProvider is IServiceProvider serviceProvider )
-            {
-                var accessor = serviceProvider.GetService<IRockRequestContextAccessor>();
+            var requestContext = TryGetRequestContext( actionContext );
 
-                if ( accessor?.RockRequestContext != null )
-                {
-                    accessor.RockRequestContext.CurrentUser = user;
-                }
+            if ( requestContext != null )
+            {
+                requestContext.CurrentUser = user;
             }
+        }
+
+        /// <summary>
+        /// Returns the <see cref="RockRequestContext"/> attached to the current
+        /// request via the <see cref="IRockRequestContextAccessor"/>, or
+        /// <c>null</c> when no service provider / accessor is available on the
+        /// request (e.g., unusual hosting scenarios).
+        /// </summary>
+        /// <param name="actionContext">The context that describes the API action request.</param>
+        /// <returns>The current <see cref="RockRequestContext"/>, or <c>null</c>.</returns>
+        private static RockRequestContext TryGetRequestContext( HttpActionContext actionContext )
+        {
+            if ( !actionContext.Request.Properties.TryGetValue( "RockServiceProvider", out var objectProvider )
+                || !( objectProvider is IServiceProvider serviceProvider ) )
+            {
+                return null;
+            }
+
+            return serviceProvider.GetService<IRockRequestContextAccessor>()?.RockRequestContext;
         }
 
         /// <summary>
         /// Fires the <see cref="Rock.Tasks.UpdatePersonSessionLastActivity"/>
         /// bus task against the <see cref="PersonSession"/> resolved on the
-        /// current request, when one is present. No-op when the request has
-        /// no resolved session (the current state for API-key requests
-        /// until Phase 10 of the PersonSession spec wires
-        /// <c>FindOrCreateApiKeySession</c>).
+        /// current request, when one is present. No-op for requests
+        /// authenticated by paths that intentionally do not produce a
+        /// <see cref="PersonSession"/> (JWT, ASOS bearer, OIDC password
+        /// grant); see the per-branch comments in
+        /// <see cref="OnAuthorization(HttpActionContext)"/>.
         /// </summary>
         /// <param name="actionContext">The context that describes the API action request.</param>
         private void FireUpdatePersonSessionLastActivityIfPresent( HttpActionContext actionContext )
         {
-            if ( !actionContext.Request.Properties.TryGetValue( "RockServiceProvider", out var objectProvider )
-                || !( objectProvider is IServiceProvider serviceProvider ) )
-            {
-                return;
-            }
-
-            var personSession = serviceProvider.GetService<IRockRequestContextAccessor>()?.RockRequestContext?.PersonSession;
+            var personSession = TryGetRequestContext( actionContext )?.PersonSession;
 
             if ( personSession == null )
             {

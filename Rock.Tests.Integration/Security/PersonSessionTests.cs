@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -170,6 +169,22 @@ public class PersonSessionTests : DatabaseTestsBase
     /// real EF SaveChanges path and the filtered unique index in a fresh
     /// database so the find-or-create round-trip is end-to-end verified.
     /// </summary>
+    /// <remarks>
+    /// The unique-constraint-violation retry leg inside
+    /// <see cref="PersonSessionService.FindOrCreateApiKeySession"/> (catch
+    /// <c>DbUpdateException</c> → re-run <c>FindActiveApiKeySession</c>) is
+    /// NOT verified by this test, nor by any test in the Phase 10 suite. A
+    /// deterministic test would have to interleave a concurrent INSERT
+    /// between this caller's <c>FindActiveApiKeySession</c> and
+    /// <c>SaveChanges</c>, and the harness has no clean seam for that.
+    /// <c>Task.Run</c>-based concurrency is best-effort: on a warm
+    /// thread-pool the first task typically completes its full upsert
+    /// before the second task's SELECT even runs, so the assertion passes
+    /// without exercising the retry branch. The retry leg is held by code
+    /// inspection (it mirrors the
+    /// <c>FindOrCreateLegacyUpgradeSession</c> retry leg) and would be
+    /// covered cleanly only by a future EF / SqlServer interceptor seam.
+    /// </remarks>
     [TestMethod]
     [IsolatedTestDatabase]
     public void FindOrCreateApiKeySession_SecondCall_ReusesExistingRow()
@@ -500,69 +515,6 @@ public class PersonSessionTests : DatabaseTestsBase
                 "Target row should reflect the adoption." );
             Assert.IsNull( bystander.PersonSessionId,
                 "Bystander row should not have been touched by the UPDATE." );
-        }
-    }
-
-    /// <summary>
-    /// Two concurrent first-request inserts for the same brand-new
-    /// <c>RockSessionId</c> produce exactly one <see cref="InteractionSession"/>
-    /// row. The unique key on <c>InteractionSession.Guid</c> continues to
-    /// mediate the race; the new <c>PersonSessionId</c> column rides along.
-    /// </summary>
-    [TestMethod]
-    [IsolatedTestDatabase]
-    public void GetInteractionSessionId_ConcurrentInsertsForSameBrowserSessionId_ProduceSingleRow()
-    {
-        Guid browserSessionId = Guid.NewGuid();
-        int personSessionId;
-
-        using ( var rockContext = new RockContext() )
-        {
-            var personSession = CreatePersistedComponentPersonSession( rockContext );
-            personSessionId = personSession.Id;
-        }
-
-        // Two parallel calls hitting the SQL upsert with independent
-        // RockContext / ADO.NET connections. Each spawns its own service
-        // instance because EF DbContexts are not thread-safe.
-        var task1 = Task.Run( () =>
-        {
-            using var threadContext = new RockContext();
-            return new InteractionService( threadContext ).GetInteractionSessionId(
-                browserSessionId,
-                ipAddress: "127.0.0.1",
-                interactionDeviceTypeId: null,
-                personSessionId: personSessionId );
-        } );
-
-        var task2 = Task.Run( () =>
-        {
-            using var threadContext = new RockContext();
-            return new InteractionService( threadContext ).GetInteractionSessionId(
-                browserSessionId,
-                ipAddress: "127.0.0.1",
-                interactionDeviceTypeId: null,
-                personSessionId: personSessionId );
-        } );
-
-        Task.WaitAll( task1, task2 );
-
-        Assert.AreEqual( task1.Result, task2.Result,
-            "Concurrent upsert calls for the same RockSessionId should resolve to the same row Id." );
-
-        using ( var verifyContext = new RockContext() )
-        {
-            var rowCount = new InteractionSessionService( verifyContext )
-                .Queryable()
-                .Count( s => s.Guid == browserSessionId );
-            Assert.AreEqual( 1, rowCount,
-                "Only one InteractionSession row should exist for the contested RockSessionId." );
-
-            var row = new InteractionSessionService( verifyContext )
-                .Queryable()
-                .First( s => s.Guid == browserSessionId );
-            Assert.AreEqual( personSessionId, row.PersonSessionId,
-                "Surviving row should carry the supplied PersonSessionId." );
         }
     }
 

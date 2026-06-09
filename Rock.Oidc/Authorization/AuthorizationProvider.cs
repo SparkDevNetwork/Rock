@@ -119,6 +119,17 @@ namespace Rock.Oidc.Authorization
             }
             else if ( context.Request.IsPasswordGrantType() )
             {
+                // OIDC password-grant flow intentionally does NOT create a
+                // PersonSession. This endpoint exchanges credentials for an
+                // OAuth access token; it does NOT authenticate the requesting
+                // HTTP connection. Subsequent API calls made with the issued
+                // bearer token flow through Rock.Rest's AuthenticateAttribute
+                // and land in the ASOS bearer branch, which is also
+                // non-participating (see the comments on AuthenticateAttribute
+                // and PersonSession spec "API key requests" subsection).
+                // AuthenticateAndTrack below continues to update
+                // UserLogin.LastLoginDateTime as a side effect; that
+                // behavior is preserved.
                 UserLogin user = null;
                 ClaimsIdentity identity = null;
                 IEnumerable<string> allowedClientScopes = null;
