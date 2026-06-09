@@ -1,0 +1,41 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="storeErrorMessage" class="alert alert-warning">
+        <h4>Store Currently Not Available</h4>
+        <p>We're sorry, the Rock Store is currently not available. Check back soon!</p>
+        <small><em>{{ storeErrorMessage }}</em></small>
+    </div>
+
+    <PromoRotator v-else-if="isRotatorStyle && config.promos"
+                  :promos="config.promos" />
+
+    <CardList v-else
+              :title="panelTitle"
+              :promos="config.promos ?? []" />
+</template>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PromoListInitializationBox } from "@Obsidian/ViewModels/Blocks/Store/PromoList/promoListInitializationBox";
+    import PromoRotator from "./PromoList/promoRotator.partial.obs";
+    import CardList from "./PromoList/cardList.partial.obs";
+
+    // #region Values
+
+    const config = useConfigurationValues<PromoListInitializationBox>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const storeErrorMessage = computed((): string => config.storeErrorMessage ?? "");
+
+    const isRotatorStyle = computed((): boolean => config.displayStyle === "Rotator");
+
+    const panelTitle = computed((): string => config.panelTitle ?? "");
+
+    // #endregion Computed Values
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
