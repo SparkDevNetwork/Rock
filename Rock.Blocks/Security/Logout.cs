@@ -106,6 +106,7 @@ namespace Rock.Blocks.Security
             {
                 if ( RequestContext.CurrentUser != null )
                 {
+#pragma warning disable 618 // UpdateUserLastActivity is obsolete; the writer is retained during the dual-reader window. See Phase 15 of the PersonSession spec.
                     var updateUserLastActivityMsg = new UpdateUserLastActivity.Message
                     {
                         UserId = RequestContext.CurrentUser.Id,
@@ -113,6 +114,7 @@ namespace Rock.Blocks.Security
                         IsOnline = false
                     };
                     updateUserLastActivityMsg.Send();
+#pragma warning restore 618
                 }
 
                 // Resolve the Lava message before signing out so CurrentPerson is available.

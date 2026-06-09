@@ -388,6 +388,7 @@ namespace Rock.Blocks.Security
             if ( this.RequestContext.CurrentUser != null && this.RequestContext.CurrentUser.UserName == user.UserName )
             {
                 // It seems silly to update user activity when deleting and this may be removed in the future, but this is for compatibility with WebForms.
+#pragma warning disable 618 // UpdateUserLastActivity is obsolete; the writer is retained during the dual-reader window. See Phase 15 of the PersonSession spec.
                 var updateUserLastActivityMsg = new UpdateUserLastActivity.Message
                 {
                     UserId = this.RequestContext.CurrentUser.Id,
@@ -396,6 +397,7 @@ namespace Rock.Blocks.Security
                 };
 
                 updateUserLastActivityMsg.Send();
+#pragma warning restore 618
 
                 Authorization.SignOut();
             }

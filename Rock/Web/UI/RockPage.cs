@@ -840,6 +840,7 @@ namespace Rock.Web.UI
             {
                 if ( CurrentUser != null )
                 {
+#pragma warning disable 618 // UpdateUserLastActivity is obsolete; the writer is retained during the dual-reader window. See Phase 15 of the PersonSession spec.
                     var message = new UpdateUserLastActivity.Message
                     {
                         UserId = CurrentUser.Id,
@@ -847,6 +848,7 @@ namespace Rock.Web.UI
                         IsOnline = false
                     };
                     message.Send();
+#pragma warning restore 618
                 }
 
                 Authorization.SignOut();

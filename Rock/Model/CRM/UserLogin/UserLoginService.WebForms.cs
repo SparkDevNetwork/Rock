@@ -75,7 +75,18 @@ namespace Rock.Model
 
                 if ( user != null && userIsOnline )
                 {
-                    // Save last activity date
+                    // Save last activity date.
+                    //
+                    // NOTE: UpdateUserLastActivity is deprecated as of Rock
+                    // 20.0 and is being replaced by
+                    // UpdatePersonSessionLastActivity, which targets
+                    // PersonSession.LastActivityDateTime. Both writers fire
+                    // here during the dual-reader window so legacy readers
+                    // (e.g. the Active Users block prior to its migration)
+                    // continue to see fresh data. UpdateUserLastActivity and
+                    // its UserLogin.LastActivityDateTime writer are scheduled
+                    // for removal in Phase 15 of the PersonSession spec.
+#pragma warning disable 618 // UpdateUserLastActivity is obsolete; writer retained during the dual-reader window.
                     var message = new UpdateUserLastActivity.Message
                     {
                         UserId = user.Id,
@@ -90,6 +101,7 @@ namespace Rock.Model
                         }
 
                         message.SendIfNeeded();
+                        FireUpdatePersonSessionLastActivityIfPresent();
                     }
                     else
                     {
@@ -103,12 +115,37 @@ namespace Rock.Model
                         Authorization.SignOut();
                         return null;
                     }
+#pragma warning restore 618
                 }
 
                 return user;
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Fires the new <see cref="UpdatePersonSessionLastActivity"/> bus
+        /// task against the <see cref="PersonSession"/> resolved on the
+        /// current request, when one is present. No-op for anonymous
+        /// requests, API-key requests (until Phase 10 wires
+        /// <c>FindOrCreateApiKeySession</c>), bearer-token requests, and
+        /// server-side jobs.
+        /// </summary>
+        private static void FireUpdatePersonSessionLastActivityIfPresent()
+        {
+            var personSession = RockRequestContextAccessor.Current?.PersonSession;
+
+            if ( personSession == null )
+            {
+                return;
+            }
+
+            new UpdatePersonSessionLastActivity.Message
+            {
+                PersonSessionId = personSession.Id,
+                LastActivityDateTime = RockDateTime.Now,
+            }.SendIfNeeded();
         }
 
         /// <summary>

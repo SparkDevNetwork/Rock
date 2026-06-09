@@ -76,7 +76,13 @@ namespace Rock.Rest.Filters
                 return;
             }
 
-            // If check if ASOS authentication occurred.
+            // Check if ASOS (OpenID Connect) authentication occurred.
+            //
+            // ASOS bearer tokens intentionally do NOT participate in
+            // PersonSession activity tracking. The OIDC client and its
+            // token claims own the credential lifecycle; layering a
+            // PersonSession on top would not change any platform decision.
+            // See PersonSession spec "API key requests" subsection.
             principal = actionContext.RequestContext.Principal;
             if ( principal != null && principal.Identity != null )
             {
@@ -162,11 +168,27 @@ namespace Rock.Rest.Filters
                     principal = new GenericPrincipal( identity, null );
                     actionContext.Request.SetUserPrincipal( principal );
                     SetRequestContextUser( actionContext, userLogin );
+
+                    // Phase 8 activity hook for API-key requests. Today this
+                    // is a no-op because the PersonSession is not yet
+                    // populated on the request context for API-key auth;
+                    // Phase 10 of the PersonSession spec wires
+                    // FindOrCreateApiKeySession into this branch, at which
+                    // point this call begins reporting activity against the
+                    // ApiKey-source PersonSession. JWT and ASOS bearer paths
+                    // intentionally do NOT participate (see spec
+                    // "API key requests").
+                    FireUpdatePersonSessionLastActivityIfPresent( actionContext );
                     return;
                 }
             }
 
-            // If still not successful, check for a JSON Web Token
+            // If still not successful, check for a JSON Web Token.
+            //
+            // JWT requests intentionally do NOT participate in PersonSession
+            // activity tracking. JWT is a stateless bearer credential whose
+            // lifecycle is owned by the token claims, not by Rock's session
+            // table. See PersonSession spec "API key requests" subsection.
             if ( TryRetrieveHeader( actionContext, HeaderTokens.JWT, out var jwtString ) )
             {
                 // If the JSON Web Token is in the header, we can determine the User from that
@@ -231,6 +253,37 @@ namespace Rock.Rest.Filters
                     accessor.RockRequestContext.CurrentUser = user;
                 }
             }
+        }
+
+        /// <summary>
+        /// Fires the <see cref="Rock.Tasks.UpdatePersonSessionLastActivity"/>
+        /// bus task against the <see cref="PersonSession"/> resolved on the
+        /// current request, when one is present. No-op when the request has
+        /// no resolved session (the current state for API-key requests
+        /// until Phase 10 of the PersonSession spec wires
+        /// <c>FindOrCreateApiKeySession</c>).
+        /// </summary>
+        /// <param name="actionContext">The context that describes the API action request.</param>
+        private void FireUpdatePersonSessionLastActivityIfPresent( HttpActionContext actionContext )
+        {
+            if ( !actionContext.Request.Properties.TryGetValue( "RockServiceProvider", out var objectProvider )
+                || !( objectProvider is IServiceProvider serviceProvider ) )
+            {
+                return;
+            }
+
+            var personSession = serviceProvider.GetService<IRockRequestContextAccessor>()?.RockRequestContext?.PersonSession;
+
+            if ( personSession == null )
+            {
+                return;
+            }
+
+            new Rock.Tasks.UpdatePersonSessionLastActivity.Message
+            {
+                PersonSessionId = personSession.Id,
+                LastActivityDateTime = RockDateTime.Now,
+            }.SendIfNeeded();
         }
     }
 }

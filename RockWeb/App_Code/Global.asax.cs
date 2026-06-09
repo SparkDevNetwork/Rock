@@ -672,6 +672,26 @@ namespace RockWeb
                         Context.User = new System.Security.Principal.GenericPrincipal( identity, null );
                         rockRequestContext.SetCurrentUser( personSession.UserLogin );
                     }
+
+                    // Activity tracking. This is the canonical fire site
+                    // for UpdatePersonSessionLastActivity — every request
+                    // that resolves a PersonSession ticks activity here,
+                    // regardless of whether it is a WebForms page, an
+                    // Obsidian block action, a REST call, a mobile cookie
+                    // request, or a TV cookie request. The bus task itself
+                    // applies the per-session throttle so this call is
+                    // cheap on hot paths. SignalR is intentionally excluded
+                    // (long-lived hub traffic does not flow through
+                    // Application_BeginRequest in a way that would
+                    // legitimately advance activity).
+                    if ( personSession != null )
+                    {
+                        new Rock.Tasks.UpdatePersonSessionLastActivity.Message
+                        {
+                            PersonSessionId = personSession.Id,
+                            LastActivityDateTime = RockDateTime.Now,
+                        }.SendIfNeeded();
+                    }
                 }
             }
             catch ( Exception ex )
