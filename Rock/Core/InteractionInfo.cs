@@ -74,6 +74,15 @@ namespace Rock.Core
         /// </summary>
         public Guid? BrowserSessionId { get; set; }
 
+        /// <inheritdoc cref="InteractionSession.PersonSessionId"/>
+        /// <remarks>
+        /// When set, the <c>InteractionSession</c> upsert stamps this value
+        /// onto the row keyed by <see cref="BrowserSessionId"/> (INSERT for a
+        /// new row, UPDATE for an existing row whose <c>PersonSessionId</c> is
+        /// null or different). Anonymous requests leave this null.
+        /// </remarks>
+        public int? PersonSessionId { get; set; }
+
         #endregion InteractionSession Properties
 
         #region Interaction Properties
@@ -208,6 +217,7 @@ namespace Rock.Core
 
             this.IpAddress = info.IPAddress;
             this.BrowserSessionId = info.BrowserSessionId;
+            this.PersonSessionId = info.PersonSessionId;
 
             #endregion Set InteractionSession Properties
 

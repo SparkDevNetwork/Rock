@@ -267,7 +267,8 @@ namespace Rock.Model
                     info.IpAddress,
                     deviceTypeId,
                     interaction.InteractionDateKey,
-                    interactionSessionLocationId );
+                    interactionSessionLocationId,
+                    info.PersonSessionId );
 
                 interaction.InteractionSessionId = interactionSessionId;
             }
@@ -601,8 +602,14 @@ namespace Rock.Model
         /// <param name="interactionDeviceTypeId">The interaction device type identifier.</param>
         /// <param name="interactionDateKey">The interaction date key.</param>
         /// <param name="interactionSessionLocationId">The interaction session location identifier.</param>
+        /// <param name="personSessionId">
+        /// The current <c>PersonSession.Id</c>, or <c>null</c> for an anonymous
+        /// request. When non-null, this value is stamped onto a new
+        /// <c>InteractionSession</c> row at INSERT, or written into an existing
+        /// row keyed by <paramref name="browserSessionId"/> via UPDATE.
+        /// </param>
         /// <returns></returns>
-        private int GetInteractionSessionId( Guid browserSessionId, string ipAddress, int? interactionDeviceTypeId, int? interactionDateKey = null, int? interactionSessionLocationId = null )
+        internal int GetInteractionSessionId( Guid browserSessionId, string ipAddress, int? interactionDeviceTypeId, int? interactionDateKey = null, int? interactionSessionLocationId = null, int? personSessionId = null )
         {
             // Guid.Empty is not a valid browser session identifier. This typically
             // occurs when a RockPage falls through to the Guid.Empty fallback before
@@ -630,13 +637,37 @@ namespace Rock.Model
                 sessionLocationId = interactionSessionLocationId;
             }
 
-            // To make this more thread safe and to avoid overhead of an extra database call, etc, run a SQL block to Get/Create in one quick SQL round trip
+            object personSessionIdParam = DBNull.Value;
+            if ( personSessionId != null )
+            {
+                personSessionIdParam = personSessionId.Value;
+            }
+
+            // To make this more thread safe and to avoid overhead of an extra database call, etc, run a SQL block to Get/Create in one quick SQL round trip.
+            //
+            // The PersonSessionId column rides along with the existing
+            // unique-key-mediated upsert (per Phase 9 of the PersonSession spec):
+            // - On INSERT, the supplied @personSessionId stamps the new row at
+            //   creation (anonymous browsers pass NULL; authenticated requests
+            //   pass their PersonSession.Id).
+            // - On the existing-row path, when @personSessionId is non-null AND
+            //   differs from the row's current value, the row is updated in
+            //   place to point at the new PersonSession. This is the adoption
+            //   path that attaches an anonymous browser's pre-auth journey to
+            //   the PersonSession created at login, and the same path the
+            //   legacy-cookie upgrade uses.
+            // - SET NOCOUNT ON suppresses rowcount messages from the UPDATE so
+            //   they do not pollute the single-int result set returned to
+            //   SqlQuery<int>().
             int interactionSessionId = this.Context.Database.SqlQuery<int>(
                 @"BEGIN
-                    DECLARE @InteractionSessionId INT;
+                    SET NOCOUNT ON;
 
-                    SELECT @InteractionSessionId = Id
-                    FROM InteractionSession
+                    DECLARE @InteractionSessionId INT;
+                    DECLARE @ExistingPersonSessionId INT;
+
+                    SELECT @InteractionSessionId = [Id], @ExistingPersonSessionId = [PersonSessionId]
+                    FROM [InteractionSession]
                     WHERE [Guid] = @browserSessionId
 
                     IF (@InteractionSessionId IS NULL)
@@ -649,6 +680,7 @@ namespace Rock.Model
                             ,[ModifiedDateTime]
                             ,[SessionStartDateKey]
                             ,[InteractionSessionLocationId]
+                            ,[PersonSessionId]
                             )
                         OUTPUT inserted.Id
                         VALUES (
@@ -659,10 +691,20 @@ namespace Rock.Model
                             ,@currentDateTime
                             ,@sessionStartDateKey
                             ,@interactionSessionLocationId
+                            ,@personSessionId
                             )
                     END
                     ELSE
                     BEGIN
+                        IF (@personSessionId IS NOT NULL
+                            AND (@ExistingPersonSessionId IS NULL OR @ExistingPersonSessionId <> @personSessionId))
+                        BEGIN
+                            UPDATE [dbo].[InteractionSession]
+                            SET [PersonSessionId] = @personSessionId
+                                ,[ModifiedDateTime] = @currentDateTime
+                            WHERE [Id] = @InteractionSessionId
+                        END
+
                         SELECT @InteractionSessionId
                     END
                 END",
@@ -671,7 +713,8 @@ namespace Rock.Model
                 new SqlParameter( "@interactionDeviceTypeId", deviceTypeId ),
                 new SqlParameter( "@currentDateTime", currentDateTime ),
                 new SqlParameter( "@sessionStartDateKey", interactionDateKey ),
-                new SqlParameter( "@interactionSessionLocationId", sessionLocationId ) )
+                new SqlParameter( "@interactionSessionLocationId", sessionLocationId ),
+                new SqlParameter( "@personSessionId", personSessionIdParam ) )
                 .FirstOrDefault();
 
             return interactionSessionId;

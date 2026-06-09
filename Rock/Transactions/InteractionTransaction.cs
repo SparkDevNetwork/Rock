@@ -384,6 +384,15 @@ namespace Rock.Transactions
         /// </value>
         public Guid? BrowserSessionId { get; set; }
 
+        /// <inheritdoc cref="InteractionSession.PersonSessionId"/>
+        /// <remarks>
+        /// This usually doesn't need to be set; the default is the current
+        /// request's <c>PersonSession.Id</c> (or <c>null</c> for anonymous
+        /// requests). When set, the <c>InteractionSession</c> upsert stamps
+        /// this value onto the row keyed by <see cref="BrowserSessionId"/>.
+        /// </remarks>
+        public int? PersonSessionId { get; set; }
+
         #endregion InteractionSession Properties
 
         #region InteractionSessionLocation Properties
@@ -616,6 +625,9 @@ namespace Rock.Transactions
             this.BrowserSessionId = this.BrowserSessionId
                 ?? rockPage?.Session["RockSessionId"]?.ToString().AsGuidOrNull()
                 ?? RockRequestContextAccessor.Current?.SessionGuid;
+
+            this.PersonSessionId = this.PersonSessionId
+                ?? RockRequestContextAccessor.Current?.PersonSession?.Id;
 
             this.PersonAliasId = this.PersonAliasId ?? rockPage?.CurrentPersonAliasId ?? rockPage?.CurrentVisitor?.Id;
 

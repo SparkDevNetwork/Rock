@@ -260,6 +260,15 @@ public partial class PersonSessionService
             ImpersonatorInteractionSessionGuid = impersonatorInteractionSession.Guid,
         } );
 
+        // Spec's InteractionSession sync table calls for a fresh
+        // InteractionSession on impersonation start. Regenerate the
+        // browser-session identifier so the next interaction-tracking call
+        // creates a new InteractionSession row tied to the impersonation
+        // PersonSession, leaving the impersonator's prior row queryable
+        // via PersonSessionAdminImpersonationSettings.ImpersonatorInteractionSessionGuid
+        // for EndImpersonationAndRestore to re-point to later.
+        requestContext?.RegenerateBrowserSessionId();
+
         return session;
     }
 
@@ -478,15 +487,21 @@ public partial class PersonSessionService
     /// <summary>
     /// Ends an admin-impersonation session by marking the supplied
     /// <paramref name="session"/> inactive and resolving the impersonator's
-    /// prior <see cref="PersonSession"/>. The caller is responsible for
-    /// reissuing the <c>.ROCK</c> cookie to point at the returned session.
-    /// <c>SaveChanges</c> is called to mark the current session as inactive.
+    /// prior <see cref="PersonSession"/>. On a successful restore, the
+    /// browser-session identifier (<c>RockSessionId</c>) on
+    /// <paramref name="requestContext"/> is re-pointed at the impersonator's
+    /// prior <c>InteractionSession.Guid</c> so subsequent interaction
+    /// tracking resumes against the admin's pre-impersonation row. The
+    /// caller is responsible for reissuing the <c>.ROCK</c> cookie to point
+    /// at the returned session. <c>SaveChanges</c> is called to mark the
+    /// current session as inactive.
     /// </summary>
     /// <param name="session">The impersonation <see cref="PersonSession"/> to end.</param>
+    /// <param name="requestContext">The current <see cref="RockRequestContext"/>, or <c>null</c> when no request is in scope (in which case browser-session restoration is skipped).</param>
     /// <returns>The impersonator's prior session, or <c>null</c> if either restore reference was dangling.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="session"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when <paramref name="session"/>'s <see cref="PersonSession.CreationSource"/> is anything other than <see cref="PersonSessionCreationSource.Impersonation"/>.</exception>
-    internal PersonSession EndImpersonationAndRestore( PersonSession session )
+    internal PersonSession EndImpersonationAndRestore( PersonSession session, RockRequestContext requestContext )
     {
         if ( session == null )
         {
@@ -529,6 +544,13 @@ public partial class PersonSessionService
             // impersonated person OR silently dropping back to the admin.
             return null;
         }
+
+        // Re-point the browser-session identifier so subsequent
+        // interaction-tracking calls on this browser update the admin's
+        // pre-impersonation InteractionSession row rather than continuing
+        // to write activity against the impersonation-period row (which
+        // remains in the database as a historical record).
+        requestContext?.SetBrowserSessionId( priorInteractionSession.Guid );
 
         return priorSession;
     }

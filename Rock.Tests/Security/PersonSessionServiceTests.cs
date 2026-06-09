@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Configuration;
 using Rock.Enums.Security;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 using Rock.Tests.Shared.TestFramework;
 
@@ -423,7 +424,7 @@ public class PersonSessionServiceTests
             IsActive = true,
         };
 
-        Assert.Throws<InvalidOperationException>( () => service.EndImpersonationAndRestore( session ) );
+        Assert.Throws<InvalidOperationException>( () => service.EndImpersonationAndRestore( session, requestContext: null ) );
     }
 
     /// <summary>
@@ -446,7 +447,7 @@ public class PersonSessionServiceTests
             IsActive = true,
         };
 
-        Assert.Throws<InvalidOperationException>( () => service.EndImpersonationAndRestore( session ) );
+        Assert.Throws<InvalidOperationException>( () => service.EndImpersonationAndRestore( session, requestContext: null ) );
     }
 
     /// <summary>
@@ -478,7 +479,7 @@ public class PersonSessionServiceTests
 
         var service = new PersonSessionService( rockContext );
 
-        var result = service.EndImpersonationAndRestore( impersonationSession );
+        var result = service.EndImpersonationAndRestore( impersonationSession, requestContext: null );
 
         Assert.IsNull( result );
         Assert.IsFalse( impersonationSession.IsActive );
@@ -522,11 +523,176 @@ public class PersonSessionServiceTests
 
         var service = new PersonSessionService( rockContext );
 
-        var result = service.EndImpersonationAndRestore( impersonationSession );
+        var result = service.EndImpersonationAndRestore( impersonationSession, requestContext: null );
 
         Assert.IsNull( result );
         Assert.IsFalse( impersonationSession.IsActive );
     }
 
     #endregion EndImpersonationAndRestore
+
+    #region Phase 9 — browser-session id reset / restore
+
+    /// <summary>
+    /// <see cref="PersonSessionService.StartImpersonationSession"/> regenerates
+    /// the browser-session identifier on the supplied
+    /// <see cref="RockRequestContext"/> so the next interaction-tracking call
+    /// creates a fresh <see cref="InteractionSession"/> row tied to the
+    /// impersonation session rather than continuing to write activity against
+    /// the impersonator's prior row.
+    /// </summary>
+    [TestMethod]
+    public void StartImpersonationSession_RegeneratesBrowserSessionId()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+        var service = new PersonSessionService( rockContext );
+
+        var requestContext = new RockRequestContext();
+        var priorBrowserSessionId = requestContext.SessionGuid;
+
+        var impersonator = new PersonSession
+        {
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 100,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+        };
+        var impersonatorInteractionSession = new InteractionSession { Guid = Guid.NewGuid() };
+
+        service.StartImpersonationSession( requestContext, targetPersonAliasId: 200, impersonator, impersonatorInteractionSession );
+
+        Assert.AreNotEqual( priorBrowserSessionId, requestContext.SessionGuid,
+            "Browser-session id should be regenerated so the impersonation session gets a fresh InteractionSession." );
+        Assert.AreNotEqual( impersonatorInteractionSession.Guid, requestContext.SessionGuid,
+            "Regenerated browser-session id must not collide with the impersonator's prior InteractionSession.Guid." );
+    }
+
+    /// <summary>
+    /// <see cref="PersonSessionService.EndImpersonationAndRestore"/> re-points
+    /// the browser-session identifier at the impersonator's prior
+    /// <c>InteractionSession.Guid</c> on a successful restore. This is the
+    /// seam that re-attaches the admin's pre-impersonation activity trail.
+    /// </summary>
+    [TestMethod]
+    public void EndImpersonationAndRestore_RePointsBrowserSessionId_OnSuccessfulRestore()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+
+        var impersonator = new PersonSession
+        {
+            Id = 1,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 100,
+            CreationSource = PersonSessionCreationSource.Component,
+            IsActive = true,
+        };
+        rockContext.Set<PersonSession>().Add( impersonator );
+
+        var priorInteractionSession = new InteractionSession { Id = 1, Guid = Guid.NewGuid() };
+        rockContext.Set<InteractionSession>().Add( priorInteractionSession );
+
+        var impersonationSession = new PersonSession
+        {
+            Id = 2,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 200,
+            CreationSource = PersonSessionCreationSource.Impersonation,
+            IsActive = true,
+        };
+        impersonationSession.SetAdditionalSettings( new PersonSessionAdminImpersonationSettings
+        {
+            ImpersonatorPersonSessionGuid = impersonator.Guid,
+            ImpersonatorInteractionSessionGuid = priorInteractionSession.Guid,
+        } );
+        rockContext.Set<PersonSession>().Add( impersonationSession );
+
+        var requestContext = new RockRequestContext();
+        var service = new PersonSessionService( rockContext );
+
+        var restored = service.EndImpersonationAndRestore( impersonationSession, requestContext );
+
+        Assert.IsNotNull( restored );
+        Assert.AreEqual( impersonator.Guid, restored.Guid );
+        Assert.IsFalse( impersonationSession.IsActive );
+        Assert.AreEqual( priorInteractionSession.Guid, requestContext.SessionGuid,
+            "Browser-session id should be re-pointed at the impersonator's prior InteractionSession on restore." );
+    }
+
+    /// <summary>
+    /// When restore fails (either prior-session reference is dangling),
+    /// <see cref="PersonSessionService.EndImpersonationAndRestore"/> does NOT
+    /// touch the request's browser-session identifier. The user becomes
+    /// anonymous; the next interaction-tracking call writes against whatever
+    /// the current browser-session id resolves to (which, having no
+    /// PersonSession, means a NULL <c>PersonSessionId</c> on insert / no
+    /// adoption on update).
+    /// </summary>
+    [TestMethod]
+    public void EndImpersonationAndRestore_DoesNotTouchBrowserSessionId_OnDanglingRestore()
+    {
+        using var scope = TestHelper.CreateScopedRockAppWithMockDatabase();
+        var rockContext = scope.App.CreateRockContext();
+
+        var impersonationSession = new PersonSession
+        {
+            Id = 2,
+            Guid = Guid.NewGuid(),
+            PersonAliasId = 200,
+            CreationSource = PersonSessionCreationSource.Impersonation,
+            IsActive = true,
+        };
+        impersonationSession.SetAdditionalSettings( new PersonSessionAdminImpersonationSettings
+        {
+            ImpersonatorPersonSessionGuid = Guid.NewGuid(), // not seeded
+            ImpersonatorInteractionSessionGuid = Guid.NewGuid(), // not seeded
+        } );
+        rockContext.Set<PersonSession>().Add( impersonationSession );
+
+        var requestContext = new RockRequestContext();
+        var priorBrowserSessionId = requestContext.SessionGuid;
+        var service = new PersonSessionService( rockContext );
+
+        var restored = service.EndImpersonationAndRestore( impersonationSession, requestContext );
+
+        Assert.IsNull( restored );
+        Assert.AreEqual( priorBrowserSessionId, requestContext.SessionGuid,
+            "Browser-session id should not be re-pointed when the restore is refused." );
+    }
+
+    /// <summary>
+    /// <see cref="RockRequestContext.RegenerateBrowserSessionId"/> assigns a
+    /// fresh <see cref="Guid"/> and exposes it via <c>SessionGuid</c> so
+    /// downstream code in the same request observes the new identifier.
+    /// </summary>
+    [TestMethod]
+    public void RegenerateBrowserSessionId_AssignsFreshGuid()
+    {
+        var requestContext = new RockRequestContext();
+        var prior = requestContext.SessionGuid;
+
+        var regenerated = requestContext.RegenerateBrowserSessionId();
+
+        Assert.AreNotEqual( prior, regenerated );
+        Assert.AreEqual( regenerated, requestContext.SessionGuid,
+            "SessionGuid should reflect the regenerated value for the rest of the request." );
+    }
+
+    /// <summary>
+    /// <see cref="RockRequestContext.SetBrowserSessionId(Guid)"/> writes the
+    /// supplied <see cref="Guid"/> through to <c>SessionGuid</c>.
+    /// </summary>
+    [TestMethod]
+    public void SetBrowserSessionId_WritesSuppliedGuid()
+    {
+        var requestContext = new RockRequestContext();
+        var target = Guid.NewGuid();
+
+        requestContext.SetBrowserSessionId( target );
+
+        Assert.AreEqual( target, requestContext.SessionGuid );
+    }
+
+    #endregion Phase 9 — browser-session id reset / restore
 }

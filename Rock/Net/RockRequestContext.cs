@@ -665,6 +665,60 @@ namespace Rock.Net
             PersonSession = personSession;
         }
 
+        /// <summary>
+        /// Replaces the browser-session identifier (<c>RockSessionId</c>) with
+        /// a fresh <see cref="Guid"/> so the next interaction-tracking call
+        /// creates a new <c>InteractionSession</c> row rather than adopting
+        /// the previous one.
+        /// </summary>
+        /// <remarks>
+        /// Called from auth-event handlers per the PersonSession spec's
+        /// reset rules: logout, login-as-a-different-person, and admin
+        /// impersonation start. Login-when-not-already-authenticated and
+        /// legacy cookie upgrade deliberately do NOT regenerate; they
+        /// keep the existing <c>RockSessionId</c> so the SQL upsert's
+        /// UPDATE path adopts the anonymous browser's pre-auth journey.
+        /// Writes through to ASP.NET <c>HttpContext.Session</c> when
+        /// available so <see cref="Rock.Web.UI.RockPage"/>'s fallback read
+        /// (<c>Session["RockSessionId"]</c>) picks up the new value on
+        /// subsequent reads in this request and across requests.
+        /// </remarks>
+        /// <returns>The newly generated <see cref="Guid"/>.</returns>
+        [RockInternal( "20.0", true )]
+        public Guid RegenerateBrowserSessionId()
+        {
+            var newSessionId = Guid.NewGuid();
+
+            SetBrowserSessionId( newSessionId );
+
+            return newSessionId;
+        }
+
+        /// <summary>
+        /// Re-points the browser-session identifier (<c>RockSessionId</c>) at
+        /// the supplied <paramref name="browserSessionId"/>. Used when ending
+        /// an admin-impersonation session to restore the admin's pre-impersonation
+        /// <c>InteractionSession</c> row.
+        /// </summary>
+        /// <remarks>
+        /// Writes through to ASP.NET <c>HttpContext.Session</c> when available;
+        /// the in-memory <see cref="SessionGuid"/> is also updated so the
+        /// remainder of this request observes the new identifier.
+        /// </remarks>
+        /// <param name="browserSessionId">The <see cref="Guid"/> to install as the current browser-session identifier.</param>
+        [RockInternal( "20.0", true )]
+        public void SetBrowserSessionId( Guid browserSessionId )
+        {
+            SessionGuid = browserSessionId;
+
+            var session = HttpContext.Current?.Session;
+
+            if ( session != null )
+            {
+                session["RockSessionId"] = browserSessionId;
+            }
+        }
+
         #endregion
 
         #region Methods

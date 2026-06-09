@@ -754,6 +754,17 @@ namespace Rock.Blocks.Security
 
                 var mfaRecency = isTwoFactorAuthenticated ? ( DateTime? ) RockDateTime.Now : null;
 
+                // Capture the prior PersonSession's PersonAliasId (if any)
+                // BEFORE creating the new session. If a different person was
+                // already authenticated on this request (e.g. user A signs
+                // out implicitly by signing in as user B), the spec's
+                // InteractionSession sync table calls for a fresh
+                // InteractionSession - so we regenerate RockSessionId below.
+                // Login-when-not-already-authenticated keeps the existing
+                // RockSessionId so the SQL upsert's UPDATE path adopts the
+                // anonymous browser's pre-auth journey onto the new session.
+                var priorSessionPersonAliasId = RequestContext.PersonSession?.PersonAliasId;
+
                 var personSessionService = new PersonSessionService( rockContext );
                 var session = personSessionService.StartComponentSession(
                     RequestContext,
@@ -772,6 +783,11 @@ namespace Rock.Blocks.Security
                 rockContext.SaveChanges();
 
                 personSessionService.SetAuthCookie( session, RequestContext );
+
+                if ( priorSessionPersonAliasId.HasValue && priorSessionPersonAliasId.Value != personAliasId )
+                {
+                    RequestContext.RegenerateBrowserSessionId();
+                }
 
                 // Make the new session available to anything that reads
                 // PersonSession off the request context later in this
